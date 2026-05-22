@@ -317,6 +317,18 @@ input:focus {
 
 }
 
+.error {
+
+    display: block;
+
+    margin-top: 6px;
+
+    font-size: 13px;
+
+    color: #dc2626;
+
+}
+
 @media(max-width:900px) {
 
     .left {
