@@ -1,0 +1,152 @@
+:root {
+
+/* colors */
+
+--color-primary: #00236f;
+--color-on-primary: #ffffff;
+--color-primary-container: #1e3a8a;
+--color-on-primary-container: #90a8ff;
+
+--color-secondary: #006c49;
+--color-on-secondary: #ffffff;
+--color-secondary-container: #6cf8bb;
+
+--color-tertiary: #262b2e;
+
+--color-error: #ba1a1a;
+
+--color-background: #f8f9ff;
+
+--color-surface: #f8f9ff;
+--color-surface-low: #eff4ff;
+--color-surface-container: #e5eeff;
+--color-surface-high: #dce9ff;
+--color-surface-highest: #d3e4fe;
+
+--color-card: #ffffff;
+
+--color-text: #0b1c30;
+--color-text-secondary: #444651;
+
+--color-outline: #757682;
+--color-outline-soft: #c5c5d3;
+
+--color-success: #10b981;
+
+--color-shadow:
+
+0px 4px 12px
+rgba(30,58,138,.05);
+
+--color-shadow-lg:
+
+0px 12px 32px
+rgba(30,58,138,.12);
+
+
+/* typography */
+
+--font-family:
+
+'Inter',
+sans-serif;
+
+
+/* Display */
+
+--display-lg-size:48px;
+--display-lg-weight:700;
+--display-lg-line:56px;
+
+
+/* Headline */
+
+--headline-lg-size:32px;
+--headline-lg-weight:600;
+--headline-lg-line:40px;
+
+--headline-md-size:24px;
+--headline-md-weight:600;
+--headline-md-line:32px;
+
+
+/* Title */
+
+--title-lg-size:20px;
+--title-lg-weight:600;
+--title-lg-line:28px;
+
+
+/* Body */
+
+--body-lg-size:18px;
+--body-lg-line:28px;
+
+--body-md-size:16px;
+--body-md-line:24px;
+
+
+/* Label */
+
+--label-md-size:14px;
+--label-md-weight:500;
+
+--label-sm-size:12px;
+--label-sm-weight:600;
+
+
+/* radius */
+
+--radius-sm:4px;
+--radius:8px;
+--radius-md:12px;
+--radius-lg:16px;
+--radius-xl:24px;
+--radius-full:9999px;
+
+
+/* spacing */
+
+--space-xs:4px;
+--space-sm:8px;
+--space-md:16px;
+--space-lg:24px;
+--space-xl:32px;
+
+--gutter:24px;
+
+--margin-mobile:16px;
+--margin-desktop:48px;
+
+
+/* transtion */
+
+--transition-fast:.2s;
+--transition-normal:.3s;
+--transition-slow:.45s;
+
+
+/* elevation*/
+
+--elevation-1:
+
+0px 4px 12px
+rgba(30,58,138,.05);
+
+--elevation-2:
+
+0px 12px 32px
+rgba(30,58,138,.12);
+
+
+/* component-token */
+
+--input-height:52px;
+
+--button-height:52px;
+
+--sidebar-width:260px;
+
+--container-max:1280px;
+
+}
