@@ -1,103 +1,81 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - DomusHub Login</title>
-    @vite([
-        'resources/css/auth/login.css'
-    ])
+    <title>DomusHub – Đăng nhập Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    @vite(['resources/css/auth/admin.css'])
 </head>
-
 <body>
-    <div class="container">
-        <div class="left">
-            <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab">
-            <div class="overlay"></div>
-            <div class="content">
-                <h1>
-                    Quản lý hiệu quả
-                    <br>
-                    với DomusHub
-                </h1>
-                <p>
-                    Hệ thống quản lý cư dân toàn diện cho các quản lý viên
-                    với tính năng mạnh mẽ và hiệu suất cao.
-                </p>
-            </div>
-        </div>
 
-        <div class="right">
-            <div class="login-box">
-                <div class="logo">
-                    👨‍💼 Admin Portal
-                </div>
+<div class="card">
 
-                <h2 class="title">
-                    Đăng nhập Admin
-                </h2>
-
-                <p class="sub">
-                    Nhập thông tin quản trị viên để tiếp tục.
-                </p>
-
-                <form method="POST" action="{{ route('admin.login.submit') }}">
-                    @csrf
-
-                    <div class="group">
-                        <label>
-                            Email hoặc SĐT
-                        </label>
-                        <input type="email" name="email" value="{{ old('email') }}" placeholder="admin@example.com" required>
-                        @error('email')
-                            <span class="error">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    <div class="group">
-                        <label>
-                            Mật khẩu
-                        </label>
-                        <input type="password" name="password" placeholder="••••••••" required>
-                    </div>
-
-                    <div class="remember">
-                        <div>
-                            <input type="checkbox" name="remember">
-                            <span>
-                                Ghi nhớ
-                            </span>
-                        </div>
-
-                        <a href="#">
-                            Quên mật khẩu?
-                        </a>
-                    </div>
-
-                    <button class="login-btn">
-                        Đăng nhập →
-                    </button>
-
-                </form>
-
-                <div class="support">
-                    ℹ Cần hỗ trợ kỹ thuật
-                    <br>
-                    Liên hệ IT để được hỗ trợ.
-                </div>
-
-                <div class="footer">
-                    <a href="{{ route('resident.login') }}">Cư dân</a> | 
-                    <a href="{{ route('security.login') }}">Bảo vệ</a>
-                </div>
-
-            </div>
-
-        </div>
-
+    <div class="logo">
+        <div class="logo-icon"><i class="fa-solid fa-user-tie"></i></div>
+        DomusHub Admin
     </div>
 
-</body>
+    <h2>Xin chào, Admin</h2>
+    <p class="sub">Đăng nhập để quản lý hệ thống DomusHub.</p>
 
+    @if(session('error'))
+        <div class="alert-error">
+            <i class="fa-solid fa-circle-exclamation"></i> {{ session('error') }}
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('admin.login.submit') }}">
+        @csrf
+
+        <div class="group">
+            <label>Email</label>
+            <div class="input-box">
+                <i class="fa-regular fa-envelope icon"></i>
+                <input type="email" name="email" placeholder="" value="{{ old('email') }}" required>
+            </div>
+            @error('email')<span class="error-msg">{{ $message }}</span>@enderror
+        </div>
+
+        <div class="group">
+            <label>Mật khẩu</label>
+            <div class="input-box">
+                <i class="fa-solid fa-lock icon"></i>
+                <input type="password" name="password" id="password" placeholder="••••••••" required>
+                <i class="fa-regular fa-eye toggle-pw" id="toggleIcon" onclick="togglePassword()"></i>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div>
+                <label class="remember">
+                    <input type="checkbox" name="remember"> Ghi nhớ đăng nhập
+                </label>
+            </div>
+            <a href="#" class="forgot">Quên mật khẩu?</a>
+        </div>
+
+        <button type="submit" class="login-btn">
+            <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
+        </button>
+    </form>
+
+    <div class="info-box">
+        <i class="fa-solid fa-lock"></i>
+        <span>Phiên đăng nhập được mã hóa và ghi lại nhật ký. Nếu cần hỗ trợ, liên hệ IT <strong>1900-XXXX</strong></span>
+    </div>
+
+</div>
+
+<script>
+function togglePassword() {
+    const input = document.getElementById('password');
+    const icon = document.getElementById('toggleIcon');
+    const isHidden = input.type === 'password';
+    input.type = isHidden ? 'text' : 'password';
+    icon.className = isHidden ? 'fa-regular fa-eye-slash toggle-pw' : 'fa-regular fa-eye toggle-pw';
+}
+</script>
+
+</body>
 </html>
