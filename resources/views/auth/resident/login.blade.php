@@ -42,6 +42,12 @@
                     Vui lòng nhập thông tin để truy cập tài khoản.
                 </p>
 
+                @if (session('status'))
+                    <div class="success-message" style="background:#ecfdf5; border:1px solid #86efac; color:#166534; padding:12px 14px; border-radius:10px; margin-bottom:16px; font-size:14px;">
+                        {{ session('status') }}
+                    </div>
+                @endif
+
                 <form method="POST" action="{{ route('resident.login.submit') }}">
                     @csrf
 
@@ -70,7 +76,7 @@
                             </span>
                         </div>
 
-                        <a href="#">
+                        <a href="{{ route('resident.forgot-password') }}">
                             Quên mật khẩu?
                         </a>
                     </div>
@@ -88,8 +94,9 @@
                 </div>
 
                 <div class="footer">
-                    <a href="{{ route('admin.login') }}">Admin</a> | 
-                    <a href="{{ route('security.login') }}">Bảo vệ</a>
+                    <a href="{{ route('admin.login') }}">Admin</a> |
+                    <a href="{{ route('security.login') }}">Bảo vệ</a> |
+                    <a href="{{ route('resident.register') }}">Đăng ký</a>
                 </div>
 
             </div>
