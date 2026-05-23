@@ -1,0 +1,237 @@
+.dashboard-page {
+    min-height: 100vh;
+    background: linear-gradient(180deg, #f8f9ff 0%, #eef4ff 100%);
+}
+
+.dashboard-shell {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr);
+}
+
+.dashboard-sidebar {
+    padding: 2rem 1.5rem;
+    background: #0f172a;
+    color: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-right: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.dashboard-brand__label {
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #cbd5e1;
+    margin-bottom: 0.5rem;
+}
+
+.dashboard-brand__title {
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.dashboard-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 2rem;
+}
+
+.dashboard-nav__item {
+    color: #e2e8f0;
+    text-decoration: none;
+    padding: 0.85rem 1rem;
+    border-radius: 0.9rem;
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.dashboard-nav__item:hover,
+.dashboard-nav__item--active {
+    background: rgba(59, 130, 246, 0.2);
+    color: #ffffff;
+}
+
+.dashboard-sidebar__footer {
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.dashboard-sidebar__caption {
+    font-size: 0.8rem;
+    color: #cbd5e1;
+    margin-bottom: 0.35rem;
+}
+
+.dashboard-sidebar__value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.dashboard-main {
+    padding: 2rem;
+}
+
+.dashboard-topbar {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.dashboard-eyebrow {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #2563eb;
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+}
+
+.dashboard-page__title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.dashboard-topbar__actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.dashboard-user-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.2rem;
+    color: #0f172a;
+}
+
+.dashboard-user-pill strong {
+    font-size: 1rem;
+}
+
+.dashboard-user-pill span {
+    font-size: 0.9rem;
+    color: #475569;
+}
+
+.dashboard-logout-btn {
+    border: none;
+    border-radius: 999px;
+    padding: 0.85rem 1.1rem;
+    background: #0f172a;
+    color: #ffffff;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.dashboard-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.dashboard-card {
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 1.2rem;
+    padding: 1.4rem;
+    box-shadow: 0 18px 40px rgba(30, 58, 138, 0.08);
+    border: 1px solid rgba(191, 219, 254, 0.6);
+}
+
+.dashboard-card--primary {
+    background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+}
+
+.dashboard-card__label {
+    color: #2563eb;
+    font-weight: 700;
+    margin-bottom: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.75rem;
+}
+
+.dashboard-card h2 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin-bottom: 0.65rem;
+    color: #0f172a;
+}
+
+.dashboard-card p {
+    color: #334155;
+    line-height: 1.6;
+}
+
+.dashboard-card__muted {
+    color: #64748b;
+}
+
+.dashboard-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.8rem;
+    font-size: 1.05rem;
+}
+
+.dashboard-status-pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.dashboard-status-pill--success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.dashboard-status-pill--warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.dashboard-list {
+    padding-left: 1.1rem;
+    color: #334155;
+    line-height: 1.8;
+}
+
+@media (max-width: 900px) {
+    .dashboard-shell {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-sidebar {
+        border-right: none;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+    }
+
+    .dashboard-topbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .dashboard-topbar__actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
