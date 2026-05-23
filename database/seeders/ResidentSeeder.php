@@ -21,7 +21,7 @@ class ResidentSeeder extends Seeder
                 'email' => 'resident.a@example.com',
                 'phone' => '0900000004',
                 // Mật khẩu bắt buộc phải mã hóa bằng Hash::make() thì user mới đăng nhập được
-                'password' => Hash::make('password123'),
+                'password' => Hash::make('  '),
                 // Sử dụng đúng các giá trị Enum mà bạn đã thiết kế trong database
                 'role' => 'resident',
                 'status' => 'active',
