@@ -1,97 +1,72 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quên mật khẩu - DomusHub</title>
-    @vite([
-        'resources/css/auth/login.css'
-    ])
-    <style>
-        .error {
-            color: #dc2626;
-            font-size: 13px;
-            margin-top: 8px;
-            display: block;
-        }
-
-        .helper {
-            color: #64748b;
-            font-size: 14px;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-
-        .link-row {
-            margin-top: 18px;
-            text-align: center;
-            font-size: 14px;
-        }
-
-        .link-row a {
-            color: #00236f;
-            text-decoration: none;
-            font-weight: 600;
-        }
-    </style>
+    <title>DomusHub – Quên mật khẩu</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    @vite(['resources/css/auth/login.css'])
 </head>
-
 <body>
-    <div class="container">
-        <div class="left">
-            <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab">
-            <div class="overlay"></div>
-            <div class="content">
-                <h1>
-                    Khôi phục mật khẩu
-                    <br>
-                    cho cư dân
-                </h1>
-                <p>
-                    Nhập email tài khoản của bạn để nhận mã xác nhận và đặt lại mật khẩu mới.
-                </p>
-            </div>
-        </div>
+<div class="container">
 
-        <div class="right">
-            <div class="login-box">
-                <div class="logo">🏠 Cư dân</div>
-                <h2 class="title">Quên mật khẩu</h2>
-                <p class="sub">Vui lòng nhập email đã đăng ký.</p>
-
-                @if (session('status'))
-                    <div class="success-message" style="background:#ecfdf5; border:1px solid #86efac; color:#166534; padding:12px 14px; border-radius:10px; margin-bottom:16px; font-size:14px;">
-                        {{ session('status') }}
-                    </div>
-                @endif
-
-                <p class="helper">
-                    Mã xác nhận sẽ được gửi đến email của bạn trong vòng vài phút.
-                </p>
-
-                <form method="POST" action="{{ route('resident.forgot-password.submit') }}">
-                    @csrf
-
-                    <div class="group">
-                        <label for="email">Email</label>
-                        <input id="email" type="email" name="email" value="{{ old('email') }}" placeholder="example@gmail.com" required>
-                        @error('email')
-                            <span class="error">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    <button class="login-btn" type="submit">
-                        Gửi mã xác nhận →
-                    </button>
-                </form>
-
-                <p class="link-row">
-                    <a href="{{ route('resident.login') }}">← Quay lại đăng nhập</a>
-                </p>
-            </div>
+    <!-- LEFT -->
+    <div class="left">
+        <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=768&h=1024&fit=crop" alt="building">
+        <div class="overlay"></div>
+        <div class="hero">
+            <h1>Khôi phục<br>tài khoản</h1>
+            <p>Nhập email để nhận mã xác nhận và đặt lại mật khẩu của bạn.</p>
         </div>
     </div>
-</body>
 
+    <!-- RIGHT -->
+    <div class="right">
+        <div class="login-box">
+
+            <div class="logo">
+                <i class="fa-solid fa-building"></i> DomusHub Portal
+            </div>
+
+            <h2>Quên mật khẩu?</h2>
+            <p class="sub">Nhập email đã đăng ký, chúng tôi sẽ gửi mã xác nhận trong vài phút.</p>
+
+            @if(session('status'))
+                <div class="alert-success">
+                    <i class="fa-solid fa-circle-check"></i> {{ session('status') }}
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="alert-error">
+                    <i class="fa-solid fa-circle-exclamation"></i> {{ session('error') }}
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('resident.forgot-password.submit') }}">
+                @csrf
+
+                <div class="group">
+                    <label>Email</label>
+                    <div class="input-box">
+                        <i class="fa-regular fa-envelope"></i>
+                        <input type="email" name="email" placeholder="ten@vidu.com" value="{{ old('email') }}" required>
+                    </div>
+                    @error('email')<span class="error-msg">{{ $message }}</span>@enderror
+                </div>
+
+                <button type="submit" class="login-btn">
+                    Gửi mã xác nhận <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </form>
+
+            <div class="bottom">
+                <p><a href="{{ route('resident.login') }}"><i class="fa-solid fa-arrow-left"></i> Quay lại đăng nhập</a></p>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+</body>
 </html>

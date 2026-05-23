@@ -49,7 +49,6 @@
             <label class="remember">
                 <input type="checkbox" name="remember"> Ghi nhớ đăng nhập
             </label>
-            <a href="#" class="forgot">Quên mật khẩu?</a>
         </div>
 
         <button type="submit" class="login-btn">

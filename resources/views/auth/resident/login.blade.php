@@ -44,15 +44,15 @@
                 </div>
 
                 <div class="group">
-                    <label>Mã căn hộ</label>
+                    <label>Mật khẩu</label>
                     <div class="input-box">
                         <i class="fa-solid fa-lock"></i>
-                        <input type="password" name="password" placeholder="Nhập mã căn hộ" required>
+                        <input type="password" name="password" placeholder="Nhập mật khẩu" required>
                     </div>
                 </div>
 
                 <div class="forgot">
-                    <a href="#">Quên mật khẩu?</a>
+                    <a href="{{ route('resident.forgot-password') }}">Quên mật khẩu?</a>
                 </div>
 
                 <button type="submit" class="login-btn">
@@ -71,7 +71,7 @@
             </div>
 
             <div class="bottom">
-                <p>Bạn chưa có tài khoản? <a href="#">Đăng ký ngay</a></p>
+                <p>Bạn chưa có tài khoản? <a href="{{ route('resident.register') }}">Đăng ký ngay</a></p>
                 <small>
                     <span>Chính sách bảo mật</span>
                     <span>Điều khoản dịch vụ</span>

@@ -1,136 +1,126 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng ký cư dân - DomusHub</title>
-    @vite([
-        'resources/css/auth/login.css'
-    ])
-    <style>
-        .error {
-            color: #dc2626;
-            font-size: 13px;
-            margin-top: 8px;
-            display: block;
-        }
-
-        .muted {
-            color: #64748b;
-            font-size: 13px;
-            line-height: 1.6;
-            margin-bottom: 24px;
-        }
-
-        .footer-link {
-            margin-top: 18px;
-            text-align: center;
-            font-size: 14px;
-        }
-
-        .footer-link a {
-            color: #00236f;
-            text-decoration: none;
-            font-weight: 600;
-        }
-    </style>
+    <title>DomusHub – Đăng ký Cư dân</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    @vite(['resources/css/auth/login.css'])
 </head>
-
 <body>
-    <div class="container">
-        <div class="left">
-            <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab">
-            <div class="overlay"></div>
-            <div class="content">
-                <h1>
-                    Tạo tài khoản
-                    <br>
-                    cho cư dân
-                </h1>
-                <p>
-                    Đăng ký nhanh với thông tin cá nhân và mã mời để tham gia hệ thống quản lý DomusHub.
-                </p>
-            </div>
-        </div>
+<div class="container">
 
-        <div class="right">
-            <div class="login-box">
-                <div class="logo">
-                    🏠 Đăng ký cư dân
-                </div>
-
-                <h2 class="title">
-                    Đăng ký cư dân
-                </h2>
-
-                <p class="sub">
-                    Vui lòng nhập đầy đủ thông tin bên dưới.
-                </p>
-
-                <p class="muted">
-                    Mã mời cư dân được cấp bởi quản lý để xác minh quyền truy cập vào căn hộ.
-                </p>
-
-                <form method="POST" action="{{ route('resident.register.submit') }}">
-                    @csrf
-
-                    <div class="group">
-                        <label for="name">Họ và tên</label>
-                        <input id="name" type="text" name="name" value="{{ old('name') }}" placeholder="Nguyễn Văn A" required>
-                        @error('name')
-                            <span class="error">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    <div class="group">
-                        <label for="phone">Số điện thoại</label>
-                        <input id="phone" type="text" name="phone" value="{{ old('phone') }}" placeholder="0901234567" required>
-                        @error('phone')
-                            <span class="error">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    <div class="group">
-                        <label for="email">Email</label>
-                        <input id="email" type="email" name="email" value="{{ old('email') }}" placeholder="example@gmail.com" required>
-                        @error('email')
-                            <span class="error">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    <div class="group">
-                        <label for="password">Mật khẩu</label>
-                        <input id="password" type="password" name="password" placeholder="••••••••" required>
-                        @error('password')
-                            <span class="error">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    <div class="group">
-                        <label for="password_confirmation">Nhập lại mật khẩu</label>
-                        <input id="password_confirmation" type="password" name="password_confirmation" placeholder="••••••••" required>
-                    </div>
-
-                    <div class="group">
-                        <label for="invite_code">Mã mời cư dân</label>
-                        <input id="invite_code" type="text" name="invite_code" value="{{ old('invite_code') }}" placeholder="INVITE-RESIDENT-001" required>
-                        @error('invite_code')
-                            <span class="error">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    <button class="login-btn" type="submit">
-                        Tạo tài khoản →
-                    </button>
-                </form>
-
-                <p class="footer-link">
-                    Đã có tài khoản? <a href="{{ route('resident.login') }}">Đăng nhập</a>
-                </p>
-            </div>
+    <!-- LEFT -->
+    <div class="left">
+        <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=768&h=1024&fit=crop" alt="building">
+        <div class="overlay"></div>
+        <div class="hero">
+            <h1>Tham gia cùng<br>DomusHub</h1>
+            <p>Đăng ký tài khoản để trải nghiệm dịch vụ quản lý cư dân minh bạch và hiện đại.</p>
         </div>
     </div>
-</body>
 
+    <!-- RIGHT -->
+    <div class="right">
+        <div class="login-box">
+
+            <div class="logo">
+                <i class="fa-solid fa-building"></i> DomusHub Portal
+            </div>
+
+            <h2>Tạo tài khoản</h2>
+            <p class="sub">Vui lòng nhập đầy đủ thông tin để đăng ký.</p>
+
+            @if(session('error'))
+                <div class="alert-error">
+                    <i class="fa-solid fa-circle-exclamation"></i> {{ session('error') }}
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('resident.register.submit') }}">
+                @csrf
+
+                <div class="group">
+                    <label>Họ và tên</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-user"></i>
+                        <input type="text" name="name" placeholder="Nguyễn Văn A" value="{{ old('name') }}" required>
+                    </div>
+                    @error('name')<span class="error-msg">{{ $message }}</span>@enderror
+                </div>
+
+                <div class="group">
+                    <label>Số điện thoại</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-phone"></i>
+                        <input type="text" name="phone" placeholder="0901234567" value="{{ old('phone') }}" required>
+                    </div>
+                    @error('phone')<span class="error-msg">{{ $message }}</span>@enderror
+                </div>
+
+                <div class="group">
+                    <label>Email</label>
+                    <div class="input-box">
+                        <i class="fa-regular fa-envelope"></i>
+                        <input type="email" name="email" placeholder="ten@vidu.com" value="{{ old('email') }}" required>
+                    </div>
+                    @error('email')<span class="error-msg">{{ $message }}</span>@enderror
+                </div>
+
+                <div class="group">
+                    <label>Mật khẩu</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" name="password" id="password" placeholder="••••••••" required>
+                        <i class="fa-regular fa-eye toggle-pw" id="toggleIcon" onclick="togglePassword()"></i>
+                    </div>
+                    @error('password')<span class="error-msg">{{ $message }}</span>@enderror
+                </div>
+
+                <div class="group">
+                    <label>Nhập lại mật khẩu</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" name="password_confirmation" placeholder="••••••••" required>
+                    </div>
+                </div>
+
+                <div class="group">
+                    <label>Mã mời cư dân</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-key"></i>
+                        <input type="text" name="invite_code" placeholder="INVITE-RESIDENT-001" value="{{ old('invite_code') }}" required>
+                    </div>
+                    @error('invite_code')<span class="error-msg">{{ $message }}</span>@enderror
+                </div>
+
+                <button type="submit" class="login-btn">
+                    Tạo tài khoản <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <div class="bottom">
+                <p>Đã có tài khoản? <a href="{{ route('resident.login') }}">Đăng nhập</a></p>
+                <small>
+                    <span>Chính sách bảo mật</span>
+                    <span>Điều khoản dịch vụ</span>
+                </small>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+function togglePassword() {
+    const input = document.getElementById('password');
+    const icon = document.getElementById('toggleIcon');
+    const isHidden = input.type === 'password';
+    input.type = isHidden ? 'text' : 'password';
+    icon.className = isHidden ? 'fa-regular fa-eye-slash toggle-pw' : 'fa-regular fa-eye toggle-pw';
+}
+</script>
+
+</body>
 </html>
