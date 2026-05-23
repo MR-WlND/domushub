@@ -5,16 +5,24 @@ use Illuminate\Support\Facades\Route;
 
 // Root route - redirect to resident login
 Route::get('/', function () {
-    return view('auth.resident.login');
+    return redirect()->route('resident.login');
 });
 
 // Admin Login Routes
 Route::get('/admin/login', [AuthController::class, 'showAdminLogin'])->name('admin.login');
 Route::post('/admin/login', [AuthController::class, 'loginAdmin'])->name('admin.login.submit');
 
-// Resident Login Routes
-Route::get('/resident/login', [AuthController::class, 'showResidentLogin'])->name('resident.login');
-Route::post('/resident/login', [AuthController::class, 'loginResident'])->name('resident.login.submit');
+// Resident Routes
+Route::prefix('resident')->name('resident.')->group(function () {
+    Route::get('/login', [AuthController::class, 'showResidentLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'loginResident'])->name('login.submit');
+    Route::get('/register', [AuthController::class, 'showResidentRegister'])->name('register');
+    Route::post('/register', [AuthController::class, 'registerResident'])->name('register.submit');
+    Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('forgot-password');
+    Route::post('/forgot-password', [AuthController::class, 'sendResetCode'])->name('forgot-password.submit');
+    Route::get('/reset-password', [AuthController::class, 'showResetPassword'])->name('reset-password');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('reset-password.submit');
+});
 
 // Security Login Routes
 Route::get('/security/login', [AuthController::class, 'showSecurityLogin'])->name('security.login');
@@ -25,13 +33,19 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Dashboard Routes
 Route::middleware(['admin'])->group(function () {
-    Route::get('/admin/dashboard', fn () => 'Admin dashboard')->name('admin.dashboard');
+    Route::get('/admin/dashboard', function () {
+        return view('admin.dashboard.index');
+    })->name('admin.dashboard');
 });
 
 Route::middleware(['security'])->group(function () {
-    Route::get('/security/dashboard', fn () => 'Security dashboard')->name('security.dashboard');
+    Route::get('/security/dashboard', function () {
+        return view('security.dashboard.index');
+    })->name('security.dashboard');
 });
 
-Route::middleware(['resident'])->group(function () {
-    Route::get('/resident/dashboard', fn () => 'Resident dashboard')->name('resident.dashboard');
+Route::middleware(['resident'])->prefix('resident')->name('resident.')->group(function () {
+    Route::get('/dashboard', function () {
+        return view('resident.home.index');
+    })->name('dashboard');
 });
