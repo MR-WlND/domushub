@@ -16,6 +16,16 @@ Route::post('/admin/login', [AuthController::class, 'loginAdmin'])->name('admin.
 Route::get('/resident/login', [AuthController::class, 'showResidentLogin'])->name('resident.login');
 Route::post('/resident/login', [AuthController::class, 'loginResident'])->name('resident.login.submit');
 
+// Resident Register Routes
+Route::get('/resident/register', [AuthController::class, 'showResidentRegister'])->name('resident.register');
+Route::post('/resident/register', [AuthController::class, 'registerResident'])->name('resident.register.submit');
+
+// Resident Forgot Password Routes
+Route::get('/resident/forgot-password', [AuthController::class, 'showForgotPassword'])->name('resident.forgot-password');
+Route::post('/resident/forgot-password', [AuthController::class, 'sendResetCode'])->name('resident.forgot-password.submit');
+Route::get('/resident/reset-password', [AuthController::class, 'showResetPassword'])->name('resident.reset-password');
+Route::post('/resident/reset-password', [AuthController::class, 'resetPassword'])->name('resident.reset-password.submit');
+
 // Security Login Routes
 Route::get('/security/login', [AuthController::class, 'showSecurityLogin'])->name('security.login');
 Route::post('/security/login', [AuthController::class, 'loginSecurity'])->name('security.login.submit');
