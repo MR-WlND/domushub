@@ -1,0 +1,240 @@
+.resident-page {
+    min-height: 100vh;
+    margin: 0;
+    background: var(--color-background);
+}
+
+.resident-layout {
+    min-height: calc(100vh - 5.5rem);
+    display: flex;
+    flex-direction: column;
+}
+
+.resident-content {
+    flex: 1;
+    padding: 2rem 1.5rem;
+}
+
+.resident-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1rem 1.5rem;
+    background: #ffffff;
+    border-bottom: 1px solid rgba(15, 52, 124, 0.12);
+}
+
+.resident-header__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+}
+
+.resident-header__logo {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #eff4ff;
+    font-size: 1.3rem;
+}
+
+.resident-header__label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #2563eb;
+    font-weight: 700;
+}
+
+.resident-header__title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.resident-header__nav {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.resident-header__link {
+    color: #475569;
+    text-decoration: none;
+    padding: 0.65rem 0.95rem;
+    border-radius: 999px;
+    font-weight: 600;
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.resident-header__link:hover,
+.resident-header__link--active {
+    background: #eff4ff;
+    color: #0f347c;
+}
+
+.resident-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.resident-header__user {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.15rem;
+}
+
+.resident-header__user strong {
+    font-size: 0.95rem;
+    color: #0f172a;
+}
+
+.resident-header__user span {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.resident-header__logout {
+    border: none;
+    border-radius: 999px;
+    padding: 0.8rem 1rem;
+    background: #0f172a;
+    color: #ffffff;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.resident-dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.resident-dashboard__hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+    border-radius: 1.2rem;
+    padding: 1.5rem;
+    border: 1px solid rgba(191, 219, 254, 0.6);
+}
+
+.resident-dashboard__eyebrow {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #2563eb;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+}
+
+.resident-dashboard__title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.resident-dashboard__intro {
+    color: #334155;
+    line-height: 1.6;
+    margin-top: 0.5rem;
+}
+
+.resident-dashboard__badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 0.9rem;
+    border-radius: 999px;
+    background: #dcfce7;
+    color: #166534;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.resident-footer {
+    width: 100%;
+    padding: 1.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid rgba(15, 52, 124, 0.12);
+    background: #f5f8ff;
+}
+
+.resident-footer__info {
+    text-align: center;
+}
+
+.resident-footer__brand {
+    color: #0f347c;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.resident-footer__copy {
+    margin-top: 0.25rem;
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.resident-footer__nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem 1.5rem;
+}
+
+.resident-footer__link {
+    color: #4b5563;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.resident-footer__link:hover {
+    color: #0f347c;
+}
+
+@media (min-width: 768px) {
+    .resident-footer {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .resident-footer__info {
+        text-align: left;
+    }
+}
+
+@media (max-width: 900px) {
+    .resident-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .resident-header__actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .resident-dashboard__hero {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
