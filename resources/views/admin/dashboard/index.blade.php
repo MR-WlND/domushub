@@ -2,7 +2,7 @@
 
 @section('page_title', 'Admin Dashboard')
 @section('page_kicker', 'Quản trị hệ thống')
-@section('role_title', 'Bảng điều khiển Admin')
+@section('role_title', 'Admin Portal')
 @section('home_route', route('admin.dashboard'))
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role', 'admin')

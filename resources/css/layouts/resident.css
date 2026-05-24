@@ -20,97 +20,185 @@
     align-items: center;
     justify-content: space-between;
     gap: 1.5rem;
-    padding: 1rem 1.5rem;
-    background: #ffffff;
-    border-bottom: 1px solid rgba(15, 52, 124, 0.12);
+    padding: 0 2.5rem;
+    background-color: #f8f9ff;
+    border-bottom: 1px solid #c5c5d3;
+    height: 72px;
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    box-sizing: border-box;
 }
 
 .resident-header__brand {
     display: flex;
     align-items: center;
-    gap: 0.9rem;
 }
 
-.resident-header__logo {
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 999px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: #eff4ff;
-    font-size: 1.3rem;
-}
-
-.resident-header__label {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #2563eb;
+.resident-header__brand-link {
+    font-size: 1.25rem;
     font-weight: 700;
-}
-
-.resident-header__title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #0f172a;
+    color: #00236f;
+    text-decoration: none;
 }
 
 .resident-header__nav {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    flex-wrap: wrap;
+    gap: 2rem;
+    height: 100%;
 }
 
 .resident-header__link {
     color: #475569;
     text-decoration: none;
-    padding: 0.65rem 0.95rem;
-    border-radius: 999px;
-    font-weight: 600;
-    transition:
-        background-color 0.2s ease,
-        color 0.2s ease;
+    font-weight: 500;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    position: relative;
+    transition: color 0.2s ease;
+    box-sizing: border-box;
 }
 
-.resident-header__link:hover,
+.resident-header__link:hover {
+    color: #00236f;
+}
+
 .resident-header__link--active {
-    background: #eff4ff;
-    color: #0f347c;
+    color: #00236f;
+    font-weight: 600;
+}
+
+.resident-header__link--active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: #00236f;
+    border-radius: 3px 3px 0 0;
 }
 
 .resident-header__actions {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 1.25rem;
 }
 
-.resident-header__user {
+/* Header icon styles */
+.header-icon-wrapper {
+    position: relative;
+    cursor: pointer;
+    color: #5f6368;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.header-icon-wrapper:hover {
+    background-color: rgba(0, 35, 111, 0.04);
+    color: #00236f;
+}
+
+.header-icon {
+    color: currentColor;
+}
+
+/* User Menu & Dropdown */
+.resident-header__user-menu {
+    position: relative;
+    cursor: pointer;
+}
+
+.resident-header__user-avatar-container {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 1px solid #c5c5d3;
+    transition: border-color 0.2s ease;
+}
+
+.resident-header__user-avatar-container:hover {
+    border-color: #00236f;
+}
+
+.resident-header__user-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.resident-header__dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background-color: #ffffff;
+    border: 1px solid #c5c5d3;
+    border-radius: 8px;
+    width: 200px;
+    box-shadow: 0 4px 12px rgba(0, 35, 111, 0.08);
+    display: none;
+    flex-direction: column;
+    z-index: 1000;
+    padding: 0.5rem 0;
+}
+
+.resident-header__user-menu:hover .resident-header__dropdown {
+    display: flex;
+}
+
+.dropdown-info {
+    padding: 0.75rem 1rem;
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    gap: 0.15rem;
 }
 
-.resident-header__user strong {
-    font-size: 0.95rem;
-    color: #0f172a;
+.dropdown-info strong {
+    font-size: 0.9rem;
+    color: #00236f;
 }
 
-.resident-header__user span {
-    font-size: 0.85rem;
-    color: #64748b;
+.dropdown-info span {
+    font-size: 0.75rem;
+    color: #757682;
 }
 
-.resident-header__logout {
-    border: none;
-    border-radius: 999px;
-    padding: 0.8rem 1rem;
-    background: #0f172a;
-    color: #ffffff;
-    font-weight: 700;
-    cursor: pointer;
+.dropdown-divider {
+    border: 0;
+    border-top: 1px solid #e2e8f0;
+    margin: 0.5rem 0;
+}
+
+.dropdown-item {
+    padding: 0.6rem 1rem;
+    color: #475569;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: #f3f6fc;
+    color: #00236f;
+}
+
+.dropdown-item--logout {
+    color: #ba1a1a;
+}
+
+.dropdown-item--logout:hover {
+    background-color: #fef2f2;
+    color: #ba1a1a;
 }
 
 .resident-dashboard {
@@ -164,61 +252,71 @@
 
 .resident-footer {
     width: 100%;
-    padding: 1.5rem 1.5rem;
+    max-width: 1280px;
+    margin: 0 auto;
+    height: 121px;
+    padding: 0 2.5rem;
     display: flex;
-    flex-direction: column;
-    gap: 1rem;
     align-items: center;
     justify-content: space-between;
-    border-top: 1px solid rgba(15, 52, 124, 0.12);
-    background: #f5f8ff;
+    border-top: 1px solid #c5c5d3;
+    background-color: #ffffff;
+    box-sizing: border-box;
 }
 
 .resident-footer__info {
-    text-align: center;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
 }
 
 .resident-footer__brand {
-    color: #0f347c;
-    font-size: 1rem;
+    color: #00236f;
+    font-size: 1.25rem;
     font-weight: 700;
     letter-spacing: 0.02em;
 }
 
 .resident-footer__copy {
-    margin-top: 0.25rem;
-    color: #6b7280;
-    font-size: 0.875rem;
+    color: #757682;
+    font-size: 0.85rem;
 }
 
 .resident-footer__nav {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 1rem 1.5rem;
+    align-items: center;
+    gap: 2rem;
 }
 
 .resident-footer__link {
-    color: #4b5563;
+    color: #475569;
     text-decoration: underline;
-    text-underline-offset: 0.2em;
+    text-underline-offset: 0.25em;
     font-size: 0.875rem;
     font-weight: 500;
     transition: color 0.2s ease;
 }
 
 .resident-footer__link:hover {
-    color: #0f347c;
+    color: #00236f;
 }
 
-@media (min-width: 768px) {
+@media (max-width: 768px) {
     .resident-footer {
-        flex-direction: row;
-        align-items: center;
+        height: auto;
+        padding: 2rem 1.5rem;
+        flex-direction: column;
+        gap: 1.5rem;
+        align-items: flex-start;
     }
-
     .resident-footer__info {
         text-align: left;
+    }
+    .resident-footer__nav {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
     }
 }
 

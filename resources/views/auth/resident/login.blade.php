@@ -51,8 +51,15 @@
                     </div>
                 </div>
 
-                <div class="forgot">
-                    <a href="{{ route('resident.forgot-password') }}">Quên mật khẩu?</a>
+                <div class="resident-login-options">
+                    <label class="resident-remember">
+                        <input type="checkbox" name="remember" value="1" {{ old('remember') ? 'checked' : '' }}>
+                        <span>Ghi nhớ đăng nhập</span>
+                    </label>
+
+                    <div class="forgot">
+                        <a href="{{ route('resident.forgot-password') }}">Quên mật khẩu?</a>
+                    </div>
                 </div>
 
                 <button type="submit" class="login-btn">
