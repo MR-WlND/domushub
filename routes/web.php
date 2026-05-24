@@ -42,7 +42,20 @@ Route::middleware(['security'])->group(function () {
     Route::get('/security/dashboard', function () {
         return view('security.dashboard.index');
     })->name('security.dashboard');
+
+    Route::get('/security/vehicle-checkin', function () {
+        return view('security.vehicle-checkin.index');
+    })->name('security.vehicle-checkin.index');
+
+    Route::get('/security/vehicle-checkout', function () {
+        return view('security.vehicle-checkout.index');
+    })->name('security.vehicle-checkout.index');
+
+    Route::get('/security/visitor-check', function () {
+        return view('security.visitor-check.index');
+    })->name('security.visitor-check.index');
 });
+
 
 Route::middleware(['resident'])->prefix('resident')->name('resident.')->group(function () {
     Route::get('/dashboard', function () {

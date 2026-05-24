@@ -196,11 +196,33 @@ font-size:15px;
 background:none;
 }
 
-.forgot{
-
-text-align:right;
-
+.resident-login-options{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:16px;
 margin-bottom:24px;
+}
+
+.resident-remember{
+display:flex;
+align-items:center;
+gap:8px;
+font-size:14px;
+font-weight:600;
+color:#475569;
+cursor:pointer;
+}
+
+.resident-remember input[type=checkbox]{
+width:16px;
+height:16px;
+accent-color:#0A2A76;
+cursor:pointer;
+}
+
+.forgot{
+text-align:right;
 }
 
 .forgot a{

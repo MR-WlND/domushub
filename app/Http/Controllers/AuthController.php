@@ -196,11 +196,17 @@ class AuthController extends Controller
 
     public function logout(Request $request): RedirectResponse
     {
+        $role = Auth::user()?->role;
+
         Auth::logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('admin.login');
+        return match ($role) {
+            'admin' => redirect()->route('admin.login'),
+            'security' => redirect()->route('security.login'),
+            default => redirect()->route('resident.login'),
+        };
     }
 }
