@@ -108,7 +108,7 @@
 
                         </div>
 
-                        <a href="#">
+                        <a href="{{ route('password.request') }}">
 
                             Quên mật khẩu?
 
@@ -138,7 +138,7 @@
 
                     Bạn chưa có tài khoản?
 
-                    <a href="#">
+                    <a href="{{ route('register') }}">
 
                         Đăng ký
 
