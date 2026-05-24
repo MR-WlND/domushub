@@ -1,10 +1,10 @@
 <footer class="resident-footer">
     <div class="resident-footer__info">
         <div class="resident-footer__brand">
-            ResiCare Portal
+            DomusHub
         </div>
         <div class="resident-footer__copy">
-            &copy; 2026 ResiCare Portal. Professional Residential Management.
+            &copy; {{ date('Y') }} DomusHub. Professional Residential Management.
         </div>
     </div>
 
