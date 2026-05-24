@@ -35,3 +35,15 @@ Route::middleware(['security'])->group(function () {
 Route::middleware(['resident'])->group(function () {
     Route::get('/resident/dashboard', fn () => 'Resident dashboard')->name('resident.dashboard');
 });
+
+Route::get('/admin', function () {
+    return view('layouts.admin.master');
+});
+
+Route::get('/resident', function () {
+    return view('layouts.resident.master');
+});
+
+Route::get('/security', function () {
+    return view('layouts.security.master');
+});
