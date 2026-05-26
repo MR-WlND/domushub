@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\ResetPasswordCodeMail;
 use App\Models\User;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,29 +16,72 @@ use Illuminate\Validation\Rule;
 
 class AuthController extends Controller
 {
-    // Admin Login
-    public function showAdminLogin()
+    // Login
+    public function showAdminLogin(): View
     {
         return view('auth.admin.login');
     }
 
-    public function loginAdmin(Request $request): RedirectResponse
+    public function showSecurityLogin(): View
     {
-        return $this->handleLogin($request, 'admin', 'admin.login');
+        return view('auth.security.login');
     }
 
-    // Resident Login
-    public function showResidentLogin()
+    public function showResidentLogin(): View
     {
         return view('auth.resident.login');
     }
 
-    public function loginResident(Request $request): RedirectResponse
+    public function loginAdmin(Request $request): RedirectResponse
     {
-        return $this->handleLogin($request, 'resident', 'resident.login');
+        return $this->handleLogin($request, 'admin');
     }
 
-    public function showResidentRegister()
+    public function loginSecurity(Request $request): RedirectResponse
+    {
+        return $this->handleLogin($request, 'security');
+    }
+
+    public function loginResident(Request $request): RedirectResponse
+    {
+        return $this->handleLogin($request, 'resident');
+    }
+
+    private function handleLogin(Request $request, string $role): RedirectResponse
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+            return back()->withErrors([
+                'email' => 'Email hoặc mật khẩu không đúng.',
+            ])->onlyInput('email');
+        }
+
+        $user = Auth::user();
+
+        if ($user->role !== $role) {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => "Tài khoản này không có quyền truy cập vào {$role}.",
+            ])->onlyInput('email');
+        }
+
+        $request->session()->regenerate();
+
+        return match ($user->role) {
+            'admin' => redirect()->route('admin.dashboard'),
+            'security' => redirect()->route('security.dashboard'),
+            'resident' => redirect()->route('resident.dashboard'),
+            default => abort(403, 'Vai trò người dùng chưa được hỗ trợ.'),
+        };
+    }
+
+    // Đăng ký
+    public function showResidentRegister(): View
     {
         return view('auth.resident.register');
     }
@@ -93,9 +137,15 @@ class AuthController extends Controller
         return redirect()->route('resident.login')->with('status', 'Đăng ký tài khoản thành công. Vui lòng đăng nhập để tiếp tục.');
     }
 
-    public function showForgotPassword()
+    // Quên mật khẩu
+    public function showForgotPassword(): View
     {
         return view('auth.resident.forgot-password');
+    }
+
+    public function showResetPassword(): View
+    {
+        return view('auth.resident.reset-password');
     }
 
     public function sendResetCode(Request $request): RedirectResponse
@@ -116,11 +166,6 @@ class AuthController extends Controller
         }
 
         return redirect()->route('resident.reset-password')->with('status', 'Nếu email của bạn tồn tại trong hệ thống, mã xác nhận đã được gửi. Vui lòng kiểm tra hộp thư của bạn.');
-    }
-
-    public function showResetPassword()
-    {
-        return view('auth.resident.reset-password');
     }
 
     public function resetPassword(Request $request): RedirectResponse
@@ -150,50 +195,7 @@ class AuthController extends Controller
         return redirect()->route('resident.login')->with('status', 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập.');
     }
 
-    // Security Login
-    public function showSecurityLogin()
-    {
-        return view('auth.security.login');
-    }
-
-    public function loginSecurity(Request $request): RedirectResponse
-    {
-        return $this->handleLogin($request, 'security', 'security.login');
-    }
-
-    private function handleLogin(Request $request, string $role, string $loginRoute): RedirectResponse
-    {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string'],
-        ]);
-
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
-            return back()->withErrors([
-                'email' => 'Email hoặc mật khẩu không đúng.',
-            ])->onlyInput('email');
-        }
-
-        $user = Auth::user();
-
-        // Validate user role matches login route
-        if ($user->role !== $role) {
-            Auth::logout();
-            return back()->withErrors([
-                'email' => "Tài khoản này không có quyền truy cập vào {$role}.",
-            ])->onlyInput('email');
-        }
-
-        $request->session()->regenerate();
-
-        return match ($user->role) {
-            'admin' => redirect()->route('admin.dashboard'),
-            'security' => redirect()->route('security.dashboard'),
-            'resident' => redirect()->route('resident.dashboard'),
-            default => abort(403, 'Vai trò người dùng chưa được hỗ trợ.'),
-        };
-    }
-
+    // Đăng xuất
     public function logout(Request $request): RedirectResponse
     {
         $role = Auth::user()?->role;
