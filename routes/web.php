@@ -13,16 +13,14 @@ Route::get('/admin/login', [AuthController::class, 'showAdminLogin'])->name('adm
 Route::post('/admin/login', [AuthController::class, 'loginAdmin'])->name('admin.login.submit');
 
 // Resident Routes
-Route::prefix('resident')->name('resident.')->group(function () {
-    Route::get('/login', [AuthController::class, 'showResidentLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'loginResident'])->name('login.submit');
-    Route::get('/register', [AuthController::class, 'showResidentRegister'])->name('register');
-    Route::post('/register', [AuthController::class, 'registerResident'])->name('register.submit');
-    Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('forgot-password');
-    Route::post('/forgot-password', [AuthController::class, 'sendResetCode'])->name('forgot-password.submit');
-    Route::get('/reset-password', [AuthController::class, 'showResetPassword'])->name('reset-password');
-    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('reset-password.submit');
-});
+Route::get('/resident/login', [AuthController::class, 'showResidentLogin'])->name('resident.login');
+Route::post('/resident/login', [AuthController::class, 'loginResident'])->name('resident.login.submit');
+Route::get('/resident/register', [AuthController::class, 'showResidentRegister'])->name('resident.register');
+Route::post('/resident/register', [AuthController::class, 'registerResident'])->name('resident.register.submit');
+Route::get('/resident/forgot-password', [AuthController::class, 'showForgotPassword'])->name('resident.forgot-password');
+Route::post('/resident/forgot-password', [AuthController::class, 'sendResetCode'])->name('resident.forgot-password.submit');
+Route::get('/resident/reset-password', [AuthController::class, 'showResetPassword'])->name('resident.reset-password');
+Route::post('/resident/reset-password', [AuthController::class, 'resetPassword'])->name('resident.reset-password.submit');
 
 // Security Login Routes
 Route::get('/security/login', [AuthController::class, 'showSecurityLogin'])->name('security.login');
@@ -57,8 +55,8 @@ Route::middleware(['security'])->group(function () {
 });
 
 
-Route::middleware(['resident'])->prefix('resident')->name('resident.')->group(function () {
-    Route::get('/dashboard', function () {
+Route::middleware(['resident'])->group(function () {
+    Route::get('/resident/dashboard', function () {
         return view('resident.home.index');
-    })->name('dashboard');
+    })->name('resident.dashboard');
 });
