@@ -34,6 +34,63 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/admin/dashboard', function () {
         return view('admin.dashboard.index');
     })->name('admin.dashboard');
+
+    // Quản lý hạ tầng
+    Route::get('/admin/buildings', function () {
+        return view('admin.dashboard.index');
+    })->name('admin.buildings.index');
+
+    Route::get('/admin/apartments', function () {
+        return view('admin.dashboard.index');
+    })->name('admin.apartments.index');
+
+    Route::get('/admin/invitations', function () {
+        return view('admin.dashboard.index');
+    })->name('admin.invitations.index');
+
+    // Điện nước & hoá đơn
+    Route::get('/admin/utility-readings', function () {
+        return view('admin.dashboard.index');
+    })->name('admin.utility-readings.index');
+
+    Route::get('/admin/service-prices', function () {
+        return view('admin.dashboard.index');
+    })->name('admin.service-prices.index');
+
+    Route::get('/admin/invoices', function () {
+        return view('admin.dashboard.index');
+    })->name('admin.invoices.index');
+
+    // Dịch vụ cư dân
+    Route::get('/admin/residents', function () {
+        return view('admin.dashboard.index');
+    })->name('admin.residents.index');
+
+    Route::get('/admin/vehicles', function () {
+        return view('admin.dashboard.index');
+    })->name('admin.vehicles.index');
+
+    Route::get('/admin/incidents', function () {
+        return view('admin.dashboard.index');
+    })->name('admin.incidents.index');
+
+    Route::get('/admin/amenities', function () {
+        return view('admin.dashboard.index');
+    })->name('admin.amenities.index');
+
+    // Tương tác & bảng tin
+    Route::get('/admin/announcements', function () {
+        return view('admin.dashboard.index');
+    })->name('admin.announcements.index');
+
+    // Cấu hình hệ thống
+    Route::get('/admin/roles', function () {
+        return view('admin.dashboard.index');
+    })->name('admin.roles.index');
+
+    Route::get('/admin/activity-logs', function () {
+        return view('admin.dashboard.index');
+    })->name('admin.activity-logs.index');
 });
 
 Route::middleware(['security'])->group(function () {
