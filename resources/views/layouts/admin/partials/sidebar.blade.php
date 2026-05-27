@@ -9,7 +9,7 @@
         {{-- TỔNG QUAN --}}
         <div class="nav-section">
             <span class="nav-section__label">TỔNG QUAN</span>
-            <a href="{{ route('admin.dashboard') }}" class="dashboard-nav__item {{ request()->routeIs('admin.dashboard') ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ route('home') }}" class="dashboard-nav__item {{ request()->routeIs('home') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="3" width="7" height="7"></rect>
                     <rect x="14" y="3" width="7" height="7"></rect>
@@ -128,7 +128,7 @@
         {{-- CẤU HÌNH HỆ THỐNG --}}
         <div class="nav-section">
             <span class="nav-section__label">CẤU HÌNH HỆ THỐNG</span>
-            <a href="{{ route('admin.roles.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.roles.*') ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ route('admin.users.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.users.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                 </svg>

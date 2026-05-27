@@ -73,7 +73,7 @@ class AuthController extends Controller
         $request->session()->regenerate();
 
         return match ($user->role) {
-            'admin' => redirect()->route('admin.dashboard'),
+            'admin' => redirect()->route('home'),
             'security' => redirect()->route('security.dashboard'),
             'resident' => redirect()->route('resident.dashboard'),
             default => abort(403, 'Vai trò người dùng chưa được hỗ trợ.'),

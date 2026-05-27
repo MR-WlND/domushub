@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
 
 // Root route - redirect to resident login
 Route::get('/', function () {
@@ -31,9 +33,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Dashboard Routes
 Route::middleware(['admin'])->group(function () {
-    Route::get('/admin/dashboard', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.dashboard');
+    Route::get('admin', [HomeController::class, 'index'])->name('home');
 
     // Quản lý hạ tầng
     Route::get('/admin/buildings', function () {
@@ -116,4 +116,14 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/dashboard', function () {
         return view('resident.home.index');
     })->name('resident.dashboard');
+});
+
+Route::middleware(['admin'])->name('admin.')->group(function () {
+    // Route xem danh sách và lọc
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::post('/users', [UserController::class, 'store'])->name('users.store');
+    
+    // Route xử lý cập nhật trạng thái/vai trò
+    Route::put('/users/{id}/update-status', [UserController::class, 'updateStatus'])->name('users.updateStatus');
+    Route::put('/users/{id}/reset-password', [UserController::class, 'resetPassword'])->name('users.resetPassword');
 });
