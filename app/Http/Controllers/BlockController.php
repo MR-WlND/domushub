@@ -14,65 +14,102 @@ class BlockController extends Controller
      * Danh sách Toà nhà
      */
     public function index(Request $request): View
-    {
-        $search = $request->search;
+{
+    $search = $request->get('search');
+    $status = $request->get('status');
 
-        $blocks = Block::query()
-            ->withCount('floors')
-            ->when($search, function ($query) use ($search) {
+    $query = Block::query()
+        ->withCount('floors');
 
-                $query->where('name', 'like', "%{$search}%");
-
-            })
-            ->latest()
-            ->paginate(12)
-            ->withQueryString();
-
-        return view('admin.blocks.index', compact(
-            'blocks',
-            'search'
-        ));
+    // Search
+    if (!empty($search)) {
+        $query->where('name', 'like', "%{$search}%");
     }
+
+    // Filter status
+    if (!empty($status)) {
+        $query->where('status', $status);
+    }
+
+    $blocks = $query
+        ->latest()
+        ->paginate(12)
+        ->withQueryString();
+
+    // Stats
+    $totalBlocks = Block::count();
+
+    $activeBlocks = Block::where(
+        'status',
+        'active'
+    )->count();
+
+    $maintenanceBlocks = Block::where(
+        'status',
+        'maintenance'
+    )->count();
+
+    $inactiveBlocks = Block::where(
+        'status',
+        'inactive'
+    )->count();
+
+    return view('admin.blocks.index', compact(
+        'blocks',
+        'search',
+        'status',
+        'totalBlocks',
+        'activeBlocks',
+        'maintenanceBlocks',
+        'inactiveBlocks'
+    ));
+}
 
     /**
      * Form tạo
      */
     public function create(): View
     {
-        return view('admin.blocks.create');
+        return view(
+            'admin.blocks.create'
+        );
     }
 
     /**
      * Lưu Toà nhà
      */
-    public function store(Request $request): RedirectResponse
-    {
+    public function store(
+        Request $request
+    ): RedirectResponse {
+
         $validated = $request->validate([
 
             'name' => [
+
                 'required',
                 'string',
                 'max:50',
                 'unique:blocks,name',
+
             ],
 
             'description' => [
+
                 'nullable',
                 'string',
-            ],
 
-            'status' => [
-                'nullable',
-                'in:active,inactive,maintenance',
             ],
 
         ]);
 
         Block::create([
 
-            'name' => $validated['name'],
-            'description' => $validated['description'] ?? null,
-            'status' => $validated['status'] ?? 'active',
+            'name' => trim(
+                $validated['name']
+            ),
+
+            'description' =>
+            $validated['description'] ?? null,
 
         ]);
 
@@ -87,9 +124,14 @@ class BlockController extends Controller
     /**
      * Form sửa
      */
-    public function edit(Block $block): View
-    {
-        return view('admin.blocks.edit', compact('block'));
+    public function edit(
+        Block $block
+    ): View {
+
+        return view(
+            'admin.blocks.edit',
+            compact('block')
+        );
     }
 
     /**
@@ -103,29 +145,31 @@ class BlockController extends Controller
         $validated = $request->validate([
 
             'name' => [
+
                 'required',
                 'string',
                 'max:50',
                 'unique:blocks,name,' . $block->id,
+
             ],
 
             'description' => [
+
                 'nullable',
                 'string',
-            ],
 
-            'status' => [
-                'nullable',
-                'in:active,inactive,maintenance',
             ],
 
         ]);
 
         $block->update([
 
-            'name' => $validated['name'],
-            'description' => $validated['description'] ?? null,
-            'status' => $validated['status'] ?? 'active',
+            'name' => trim(
+                $validated['name']
+            ),
+
+            'description' =>
+            $validated['description'] ?? null,
 
         ]);
 
@@ -140,9 +184,14 @@ class BlockController extends Controller
     /**
      * Xóa Toà nhà
      */
-    public function destroy(Block $block): RedirectResponse
-    {
-        if ($block->floors()->count() > 0) {
+    public function destroy(
+        Block $block
+    ): RedirectResponse {
+
+        /**
+         * Không cho xóa nếu còn tầng
+         */
+        if ($block->floors()->exists()) {
 
             return redirect()
                 ->route('admin.blocks.index')

@@ -38,6 +38,49 @@
         </div>
     @endif
 
+    <div class="building-filter-panel">
+        <div class="building-filter-row">
+            <form action="{{ route('admin.blocks.index') }}" method="GET" class="dashboard-topbar__search">
+                <span class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ $search }}"
+                    placeholder="Tìm kiếm toà nhà..."
+                    class="search-input"
+                />
+            </form>
+
+            <div class="building-status-tabs">
+                @php $filters = request()->except('page', 'status'); @endphp
+
+                <a href="{{ route('admin.blocks.index', $filters) }}"
+                   class="building-tab {{ empty($status) ? 'building-tab--active' : '' }}">
+                    Tất cả
+                </a>
+                <a href="{{ route('admin.blocks.index', array_merge($filters, ['status' => 'active'])) }}"
+                   class="building-tab {{ $status == 'active' ? 'building-tab--active' : '' }}">
+                    Hoạt động
+                </a>
+                <a href="{{ route('admin.blocks.index', array_merge($filters, ['status' => 'maintenance'])) }}"
+                   class="building-tab {{ $status == 'maintenance' ? 'building-tab--active' : '' }}">
+                    Bảo trì
+                </a>
+                <a href="{{ route('admin.blocks.index', array_merge($filters, ['status' => 'inactive'])) }}"
+                   class="building-tab {{ $status == 'inactive' ? 'building-tab--active' : '' }}">
+                    Ngưng hoạt động
+                </a>
+            </div>
+        </div>
+
+        <div class="building-legend-row">
+            <span class="dashboard-status-pill dashboard-status-pill--success">Hoạt động {{ $activeBlocks }}</span>
+            <span class="dashboard-status-pill dashboard-status-pill--warning">Bảo trì {{ $maintenanceBlocks }}</span>
+            <span class="dashboard-status-pill dashboard-status-pill--danger">Ngưng hoạt động {{ $inactiveBlocks }}</span>
+            <span class="dashboard-status-pill">Tổng toà {{ $totalBlocks }}</span>
+        </div>
+    </div>
+
     {{-- Stats --}}
     <div class="stats-grid">
 
@@ -77,7 +120,7 @@
                     <div class="building-top">
 
                         <div>
-                            <h3 class="building-name">
+                            <h3 class="building-title">
                                 {{ $block->name }}
                             </h3>
 
@@ -86,46 +129,48 @@
                             </p>
                         </div>
 
-                        <span class="status-badge
-                            {{ $block->status == 'active' ? 'status-success' : '' }}
-                            {{ $block->status == 'maintenance' ? 'status-warning' : '' }}
-                            {{ $block->status == 'inactive' ? 'status-danger' : '' }}
+                        <span class="building-status
+                            {{ $block->status == 'active' ? 'status-active' : '' }}
+                            {{ $block->status == 'maintenance' ? 'status-maintenance' : '' }}
+                            {{ $block->status == 'inactive' ? 'status-inactive' : '' }}
                         ">
                             @if($block->status == 'active')
                                 Hoạt động
                             @elseif($block->status == 'maintenance')
                                 Bảo trì
                             @else
-                                Ngưng
+                                Ngưng hoạt động
                             @endif
                         </span>
 
                     </div>
 
                     {{-- Description --}}
-                    <p class="building-description">
+                    <p class="building-desc">
                         {{ $block->description ?? 'Không có mô tả' }}
                     </p>
 
                     {{-- Stats --}}
                     <div class="building-stats">
 
-                        <div class="building-stat-box">
-                            <strong>{{ $block->floors_count }}</strong>
-                            <span>Tầng</span>
+                        <div class="building-mini-card">
+                            <div class="building-mini-number">
+                                {{ $block->floors_count }}
+                            </div>
+                            <div class="building-mini-label">Tầng</div>
                         </div>
 
-                        <div class="building-stat-box">
-                            <strong>
+                        <div class="building-mini-card">
+                            <div class="building-mini-number">
                                 {{ $block->apartments_count ?? 0 }}
-                            </strong>
-                            <span>Phòng</span>
+                            </div>
+                            <div class="building-mini-label">Phòng</div>
                         </div>
 
                     </div>
 
                     {{-- Actions --}}
-                    <div class="building-actions">
+                    <div class="action-group">
 
                         <a href="{{ route('admin.floors.index', ['block_id' => $block->id]) }}"
                            class="btn btn-secondary">
@@ -136,20 +181,6 @@
                            class="btn btn-light">
                             Sửa
                         </a>
-
-                        <form action="{{ route('admin.blocks.destroy', $block) }}"
-                              method="POST"
-                              onsubmit="return confirm('Bạn chắc chắn muốn xoá toà này?')">
-
-                            @csrf
-                            @method('DELETE')
-
-                            <button type="submit"
-                                    class="btn btn-danger">
-                                Xóa
-                            </button>
-
-                        </form>
 
                     </div>
 

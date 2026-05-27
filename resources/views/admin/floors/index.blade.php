@@ -191,22 +191,6 @@
 
                         </a>
 
-                        <form action="{{ route('admin.floors.destroy', $floor) }}"
-                              method="POST"
-                              onsubmit="return confirm('Bạn chắc chắn muốn xóa tầng này?')">
-
-                            @csrf
-                            @method('DELETE')
-
-                            <button type="submit"
-                                    class="btn btn-danger">
-
-                                Xóa
-
-                            </button>
-
-                        </form>
-
                     </div>
 
                 </article>
@@ -232,9 +216,7 @@
 
             <a href="{{ route('admin.floors.create') }}"
                class="btn btn-primary">
-
                 + Tạo Tầng
-
             </a>
 
         </article>

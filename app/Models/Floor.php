@@ -14,6 +14,8 @@ class Floor extends Model
         'name',
         'status',
         'description',
+        'expected_apartments',
+        'floor_type',
     ];
 
     public function block(): BelongsTo

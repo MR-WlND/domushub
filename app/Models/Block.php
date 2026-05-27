@@ -10,6 +10,7 @@ class Block extends Model
     protected $fillable = [
         'name',
         'description',
+        'status',
     ];
 
     public function floors(): HasMany

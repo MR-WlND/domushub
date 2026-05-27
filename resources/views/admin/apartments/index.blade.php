@@ -253,20 +253,6 @@
 
                 </a>
 
-                <form action="{{ route('admin.apartments.destroy', $apartment->id) }}"
-                    method="POST">
-
-                    @csrf
-                    @method('DELETE')
-
-                    <button class="btn-apartment btn-apartment--delete">
-
-                        Xóa
-
-                    </button>
-
-                </form>
-
             </div>
 
         </div>
