@@ -83,11 +83,6 @@ Route::middleware(['admin'])->group(function () {
         return view('admin.dashboard.index');
     })->name('admin.announcements.index');
 
-    // Cấu hình hệ thống
-    Route::get('/admin/roles', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.roles.index');
-
     Route::get('/admin/activity-logs', function () {
         return view('admin.dashboard.index');
     })->name('admin.activity-logs.index');
@@ -121,8 +116,11 @@ Route::middleware(['resident'])->group(function () {
 Route::middleware(['admin'])->name('admin.')->group(function () {
     // Route xem danh sách và lọc
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
     Route::post('/users', [UserController::class, 'store'])->name('users.store');
-    
+    Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
+
     // Route xử lý cập nhật trạng thái/vai trò
     Route::put('/users/{id}/update-status', [UserController::class, 'updateStatus'])->name('users.updateStatus');
     Route::put('/users/{id}/reset-password', [UserController::class, 'resetPassword'])->name('users.resetPassword');

@@ -34,20 +34,33 @@ class AuthController extends Controller
 
     public function loginAdmin(Request $request): RedirectResponse
     {
-        return $this->handleLogin($request, 'admin');
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+            return back()->withErrors([
+                'email' => 'Email hoặc mật khẩu không đúng.',
+            ])->onlyInput('email');
+        }
+
+        $user = Auth::user();
+
+        if ($user->role !== 'admin') {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản này không có quyền truy cập vào admin.',
+            ])->onlyInput('email');
+        }
+
+        $request->session()->regenerate();
+
+        return redirect()->route('home');
     }
 
     public function loginSecurity(Request $request): RedirectResponse
-    {
-        return $this->handleLogin($request, 'security');
-    }
-
-    public function loginResident(Request $request): RedirectResponse
-    {
-        return $this->handleLogin($request, 'resident');
-    }
-
-    private function handleLogin(Request $request, string $role): RedirectResponse
     {
         $credentials = $request->validate([
             'email' => ['required', 'email'],
@@ -62,22 +75,45 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
-        if ($user->role !== $role) {
+        if ($user->role !== 'security') {
             Auth::logout();
 
             return back()->withErrors([
-                'email' => "Tài khoản này không có quyền truy cập vào {$role}.",
+                'email' => 'Tài khoản này không có quyền truy cập vào security.',
             ])->onlyInput('email');
         }
 
         $request->session()->regenerate();
 
-        return match ($user->role) {
-            'admin' => redirect()->route('home'),
-            'security' => redirect()->route('security.dashboard'),
-            'resident' => redirect()->route('resident.dashboard'),
-            default => abort(403, 'Vai trò người dùng chưa được hỗ trợ.'),
-        };
+        return redirect()->route('security.dashboard');
+    }
+
+    public function loginResident(Request $request): RedirectResponse
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+            return back()->withErrors([
+                'email' => 'Email hoặc mật khẩu không đúng.',
+            ])->onlyInput('email');
+        }
+
+        $user = Auth::user();
+
+        if ($user->role !== 'resident') {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản này không có quyền truy cập vào resident.',
+            ])->onlyInput('email');
+        }
+
+        $request->session()->regenerate();
+
+        return redirect()->route('resident.dashboard');
     }
 
     // Đăng ký
@@ -116,7 +152,9 @@ class AuthController extends Controller
             ])->onlyInput(['name', 'phone', 'email', 'invite_code']);
         }
 
-        DB::transaction(function () use ($validated, $invite) {
+        DB::beginTransaction();
+
+        try {
             User::create([
                 'name' => $validated['name'],
                 'phone' => $validated['phone'],
@@ -132,7 +170,12 @@ class AuthController extends Controller
                     'status' => 'used',
                     'updated_at' => now(),
                 ]);
-        });
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
 
         return redirect()->route('resident.login')->with('status', 'Đăng ký tài khoản thành công. Vui lòng đăng nhập để tiếp tục.');
     }
@@ -152,6 +195,9 @@ class AuthController extends Controller
     {
         $request->validate([
             'email' => ['required', 'email'],
+        ], [
+            'email.required' => 'Vui lòng nhập email.',
+            'email.email' => 'Email không đúng định dạng.',
         ]);
 
         $email = strtolower(trim($request->email));
@@ -162,7 +208,18 @@ class AuthController extends Controller
         $user = User::where('email', $email)->first();
 
         if ($user) {
-            Mail::to($user)->send(new ResetPasswordCodeMail($code));
+            $mailer = (string) config('mail.default');
+
+            if (in_array($mailer, ['log', 'array'], true)) {
+                return back()->with('error', 'Chức năng gửi email chưa được cấu hình. Vui lòng liên hệ quản trị viên để được hỗ trợ.');
+            }
+
+            try {
+                Mail::to($user)->send(new ResetPasswordCodeMail($code));
+            } catch (\Throwable $exception) {
+                report($exception);
+                return back()->with('error', 'Không thể gửi mã xác nhận lúc này. Vui lòng thử lại sau ít phút.');
+            }
         }
 
         return redirect()->route('resident.reset-password')->with('status', 'Nếu email của bạn tồn tại trong hệ thống, mã xác nhận đã được gửi. Vui lòng kiểm tra hộp thư của bạn.');
@@ -174,6 +231,14 @@ class AuthController extends Controller
             'email' => ['required', 'email'],
             'code' => ['required', 'digits:6'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ], [
+            'email.required' => 'Vui lòng nhập email.',
+            'email.email' => 'Email không đúng định dạng.',
+            'code.required' => 'Vui lòng nhập mã xác nhận.',
+            'code.digits' => 'Mã xác nhận phải gồm 6 chữ số.',
+            'password.required' => 'Vui lòng nhập mật khẩu mới.',
+            'password.min' => 'Mật khẩu mới phải có ít nhất 8 ký tự.',
+            'password.confirmed' => 'Xác nhận mật khẩu không khớp.',
         ]);
 
         $email = strtolower(trim($request->email));
@@ -198,17 +263,21 @@ class AuthController extends Controller
     // Đăng xuất
     public function logout(Request $request): RedirectResponse
     {
-        $role = Auth::user()?->role;
+        $role = Auth::user() ? Auth::user()->role : null;
 
         Auth::logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return match ($role) {
-            'admin' => redirect()->route('admin.login'),
-            'security' => redirect()->route('security.login'),
-            default => redirect()->route('resident.login'),
-        };
+        if ($role === 'admin') {
+            return redirect()->route('admin.login');
+        }
+
+        if ($role === 'security') {
+            return redirect()->route('security.login');
+        }
+
+        return redirect()->route('resident.login');
     }
 }

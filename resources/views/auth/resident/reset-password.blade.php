@@ -5,36 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đặt lại mật khẩu - DomusHub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     @vite([
-        'resources/css/auth/login.css'
+        'resources/css/auth/login.css',
+        'resources/css/auth/reset-password.css'
     ])
-    <style>
-        .error {
-            color: #dc2626;
-            font-size: 13px;
-            margin-top: 8px;
-            display: block;
-        }
-
-        .helper {
-            color: #64748b;
-            font-size: 14px;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-
-        .link-row {
-            margin-top: 18px;
-            text-align: center;
-            font-size: 14px;
-        }
-
-        .link-row a {
-            color: #00236f;
-            text-decoration: none;
-            font-weight: 600;
-        }
-    </style>
 </head>
 
 <body>
@@ -42,27 +17,35 @@
         <div class="left">
             <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab">
             <div class="overlay"></div>
-            <div class="content">
+            <div class="hero">
                 <h1>
                     Đặt lại mật khẩu
                     <br>
-                    cho cư dân
+                    an toàn
                 </h1>
                 <p>
-                    Nhập email, mã xác nhận và mật khẩu mới để hoàn tất quá trình khôi phục.
+                    Nhập mã xác nhận gồm 6 số được gửi về email để tạo mật khẩu mới cho tài khoản của bạn.
                 </p>
             </div>
         </div>
 
         <div class="right">
             <div class="login-box">
-                <div class="logo">🏠 Cư dân</div>
-                <h2 class="title">Nhập mã xác nhận</h2>
-                <p class="sub">Vui lòng hoàn tất các bước bên dưới.</p>
+                <div class="logo">
+                    <i class="fa-solid fa-building"></i> DomusHub Portal
+                </div>
+                <h2>Nhập mã xác nhận</h2>
+                <p class="sub">Nhập email, mã xác nhận và mật khẩu mới để hoàn tất khôi phục tài khoản.</p>
 
                 @if (session('status'))
-                    <div class="success-message" style="background:#ecfdf5; border:1px solid #86efac; color:#166534; padding:12px 14px; border-radius:10px; margin-bottom:16px; font-size:14px;">
-                        {{ session('status') }}
+                    <div class="alert-success">
+                        <i class="fa-solid fa-circle-check"></i> {{ session('status') }}
+                    </div>
+                @endif
+
+                @if (session('error'))
+                    <div class="alert-error">
+                        <i class="fa-solid fa-circle-exclamation"></i> {{ session('error') }}
                     </div>
                 @endif
 
@@ -75,41 +58,48 @@
 
                     <div class="group">
                         <label for="email">Email</label>
-                        <input id="email" type="email" name="email" value="{{ old('email') }}" placeholder="example@gmail.com" required>
-                        @error('email')
-                            <span class="error">{{ $message }}</span>
-                        @enderror
+                        <div class="input-box">
+                            <i class="fa-regular fa-envelope"></i>
+                            <input id="email" type="email" name="email" value="{{ old('email') }}" placeholder="example@gmail.com" required>
+                        </div>
+                        @error('email')<span class="error-msg">{{ $message }}</span>@enderror
                     </div>
 
                     <div class="group">
                         <label for="code">Mã xác nhận</label>
-                        <input id="code" type="text" name="code" value="{{ old('code') }}" placeholder="123456" maxlength="6" required>
-                        @error('code')
-                            <span class="error">{{ $message }}</span>
-                        @enderror
+                        <div class="input-box">
+                            <i class="fa-solid fa-key"></i>
+                            <input id="code" class="otp-input" type="text" name="code" value="{{ old('code') }}" placeholder="123456" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" required>
+                        </div>
+                        @error('code')<span class="error-msg">{{ $message }}</span>@enderror
                     </div>
 
                     <div class="group">
                         <label for="password">Mật khẩu mới</label>
-                        <input id="password" type="password" name="password" placeholder="••••••••" required>
-                        @error('password')
-                            <span class="error">{{ $message }}</span>
-                        @enderror
+                        <div class="input-box">
+                            <i class="fa-solid fa-lock"></i>
+                            <input id="password" type="password" name="password" placeholder="Tối thiểu 8 ký tự" minlength="8" required>
+                        </div>
+                        @error('password')<span class="error-msg">{{ $message }}</span>@enderror
                     </div>
 
                     <div class="group">
                         <label for="password_confirmation">Nhập lại mật khẩu mới</label>
-                        <input id="password_confirmation" type="password" name="password_confirmation" placeholder="••••••••" required>
+                        <div class="input-box">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <input id="password_confirmation" type="password" name="password_confirmation" placeholder="Nhập lại mật khẩu mới" minlength="8" required>
+                        </div>
                     </div>
 
                     <button class="login-btn" type="submit">
-                        Đặt lại mật khẩu →
+                        Đặt lại mật khẩu
                     </button>
+                    <p><a class="login-btn login-btn-secondary" href="{{ route('resident.login') }}">Quay lại đăng nhập</a></p>
                 </form>
 
-                <p class="link-row">
-                    <a href="{{ route('resident.login') }}">← Quay lại đăng nhập</a>
-                </p>
+                <div class="bottom">
+                    <p><a href="{{ route('resident.forgot-password') }}"><i class="fa-solid fa-paper-plane"></i> Gửi lại mã xác nhận</a></p>
+                </div>
             </div>
         </div>
     </div>
