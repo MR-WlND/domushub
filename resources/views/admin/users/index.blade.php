@@ -5,6 +5,10 @@
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role_label', 'ADMIN')
 
+@push('styles')
+    @vite(['resources/css/pages/admin/users/index.css'])
+@endpush
+
 @php
     $roleLabels = [
         'admin' => 'Quản trị viên',
@@ -16,9 +20,9 @@
     ];
 
     $statusLabels = [
+        'pending' => 'Chờ kích hoạt',
         'active' => 'Đang hoạt động',
-        'pending' => 'Chờ duyệt',
-        'inactive' => 'Tạm khóa',
+        'banned' => 'Đã khóa',
     ];
 @endphp
 
@@ -30,8 +34,7 @@
                 <h1>Phân quyền người dùng</h1>
             </div>
             <div class="users-page__actions">
-                <button type="button" class="users-button users-button--primary" onclick="openCreateModal()">Thêm nhân
-                    sự</button>
+                <a href="{{ route('admin.users.create') }}" class="users-button users-button--primary">Thêm nhân sự</a>
             </div>
         </div>
 
@@ -120,8 +123,7 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <button type="button" class="btn-edit-permissions"
-                                        onclick="openEditModal({{ json_encode($user) }})">
+                                    <a href="{{ route('admin.users.edit', $user) }}" class="btn-edit-permissions">
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                             stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                                             <circle cx="12" cy="12" r="3"></circle>
@@ -130,7 +132,7 @@
                                             </path>
                                         </svg>
                                         Sửa quyền
-                                    </button>
+                                    </a>
                                 </td>
                             </tr>
                         @empty
@@ -155,145 +157,4 @@
         </div>
     </div>
 
-    <div id="createStaffModal" class="modal-overlay">
-        <div class="modal-container">
-            <div class="modal-header">
-                <h3>Thêm nhân sự</h3>
-                <button type="button" class="modal-close" onclick="closeCreateModal()">&times;</button>
-            </div>
-            <form method="POST" action="{{ route('admin.users.store') }}">
-                @csrf
-                <div class="modal-body">
-                    <div class="modal-form-group">
-                        <label for="createUserName">Tên nhân sự</label>
-                        <input type="text" id="createUserName" name="name" value="{{ old('name') }}" required>
-                    </div>
-
-                    <div class="modal-form-group">
-                        <label for="createUserEmail">Email</label>
-                        <input type="email" id="createUserEmail" name="email" value="{{ old('email') }}" required>
-                    </div>
-
-                    <div class="modal-form-group">
-                        <label for="createRoleSelect">Vai trò</label>
-                        <select name="role" id="createRoleSelect" required>
-                            @foreach ($roleLabels as $value => $label)
-                                <option value="{{ $value }}" @selected(old('role', 'staff') === $value)>{{ $label }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="modal-note">
-                        Mật khẩu mặc định: <strong>Chungcu@2026</strong>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-modal-cancel" onclick="closeCreateModal()">Hủy</button>
-                    <button type="submit" class="btn-modal-save">Tạo tài khoản</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="editPermissionsModal" class="modal-overlay">
-        <div class="modal-container">
-            <div class="modal-header">
-                <h3 id="modalTitle">Sửa quyền người dùng</h3>
-                <button type="button" class="modal-close" onclick="closeEditModal()">&times;</button>
-            </div>
-
-            <form id="editPermissionsForm" method="POST" action="">
-                @csrf
-                @method('PUT')
-                <div class="modal-body">
-                    <div class="modal-form-group">
-                        <label for="modalUserName">Người dùng</label>
-                        <input type="text" id="modalUserName" disabled>
-                    </div>
-
-                    <div class="modal-form-group">
-                        <label for="modalRoleSelect">Vai trò</label>
-                        <select name="role" id="modalRoleSelect">
-                            @foreach ($roleLabels as $value => $label)
-                                <option value="{{ $value }}">{{ $label }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="modal-form-group">
-                        <label for="modalStatusSelect">Trạng thái</label>
-                        <select name="status" id="modalStatusSelect">
-                            @foreach ($statusLabels as $value => $label)
-                                <option value="{{ $value }}">{{ $label }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" form="resetPasswordForm" class="btn-modal-reset">Đặt lại mật khẩu</button>
-                    <button type="button" class="btn-modal-cancel" onclick="closeEditModal()">Hủy</button>
-                    <button type="submit" class="btn-modal-save">Lưu thay đổi</button>
-                </div>
-            </form>
-
-            <form id="resetPasswordForm" method="POST" action=""
-                onsubmit="return confirm('Đặt lại mật khẩu tài khoản này về Chungcu@2026?')">
-                @csrf
-                @method('PUT')
-            </form>
-        </div>
-    </div>
 @endsection
-
-@push('scripts')
-    <script>
-        const modal = document.getElementById('editPermissionsModal');
-        const createModal = document.getElementById('createStaffModal');
-        const form = document.getElementById('editPermissionsForm');
-        const resetForm = document.getElementById('resetPasswordForm');
-        const userNameInput = document.getElementById('modalUserName');
-        const roleSelect = document.getElementById('modalRoleSelect');
-        const statusSelect = document.getElementById('modalStatusSelect');
-
-        function openCreateModal() {
-            createModal.classList.add('open');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeCreateModal() {
-            createModal.classList.remove('open');
-            document.body.style.overflow = '';
-        }
-
-        function openEditModal(user) {
-            form.action = `/users/${user.id}/update-status`;
-            resetForm.action = `/users/${user.id}/reset-password`;
-
-            userNameInput.value = user.name;
-            roleSelect.value = user.role;
-            statusSelect.value = user.status;
-
-            modal.classList.add('open');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeEditModal() {
-            modal.classList.remove('open');
-            document.body.style.overflow = '';
-        }
-
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) closeEditModal();
-        });
-
-        createModal.addEventListener('click', function(e) {
-            if (e.target === createModal) closeCreateModal();
-        });
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && modal.classList.contains('open')) closeEditModal();
-            if (e.key === 'Escape' && createModal.classList.contains('open')) closeCreateModal();
-        });
-    </script>
-@endpush

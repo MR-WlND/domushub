@@ -39,22 +39,77 @@ class UserController extends Controller
         // Trả về view giao diện admin
         return view('admin.users.index', compact('users'));
     }
+
+    public function create()
+    {
+        return view('admin.users.create', [
+            'roleLabels' => [
+                'admin' => 'Quản trị viên',
+                'manager' => 'Quản lý',
+                'staff' => 'Nhân viên',
+                'technician' => 'Kỹ thuật',
+                'security' => 'An ninh',
+                'resident' => 'Cư dân',
+            ],
+            'statusLabels' => [
+                'pending' => 'Chờ kích hoạt',
+                'active' => 'Đang hoạt động',
+                'banned' => 'Đã khóa',
+            ],
+        ]);
+    }
+
+    public function edit($id)
+    {
+        $user = User::findOrFail($id);
+
+        return view('admin.users.edit', [
+            'user' => $user,
+            'roleLabels' => [
+                'admin' => 'Quản trị viên',
+                'manager' => 'Quản lý',
+                'staff' => 'Nhân viên',
+                'technician' => 'Kỹ thuật',
+                'security' => 'An ninh',
+                'resident' => 'Cư dân',
+            ],
+            'statusLabels' => [
+                'pending' => 'Chờ kích hoạt',
+                'active' => 'Đang hoạt động',
+                'banned' => 'Đã khóa',
+            ],
+        ]);
+    }
     // 2. Hàm cập nhật Vai trò và Trạng thái khi Admin bấm Lưu trên Modal
     public function store(Request $request)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:100',
             'email' => 'required|email|max:150|unique:users,email',
+            'phone' => 'required|string|max:20|regex:/^[0-9+]+$/|unique:users,phone',
             'role' => 'required|in:admin,manager,staff,technician,security,resident',
+            'status' => 'required|in:pending,active,banned',
+        ], [
+            'name.required' => 'Vui lòng nhập họ và tên.',
+            'email.required' => 'Vui lòng nhập email.',
+            'email.email' => 'Email không đúng định dạng.',
+            'email.unique' => 'Email đã tồn tại trong hệ thống.',
+            'phone.required' => 'Vui lòng nhập số điện thoại.',
+            'phone.regex' => 'Số điện thoại chỉ được chứa số và dấu +.',
+            'phone.unique' => 'Số điện thoại đã tồn tại trong hệ thống.',
+            'role.required' => 'Vui lòng chọn vai trò.',
+            'status.required' => 'Vui lòng chọn trạng thái.',
+            'role.in' => 'Vai trò không hợp lệ.',
+            'status.in' => 'Trạng thái không hợp lệ.',
         ]);
 
         $user = User::create([
             'name' => $validated['name'],
-            'email' => $validated['email'],
-            'phone' => 'AUTO' . now()->format('ymdHis'),
+            'email' => strtolower(trim($validated['email'])),
+            'phone' => $validated['phone'],
             'password' => self::DEFAULT_PASSWORD,
             'role' => $validated['role'],
-            'status' => 'active',
+            'status' => $validated['status'],
         ]);
 
         return redirect()
@@ -62,11 +117,51 @@ class UserController extends Controller
             ->with('success', 'Tạo tài khoản ' . $user->name . ' thành công. Mật khẩu mặc định: ' . self::DEFAULT_PASSWORD);
     }
 
+    public function update(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:100',
+            'email' => 'required|email|max:150|unique:users,email,' . $id,
+            'phone' => 'required|string|max:20|regex:/^[0-9+]+$/|unique:users,phone,' . $id,
+            'role' => 'required|in:admin,manager,staff,technician,security,resident',
+            'status' => 'required|in:pending,active,banned',
+        ], [
+            'name.required' => 'Vui lòng nhập họ và tên.',
+            'email.required' => 'Vui lòng nhập email.',
+            'email.email' => 'Email không đúng định dạng.',
+            'email.unique' => 'Email đã tồn tại trong hệ thống.',
+            'phone.required' => 'Vui lòng nhập số điện thoại.',
+            'phone.regex' => 'Số điện thoại chỉ được chứa số và dấu +.',
+            'phone.unique' => 'Số điện thoại đã tồn tại trong hệ thống.',
+            'role.required' => 'Vui lòng chọn vai trò.',
+            'status.required' => 'Vui lòng chọn trạng thái.',
+            'role.in' => 'Vai trò không hợp lệ.',
+            'status.in' => 'Trạng thái không hợp lệ.',
+        ]);
+
+        $user->update([
+            'name' => $validated['name'],
+            'email' => strtolower(trim($validated['email'])),
+            'phone' => $validated['phone'],
+            'role' => $validated['role'],
+            'status' => $validated['status'],
+        ]);
+
+        return redirect()->route('admin.users.index')->with('success', 'Cập nhật thông tin người dùng thành công!');
+    }
+
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
             'role' => 'required|in:admin,manager,staff,technician,security,resident',
-            'status' => 'required|in:active,pending,inactive',
+            'status' => 'required|in:pending,active,banned',
+        ], [
+            'role.required' => 'Vui lòng chọn vai trò.',
+            'status.required' => 'Vui lòng chọn trạng thái.',
+            'role.in' => 'Vai trò không hợp lệ.',
+            'status.in' => 'Trạng thái không hợp lệ.',
         ]);
 
         $user = User::findOrFail($id);

@@ -14,7 +14,8 @@ export default defineConfig({
                 'resources/css/layouts/resident.css',
                 'resources/css/auth/admin.css',
                 'resources/css/auth/security.css',
-                'resources/css/auth/login.css'
+                'resources/css/auth/login.css',
+                'resources/css/auth/reset-password.css'
             ],
             refresh: true,
             fonts: [
