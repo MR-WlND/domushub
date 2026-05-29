@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminInviteController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -44,9 +45,8 @@ Route::middleware(['admin'])->group(function () {
         return view('admin.dashboard.index');
     })->name('admin.apartments.index');
 
-    Route::get('/admin/invitations', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.invitations.index');
+    Route::get('/admin/invitations', [AdminInviteController::class, 'index'])->name('admin.invitations.index');
+    Route::post('/admin/invitations', [AdminInviteController::class, 'store'])->name('admin.invitations.store');
 
     // Điện nước & hoá đơn
     Route::get('/admin/utility-readings', function () {

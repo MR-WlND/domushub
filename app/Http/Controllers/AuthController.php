@@ -116,25 +116,69 @@ class AuthController extends Controller
             ])->onlyInput(['name', 'phone', 'email', 'invite_code']);
         }
 
-        DB::transaction(function () use ($validated, $invite) {
-            User::create([
+        $currentResidents = DB::table('residents')
+            ->where('apartment_id', $invite->apartment_id)
+            ->count();
+
+        $maxResidents = (int) ($invite->max_residents ?? 1);
+
+        if ($currentResidents >= $maxResidents) {
+            return back()->withErrors([
+                'invite_code' => 'Mã mời này đã đạt số người tối đa cho căn hộ này.',
+            ])->onlyInput(['name', 'phone', 'email', 'invite_code']);
+        }
+
+        DB::transaction(function () use ($validated, $invite, $currentResidents, $maxResidents) {
+            $user = User::create([
                 'name' => $validated['name'],
                 'phone' => $validated['phone'],
                 'email' => $validated['email'],
-                'password' => $validated['password'],
+                'password' => Hash::make($validated['password']),
                 'role' => 'resident',
                 'status' => 'active',
             ]);
 
+            DB::table('residents')->insert([
+                'user_id' => $user->id,
+                'apartment_id' => $invite->apartment_id,
+                'invite_id' => $invite->id,
+                'relationship' => $invite->intended_relationship,
+                'temporary_status' => 'permanent',
+                'start_date' => now()->toDateString(),
+                'end_date' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            $usedCount = (int) ($invite->used_count ?? 0) + 1;
+            $nextStatus = $usedCount >= $maxResidents ? 'used' : 'active';
+
             DB::table('apartment_invites')
                 ->where('id', $invite->id)
                 ->update([
-                    'status' => 'used',
+                    'used_count' => $usedCount,
+                    'status' => $nextStatus,
                     'updated_at' => now(),
                 ]);
         });
 
         return redirect()->route('resident.login')->with('status', 'Đăng ký tài khoản thành công. Vui lòng đăng nhập để tiếp tục.');
+    }
+
+    private function createNewInvite(int $apartmentId, int $createdBy, string $relationship, int $maxResidents): void
+    {
+        DB::table('apartment_invites')->insert([
+            'apartment_id' => $apartmentId,
+            'created_by' => $createdBy,
+            'invite_code' => strtoupper(uniqid('INVITE-')),
+            'intended_relationship' => $relationship,
+            'status' => 'active',
+            'max_residents' => $maxResidents,
+            'used_count' => 0,
+            'expired_at' => now()->addDays(7),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     // Quên mật khẩu
