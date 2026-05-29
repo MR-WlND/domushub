@@ -1,6 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Resident;
+
+
+use App\Http\Controllers\Controller;
 
 use App\Models\Vehicle;
 use Illuminate\Http\Request;

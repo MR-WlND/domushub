@@ -27,24 +27,26 @@ class Vehicle extends Model
     ];
 
     /**
-     * Kiểm tra xe đang chờ duyệt
+     * Mối quan hệ: Xe thuộc về một căn hộ
+     * Dùng để hiển thị thông tin căn hộ lên bảng Admin
      */
+    public function apartment()
+    {
+        return $this->belongsTo(Apartment::class, 'apartment_id');
+    }
+
+    // --- Các hàm kiểm tra trạng thái ---
+
     public function isPending(): bool
     {
         return $this->status === 'pending';
     }
 
-    /**
-     * Kiểm tra xe đã được duyệt
-     */
     public function isApproved(): bool
     {
         return $this->status === 'approved';
     }
 
-    /**
-     * Kiểm tra xe bị từ chối
-     */
     public function isRejected(): bool
     {
         return $this->status === 'rejected';
