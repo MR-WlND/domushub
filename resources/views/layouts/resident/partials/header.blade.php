@@ -7,14 +7,17 @@
         <a href="{{ route('resident.dashboard') }}" class="resident-header__link {{ request()->routeIs('resident.dashboard') ? 'resident-header__link--active' : '' }}">
             Home
         </a>
-        <a href="#" class="resident-header__link">
-            Support
+        <a href="{{ route('resident.vehicles.index') }}" class="resident-header__link {{ request()->routeIs('resident.vehicles.*') ? 'resident-header__link--active' : '' }}">
+            Phương Tiện
         </a>
         <a href="#" class="resident-header__link">
-            FAQs
+            Hóa Đơn
         </a>
         <a href="#" class="resident-header__link">
-            Contact
+            Phản Ánh
+        </a>
+        <a href="#" class="resident-header__link">
+            Tiện Ích
         </a>
     </nav>
 
