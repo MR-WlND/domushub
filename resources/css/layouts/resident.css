@@ -25,9 +25,10 @@
     border-bottom: 1px solid #c5c5d3;
     height: 72px;
     width: 100%;
-    max-width: 1280px;
-    margin: 0 auto;
     box-sizing: border-box;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .resident-header__brand {
@@ -252,8 +253,6 @@
 
 .resident-footer {
     width: 100%;
-    max-width: 1280px;
-    margin: 0 auto;
     height: 121px;
     padding: 0 2.5rem;
     display: flex;
@@ -324,6 +323,9 @@
     .resident-header {
         flex-direction: column;
         align-items: flex-start;
+        height: auto;
+        padding: 1.25rem 1.5rem;
+        gap: 1.25rem;
     }
 
     .resident-header__actions {
