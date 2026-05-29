@@ -127,8 +127,13 @@
                     {{-- Actions --}}
                     <div class="building-actions">
 
-                        <a href="{{ route('admin.floors.index', ['block_id' => $block->id]) }}"
+                        <a href="{{ route('admin.buildings.show', $block) }}"
                            class="btn btn-secondary">
+                            Chi tiết
+                        </a>
+
+                        <a href="{{ route('admin.floors.index', ['block_id' => $block->id]) }}"
+                           class="btn btn-light">
                             Xem tầng
                         </a>
 

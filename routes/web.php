@@ -39,6 +39,7 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/admin/buildings', [\App\Http\Controllers\BlockController::class, 'index'])->name('admin.buildings.index');
     Route::get('/admin/buildings/create', [\App\Http\Controllers\BlockController::class, 'create'])->name('admin.buildings.create');
     Route::post('/admin/buildings', [\App\Http\Controllers\BlockController::class, 'store'])->name('admin.buildings.store');
+    Route::get('/admin/buildings/{block}', [\App\Http\Controllers\BlockController::class, 'show'])->name('admin.buildings.show');
     Route::get('/admin/buildings/{block}/edit', [\App\Http\Controllers\BlockController::class, 'edit'])->name('admin.buildings.edit');
     Route::put('/admin/buildings/{block}', [\App\Http\Controllers\BlockController::class, 'update'])->name('admin.buildings.update');
     Route::delete('/admin/buildings/{block}', [\App\Http\Controllers\BlockController::class, 'destroy'])->name('admin.buildings.destroy');

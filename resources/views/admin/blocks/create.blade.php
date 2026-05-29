@@ -103,21 +103,105 @@
 
                     <select name="status" class="form-input">
 
-                        <option value="active">
+                        <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>
                             Hoạt động
                         </option>
 
-                        <option value="maintenance">
+                        <option value="maintenance" {{ old('status') == 'maintenance' ? 'selected' : '' }}>
                             Bảo trì
                         </option>
 
-                        <option value="inactive">
+                        <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>
                             Ngưng hoạt động
                         </option>
 
                     </select>
 
                 </div>
+
+            </div>
+
+            {{-- Số tầng --}}
+            <div class="form-group">
+
+                <label class="form-label">
+                    Số tầng
+                </label>
+
+                <input
+                    type="number"
+                    name="number_of_floors"
+                    value="{{ old('number_of_floors') }}"
+                    placeholder="VD: 10"
+                    class="form-input @error('number_of_floors') input-error @enderror"
+                >
+
+                @error('number_of_floors')
+                    <p class="form-error">{{ $message }}</p>
+                @enderror
+
+            </div>
+
+            {{-- Số căn hộ --}}
+            <div class="form-group">
+
+                <label class="form-label">
+                    Số căn hộ
+                </label>
+
+                <input
+                    type="number"
+                    name="total_apartments"
+                    value="{{ old('total_apartments') }}"
+                    placeholder="VD: 100"
+                    class="form-input @error('total_apartments') input-error @enderror"
+                >
+
+                @error('total_apartments')
+                    <p class="form-error">{{ $message }}</p>
+                @enderror
+
+            </div>
+
+            {{-- Người quản lý --}}
+            <div class="form-group">
+
+                <label class="form-label">
+                    Người quản lý
+                </label>
+
+                <input
+                    type="text"
+                    name="manager_name"
+                    value="{{ old('manager_name') }}"
+                    placeholder="VD: Nguyễn Văn A"
+                    class="form-input @error('manager_name') input-error @enderror"
+                >
+
+                @error('manager_name')
+                    <p class="form-error">{{ $message }}</p>
+                @enderror
+
+            </div>
+
+            {{-- Liên hệ --}}
+            <div class="form-group">
+
+                <label class="form-label">
+                    Số điện thoại / email
+                </label>
+
+                <input
+                    type="text"
+                    name="manager_contact"
+                    value="{{ old('manager_contact') }}"
+                    placeholder="VD: 0901234567 hoặc manager@example.com"
+                    class="form-input @error('manager_contact') input-error @enderror"
+                >
+
+                @error('manager_contact')
+                    <p class="form-error">{{ $message }}</p>
+                @enderror
 
             </div>
 
