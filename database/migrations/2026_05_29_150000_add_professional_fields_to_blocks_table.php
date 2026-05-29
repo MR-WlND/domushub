@@ -9,12 +9,24 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('blocks', function (Blueprint $table) {
-            $table->string('code', 100)->nullable()->unique()->after('name');
-            $table->enum('status', ['active', 'inactive', 'maintenance'])->default('active')->after('code');
-            $table->unsignedInteger('number_of_floors')->nullable()->after('status');
-            $table->unsignedInteger('total_apartments')->nullable()->after('number_of_floors');
-            $table->string('manager_name', 100)->nullable()->after('total_apartments');
-            $table->string('manager_contact', 100)->nullable()->after('manager_name');
+            if (!Schema::hasColumn('blocks', 'code')) {
+                $table->string('code', 100)->nullable()->unique()->after('name');
+            }
+            if (!Schema::hasColumn('blocks', 'status')) {
+                $table->enum('status', ['active', 'inactive', 'maintenance'])->default('active')->after('code');
+            }
+            if (!Schema::hasColumn('blocks', 'number_of_floors')) {
+                $table->unsignedInteger('number_of_floors')->nullable()->after('status');
+            }
+            if (!Schema::hasColumn('blocks', 'total_apartments')) {
+                $table->unsignedInteger('total_apartments')->nullable()->after('number_of_floors');
+            }
+            if (!Schema::hasColumn('blocks', 'manager_name')) {
+                $table->string('manager_name', 100)->nullable()->after('total_apartments');
+            }
+            if (!Schema::hasColumn('blocks', 'manager_contact')) {
+                $table->string('manager_contact', 100)->nullable()->after('manager_name');
+            }
         });
     }
 

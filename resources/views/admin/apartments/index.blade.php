@@ -24,6 +24,18 @@
 
     </div>
 
+    @if (session('success'))
+        <div class="alert alert-success" style="margin-bottom: 20px; padding: 15px; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 8px;">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="alert alert-danger" style="margin-bottom: 20px; padding: 15px; background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 8px;">
+            {{ session('error') }}
+        </div>
+    @endif
+
     {{-- Stats --}}
     <div class="apartment-stats">
 
@@ -111,6 +123,7 @@
                         @foreach($floors as $floor)
 
                         <option value="{{ $floor->id }}"
+                            data-block-id="{{ $floor->block_id }}"
                             {{ request('floor_id') == $floor->id ? 'selected' : '' }}>
 
                             {{ $floor->name }}
@@ -131,15 +144,15 @@
                             Tất cả
                         </option>
 
-                        <option value="occupied">
+                        <option value="occupied" {{ request('status') == 'occupied' ? 'selected' : '' }}>
                             Đang ở
                         </option>
 
-                        <option value="vacant">
+                        <option value="vacant" {{ request('status') == 'vacant' ? 'selected' : '' }}>
                             Trống
                         </option>
 
-                        <option value="maintenance">
+                        <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>
                             Bảo trì
                         </option>
 
@@ -239,7 +252,7 @@
             {{-- actions --}}
             <div class="apartment-actions">
 
-                <a href="#"
+                <a href="{{ route('admin.apartments.show', $apartment->id) }}"
                     class="btn-apartment btn-apartment--view">
 
                     Chi tiết
@@ -253,18 +266,12 @@
 
                 </a>
 
-                <form action="{{ route('admin.apartments.destroy', $apartment->id) }}"
-                    method="POST">
-
+                <form action="{{ route('admin.apartments.destroy', $apartment->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa căn hộ này?')">
                     @csrf
                     @method('DELETE')
-
-                    <button class="btn-apartment btn-apartment--delete">
-
+                    <button type="submit" class="btn-apartment btn-apartment--delete">
                         Xóa
-
                     </button>
-
                 </form>
 
             </div>
@@ -286,3 +293,72 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const blockFilter = document.querySelector('select[name="block_id"]');
+        const floorFilter = document.querySelector('select[name="floor_id"]');
+        const statusFilter = document.querySelector('select[name="status"]');
+        
+        // Cache floor options (excluding the placeholder)
+        const floorOptions = Array.from(floorFilter.querySelectorAll('option[data-block-id]'));
+        
+        function updateFloors(resetSelected = false) {
+            const selectedBlockId = blockFilter.value;
+            const currentFloorValue = floorFilter.value;
+            
+            // Clear floor filter options (keep placeholder)
+            floorFilter.innerHTML = '<option value="">Tất cả tầng</option>';
+            
+            if (selectedBlockId) {
+                // Filter and append matching floors
+                const filteredOptions = floorOptions.filter(opt => opt.getAttribute('data-block-id') === selectedBlockId);
+                
+                filteredOptions.forEach(opt => {
+                    floorFilter.appendChild(opt);
+                });
+                
+                floorFilter.disabled = false;
+                
+                // Retain selected floor if it belongs to the active block
+                if (!resetSelected && currentFloorValue) {
+                    const selectedOpt = filteredOptions.find(opt => opt.value === currentFloorValue);
+                    if (selectedOpt) {
+                        floorFilter.value = currentFloorValue;
+                    }
+                }
+            } else {
+                // Show all floor options if no block is selected
+                floorOptions.forEach(opt => {
+                    floorFilter.appendChild(opt);
+                });
+                floorFilter.disabled = false;
+                
+                if (!resetSelected && currentFloorValue) {
+                    floorFilter.value = currentFloorValue;
+                }
+            }
+        }
+        
+        // Auto-submit form when status or floor filter changes
+        statusFilter.addEventListener('change', function () {
+            this.form.submit();
+        });
+        
+        floorFilter.addEventListener('change', function () {
+            this.form.submit();
+        });
+        
+        // When block changes: reset floor filter to empty, update floors, then submit
+        blockFilter.addEventListener('change', function () {
+            floorFilter.value = "";
+            updateFloors(true);
+            this.form.submit();
+        });
+        
+        // Initialize floors filter on page load
+        updateFloors(false);
+    });
+</script>
+@endpush

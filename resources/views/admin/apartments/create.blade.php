@@ -34,6 +34,41 @@
         <form action="{{ route('admin.apartments.store') }}" method="POST">
             @csrf
 
+            @php
+                $selectedFloorId = old('floor_id');
+                $selectedBlockId = null;
+                if ($selectedFloorId) {
+                    $selectedFloor = $floors->firstWhere('id', $selectedFloorId);
+                    if ($selectedFloor) {
+                        $selectedBlockId = $selectedFloor->block_id;
+                    }
+                }
+            @endphp
+
+            {{-- Chọn Tòa --}}
+            <div class="form-group">
+
+                <label class="form-label">
+                    Tòa nhà
+                    <span class="required">*</span>
+                </label>
+
+                <select
+                    id="block_select"
+                    class="form-input"
+                    required
+                >
+                    <option value="">-- Chọn Tòa nhà --</option>
+                    @foreach($blocks as $block)
+                        <option value="{{ $block->id }}"
+                            {{ $selectedBlockId == $block->id ? 'selected' : '' }}>
+                            {{ $block->name }}
+                        </option>
+                    @endforeach
+                </select>
+
+            </div>
+
             {{-- Chọn Tầng --}}
             <div class="form-group">
 
@@ -44,18 +79,19 @@
 
                 <select
                     name="floor_id"
+                    id="floor_select"
                     class="form-input @error('floor_id') input-error @enderror"
                     required
+                    disabled
                 >
                     <option value="">-- Chọn Tầng --</option>
-
                     @foreach($floors as $floor)
                         <option value="{{ $floor->id }}"
+                            data-block-id="{{ $floor->block_id }}"
                             {{ old('floor_id') == $floor->id ? 'selected' : '' }}>
-                            {{ $floor->block->name }} - {{ $floor->name ?? 'Tầng ' . $floor->floor_number }}
+                            {{ $floor->name ?? 'Tầng ' . $floor->floor_number }}
                         </option>
                     @endforeach
-
                 </select>
 
                 @error('floor_id')
@@ -180,3 +216,51 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const blockSelect = document.getElementById('block_select');
+        const floorSelect = document.getElementById('floor_select');
+        
+        // Cache all floor options except the placeholder
+        const floorOptions = Array.from(floorSelect.querySelectorAll('option[data-block-id]'));
+        
+        function updateFloors() {
+            const selectedBlockId = blockSelect.value;
+            
+            // Clear current floor options (keep placeholder)
+            floorSelect.innerHTML = '<option value="">-- Chọn Tầng --</option>';
+            
+            if (selectedBlockId) {
+                // Filter and append matching floors
+                const filteredOptions = floorOptions.filter(opt => opt.getAttribute('data-block-id') === selectedBlockId);
+                
+                filteredOptions.forEach(opt => {
+                    floorSelect.appendChild(opt);
+                });
+                
+                floorSelect.disabled = false;
+            } else {
+                floorSelect.disabled = true;
+            }
+        }
+        
+        // Run updateFloors on change
+        blockSelect.addEventListener('change', function () {
+            // Reset selected floor to placeholder on block change
+            floorSelect.value = "";
+            updateFloors();
+        });
+        
+        // Run updateFloors on load to handle pre-selected values (e.g. from validation old values)
+        if (blockSelect.value) {
+            const currentFloorValue = "{{ old('floor_id') }}";
+            updateFloors();
+            if (currentFloorValue) {
+                floorSelect.value = currentFloorValue;
+            }
+        }
+    });
+</script>
+@endpush
