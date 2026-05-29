@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\VehicleController;
 
 // Root route - redirect to resident login
 Route::get('/', function () {
@@ -30,7 +29,9 @@ Route::post('/security/login', [AuthController::class, 'loginSecurity'])->name('
 // Logout (accessible from all roles)
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Dashboard Routes
+// =========================================================================
+// DASHBOARD ADMIN ROUTES
+// =========================================================================
 Route::middleware(['admin'])->group(function () {
     Route::get('/admin/dashboard', function () {
         return view('admin.dashboard.index');
@@ -67,9 +68,10 @@ Route::middleware(['admin'])->group(function () {
         return view('admin.dashboard.index');
     })->name('admin.residents.index');
 
-    Route::get('/admin/vehicles', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.vehicles.index');
+    // QUẢN LÝ PHƯƠNG TIỆN PHÍA ADMIN (Đã chuyển sang Controller riêng của Admin)
+    Route::get('/admin/vehicles', [App\Http\Controllers\Admin\VehicleController::class, 'index'])->name('admin.vehicles.index');
+    Route::post('/admin/vehicles/{vehicle}/approve', [App\Http\Controllers\Admin\VehicleController::class, 'approve'])->name('admin.vehicles.approve');
+    Route::post('/admin/vehicles/{vehicle}/reject', [App\Http\Controllers\Admin\VehicleController::class, 'reject'])->name('admin.vehicles.reject');
 
     Route::get('/admin/incidents', function () {
         return view('admin.dashboard.index');
@@ -94,6 +96,9 @@ Route::middleware(['admin'])->group(function () {
     })->name('admin.activity-logs.index');
 });
 
+
+// DASHBOARD SECURITY ROUTES
+
 Route::middleware(['security'])->group(function () {
     Route::get('/security/dashboard', function () {
         return view('security.dashboard.index');
@@ -113,6 +118,7 @@ Route::middleware(['security'])->group(function () {
 });
 
 
+//  DASHBOARD RESIDENT ROUTES
 
 Route::middleware(['resident'])->group(function () {
 
@@ -120,15 +126,16 @@ Route::middleware(['resident'])->group(function () {
         return view('resident.home.index');
     })->name('resident.dashboard');
 
-    Route::get('/resident/vehicles', [VehicleController::class, 'index'])
+    // QUẢN LÝ PHƯƠNG TIỆN PHÍA CƯ DÂN (Trỏ chuẩn vào thư mục Resident)
+    Route::get('/resident/vehicles', [App\Http\Controllers\Resident\VehicleController::class, 'index'])
         ->name('resident.vehicles.index');
 
-    Route::get('/resident/vehicles/create', [VehicleController::class, 'create'])
+    Route::get('/resident/vehicles/create', [App\Http\Controllers\Resident\VehicleController::class, 'create'])
         ->name('resident.vehicles.create');
 
-    Route::post('/resident/vehicles', [VehicleController::class, 'store'])
+    Route::post('/resident/vehicles', [App\Http\Controllers\Resident\VehicleController::class, 'store'])
         ->name('resident.vehicles.store');
 
-    Route::delete('/resident/vehicles/{vehicle}', [VehicleController::class, 'destroy'])
+    Route::delete('/resident/vehicles/{vehicle}', [App\Http\Controllers\Resident\VehicleController::class, 'destroy'])
         ->name('resident.vehicles.destroy');
 });
