@@ -27,7 +27,8 @@ class ApartmentController extends Controller
         $query = Apartment::query()
             ->with([
                 'floor.block',
-            ]);
+            ])
+            ->withCount('residents');
 
         /**
          * Filter theo block

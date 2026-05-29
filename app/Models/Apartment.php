@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Resident;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,6 +17,7 @@ class Apartment extends Model
         'apartment_number',
         'area',
         'status',
+        'description',
     ];
 
     /**

@@ -19,6 +19,7 @@ class BlockController extends Controller
 
         $blocks = Block::query()
             ->withCount('floors')
+            ->withCount('apartments')
             ->when($search, function ($query) use ($search) {
 
                 $query->where('name', 'like', "%{$search}%");
@@ -56,9 +57,11 @@ class BlockController extends Controller
                 'unique:blocks,name',
             ],
 
-            'description' => [
+            'code' => [
                 'nullable',
                 'string',
+                'max:100',
+                'unique:blocks,code',
             ],
 
             'status' => [
@@ -66,13 +69,47 @@ class BlockController extends Controller
                 'in:active,inactive,maintenance',
             ],
 
+            'number_of_floors' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+
+            'total_apartments' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+
+            'manager_name' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+
+            'manager_contact' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+
+            'description' => [
+                'nullable',
+                'string',
+            ],
+
         ]);
 
         Block::create([
 
             'name' => $validated['name'],
-            'description' => $validated['description'] ?? null,
+            'code' => $validated['code'] ?? null,
             'status' => $validated['status'] ?? 'active',
+            'number_of_floors' => $validated['number_of_floors'] ?? null,
+            'total_apartments' => $validated['total_apartments'] ?? null,
+            'manager_name' => $validated['manager_name'] ?? null,
+            'manager_contact' => $validated['manager_contact'] ?? null,
+            'description' => $validated['description'] ?? null,
 
         ]);
 
@@ -82,6 +119,31 @@ class BlockController extends Controller
                 'success',
                 'Toà nhà đã được tạo thành công.'
             );
+    }
+
+    /**
+     * Chi tiết Toà nhà
+     */
+    public function show(Block $block): View
+    {
+        $floors = $block->floors()
+            ->withCount('apartments')
+            ->orderBy('floor_number')
+            ->get();
+
+        $stats = [
+            'floors' => $floors->count(),
+            'apartments' => $block->apartments()->count(),
+            'vacant' => $block->apartments()->where('apartments.status', 'vacant')->count(),
+            'occupied' => $block->apartments()->where('apartments.status', 'occupied')->count(),
+            'maintenance' => $block->apartments()->where('apartments.status', 'maintenance')->count(),
+        ];
+
+        return view('admin.blocks.show', compact(
+            'block',
+            'floors',
+            'stats'
+        ));
     }
 
     /**
@@ -109,9 +171,11 @@ class BlockController extends Controller
                 'unique:blocks,name,' . $block->id,
             ],
 
-            'description' => [
+            'code' => [
                 'nullable',
                 'string',
+                'max:100',
+                'unique:blocks,code,' . $block->id,
             ],
 
             'status' => [
@@ -119,13 +183,47 @@ class BlockController extends Controller
                 'in:active,inactive,maintenance',
             ],
 
+            'number_of_floors' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+
+            'total_apartments' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+
+            'manager_name' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+
+            'manager_contact' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+
+            'description' => [
+                'nullable',
+                'string',
+            ],
+
         ]);
 
         $block->update([
 
             'name' => $validated['name'],
-            'description' => $validated['description'] ?? null,
+            'code' => $validated['code'] ?? null,
             'status' => $validated['status'] ?? 'active',
+            'number_of_floors' => $validated['number_of_floors'] ?? null,
+            'total_apartments' => $validated['total_apartments'] ?? null,
+            'manager_name' => $validated['manager_name'] ?? null,
+            'manager_contact' => $validated['manager_contact'] ?? null,
+            'description' => $validated['description'] ?? null,
 
         ]);
 
