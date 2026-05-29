@@ -177,10 +177,10 @@
                     {{-- Actions --}}
                     <div class="floor-actions">
 
-                        <a href="{{ route('admin.apartments.index', ['floor_id' => $floor->id]) }}"
-                           class="btn btn-secondary">
+                        <a href="{{ route('admin.floors.show', $floor->id) }}"
+                           class="btn btn-secondary" style="background: #eff6ff; color: #2563eb; border: none; font-weight: 700;">
 
-                            Xem Căn
+                            Chi Tiết
 
                         </a>
 
@@ -190,22 +190,6 @@
                             Sửa
 
                         </a>
-
-                        <form action="{{ route('admin.floors.destroy', $floor) }}"
-                              method="POST"
-                              onsubmit="return confirm('Bạn chắc chắn muốn xóa tầng này?')">
-
-                            @csrf
-                            @method('DELETE')
-
-                            <button type="submit"
-                                    class="btn btn-danger">
-
-                                Xóa
-
-                            </button>
-
-                        </form>
 
                     </div>
 
@@ -232,9 +216,7 @@
 
             <a href="{{ route('admin.floors.create') }}"
                class="btn btn-primary">
-
                 + Tạo Tầng
-
             </a>
 
         </article>

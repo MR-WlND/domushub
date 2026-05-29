@@ -56,6 +56,7 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/admin/floors', [\App\Http\Controllers\FloorController::class, 'index'])->name('admin.floors.index');
     Route::get('/admin/floors/create', [\App\Http\Controllers\FloorController::class, 'create'])->name('admin.floors.create');
     Route::post('/admin/floors', [\App\Http\Controllers\FloorController::class, 'store'])->name('admin.floors.store');
+    Route::get('/admin/floors/{floor}', [\App\Http\Controllers\FloorController::class, 'show'])->name('admin.floors.show');
     Route::get('/admin/floors/{floor}/edit', [\App\Http\Controllers\FloorController::class, 'edit'])->name('admin.floors.edit');
     Route::put('/admin/floors/{floor}', [\App\Http\Controllers\FloorController::class, 'update'])->name('admin.floors.update');
     Route::delete('/admin/floors/{floor}', [\App\Http\Controllers\FloorController::class, 'destroy'])->name('admin.floors.destroy');
@@ -64,6 +65,7 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/admin/apartments', [\App\Http\Controllers\ApartmentController::class, 'index'])->name('admin.apartments.index');
     Route::get('/admin/apartments/create', [\App\Http\Controllers\ApartmentController::class, 'create'])->name('admin.apartments.create');
     Route::post('/admin/apartments', [\App\Http\Controllers\ApartmentController::class, 'store'])->name('admin.apartments.store');
+    Route::get('/admin/apartments/{apartment}', [\App\Http\Controllers\ApartmentController::class, 'show'])->name('admin.apartments.show');
     Route::get('/admin/apartments/{apartment}/edit', [\App\Http\Controllers\ApartmentController::class, 'edit'])->name('admin.apartments.edit');
     Route::put('/admin/apartments/{apartment}', [\App\Http\Controllers\ApartmentController::class, 'update'])->name('admin.apartments.update');
     Route::delete('/admin/apartments/{apartment}', [\App\Http\Controllers\ApartmentController::class, 'destroy'])->name('admin.apartments.destroy');

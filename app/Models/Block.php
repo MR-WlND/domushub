@@ -17,7 +17,7 @@ class Block extends Model
         'total_apartments',
         'manager_name',
         'manager_contact',
-        'description',
+        'description',  
     ];
 
     public function floors(): HasMany
@@ -30,10 +30,10 @@ class Block extends Model
         return $this->hasManyThrough(
             Apartment::class,
             Floor::class,
-            'block_id', // foreign key on floors table
-            'floor_id', // foreign key on apartments table
-            'id',       // local key on blocks table
-            'id'        // local key on floors table
+            'block_id',      // Foreign key on floors table
+            'floor_id',      // Foreign key on apartments table
+            'id',            // Local key on blocks table
+            'id'             // Local key on floors table
         );
     }
 }

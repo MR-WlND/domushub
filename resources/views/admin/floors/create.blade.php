@@ -39,147 +39,207 @@
 
             @csrf
 
-            {{-- Chọn Toà --}}
-            <div class="form-group">
+            <div class="form-row">
 
-                <label class="form-label">
-                    Toà nhà
-                    <span class="required">*</span>
-                </label>
+                {{-- Tên tầng --}}
+                <div class="form-group">
 
-                <select
-                    name="block_id"
-                    class="form-input @error('block_id') input-error @enderror"
-                    required
-                >
+                    <label class="form-label">
+                        Tên tầng
+                        <span class="required">*</span>
+                    </label>
 
-                    <option value="">
-                        -- Chọn Toà nhà --
-                    </option>
+                    <input
+                        type="text"
+                        name="name"
+                        value="{{ old('name') }}"
+                        placeholder="Ví dụ: Tầng 15, Tầng Hầm 1..."
+                        class="form-input @error('name') input-error @enderror"
+                        required
+                    >
 
-                    @foreach($blocks as $block)
+                    @error('name')
+                        <p class="form-error">
+                            {{ $message }}
+                        </p>
+                    @enderror
 
-                        <option value="{{ $block->id }}"
-                            {{ old('block_id') == $block->id ? 'selected' : '' }}>
+                </div>
 
-                            {{ $block->name }}
+                {{-- Số lượng căn hộ dự kiến --}}
+                <div class="form-group">
 
+                    <label class="form-label">
+                        Số lượng căn hộ dự kiến
+                    </label>
+
+                    <input
+                        type="number"
+                        name="expected_apartments"
+                        value="{{ old('expected_apartments', 0) }}"
+                        placeholder="0"
+                        min="0"
+                        class="form-input @error('expected_apartments') input-error @enderror"
+                    >
+
+                    @error('expected_apartments')
+                        <p class="form-error">
+                            {{ $message }}
+                        </p>
+                    @enderror
+
+                </div>
+
+            </div>
+
+            <div class="form-row">
+
+                {{-- Block / Tòa nhà --}}
+                <div class="form-group">
+
+                    <label class="form-label">
+                        Block / Tòa nhà
+                        <span class="required">*</span>
+                    </label>
+
+                    <select
+                        name="block_id"
+                        class="form-input @error('block_id') input-error @enderror"
+                        required
+                    >
+
+                        <option value="">
+                            -- Chọn toà nhà --
                         </option>
 
-                    @endforeach
+                        @foreach($blocks as $block)
+                            <option value="{{ $block->id }}"
+                                {{ old('block_id') == $block->id ? 'selected' : '' }}>
+                                {{ $block->name }}
+                            </option>
+                        @endforeach
 
-                </select>
+                    </select>
 
-                @error('block_id')
-                    <p class="form-error">
-                        {{ $message }}
-                    </p>
-                @enderror
+                    @error('block_id')
+                        <p class="form-error">
+                            {{ $message }}
+                        </p>
+                    @enderror
 
-            </div>
+                </div>
 
-            {{-- Số tầng --}}
-            <div class="form-group">
+                {{-- Loại tầng --}}
+                <div class="form-group">
 
-                <label class="form-label">
-                    Số tầng
-                    <span class="required">*</span>
-                </label>
+                    <label class="form-label">
+                        Loại tầng
+                        <span class="required">*</span>
+                    </label>
 
-                <input
-                    type="number"
-                    name="floor_number"
-                    value="{{ old('floor_number') }}"
-                    placeholder="VD: 1, 2, 3..."
-                    class="form-input @error('floor_number') input-error @enderror"
-                    required
-                >
+                    <select
+                        name="floor_type"
+                        class="form-input @error('floor_type') input-error @enderror"
+                        required
+                    >
+                        <option value="resident" {{ old('floor_type') == 'resident' ? 'selected' : '' }}>
+                            Cư dân
+                        </option>
+                        <option value="basement" {{ old('floor_type') == 'basement' ? 'selected' : '' }}>
+                            Tầng hầm
+                        </option>
+                        <option value="commercial" {{ old('floor_type') == 'commercial' ? 'selected' : '' }}>
+                            Thương mại
+                        </option>
+                        <option value="service" {{ old('floor_type') == 'service' ? 'selected' : '' }}>
+                            Tiện ích
+                        </option>
+                    </select>
 
-                @error('floor_number')
-                    <p class="form-error">
-                        {{ $message }}
-                    </p>
-                @enderror
+                    @error('floor_type')
+                        <p class="form-error">
+                            {{ $message }}
+                        </p>
+                    @enderror
 
-            </div>
-
-            {{-- Tên tầng --}}
-            <div class="form-group">
-
-                <label class="form-label">
-                    Tên tầng
-                </label>
-
-                <input
-                    type="text"
-                    name="name"
-                    value="{{ old('name') }}"
-                    placeholder="VD: Tầng 1"
-                    class="form-input"
-                >
-
-            </div>
-
-            {{-- Trạng thái --}}
-            <div class="form-group">
-
-                <label class="form-label">
-                    Trạng thái
-                </label>
-
-                <select
-                    name="status"
-                    class="form-input"
-                >
-
-                    <option value="active">
-                        Hoạt động
-                    </option>
-
-                    <option value="maintenance">
-                        Bảo trì
-                    </option>
-
-                    <option value="inactive">
-                        Ngưng hoạt động
-                    </option>
-
-                </select>
+                </div>
 
             </div>
 
-            {{-- Mô tả --}}
-            <div class="form-group">
+            <div class="form-row">
 
-                <label class="form-label">
-                    Mô tả
-                </label>
+                {{-- Trạng thái --}}
+                <div class="form-group">
 
-                <textarea
-                    name="description"
-                    placeholder="Nhập mô tả tầng..."
-                    class="form-input form-textarea"
-                >{{ old('description') }}</textarea>
+                    <label class="form-label">
+                        Trạng thái
+                        <span class="required">*</span>
+                    </label>
 
+                    <select
+                        name="status"
+                        class="form-input @error('status') input-error @enderror"
+                        required
+                    >
+                        <option value="active" {{ old('status', 'active') == 'active' ? 'selected' : '' }}>
+                            Hoạt động
+                        </option>
+                        <option value="maintenance" {{ old('status') == 'maintenance' ? 'selected' : '' }}>
+                            Bảo trì
+                        </option>
+                        <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>
+                            Ngưng hoạt động
+                        </option>
+                    </select>
+
+                    @error('status')
+                        <p class="form-error">
+                            {{ $message }}
+                        </p>
+                    @enderror
+
+                </div>
+
+                {{-- Ghi chú --}}
+                <div class="form-group">
+
+                    <label class="form-label">
+                        Ghi chú
+                    </label>
+
+                    <textarea
+                        name="description"
+                        placeholder="Nhập ghi chú chi tiết về tầng này..."
+                        class="form-input form-textarea @error('description') input-error @enderror"
+                    >{{ old('description') }}</textarea>
+
+                    @error('description')
+                        <p class="form-error">
+                            {{ $message }}
+                        </p>
+                    @enderror
+
+                </div>
+
+            </div>
+
+            <div class="info-box">
+                <i class="icon">ℹ️</i>
+                <div>
+                    <strong>Lưu ý hệ thống</strong>
+                    <p>Sau khi thêm tầng, hệ thống sẽ tự động tạo sơ đồ mặt bằng trống. Bạn có thể thêm chi tiết từng căn hộ trong phần quản lý căn hộ sau.</p>
+                </div>
             </div>
 
             {{-- Actions --}}
             <div class="form-actions">
-
-                <button type="submit"
-                        class="btn btn-primary">
-
-                    + Tạo Tầng
-
+                <button type="submit" class="btn btn-primary">
+                    Xác nhận thêm tầng
                 </button>
 
-                <a href="{{ route('admin.floors.index') }}"
-                   class="btn btn-light">
-
+                <a href="{{ route('admin.floors.index') }}" class="btn btn-light">
                     Hủy
-
                 </a>
-
             </div>
 
         </form>

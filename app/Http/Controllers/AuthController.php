@@ -117,7 +117,7 @@ class AuthController extends Controller
         }
 
         DB::transaction(function () use ($validated, $invite) {
-            User::create([
+            $user = User::create([
                 'name' => $validated['name'],
                 'phone' => $validated['phone'],
                 'email' => $validated['email'],
@@ -125,6 +125,26 @@ class AuthController extends Controller
                 'role' => 'resident',
                 'status' => 'active',
             ]);
+
+            // Thêm bản ghi vào bảng residents để liên kết Cư dân với Căn hộ tương ứng từ mã mời
+            DB::table('residents')->insert([
+                'user_id' => $user->id,
+                'apartment_id' => $invite->apartment_id,
+                'invite_id' => $invite->id,
+                'relationship' => $invite->intended_relationship,
+                'temporary_status' => 'permanent',
+                'start_date' => now()->toDateString(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            // Tự động cập nhật trạng thái căn hộ thành "Đang ở" (occupied)
+            DB::table('apartments')
+                ->where('id', $invite->apartment_id)
+                ->update([
+                    'status' => 'occupied',
+                    'updated_at' => now(),
+                ]);
 
             DB::table('apartment_invites')
                 ->where('id', $invite->id)

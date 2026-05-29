@@ -15,23 +15,36 @@ class BlockController extends Controller
      */
     public function index(Request $request): View
     {
-        $search = $request->search;
+        $search = $request->query('search');
+        $status = $request->query('status');
 
         $blocks = Block::query()
             ->withCount('floors')
             ->withCount('apartments')
-            ->when($search, function ($query) use ($search) {
-
+            ->when($search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%");
-
+            })
+            ->when($status, function ($query, $status) {
+                $query->where('status', $status);
             })
             ->latest()
             ->paginate(12)
             ->withQueryString();
 
+        // Stats
+        $totalBlocks = Block::count();
+        $activeBlocks = Block::where('status', 'active')->count();
+        $maintenanceBlocks = Block::where('status', 'maintenance')->count();
+        $inactiveBlocks = Block::where('status', 'inactive')->count();
+
         return view('admin.blocks.index', compact(
             'blocks',
-            'search'
+            'search',
+            'status',
+            'totalBlocks',
+            'activeBlocks',
+            'maintenanceBlocks',
+            'inactiveBlocks'
         ));
     }
 
@@ -40,21 +53,27 @@ class BlockController extends Controller
      */
     public function create(): View
     {
-        return view('admin.blocks.create');
+        return view(
+            'admin.blocks.create'
+        );
     }
 
     /**
      * Lưu Toà nhà
      */
-    public function store(Request $request): RedirectResponse
-    {
+    public function store(
+        Request $request
+    ): RedirectResponse {
+
         $validated = $request->validate([
 
             'name' => [
+
                 'required',
                 'string',
                 'max:50',
                 'unique:blocks,name',
+
             ],
 
             'code' => [
@@ -149,9 +168,14 @@ class BlockController extends Controller
     /**
      * Form sửa
      */
-    public function edit(Block $block): View
-    {
-        return view('admin.blocks.edit', compact('block'));
+    public function edit(
+        Block $block
+    ): View {
+
+        return view(
+            'admin.blocks.edit',
+            compact('block')
+        );
     }
 
     /**
@@ -165,10 +189,12 @@ class BlockController extends Controller
         $validated = $request->validate([
 
             'name' => [
+
                 'required',
                 'string',
                 'max:50',
                 'unique:blocks,name,' . $block->id,
+
             ],
 
             'code' => [
@@ -238,9 +264,14 @@ class BlockController extends Controller
     /**
      * Xóa Toà nhà
      */
-    public function destroy(Block $block): RedirectResponse
-    {
-        if ($block->floors()->count() > 0) {
+    public function destroy(
+        Block $block
+    ): RedirectResponse {
+
+        /**
+         * Không cho xóa nếu còn tầng
+         */
+        if ($block->floors()->exists()) {
 
             return redirect()
                 ->route('admin.blocks.index')

@@ -138,13 +138,14 @@ class ApartmentController extends Controller
      */
     public function create(): View
     {
+        $blocks = Block::orderBy('name')->get();
         $floors = Floor::with('block')
             ->orderBy('floor_number')
             ->get();
 
         return view(
             'admin.apartments.create',
-            compact('floors')
+            compact('floors', 'blocks')
         );
     }
 
@@ -228,12 +229,23 @@ class ApartmentController extends Controller
     }
 
     /**
+     * Chi tiết căn hộ
+     */
+    public function show(Apartment $apartment): View
+    {
+        $apartment->load(['floor.block', 'residents']);
+
+        return view('admin.apartments.show', compact('apartment'));
+    }
+
+    /**
      * Form sửa
      */
     public function edit(
         Apartment $apartment
     ): View {
 
+        $blocks = Block::orderBy('name')->get();
         $floors = Floor::with('block')
             ->orderBy('floor_number')
             ->get();
@@ -242,7 +254,8 @@ class ApartmentController extends Controller
             'admin.apartments.edit',
             compact(
                 'apartment',
-                'floors'
+                'floors',
+                'blocks'
             )
         );
     }
@@ -340,6 +353,16 @@ class ApartmentController extends Controller
     ): RedirectResponse {
 
         $floorId = $apartment->floor_id;
+
+        // 1. Kiểm tra trạng thái căn hộ
+        if ($apartment->status === 'occupied') {
+            return back()->with('error', 'Không thể xóa căn hộ đang có trạng thái "Đang ở". Vui lòng cập nhật trạng thái trước khi xóa.');
+        }
+
+        // 2. Kiểm tra xem căn hộ có cư dân nào không
+        if ($apartment->residents()->exists()) {
+            return back()->with('error', 'Không thể xóa căn hộ đang có cư dân sinh sống. Vui lòng chuyển cư dân đi trước khi xóa.');
+        }
 
         $apartment->delete();
 
