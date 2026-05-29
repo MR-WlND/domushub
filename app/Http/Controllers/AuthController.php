@@ -121,9 +121,12 @@ class AuthController extends Controller
                 'name' => $validated['name'],
                 'phone' => $validated['phone'],
                 'email' => $validated['email'],
-                'password' => $validated['password'],
+                'password' => $validated['password'], // Password tự động được hash nhờ config Cast trong User Model
                 'role' => 'resident',
                 'status' => 'active',
+
+                // CẬP NHẬT: Gán trực tiếp apartment_id từ bảng mã mời sang
+                'apartment_id' => $invite->apartment_id,
             ]);
 
             DB::table('apartment_invites')

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\VehicleController;
 
 // Root route - redirect to resident login
 Route::get('/', function () {
@@ -55,8 +56,22 @@ Route::middleware(['security'])->group(function () {
 });
 
 
+
 Route::middleware(['resident'])->group(function () {
+
     Route::get('/resident/dashboard', function () {
         return view('resident.home.index');
     })->name('resident.dashboard');
+
+    Route::get('/resident/vehicles', [VehicleController::class, 'index'])
+        ->name('resident.vehicles.index');
+
+    Route::get('/resident/vehicles/create', [VehicleController::class, 'create'])
+        ->name('resident.vehicles.create');
+
+    Route::post('/resident/vehicles', [VehicleController::class, 'store'])
+        ->name('resident.vehicles.store');
+
+    Route::delete('/resident/vehicles/{vehicle}', [VehicleController::class, 'destroy'])
+        ->name('resident.vehicles.destroy');
 });

@@ -11,7 +11,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'phone', 'email', 'password', 'role', 'status'])]
+// CẬP NHẬT: Đã bổ sung 'apartment_id' vào mảng Fillable bên dưới
+#[Fillable(['name', 'phone', 'email', 'password', 'role', 'status', 'apartment_id'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -29,5 +30,13 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Một cư dân thuộc về một căn hộ
+     */
+    public function apartment()
+    {
+        return $this->belongsTo(Apartment::class);
     }
 }
