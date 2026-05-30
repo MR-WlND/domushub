@@ -132,18 +132,24 @@ class AuthController extends Controller
             'invite_code' => [
                 'required',
                 'string',
-                'max:50',
-                Rule::exists('apartment_invites', 'invite_code')->where(function ($query) {
-                    $query->where('status', 'active')
-                        ->where('expired_at', '>', now());
+                'max:20',
+                Rule::exists('invitations', 'code')->where(function ($query) {
+                    $query->whereRaw('uses_count < max_uses')
+                        ->where(function ($q) {
+                            $q->whereNull('expires_at')
+                              ->orWhere('expires_at', '>', now());
+                        });
                 }),
             ],
         ]);
 
-        $invite = DB::table('apartment_invites')
-            ->where('invite_code', $validated['invite_code'])
-            ->where('status', 'active')
-            ->where('expired_at', '>', now())
+        $invite = DB::table('invitations')
+            ->where('code', $validated['invite_code'])
+            ->whereRaw('uses_count < max_uses')
+            ->where(function ($q) {
+                $q->whereNull('expires_at')
+                  ->orWhere('expires_at', '>', now());
+            })
             ->first();
 
         if (! $invite) {
@@ -164,10 +170,9 @@ class AuthController extends Controller
                 'status' => 'active',
             ]);
 
-            DB::table('apartment_invites')
+            DB::table('invitations')
                 ->where('id', $invite->id)
-                ->update([
-                    'status' => 'used',
+                ->increment('uses_count', 1, [
                     'updated_at' => now(),
                 ]);
 

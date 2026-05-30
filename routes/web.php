@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\InvitationController;
 
 // Root route - redirect to resident login
 Route::get('/', function () {
@@ -44,9 +45,6 @@ Route::middleware(['admin'])->group(function () {
         return view('admin.dashboard.index');
     })->name('admin.apartments.index');
 
-    Route::get('/admin/invitations', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.invitations.index');
 
     // Điện nước & hoá đơn
     Route::get('/admin/utility-readings', function () {
@@ -124,4 +122,9 @@ Route::middleware(['admin'])->name('admin.')->group(function () {
     // Route xử lý cập nhật trạng thái/vai trò
     Route::put('/users/{id}/update-status', [UserController::class, 'updateStatus'])->name('users.updateStatus');
     Route::put('/users/{id}/reset-password', [UserController::class, 'resetPassword'])->name('users.resetPassword');
+
+    // Quản lý mã mời (Invitations)
+    Route::get('/admin/invitations', [InvitationController::class, 'index'])->name('invitations.index');
+    Route::post('/admin/invitations', [InvitationController::class, 'store'])->name('invitations.store');
+    Route::delete('/admin/invitations/{id}', [InvitationController::class, 'destroy'])->name('invitations.destroy');
 });
