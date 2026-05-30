@@ -86,10 +86,10 @@
                 </div>
 
                 <div class="group">
-                    <label>Mã mời cư dân</label>
+                    <label>Mã mời cư dân (Bắt buộc)</label>
                     <div class="input-box">
                         <i class="fa-solid fa-key"></i>
-                        <input type="text" name="invite_code" placeholder="INVITE-RESIDENT-001" value="{{ old('invite_code') }}" required>
+                        <input type="text" name="invite_code" placeholder="RES-XXXXXXXX" value="{{ old('invite_code') }}" required>
                     </div>
                     @error('invite_code')<span class="error-msg">{{ $message }}</span>@enderror
                 </div>
