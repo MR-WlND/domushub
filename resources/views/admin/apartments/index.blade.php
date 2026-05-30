@@ -45,7 +45,7 @@
             </span>
 
             <h3>
-                {{ $totalApartments ?? 0 }}
+                {{ $stats['total'] ?? 0 }}
             </h3>
         </div>
 
@@ -55,7 +55,7 @@
             </span>
 
             <h3 class="text-success">
-                {{ $occupiedApartments ?? 0 }}
+                {{ $stats['occupied'] ?? 0 }}
             </h3>
         </div>
 
@@ -65,7 +65,7 @@
             </span>
 
             <h3 class="text-warning">
-                {{ $vacantApartments ?? 0 }}
+                {{ $stats['vacant'] ?? 0 }}
             </h3>
         </div>
 
@@ -75,7 +75,7 @@
             </span>
 
             <h3 class="text-danger">
-                {{ $maintenanceApartments ?? 0 }}
+                {{ $stats['maintenance'] ?? 0 }}
             </h3>
         </div>
 
@@ -290,6 +290,13 @@
 
     </div>
 
+    {{-- Pagination --}}
+    @if($apartments->hasPages())
+        <div class="pagination-wrapper" style="margin-top: 32px; display: flex; justify-content: center;">
+            {{ $apartments->links() }}
+        </div>
+    @endif
+
 </div>
 
 @endsection
@@ -361,4 +368,102 @@
         updateFloors(false);
     });
 </script>
+@endpush
+
+@push('styles')
+<style>
+    /* -----------------------------------------
+       CUSTOM PREMIUM PAGINATION
+    ----------------------------------------- */
+    /* Hide the simple mobile buttons by default */
+    .pagination-wrapper nav > div:first-child {
+        display: none !important;
+    }
+
+    /* Force show the desktop layout with full numbers and details */
+    .pagination-wrapper nav > div:last-child {
+        display: flex !important;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        width: 100%;
+    }
+
+    @media (min-width: 640px) {
+        .pagination-wrapper nav > div:last-child {
+            flex-direction: row;
+            justify-content: center !important;
+        }
+    }
+
+    /* Flex container for pagination buttons */
+    .pagination-wrapper nav div:last-child > div:last-child,
+    .pagination-wrapper nav div:last-child > span {
+        display: flex !important;
+        gap: 6px;
+        align-items: center;
+        flex-wrap: wrap;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Description text */
+    .pagination-wrapper nav p {
+        display: none !important;
+    }
+
+    /* Style for buttons (links) */
+    .pagination-wrapper nav a,
+    .pagination-wrapper nav span[aria-current="page"] span,
+    .pagination-wrapper nav span[aria-disabled="true"] span {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        min-width: 38px;
+        height: 38px;
+        padding: 0 14px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        box-sizing: border-box;
+        transition: all 0.2s ease;
+    }
+
+    /* Inactive page numbers and active action buttons */
+    .pagination-wrapper nav a {
+        background-color: #ffffff;
+        color: #334155;
+        border: 1px solid #cbd5e1;
+    }
+
+    .pagination-wrapper nav a:hover {
+        background-color: #f1f5f9;
+        color: #0b57d0;
+        border-color: #0b57d0;
+    }
+
+    /* Active current page */
+    .pagination-wrapper nav span[aria-current="page"] span {
+        background-color: #0b57d0;
+        color: #ffffff;
+        border: 1px solid #0b57d0;
+    }
+
+    /* Disabled buttons */
+    .pagination-wrapper nav span[aria-disabled="true"] span {
+        background-color: #f8fafc;
+        color: #cbd5e1;
+        border: 1px solid #e2e8f0;
+        cursor: not-allowed;
+    }
+
+    /* SVG arrow size adjustments */
+    .pagination-wrapper nav svg {
+        width: 18px;
+        height: 18px;
+        vertical-align: middle;
+    }
+</style>
 @endpush

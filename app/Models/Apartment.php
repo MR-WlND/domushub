@@ -21,6 +21,31 @@ class Apartment extends Model
     ];
 
     /**
+     * Tự động cập nhật trạng thái dựa trên số lượng cư dân
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($apartment) {
+            // Đếm số cư dân hiện tại của căn hộ
+            $residentsCount = $apartment->residents()->count();
+
+            if ($residentsCount > 0) {
+                // Nếu có cư dân, bắt buộc trạng thái là "Đang ở"
+                $apartment->status = 'occupied';
+            } else {
+                // Nếu không có cư dân
+                // Nếu trạng thái đang là "Đang ở", tự động chuyển về "Trống"
+                if ($apartment->status === 'occupied') {
+                    $apartment->status = 'vacant';
+                }
+                // Giữ nguyên trạng thái "Bảo trì" hoặc "Trống" theo thiết lập thủ công của Admin
+            }
+        });
+    }
+
+    /**
      * Quan hệ tầng
      */
     public function floor(): BelongsTo
