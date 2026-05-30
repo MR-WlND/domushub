@@ -1,0 +1,552 @@
+/* ═══════════════════════════════════════════════
+   Invoice Statistics Dashboard CSS
+   DomusHub – Modern SaaS UI
+═══════════════════════════════════════════════ */
+
+/* ── Page header ───────────────────────────── */
+.page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.page-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -.4px;
+    line-height: 1.2;
+}
+
+.page-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 3px;
+}
+
+.page-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* ── Period select ─────────────────────────── */
+.period-select {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xs);
+    background: var(--surface-card);
+    font-size: 13px;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 500;
+    transition: border-color var(--transition);
+    outline: none;
+}
+
+.period-select:focus { border-color: var(--brand-400); }
+
+/* ── KPI Grid ──────────────────────────────── */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.kpi-card {
+    background: var(--surface-card);
+    border-radius: var(--radius);
+    padding: 22px 22px 18px;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow var(--transition), transform var(--transition);
+}
+
+.kpi-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.kpi-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+}
+
+.kpi-card.kpi-total::after    { background: linear-gradient(90deg, var(--brand-500), var(--brand-400)); }
+.kpi-card.kpi-paid::after     { background: linear-gradient(90deg, var(--green-500), #34d399); }
+.kpi-card.kpi-unpaid::after   { background: linear-gradient(90deg, var(--amber-500), #fbbf24); }
+.kpi-card.kpi-overdue::after  { background: linear-gradient(90deg, var(--red-500), #f87171); }
+
+.kpi-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.kpi-label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+.kpi-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.kpi-total  .kpi-icon { background: var(--brand-50); }
+.kpi-paid   .kpi-icon { background: var(--green-50); }
+.kpi-unpaid .kpi-icon { background: var(--amber-50); }
+.kpi-overdue .kpi-icon { background: var(--red-50); }
+
+.kpi-value {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -.6px;
+    line-height: 1.1;
+}
+
+.kpi-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.kpi-delta {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 20px;
+}
+
+.kpi-delta.up   { background: var(--green-50); color: var(--green-600); }
+.kpi-delta.down { background: var(--red-50);   color: var(--red-600);   }
+.kpi-delta.flat { background: #f1f5f9; color: #64748b; }
+
+/* ── Charts row ────────────────────────────── */
+.charts-row {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 16px;
+    margin-bottom: 24px;
+    align-items: start;
+}
+
+/* ── Chart card ────────────────────────────── */
+.chart-card {
+    background: var(--surface-card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    overflow: hidden;
+}
+
+.chart-card-header {
+    padding: 18px 22px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.chart-card-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.chart-card-subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.chart-legend {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.legend-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.chart-body {
+    padding: 16px 22px 22px;
+    position: relative;
+}
+
+.chart-wrap {
+    position: relative;
+    height: 260px;
+}
+
+/* Donut chart wrap */
+.donut-wrap {
+    position: relative;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.donut-center-label {
+    position: absolute;
+    text-align: center;
+}
+
+.donut-center-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -.5px;
+}
+
+.donut-center-text {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+/* Donut legend list */
+.donut-legend {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.donut-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+}
+
+.donut-legend-bar {
+    flex: 1;
+    height: 4px;
+    background: #eef2fa;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.donut-legend-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width .8s cubic-bezier(.4,0,.2,1);
+}
+
+.donut-legend-label {
+    flex: 0 0 90px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.donut-legend-value {
+    flex: 0 0 80px;
+    text-align: right;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* ── Second row: table + mini chart ────────── */
+.bottom-row {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 16px;
+    margin-bottom: 24px;
+    align-items: start;
+}
+
+/* ── Table card ────────────────────────────── */
+.table-card {
+    background: var(--surface-card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    overflow: hidden;
+}
+
+.table-card-header {
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.table-card-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* ── Data table ────────────────────────────── */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.data-table th {
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--text-muted);
+    background: #fafbff;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+}
+
+.data-table td {
+    padding: 13px 16px;
+    border-bottom: 1px solid #f0f4fd;
+    vertical-align: middle;
+}
+
+.data-table tbody tr {
+    transition: background var(--transition);
+}
+
+.data-table tbody tr:hover {
+    background: var(--surface-hover);
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.data-table .amount {
+    font-weight: 700;
+    color: var(--text-primary);
+    font-feature-settings: 'tnum';
+}
+
+.data-table .invoice-code {
+    font-family: monospace;
+    font-size: 12px;
+    color: var(--brand-600);
+    font-weight: 600;
+}
+
+/* Apartment label */
+.apt-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.apt-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: var(--brand-50);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.apt-name { font-weight: 600; font-size: 13px; color: var(--text-primary); }
+.apt-block { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+/* ── Debt rank card ────────────────────────── */
+.debt-rank-list {
+    padding: 10px 0;
+}
+
+.debt-rank-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    transition: background var(--transition);
+}
+
+.debt-rank-item:hover { background: var(--surface-hover); }
+
+.debt-rank-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--brand-50);
+    color: var(--brand-600);
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.debt-rank-num.top1 { background: #fef3c7; color: #92400e; }
+.debt-rank-num.top2 { background: #f1f5f9; color: #475569; }
+.debt-rank-num.top3 { background: #fef2f2; color: #991b1b; }
+
+.debt-info { flex: 1; min-width: 0; }
+.debt-apt  { font-size: 12.5px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.debt-sub  { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+.debt-amount {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--red-600);
+    white-space: nowrap;
+    font-feature-settings: 'tnum';
+}
+
+/* Progress bar inside debt rank */
+.debt-bar-wrap {
+    height: 3px;
+    background: #eef2fa;
+    border-radius: 4px;
+    margin-top: 5px;
+    overflow: hidden;
+}
+
+.debt-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--red-500), #f87171);
+    border-radius: 4px;
+    transition: width .8s cubic-bezier(.4,0,.2,1);
+}
+
+/* ── Collection rate mini bars ─────────────── */
+.collection-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    padding: 16px 20px;
+}
+
+.collection-bar-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: default;
+}
+
+.collection-bar-outer {
+    width: 100%;
+    height: 60px;
+    background: #eef2fa;
+    border-radius: 6px;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+}
+
+.collection-bar-inner {
+    width: 100%;
+    border-radius: 6px;
+    transition: height .7s cubic-bezier(.4,0,.2,1);
+    background: linear-gradient(180deg, var(--green-500), #34d399);
+}
+
+.collection-bar-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.collection-bar-pct {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--green-600);
+}
+
+/* ── Skeleton loading ──────────────────────── */
+@keyframes shimmer {
+    0%   { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+}
+
+.skeleton {
+    background: linear-gradient(90deg, #f0f4fd 25%, #e4eaf5 50%, #f0f4fd 75%);
+    background-size: 800px 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 6px;
+}
+
+/* ── Empty state ───────────────────────────── */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    text-align: center;
+    gap: 8px;
+}
+
+.empty-state-icon { font-size: 40px; opacity: .4; }
+.empty-state-text { font-size: 14px; color: var(--text-muted); }
+
+/* ── Responsive ────────────────────────────── */
+@media (max-width: 1100px) {
+    .kpi-grid     { grid-template-columns: repeat(2, 1fr); }
+    .charts-row   { grid-template-columns: 1fr; }
+    .bottom-row   { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 700px) {
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    .admin-content { padding: 16px; }
+    .page-header { flex-direction: column; }
+}
+
+@media (max-width: 480px) {
+    .kpi-grid  { grid-template-columns: 1fr; }
+}

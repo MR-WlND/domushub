@@ -12,6 +12,8 @@ export default defineConfig({
                 'resources/css/auth/login.css',
                 'resources/css/auth/register.css',
                 'resources/css/auth/forgot-password.css',
+                'resources/css/admin/layout.css',
+                'resources/css/admin/invoices.css',
             ],
             refresh: true,
             fonts: [
