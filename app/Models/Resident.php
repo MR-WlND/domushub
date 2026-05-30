@@ -20,6 +20,30 @@ class Resident extends Model
         'end_date',
     ];
 
+    /**
+     * Tự động kích hoạt cập nhật trạng thái căn hộ khi thêm/bớt cư dân
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saved(function ($resident) {
+            $apartment = $resident->apartment;
+            if ($apartment) {
+                // Lưu căn hộ sẽ kích hoạt sự kiện saving của Apartment và tự động tính toán lại trạng thái
+                $apartment->save();
+            }
+        });
+
+        static::deleted(function ($resident) {
+            $apartment = $resident->apartment;
+            if ($apartment) {
+                // Lưu căn hộ sẽ kích hoạt sự kiện saving của Apartment và tự động tính toán lại trạng thái
+                $apartment->save();
+            }
+        });
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
