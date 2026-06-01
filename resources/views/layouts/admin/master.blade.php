@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('page_title', 'DomusHub')</title>
-    @vite(['resources/css/app.css', 'resources/css/layouts/admin.css'])
+    @vite(['resources/css/app.css', 'resources/css/layouts/admin.css', 'resources/css/layouts/forms.css'])
     @stack('styles')
 </head>
 
