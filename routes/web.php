@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\AdminApartmentMemberController;
+use App\Http\Controllers\ApartmentMemberController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
@@ -20,6 +22,8 @@ Route::get('/resident/login', [AuthController::class, 'showResidentLogin'])->nam
 Route::post('/resident/login', [AuthController::class, 'loginResident'])->name('resident.login.submit');
 Route::get('/resident/register', [AuthController::class, 'showResidentRegister'])->name('resident.register');
 Route::post('/resident/register', [AuthController::class, 'registerResident'])->name('resident.register.submit');
+Route::get('/member/register', [AuthController::class, 'showMemberRegister'])->name('member.register');
+Route::post('/member/register', [AuthController::class, 'registerMember'])->name('member.register.submit');
 Route::get('/resident/forgot-password', [AuthController::class, 'showForgotPassword'])->name('resident.forgot-password');
 Route::post('/resident/forgot-password', [AuthController::class, 'sendResetCode'])->name('resident.forgot-password.submit');
 Route::get('/resident/reset-password', [AuthController::class, 'showResetPassword'])->name('resident.reset-password');
@@ -109,6 +113,11 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/dashboard', function () {
         return view('resident.home.index');
     })->name('resident.dashboard');
+
+    Route::get('/resident/members', [ApartmentMemberController::class, 'index'])->name('resident.members.index');
+    Route::post('/resident/members', [ApartmentMemberController::class, 'store'])->name('resident.members.store');
+    Route::delete('/resident/members/{member}', [ApartmentMemberController::class, 'destroy'])->name('resident.members.destroy');
+    Route::post('/resident/members/{member}/invite', [ApartmentMemberController::class, 'invite'])->name('resident.members.invite');
 });
 
 Route::middleware(['admin'])->name('admin.')->group(function () {
@@ -127,4 +136,8 @@ Route::middleware(['admin'])->name('admin.')->group(function () {
     Route::get('/admin/invitations', [InvitationController::class, 'index'])->name('invitations.index');
     Route::post('/admin/invitations', [InvitationController::class, 'store'])->name('invitations.store');
     Route::delete('/admin/invitations/{id}', [InvitationController::class, 'destroy'])->name('invitations.destroy');
+
+    Route::get('/admin/apartment-members', [AdminApartmentMemberController::class, 'index'])->name('apartment-members.index');
+    Route::put('/admin/apartment-members/{member}/verify', [AdminApartmentMemberController::class, 'verify'])->name('apartment-members.verify');
+    Route::put('/admin/apartment-members/{member}/reject', [AdminApartmentMemberController::class, 'reject'])->name('apartment-members.reject');
 });

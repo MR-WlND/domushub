@@ -397,6 +397,77 @@
     margin-top: 8px !important;
 }
 
+/* Admin tables and buttons for management pages */
+.admin-page-header {
+    margin-bottom: 20px;
+}
+
+.admin-page-header h1 {
+    margin: 0 0 8px;
+    font-size: 22px;
+    color: #0f172a;
+}
+
+.admin-table {
+    background: #ffffff;
+    border: 1px solid #e6e9ef;
+    border-radius: 10px;
+    padding: 18px;
+    box-shadow: 0 6px 18px rgba(2,6,23,0.04);
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    color: #1f2d3d;
+}
+
+.table thead th {
+    text-align: left;
+    padding: 12px 14px;
+    font-weight: 700;
+    color: #0b2a4a;
+    border-bottom: 1px solid #eef2f7;
+}
+
+.table tbody td {
+    padding: 12px 14px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f6f8fb;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.table.table-hover tbody tr:hover {
+    background-color: #fbfdff;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-primary { background:#1f6feb; color:#fff; }
+.btn-success { background:#16a34a; color:#fff; }
+.btn-danger { background:#ef4444; color:#fff; }
+
+.alert {
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.alert-success { background:#e6fffa; color:#065f46; border:1px solid #a7f3d0; }
+
 .dashboard-stat-row {
     display: flex;
     justify-content: space-between;

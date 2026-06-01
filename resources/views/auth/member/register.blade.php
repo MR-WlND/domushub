@@ -3,33 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DomusHub – Đăng ký Cư dân</title>
+    <title>DomusHub – Đăng ký thành viên</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     @vite(['resources/css/auth/login.css'])
 </head>
 <body>
 <div class="container">
-
-    <!-- LEFT -->
     <div class="left">
         <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=768&h=1024&fit=crop" alt="building">
         <div class="overlay"></div>
         <div class="hero">
-            <h1>Tham gia cùng<br>DomusHub</h1>
-            <p>Đăng ký tài khoản để trải nghiệm dịch vụ quản lý cư dân minh bạch và hiện đại.</p>
+            <h1>Gia nhập cùng<br>DomusHub</h1>
+            <p>Đăng ký thành viên trong gia đình bằng mã mời của chủ hộ.</p>
         </div>
     </div>
 
-    <!-- RIGHT -->
     <div class="right">
         <div class="login-box">
-
             <div class="logo">
                 <i class="fa-solid fa-building"></i> DomusHub Portal
             </div>
 
-            <h2>Tạo tài khoản</h2>
-            <p class="sub">Vui lòng nhập đầy đủ thông tin để đăng ký.</p>
+            <h2>Tạo tài khoản thành viên</h2>
+            <p class="sub">Nhập thông tin cá nhân và mã mời MEM.</p>
 
             @if(session('error'))
                 <div class="alert-error">
@@ -37,7 +33,7 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('resident.register.submit') }}">
+            <form method="POST" action="{{ route('member.register.submit') }}">
                 @csrf
 
                 <div class="group">
@@ -68,22 +64,6 @@
                 </div>
 
                 <div class="group">
-                    <label>Căn hộ</label>
-                    <div class="input-box">
-                        <i class="fa-solid fa-building-user"></i>
-                        <select name="apartment_id" required>
-                            <option value="">Chọn căn hộ</option>
-                            @foreach($apartments as $apartment)
-                                <option value="{{ $apartment->id }}" {{ old('apartment_id') == $apartment->id ? 'selected' : '' }}>
-                                    {{ $apartment->building_name }} - Tầng {{ $apartment->floor_number }} - Căn {{ $apartment->apartment_number }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    @error('apartment_id')<span class="error-msg">{{ $message }}</span>@enderror
-                </div>
-
-                <div class="group">
                     <label>Mật khẩu</label>
                     <div class="input-box">
                         <i class="fa-solid fa-lock"></i>
@@ -102,29 +82,12 @@
                 </div>
 
                 <div class="group">
-                    <label>Mã mời cư dân (RES)</label>
+                    <label>Mã mời thành viên (MEM)</label>
                     <div class="input-box">
                         <i class="fa-solid fa-key"></i>
-                        <input type="text" name="invite_code" placeholder="RES-XXXXXXXX" value="{{ old('invite_code') }}" required>
+                        <input type="text" name="invite_code" placeholder="MEM-XXXXXXXX" value="{{ old('invite_code') }}" required>
                     </div>
                     @error('invite_code')<span class="error-msg">{{ $message }}</span>@enderror
-                </div>
-
-                <div class="group">
-                    <label>Danh sách nhân khẩu</label>
-                    <div id="memberList">
-                        @php $members = old('members', []); @endphp
-                        @foreach($members as $index => $member)
-                            <div class="member-row">
-                                <input type="text" name="members[{{ $index }}][name]" placeholder="Họ và tên" value="{{ $member['name'] }}" required>
-                                <input type="text" name="members[{{ $index }}][relationship]" placeholder="Quan hệ" value="{{ $member['relationship'] }}" required>
-                                <input type="number" name="members[{{ $index }}][birth_year]" placeholder="Năm sinh" value="{{ $member['birth_year'] }}">
-                                <button type="button" class="small-btn" onclick="removeMemberRow(this)">Xóa</button>
-                            </div>
-                        @endforeach
-                    </div>
-                    <button type="button" class="login-btn" onclick="addMemberRow()">Thêm thành viên</button>
-                    @error('members')<span class="error-msg">{{ $message }}</span>@enderror
                 </div>
 
                 <button type="submit" class="login-btn">
@@ -142,7 +105,6 @@
 
         </div>
     </div>
-
 </div>
 
 <script>
@@ -152,53 +114,6 @@ function togglePassword() {
     const isHidden = input.type === 'password';
     input.type = isHidden ? 'text' : 'password';
     icon.className = isHidden ? 'fa-regular fa-eye-slash toggle-pw' : 'fa-regular fa-eye toggle-pw';
-}
-
-function addMemberRow() {
-    const list = document.getElementById('memberList');
-    const index = list.children.length;
-
-    const row = document.createElement('div');
-    row.className = 'member-row';
-
-    const nameInput = document.createElement('input');
-    nameInput.type = 'text';
-    nameInput.name = `members[${index}][name]`;
-    nameInput.placeholder = 'Họ và tên';
-    nameInput.required = true;
-
-    const relationshipInput = document.createElement('input');
-    relationshipInput.type = 'text';
-    relationshipInput.name = `members[${index}][relationship]`;
-    relationshipInput.placeholder = 'Quan hệ';
-    relationshipInput.required = true;
-
-    const yearInput = document.createElement('input');
-    yearInput.type = 'number';
-    yearInput.name = `members[${index}][birth_year]`;
-    yearInput.placeholder = 'Năm sinh';
-
-    const removeButton = document.createElement('button');
-    removeButton.type = 'button';
-    removeButton.className = 'small-btn';
-    removeButton.textContent = 'Xóa';
-    removeButton.onclick = function () {
-        removeMemberRow(removeButton);
-    };
-
-    row.appendChild(nameInput);
-    row.appendChild(relationshipInput);
-    row.appendChild(yearInput);
-    row.appendChild(removeButton);
-
-    list.appendChild(row);
-}
-
-function removeMemberRow(button) {
-    const row = button.closest('.member-row');
-    if (row) {
-        row.remove();
-    }
 }
 </script>
 

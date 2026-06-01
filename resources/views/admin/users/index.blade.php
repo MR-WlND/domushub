@@ -17,6 +17,7 @@
         'technician' => 'Kỹ thuật',
         'security' => 'An ninh',
         'resident' => 'Cư dân',
+        'owner' => 'Chủ hộ',
     ];
 
     $statusLabels = [

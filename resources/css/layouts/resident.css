@@ -104,6 +104,84 @@
     transition: all 0.2s ease;
 }
 
+.resident-header__pending-members {
+    position: relative;
+}
+
+.resident-header__pending-members .header-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #de3b3b;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.68rem;
+    padding: 2px 6px;
+    border-radius: 999px;
+}
+
+.resident-pending-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    width: 320px;
+    background: #fff;
+    border: 1px solid #e6e9ef;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(2,6,23,0.08);
+    z-index: 1000;
+    padding: 0.5rem;
+}
+
+.resident-header__pending-members:hover .resident-pending-dropdown {
+    display: block;
+}
+
+.pending-list {
+    max-height: 280px;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.pending-item {
+    padding: 0.5rem;
+    border-radius: 6px;
+    background: #fbfbfd;
+}
+
+.pending-item__main {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.pending-item__rel {
+    color: #6b7280;
+    font-size: 0.85rem;
+}
+
+.pending-item__sub {
+    color: #9aa0a6;
+    font-size: 0.82rem;
+    margin-top: 0.25rem;
+}
+
+.pending-actions {
+    margin-top: 0.6rem;
+    border-top: 1px solid #f1f3f7;
+    padding-top: 0.6rem;
+    text-align: right;
+}
+
+.pending-actions a {
+    color: #00236f;
+    font-weight: 600;
+    text-decoration: none;
+}
+
 .header-icon-wrapper:hover {
     background-color: rgba(0, 35, 111, 0.04);
     color: #00236f;

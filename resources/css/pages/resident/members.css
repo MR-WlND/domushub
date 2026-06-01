@@ -1,0 +1,39 @@
+/* resident members page */
+.member-card {
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(18, 38, 63, 0.04);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.member-card h2 { font-size: 20px; margin-bottom: 12px; color:#102a43; }
+.member-actions { margin-bottom: 18px; }
+.add-member-form .form-row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+.add-member-form input[type="text"],
+.add-member-form input[type="number"],
+.add-member-form input[type="date"],
+.add-member-form input[type="email"] {
+  border:1px solid #e6eef6;
+  border-radius:8px;
+  padding:10px 12px;
+  background:#ffffff;
+  min-width:160px;
+  font-size:14px;
+  box-shadow: 0 1px 2px rgba(2,6,23,0.03);
+}
+.add-member-form button.btn { background:#1f6feb; color:#fff; border:none; padding:10px 16px; border-radius:8px; cursor:pointer; }
+.btn { display:inline-block; padding:6px 10px; font-size:14px; border-radius:6px; }
+.btn-primary { background:#1f6feb; color:#fff; border:none; }
+.btn-secondary { background:#e6eef6; color:#0b2a4a; border:none; }
+.btn-danger { background:#e53e3e; color:#fff; border:none; }
+.table { width:100%; border-collapse:collapse; font-size:14px; }
+.table thead th { padding: 12px 14px; text-align:left; font-weight:700; color:#0b2a4a; border-bottom:1px solid #eef2f7; }
+.table th, .table td { padding:12px 14px; border-bottom:1px solid #f6f8fb; text-align:left; vertical-align:middle; }
+.table thead th { background:transparent; }
+.alert { padding:10px 12px; border-radius:6px; margin-bottom:12px; }
+.alert-success { background:#e6fffa; color:#065f46; border:1px solid #a7f3d0; }
+.error-msg { color:#e53e3e; font-size:13px; margin-top:6px; display:block; }
+@media (max-width:720px){
+  .add-member-form .form-row { flex-direction:column; align-items:stretch; }
+  .add-member-form input { width:100%; }
+}

@@ -78,7 +78,8 @@
             </div>
 
             <div class="bottom">
-                <p>Bạn chưa có tài khoản? <a href="{{ route('resident.register') }}">Đăng ký ngay</a></p>
+                <p>Bạn chưa có tài khoản? <a href="{{ route('resident.register') }}">Đăng ký chủ hộ</a></p>
+                <p>Thành viên gia đình? <a href="{{ route('member.register') }}">Đăng ký bằng mã MEM</a></p>
                 <small>
                     <span>Chính sách bảo mật</span>
                     <span>Điều khoản dịch vụ</span>

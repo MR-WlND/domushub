@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('avatar', 255)->nullable();
             
             // Định nghĩa Enum Role và Status
-            $table->enum('role', ['admin', 'manager', 'staff', 'technician', 'security', 'resident'])->default('resident');
+            $table->enum('role', ['admin', 'manager', 'staff', 'technician', 'security', 'resident', 'owner'])->default('resident');
             $table->enum('status', ['pending', 'active', 'banned'])->default('pending');
             
             $table->timestamp('email_verified_at')->nullable();

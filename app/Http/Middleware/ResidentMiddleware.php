@@ -11,7 +11,7 @@ class ResidentMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (! Auth::check() || Auth::user()->role !== 'resident') {
+        if (! Auth::check() || ! in_array(Auth::user()->role, ['resident', 'owner'], true)) {
             abort(403, 'Bạn không có quyền truy cập.');
         }
 

@@ -49,19 +49,18 @@
 
                 <div class="invitations-form__field">
                     <label class="invitations-form__label">
-                        Số lượt sử dụng tối đa <span>*</span>
+                        Tòa nhà <span>*</span>
                     </label>
-                    <input
-                        type="number"
-                        name="max_uses"
-                        class="invitations-form__input"
-                        value="{{ old('max_uses', 1) }}"
-                        min="1"
-                        placeholder="Ví dụ: 4"
-                        required
-                    >
-                    <small class="invitations-form__hint">Mã có thể dùng cho bao nhiêu tài khoản cư dân.</small>
+                    <select name="building_id" class="invitations-form__input" required>
+                        <option value="">Chọn tòa nhà</option>
+                        @foreach($blocks as $block)
+                            <option value="{{ $block->id }}" {{ old('building_id') == $block->id ? 'selected' : '' }}>{{ $block->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('building_id')<span class="error-msg">{{ $message }}</span>@enderror
                 </div>
+
+                <input type="hidden" name="max_uses" value="1">
 
                 <div class="invitations-form__field">
                     <label class="invitations-form__label">Ngày hết hạn</label>
@@ -97,6 +96,8 @@
                     <tr>
                         <th style="width:52px">STT</th>
                         <th>Mã Mời</th>
+                        <th>Loại</th>
+                        <th>Tòa nhà</th>
                         <th>Lượt sử dụng</th>
                         <th>Ngày hết hạn</th>
                         <th>Người tạo</th>
@@ -123,6 +124,9 @@
                                     <i class="fas fa-copy inv-code-badge__copy-icon"></i>
                                 </span>
                             </td>
+
+                            <td>{{ $invite->type === 'resident_master' ? 'RES' : 'MEM' }}</td>
+                            <td>{{ optional($invite->building)->name ?? '—' }}</td>
 
                             <td>
                                 <div class="inv-usage">
