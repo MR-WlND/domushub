@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Mail\ResetPasswordCodeMail;
 use App\Models\User;
+use App\Models\Resident;
+use App\Models\Apartment;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -152,9 +154,7 @@ class AuthController extends Controller
             ])->onlyInput(['name', 'phone', 'email', 'invite_code']);
         }
 
-        DB::beginTransaction();
-
-        try {
+        DB::transaction(function () use ($validated, $invite) {
             User::create([
                 'name' => $validated['name'],
                 'phone' => $validated['phone'],
@@ -163,6 +163,18 @@ class AuthController extends Controller
                 'role' => 'resident',
                 'status' => 'active',
             ]);
+
+            // Thêm bản ghi vào bảng residents thông qua Eloquent để kích hoạt model events
+            Resident::create([
+                'user_id' => $user->id,
+                'apartment_id' => $invite->apartment_id,
+                'invite_id' => $invite->id,
+                'relationship' => $invite->intended_relationship,
+                'temporary_status' => 'permanent',
+                'start_date' => now()->toDateString(),
+            ]);
+
+            // Note: Trạng thái căn hộ (status = 'occupied') đã được tự động cập nhật nhờ sự kiện boot/saved của Resident!
 
             DB::table('apartment_invites')
                 ->where('id', $invite->id)

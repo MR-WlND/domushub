@@ -1,0 +1,239 @@
+/* --------------------------------------------------------------------------
+   DOMUSHUB - PREMIUM FORM STYLES
+   Used across all Create and Edit pages (Blocks, Floors, Apartments, etc.)
+   -------------------------------------------------------------------------- */
+
+/* Breadcrumb navigation */
+.breadcrumb-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+.breadcrumb-nav a {
+    color: #0b57d0;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+.breadcrumb-nav a:hover {
+    color: #00236f;
+    text-decoration: underline;
+}
+.breadcrumb-nav .divider {
+    color: #cbd5e1;
+    user-select: none;
+}
+.breadcrumb-nav .current {
+    color: #334155;
+}
+
+/* Premium Form Card Wrapper */
+.form-card-custom {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 10px 25px rgba(0, 35, 111, 0.04);
+    border: 1px solid #e2e8f0;
+    position: relative;
+}
+
+/* Category or section badge inside card */
+.card-badge-custom {
+    position: absolute;
+    top: 24px;
+    right: 28px;
+    background-color: #eff6ff;
+    color: #0b57d0;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+}
+
+@media (max-width: 480px) {
+    .card-badge-custom {
+        position: relative;
+        top: 0;
+        right: 0;
+        margin-bottom: 20px;
+        width: fit-content;
+    }
+    .form-card-custom {
+        padding: 20px 16px;
+    }
+}
+
+/* Section headers with index numbers */
+.form-section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 10px;
+}
+.form-section-header .section-number {
+    font-size: 13px;
+    font-weight: 800;
+    background: #0b57d0;
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.form-section-header h4 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+/* Input Grid layouts (2 and 3 columns) */
+.form-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.form-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 768px) {
+    .form-grid-2,
+    .form-grid-3 {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+}
+
+/* Form Group & Labels */
+.form-group-custom {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.form-label-custom {
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569;
+}
+.form-label-custom .required {
+    color: #ef4444;
+    font-weight: 700;
+}
+
+/* Premium Inputs with SVG Icons */
+.input-wrapper-custom {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.input-icon-custom {
+    position: absolute;
+    left: 16px;
+    color: #94a3b8;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.form-input-custom {
+    width: 100%;
+    height: 46px;
+    padding: 10px 16px 10px 44px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 14px;
+    color: #1e293b;
+    background-color: #ffffff;
+    outline: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-sizing: border-box;
+}
+.form-input-custom::placeholder {
+    color: #94a3b8;
+}
+.form-input-custom:focus {
+    border-color: #0b57d0;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.08);
+}
+
+select.form-input-custom {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 16px;
+    padding-right: 44px;
+}
+
+/* Premium Textarea styling */
+.form-textarea-custom {
+    height: auto !important;
+    padding: 14px 16px !important;
+    resize: vertical;
+    line-height: 1.5;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    transition: all 0.2s;
+}
+.form-textarea-custom::placeholder {
+    color: #94a3b8;
+}
+.form-textarea-custom:focus {
+    border-color: #0b57d0;
+    box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.08);
+}
+
+/* Error message and highlighed input classes */
+.form-error-custom {
+    font-size: 12px;
+    color: #ef4444;
+    font-weight: 500;
+    margin: 2px 0 0 0;
+}
+.input-error {
+    border-color: #ef4444 !important;
+    background-color: #fffafb;
+}
+.input-error:focus {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08) !important;
+}
+
+/* Form Actions area at bottom of card */
+.form-actions-custom {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #f1f5f9;
+}
