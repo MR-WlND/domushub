@@ -14,8 +14,6 @@ class Floor extends Model
         'name',
         'status',
         'description',
-        'expected_apartments',
-        'floor_type',
     ];
 
     public function block(): BelongsTo
@@ -26,5 +24,13 @@ class Floor extends Model
     public function apartments(): HasMany
     {
         return $this->hasMany(Apartment::class);
+    }
+
+    /**
+     * Tên hiển thị: ưu tiên name, fallback về "Tầng {floor_number}"
+     */
+    public function getDisplayNameAttribute(): string
+    {
+        return $this->name ?? 'Tầng ' . $this->floor_number;
     }
 }

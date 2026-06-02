@@ -11,8 +11,11 @@ return new class extends Migration
         Schema::create('floors', function (Blueprint $table) {
             $table->id();
             // Khóa ngoại nối với bảng blocks
-            $table->foreignId('block_id')->constrained('blocks')->onDelete('cascade');
+            $table->foreignId('block_id')->constrained('blocks')->restrictOnDelete();
             $table->integer('floor_number');
+            $table->string('name', 50)->nullable();       // Tên tầng (VD: "Tầng 1", "Tầng Hầm")
+            $table->enum('status', ['active', 'inactive', 'maintenance'])->default('active');
+            $table->text('description')->nullable();
             $table->timestamps();
 
             // Khóa Unique kết hợp (block_id, floor_number)

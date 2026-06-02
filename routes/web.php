@@ -2,6 +2,15 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\ResidentManageController;
+use App\Http\Controllers\ServicePriceController;
+use App\Http\Controllers\UtilityMeterController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ResidentInvoiceController;
+use App\Http\Controllers\ResidentInvitationController;
+
+use App\Http\Controllers\AdminInvitationController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 
@@ -33,27 +42,18 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Dashboard Routes
 Route::middleware(['admin'])->group(function () {
-    Route::get('admin', [HomeController::class, 'index'])->name('home');
-
-    // Quản lý hạ tầng - Buildings/Blocks
-    Route::get('/admin/buildings', [\App\Http\Controllers\BlockController::class, 'index'])->name('admin.buildings.index');
-    Route::get('/admin/buildings/create', [\App\Http\Controllers\BlockController::class, 'create'])->name('admin.buildings.create');
-    Route::post('/admin/buildings', [\App\Http\Controllers\BlockController::class, 'store'])->name('admin.buildings.store');
-    Route::get('/admin/buildings/{block}', [\App\Http\Controllers\BlockController::class, 'show'])->name('admin.buildings.show');
-    Route::get('/admin/buildings/{block}/edit', [\App\Http\Controllers\BlockController::class, 'edit'])->name('admin.buildings.edit');
-    Route::put('/admin/buildings/{block}', [\App\Http\Controllers\BlockController::class, 'update'])->name('admin.buildings.update');
-    Route::delete('/admin/buildings/{block}', [\App\Http\Controllers\BlockController::class, 'destroy'])->name('admin.buildings.destroy');
+    Route::get('admin', [HomeController::class, 'index'])->name('admin.dashboard');
 
     // Block/Building routes (used in views)
     Route::get('/admin/blocks', [\App\Http\Controllers\BlockController::class, 'index'])->name('admin.blocks.index');
     Route::get('/admin/blocks/create', [\App\Http\Controllers\BlockController::class, 'create'])->name('admin.blocks.create');
     Route::post('/admin/blocks', [\App\Http\Controllers\BlockController::class, 'store'])->name('admin.blocks.store');
+    Route::get('/admin/blocks/{block}', [\App\Http\Controllers\BlockController::class, 'show'])->name('admin.blocks.show');
     Route::get('/admin/blocks/{block}/edit', [\App\Http\Controllers\BlockController::class, 'edit'])->name('admin.blocks.edit');
     Route::put('/admin/blocks/{block}', [\App\Http\Controllers\BlockController::class, 'update'])->name('admin.blocks.update');
     Route::delete('/admin/blocks/{block}', [\App\Http\Controllers\BlockController::class, 'destroy'])->name('admin.blocks.destroy');
 
     // Floors (Tầng)
-    Route::get('/admin/floors', [\App\Http\Controllers\FloorController::class, 'index'])->name('admin.floors.index');
     Route::get('/admin/floors/create', [\App\Http\Controllers\FloorController::class, 'create'])->name('admin.floors.create');
     Route::post('/admin/floors', [\App\Http\Controllers\FloorController::class, 'store'])->name('admin.floors.store');
     Route::get('/admin/floors/{floor}', [\App\Http\Controllers\FloorController::class, 'show'])->name('admin.floors.show');
@@ -70,22 +70,22 @@ Route::middleware(['admin'])->group(function () {
     Route::put('/admin/apartments/{apartment}', [\App\Http\Controllers\ApartmentController::class, 'update'])->name('admin.apartments.update');
     Route::delete('/admin/apartments/{apartment}', [\App\Http\Controllers\ApartmentController::class, 'destroy'])->name('admin.apartments.destroy');
 
-    Route::get('/admin/invitations', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.invitations.index');
+    // Xoá mềm cư dân khỏi phòng
+    Route::delete('/admin/residents/{id}', [ResidentManageController::class, 'destroy'])->name('admin.residents.destroy');
 
     // Điện nước & hoá đơn
-    Route::get('/admin/utility-readings', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.utility-readings.index');
+    Route::get('/admin/utility-readings', [UtilityMeterController::class, 'index'])->name('admin.utility-readings.index');
+    Route::get('/admin/utility-readings/create', [UtilityMeterController::class, 'create'])->name('admin.utility-readings.create');
+    Route::post('/admin/utility-readings', [UtilityMeterController::class, 'store'])->name('admin.utility-readings.store');
 
-    Route::get('/admin/service-prices', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.service-prices.index');
+    Route::get('/admin/service-prices', [ServicePriceController::class, 'index'])->name('admin.service-prices.index');
+    Route::post('/admin/service-prices', [ServicePriceController::class, 'store'])->name('admin.service-prices.store');
+    Route::put('/admin/service-prices/{id}', [ServicePriceController::class, 'update'])->name('admin.service-prices.update');
+    Route::delete('/admin/service-prices/{id}', [ServicePriceController::class, 'destroy'])->name('admin.service-prices.destroy');
 
-    Route::get('/admin/invoices', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.invoices.index');
+    Route::get('/admin/invoices', [InvoiceController::class, 'index'])->name('admin.invoices.index');
+    Route::post('/admin/invoices/generate', [InvoiceController::class, 'generate'])->name('admin.invoices.generate');
+
 
     // Dịch vụ cư dân
     Route::get('/admin/residents', function () {
@@ -137,6 +137,23 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/dashboard', function () {
         return view('resident.home.index');
     })->name('resident.dashboard');
+
+    // Profile
+    Route::get('/resident/profile', [ProfileController::class, 'index'])->name('resident.profile.index');
+    Route::put('/resident/profile', [ProfileController::class, 'update'])->name('resident.profile.update');
+
+
+    // Hoá đơn cư dân
+    Route::get('/resident/invoices', [ResidentInvoiceController::class, 'index'])->name('resident.invoices.index');
+    Route::post('/resident/invoices/{id}/pay', [ResidentInvoiceController::class, 'pay'])->name('resident.invoices.pay');
+
+    // Quản lý thành viên gia đình & nhân khẩu & mã mời
+    Route::get('/resident/members', [\App\Http\Controllers\ResidentMemberController::class, 'index'])->name('resident.members.index');
+    Route::post('/resident/members/declared', [\App\Http\Controllers\ResidentMemberController::class, 'storeDeclared'])->name('resident.members.declared.store');
+    Route::delete('/resident/members/declared/{member}', [\App\Http\Controllers\ResidentMemberController::class, 'destroyDeclared'])->name('resident.members.declared.destroy');
+    Route::post('/resident/members/invitations', [\App\Http\Controllers\ResidentMemberController::class, 'storeInvite'])->name('resident.members.invitations.store');
+    Route::delete('/resident/members/invitations/{id}', [\App\Http\Controllers\ResidentMemberController::class, 'destroyInvite'])->name('resident.members.invitations.destroy');
+    Route::delete('/resident/members/registered/{id}', [\App\Http\Controllers\ResidentMemberController::class, 'destroyRegistered'])->name('resident.members.registered.destroy');
 });
 
 Route::middleware(['admin'])->name('admin.')->group(function () {
@@ -150,4 +167,9 @@ Route::middleware(['admin'])->name('admin.')->group(function () {
     // Route xử lý cập nhật trạng thái/vai trò
     Route::put('/users/{id}/update-status', [UserController::class, 'updateStatus'])->name('users.updateStatus');
     Route::put('/users/{id}/reset-password', [UserController::class, 'resetPassword'])->name('users.resetPassword');
+
+    // Quản lý mã mời (Invitations)
+    Route::get('/admin/invitations', [AdminInvitationController::class, 'index'])->name('invitations.index');
+    Route::post('/admin/invitations', [AdminInvitationController::class, 'store'])->name('invitations.store');
+    Route::delete('/admin/invitations/{id}', [AdminInvitationController::class, 'destroy'])->name('invitations.destroy');
 });

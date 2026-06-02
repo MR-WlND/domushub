@@ -1,0 +1,751 @@
+/* ============================================================
+   APARTMENTS PAGE - Table layout matching reference design
+   ============================================================ */
+
+/* ─── Page layout ─── */
+.apartments-page {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ─── Page Header ─── */
+.apartments-page__header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.apartments-page__header h1 {
+    margin: 0;
+    color: #00236f;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.apartments-page__subtitle {
+    margin: 6px 0 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.apartments-page__actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+/* ─── Alert ─── */
+.apartments-alert {
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.apartments-alert--success {
+    background: #e6f4ea;
+    color: #137333;
+    border: 1px solid #b7dfc1;
+}
+
+.apartments-alert--danger {
+    background: #fce8e6;
+    color: #ba1a1a;
+    border: 1px solid #f4b8b2;
+}
+
+/* ─── Buttons ─── */
+.apts-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 40px;
+    padding: 0 18px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.apts-button--primary {
+    background: #00236f;
+    color: #ffffff;
+}
+
+.apts-button--primary:hover {
+    background: #001850;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 35, 111, 0.18);
+}
+
+/* ─── Stats Grid ─── */
+.apartments-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.apts-stat-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.apts-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 35, 111, 0.06);
+}
+
+.apts-stat-card__label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+}
+
+.apts-stat-card__value {
+    font-size: 28px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1;
+}
+
+/* ─── Filter Card ─── */
+.apartments-filter-card {
+    background: #f8f9ff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 18px;
+}
+
+.apartments-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.apartments-filter-card label {
+    display: block;
+    margin-bottom: 6px;
+    color: #475569;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.apartments-filter-card select {
+    width: 100%;
+    min-height: 40px;
+    padding: 0 40px 0 14px;
+    border: 1px solid #d9e2f2;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 14px;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.apartments-filter-card select:focus {
+    border-color: #0b57d0;
+    box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.08);
+}
+
+.apartments-filter-card select:disabled {
+    background: #f1f5f9;
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+/* ─── Table Card ─── */
+.apartments-table-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.apartments-table-wrap {
+    overflow-x: auto;
+}
+
+/* ─── Table ─── */
+.apartments-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.apartments-table thead {
+    background: #f1f5f9;
+}
+
+.apartments-table thead th {
+    padding: 14px 18px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #64748b;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
+}
+
+.apartments-table tbody tr {
+    border-bottom: 1px solid #f1f5f9;
+    transition: background-color 0.15s ease;
+}
+
+.apartments-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.apartments-table tbody tr:hover {
+    background-color: #f8faff;
+}
+
+.apartments-table tbody td {
+    padding: 16px 18px;
+    vertical-align: middle;
+    color: #334155;
+}
+
+.text-right {
+    text-align: right !important;
+}
+
+.text-center {
+    text-align: center !important;
+}
+
+.text-muted {
+    color: #94a3b8 !important;
+}
+
+/* ─── Apartment Code Link ─── */
+.apt-code-link {
+    text-decoration: none;
+    display: inline-block;
+}
+
+.apt-code {
+    font-size: 15px;
+    font-weight: 800;
+    color: #0b57d0;
+    letter-spacing: 0.02em;
+    transition: color 0.15s ease;
+}
+
+.apt-code-link:hover .apt-code {
+    color: #001850;
+    text-decoration: underline;
+}
+
+/* ─── Location Cell ─── */
+.apt-location-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.apt-location-block {
+    font-weight: 600;
+    color: #334155;
+    font-size: 14px;
+}
+
+.apt-location-floor {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+/* ─── Area ─── */
+.apt-area {
+    font-weight: 600;
+    color: #475569;
+}
+
+/* ─── Owner Cell ─── */
+.apt-owner-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.apt-owner-name {
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 14px;
+}
+
+.apt-owner-phone {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.apt-owner-empty {
+    color: #cbd5e1;
+}
+
+/* ─── Status Badge ─── */
+.apt-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.apt-status::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.apt-status--occupied {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.apt-status--occupied::before {
+    background: #22c55e;
+    box-shadow: 0 0 5px #22c55e;
+}
+
+.apt-status--vacant {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.apt-status--vacant::before {
+    background: #f59e0b;
+}
+
+.apt-status--maintenance {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.apt-status--maintenance::before {
+    background: #ef4444;
+}
+
+/* ─── Table Actions ─── */
+.apt-table-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
+.apt-table-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: none;
+    padding: 0;
+}
+
+.apt-table-btn--view {
+    color: #0b57d0;
+    background: #eff6ff;
+    border-color: #bfdbfe;
+}
+
+.apt-table-btn--view:hover {
+    background: #dbeafe;
+    transform: translateY(-1px);
+}
+
+.apt-table-btn--edit {
+    color: #475569;
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+}
+
+.apt-table-btn--edit:hover {
+    background: #e2e8f0;
+    transform: translateY(-1px);
+}
+
+.apt-table-btn--delete {
+    color: #dc2626;
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
+.apt-table-btn--delete:hover {
+    background: #fee2e2;
+    transform: translateY(-1px);
+}
+
+/* ─── Pagination ─── */
+.apartments-pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 8px;
+}
+
+/* Laravel pagination override */
+.apartments-pagination nav > div:first-child { display: none !important; }
+
+.apartments-pagination nav > div:last-child {
+    display: flex !important;
+    justify-content: center;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.apartments-pagination nav p { display: none !important; }
+
+.apartments-pagination nav a,
+.apartments-pagination nav span[aria-current="page"] span,
+.apartments-pagination nav span[aria-disabled="true"] span,
+.apartments-pagination nav span.relative.inline-flex {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    min-width: 38px;
+    height: 38px;
+    padding: 0 14px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    border: none !important;
+    background: transparent !important;
+    color: #00236f !important;
+}
+
+.apartments-pagination nav a:hover {
+    background-color: #f0f4ff !important;
+}
+
+.apartments-pagination nav span[aria-current="page"] span {
+    background-color: #00236f !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 6px rgba(0, 35, 111, 0.2) !important;
+}
+
+.apartments-pagination nav span[aria-disabled="true"] span {
+    color: #cbd5e1 !important;
+    cursor: not-allowed;
+    background: transparent !important;
+}
+
+.apartments-pagination nav svg {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+}
+
+/* ─── Breadcrumb Nav ─── */
+.breadcrumb-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.breadcrumb-nav a {
+    color: #0b57d0;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.breadcrumb-nav a:hover {
+    color: #00236f;
+    text-decoration: underline;
+}
+
+.breadcrumb-nav .divider {
+    color: #cbd5e1;
+    user-select: none;
+}
+
+.breadcrumb-nav .current {
+    color: #334155;
+}
+
+/* ─── Extra Buttons ─── */
+.apts-button--edit {
+    background: #f1f5f9;
+    color: #475569;
+    border-color: #e2e8f0;
+}
+
+.apts-button--edit:hover {
+    background: #e2e8f0;
+    transform: translateY(-1px);
+}
+
+.apts-button--view {
+    background: #eff6ff;
+    color: #0b57d0;
+    border-color: #bfdbfe;
+}
+
+.apts-button--view:hover {
+    background: #dbeafe;
+    transform: translateY(-1px);
+}
+
+.apts-button--delete {
+    background: #fef2f2;
+    color: #dc2626;
+    border-color: #fecaca;
+}
+
+.apts-button--delete:hover {
+    background: #fee2e2;
+    transform: translateY(-1px);
+}
+
+/* ─── Form Card ─── */
+.form-card-custom {
+    padding: 32px;
+}
+
+.card-badge-custom {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    background: #f0f4ff;
+    color: #00236f;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    border: 1px solid #d9e2ff;
+}
+
+/* ─── Form Sections ─── */
+.form-section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.form-section-header .section-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: #00236f;
+    color: white;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.form-section-header h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+/* ─── Form Grid ─── */
+.form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 8px;
+}
+
+@media (max-width: 768px) {
+    .form-grid-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ─── Form Group ─── */
+.form-group-custom {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-label-custom {
+    font-size: 13px;
+    font-weight: 700;
+    color: #475569;
+}
+
+.form-label-custom .required {
+    color: #dc2626;
+    margin-left: 2px;
+}
+
+.input-wrapper-custom {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon-custom {
+    position: absolute;
+    left: 12px;
+    color: #94a3b8;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.form-input-custom {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 14px 0 40px;
+    border: 1.5px solid #d9e2f2;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    appearance: none;
+}
+
+.form-input-custom:focus {
+    border-color: #0b57d0;
+    box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.08);
+}
+
+.form-input-custom.input-error {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08);
+}
+
+.form-input-custom:disabled {
+    background: #f8fafc;
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+select.form-input-custom {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 36px;
+}
+
+.form-textarea-custom {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid #d9e2f2;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 14px;
+    outline: none;
+    resize: vertical;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    font-family: inherit;
+    line-height: 1.6;
+}
+
+.form-textarea-custom:focus {
+    border-color: #0b57d0;
+    box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.08);
+}
+
+.form-textarea-custom.input-error {
+    border-color: #dc2626;
+}
+
+.form-error-custom {
+    font-size: 12px;
+    color: #dc2626;
+    font-weight: 500;
+    margin: 2px 0 0 0;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 1024px) {
+    .apartments-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .apartments-filter-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .apartments-page__header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .apartments-page__actions {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 620px) {
+    .apartments-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .apartments-filter-grid {
+        grid-template-columns: 1fr;
+    }
+}

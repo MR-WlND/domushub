@@ -153,7 +153,7 @@
     padding: 0.5rem 0;
 }
 
-.resident-header__user-menu:hover .resident-header__dropdown {
+.resident-header__user-menu.active .resident-header__dropdown {
     display: flex;
 }
 

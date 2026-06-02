@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Mail\ResetPasswordCodeMail;
-use App\Models\User;
-use App\Models\Resident;
 use App\Models\Apartment;
+use App\Models\ApartmentInvite;
+use App\Models\ApartmentMember;
+use App\Models\Resident;
+use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -59,7 +61,7 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->route('home');
+        return redirect()->route('admin.dashboard');
     }
 
     public function loginSecurity(Request $request): RedirectResponse
@@ -131,31 +133,45 @@ class AuthController extends Controller
             'phone' => ['required', 'string', 'max:20', 'regex:/^[0-9+]+$/', 'unique:users,phone'],
             'email' => ['required', 'email', 'max:150', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'invite_code' => [
-                'required',
-                'string',
-                'max:50',
-                Rule::exists('apartment_invites', 'invite_code')->where(function ($query) {
-                    $query->where('status', 'active')
-                        ->where('expired_at', '>', now());
-                }),
-            ],
+            'invite_code' => ['required', 'string', 'max:50'],
+        ], [
+            'name.required' => 'Vui lòng nhập họ và tên.',
+            'phone.required' => 'Vui lòng nhập số điện thoại.',
+            'phone.regex' => 'Số điện thoại chỉ được chứa số và dấu +.',
+            'phone.unique' => 'Số điện thoại đã tồn tại trong hệ thống.',
+            'email.required' => 'Vui lòng nhập email.',
+            'email.email' => 'Email không đúng định dạng.',
+            'email.unique' => 'Email đã tồn tại trong hệ thống.',
+            'password.required' => 'Vui lòng nhập mật khẩu.',
+            'password.min' => 'Mật khẩu phải có ít nhất 8 ký tự.',
+            'password.confirmed' => 'Xác nhận mật khẩu không khớp.',
+            'invite_code.required' => 'Vui lòng nhập mã mời cư dân.',
         ]);
 
-        $invite = DB::table('apartment_invites')
-            ->where('invite_code', $validated['invite_code'])
+        // Tìm mã mời hợp lệ
+        $invite = ApartmentInvite::where('invite_code', $validated['invite_code'])
             ->where('status', 'active')
-            ->where('expired_at', '>', now())
-            ->first();
+            ->where(function ($q) {
+                $q->whereNull('expired_at')->orWhere('expired_at', '>', now());
+            })->first();
 
-        if (! $invite) {
+        if (! $invite || ! $invite->isValid()) {
             return back()->withErrors([
                 'invite_code' => 'Mã mời cư dân không hợp lệ hoặc đã hết hạn.',
             ])->onlyInput(['name', 'phone', 'email', 'invite_code']);
         }
 
-        DB::transaction(function () use ($validated, $invite) {
-            User::create([
+        // Mã mời phải được gắn với căn hộ cụ thể
+        if (! $invite->apartment_id) {
+            return back()->withErrors([
+                'invite_code' => 'Mã mời này chưa được gắn với căn hộ cụ thể. Vui lòng liên hệ quản trị viên.',
+            ])->onlyInput(['name', 'phone', 'email', 'invite_code']);
+        }
+
+        $apartment = Apartment::with(['floor.block'])->findOrFail($invite->apartment_id);
+
+        DB::transaction(function () use ($validated, $invite, $apartment) {
+            $user = User::create([
                 'name' => $validated['name'],
                 'phone' => $validated['phone'],
                 'email' => $validated['email'],
@@ -164,32 +180,23 @@ class AuthController extends Controller
                 'status' => 'active',
             ]);
 
-            // Thêm bản ghi vào bảng residents thông qua Eloquent để kích hoạt model events
             Resident::create([
                 'user_id' => $user->id,
-                'apartment_id' => $invite->apartment_id,
+                'apartment_id' => $apartment->id,
                 'invite_id' => $invite->id,
                 'relationship' => $invite->intended_relationship,
                 'temporary_status' => 'permanent',
                 'start_date' => now()->toDateString(),
             ]);
 
-            // Note: Trạng thái căn hộ (status = 'occupied') đã được tự động cập nhật nhờ sự kiện boot/saved của Resident!
+            $invite->uses_count += 1;
+            if ($invite->uses_count >= $invite->max_uses) {
+                $invite->status = 'used';
+            }
+            $invite->save();
+        });
 
-            DB::table('apartment_invites')
-                ->where('id', $invite->id)
-                ->update([
-                    'status' => 'used',
-                    'updated_at' => now(),
-                ]);
-
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        }
-
-        return redirect()->route('resident.login')->with('status', 'Đăng ký tài khoản thành công. Vui lòng đăng nhập để tiếp tục.');
+        return redirect()->route('resident.login')->with('status', 'Đăng ký tài khoản thành công và đã được thêm vào căn hộ ' . $apartment->apartment_number . '. Vui lòng đăng nhập.');
     }
 
     // Quên mật khẩu

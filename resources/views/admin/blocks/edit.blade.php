@@ -7,8 +7,12 @@
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role', 'admin')
 
+@push('styles')
+    @vite(['resources/css/pages/admin/blocks/index.css'])
+@endpush
+
 @section('content')
-<div class="dashboard-content">
+<div class="blocks-page">
 
     {{-- Breadcrumb Navigation --}}
     <nav class="breadcrumb-nav">
@@ -20,16 +24,22 @@
     </nav>
 
     {{-- Header --}}
-    <div class="page-header" style="margin-top: 15px;">
+    <div class="blocks-page__header">
         <div>
-            <h1 class="page-title">Sửa Toà nhà</h1>
-            <p class="page-subtitle">
+            <h1>Sửa Toà nhà</h1>
+            <p class="blocks-page__subtitle">
                 Đang chỉnh sửa tòa nhà: <strong style="color: #0b57d0;">{{ $block->name }}</strong>
             </p>
         </div>
-        <a href="{{ route('admin.blocks.index') }}" class="btn btn-secondary" style="display: flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; font-size: 14px; background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; height: 38px; box-sizing: border-box; transition: all 0.2s;">
-            ← Quay lại
-        </a>
+        <div class="blocks-page__actions">
+            <a href="{{ route('admin.blocks.show', $block) }}" class="blocks-button blocks-button--view">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                Xem chi tiết
+            </a>
+            <a href="{{ route('admin.blocks.index') }}" class="blocks-button blocks-button--light">
+                ← Quay lại
+            </a>
+        </div>
     </div>
 
     {{-- Form Card --}}
@@ -89,60 +99,18 @@
                 </div>
             </div>
 
-            <div class="form-grid-3">
-                {{-- Trạng thái --}}
-                <div class="form-group-custom">
-                    <label class="form-label-custom">Trạng thái hoạt động</label>
-                    <div class="input-wrapper-custom">
-                        <span class="input-icon-custom">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                        </span>
-                        <select name="status" class="form-input-custom">
-                            <option value="active" {{ old('status', $block->status) == 'active' ? 'selected' : '' }}>Hoạt động</option>
-                            <option value="maintenance" {{ old('status', $block->status) == 'maintenance' ? 'selected' : '' }}>Bảo trì</option>
-                            <option value="inactive" {{ old('status', $block->status) == 'inactive' ? 'selected' : '' }}>Ngưng hoạt động</option>
-                        </select>
-                    </div>
-                </div>
-
-                {{-- Số tầng --}}
-                <div class="form-group-custom">
-                    <label class="form-label-custom">Số tầng</label>
-                    <div class="input-wrapper-custom">
-                        <span class="input-icon-custom">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7" /></svg>
-                        </span>
-                        <input
-                            type="number"
-                            name="number_of_floors"
-                            value="{{ old('number_of_floors', $block->number_of_floors) }}"
-                            placeholder="VD: 10"
-                            class="form-input-custom @error('number_of_floors') input-error @enderror"
-                        >
-                    </div>
-                    @error('number_of_floors')
-                        <p class="form-error-custom">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                {{-- Số căn hộ --}}
-                <div class="form-group-custom">
-                    <label class="form-label-custom">Số căn hộ dự kiến</label>
-                    <div class="input-wrapper-custom">
-                        <span class="input-icon-custom">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
-                        </span>
-                        <input
-                            type="number"
-                            name="total_apartments"
-                            value="{{ old('total_apartments', $block->total_apartments) }}"
-                            placeholder="VD: 100"
-                            class="form-input-custom @error('total_apartments') input-error @enderror"
-                        >
-                    </div>
-                    @error('total_apartments')
-                        <p class="form-error-custom">{{ $message }}</p>
-                    @enderror
+            {{-- Trạng thái --}}
+            <div class="form-group-custom">
+                <label class="form-label-custom">Trạng thái hoạt động</label>
+                <div class="input-wrapper-custom">
+                    <span class="input-icon-custom">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                    </span>
+                    <select name="status" class="form-input-custom">
+                        <option value="active"       {{ old('status', $block->status) == 'active'       ? 'selected' : '' }}>Hoạt động</option>
+                        <option value="maintenance"  {{ old('status', $block->status) == 'maintenance'  ? 'selected' : '' }}>Bảo trì</option>
+                        <option value="inactive"     {{ old('status', $block->status) == 'inactive'     ? 'selected' : '' }}>Ngưng hoạt động</option>
+                    </select>
                 </div>
             </div>
 
@@ -212,12 +180,12 @@
             </div>
 
             {{-- Action --}}
-            <div class="form-actions-custom">
-                <button type="submit" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600; padding: 12px 24px; border-radius: 8px; font-size: 14px; cursor: pointer; border: none; background-color: #0b57d0; color: white;">
+            <div class="blocks-page__actions" style="justify-content: flex-start; margin-top: 24px;">
+                <button type="submit" class="blocks-button blocks-button--primary">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
                     Xác nhận cập nhật
                 </button>
-                <a href="{{ route('admin.blocks.index') }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; justify-content: center; height: 44px; padding: 0 24px; border-radius: 8px; font-weight: 600; text-decoration: none; font-size: 14px; background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; transition: all 0.2s;">
+                <a href="{{ route('admin.blocks.index') }}" class="blocks-button blocks-button--light">
                     Hủy bỏ
                 </a>
             </div>
