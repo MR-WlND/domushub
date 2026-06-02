@@ -1,7 +1,7 @@
 @extends('layouts.admin.master')
 
 @section('page_title', 'Thêm nhân sự')
-@section('home_route', route('home'))
+@section('home_route', route('admin.dashboard'))
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role_label', 'ADMIN')
 

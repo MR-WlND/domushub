@@ -7,8 +7,12 @@
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role', 'admin')
 
+@push('styles')
+    @vite(['resources/css/pages/admin/apartments/index.css'])
+@endpush
+
 @section('content')
-<div class="dashboard-content">
+<div class="apartments-page">
 
     {{-- Breadcrumb Navigation --}}
     <nav class="breadcrumb-nav">
@@ -20,16 +24,16 @@
     </nav>
 
     {{-- Header --}}
-    <div class="page-header" style="margin-top: 15px;">
+    <div class="apartments-page__header">
         <div>
-            <h1 class="page-title">Tạo Căn hộ mới</h1>
-            <p class="page-subtitle">
-                Thêm căn hộ mới vào hệ thống quản lý chung cư
-            </p>
+            <h1>Tạo Căn hộ mới</h1>
+            <p class="apartments-page__subtitle">Thêm căn hộ mới vào hệ thống quản lý chung cư</p>
         </div>
-        <a href="{{ route('admin.apartments.index') }}" class="btn btn-secondary" style="display: flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; font-size: 14px; background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; height: 38px; box-sizing: border-box; transition: all 0.2s;">
-            ← Quay lại
-        </a>
+        <div class="apartments-page__actions">
+            <a href="{{ route('admin.apartments.index') }}" class="apts-button apts-button--edit">
+                ← Quay lại
+            </a>
+        </div>
     </div>
 
     {{-- Form Card --}}
@@ -110,7 +114,7 @@
                 <h4>Thông số kỹ thuật & Trạng thái</h4>
             </div>
 
-            <div class="form-grid-3">
+            <div class="form-grid-2">
                 {{-- Số căn hộ --}}
                 <div class="form-group-custom">
                     <label class="form-label-custom">
@@ -132,30 +136,7 @@
                     @enderror
                 </div>
 
-                {{-- Diện tích --}}
-                <div class="form-group-custom">
-                    <label class="form-label-custom">
-                        Diện tích sử dụng (m²) <span class="required">*</span>
-                    </label>
-                    <div class="input-wrapper-custom">
-                        <span class="input-icon-custom">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" /></svg>
-                        </span>
-                        <input
-                            type="number"
-                            step="0.01"
-                            min="0.01"
-                            name="area"
-                            value="{{ old('area') }}"
-                            placeholder="VD: 45.5"
-                            class="form-input-custom @error('area') input-error @enderror"
-                            required
-                        >
-                    </div>
-                    @error('area')
-                        <p class="form-error-custom">{{ $message }}</p>
-                    @enderror
-                </div>
+
 
                 {{-- Trạng thái --}}
                 <div class="form-group-custom">
@@ -166,7 +147,6 @@
                         </span>
                         <select name="status" class="form-input-custom @error('status') input-error @enderror">
                             <option value="vacant" {{ old('status') == 'vacant' ? 'selected' : '' }}>Trống</option>
-                            <option value="occupied" {{ old('status') == 'occupied' ? 'selected' : '' }}>Đang ở</option>
                             <option value="maintenance" {{ old('status') == 'maintenance' ? 'selected' : '' }}>Bảo trì</option>
                         </select>
                     </div>
@@ -197,12 +177,12 @@
             </div>
 
             {{-- Actions --}}
-            <div class="form-actions-custom">
-                <button type="submit" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600; padding: 12px 24px; border-radius: 8px; font-size: 14px; cursor: pointer; border: none; background-color: #0b57d0; color: white;">
+            <div class="apartments-page__actions" style="justify-content: flex-start; margin-top: 24px;">
+                <button type="submit" class="apts-button apts-button--primary">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
                     Xác nhận thêm căn hộ
                 </button>
-                <a href="{{ route('admin.apartments.index') }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; justify-content: center; height: 44px; padding: 0 24px; border-radius: 8px; font-weight: 600; text-decoration: none; font-size: 14px; background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; transition: all 0.2s;">
+                <a href="{{ route('admin.apartments.index') }}" class="apts-button apts-button--edit">
                     Hủy bỏ
                 </a>
             </div>

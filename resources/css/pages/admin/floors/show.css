@@ -1,0 +1,238 @@
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 15px;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #64748b;
+}
+
+.detail-value {
+    color: #0f172a;
+    font-weight: 500;
+}
+
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.premium-stat-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.premium-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+    border-color: #cbd5e1;
+}
+
+.premium-stat-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.premium-stat-value {
+    font-size: 32px;
+    font-weight: 800;
+    color: #082b7a;
+    line-height: 1;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 9999px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.badge-success {
+    background-color: #dcfce7;
+    color: #15803d;
+}
+
+.badge-warning {
+    background-color: #fef3c7;
+    color: #b45309;
+}
+
+.badge-danger {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+.apartment-grid-map {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+    padding: 10px 0;
+}
+
+.apartment-map-card {
+    border-radius: 18px;
+    border: 1px solid #e2e8f0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    transition: all 0.25s ease;
+    position: relative;
+    background: white;
+}
+
+.apartment-map-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+}
+
+.apartment-map-card--occupied {
+    border-color: #bbf7d0;
+    background: #f0fdf4;
+}
+
+.apartment-map-card--vacant {
+    border-color: #fef08a;
+    background: #fefdf0;
+}
+
+.apartment-map-card--maintenance {
+    border-color: #fca5a5;
+    background: #fdf2f2;
+}
+
+.map-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.map-card-number {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.map-card-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 9999px;
+}
+
+.map-card-badge--occupied {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.map-card-badge--vacant {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.map-card-badge--maintenance {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.map-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.map-card-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px dashed rgba(226, 232, 240, 0.6);
+    padding-bottom: 6px;
+}
+
+.map-card-info:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.info-label {
+    color: #64748b;
+    font-weight: 500;
+}
+
+.info-value {
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.map-card-footer {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.map-card-btn {
+    flex: 1;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.map-card-btn--view {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.map-card-btn--view:hover {
+    background: #dbeafe;
+}
+
+.map-card-btn--edit {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.map-card-btn--edit:hover {
+    background: #e2e8f0;
+}
+
+@media (max-width: 900px) {
+    .stats-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 760px) {
+    .apartment-grid-map {
+        grid-template-columns: 1fr;
+    }
+}

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('invite_code', 50)->unique();
             $table->enum('intended_relationship', ['owner', 'tenant', 'family_member']);
             $table->enum('status', ['active', 'used', 'expired'])->default('active');
-            $table->timestamp('expired_at');
+            $table->timestamp('expired_at')->nullable();
             $table->timestamps();
         });
     }

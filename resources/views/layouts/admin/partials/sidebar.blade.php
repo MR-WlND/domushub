@@ -9,7 +9,7 @@
         {{-- TỔNG QUAN --}}
         <div class="nav-section">
             <span class="nav-section__label">TỔNG QUAN</span>
-            <a href="{{ route('home') }}" class="dashboard-nav__item {{ request()->routeIs('home') ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ route('admin.dashboard') }}" class="dashboard-nav__item {{ request()->routeIs('admin.dashboard') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="3" width="7" height="7"></rect>
                     <rect x="14" y="3" width="7" height="7"></rect>
@@ -23,7 +23,7 @@
         {{-- QUẢN LÝ HẠ TẦNG --}}
         <div class="nav-section">
             <span class="nav-section__label">QUẢN LÝ HẠ TẦNG</span>
-            <a href="{{ route('admin.buildings.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.buildings.*') ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ route('admin.blocks.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.blocks.*') || request()->routeIs('admin.floors.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="2" y="3" width="20" height="18" rx="1"></rect>
                     <path d="M9 3v18"></path>
@@ -162,3 +162,4 @@
         </div>
     </div>
 </aside>
+

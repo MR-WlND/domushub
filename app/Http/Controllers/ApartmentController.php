@@ -27,6 +27,7 @@ class ApartmentController extends Controller
         $query = Apartment::query()
             ->with([
                 'floor.block',
+                'residents.user',
             ])
             ->withCount('residents');
 
@@ -169,11 +170,6 @@ class ApartmentController extends Controller
                 'max:20',
             ],
 
-            'area' => [
-                'required',
-                'numeric',
-                'min:0.01',
-            ],
 
             'status' => [
                 'required',
@@ -212,6 +208,7 @@ class ApartmentController extends Controller
                 ]);
         }
 
+        $validated['area'] = 0;
         Apartment::create($validated);
 
         return redirect()
@@ -281,11 +278,6 @@ class ApartmentController extends Controller
                 'max:20',
             ],
 
-            'area' => [
-                'required',
-                'numeric',
-                'min:0.01',
-            ],
 
             'status' => [
                 'required',
@@ -329,6 +321,7 @@ class ApartmentController extends Controller
                 ]);
         }
 
+        $validated['area'] = 0;
         $apartment->update($validated);
 
         return redirect()

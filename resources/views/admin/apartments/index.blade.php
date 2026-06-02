@@ -1,298 +1,204 @@
 @extends('layouts.admin.master')
-@section('title', 'Quản lý Căn hộ')
+
+@section('page_title', 'Quản lý Căn hộ')
+@section('page_kicker', 'Quản trị hệ thống')
+@section('role_title', 'Admin Portal')
+@section('home_route', route('admin.dashboard'))
+@section('user_name', auth()->user()->name ?? 'Admin')
+@section('user_role', 'admin')
+
+@push('styles')
+    @vite(['resources/css/pages/admin/apartments/index.css'])
+@endpush
+
 @section('content')
 
-<div class="apartment-page">
+<div class="apartments-page">
 
     {{-- Header --}}
-    <div class="apartment-page__header">
-
+    <div class="apartments-page__header">
         <div>
-            <h1 class="apartment-page__title">
-                Danh sách Căn hộ
-            </h1>
-
-            <p class="apartment-page__subtitle">
-                Quản lý toàn bộ căn hộ trong hệ thống
-            </p>
+            <h1>Quản lý Căn hộ</h1>
+            <p class="apartments-page__subtitle">Hệ thống theo dõi chi tiết tình trạng và thông tin cư dân theo đơn vị căn hộ.</p>
         </div>
 
-        <a href="{{ route('admin.apartments.create') }}"
-            class="btn-add-apartment">
-            + Thêm Căn hộ
-        </a>
-
+        <div class="apartments-page__actions">
+            <a href="{{ route('admin.apartments.create') }}" class="apts-button apts-button--primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                Thêm căn hộ mới
+            </a>
+        </div>
     </div>
 
+    {{-- Alerts --}}
     @if (session('success'))
-        <div class="alert alert-success" style="margin-bottom: 20px; padding: 15px; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 8px;">
-            {{ session('success') }}
-        </div>
+        <div class="apartments-alert apartments-alert--success">{{ session('success') }}</div>
     @endif
-
     @if (session('error'))
-        <div class="alert alert-danger" style="margin-bottom: 20px; padding: 15px; background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 8px;">
-            {{ session('error') }}
-        </div>
+        <div class="apartments-alert apartments-alert--danger">{{ session('error') }}</div>
     @endif
 
-    {{-- Stats --}}
-    <div class="apartment-stats">
-
-        <div class="apartment-stat-card">
-            <span class="apartment-stat-card__label">
-                Tổng căn hộ
-            </span>
-
-            <h3>
-                {{ $stats['total'] ?? 0 }}
-            </h3>
+    {{-- Stats Grid --}}
+    <div class="apartments-stats-grid">
+        <div class="apts-stat-card" style="border-left: 4px solid #0b57d0;">
+            <span class="apts-stat-card__label">Tổng số căn hộ</span>
+            <span class="apts-stat-card__value" style="color: #0b57d0;">{{ number_format($stats['total'] ?? 0) }}</span>
         </div>
-
-        <div class="apartment-stat-card">
-            <span class="apartment-stat-card__label">
-                Đang ở
-            </span>
-
-            <h3 class="text-success">
-                {{ $stats['occupied'] ?? 0 }}
-            </h3>
+        <div class="apts-stat-card" style="border-left: 4px solid #16a34a;">
+            <span class="apts-stat-card__label">Đang ở (Occupied)</span>
+            <span class="apts-stat-card__value" style="color: #16a34a;">{{ number_format($stats['occupied'] ?? 0) }}</span>
         </div>
-
-        <div class="apartment-stat-card">
-            <span class="apartment-stat-card__label">
-                Trống
-            </span>
-
-            <h3 class="text-warning">
-                {{ $stats['vacant'] ?? 0 }}
-            </h3>
+        <div class="apts-stat-card" style="border-left: 4px solid #f59e0b;">
+            <span class="apts-stat-card__label">Trống (Vacant)</span>
+            <span class="apts-stat-card__value" style="color: #f59e0b;">{{ number_format($stats['vacant'] ?? 0) }}</span>
         </div>
-
-        <div class="apartment-stat-card">
-            <span class="apartment-stat-card__label">
-                Bảo trì
-            </span>
-
-            <h3 class="text-danger">
-                {{ $stats['maintenance'] ?? 0 }}
-            </h3>
+        <div class="apts-stat-card" style="border-left: 4px solid #dc2626;">
+            <span class="apts-stat-card__label">Đang bảo trì</span>
+            <span class="apts-stat-card__value" style="color: #dc2626;">{{ number_format($stats['maintenance'] ?? 0) }}</span>
         </div>
-
     </div>
 
     {{-- Filters --}}
-    <div class="apartment-filter-card">
-
+    <div class="apartments-filter-card">
         <form method="GET">
-
-            <div class="apartment-filter-grid">
-
+            <div class="apartments-filter-grid">
                 <div>
                     <label>Tòa nhà</label>
-
                     <select name="block_id">
-
-                        <option value="">
-                            Tất cả tòa
-                        </option>
-
-                        @foreach($blocks as $block)
-
-                        <option value="{{ $block->id }}"
-                            {{ request('block_id') == $block->id ? 'selected' : '' }}>
-
-                            {{ $block->name }}
-
-                        </option>
-
+                        <option value="">Tất cả</option>
+                        @foreach ($blocks as $blk)
+                            <option value="{{ $blk->id }}"
+                                {{ request('block_id') == $blk->id ? 'selected' : '' }}>
+                                {{ $blk->name }}
+                            </option>
                         @endforeach
-
                     </select>
                 </div>
 
                 <div>
                     <label>Tầng</label>
-
                     <select name="floor_id">
-
-                        <option value="">
-                            Tất cả tầng
-                        </option>
-
-                        @foreach($floors as $floor)
-
-                        <option value="{{ $floor->id }}"
-                            data-block-id="{{ $floor->block_id }}"
-                            {{ request('floor_id') == $floor->id ? 'selected' : '' }}>
-
-                            {{ $floor->name }}
-
-                        </option>
-
+                        <option value="">Tất cả</option>
+                        @foreach ($floors as $fl)
+                            <option value="{{ $fl->id }}"
+                                    data-block-id="{{ $fl->block_id }}"
+                                {{ request('floor_id') == $fl->id ? 'selected' : '' }}>
+                                {{ $fl->name }}
+                            </option>
                         @endforeach
-
                     </select>
                 </div>
 
                 <div>
                     <label>Trạng thái</label>
-
                     <select name="status">
-
-                        <option value="">
-                            Tất cả
-                        </option>
-
-                        <option value="occupied" {{ request('status') == 'occupied' ? 'selected' : '' }}>
-                            Đang ở
-                        </option>
-
-                        <option value="vacant" {{ request('status') == 'vacant' ? 'selected' : '' }}>
-                            Trống
-                        </option>
-
-                        <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>
-                            Bảo trì
-                        </option>
-
+                        <option value="">Tất cả</option>
+                        <option value="occupied"    {{ request('status') == 'occupied'    ? 'selected' : '' }}>Đang ở</option>
+                        <option value="vacant"      {{ request('status') == 'vacant'      ? 'selected' : '' }}>Trống</option>
+                        <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Đang bảo trì</option>
                     </select>
                 </div>
-
             </div>
-
         </form>
-
     </div>
 
-    {{-- Apartments Grid --}}
-    <div class="apartment-grid">
+    {{-- Apartments Table --}}
+    <div class="apartments-table-card">
+        <div class="apartments-table-wrap">
+            <table class="apartments-table">
+                <thead>
+                    <tr>
+                        <th>Mã căn hộ</th>
+                        <th>Tòa / Tầng</th>
 
-        @forelse($apartments as $apartment)
+                        <th>Chủ hộ</th>
+                        <th>Trạng thái</th>
+                        <th class="text-right">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($apartments as $apartment)
+                        <tr>
+                            {{-- Mã căn hộ --}}
+                            <td>
+                                <a href="{{ route('admin.apartments.show', $apartment->id) }}" class="apt-code-link">
+                                    <span class="apt-code">{{ $apartment->apartment_number }}</span>
+                                </a>
+                            </td>
 
-        <div class="apartment-card">
+                            {{-- Tòa / Tầng --}}
+                            <td>
+                                <div class="apt-location-cell">
+                                    <span class="apt-location-block">{{ $apartment->floor->block->name ?? '—' }}</span>
+                                    <span class="apt-location-floor">{{ $apartment->floor->name ?? '' }}</span>
+                                </div>
+                            </td>
 
-            {{-- top --}}
-            <div class="apartment-card__top">
 
-                <div>
 
-                    <div class="apartment-number">
-                        {{ $apartment->apartment_number }}
-                    </div>
+                            {{-- Chủ hộ --}}
+                            <td>
+                                @php
+                                    $owner = $apartment->residents->first();
+                                @endphp
+                                @if($owner && $owner->user)
+                                    <div class="apt-owner-cell">
+                                        <span class="apt-owner-name">{{ $owner->user->name }}</span>
+                                        <span class="apt-owner-phone">{{ $owner->user->phone ?? '' }}</span>
+                                    </div>
+                                @else
+                                    <span class="apt-owner-empty">—</span>
+                                @endif
+                            </td>
 
-                    <div class="apartment-location">
+                            {{-- Trạng thái --}}
+                            <td>
+                                <span class="apt-status apt-status--{{ $apartment->status }}">
+                                    @if ($apartment->status == 'occupied') Đang ở
+                                    @elseif($apartment->status == 'vacant') Trống
+                                    @else Đang sửa chữa
+                                    @endif
+                                </span>
+                            </td>
 
-                        {{ $apartment->floor->name ?? '' }}
-                        -
-                        {{ $apartment->floor->block->name ?? '' }}
-
-                    </div>
-
-                </div>
-
-                <div class="apartment-status
-                        @if($apartment->status == 'occupied')
-                            apartment-status--occupied
-                        @elseif($apartment->status == 'vacant')
-                            apartment-status--vacant
-                        @else
-                            apartment-status--maintenance
-                        @endif
-                    ">
-
-                    @if($apartment->status == 'occupied')
-                    Đang ở
-                    @elseif($apartment->status == 'vacant')
-                    Trống
-                    @else
-                    Bảo trì
-                    @endif
-
-                </div>
-
-            </div>
-
-            {{-- description --}}
-            <div class="apartment-description">
-
-                {{ $apartment->description ?? 'Không có mô tả' }}
-
-            </div>
-
-            {{-- stats --}}
-            <div class="apartment-card__stats">
-
-                <div class="apartment-mini-stat">
-
-                    <div class="apartment-mini-stat__value">
-                        {{ $apartment->area ?? 0 }}
-                    </div>
-
-                    <div class="apartment-mini-stat__label">
-                        m²
-                    </div>
-
-                </div>
-
-                <div class="apartment-mini-stat">
-
-                    <div class="apartment-mini-stat__value">
-                        {{ $apartment->residents_count ?? 0 }}
-                    </div>
-
-                    <div class="apartment-mini-stat__label">
-                        Cư dân
-                    </div>
-
-                </div>
-
-            </div>
-
-            {{-- actions --}}
-            <div class="apartment-actions">
-
-                <a href="{{ route('admin.apartments.show', $apartment->id) }}"
-                    class="btn-apartment btn-apartment--view">
-
-                    Chi tiết
-
-                </a>
-
-                <a href="{{ route('admin.apartments.edit', $apartment->id) }}"
-                    class="btn-apartment btn-apartment--edit">
-
-                    Sửa
-
-                </a>
-
-                <form action="{{ route('admin.apartments.destroy', $apartment->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa căn hộ này?')">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn-apartment btn-apartment--delete">
-                        Xóa
-                    </button>
-                </form>
-
-            </div>
-
+                            {{-- Thao tác --}}
+                            <td class="text-right">
+                                <div class="apt-table-actions">
+                                    <a href="{{ route('admin.apartments.show', $apartment->id) }}" class="apt-table-btn apt-table-btn--view" title="Xem chi tiết">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    </a>
+                                    <a href="{{ route('admin.apartments.edit', $apartment->id) }}" class="apt-table-btn apt-table-btn--edit" title="Chỉnh sửa">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                    </a>
+                                    <form action="{{ route('admin.apartments.destroy', $apartment->id) }}" method="POST"
+                                          style="display:contents;"
+                                          onsubmit="return confirm('Bạn có chắc chắn muốn xóa căn hộ này?')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="apt-table-btn apt-table-btn--delete" title="Xóa">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="text-center text-muted" style="padding: 40px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="#cbd5e1" stroke-width="1.5" style="margin-bottom: 10px;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                                </svg>
+                                <br>Chưa có căn hộ nào
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
-
-        @empty
-
-        <div class="empty-apartment">
-
-            Chưa có căn hộ nào
-
-        </div>
-
-        @endforelse
-
     </div>
 
     {{-- Pagination --}}
-    @if($apartments->hasPages())
-        <div class="pagination-wrapper" style="margin-top: 32px; display: flex; justify-content: center;">
+    @if ($apartments->hasPages())
+        <div class="apartments-pagination">
             {{ $apartments->links() }}
         </div>
     @endif
@@ -302,168 +208,43 @@
 @endsection
 
 @push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const blockFilter = document.querySelector('select[name="block_id"]');
-        const floorFilter = document.querySelector('select[name="floor_id"]');
-        const statusFilter = document.querySelector('select[name="status"]');
-        
-        // Cache floor options (excluding the placeholder)
-        const floorOptions = Array.from(floorFilter.querySelectorAll('option[data-block-id]'));
-        
-        function updateFloors(resetSelected = false) {
-            const selectedBlockId = blockFilter.value;
-            const currentFloorValue = floorFilter.value;
-            
-            // Clear floor filter options (keep placeholder)
-            floorFilter.innerHTML = '<option value="">Tất cả tầng</option>';
-            
-            if (selectedBlockId) {
-                // Filter and append matching floors
-                const filteredOptions = floorOptions.filter(opt => opt.getAttribute('data-block-id') === selectedBlockId);
-                
-                filteredOptions.forEach(opt => {
-                    floorFilter.appendChild(opt);
-                });
-                
-                floorFilter.disabled = false;
-                
-                // Retain selected floor if it belongs to the active block
-                if (!resetSelected && currentFloorValue) {
-                    const selectedOpt = filteredOptions.find(opt => opt.value === currentFloorValue);
-                    if (selectedOpt) {
-                        floorFilter.value = currentFloorValue;
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const blockFilter = document.querySelector('select[name="block_id"]');
+            const floorFilter = document.querySelector('select[name="floor_id"]');
+            const statusFilter = document.querySelector('select[name="status"]');
+
+            const floorOptions = Array.from(floorFilter.querySelectorAll('option[data-block-id]'));
+
+            function updateFloors(resetSelected = false) {
+                const selectedBlockId = blockFilter.value;
+                const currentFloorValue = floorFilter.value;
+
+                floorFilter.innerHTML = '<option value="">Tất cả</option>';
+
+                if (selectedBlockId) {
+                    const filteredOptions = floorOptions.filter(opt => opt.getAttribute('data-block-id') === selectedBlockId);
+                    filteredOptions.forEach(opt => floorFilter.appendChild(opt));
+                    floorFilter.disabled = false;
+
+                    if (!resetSelected && currentFloorValue) {
+                        const selectedOpt = filteredOptions.find(opt => opt.value === currentFloorValue);
+                        if (selectedOpt) floorFilter.value = currentFloorValue;
                     }
-                }
-            } else {
-                // Show all floor options if no block is selected
-                floorOptions.forEach(opt => {
-                    floorFilter.appendChild(opt);
-                });
-                floorFilter.disabled = false;
-                
-                if (!resetSelected && currentFloorValue) {
-                    floorFilter.value = currentFloorValue;
+                } else {
+                    floorFilter.disabled = true;
                 }
             }
-        }
-        
-        // Auto-submit form when status or floor filter changes
-        statusFilter.addEventListener('change', function () {
-            this.form.submit();
+
+            statusFilter.addEventListener('change', function() { this.form.submit(); });
+            floorFilter.addEventListener('change', function() { this.form.submit(); });
+            blockFilter.addEventListener('change', function() {
+                floorFilter.value = "";
+                updateFloors(true);
+                this.form.submit();
+            });
+
+            updateFloors(false);
         });
-        
-        floorFilter.addEventListener('change', function () {
-            this.form.submit();
-        });
-        
-        // When block changes: reset floor filter to empty, update floors, then submit
-        blockFilter.addEventListener('change', function () {
-            floorFilter.value = "";
-            updateFloors(true);
-            this.form.submit();
-        });
-        
-        // Initialize floors filter on page load
-        updateFloors(false);
-    });
-</script>
-@endpush
-
-@push('styles')
-<style>
-    /* -----------------------------------------
-       CUSTOM PREMIUM PAGINATION
-    ----------------------------------------- */
-    /* Hide the simple mobile buttons by default */
-    .pagination-wrapper nav > div:first-child {
-        display: none !important;
-    }
-
-    /* Force show the desktop layout with full numbers and details */
-    .pagination-wrapper nav > div:last-child {
-        display: flex !important;
-        flex-direction: column;
-        align-items: center;
-        gap: 16px;
-        width: 100%;
-    }
-
-    @media (min-width: 640px) {
-        .pagination-wrapper nav > div:last-child {
-            flex-direction: row;
-            justify-content: center !important;
-        }
-    }
-
-    /* Flex container for pagination buttons */
-    .pagination-wrapper nav div:last-child > div:last-child,
-    .pagination-wrapper nav div:last-child > span {
-        display: flex !important;
-        gap: 6px;
-        align-items: center;
-        flex-wrap: wrap;
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-    }
-
-    /* Description text */
-    .pagination-wrapper nav p {
-        display: none !important;
-    }
-
-    /* Style for buttons (links) */
-    .pagination-wrapper nav a,
-    .pagination-wrapper nav span[aria-current="page"] span,
-    .pagination-wrapper nav span[aria-disabled="true"] span {
-        display: inline-flex !important;
-        align-items: center;
-        justify-content: center;
-        min-width: 38px;
-        height: 38px;
-        padding: 0 14px;
-        border-radius: 8px;
-        font-size: 14px;
-        font-weight: 600;
-        text-decoration: none;
-        box-sizing: border-box;
-        transition: all 0.2s ease;
-    }
-
-    /* Inactive page numbers and active action buttons */
-    .pagination-wrapper nav a {
-        background-color: #ffffff;
-        color: #334155;
-        border: 1px solid #cbd5e1;
-    }
-
-    .pagination-wrapper nav a:hover {
-        background-color: #f1f5f9;
-        color: #0b57d0;
-        border-color: #0b57d0;
-    }
-
-    /* Active current page */
-    .pagination-wrapper nav span[aria-current="page"] span {
-        background-color: #0b57d0;
-        color: #ffffff;
-        border: 1px solid #0b57d0;
-    }
-
-    /* Disabled buttons */
-    .pagination-wrapper nav span[aria-disabled="true"] span {
-        background-color: #f8fafc;
-        color: #cbd5e1;
-        border: 1px solid #e2e8f0;
-        cursor: not-allowed;
-    }
-
-    /* SVG arrow size adjustments */
-    .pagination-wrapper nav svg {
-        width: 18px;
-        height: 18px;
-        vertical-align: middle;
-    }
-</style>
+    </script>
 @endpush

@@ -10,10 +10,11 @@ return new class extends Migration
     {
         Schema::create('apartments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('floor_id')->constrained('floors')->onDelete('cascade');
+            $table->foreignId('floor_id')->constrained('floors')->restrictOnDelete();
             $table->string('apartment_number', 20);
             $table->decimal('area', 10, 2);
             $table->enum('status', ['vacant', 'occupied', 'maintenance'])->default('vacant');
+            $table->text('description')->nullable();
             $table->softDeletes();
             $table->timestamps();
 

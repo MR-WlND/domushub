@@ -8,15 +8,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('floors', function (Blueprint $table) {
-            $table->string('name')->nullable()->after('floor_number');
+        Schema::table('apartment_invites', function (Blueprint $table) {
+            $table->string('note', 200)->nullable()->after('intended_relationship');
         });
     }
 
     public function down(): void
     {
-        Schema::table('floors', function (Blueprint $table) {
-            $table->dropColumn('name');
+        Schema::table('apartment_invites', function (Blueprint $table) {
+            $table->dropColumn('note');
         });
     }
 };
