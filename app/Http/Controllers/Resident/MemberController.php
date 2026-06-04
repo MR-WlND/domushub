@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Resident;
 
 use App\Http\Controllers\Controller;
 use App\Models\Apartment;
@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
-class ResidentMemberController extends Controller
+class MemberController extends Controller
 {
     private function getOwnerApartmentIds(User $user): array
     {

@@ -29,6 +29,7 @@ class User extends Authenticatable
         'role',
         'status',
         'avatar',
+        'apartment_id',
     ];
 
     /**
@@ -63,9 +64,19 @@ class User extends Authenticatable
         });
     }
 
+    /**
+     * Một user có thể là cư dân của nhiều căn hộ (lịch sử)
+     */
     public function residents()
     {
         return $this->hasMany(Resident::class);
     }
-}
 
+    /**
+     * Căn hộ hiện tại của cư dân
+     */
+    public function apartment()
+    {
+        return $this->belongsTo(Apartment::class);
+    }
+}
