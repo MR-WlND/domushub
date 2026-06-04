@@ -1,13 +1,15 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Resident;
+
+use App\Http\Controllers\Controller;
 
 use App\Models\Invoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
-class ResidentInvoiceController extends Controller
+class InvoiceController extends Controller
 {
     /**
      * Danh sách hoá đơn của cư dân

@@ -1,0 +1,489 @@
+/* ============================================================
+   PARKING LOTS PAGE - Synced with Apartments/Vehicles layout
+   ============================================================ */
+
+/* ─── Page layout ─── */
+.parking-page {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ─── Page Header ─── */
+.parking-page__header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.parking-page__header h1 {
+    margin: 0;
+    color: #00236f;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.parking-page__subtitle {
+    margin: 6px 0 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+/* ─── Alert ─── */
+.parking-alert {
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.parking-alert--success {
+    background: #e6f4ea;
+    color: #137333;
+    border: 1px solid #b7dfc1;
+}
+
+.parking-alert--danger {
+    background: #fce8e6;
+    color: #ba1a1a;
+    border: 1px solid #f4b8b2;
+}
+
+/* ─── Stats Grid ─── */
+.parking-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.pk-stat-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pk-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 35, 111, 0.06);
+}
+
+.pk-stat-card__label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+}
+
+.pk-stat-card__value {
+    font-size: 28px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1;
+}
+
+/* ─── Create Card (Form) ─── */
+.parking-create-card {
+    background: #f8f9ff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.parking-create-card label {
+    display: block;
+    margin-bottom: 6px;
+    color: #475569;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.parking-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    align-items: flex-end;
+}
+
+.parking-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.parking-form-control {
+    width: 100%;
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1px solid #d9e2f2;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 14px;
+    outline: none;
+    appearance: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+select.parking-form-control {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 36px;
+}
+
+.parking-form-control:focus {
+    border-color: #0b57d0;
+    box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.08);
+}
+
+.parking-form-control:disabled {
+    background: #f1f5f9;
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+.parking-mode-switch {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 14px;
+}
+
+.parking-mode-switch label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #334155;
+    cursor: pointer;
+    margin-bottom: 0;
+}
+
+.parking-mode-switch input[type="radio"] {
+    accent-color: #00236f;
+}
+
+/* ─── Tabs Navigation ─── */
+.parking-tabs-nav {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.parking-tab-btn {
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #64748b;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.parking-tab-btn:hover {
+    color: #00236f;
+    background: #f8f9ff;
+}
+
+.parking-tab-btn.active {
+    color: #00236f;
+    border-bottom-color: #00236f;
+}
+
+.parking-tab-content {
+    display: none;
+}
+
+.parking-tab-content.active {
+    display: block;
+}
+
+/* ─── Table Card ─── */
+.parking-table-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.parking-table-wrap {
+    overflow-x: auto;
+}
+
+/* ─── Table ─── */
+.parking-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.parking-table thead {
+    background: #f1f5f9;
+}
+
+.parking-table thead th {
+    padding: 14px 18px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #64748b;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
+}
+
+.parking-table tbody tr {
+    border-bottom: 1px solid #f1f5f9;
+    transition: background-color 0.15s ease;
+}
+
+.parking-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.parking-table tbody tr:hover {
+    background-color: #f8faff;
+}
+
+.parking-table tbody td {
+    padding: 16px 18px;
+    vertical-align: middle;
+    color: #334155;
+}
+
+.text-right { text-align: right !important; }
+
+/* ─── Lot Code ─── */
+.pk-lot-code {
+    font-size: 15px;
+    font-weight: 800;
+    color: #0b57d0;
+    letter-spacing: 0.02em;
+}
+
+/* ─── Status Badge ─── */
+.pk-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.pk-status::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.pk-status--available {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.pk-status--available::before {
+    background: #22c55e;
+    box-shadow: 0 0 5px #22c55e;
+}
+
+.pk-status--occupied {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.pk-status--occupied::before {
+    background: #f59e0b;
+}
+
+.pk-status--maintenance {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.pk-status--maintenance::before {
+    background: #ef4444;
+}
+
+/* ─── Table Actions ─── */
+.pk-table-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
+.pk-table-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    padding: 0 14px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: none;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.pk-table-btn--primary {
+    color: #ffffff;
+    background: #00236f;
+}
+
+.pk-table-btn--primary:hover {
+    background: #001850;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 35, 111, 0.18);
+}
+
+.pk-table-btn--outline {
+    color: #0b57d0;
+    background: #eff6ff;
+    border-color: #bfdbfe;
+}
+
+.pk-table-btn--outline:hover {
+    background: #dbeafe;
+    transform: translateY(-1px);
+}
+
+.pk-table-btn--warning {
+    color: #92400e;
+    background: #fef3c7;
+    border-color: #fde68a;
+}
+
+.pk-table-btn--warning:hover {
+    background: #fde68a;
+    transform: translateY(-1px);
+}
+
+.pk-table-btn--danger {
+    color: #dc2626;
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
+.pk-table-btn--danger:hover {
+    background: #fee2e2;
+    transform: translateY(-1px);
+}
+
+.pk-table-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* ─── Progress Bar (Motorbike Zone) ─── */
+.pk-progress-wrap {
+    width: 100%;
+    min-width: 220px;
+}
+
+.pk-progress-text {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 6px;
+}
+
+.pk-progress-text strong {
+    color: #0f172a;
+}
+
+.pk-progress-bar {
+    width: 100%;
+    height: 10px;
+    background: #e2e8f0;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.pk-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+    border-radius: 999px;
+    transition: width 0.5s ease;
+}
+
+.pk-progress-fill.warning {
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.pk-progress-fill.danger {
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+    animation: pulse-danger 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-danger {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.75; }
+}
+
+.pk-progress-percent {
+    font-size: 11px;
+    text-align: right;
+    margin-top: 4px;
+    font-weight: 600;
+    color: #94a3b8;
+}
+
+.pk-progress-percent.danger {
+    color: #dc2626;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 1024px) {
+    .parking-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .parking-page__header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 620px) {
+    .parking-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .parking-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .parking-tabs-nav {
+        overflow-x: auto;
+    }
+}

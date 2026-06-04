@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Resident;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Apartment extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'floor_id',
@@ -45,6 +46,12 @@ class Apartment extends Model
         });
     }
 
+    /*
+    |----------------------------
+    | RELATIONSHIPS
+    |----------------------------
+    */
+
     /**
      * Quan hệ tầng
      */
@@ -54,7 +61,7 @@ class Apartment extends Model
     }
 
     /**
-     * Quan hệ cư dân
+     * Quan hệ cư dân (Resident records)
      */
     public function residents(): HasMany
     {
@@ -62,15 +69,33 @@ class Apartment extends Model
     }
 
     /**
+     * Users thuộc căn hộ này
+     */
+    public function users(): HasMany
+    {
+        return $this->hasMany(User::class);
+    }
+
+    /**
+     * Xe đăng ký thuộc căn hộ này
+     */
+    public function vehicles(): HasMany
+    {
+        return $this->hasMany(Vehicle::class);
+    }
+
+    /*
+    |----------------------------
+    | SCOPES
+    |----------------------------
+    */
+
+    /**
      * Scope căn hoạt động
      */
     public function scopeActive($query)
     {
-        return $query->where(
-            'status',
-            '!=',
-            'maintenance'
-        );
+        return $query->where('status', '!=', 'maintenance');
     }
 
     /**
@@ -78,11 +103,14 @@ class Apartment extends Model
      */
     public function scopeVacant($query)
     {
-        return $query->where(
-            'status',
-            'vacant'
-        );
+        return $query->where('status', 'vacant');
     }
+
+    /*
+    |----------------------------
+    | ACCESSORS
+    |----------------------------
+    */
 
     /**
      * Accessor trạng thái tiếng Việt
@@ -90,14 +118,10 @@ class Apartment extends Model
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
-
-            'vacant' => 'Còn trống',
-
-            'occupied' => 'Đang ở',
-
+            'vacant'      => 'Còn trống',
+            'occupied'    => 'Đang ở',
             'maintenance' => 'Bảo trì',
-
-            default => 'Không xác định',
+            default       => 'Không xác định',
         };
     }
 }

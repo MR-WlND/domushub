@@ -8,19 +8,45 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('vehicle_logs', function (Blueprint $table) {
-            $table->id();
-            $table->string('qr_code_scanned', 255);
-            $table->foreignId('vehicle_id')->nullable()->constrained('vehicles')->nullOnDelete();
-            $table->foreignId('check_in_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('check_out_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->timestamp('check_in_at')->nullable();
-            $table->timestamp('check_out_at')->nullable();
-            $table->enum('status', ['inside', 'outside'])->default('inside');
-            $table->timestamp('created_at')->useCurrent();
+        if (!Schema::hasTable('vehicle_logs')) {
+            Schema::create('vehicle_logs', function (Blueprint $table) {
+                $table->id();
 
-            $table->index(['qr_code_scanned', 'status'], 'idx_logs_qr_status');
-        });
+                // Xe liên quan
+                $table->foreignId('vehicle_id')
+                    ->nullable()
+                    ->constrained('vehicles')
+                    ->nullOnDelete();
+
+                // Nhân viên bảo vệ check-in / check-out
+                $table->foreignId('checked_in_by')
+                    ->nullable()
+                    ->constrained('users')
+                    ->nullOnDelete();
+
+                $table->foreignId('checked_out_by')
+                    ->nullable()
+                    ->constrained('users')
+                    ->nullOnDelete();
+
+                // Thời gian vào / ra
+                $table->timestamp('check_in_at')->nullable();
+                $table->timestamp('check_out_at')->nullable();
+
+                // QR tại thời điểm scan (giữ lịch sử snapshot)
+                $table->string('qr_code')->nullable();
+
+                // Trạng thái
+                $table->enum('status', ['inside', 'outside'])->default('inside');
+
+                // Index tối ưu truy vấn
+                $table->index('vehicle_id');
+                $table->index(['status']);
+                $table->index(['qr_code']);
+
+                $table->timestamps();
+            });
+        }
     }
 
     public function down(): void

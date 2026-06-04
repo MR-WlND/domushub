@@ -96,6 +96,16 @@
                 </svg>
                 <span>Quản lý xe</span>
             </a>
+            <a href="{{ route('admin.parking-lots.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.parking-lots.*') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <path d="M9 3v18"></path>
+                    <path d="M14 9h4"></path>
+                    <path d="M14 12h4"></path>
+                    <path d="M14 15h4"></path>
+                </svg>
+                <span>Quản lý lốt đỗ</span>
+            </a>
             <a href="{{ route('admin.incidents.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.incidents.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
