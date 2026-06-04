@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             SecuritySeeder::class,
             ResidentSeeder::class,
+            ApartmentSeeder::class,
         ]);
 
     }
