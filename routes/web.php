@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UtilityReadingController;
 use Illuminate\Support\Facades\Route;
 
 // Root route - redirect to resident login
@@ -49,9 +50,11 @@ Route::middleware(['admin'])->group(function () {
     })->name('admin.invitations.index');
 
     // Điện nước & hoá đơn
-    Route::get('/admin/utility-readings', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.utility-readings.index');
+    Route::get('/admin/utility-readings', [UtilityReadingController::class, 'index'])->name('admin.utility-readings.index');
+    Route::post('/admin/utility-readings', [UtilityReadingController::class, 'store'])->name('admin.utility-readings.store');
+    Route::put('/admin/utility-readings/{id}', [UtilityReadingController::class, 'update'])->name('admin.utility-readings.update');
+    Route::post('/admin/utility-readings/finalize', [UtilityReadingController::class, 'finalize'])->name('admin.utility-readings.finalize');
+    Route::get('/admin/utility-readings/apartments', [UtilityReadingController::class, 'getApartments'])->name('admin.utility-readings.apartments');
 
     Route::get('/admin/service-prices', function () {
         return view('admin.dashboard.index');
