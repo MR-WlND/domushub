@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class UtilityMeterController extends Controller
@@ -656,7 +657,7 @@ class UtilityMeterController extends Controller
         $affectedApartments = [];
 
         // DB transaction để bảo đảm an toàn dữ liệu
-        \DB::beginTransaction();
+        DB::beginTransaction();
 
         try {
             for ($i = 1; $i < count($rows); $i++) {
@@ -783,7 +784,7 @@ class UtilityMeterController extends Controller
             }
 
             if (count($errors) > 0) {
-                \DB::rollBack();
+                DB::rollBack();
                 return back()->with('error', 'Import thất bại do có dữ liệu lỗi. Vui lòng kiểm tra lại file mẫu.')->withErrors($errors);
             }
 
@@ -792,7 +793,7 @@ class UtilityMeterController extends Controller
                 $this->syncInvoice($affected['apartment_id'], $affected['month'], $affected['year']);
             }
 
-            \DB::commit();
+            DB::commit();
 
             return redirect()->route('admin.utility-readings.index', [
                 'month' => $month,
@@ -800,7 +801,7 @@ class UtilityMeterController extends Controller
             ])->with('success', "Nhập thành công {$successCount} chỉ số điện/nước từ file Excel/CSV và tự động cập nhật hóa đơn tương ứng.");
 
         } catch (\Exception $e) {
-            \DB::rollBack();
+            DB::rollBack();
             return back()->with('error', 'Đã xảy ra lỗi hệ thống trong quá trình import: ' . $e->getMessage());
         }
     }

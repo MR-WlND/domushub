@@ -40,10 +40,11 @@ class FloorController extends Controller
     /**
      * Form tạo tầng
      */
-    public function create(): View
+    public function create(Request $request): View
     {
+        $selectedBlockId = $request->query('block_id');
         $blocks = Block::orderBy('name')->get();
-        return view('admin.floors.create', compact('blocks'));
+        return view('admin.floors.create', compact('blocks', 'selectedBlockId'));
     }
 
     /**
