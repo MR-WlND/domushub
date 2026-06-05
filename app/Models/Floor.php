@@ -42,4 +42,15 @@ class Floor extends Model
     {
         return $this->name ?? 'Tầng ' . $this->floor_number;
     }
+
+    /**
+     * Tự động sửa lỗi hiển thị dấu tiếng Việt nếu bị lỗi database (ví dụ T?ng -> Tầng)
+     */
+    public function getNameAttribute($value): ?string
+    {
+        if (is_null($value)) {
+            return null;
+        }
+        return str_replace(['T?ng', '?'], ['Tầng', 'ầ'], $value);
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Apartment;
 use App\Models\ApartmentInvite;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class ApartmentInviteController extends Controller
@@ -23,7 +24,7 @@ class ApartmentInviteController extends Controller
         $apartment = Apartment::findOrFail($validated['apartment_id']);
 
         // Kiểm tra user hiện tại có phải owner của căn hộ hay không
-        $isOwner = $apartment->residents()->where('user_id', auth()->id())->where('relationship', 'owner')->exists();
+        $isOwner = $apartment->residents()->where('user_id', Auth::id())->where('relationship', 'owner')->exists();
 
         if (! $isOwner) {
             return back()->withErrors(['apartment_id' => 'Bạn không phải chủ hộ của căn này.']);
@@ -33,7 +34,7 @@ class ApartmentInviteController extends Controller
 
         ApartmentInvite::create([
             'apartment_id' => $apartment->id,
-            'created_by' => auth()->id(),
+            'created_by' => Auth::id(),
             'invite_code' => $code,
             'intended_relationship' => $validated['intended_relationship'],
             'status' => 'active',

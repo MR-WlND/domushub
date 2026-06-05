@@ -63,7 +63,7 @@
                         <select name="block_id" class="form-input-custom @error('block_id') input-error @enderror" required>
                             <option value="">-- Chọn tòa nhà --</option>
                             @foreach($blocks as $block)
-                                <option value="{{ $block->id }}" {{ old('block_id') == $block->id ? 'selected' : '' }}>
+                                <option value="{{ $block->id }}" {{ old('block_id', $selectedBlockId ?? '') == $block->id ? 'selected' : '' }}>
                                     {{ $block->name }}
                                 </option>
                             @endforeach
