@@ -49,7 +49,22 @@
 
 .done-icon { font-size: 18px; line-height: 1; }
 
+/* ── Color Grouping & Borders ─────────────────── */
+.col-elec {
+    background-color: #fffbeb !important;
+}
+.col-water {
+    background-color: #eff6ff !important;
+}
+.col-divider-border {
+    border-right: 3px solid #94a3b8 !important;
+}
+
 .batch-row--all-done td { background: #f0fdf4; }
+.batch-row--all-done td.col-elec,
+.batch-row--all-done td.col-water {
+    background-color: #f0fdf4 !important;
+}
 .batch-row--all-done .batch-meter-input { display: none; }
 </style>
 @endpush
@@ -198,21 +213,30 @@
             <table class="util-table" style="min-width:900px;">
                 <thead>
                     <tr>
-                        <th style="width:40px;text-align:center;">☑</th>
-                        <th style="min-width:80px;">Phòng</th>
-                        <th>Tòa / Tầng</th>
+                        <th rowspan="2" style="width:40px; text-align:center; vertical-align:middle;">☑</th>
+                        <th rowspan="2" style="min-width:80px; vertical-align:middle; text-align:center;">Phòng</th>
+                        <th rowspan="2" style="vertical-align:middle; text-align:center;">Tòa / Tầng</th>
 
-                        {{-- Electricity columns --}}
-                        <th style="background:#fffbeb;border-left:2px solid #fde68a;">⚡ CS cũ</th>
-                        <th style="background:#fffbeb;">⚡ CS mới</th>
-                        <th style="background:#fffbeb;">⚡ Tiêu thụ</th>
+                        {{-- Electricity Header Group --}}
+                        <th colspan="3" class="col-elec col-divider-border" style="text-align:center; font-weight:700; color:#92400e;">
+                            ⚡ ĐIỆN — THÁNG {{ $selectedMonth }}/{{ $selectedYear }}
+                        </th>
 
-                        {{-- Water columns --}}
-                        <th style="background:#eff6ff;border-left:2px solid #bfdbfe;">💧 CS cũ</th>
-                        <th style="background:#eff6ff;">💧 CS mới</th>
-                        <th style="background:#eff6ff;">💧 Tiêu thụ</th>
+                        {{-- Water Header Group --}}
+                        <th colspan="3" class="col-water" style="text-align:center; font-weight:700; color:#1e40af;">
+                            💧 NƯỚC — THÁNG {{ $selectedMonth }}/{{ $selectedYear }}
+                        </th>
 
-                        <th style="min-width:90px;">Trạng thái</th>
+                        <th rowspan="2" style="min-width:90px; vertical-align:middle; text-align:center;">Trạng thái</th>
+                    </tr>
+                    <tr>
+                        <th class="col-elec" style="text-align:center; font-size:12px; font-weight:600; color:#92400e;">CS Cũ</th>
+                        <th class="col-elec" style="text-align:center; font-size:12px; font-weight:600; color:#92400e;">CS Mới</th>
+                        <th class="col-elec col-divider-border" style="text-align:center; font-size:12px; font-weight:600; color:#92400e;">Tiêu thụ</th>
+
+                        <th class="col-water" style="text-align:center; font-size:12px; font-weight:600; color:#1e40af;">CS Cũ</th>
+                        <th class="col-water" style="text-align:center; font-size:12px; font-weight:600; color:#1e40af;">CS Mới</th>
+                        <th class="col-water" style="text-align:center; font-size:12px; font-weight:600; color:#1e40af;">Tiêu thụ</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -230,19 +254,19 @@
                         </td>
 
                         {{-- Room --}}
-                        <td><strong class="text-strong">{{ $data['apartment']->apartment_number }}</strong></td>
+                        <td style="text-align:center;"><strong class="text-strong">{{ $data['apartment']->apartment_number }}</strong></td>
 
                         {{-- Block/Floor --}}
-                        <td class="text-muted" style="font-size:12px;">
+                        <td class="text-muted" style="font-size:12px; text-align:center;">
                             {{ $data['apartment']->floor->block->name ?? '—' }}
                             / {{ $data['apartment']->floor->name ?? 'Tầng ' . $data['apartment']->floor->floor_number }}
                         </td>
 
                         {{-- ── ELECTRICITY ─────────────────────── --}}
-                        <td style="background:#fffbeb;border-left:2px solid #fde68a;font-weight:600;color:#92400e;">
+                        <td class="col-elec" style="font-weight:600;color:#92400e;text-align:center;">
                             {{ number_format($data['elec_old']) }}
                         </td>
-                        <td style="background:#fffbeb;">
+                        <td class="col-elec" style="text-align:center;">
                             @if (!$data['elec_recorded'])
                                 <input type="hidden"
                                     name="readings[{{ $i }}][apartment_id]"
@@ -261,16 +285,16 @@
                                 <input type="hidden" name="readings[{{ $i }}][apartment_id]" value="{{ $data['apartment']->id }}">
                             @endif
                         </td>
-                        <td style="background:#fffbeb;">
+                        <td class="col-elec col-divider-border" style="text-align:center;">
                             <span class="usage-chip {{ !$data['elec_recorded'] ? 'usage-chip--zero' : 'usage-chip--elec' }}"
                                 id="elec-usage-{{ $i }}">—</span>
                         </td>
 
                         {{-- ── WATER ───────────────────────────── --}}
-                        <td style="background:#eff6ff;border-left:2px solid #bfdbfe;font-weight:600;color:#1e40af;">
+                        <td class="col-water" style="font-weight:600;color:#1e40af;text-align:center;">
                             {{ number_format($data['water_old']) }}
                         </td>
-                        <td style="background:#eff6ff;">
+                        <td class="col-water" style="text-align:center;">
                             @if (!$data['water_recorded'])
                                 <input type="number"
                                     name="readings[{{ $i }}][water_new]"
@@ -284,13 +308,13 @@
                                 <span style="color:#15803d;font-weight:600;font-size:13px;">✓ Đã chốt</span>
                             @endif
                         </td>
-                        <td style="background:#eff6ff;">
+                        <td class="col-water" style="text-align:center;">
                             <span class="usage-chip {{ !$data['water_recorded'] ? 'usage-chip--zero' : 'usage-chip--water' }}"
                                 id="water-usage-{{ $i }}">—</span>
                         </td>
 
                         {{-- Status --}}
-                        <td>
+                        <td style="text-align:center;">
                             @if ($bothDoneRow)
                                 <span class="util-badge util-badge--success">✅ Đã chốt</span>
                             @elseif ($data['elec_recorded'] || $data['water_recorded'])

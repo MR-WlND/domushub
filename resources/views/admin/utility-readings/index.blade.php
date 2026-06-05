@@ -15,6 +15,12 @@
         <p>Quản lý chỉ số điện nước theo tháng – Tháng {{ $month }}/{{ $year }}</p>
     </div>
     <div class="util-header-actions">
+        <button type="button" class="util-btn util-btn--outline" onclick="openImportModal()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M4 16v1a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-1m-4-8-4-4m0 0L8 8m4-4v12"/>
+            </svg>
+            Nhập từ Excel/CSV
+        </button>
         <a href="{{ route('admin.utility-readings.batch') }}" class="util-btn util-btn--secondary">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
@@ -94,7 +100,7 @@
                 <select name="floor_id">
                     <option value="">Tất cả tầng</option>
                     @foreach ($floors as $floor)
-                        <option value="{{ $floor->id }}" {{ $floorId == $floor->id ? 'selected' : '' }}>
+                        <option value="{{ $floor->id }}" data-block-id="{{ $floor->block_id }}" {{ $floorId == $floor->id ? 'selected' : '' }}>
                             {{ $floor->block->name ?? '' }} – {{ $floor->name ?? 'Tầng ' . $floor->floor_number }}
                         </option>
                     @endforeach
@@ -241,4 +247,220 @@
 </div>
 @endif
 
+{{-- ── Import Modal ────────────────────────────────────── --}}
+<div class="util-modal-backdrop" id="importModal">
+    <div class="util-modal">
+        <div class="util-modal-header">
+            <h3>
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:inline-block; vertical-align:middle; margin-right:6px;">
+                    <path d="M12 10v6m0 0-3-3m3 3 3-3M3 17V7a2 2 0 0 1 2-2h6l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                </svg>
+                Nhập chỉ số từ Excel / CSV
+            </h3>
+            <button class="util-modal-close" onclick="closeImportModal()">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div class="util-modal-body">
+            {{-- 1. Download template option --}}
+            <div class="util-template-box">
+                <div class="util-template-title">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:inline-block; vertical-align:middle; margin-right:4px;">
+                        <path d="M4 16v1a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-1m-4-4-4 4m0 0-4-4m4 4V4"/>
+                    </svg>
+                    Tải File Mẫu Tiện Lợi
+                </div>
+                <div class="util-template-desc">
+                    Hệ thống sẽ chuẩn bị sẵn danh sách căn hộ kèm **chỉ số cũ** của kỳ trước để bạn dễ dàng điền chỉ số mới.
+                </div>
+                <div class="util-template-select-row">
+                    <div>
+                        <select id="template_month">
+                            @for ($m = 1; $m <= 12; $m++)
+                                <option value="{{ $m }}" {{ $m == $month ? 'selected' : '' }}>Tháng {{ $m }}</option>
+                            @endfor
+                        </select>
+                    </div>
+                    <div>
+                        <select id="template_year">
+                            @for ($y = now()->year - 2; $y <= now()->year + 2; $y++)
+                                <option value="{{ $y }}" {{ $y == $year ? 'selected' : '' }}>Năm {{ $y }}</option>
+                            @endfor
+                        </select>
+                    </div>
+                    <button type="button" class="util-template-btn" onclick="downloadTemplateFile()">
+                        Tải mẫu (.xlsx)
+                    </button>
+                </div>
+            </div>
+
+            {{-- 2. Upload Form --}}
+            <form action="{{ route('admin.utility-readings.import') }}" method="POST" enctype="multipart/form-data" id="importForm">
+                @csrf
+                <input type="file" name="csv_file" id="csv_file" accept=".xlsx,.xls,.csv,text/csv,text/plain" style="display: none;" onchange="handleFileSelect(this)">
+                
+                <div class="util-form-group" style="margin-bottom: 20px;">
+                    <label class="util-form-label">Tháng / Năm áp dụng chỉ số <span class="required">*</span></label>
+                    <div style="display: flex; gap: 12px; margin-top: 4px;">
+                        <div style="flex: 1;">
+                            <select name="import_month" id="import_month" class="util-form-input">
+                                @for ($m = 1; $m <= 12; $m++)
+                                    <option value="{{ $m }}" {{ $m == $month ? 'selected' : '' }}>Tháng {{ $m }}</option>
+                                @endfor
+                            </select>
+                        </div>
+                        <div style="flex: 1;">
+                            <select name="import_year" id="import_year" class="util-form-input">
+                                @for ($y = now()->year - 2; $y <= now()->year + 2; $y++)
+                                    <option value="{{ $y }}" {{ $y == $year ? 'selected' : '' }}>Năm {{ $y }}</option>
+                                @endfor
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="util-drag-zone" id="dropZone" onclick="document.getElementById('csv_file').click()">
+                    <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path d="M12 16v-8m0 8-4-4m4 4 4-4M3 15v3a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3v-3"/>
+                    </svg>
+                    <div class="util-drag-text">Kéo thả file Excel hoặc CSV vào đây hoặc <span>chọn từ máy tính</span></div>
+                    <div class="util-drag-sub">Hỗ trợ file .xlsx, .xls hoặc .csv dung lượng tối đa 4MB</div>
+                </div>
+
+                <div class="util-file-preview" id="filePreview">
+                    <div class="util-file-info">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style="color: #10b981; display:inline-block; vertical-align:middle; margin-right:4px;">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                        </svg>
+                        <span id="fileNameDisplay">file_name.csv</span>
+                    </div>
+                    <span class="util-file-remove" onclick="removeSelectedFile(event)">Xóa</span>
+                </div>
+
+                <div class="util-form-actions" style="margin-top: 24px; padding-top: 18px;">
+                    <button type="submit" class="util-btn util-btn--primary" id="btnSubmitImport" disabled style="width: 100%; justify-content: center;">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:inline-block; vertical-align:middle; margin-right:4px;">
+                            <path d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Bắt đầu nhập dữ liệu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
+
+@push('scripts')
+<script>
+// Modal toggling
+function openImportModal() {
+    document.getElementById('importModal').classList.add('active');
+}
+
+function closeImportModal() {
+    document.getElementById('importModal').classList.remove('active');
+    // Clear selected file if any
+    removeSelectedFile(null);
+}
+
+// Download template with dynamic month/year parameters
+function downloadTemplateFile() {
+    const month = document.getElementById('template_month').value;
+    const year = document.getElementById('template_year').value;
+    window.location.href = `{{ route('admin.utility-readings.import-template') }}?month=${month}&year=${year}`;
+}
+
+// File preview and selection
+function handleFileSelect(input) {
+    const file = input.files[0];
+    if (file) {
+        document.getElementById('fileNameDisplay').textContent = file.name;
+        document.getElementById('filePreview').style.display = 'flex';
+        document.getElementById('btnSubmitImport').disabled = false;
+    }
+}
+
+function removeSelectedFile(e) {
+    if (e) e.stopPropagation();
+    document.getElementById('csv_file').value = '';
+    document.getElementById('filePreview').style.display = 'none';
+    document.getElementById('btnSubmitImport').disabled = true;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const blockSelect = document.querySelector('select[name="block_id"]');
+    const floorSelect = document.querySelector('select[name="floor_id"]');
+    
+    if (blockSelect && floorSelect) {
+        // Lưu danh sách tất cả các options tầng ban đầu
+        const allFloorOptions = Array.from(floorSelect.options);
+        
+        function filterFloors() {
+            const selectedBlockId = blockSelect.value;
+            const currentSelectedValue = floorSelect.value;
+            
+            // Xóa tất cả option hiện tại
+            floorSelect.innerHTML = '';
+            
+            // Lọc và chèn lại các option phù hợp
+            allFloorOptions.forEach(option => {
+                const blockIdOfOption = option.getAttribute('data-block-id');
+                
+                // Hiển thị nếu là option mặc định "Tất cả tầng" hoặc thuộc tòa nhà được chọn hoặc chưa chọn tòa nhà nào
+                if (!selectedBlockId || !blockIdOfOption || blockIdOfOption === selectedBlockId) {
+                    floorSelect.appendChild(option);
+                }
+            });
+            
+            // Khôi phục lại giá trị đã chọn nếu nó vẫn nằm trong danh sách được hiển thị
+            const optionsArray = Array.from(floorSelect.options);
+            const exists = optionsArray.some(opt => opt.value === currentSelectedValue);
+            if (exists) {
+                floorSelect.value = currentSelectedValue;
+            } else {
+                floorSelect.value = '';
+            }
+        }
+        
+        // Lắng nghe sự kiện thay đổi tòa nhà
+        blockSelect.addEventListener('change', filterFloors);
+        
+        // Chạy lúc load trang để lọc sẵn nếu có tòa nhà được chọn trước đó
+        filterFloors();
+    }
+
+    // Drag and drop events
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('csv_file');
+
+    if (dropZone && fileInput) {
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+            }, false);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length) {
+                fileInput.files = files;
+                handleFileSelect(fileInput);
+            }
+        }, false);
+    }
+});
+</script>
+@endpush

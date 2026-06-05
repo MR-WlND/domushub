@@ -45,29 +45,43 @@ class CalculateParkingFee extends Command
 
             $totalAmount = ($motoCount * $motoPrice) + ($carCount * $carPrice);
 
+            // Ensure parking service price exists
+            $parkingService = \App\Models\ServicePrice::firstOrCreate(
+                ['type' => 'parking', 'status' => 'active'],
+                [
+                    'name' => 'Phí gửi xe',
+                    'unit_price' => 0,
+                    'description' => 'Phí trông giữ phương tiện hàng tháng'
+                ]
+            );
+
             // Tạo hóa đơn
             $invoice = Invoice::create([
-                'apartment_id' => $apartment->id,
-                'title' => 'Phí gửi xe tháng ' . Carbon::now()->format('m/Y'),
-                'amount' => $totalAmount,
-                'status' => 'unpaid',
-                'due_date' => Carbon::now()->addDays(10), // Hạn nộp 10 ngày
+                'apartment_id'  => $apartment->id,
+                'title'         => 'Phí gửi xe tháng ' . Carbon::now()->format('m/Y'),
+                'billing_month' => Carbon::now()->month,
+                'billing_year'  => Carbon::now()->year,
+                'total_amount'  => $totalAmount,
+                'status'        => 'unpaid',
+                'due_date'      => Carbon::now()->addDays(10), // Hạn nộp 10 ngày
             ]);
 
             // Thêm chi tiết hóa đơn
             if ($motoCount > 0) {
                 InvoiceDetail::create([
-                    'invoice_id' => $invoice->id,
-                    'description' => "Phí gửi xe máy/xe điện ($motoCount xe)",
-                    'amount' => $motoCount * $motoPrice
+                    'bill_id'          => $invoice->id,
+                    'service_price_id' => $parkingService->id,
+                    'quantity'         => $motoCount,
+                    'amount'           => $motoCount * $motoPrice
                 ]);
             }
 
             if ($carCount > 0) {
                 InvoiceDetail::create([
-                    'invoice_id' => $invoice->id,
-                    'description' => "Phí gửi xe ô tô ($carCount xe)",
-                    'amount' => $carCount * $carPrice
+                    'bill_id'          => $invoice->id,
+                    'service_price_id' => $parkingService->id,
+                    'quantity'         => $carCount,
+                    'amount'           => $carCount * $carPrice
                 ]);
             }
 
