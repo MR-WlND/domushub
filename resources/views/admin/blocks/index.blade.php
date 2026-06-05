@@ -23,6 +23,10 @@
         </div>
 
         <div class="blocks-page__actions">
+            <button type="button" class="blocks-button blocks-button--secondary" onclick="openImportModal()" style="margin-right: 8px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                Nhập từ Excel
+            </button>
             <a href="{{ route('admin.blocks.create') }}" class="blocks-button blocks-button--primary">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                 Thêm tòa nhà mới
@@ -246,10 +250,108 @@
     </div>
 </div>
 
+{{-- ── Import Modal ────────────────────────────────────── --}}
+<div class="util-modal-backdrop" id="importModal">
+    <div class="util-modal">
+        <div class="util-modal-header">
+            <h3>
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:inline-block; vertical-align:middle; margin-right:6px;">
+                    <path d="M12 10v6m0 0-3-3m3 3 3-3M3 17V7a2 2 0 0 1 2-2h6l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                </svg>
+                Nhập Tòa/Tầng/Căn Hộ từ Excel
+            </h3>
+            <button class="util-modal-close" onclick="closeImportModal()">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div class="util-modal-body">
+            {{-- 1. Download template option --}}
+            <div class="util-template-box">
+                <div class="util-template-title">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:inline-block; vertical-align:middle; margin-right:4px;">
+                        <path d="M4 16v1a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-1m-4-4-4 4m0 0-4-4m4 4V4"/>
+                    </svg>
+                    Tải File Mẫu Sơ Đồ Căn Hộ
+                </div>
+                <div class="util-template-desc">
+                    Tải file cấu trúc chuẩn để điền thông tin Tòa nhà, Tầng, Số phòng và Diện tích tương ứng.
+                </div>
+                <div class="util-template-select-row" style="justify-content: flex-start;">
+                    <a href="{{ route('admin.apartments.import-template') }}" class="util-template-btn">
+                        Tải file mẫu (.xlsx)
+                    </a>
+                </div>
+            </div>
+
+            {{-- 2. Upload Form --}}
+            <form action="{{ route('admin.apartments.import') }}" method="POST" enctype="multipart/form-data" id="importForm">
+                @csrf
+                <input type="file" name="csv_file" id="csv_file" accept=".xlsx,.xls" style="display: none;" onchange="handleFileSelect(this)">
+
+                <div class="util-drag-zone" id="dropZone" onclick="document.getElementById('csv_file').click()">
+                    <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path d="M12 16v-8m0 8-4-4m4 4 4-4M3 15v3a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3v-3"/>
+                    </svg>
+                    <div class="util-drag-text">Kéo thả file Excel vào đây hoặc <span>chọn từ máy tính</span></div>
+                    <div class="util-drag-sub">Hỗ trợ định dạng .xlsx, .xls tối đa 4MB</div>
+                </div>
+
+                <div class="util-file-preview" id="filePreview">
+                    <div class="util-file-info">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style="color: #10b981; display:inline-block; vertical-align:middle; margin-right:4px;">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                        </svg>
+                        <span id="fileNameDisplay">file_name.xlsx</span>
+                    </div>
+                    <span class="util-file-remove" onclick="removeSelectedFile(event)">Xóa</span>
+                </div>
+
+                <div class="util-form-actions" style="margin-top: 24px; padding-top: 18px;">
+                    <button type="submit" class="blocks-button blocks-button--primary" id="btnSubmitImport" disabled style="width: 100%; justify-content: center; border: none; cursor: pointer;">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:inline-block; vertical-align:middle; margin-right:4px;">
+                            <path d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Bắt đầu nhập dữ liệu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
 <script>
+    // Modal toggling
+    function openImportModal() {
+        document.getElementById('importModal').classList.add('active');
+    }
+
+    function closeImportModal() {
+        document.getElementById('importModal').classList.remove('active');
+        removeSelectedFile(null);
+    }
+
+    // File preview and selection
+    function handleFileSelect(input) {
+        const file = input.files[0];
+        if (file) {
+            document.getElementById('fileNameDisplay').textContent = file.name;
+            document.getElementById('filePreview').style.display = 'flex';
+            document.getElementById('btnSubmitImport').disabled = false;
+        }
+    }
+
+    function removeSelectedFile(e) {
+        if (e) e.stopPropagation();
+        document.getElementById('csv_file').value = '';
+        document.getElementById('filePreview').style.display = 'none';
+        document.getElementById('btnSubmitImport').disabled = true;
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         const toggleBtn = document.querySelector('.infra-dropdown-toggle');
         const menu = document.querySelector('.infra-dropdown-menu');
@@ -265,6 +367,35 @@
                     menu.style.display = 'none';
                 }
             });
+        }
+
+        // Drag and drop events setup
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('csv_file');
+
+        if (dropZone && fileInput) {
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add('dragover');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('dragover');
+                }, false);
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                if (files.length) {
+                    fileInput.files = files;
+                    handleFileSelect(fileInput);
+                }
+            }, false);
         }
     });
 </script>

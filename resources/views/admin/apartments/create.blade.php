@@ -47,7 +47,7 @@
             @csrf
 
             @php
-                $selectedFloorId = old('floor_id');
+                $selectedFloorId = old('floor_id', $selectedFloorId ?? null);
                 $selectedBlockId = null;
                 if ($selectedFloorId) {
                     $selectedFloor = $floors->firstWhere('id', $selectedFloorId);
@@ -96,7 +96,7 @@
                         <select name="floor_id" id="floor_select" class="form-input-custom @error('floor_id') input-error @enderror" required disabled>
                             <option value="">-- Chọn Tầng --</option>
                             @foreach($floors as $floor)
-                                <option value="{{ $floor->id }}" data-block-id="{{ $floor->block_id }}" {{ old('floor_id') == $floor->id ? 'selected' : '' }}>
+                                <option value="{{ $floor->id }}" data-block-id="{{ $floor->block_id }}" {{ old('floor_id', $selectedFloorId ?? '') == $floor->id ? 'selected' : '' }}>
                                     {{ $floor->name ?? 'Tầng ' . $floor->floor_number }}
                                 </option>
                             @endforeach
@@ -229,9 +229,9 @@
             updateFloors();
         });
         
-        // Run updateFloors on load to handle pre-selected values (e.g. from validation old values)
+        // Run updateFloors on load to handle pre-selected values
         if (blockSelect.value) {
-            const currentFloorValue = "{{ old('floor_id') }}";
+            const currentFloorValue = "{{ old('floor_id', $selectedFloorId ?? '') }}";
             updateFloors();
             if (currentFloorValue) {
                 floorSelect.value = currentFloorValue;

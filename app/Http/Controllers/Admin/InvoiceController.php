@@ -15,11 +15,13 @@ class InvoiceController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Invoice::with(['apartment.floor.block', 'creator'])
+        $query = Invoice::with(['apartment.floor.block', 'details.servicePrice'])
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('type')) {
-            $query->where('type', $request->type);
+            $query->whereHas('details.servicePrice', function ($q) use ($request) {
+                $q->where('type', $request->type);
+            });
         }
 
         if ($request->filled('status')) {
@@ -28,14 +30,18 @@ class InvoiceController extends Controller
 
         if ($request->filled('month')) {
             [$year, $month] = explode('-', $request->month);
-            $query->whereYear('billing_month', $year)
-                  ->whereMonth('billing_month', $month);
+            $query->where('billing_month', (int) $month)
+                  ->where('billing_year', (int) $year);
         }
 
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
-                $q->where('invoice_code', 'like', '%' . $request->search . '%')
-                  ->orWhere('title', 'like', '%' . $request->search . '%');
+                $cleanSearch = str_replace('BILL-', '', $request->search);
+                $q->where('title', 'like', '%' . $request->search . '%')
+                  ->orWhere('id', 'like', '%' . $cleanSearch . '%')
+                  ->orWhereHas('apartment', function ($a) use ($request) {
+                      $a->where('apartment_number', 'like', '%' . $request->search . '%');
+                  });
             });
         }
 
@@ -63,16 +69,44 @@ class InvoiceController extends Controller
             'title'          => 'required|string|max:150',
             'type'           => 'required|in:electricity,water,management_fee,parking,other',
             'amount'         => 'required|numeric|min:0',
-            'billing_month'  => 'required|date',
-            'due_date'       => 'required|date|after_or_equal:billing_month',
+            'billing_month'  => 'required|string',
+            'due_date'       => 'required|date',
             'note'           => 'nullable|string|max:500',
         ]);
 
-        $validated['created_by']    = auth()->id();
-        $validated['invoice_code']  = Invoice::generateCode();
-        $validated['status']        = 'unpaid';
+        // Parse month and year from YYYY-MM
+        $monthYear = explode('-', $validated['billing_month']);
+        $billingMonth = (int) $monthYear[1];
+        $billingYear = (int) $monthYear[0];
 
-        Invoice::create($validated);
+        // Ensure ServicePrice exists
+        $servicePrice = \App\Models\ServicePrice::firstOrCreate(
+            ['type' => $validated['type'], 'status' => 'active'],
+            [
+                'name' => 'Phí ' . Invoice::typeLabel($validated['type']),
+                'unit_price' => $validated['amount'],
+                'description' => 'Tự động tạo từ màn hình phát hành hóa đơn'
+            ]
+        );
+
+        // Create the Invoice (bill)
+        $invoice = Invoice::create([
+            'apartment_id'  => $validated['apartment_id'],
+            'title'         => $validated['title'],
+            'billing_month' => $billingMonth,
+            'billing_year'  => $billingYear,
+            'due_date'      => $validated['due_date'],
+            'total_amount'  => $validated['amount'],
+            'status'        => 'unpaid',
+        ]);
+
+        // Create InvoiceDetail
+        \App\Models\InvoiceDetail::create([
+            'bill_id'          => $invoice->id,
+            'service_price_id' => $servicePrice->id,
+            'quantity'         => 1,
+            'amount'           => $validated['amount'],
+        ]);
 
         return redirect()->route('admin.invoices.index')
                          ->with('success', 'Hóa đơn đã được tạo thành công.');
@@ -83,7 +117,7 @@ class InvoiceController extends Controller
      */
     public function show(Invoice $invoice)
     {
-        $invoice->load(['apartment.floor.block', 'creator', 'items']);
+        $invoice->load(['apartment.floor.block', 'details.servicePrice']);
         return view('admin.invoices.show', compact('invoice'));
     }
 
@@ -97,9 +131,22 @@ class InvoiceController extends Controller
         ]);
 
         $invoice->update([
-            'status'         => 'paid',
+            'status' => 'paid',
+        ]);
+
+        // Log payment in payments table
+        $paymentMethodMap = [
+            'cash'     => 'cash',
+            'transfer' => 'bank_transfer',
+            'other'    => 'other',
+        ];
+
+        \App\Models\Payment::create([
+            'bill_id'        => $invoice->id,
+            'amount'         => $invoice->total_amount,
+            'payment_method' => $paymentMethodMap[$validated['payment_method']] ?? 'other',
+            'status'         => 'success',
             'paid_at'        => now(),
-            'payment_method' => $validated['payment_method'],
         ]);
 
         return back()->with('success', 'Hóa đơn đã được đánh dấu là đã thanh toán.');

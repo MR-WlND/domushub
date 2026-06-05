@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Invitation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class InvitationController extends Controller
@@ -36,7 +37,7 @@ class InvitationController extends Controller
             'permissions' => [],          // Không có quyền đặc cách
             'max_uses' => $validated['max_uses'],
             'expires_at' => $validated['expires_at'],
-            'created_by' => auth()->id()
+            'created_by' => Auth::id()
         ]);
 
         return redirect()->back()->with('success', 'Đã tạo mã mời cư dân thành công: ' . $code);
