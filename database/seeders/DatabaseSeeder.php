@@ -23,10 +23,7 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         $this->call([
-            AdminSeeder::class,
-            SecuritySeeder::class,
-            BlockFloorApartmentSeeder::class,
-            ResidentSeeder::class,
+            ServicePriceSeeder::class,
         ]);
 
     }
