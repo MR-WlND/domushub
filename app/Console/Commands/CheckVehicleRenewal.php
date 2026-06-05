@@ -46,9 +46,10 @@ class CheckVehicleRenewal extends Command
             foreach ($vehicles as $vehicle) {
                 $vehicle->update(['status' => 'pending_renewal']);
                 $totalUpdated++;
+                $apartmentNumber = $vehicle->apartment->apartment_number ?? $invoice->apartment_id;
                 $this->line(
-                    "  → Xe {$vehicle->license_plate} ({$vehicle->typeLabel()}) " .
-                    "của căn hộ {$vehicle->apartment->apartment_number ?? $invoice->apartment_id} " .
+                    "  → Xe " . $vehicle->license_plate . " (" . $vehicle->typeLabel() . ") " .
+                    "của căn hộ " . $apartmentNumber . " " .
                     "→ pending_renewal"
                 );
             }

@@ -24,7 +24,7 @@
                 <a href="{{ route('admin.floors.edit', $floor) }}" class="btn btn-light">
                     Sửa tầng
                 </a>
-                <a href="{{ route('admin.buildings.show', $floor->block_id) }}" class="btn btn-secondary">
+                <a href="{{ route('admin.blocks.show', $floor->block_id) }}" class="btn btn-secondary">
                     ← Tòa nhà
                 </a>
             </div>
