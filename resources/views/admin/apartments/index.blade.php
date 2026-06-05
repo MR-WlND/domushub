@@ -23,6 +23,10 @@
         </div>
 
         <div class="apartments-page__actions">
+            <button type="button" class="apts-button apts-button--secondary" onclick="openImportModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                Nhập từ Excel
+            </button>
             <a href="{{ route('admin.apartments.create') }}" class="apts-button apts-button--primary">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                 Thêm căn hộ mới
@@ -236,13 +240,15 @@
                 }
             }
 
-            statusFilter.addEventListener('change', function() { this.form.submit(); });
-            floorFilter.addEventListener('change', function() { this.form.submit(); });
-            blockFilter.addEventListener('change', function() {
-                floorFilter.value = "";
-                updateFloors(true);
-                this.form.submit();
-            });
+            if (statusFilter) statusFilter.addEventListener('change', function() { this.form.submit(); });
+            if (floorFilter) floorFilter.addEventListener('change', function() { this.form.submit(); });
+            if (blockFilter) {
+                blockFilter.addEventListener('change', function() {
+                    floorFilter.value = "";
+                    updateFloors(true);
+                    this.form.submit();
+                });
+            }
 
             updateFloors(false);
         });

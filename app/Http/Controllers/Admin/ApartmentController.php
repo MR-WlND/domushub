@@ -139,8 +139,9 @@ class ApartmentController extends Controller
     /**
      * Form tạo
      */
-    public function create(): View
+    public function create(Request $request): View
     {
+        $selectedFloorId = $request->query('floor_id');
         $blocks = Block::orderBy('name')->get();
         $floors = Floor::with('block')
             ->orderBy('floor_number')
@@ -148,7 +149,7 @@ class ApartmentController extends Controller
 
         return view(
             'admin.apartments.create',
-            compact('floors', 'blocks')
+            compact('floors', 'blocks', 'selectedFloorId')
         );
     }
 
@@ -372,5 +373,197 @@ class ApartmentController extends Controller
                 'success',
                 'Căn hộ đã được xóa thành công.'
             );
+    }
+
+    /**
+     * Tải file Excel mẫu để nhập căn hộ
+     */
+    public function downloadTemplate(): \Symfony\Component\HttpFoundation\Response
+    {
+        try {
+            $filePath = \App\Helpers\SimpleXlsx::exportApartmentTemplate();
+            return response()->download($filePath, 'template_danh_sach_can_ho.xlsx')->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Lỗi khi tạo file mẫu: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Nhập căn hộ, tầng, tòa nhà từ Excel
+     */
+    public function import(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'csv_file' => 'required|file|max:4096', // Max 4MB
+        ]);
+
+        $file = $request->file('csv_file');
+        $extension = strtolower($file->getClientOriginalExtension());
+        if (!in_array($extension, ['xlsx', 'xls'])) {
+            return back()->with('error', 'Chỉ chấp nhận tệp Excel có định dạng .xlsx hoặc .xls.');
+        }
+
+        try {
+            $rows = \App\Helpers\SimpleXlsx::parse($file->getRealPath());
+            
+            if (count($rows) <= 1) {
+                return back()->with('error', 'Tệp Excel trống hoặc không đúng cấu trúc mẫu.');
+            }
+
+            // Dòng đầu tiên là header
+            $header = $rows[0];
+            
+            // Validate sơ bộ số cột (ít nhất phải có 12 cột cho cấu trúc mẫu đầy đủ)
+            if (count($header) < 12) {
+                return back()->with('error', 'Tệp Excel không đúng số cột quy định của file mẫu (yêu cầu 12 cột).');
+            }
+
+            $successCount = 0;
+            $updatedCount = 0;
+
+            \Illuminate\Support\Facades\DB::transaction(function () use ($rows, &$successCount, &$updatedCount) {
+                // Duyệt từ dòng thứ 2 (chỉ mục 1)
+                for ($i = 1; $i < count($rows); $i++) {
+                    $row = $rows[$i];
+                    
+                    // Bỏ qua dòng trống hoàn toàn
+                    $isEmptyRow = true;
+                    foreach ($row as $val) {
+                        if ($val !== '') {
+                            $isEmptyRow = false;
+                            break;
+                        }
+                    }
+                    if ($isEmptyRow) {
+                        continue;
+                    }
+
+                    $blockName = trim($row[0] ?? '');
+                    $blockCode = trim($row[1] ?? '');
+                    $blockManagerName = trim($row[2] ?? '');
+                    $blockManagerContact = trim($row[3] ?? '');
+                    $blockDescription = trim($row[4] ?? '');
+                    $floorNumberStr = trim($row[5] ?? '');
+                    $floorName = trim($row[6] ?? '');
+                    $floorDescription = trim($row[7] ?? '');
+                    $apartmentNumber = trim($row[8] ?? '');
+                    $areaStr = trim($row[9] ?? '');
+                    $statusStr = trim($row[10] ?? '');
+                    $apartmentDescription = trim($row[11] ?? '');
+
+                    $rowNum = $i + 1; // Số hàng trong Excel (1-indexed)
+
+                    // Validate các trường bắt buộc
+                    if (empty($blockName)) {
+                        throw new \Exception("Dòng {$rowNum}: Tên tòa nhà không được để trống.");
+                    }
+                    if ($floorNumberStr === '') {
+                        throw new \Exception("Dòng {$rowNum}: Số tầng không được để trống.");
+                    }
+                    if (!is_numeric($floorNumberStr)) {
+                        throw new \Exception("Dòng {$rowNum}: Số tầng phải là số nguyên (ví dụ: 1, 2, 3).");
+                    }
+                    $floorNumber = (int)$floorNumberStr;
+
+                    if (empty($apartmentNumber)) {
+                        throw new \Exception("Dòng {$rowNum}: Số căn hộ không được để trống.");
+                    }
+                    if ($areaStr === '') {
+                        throw new \Exception("Dòng {$rowNum}: Diện tích không được để trống.");
+                    }
+                    if (!is_numeric($areaStr)) {
+                        throw new \Exception("Dòng {$rowNum}: Diện tích phải là số thập phân (ví dụ: 75.50).");
+                    }
+                    $area = (float)$areaStr;
+
+                    // 1. Tìm hoặc tạo Block
+                    $block = Block::whereRaw('LOWER(name) = ?', [strtolower($blockName)])->first();
+                    if (!$block) {
+                        $block = Block::create([
+                            'name' => $blockName,
+                            'code' => $blockCode ?: \Illuminate\Support\Str::slug($blockName),
+                            'status' => 'active',
+                            'manager_name' => $blockManagerName ?: null,
+                            'manager_contact' => $blockManagerContact ?: null,
+                            'description' => $blockDescription ?: null,
+                        ]);
+                    } else {
+                        // Cập nhật thông tin block nếu có giá trị mới
+                        $updateData = [];
+                        if ($blockCode !== '') $updateData['code'] = $blockCode;
+                        if ($blockManagerName !== '') $updateData['manager_name'] = $blockManagerName;
+                        if ($blockManagerContact !== '') $updateData['manager_contact'] = $blockManagerContact;
+                        if ($blockDescription !== '') $updateData['description'] = $blockDescription;
+                        if (!empty($updateData)) {
+                            $block->update($updateData);
+                        }
+                    }
+
+                    // 2. Tìm hoặc tạo Floor
+                    $floor = Floor::where('block_id', $block->id)
+                        ->where('floor_number', $floorNumber)
+                        ->first();
+                    if (!$floor) {
+                        $floor = Floor::create([
+                            'block_id' => $block->id,
+                            'floor_number' => $floorNumber,
+                            'name' => $floorName ?: "Tầng {$floorNumber}",
+                            'status' => 'active',
+                            'description' => $floorDescription ?: null,
+                        ]);
+                    } else {
+                        // Cập nhật thông tin floor nếu có giá trị mới
+                        $updateData = [];
+                        if ($floorName !== '') $updateData['name'] = $floorName;
+                        if ($floorDescription !== '') $updateData['description'] = $floorDescription;
+                        if (!empty($updateData)) {
+                            $floor->update($updateData);
+                        }
+                    }
+
+                    // 3. Ánh xạ trạng thái căn hộ Lowercase
+                    $status = 'vacant';
+                    $statusLower = mb_strtolower($statusStr, 'UTF-8');
+                    if (str_contains($statusLower, 'đang ở') || str_contains($statusLower, 'occupied')) {
+                        $status = 'occupied';
+                    } elseif (str_contains($statusLower, 'bảo trì') || str_contains($statusLower, 'maintenance') || str_contains($statusLower, 'sửa chữa')) {
+                        $status = 'maintenance';
+                    }
+
+                    // 4. Tìm hoặc tạo/cập nhật Apartment (tìm cả căn hộ đã xóa mềm)
+                    $apartment = Apartment::withTrashed()
+                        ->where('floor_id', $floor->id)
+                        ->where('apartment_number', $apartmentNumber)
+                        ->first();
+
+                    if ($apartment) {
+                        if ($apartment->trashed()) {
+                            $apartment->restore();
+                        }
+                        $apartment->update([
+                            'area' => $area,
+                            'status' => $status,
+                            'description' => $apartmentDescription ?: $apartment->description,
+                        ]);
+                        $updatedCount++;
+                    } else {
+                        Apartment::create([
+                            'floor_id' => $floor->id,
+                            'apartment_number' => $apartmentNumber,
+                            'area' => $area,
+                            'status' => $status,
+                            'description' => $apartmentDescription,
+                        ]);
+                        $successCount++;
+                    }
+                }
+            });
+
+            $msg = "Đã nhập dữ liệu thành công. Thêm mới {$successCount} căn hộ, cập nhật {$updatedCount} căn hộ.";
+            return back()->with('success', $msg);
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Lỗi nhập dữ liệu: ' . $e->getMessage());
+        }
     }
 }
