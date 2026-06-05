@@ -1,0 +1,469 @@
+@extends('layouts.admin.master')
+
+@section('page_title', 'Ghi chỉ số hàng loạt – DomusHub')
+
+@push('styles')
+@vite(['resources/css/pages/admin/utility-readings/index.css'])
+<style>
+/* ── Batch table two-column layout ─────────────── */
+.batch-meter-input {
+    width: 130px;
+    height: 38px;
+    padding: 8px 12px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #1e293b;
+    background: #ffffff;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+    box-sizing: border-box;
+}
+.batch-meter-input:focus {
+    border-color: #0b57d0;
+    box-shadow: 0 0 0 3px rgba(11,87,208,.08);
+}
+.batch-meter-input.elec-input:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.1); }
+.batch-meter-input.water-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.1); }
+.batch-meter-input:disabled { background: #f8fafc; cursor: not-allowed; opacity: .55; }
+.batch-meter-input.input-invalid { border-color: #ef4444 !important; box-shadow: 0 0 0 3px rgba(239,68,68,.1) !important; }
+
+.usage-chip {
+    display: inline-block;
+    min-width: 52px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+}
+.usage-chip--elec  { background: #fef3c7; color: #92400e; }
+.usage-chip--water { background: #dbeafe; color: #1e40af; }
+.usage-chip--zero  { background: #f1f5f9; color: #94a3b8; }
+
+.col-divider {
+    border-left: 2px dashed #e2e8f0;
+    padding-left: 14px;
+    margin-left: 6px;
+}
+
+.done-icon { font-size: 18px; line-height: 1; }
+
+.batch-row--all-done td { background: #f0fdf4; }
+.batch-row--all-done .batch-meter-input { display: none; }
+</style>
+@endpush
+
+@section('content')
+
+{{-- ── Page Header ─────────────────────────────────── --}}
+<div class="util-page-header">
+    <div>
+        <h1>⚡💧 Ghi chỉ số hàng loạt</h1>
+        <p>Chốt cả <strong>điện</strong> và <strong>nước</strong> cho nhiều căn hộ cùng lúc</p>
+    </div>
+    <a href="{{ route('admin.utility-readings.index') }}" class="util-btn util-btn--outline">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+        </svg>
+        Quay lại danh sách
+    </a>
+</div>
+
+{{-- ── Error Alert ─────────────────────────────────── --}}
+@if (isset($errors) && $errors->any())
+    <div class="util-alert--danger">
+        <ul>@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+    </div>
+@endif
+
+{{-- ── Filter Panel ────────────────────────────────── --}}
+<div class="util-filter-panel">
+    <form action="{{ route('admin.utility-readings.batch') }}" method="GET" id="filterForm">
+        <div class="util-filter-grid">
+            <div>
+                <label>Tòa nhà</label>
+                <select name="block_id" onchange="this.form.submit()">
+                    <option value="">— Chọn tòa nhà —</option>
+                    @foreach ($blocks as $block)
+                        <option value="{{ $block->id }}" {{ $selectedBlockId == $block->id ? 'selected' : '' }}>
+                            {{ $block->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label>Tầng</label>
+                <select name="floor_id" onchange="this.form.submit()">
+                    <option value="">Tất cả tầng</option>
+                    @foreach ($floors as $floor)
+                        @if (!$selectedBlockId || $floor->block_id == $selectedBlockId)
+                            <option value="{{ $floor->id }}" {{ $selectedFloorId == $floor->id ? 'selected' : '' }}>
+                                {{ $floor->block->name ?? '' }} – {{ $floor->name ?? 'Tầng ' . $floor->floor_number }}
+                            </option>
+                        @endif
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label>Tháng</label>
+                <input type="number" name="month" value="{{ $selectedMonth }}" min="1" max="12">
+            </div>
+            <div>
+                <label>Năm</label>
+                <input type="number" name="year" value="{{ $selectedYear }}" min="2020" max="2100">
+            </div>
+            <div class="util-filter-actions">
+                <button type="submit" class="util-btn util-btn--primary util-btn--sm">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    Tải
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+{{-- ── Main content ────────────────────────────────── --}}
+@if (count($apartmentData) > 0)
+@php
+    $total      = count($apartmentData);
+    $elecDone   = collect($apartmentData)->where('elec_recorded', true)->count();
+    $waterDone  = collect($apartmentData)->where('water_recorded', true)->count();
+    $bothDone   = collect($apartmentData)->where('both_recorded', true)->count();
+    $elecPct    = $total > 0 ? round($elecDone / $total * 100) : 0;
+    $waterPct   = $total > 0 ? round($waterDone / $total * 100) : 0;
+@endphp
+
+{{-- ── Progress summary ────────────────────────────── --}}
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 12px; margin-bottom: 20px;">
+
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:16px 20px;">
+        <div style="font-size:12px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">⚡ Điện – Tháng {{ $selectedMonth }}/{{ $selectedYear }}</div>
+        <div style="font-size:26px;font-weight:800;color:#b45309;">{{ $elecDone }}<span style="font-size:16px;font-weight:600;color:#d97706;"> / {{ $total }}</span></div>
+        <div style="margin-top:8px;background:#e2e8f0;border-radius:999px;height:6px;overflow:hidden;">
+            <div style="height:100%;width:{{ $elecPct }}%;background:linear-gradient(90deg,#f59e0b,#d97706);border-radius:999px;"></div>
+        </div>
+        <div style="font-size:12px;color:#92400e;margin-top:4px;">{{ $elecPct }}% hoàn thành</div>
+    </div>
+
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:16px 20px;">
+        <div style="font-size:12px;font-weight:700;color:#1e40af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">💧 Nước – Tháng {{ $selectedMonth }}/{{ $selectedYear }}</div>
+        <div style="font-size:26px;font-weight:800;color:#1d4ed8;">{{ $waterDone }}<span style="font-size:16px;font-weight:600;color:#3b82f6;"> / {{ $total }}</span></div>
+        <div style="margin-top:8px;background:#e2e8f0;border-radius:999px;height:6px;overflow:hidden;">
+            <div style="height:100%;width:{{ $waterPct }}%;background:linear-gradient(90deg,#3b82f6,#1d4ed8);border-radius:999px;"></div>
+        </div>
+        <div style="font-size:12px;color:#1e40af;margin-top:4px;">{{ $waterPct }}% hoàn thành</div>
+    </div>
+
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px 20px;">
+        <div style="font-size:12px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">✅ Hoàn tất cả 2</div>
+        <div style="font-size:26px;font-weight:800;color:#15803d;">{{ $bothDone }}<span style="font-size:16px;font-weight:600;color:#22c55e;"> / {{ $total }}</span></div>
+        <div style="margin-top:8px;background:#e2e8f0;border-radius:999px;height:6px;overflow:hidden;">
+            <div style="height:100%;width:{{ $total > 0 ? round($bothDone/$total*100) : 0 }}%;background:linear-gradient(90deg,#10b981,#059669);border-radius:999px;"></div>
+        </div>
+        <div style="font-size:12px;color:#166534;margin-top:4px;">{{ $total > 0 ? round($bothDone/$total*100) : 0 }}% hoàn thành</div>
+    </div>
+
+    <div style="background:#f8faff;border:1px solid #e2e8f0;border-radius:12px;padding:16px 20px;display:flex;flex-direction:column;justify-content:center;gap:6px;">
+        <div style="font-size:13px;font-weight:600;color:#334155;">🏠 Tổng căn hộ: <strong>{{ $total }}</strong></div>
+        <div style="font-size:13px;color:#64748b;">Chưa chốt điện: <strong style="color:#f59e0b;">{{ $total - $elecDone }}</strong></div>
+        <div style="font-size:13px;color:#64748b;">Chưa chốt nước: <strong style="color:#3b82f6;">{{ $total - $waterDone }}</strong></div>
+    </div>
+</div>
+
+{{-- ── Batch Form ───────────────────────────────────── --}}
+<form action="{{ route('admin.utility-readings.batch.store') }}" method="POST" id="batchForm">
+    @csrf
+    <input type="hidden" name="record_month" value="{{ $selectedMonth }}">
+    <input type="hidden" name="record_year"  value="{{ $selectedYear }}">
+
+    <div class="util-table-card">
+        {{-- Table header bar --}}
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid #e2e8f0;flex-wrap:wrap;gap:10px;">
+            <div style="font-weight:700;color:#0f172a;font-size:14px;">
+                Danh sách căn hộ – Tháng {{ $selectedMonth }}/{{ $selectedYear }}
+            </div>
+            <div style="display:flex;align-items:center;gap:16px;font-size:13px;color:#64748b;">
+                <span>⚡ Cột vàng = Điện &nbsp;|&nbsp; 💧 Cột xanh = Nước</span>
+                <label style="display:flex;align-items:center;gap:6px;font-weight:600;cursor:pointer;">
+                    <input type="checkbox" id="selectAll" checked style="width:15px;height:15px;accent-color:#00236f;">
+                    Chọn tất cả
+                </label>
+            </div>
+        </div>
+
+        <div class="util-table-wrap">
+            <table class="util-table" style="min-width:900px;">
+                <thead>
+                    <tr>
+                        <th style="width:40px;text-align:center;">☑</th>
+                        <th style="min-width:80px;">Phòng</th>
+                        <th>Tòa / Tầng</th>
+
+                        {{-- Electricity columns --}}
+                        <th style="background:#fffbeb;border-left:2px solid #fde68a;">⚡ CS cũ</th>
+                        <th style="background:#fffbeb;">⚡ CS mới</th>
+                        <th style="background:#fffbeb;">⚡ Tiêu thụ</th>
+
+                        {{-- Water columns --}}
+                        <th style="background:#eff6ff;border-left:2px solid #bfdbfe;">💧 CS cũ</th>
+                        <th style="background:#eff6ff;">💧 CS mới</th>
+                        <th style="background:#eff6ff;">💧 Tiêu thụ</th>
+
+                        <th style="min-width:90px;">Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($apartmentData as $i => $data)
+                    @php $bothDoneRow = $data['elec_recorded'] && $data['water_recorded']; @endphp
+                    <tr id="row-{{ $i }}" class="{{ $bothDoneRow ? 'batch-row--all-done' : '' }}">
+                        {{-- Checkbox --}}
+                        <td style="text-align:center;">
+                            @if (!$bothDoneRow)
+                                <input type="checkbox" class="row-check" data-index="{{ $i }}" checked
+                                    style="width:15px;height:15px;accent-color:#00236f;cursor:pointer;">
+                            @else
+                                <span class="done-icon">✅</span>
+                            @endif
+                        </td>
+
+                        {{-- Room --}}
+                        <td><strong class="text-strong">{{ $data['apartment']->apartment_number }}</strong></td>
+
+                        {{-- Block/Floor --}}
+                        <td class="text-muted" style="font-size:12px;">
+                            {{ $data['apartment']->floor->block->name ?? '—' }}
+                            / {{ $data['apartment']->floor->name ?? 'Tầng ' . $data['apartment']->floor->floor_number }}
+                        </td>
+
+                        {{-- ── ELECTRICITY ─────────────────────── --}}
+                        <td style="background:#fffbeb;border-left:2px solid #fde68a;font-weight:600;color:#92400e;">
+                            {{ number_format($data['elec_old']) }}
+                        </td>
+                        <td style="background:#fffbeb;">
+                            @if (!$data['elec_recorded'])
+                                <input type="hidden"
+                                    name="readings[{{ $i }}][apartment_id]"
+                                    value="{{ $data['apartment']->id }}"
+                                    class="apt-id-input">
+                                <input type="number"
+                                    name="readings[{{ $i }}][elec_new]"
+                                    class="batch-meter-input elec-input"
+                                    min="{{ $data['elec_old'] }}"
+                                    data-old="{{ $data['elec_old'] }}"
+                                    data-type="elec"
+                                    data-index="{{ $i }}"
+                                    placeholder="Chỉ số mới">
+                            @else
+                                <span style="color:#15803d;font-weight:600;font-size:13px;">✓ Đã chốt</span>
+                                <input type="hidden" name="readings[{{ $i }}][apartment_id]" value="{{ $data['apartment']->id }}">
+                            @endif
+                        </td>
+                        <td style="background:#fffbeb;">
+                            <span class="usage-chip {{ !$data['elec_recorded'] ? 'usage-chip--zero' : 'usage-chip--elec' }}"
+                                id="elec-usage-{{ $i }}">—</span>
+                        </td>
+
+                        {{-- ── WATER ───────────────────────────── --}}
+                        <td style="background:#eff6ff;border-left:2px solid #bfdbfe;font-weight:600;color:#1e40af;">
+                            {{ number_format($data['water_old']) }}
+                        </td>
+                        <td style="background:#eff6ff;">
+                            @if (!$data['water_recorded'])
+                                <input type="number"
+                                    name="readings[{{ $i }}][water_new]"
+                                    class="batch-meter-input water-input"
+                                    min="{{ $data['water_old'] }}"
+                                    data-old="{{ $data['water_old'] }}"
+                                    data-type="water"
+                                    data-index="{{ $i }}"
+                                    placeholder="Chỉ số mới">
+                            @else
+                                <span style="color:#15803d;font-weight:600;font-size:13px;">✓ Đã chốt</span>
+                            @endif
+                        </td>
+                        <td style="background:#eff6ff;">
+                            <span class="usage-chip {{ !$data['water_recorded'] ? 'usage-chip--zero' : 'usage-chip--water' }}"
+                                id="water-usage-{{ $i }}">—</span>
+                        </td>
+
+                        {{-- Status --}}
+                        <td>
+                            @if ($bothDoneRow)
+                                <span class="util-badge util-badge--success">✅ Đã chốt</span>
+                            @elseif ($data['elec_recorded'] || $data['water_recorded'])
+                                <span class="util-badge" style="background:#e0f2fe;color:#075985;font-size:11px;">
+                                    {{ $data['elec_recorded'] ? '⚡' : '' }}{{ $data['water_recorded'] ? '💧' : '' }} Chốt 1 phần
+                                </span>
+                            @else
+                                <span class="util-badge util-badge--warning">⏳ Chưa chốt</span>
+                            @endif
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+
+        {{-- Footer --}}
+        <div class="util-batch-footer" style="flex-wrap:wrap;gap:12px;">
+            <div class="util-batch-footer__info">
+                Tháng <strong>{{ $selectedMonth }}/{{ $selectedYear }}</strong>
+                &nbsp;·&nbsp; Tổng: <strong>{{ $total }}</strong> căn hộ
+                &nbsp;·&nbsp; Đang chọn: <strong id="countNum">{{ $total - $bothDone }}</strong>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <span style="font-size:12px;color:#64748b;">Có thể để trống ô không cần ghi</span>
+                <button type="submit" class="util-btn util-btn--primary" id="batchSubmitBtn">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                        <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+                    </svg>
+                    Lưu tất cả
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+
+@elseif ($selectedBlockId || $selectedFloorId)
+<div class="util-empty-state">
+    <svg width="48" height="48" fill="none" stroke="#cbd5e1" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 16px;">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+    <p>Không tìm thấy căn hộ nào trong khu vực đã chọn.</p>
+</div>
+@else
+<div class="util-empty-state">
+    <svg width="52" height="52" fill="none" stroke="#cbd5e1" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 16px;">
+        <rect x="2" y="3" width="20" height="18" rx="1"/>
+        <path d="M9 3v18"/><path d="M15 3v18"/><path d="M2 9h20"/><path d="M2 15h20"/>
+    </svg>
+    <p>Vui lòng chọn <strong>Tòa nhà</strong> để hiển thị danh sách căn hộ cần chốt.</p>
+</div>
+@endif
+
+@endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    // ── Tính tiêu thụ realtime ─────────────────────────
+    document.querySelectorAll('.batch-meter-input').forEach(function (inp) {
+        inp.addEventListener('input', function () {
+            const oldVal   = parseInt(this.dataset.old) || 0;
+            const newVal   = parseInt(this.value) || 0;
+            const usage    = Math.max(0, newVal - oldVal);
+            const idx      = this.dataset.index;
+            const type     = this.dataset.type; // 'elec' or 'water'
+            const chipId   = type + '-usage-' + idx;
+            const chip     = document.getElementById(chipId);
+
+            // Validate: new >= old
+            if (this.value !== '' && newVal < oldVal) {
+                this.classList.add('input-invalid');
+            } else {
+                this.classList.remove('input-invalid');
+            }
+
+            if (chip) {
+                if (usage > 0) {
+                    chip.textContent = usage.toLocaleString('vi-VN');
+                    chip.className   = 'usage-chip usage-chip--' + (type === 'elec' ? 'elec' : 'water');
+                } else {
+                    chip.textContent = '—';
+                    chip.className   = 'usage-chip usage-chip--zero';
+                }
+            }
+        });
+    });
+
+    // ── Select All ────────────────────────────────────
+    const selectAll = document.getElementById('selectAll');
+    const countEl   = document.getElementById('countNum');
+
+    function updateCount() {
+        const n = document.querySelectorAll('.row-check:checked').length;
+        if (countEl) countEl.textContent = n;
+    }
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function () {
+            document.querySelectorAll('.row-check').forEach(cb => {
+                cb.checked = this.checked;
+                toggleRow(cb);
+            });
+            updateCount();
+        });
+    }
+
+    document.querySelectorAll('.row-check').forEach(cb => {
+        cb.addEventListener('change', function () {
+            toggleRow(this);
+            updateCount();
+            if (selectAll) {
+                selectAll.checked =
+                    document.querySelectorAll('.row-check').length ===
+                    document.querySelectorAll('.row-check:checked').length;
+            }
+        });
+    });
+
+    function toggleRow(checkbox) {
+        const row    = checkbox.closest('tr');
+        const inputs = row.querySelectorAll('input[name^="readings"]');
+        if (checkbox.checked) {
+            inputs.forEach(i => { i.disabled = false; });
+            row.style.opacity = '1';
+        } else {
+            inputs.forEach(i => { i.disabled = true; });
+            row.style.opacity = '0.4';
+        }
+    }
+
+    // ── Submit validation ─────────────────────────────
+    const form = document.getElementById('batchForm');
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            // Xoá inputs của row bỏ chọn
+            document.querySelectorAll('.row-check:not(:checked)').forEach(cb => {
+                cb.closest('tr').querySelectorAll('input[name^="readings"]').forEach(i => i.remove());
+            });
+
+            // Kiểm tra còn ít nhất 1 giá trị mới
+            const activeInputs = form.querySelectorAll('.batch-meter-input:not([disabled])');
+            const hasAnyValue  = Array.from(activeInputs).some(i => i.value.trim() !== '');
+
+            if (!hasAnyValue) {
+                e.preventDefault();
+                alert('⚠️ Vui lòng nhập ít nhất 1 chỉ số mới (điện hoặc nước) trước khi lưu.');
+                return;
+            }
+
+            // Kiểm tra new >= old
+            let hasInvalid = false;
+            activeInputs.forEach(inp => {
+                if (inp.value.trim() !== '') {
+                    const oldVal = parseInt(inp.dataset.old) || 0;
+                    const newVal = parseInt(inp.value) || 0;
+                    if (newVal < oldVal) {
+                        inp.classList.add('input-invalid');
+                        hasInvalid = true;
+                    }
+                }
+            });
+
+            if (hasInvalid) {
+                e.preventDefault();
+                alert('⚠️ Chỉ số mới không được nhỏ hơn chỉ số cũ. Vui lòng kiểm tra các ô được tô đỏ.');
+                return;
+            }
+        });
+    }
+});
+</script>
+@endpush
