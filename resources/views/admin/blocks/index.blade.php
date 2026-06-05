@@ -22,7 +22,11 @@
             <p class="blocks-page__subtitle">Quản lý danh sách các tòa nhà, tầng và phân bổ căn hộ trong hệ thống.</p>
         </div>
 
-        <div class="blocks-page__actions">
+        <div class="blocks-page__actions" style="display: flex; gap: 10px;">
+            <button id="btn-import-csv" class="blocks-button" style="background: #eff6ff; color: #0b57d0; border: 1px solid #bfdbfe; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 0 18px; border-radius: 10px; font-size: 14px; font-weight: 700;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                Nhập từ CSV
+            </button>
             <a href="{{ route('admin.blocks.create') }}" class="blocks-button blocks-button--primary">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                 Thêm tòa nhà mới
@@ -55,7 +59,7 @@
         <div class="blocks-alert blocks-alert--success" style="margin-bottom: 20px;">{{ $message }}</div>
     @endif
     @if ($message = Session::get('error'))
-        <div class="blocks-alert blocks-alert--danger" style="margin-bottom: 20px;">{{ $message }}</div>
+        <div class="blocks-alert blocks-alert--danger" style="margin-bottom: 20px;">{!! $message !!}</div>
     @endif
 
     {{-- Main Layout: 2 Columns --}}
@@ -244,6 +248,41 @@
         </div>
 
     </div>
+
+    {{-- Modal Nhập CSV --}}
+    <div id="import-csv-modal" class="custom-modal" style="display: none;">
+        <div class="custom-modal-backdrop"></div>
+        <div class="custom-modal-content">
+            <div class="custom-modal-header">
+                <h3>Nhập căn hộ từ file CSV</h3>
+                <button type="button" class="close-modal-btn">&times;</button>
+            </div>
+            <form action="{{ route('admin.apartments.import') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="custom-modal-body">
+                    <p style="font-size: 14px; color: #64748b; margin-bottom: 15px; line-height: 1.5;">
+                        Vui lòng sử dụng file mẫu CSV để điền danh sách căn hộ. Hệ thống sẽ tự động tìm kiếm hoặc khởi tạo Tòa nhà & Tầng tương ứng nếu chưa tồn tại.
+                    </p>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <a href="{{ route('admin.apartments.import.template') }}" class="blocks-button" style="font-size: 13px; min-height: 36px; padding: 0 12px; display: inline-flex; align-items: center; background: #eff6ff; color: #0b57d0; border: 1px solid #bfdbfe; border-radius: 8px; text-decoration: none; font-weight: 700; gap: 4px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            Tải file mẫu CSV (.csv)
+                        </a>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 13px; font-weight: 700; color: #475569;">Chọn file CSV từ máy tính<span style="color: #dc2626; margin-left: 2px;">*</span></label>
+                        <input type="file" name="file" accept=".csv" required style="width: 100%; min-height: 44px; padding: 9px 14px; border: 1.5px solid #d9e2f2; border-radius: 10px; background: #ffffff; color: #0f172a; font-size: 14px; outline: none;">
+                    </div>
+                </div>
+                <div class="custom-modal-footer">
+                    <button type="button" class="blocks-button close-modal-btn" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; cursor: pointer; border-radius: 8px; min-height: 38px; padding: 0 16px; font-size: 14px; font-weight: 700;">Hủy bỏ</button>
+                    <button type="submit" class="blocks-button blocks-button--primary" style="cursor: pointer; border-radius: 8px; min-height: 38px; padding: 0 16px; font-size: 14px; font-weight: 700; border: none;">Bắt đầu nhập</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 @endsection
@@ -265,6 +304,33 @@
                     menu.style.display = 'none';
                 }
             });
+        }
+
+        // Modal Nhập CSV Logic
+        const btnImportCsv = document.getElementById('btn-import-csv');
+        const importModal = document.getElementById('import-csv-modal');
+        const closeModalBtns = document.querySelectorAll('.close-modal-btn');
+
+        if (btnImportCsv && importModal) {
+            btnImportCsv.addEventListener('click', function(e) {
+                e.preventDefault();
+                importModal.style.display = 'flex';
+            });
+
+            closeModalBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    importModal.style.display = 'none';
+                });
+            });
+
+            const backdrop = importModal.querySelector('.custom-modal-backdrop');
+            if (backdrop) {
+                backdrop.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    importModal.style.display = 'none';
+                });
+            }
         }
     });
 </script>
