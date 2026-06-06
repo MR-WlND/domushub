@@ -16,7 +16,8 @@
             class="resident-header__link {{ request()->routeIs('resident.vehicles.*') ? 'resident-header__link--active' : '' }}">
             Phương Tiện
         </a>
-        <a href="#" class="resident-header__link">
+        <a href="{{ route('resident.invoices.index') }}"
+            class="resident-header__link {{ request()->routeIs('resident.invoices.*') ? 'resident-header__link--active' : '' }}">
             Hóa Đơn
         </a>
         <a href="#" class="resident-header__link">
