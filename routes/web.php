@@ -95,7 +95,14 @@ Route::middleware(['admin'])->group(function () {
     Route::delete('/admin/service-prices/{id}', [ServicePriceController::class, 'destroy'])->name('admin.service-prices.destroy');
 
     Route::get('/admin/invoices', [InvoiceController::class, 'index'])->name('admin.invoices.index');
+    Route::get('/admin/invoices/stats', [InvoiceController::class, 'stats'])->name('admin.invoices.stats');
+    Route::get('/admin/invoices/create', [InvoiceController::class, 'create'])->name('admin.invoices.create');
+    Route::post('/admin/invoices', [InvoiceController::class, 'store'])->name('admin.invoices.store');
     Route::post('/admin/invoices/generate', [InvoiceController::class, 'generate'])->name('admin.invoices.generate');
+    Route::get('/admin/invoices/{invoice}', [InvoiceController::class, 'show'])->name('admin.invoices.show');
+    Route::post('/admin/invoices/{invoice}/mark-paid', [InvoiceController::class, 'markAsPaid'])->name('admin.invoices.mark-paid');
+    Route::post('/admin/payments/{payment}/refund', [InvoiceController::class, 'refundPayment'])->name('admin.payments.refund');
+
 
 
     // Dịch vụ cư dân

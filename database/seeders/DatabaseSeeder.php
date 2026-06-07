@@ -23,7 +23,11 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         $this->call([
-            ServicePriceSeeder::class,
+            ServicePriceSeeder::class,       // Bảng giá dịch vụ (không phụ thuộc)
+            AdminSeeder::class,              // Tài khoản admin
+            SecuritySeeder::class,           // Tài khoản bảo vệ
+            BlockFloorApartmentSeeder::class, // Tòa > Tầng > Căn hộ
+            ResidentAccountSeeder::class,    // Tài khoản cư dân (cần apartments trước)
         ]);
 
     }
