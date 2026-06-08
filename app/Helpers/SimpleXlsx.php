@@ -317,12 +317,13 @@ class SimpleXlsx
     <col min="4" max="4" width="22" customWidth="1"/>
     <col min="5" max="5" width="25" customWidth="1"/>
     <col min="6" max="6" width="16" customWidth="1"/>
-    <col min="7" max="7" width="18" customWidth="1"/>
-    <col min="8" max="8" width="25" customWidth="1"/>
-    <col min="9" max="9" width="18" customWidth="1"/>
+    <col min="7" max="7" width="22" customWidth="1"/>
+    <col min="8" max="8" width="30" customWidth="1"/> <!-- Loại Tầng -->
+    <col min="9" max="9" width="25" customWidth="1"/> <!-- Mô Tả Tầng -->
     <col min="10" max="10" width="18" customWidth="1"/>
-    <col min="11" max="11" width="28" customWidth="1"/>
-    <col min="12" max="12" width="30" customWidth="1"/>
+    <col min="11" max="11" width="18" customWidth="1"/>
+    <col min="12" max="12" width="28" customWidth="1"/>
+    <col min="13" max="13" width="30" customWidth="1"/>
   </cols>
   <sheetData>';
 
@@ -334,12 +335,13 @@ class SimpleXlsx
         $sheet1 .= '<c r="D1" t="inlineStr"><is><t>Liên Hệ Quản Lý (Tùy chọn)</t></is></c>';
         $sheet1 .= '<c r="E1" t="inlineStr"><is><t>Mô Tả Tòa Nhà (Tùy chọn)</t></is></c>';
         $sheet1 .= '<c r="F1" t="inlineStr"><is><t>Số Tầng (Bắt buộc)</t></is></c>';
-        $sheet1 .= '<c r="G1" t="inlineStr"><is><t>Tên Tầng (Tùy chọn)</t></is></c>';
-        $sheet1 .= '<c r="H1" t="inlineStr"><is><t>Mô Tả Tầng (Tùy chọn)</t></is></c>';
-        $sheet1 .= '<c r="I1" t="inlineStr"><is><t>Số Căn Hộ (Bắt buộc)</t></is></c>';
-        $sheet1 .= '<c r="J1" t="inlineStr"><is><t>Diện Tích m2 (Bắt buộc)</t></is></c>';
-        $sheet1 .= '<c r="K1" t="inlineStr"><is><t>Trạng Thái (Trống / Đang ở / Bảo trì)</t></is></c>';
-        $sheet1 .= '<c r="L1" t="inlineStr"><is><t>Mô Tả Căn Hộ (Tùy chọn)</t></is></c>';
+        $sheet1 .= '<c r="G1" t="inlineStr"><is><t>Tên Tầng (Bắt buộc)</t></is></c>';
+        $sheet1 .= '<c r="H1" t="inlineStr"><is><t>Loại Tầng (Cư dân / Thương mại / Kỹ thuật / Tiện ích)</t></is></c>';
+        $sheet1 .= '<c r="I1" t="inlineStr"><is><t>Mô Tả Tầng (Tùy chọn)</t></is></c>';
+        $sheet1 .= '<c r="J1" t="inlineStr"><is><t>Số Căn Hộ (Bắt buộc)</t></is></c>';
+        $sheet1 .= '<c r="K1" t="inlineStr"><is><t>Diện Tích m2 (Bắt buộc)</t></is></c>';
+        $sheet1 .= '<c r="L1" t="inlineStr"><is><t>Trạng Thái (Trống / Đang ở / Bảo trì)</t></is></c>';
+        $sheet1 .= '<c r="M1" t="inlineStr"><is><t>Mô Tả Căn Hộ (Tùy chọn)</t></is></c>';
         $sheet1 .= '</row>';
 
         // Row 2: Sample Data 1
@@ -351,11 +353,12 @@ class SimpleXlsx
         $sheet1 .= '<c r="E2" t="inlineStr"><is><t>Khu căn hộ cao cấp phía Đông</t></is></c>';
         $sheet1 .= '<c r="F2" s="1"><v>1</v></c>';
         $sheet1 .= '<c r="G2" t="inlineStr"><is><t>Tầng 1</t></is></c>';
-        $sheet1 .= '<c r="H2" t="inlineStr"><is><t>Khu thương mại và căn hộ trệt</t></is></c>';
-        $sheet1 .= '<c r="I2" t="inlineStr"><is><t>A101</t></is></c>';
-        $sheet1 .= '<c r="J2" s="2"><v>75.50</v></c>';
-        $sheet1 .= '<c r="K2" t="inlineStr"><is><t>Trống</t></is></c>';
-        $sheet1 .= '<c r="L2" t="inlineStr"><is><t>Căn hộ gần sảnh chính</t></is></c>';
+        $sheet1 .= '<c r="H2" t="inlineStr"><is><t>Cư dân</t></is></c>';
+        $sheet1 .= '<c r="I2" t="inlineStr"><is><t>Khu thương mại và căn hộ trệt</t></is></c>';
+        $sheet1 .= '<c r="J2" t="inlineStr"><is><t>A101</t></is></c>';
+        $sheet1 .= '<c r="K2" s="2"><v>75.50</v></c>';
+        $sheet1 .= '<c r="L2" t="inlineStr"><is><t>Trống</t></is></c>';
+        $sheet1 .= '<c r="M2" t="inlineStr"><is><t>Căn hộ gần sảnh chính</t></is></c>';
         $sheet1 .= '</row>';
 
         // Row 3: Sample Data 2
@@ -367,11 +370,12 @@ class SimpleXlsx
         $sheet1 .= '<c r="E3" t="inlineStr"><is><t>Khu căn hộ cao cấp phía Đông</t></is></c>';
         $sheet1 .= '<c r="F3" s="1"><v>1</v></c>';
         $sheet1 .= '<c r="G3" t="inlineStr"><is><t>Tầng 1</t></is></c>';
-        $sheet1 .= '<c r="H3" t="inlineStr"><is><t>Khu thương mại và căn hộ trệt</t></is></c>';
-        $sheet1 .= '<c r="I3" t="inlineStr"><is><t>A102</t></is></c>';
-        $sheet1 .= '<c r="J3" s="2"><v>85.00</v></c>';
-        $sheet1 .= '<c r="K3" t="inlineStr"><is><t>Đang ở</t></is></c>';
-        $sheet1 .= '<c r="L3" t="inlineStr"><is><t>Căn hộ 2 phòng ngủ</t></is></c>';
+        $sheet1 .= '<c r="H3" t="inlineStr"><is><t>Cư dân</t></is></c>';
+        $sheet1 .= '<c r="I3" t="inlineStr"><is><t>Khu thương mại và căn hộ trệt</t></is></c>';
+        $sheet1 .= '<c r="J3" t="inlineStr"><is><t>A102</t></is></c>';
+        $sheet1 .= '<c r="K3" s="2"><v>85.00</v></c>';
+        $sheet1 .= '<c r="L3" t="inlineStr"><is><t>Đang ở</t></is></c>';
+        $sheet1 .= '<c r="M3" t="inlineStr"><is><t>Căn hộ 2 phòng ngủ</t></is></c>';
         $sheet1 .= '</row>';
 
         // Row 4: Sample Data 3
@@ -383,11 +387,12 @@ class SimpleXlsx
         $sheet1 .= '<c r="E4" t="inlineStr"><is><t>Khu chung cư xã hội phía Nam</t></is></c>';
         $sheet1 .= '<c r="F4" s="1"><v>2</v></c>';
         $sheet1 .= '<c r="G4" t="inlineStr"><is><t>Tầng 2</t></is></c>';
-        $sheet1 .= '<c r="H4" t="inlineStr"><is><t>Tầng dân cư trung cấp</t></is></c>';
-        $sheet1 .= '<c r="I4" t="inlineStr"><is><t>B201</t></is></c>';
-        $sheet1 .= '<c r="J4" s="2"><v>68.20</v></c>';
-        $sheet1 .= '<c r="K4" t="inlineStr"><is><t>Bảo trì</t></is></c>';
-        $sheet1 .= '<c r="L4" t="inlineStr"><is><t>Đang sửa chữa điện nước</t></is></c>';
+        $sheet1 .= '<c r="H4" t="inlineStr"><is><t>Thương mại</t></is></c>';
+        $sheet1 .= '<c r="I4" t="inlineStr"><is><t>Tầng dân cư trung cấp</t></is></c>';
+        $sheet1 .= '<c r="J4" t="inlineStr"><is><t>B201</t></is></c>';
+        $sheet1 .= '<c r="K4" s="2"><v>68.20</v></c>';
+        $sheet1 .= '<c r="L4" t="inlineStr"><is><t>Bảo trì</t></is></c>';
+        $sheet1 .= '<c r="M4" t="inlineStr"><is><t>Đang sửa chữa điện nước</t></is></c>';
         $sheet1 .= '</row>';
 
         $sheet1 .= '  </sheetData>';
