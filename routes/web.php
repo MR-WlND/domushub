@@ -44,6 +44,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // =========================================================================
 Route::middleware(['admin'])->group(function () {
     Route::get('admin', [HomeController::class, 'index'])->name('admin.dashboard');
+    Route::get('/admin/statistics', [HomeController::class, 'statistics'])->name('admin.statistics');
 
     // Block/Building routes (used in views)
     Route::get('/admin/blocks', [\App\Http\Controllers\Admin\BlockController::class, 'index'])->name('admin.blocks.index');
@@ -95,7 +96,7 @@ Route::middleware(['admin'])->group(function () {
     Route::delete('/admin/service-prices/{id}', [ServicePriceController::class, 'destroy'])->name('admin.service-prices.destroy');
 
     Route::get('/admin/invoices', [InvoiceController::class, 'index'])->name('admin.invoices.index');
-    Route::post('/admin/invoices/generate', [InvoiceController::class, 'generate'])->name('admin.invoices.generate');
+    Route::patch('/admin/invoices/{invoice}/mark-paid', [InvoiceController::class, 'markAsPaid'])->name('admin.invoices.mark-paid');
 
 
     // Dịch vụ cư dân
@@ -164,6 +165,10 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/dashboard', function () {
         return view('resident.home.index');
     })->name('resident.dashboard');
+
+    Route::get('/resident/contact', function () {
+        return view('resident.contact.index');
+    })->name('resident.contact');
 
     // Profile
     Route::get('/resident/profile', [ProfileController::class, 'index'])->name('resident.profile.index');

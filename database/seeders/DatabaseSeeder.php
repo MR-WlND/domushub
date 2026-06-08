@@ -25,8 +25,11 @@ class DatabaseSeeder extends Seeder
         $this->call([
             AdminSeeder::class,
             SecuritySeeder::class,
-            BlockFloorApartmentSeeder::class,
             ResidentSeeder::class,
+            BlockFloorApartmentSeeder::class,
+            ServicePriceSeeder::class,
+            InvoiceSeeder::class,
+            SystemSettingSeeder::class,
         ]);
 
     }

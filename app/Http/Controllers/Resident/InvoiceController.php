@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Resident;
 
 use App\Http\Controllers\Controller;
-
 use App\Models\Invoice;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -24,9 +24,10 @@ class InvoiceController extends Controller
             ->pluck('apartment_id')
             ->toArray();
 
-        $query = Invoice::with(['apartment.floor.block'])
+        $query = Invoice::with(['apartment.floor.block', 'details.servicePrice'])
             ->whereIn('apartment_id', $apartmentIds)
-            ->orderByDesc('created_at');
+            ->orderByDesc('billing_year')
+            ->orderByDesc('billing_month');
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -55,10 +56,19 @@ class InvoiceController extends Controller
             return back()->with('error', 'Hoá đơn này đã được thanh toán.');
         }
 
+        // Cập nhật trạng thái hóa đơn
         $invoice->update([
-            'status'         => 'paid',
-            'paid_at'        => now(),
-            'payment_method' => 'transfer',
+            'status' => 'paid',
+        ]);
+
+        // Tạo bản ghi thanh toán tương ứng
+        Payment::create([
+            'bill_id'          => $invoice->id,
+            'amount'           => $invoice->total_amount,
+            'payment_method'   => 'bank_transfer',
+            'transaction_code' => 'TX-' . $invoice->id . '-' . time(),
+            'status'           => 'success',
+            'paid_at'          => now(),
         ]);
 
         return back()->with('success', 'Thanh toán hoá đơn thành công.');

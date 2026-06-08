@@ -1,0 +1,344 @@
+/* Resident Contact Page Stylesheet */
+
+.resident-contact-page {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+    padding-bottom: 2rem;
+    max-width: var(--container-max, 1280px);
+    margin: 0 auto;
+}
+
+/* Contact Group Section */
+.contact-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.contact-group__header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.contact-group__title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin: 0;
+}
+
+.contact-group__title-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Section specific colors for headers */
+.contact-group__title--danger {
+    color: #ba1a1a;
+}
+
+.contact-group__title--primary {
+    color: #00236f;
+}
+
+.contact-group__title--success {
+    color: #006c49;
+}
+
+/* Section Header Badge */
+.status-indicator-badge {
+    background-color: #dcfce7;
+    color: #166534;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.4rem 0.9rem;
+    border-radius: 9999px;
+    letter-spacing: 0.02em;
+}
+
+/* Grid Layout */
+.contact-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+}
+
+/* Contact Card Base styling */
+.contact-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.5rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 175px;
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.03);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.contact-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(30, 58, 138, 0.06);
+}
+
+/* Highlighted card styling (e.g. Ban Quản lý) */
+.contact-card--highlight {
+    border-color: rgba(186, 26, 26, 0.3);
+    box-shadow: 0 4px 16px rgba(186, 26, 26, 0.05);
+}
+
+.contact-card--highlight:hover {
+    box-shadow: 0 8px 24px rgba(186, 26, 26, 0.09);
+    border-color: rgba(186, 26, 26, 0.5);
+}
+
+/* 24/7 Red badge in corner */
+.contact-card__badge-247 {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #ba1a1a;
+    color: #ffffff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.35rem 0.65rem;
+    border-bottom-left-radius: 8px;
+    border-top-right-radius: 11px;
+    letter-spacing: 0.05em;
+}
+
+/* Card Body elements */
+.contact-card__body {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-bottom: 1.25rem;
+}
+
+.contact-card__icon {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+}
+
+.contact-card__icon--danger {
+    background-color: #fef2f2;
+    color: #ba1a1a;
+}
+
+.contact-card__icon--primary {
+    background-color: #eff6ff;
+    color: #00236f;
+}
+
+.contact-card__icon--outline {
+    background-color: #f8fafc;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.contact-card__icon--green {
+    background-color: #f0fdf4;
+    color: #166534;
+}
+
+.contact-card__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.contact-card__info--status {
+    flex: 1;
+}
+
+.contact-card__title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.contact-card__name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+.contact-card__desc {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Status Badges inside cards */
+.status-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+.status-badge--open {
+    background-color: #22c55e;
+    color: #ffffff;
+}
+
+.status-badge--closed {
+    background-color: #94a3b8;
+    color: #ffffff;
+}
+
+/* Contact Button Base */
+.contact-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    height: 40px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+/* Red button for emergency */
+.contact-btn--red {
+    background-color: #ba1a1a;
+    color: #ffffff;
+    border: none;
+}
+
+.contact-btn--red:hover {
+    background-color: #a11414;
+}
+
+/* Navy button for emergency */
+.contact-btn--navy {
+    background-color: #00236f;
+    color: #ffffff;
+    border: none;
+}
+
+.contact-btn--navy:hover {
+    background-color: #001a54;
+}
+
+/* Outline button for building services */
+.contact-btn--outline {
+    background-color: #ffffff;
+    color: #00236f;
+    border: 1px solid #c5c5d3;
+}
+
+.contact-btn--outline:hover {
+    background-color: #f3f4f6;
+    border-color: #00236f;
+}
+
+/* Split Button container (Cứu hoả/Công an) */
+.contact-card__split-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.contact-btn-split {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 0.85rem;
+    height: 34px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: opacity 0.15s;
+}
+
+.contact-btn-split:hover {
+    opacity: 0.85;
+}
+
+.contact-btn-split--red {
+    background-color: #fee2e2;
+    color: #ba1a1a;
+}
+
+.contact-btn-split--blue {
+    background-color: #e0f2fe;
+    color: #0369a1;
+}
+
+/* Phone Display under local amenities */
+.contact-phone-display {
+    border-top: 1px dashed #e2e8f0;
+    padding-top: 0.9rem;
+    display: flex;
+    align-items: center;
+}
+
+.contact-phone-link {
+    color: #2563eb;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: color 0.15s;
+}
+
+.contact-phone-link:hover {
+    color: #1d4ed8;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1200px) {
+    .contact-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .contact-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 580px) {
+    .contact-grid {
+        grid-template-columns: 1fr;
+    }
+    .resident-contact-page {
+        gap: 2rem;
+    }
+    .contact-group__header-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}

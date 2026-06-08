@@ -1,12 +1,28 @@
 <aside class="dashboard-sidebar" id="dashboardSidebar">
     <div class="dashboard-brand">
         <h2 class="dashboard-brand__title">Chung cư Số</h2>
-        <p class="dashboard-brand__label">Admin Portal</p>
+        <p class="dashboard-brand__label">
+            @php
+                $role = auth()->user()->role;
+            @endphp
+            @if($role === 'admin')
+                Admin Portal
+            @elseif($role === 'manager')
+                Quản lý
+            @elseif($role === 'staff')
+                Nhân viên
+            @elseif($role === 'technician')
+                Kỹ thuật viên
+            @endif
+        </p>
     </div>
 
     <nav class="dashboard-nav">
 
-        {{-- TỔNG QUAN --}}
+        {{-- ============================================================== --}}
+        {{-- TỔNG QUAN - Admin & Manager --}}
+        {{-- ============================================================== --}}
+        @if(in_array($role, ['admin', 'manager']))
         <div class="nav-section">
             <span class="nav-section__label">TỔNG QUAN</span>
             <a href="{{ route('admin.dashboard') }}" class="dashboard-nav__item {{ request()->routeIs('admin.dashboard') ? 'dashboard-nav__item--active' : '' }}">
@@ -18,9 +34,21 @@
                 </svg>
                 <span>Trang tổng quan</span>
             </a>
+            <a href="{{ route('admin.statistics') }}" class="dashboard-nav__item {{ request()->routeIs('admin.statistics') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+                <span>Báo cáo & Thống kê</span>
+            </a>
         </div>
+        @endif
 
-        {{-- QUẢN LÝ HẠ TẦNG --}}
+        {{-- ============================================================== --}}
+        {{-- QUẢN LÝ HẠ TẦNG - Chỉ Admin --}}
+        {{-- ============================================================== --}}
+        @if($role === 'admin')
         <div class="nav-section">
             <span class="nav-section__label">QUẢN LÝ HẠ TẦNG</span>
             <a href="{{ route('admin.blocks.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.blocks.*') || request()->routeIs('admin.floors.*') ? 'dashboard-nav__item--active' : '' }}">
@@ -49,8 +77,12 @@
                 <span>Mã mời đăng ký</span>
             </a>
         </div>
+        @endif
 
-        {{-- ĐIỆN NƯỚC & HOÁ ĐƠN --}}
+        {{-- ============================================================== --}}
+        {{-- ĐIỆN NƯỚC & HOÁ ĐƠN - Admin & Staff --}}
+        {{-- ============================================================== --}}
+        @if(in_array($role, ['admin', 'staff']))
         <div class="nav-section">
             <span class="nav-section__label">ĐIỆN NƯỚC & HOÁ ĐƠN</span>
             <a href="{{ route('admin.utility-readings.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.utility-readings.*') ? 'dashboard-nav__item--active' : '' }}">
@@ -59,6 +91,7 @@
                 </svg>
                 <span>Chốt số điện nước</span>
             </a>
+            @if($role === 'admin')
             <a href="{{ route('admin.service-prices.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.service-prices.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="12" y1="1" x2="12" y2="23"></line>
@@ -66,6 +99,7 @@
                 </svg>
                 <span>Cấu hình giá</span>
             </a>
+            @endif
             <a href="{{ route('admin.invoices.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.invoices.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect>
@@ -74,8 +108,12 @@
                 <span>Hoá đơn</span>
             </a>
         </div>
+        @endif
 
-        {{-- DỊCH VỤ CƯ DÂN --}}
+        {{-- ============================================================== --}}
+        {{-- DỊCH VỤ CƯ DÂN - Admin & Manager --}}
+        {{-- ============================================================== --}}
+        @if(in_array($role, ['admin', 'manager']))
         <div class="nav-section">
             <span class="nav-section__label">DỊCH VỤ CƯ DÂN</span>
             <a href="{{ route('admin.residents.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.residents.*') ? 'dashboard-nav__item--active' : '' }}">
@@ -111,7 +149,7 @@
                     <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
                     <circle cx="12" cy="13" r="4"></circle>
                 </svg>
-                <span>Phản ánh sự cố</span>
+                <span>Phê duyệt phản ánh</span>
             </a>
             <a href="{{ route('admin.amenities.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.amenities.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -123,8 +161,28 @@
                 <span>Đặt tiện ích</span>
             </a>
         </div>
+        @endif
 
-        {{-- TƯƠNG TÁC & BẢNG TIN --}}
+        {{-- ============================================================== --}}
+        {{-- PHẢN ÁNH SỰ CỐ - Technician --}}
+        {{-- Technician chỉ thấy danh sách phản ánh được giao --}}
+        {{-- ============================================================== --}}
+        @if($role === 'technician')
+        <div class="nav-section">
+            <span class="nav-section__label">PHẢN ÁNH SỰ CỐ</span>
+            <a href="{{ route('admin.incidents.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.incidents.*') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                </svg>
+                <span>Phản ánh được giao</span>
+            </a>
+        </div>
+        @endif
+
+        {{-- ============================================================== --}}
+        {{-- TƯƠNG TÁC & BẢNG TIN - Admin & Manager --}}
+        {{-- ============================================================== --}}
+        @if(in_array($role, ['admin', 'manager']))
         <div class="nav-section">
             <span class="nav-section__label">TƯƠNG TÁC & BẢNG TIN</span>
             <a href="{{ route('admin.announcements.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.announcements.*') ? 'dashboard-nav__item--active' : '' }}">
@@ -134,8 +192,13 @@
                 <span>Bảng tin chung cư</span>
             </a>
         </div>
+        @endif
 
-        {{-- CẤU HÌNH HỆ THỐNG --}}
+        {{-- ============================================================== --}}
+        {{-- CẤU HÌNH HỆ THỐNG - Chỉ Admin --}}
+        {{-- Manager, Staff, Technician KHÔNG thấy mục này --}}
+        {{-- ============================================================== --}}
+        @if($role === 'admin')
         <div class="nav-section">
             <span class="nav-section__label">CẤU HÌNH HỆ THỐNG</span>
             <a href="{{ route('admin.users.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.users.*') ? 'dashboard-nav__item--active' : '' }}">
@@ -153,6 +216,7 @@
                 <span>Lịch sử thao tác</span>
             </a>
         </div>
+        @endif
 
     </nav>
 
@@ -172,4 +236,3 @@
         </div>
     </div>
 </aside>
-
