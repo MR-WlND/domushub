@@ -41,23 +41,35 @@
         <h4>Thông tin căn hộ</h4>
     </div>
 
-    <form action="{{ route('admin.utility-readings.store') }}" method="POST" id="createForm">
+    <form action="{{ route('admin.utility-readings.store') }}" method="POST" id="createForm" enctype="multipart/form-data">
         @csrf
 
         <div class="util-form-grid-2">
+            {{-- Chọn Tòa nhà --}}
+            <div class="util-form-group">
+                <label class="util-form-label">Block / Tòa nhà <span style="color:#ef4444">*</span></label>
+                <select id="block_select" class="util-form-input" required>
+                    <option value="">— Chọn tòa nhà —</option>
+                    @foreach ($blocks as $block)
+                        <option value="{{ $block->id }}">{{ $block->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            {{-- Chọn Tầng --}}
+            <div class="util-form-group">
+                <label class="util-form-label">Tầng <span style="color:#ef4444">*</span></label>
+                <select id="floor_select" class="util-form-input" required disabled>
+                    <option value="">— Chọn tầng —</option>
+                </select>
+            </div>
+
             {{-- Căn hộ --}}
             <div class="util-form-group" style="grid-column: span 2;">
-                <label class="util-form-label">Căn hộ <span class="util-form-label .required" style="color:#ef4444">*</span></label>
+                <label class="util-form-label">Căn hộ <span style="color:#ef4444">*</span></label>
                 <select name="apartment_id" id="apartment_id"
-                    class="util-form-input {{ $errors->has('apartment_id') ? 'util-form-input--error' : '' }}" required>
+                    class="util-form-input {{ $errors->has('apartment_id') ? 'util-form-input--error' : '' }}" required disabled>
                     <option value="">— Chọn căn hộ —</option>
-                    @foreach ($apartments as $apartment)
-                        <option value="{{ $apartment->id }}" {{ old('apartment_id') == $apartment->id ? 'selected' : '' }}>
-                            {{ $apartment->apartment_number }}
-                            – {{ $apartment->floor->block->name ?? '' }}
-                            / {{ $apartment->floor->name ?? 'Tầng ' . $apartment->floor->floor_number }}
-                        </option>
-                    @endforeach
                 </select>
                 @error('apartment_id')
                     <p class="util-form-error">{{ $message }}</p>
@@ -103,14 +115,18 @@
 
         {{-- Chỉ số --}}
         <div class="util-form-grid-3" style="margin-top: 0;">
+            @if(auth()->user()->role !== 'technician')
             <div class="util-form-group">
                 <label class="util-form-label">Chỉ số cũ (tự động)</label>
                 <input type="number" id="old_value_display" class="util-form-input util-form-input--readonly"
                     value="0" readonly>
                 <p class="util-form-hint">Lấy tự động từ kỳ trước</p>
             </div>
+            @else
+            <input type="hidden" id="old_value_display" value="0">
+            @endif
 
-            <div class="util-form-group">
+            <div class="util-form-group" style="{{ auth()->user()->role === 'technician' ? 'grid-column: span 3;' : '' }}">
                 <label class="util-form-label">Chỉ số mới <span style="color:#ef4444">*</span></label>
                 <input type="number" name="new_value" id="new_value"
                     value="{{ old('new_value') }}" min="0"
@@ -121,11 +137,25 @@
                 @enderror
             </div>
 
+            @if(auth()->user()->role !== 'technician')
             <div class="util-form-group">
                 <label class="util-form-label">Tiêu thụ (tự tính)</label>
                 <input type="text" id="usage_display" class="util-form-input util-form-input--readonly"
                     value="0" readonly style="font-weight: 700; color: #00236f;">
                 <p class="util-form-hint">= Chỉ số mới – Chỉ số cũ</p>
+            </div>
+            @else
+            <input type="hidden" id="usage_display" value="0">
+            @endif
+        </div>
+
+        {{-- Ảnh công tơ minh chứng --}}
+        <div class="util-form-group" style="margin-top: 15px; margin-bottom: 20px;">
+            <label class="util-form-label">Ảnh minh chứng công tơ</label>
+            <input type="file" name="image_proof" id="image_proof" accept="image/*" class="util-form-input">
+            <p class="util-form-hint">Hỗ trợ các file định dạng ảnh (JPG, PNG, WebP) tối đa 4MB.</p>
+            <div id="image_preview_container" style="margin-top: 10px; display: none;">
+                <img id="image_preview" src="" alt="Xem trước ảnh công tơ" style="max-width: 240px; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
             </div>
         </div>
 
@@ -149,6 +179,8 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const blockSelect  = document.getElementById('block_select');
+    const floorSelect  = document.getElementById('floor_select');
     const apartmentId  = document.getElementById('apartment_id');
     const type         = document.getElementById('type');
     const recordMonth  = document.getElementById('record_month');
@@ -156,6 +188,62 @@ document.addEventListener('DOMContentLoaded', function () {
     const oldValueDisp = document.getElementById('old_value_display');
     const newValueInp  = document.getElementById('new_value');
     const usageDisp    = document.getElementById('usage_display');
+
+    // Dữ liệu được truyền từ Laravel
+    const floorsData = @json($floors);
+    const apartmentsData = @json($apartments);
+
+    function populateFloors(blockId) {
+        floorSelect.innerHTML = '<option value="">— Chọn tầng —</option>';
+        apartmentId.innerHTML = '<option value="">— Chọn căn hộ —</option>';
+        apartmentId.disabled = true;
+
+        if (!blockId) {
+            floorSelect.disabled = true;
+            return;
+        }
+
+        const filteredFloors = floorsData.filter(f => f.block_id == blockId);
+        filteredFloors.forEach(f => {
+            const opt = document.createElement('option');
+            opt.value = f.id;
+            opt.textContent = f.name || `Tầng ${f.floor_number}`;
+            floorSelect.appendChild(opt);
+        });
+
+        floorSelect.disabled = false;
+    }
+
+    function populateApartments(floorId) {
+        apartmentId.innerHTML = '<option value="">— Chọn căn hộ —</option>';
+
+        if (!floorId) {
+            apartmentId.disabled = true;
+            return;
+        }
+
+        const filteredApts = apartmentsData.filter(a => a.floor_id == floorId);
+        filteredApts.forEach(a => {
+            const opt = document.createElement('option');
+            opt.value = a.id;
+            opt.textContent = a.apartment_number;
+            apartmentId.appendChild(opt);
+        });
+
+        apartmentId.disabled = false;
+    }
+
+    blockSelect.addEventListener('change', function () {
+        populateFloors(this.value);
+        oldValueDisp.value = 0;
+        calcUsage();
+    });
+
+    floorSelect.addEventListener('change', function () {
+        populateApartments(this.value);
+        oldValueDisp.value = 0;
+        calcUsage();
+    });
 
     function fetchOldValue() {
         const aptId = apartmentId.value;
@@ -191,7 +279,41 @@ document.addEventListener('DOMContentLoaded', function () {
     recordYear.addEventListener('change', fetchOldValue);
     newValueInp.addEventListener('input', calcUsage);
 
-    if (apartmentId.value && type.value) fetchOldValue();
+    // Xử lý xem trước ảnh
+    const imageProof = document.getElementById('image_proof');
+    const previewContainer = document.getElementById('image_preview_container');
+    const previewImg = document.getElementById('image_preview');
+
+    if (imageProof) {
+        imageProof.addEventListener('change', function () {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    previewImg.src = e.target.result;
+                    previewContainer.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            } else {
+                previewImg.src = '';
+                previewContainer.style.display = 'none';
+            }
+        });
+    }
+
+    // Khôi phục giá trị cũ nếu có lỗi validate hoặc chọn lại
+    const oldApartmentId = "{{ old('apartment_id') }}";
+    if (oldApartmentId) {
+        const apt = apartmentsData.find(a => a.id == oldApartmentId);
+        if (apt) {
+            blockSelect.value = apt.floor.block_id;
+            populateFloors(apt.floor.block_id);
+            floorSelect.value = apt.floor_id;
+            populateApartments(apt.floor_id);
+            apartmentId.value = oldApartmentId;
+            fetchOldValue();
+        }
+    }
 });
 </script>
 @endpush

@@ -87,12 +87,13 @@ class UtilityMeterController extends Controller
     public function create(): View
     {
         $blocks     = Block::orderBy('name')->get();
+        $floors     = Floor::orderBy('floor_number')->get();
         $apartments = Apartment::with('floor.block')
             ->where('status', '!=', 'maintenance')
             ->orderBy('apartment_number')
             ->get();
 
-        return view('admin.utility-readings.create', compact('blocks', 'apartments'));
+        return view('admin.utility-readings.create', compact('blocks', 'floors', 'apartments'));
     }
 
     /**
@@ -106,11 +107,14 @@ class UtilityMeterController extends Controller
             'record_month'  => 'required|integer|min:1|max:12',
             'record_year'   => 'required|integer|min:2020|max:2100',
             'new_value'     => 'required|integer|min:0',
+            'image_proof'   => 'nullable|image|max:4096',
         ], [
             'apartment_id.required' => 'Vui lòng chọn căn hộ.',
             'type.required'         => 'Vui lòng chọn loại (điện/nước).',
             'new_value.required'    => 'Vui lòng nhập chỉ số mới.',
             'new_value.min'         => 'Chỉ số mới phải >= 0.',
+            'image_proof.image'     => 'Tệp minh chứng phải là hình ảnh.',
+            'image_proof.max'       => 'Dung lượng ảnh tối đa là 4MB.',
         ]);
 
         // Kiểm tra trùng
@@ -134,6 +138,11 @@ class UtilityMeterController extends Controller
             $validated['record_year']
         ) ?? 0;
 
+        $imageProofPath = null;
+        if ($request->hasFile('image_proof')) {
+            $imageProofPath = $request->file('image_proof')->store('proofs', 'public');
+        }
+
         UtilityMeter::create([
             'apartment_id'  => $validated['apartment_id'],
             'type'          => $validated['type'],
@@ -142,14 +151,37 @@ class UtilityMeterController extends Controller
             'old_value'     => $oldValue,
             'new_value'     => $validated['new_value'],
             'recorded_by'   => Auth::id(),
+            'status'        => 'pending',
+            'image_proof'   => $imageProofPath,
         ]);
 
-        $this->syncInvoice((int) $validated['apartment_id'], (int) $validated['record_month'], (int) $validated['record_year']);
+        // Gửi thông báo cho nhân viên kế toán (staff) khi kỹ thuật viên ghi số
+        if (Auth::user()->role === 'technician') {
+            $apartment = Apartment::find($validated['apartment_id']);
+            $typeName = $validated['type'] === 'electricity' ? 'Điện' : 'Nước';
+            $recorderName = Auth::user()->name;
+            $apartmentNumber = $apartment->apartment_number ?? 'N/A';
+            
+            $accountants = \App\Models\User::whereIn('role', ['staff', 'manager', 'admin'])->get();
+            $notificationData = [
+                'title' => '⏳ Chỉ số mới chờ phê duyệt',
+                'message' => "Kỹ thuật viên <strong>{$recorderName}</strong> đã gửi số <strong>{$typeName}</strong> mới cho căn hộ <strong>{$apartmentNumber}</strong> (Kỳ {$validated['record_month']}/{$validated['record_year']}): {$validated['new_value']}. Vui lòng kiểm tra và duyệt.",
+                'url' => route('admin.utility-readings.index', [
+                    'month' => $validated['record_month'],
+                    'year' => $validated['record_year']
+                ]),
+                'type' => 'single',
+            ];
+            
+            foreach ($accountants as $acc) {
+                $acc->notify(new \App\Notifications\UtilityIndexRecordedNotification($notificationData));
+            }
+        }
 
         return redirect()->route('admin.utility-readings.index', [
             'month' => $validated['record_month'],
             'year'  => $validated['record_year'],
-        ])->with('success', 'Đã ghi chỉ số thành công và đồng bộ hóa đơn.');
+        ])->with('success', 'Đã ghi nhận chỉ số mới và chuyển trạng thái Chờ chốt.');
     }
 
     /**
@@ -239,10 +271,16 @@ class UtilityMeterController extends Controller
         $skipped = 0;
         $affectedApartments = [];
 
-        foreach ($request->readings as $reading) {
+        foreach ($request->readings as $i => $reading) {
             $aptId = $reading['apartment_id'];
             $elecSaved = false;
             $waterSaved = false;
+
+            // Tải ảnh công tơ nếu có
+            $imageProofPath = null;
+            if ($request->hasFile("readings.{$i}.image_proof")) {
+                $imageProofPath = $request->file("readings.{$i}.image_proof")->store('proofs', 'public');
+            }
 
             // ── Điện ────────────────────────────────────
             if (isset($reading['elec_new']) && $reading['elec_new'] !== '') {
@@ -264,6 +302,8 @@ class UtilityMeterController extends Controller
                         'old_value'    => $elecOld,
                         'new_value'    => (int) $reading['elec_new'],
                         'recorded_by'  => Auth::id(),
+                        'status'       => 'pending',
+                        'image_proof'  => $imageProofPath,
                     ]);
                     $saved++;
                     $elecSaved = true;
@@ -290,6 +330,8 @@ class UtilityMeterController extends Controller
                         'old_value'    => $waterOld,
                         'new_value'    => (int) $reading['water_new'],
                         'recorded_by'  => Auth::id(),
+                        'status'       => 'pending',
+                        'image_proof'  => $imageProofPath,
                     ]);
                     $saved++;
                     $waterSaved = true;
@@ -301,12 +343,28 @@ class UtilityMeterController extends Controller
             }
         }
 
-        // Đồng bộ hóa hóa đơn cho tất cả căn hộ bị ảnh hưởng
-        foreach (array_keys($affectedApartments) as $aptId) {
-            $this->syncInvoice((int) $aptId, $month, $year);
+        // Gửi thông báo cho nhân viên kế toán (staff) khi kỹ thuật viên ghi số hàng loạt
+        if ($saved > 0 && Auth::user()->role === 'technician') {
+            $recorderName = Auth::user()->name;
+            $countApts = count($affectedApartments);
+            
+            $accountants = \App\Models\User::whereIn('role', ['staff', 'manager', 'admin'])->get();
+            $notificationData = [
+                'title' => '⏳ Chốt số hàng loạt chờ phê duyệt',
+                'message' => "Kỹ thuật viên <strong>{$recorderName}</strong> đã chốt hàng loạt chỉ số mới cho <strong>{$countApts}</strong> căn hộ (Kỳ {$month}/{$year}) và đang chờ duyệt.",
+                'url' => route('admin.utility-readings.index', [
+                    'month' => $month,
+                    'year' => $year
+                ]),
+                'type' => 'batch',
+            ];
+            
+            foreach ($accountants as $acc) {
+                $acc->notify(new \App\Notifications\UtilityIndexRecordedNotification($notificationData));
+            }
         }
 
-        $message = "Đã ghi thành công {$saved} chỉ số điện/nước và cập nhật hóa đơn tương ứng.";
+        $message = "Đã gửi thành công {$saved} chỉ số điện/nước và đang chờ kế toán phê duyệt.";
         if ($skipped > 0) {
             $message .= " Bỏ qua {$skipped} mục đã chốt trước đó.";
         }
@@ -322,6 +380,10 @@ class UtilityMeterController extends Controller
      */
     public function edit(int $id): View
     {
+        if (auth()->user()->role === 'technician') {
+            abort(403, 'Bạn không có quyền chỉnh sửa chỉ số.');
+        }
+
         $reading = UtilityMeter::with('apartment.floor.block')->findOrFail($id);
 
         return view('admin.utility-readings.edit', compact('reading'));
@@ -332,6 +394,10 @@ class UtilityMeterController extends Controller
      */
     public function update(Request $request, int $id): RedirectResponse
     {
+        if (auth()->user()->role === 'technician') {
+            abort(403, 'Bạn không có quyền chỉnh sửa chỉ số.');
+        }
+
         $reading = UtilityMeter::findOrFail($id);
 
         $validated = $request->validate([
@@ -345,12 +411,15 @@ class UtilityMeterController extends Controller
 
         $reading->update($validated);
 
-        $this->syncInvoice($reading->apartment_id, (int) $reading->record_month, (int) $reading->record_year);
+        // Chỉ đồng bộ hóa đơn nếu bản ghi đã được duyệt
+        if ($reading->status === 'approved') {
+            $this->syncInvoice($reading->apartment_id, (int) $reading->record_month, (int) $reading->record_year);
+        }
 
         return redirect()->route('admin.utility-readings.index', [
             'month' => $reading->record_month,
             'year'  => $reading->record_year,
-        ])->with('success', 'Đã cập nhật chỉ số và hóa đơn thành công.');
+        ])->with('success', 'Đã cập nhật chỉ số thành công.');
     }
 
     /**
@@ -358,19 +427,83 @@ class UtilityMeterController extends Controller
      */
     public function destroy(int $id): RedirectResponse
     {
+        if (auth()->user()->role === 'technician') {
+            abort(403, 'Bạn không có quyền xóa chỉ số.');
+        }
+
         $reading = UtilityMeter::findOrFail($id);
         $month   = $reading->record_month;
         $year    = $reading->record_year;
         $apartmentId = $reading->apartment_id;
+        $status = $reading->status;
 
         $reading->delete();
 
-        $this->syncInvoice($apartmentId, (int) $month, (int) $year);
+        if ($status === 'approved') {
+            $this->syncInvoice($apartmentId, (int) $month, (int) $year);
+        }
 
         return redirect()->route('admin.utility-readings.index', [
             'month' => $month,
             'year'  => $year,
-        ])->with('success', 'Đã xóa chỉ số và đồng bộ hóa đơn thành công.');
+        ])->with('success', 'Đã xóa chỉ số thành công.');
+    }
+
+    /**
+     * Phê duyệt chỉ số đơn lẻ
+     */
+    public function approve(int $id): RedirectResponse
+    {
+        if (in_array(auth()->user()->role, ['technician'])) {
+            abort(403, 'Bạn không có quyền phê duyệt chỉ số.');
+        }
+
+        $reading = UtilityMeter::findOrFail($id);
+        $reading->update(['status' => 'approved']);
+
+        // Đồng bộ hóa đơn ngay lập tức
+        $this->syncInvoice($reading->apartment_id, (int) $reading->record_month, (int) $reading->record_year);
+
+        return redirect()->route('admin.utility-readings.index', [
+            'month' => $reading->record_month,
+            'year'  => $reading->record_year,
+        ])->with('success', 'Đã phê duyệt chỉ số và đồng bộ hóa đơn.');
+    }
+
+    /**
+     * Phê duyệt hàng loạt chỉ số
+     */
+    public function batchApprove(Request $request): RedirectResponse
+    {
+        if (in_array(auth()->user()->role, ['technician'])) {
+            abort(403, 'Bạn không có quyền phê duyệt chỉ số.');
+        }
+
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|exists:utility_meters,id',
+            'month' => 'required|integer',
+            'year' => 'required|integer',
+        ]);
+
+        $ids = $request->ids;
+        $readings = UtilityMeter::whereIn('id', $ids)->where('status', 'pending')->get();
+        $affectedApartments = [];
+
+        foreach ($readings as $reading) {
+            $reading->update(['status' => 'approved']);
+            $affectedApartments[$reading->apartment_id] = true;
+        }
+
+        // Đồng bộ hóa đơn cho toàn bộ căn hộ bị ảnh hưởng
+        foreach (array_keys($affectedApartments) as $aptId) {
+            $this->syncInvoice((int) $aptId, (int) $request->month, (int) $request->year);
+        }
+
+        return redirect()->route('admin.utility-readings.index', [
+            'month' => $request->month,
+            'year'  => $request->year,
+        ])->with('success', 'Đã phê duyệt thành công ' . count($readings) . ' chỉ số và đồng bộ hóa đơn.');
     }
 
     /**
@@ -400,17 +533,19 @@ class UtilityMeterController extends Controller
      */
     private function syncInvoice(int $apartmentId, int $month, int $year): void
     {
-        // 1. Tìm tất cả chỉ số điện và nước của căn hộ này trong tháng/năm
+        // 1. Tìm tất cả chỉ số điện và nước của căn hộ này trong tháng/năm có trạng thái APPROVED
         $elecReading = UtilityMeter::where('apartment_id', $apartmentId)
             ->where('type', 'electricity')
             ->where('record_month', $month)
             ->where('record_year', $year)
+            ->where('status', 'approved')
             ->first();
 
         $waterReading = UtilityMeter::where('apartment_id', $apartmentId)
             ->where('type', 'water')
             ->where('record_month', $month)
             ->where('record_year', $year)
+            ->where('status', 'approved')
             ->first();
 
         // 2. Đảm bảo ServicePrice tồn tại cho điện và nước
@@ -742,6 +877,7 @@ class UtilityMeterController extends Controller
                             'old_value'   => $elecOld,
                             'new_value'   => $elecNew,
                             'recorded_by' => Auth::id(),
+                            'status'      => 'pending',
                         ]
                     );
                     $successCount++;
@@ -767,6 +903,7 @@ class UtilityMeterController extends Controller
                             'old_value'   => $waterOld,
                             'new_value'   => $waterNew,
                             'recorded_by' => Auth::id(),
+                            'status'      => 'pending',
                         ]
                     );
                     $successCount++;
@@ -788,17 +925,12 @@ class UtilityMeterController extends Controller
                 return back()->with('error', 'Import thất bại do có dữ liệu lỗi. Vui lòng kiểm tra lại file mẫu.')->withErrors($errors);
             }
 
-            // Đồng bộ hóa hóa đơn cho tất cả các căn hộ bị ảnh hưởng
-            foreach ($affectedApartments as $affected) {
-                $this->syncInvoice($affected['apartment_id'], $affected['month'], $affected['year']);
-            }
-
             DB::commit();
 
             return redirect()->route('admin.utility-readings.index', [
                 'month' => $month,
                 'year'  => $year,
-            ])->with('success', "Nhập thành công {$successCount} chỉ số điện/nước từ file Excel/CSV và tự động cập nhật hóa đơn tương ứng.");
+            ])->with('success', "Nhập thành công {$successCount} chỉ số điện/nước từ file Excel/CSV ở trạng thái Chờ chốt.");
 
         } catch (\Exception $e) {
             DB::rollBack();

@@ -80,9 +80,9 @@
         @endif
 
         {{-- ============================================================== --}}
-        {{-- ĐIỆN NƯỚC & HOÁ ĐƠN - Admin & Staff --}}
+        {{-- ĐIỆN NƯỚC & HOÁ ĐƠN - Admin, Staff & Technician --}}
         {{-- ============================================================== --}}
-        @if(in_array($role, ['admin', 'staff']))
+        @if(in_array($role, ['admin', 'staff', 'technician']))
         <div class="nav-section">
             <span class="nav-section__label">ĐIỆN NƯỚC & HOÁ ĐƠN</span>
             <a href="{{ route('admin.utility-readings.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.utility-readings.*') ? 'dashboard-nav__item--active' : '' }}">
@@ -100,6 +100,7 @@
                 <span>Cấu hình giá</span>
             </a>
             @endif
+            @if(in_array($role, ['admin', 'staff']))
             <a href="{{ route('admin.invoices.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.invoices.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect>
@@ -107,6 +108,7 @@
                 </svg>
                 <span>Hoá đơn</span>
             </a>
+            @endif
         </div>
         @endif
 

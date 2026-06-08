@@ -11,6 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Bỏ qua nếu cột đã tồn tại (do migration khác tạo trước)
+        if (Schema::hasColumn('users', 'apartment_id')) {
+            return;
+        }
+
         Schema::table('users', function (Blueprint $table) {
             $table->foreignId('apartment_id')->nullable()->after('status')->constrained('apartments')->onDelete('set null');
         });
@@ -21,6 +26,11 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Chỉ xóa nếu cột thực sự tồn tại
+        if (!Schema::hasColumn('users', 'apartment_id')) {
+            return;
+        }
+
         Schema::table('users', function (Blueprint $table) {
             $table->dropForeign(['apartment_id']);
             $table->dropColumn('apartment_id');
