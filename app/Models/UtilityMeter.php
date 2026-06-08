@@ -9,6 +9,7 @@ class UtilityMeter extends Model
 {
     const STATUS_PENDING = 'pending';
     const STATUS_APPROVED = 'approved';
+    const STATUS_REJECTED = 'rejected';
 
     protected $table = 'utility_meters';
 
@@ -23,6 +24,7 @@ class UtilityMeter extends Model
         'image_proof',
         'recorded_by',
         'status',
+        'is_reset',
     ];
 
     /*

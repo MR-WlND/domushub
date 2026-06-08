@@ -286,9 +286,21 @@
                                     class="batch-meter-input elec-input"
                                     min="{{ $data['elec_old'] }}"
                                     data-old="{{ $data['elec_old'] }}"
+                                    data-original-old="{{ $data['elec_old'] }}"
                                     data-type="elec"
                                     data-index="{{ $i }}"
                                     placeholder="Chỉ số mới">
+                                <div style="margin-top: 4px;">
+                                    <label style="display:inline-flex; align-items:center; gap:4px; font-size:10px; color:#92400e; cursor:pointer;">
+                                        <input type="checkbox"
+                                            name="readings[{{ $i }}][elec_is_reset]"
+                                            value="1"
+                                            class="elec-reset-cb"
+                                            data-index="{{ $i }}"
+                                            style="width:12px; height:12px; margin:0;">
+                                        Thay mới
+                                    </label>
+                                </div>
                             @else
                                 <span style="color:#15803d;font-weight:600;font-size:13px;">✓ Đã chốt</span>
                                 <input type="hidden" name="readings[{{ $i }}][apartment_id]" value="{{ $data['apartment']->id }}">
@@ -314,9 +326,21 @@
                                     class="batch-meter-input water-input"
                                     min="{{ $data['water_old'] }}"
                                     data-old="{{ $data['water_old'] }}"
+                                    data-original-old="{{ $data['water_old'] }}"
                                     data-type="water"
                                     data-index="{{ $i }}"
                                     placeholder="Chỉ số mới">
+                                <div style="margin-top: 4px;">
+                                    <label style="display:inline-flex; align-items:center; gap:4px; font-size:10px; color:#1e40af; cursor:pointer;">
+                                        <input type="checkbox"
+                                            name="readings[{{ $i }}][water_is_reset]"
+                                            value="1"
+                                            class="water-reset-cb"
+                                            data-index="{{ $i }}"
+                                            style="width:12px; height:12px; margin:0;">
+                                        Thay mới
+                                    </label>
+                                </div>
                             @else
                                 <span style="color:#15803d;font-weight:600;font-size:13px;">✓ Đã chốt</span>
                             @endif
@@ -430,6 +454,38 @@ document.addEventListener('DOMContentLoaded', function () {
                     chip.className   = 'usage-chip usage-chip--zero';
                 }
             }
+        });
+    });
+
+    // ── Xử lý cờ Thay mới (Reset) ──────────────────────
+    function handleResetCheckbox(cb, inputClass) {
+        const idx = cb.dataset.index;
+        const row = cb.closest('tr');
+        const inp = row.querySelector('.' + inputClass);
+        
+        if (inp) {
+            if (cb.checked) {
+                inp.dataset.old = 0;
+                inp.min = 0;
+            } else {
+                const originalOld = inp.dataset.originalOld || 0;
+                inp.dataset.old = originalOld;
+                inp.min = originalOld;
+            }
+            // Trigger input event to recalculate realtime usage
+            inp.dispatchEvent(new Event('input'));
+        }
+    }
+
+    document.querySelectorAll('.elec-reset-cb').forEach(cb => {
+        cb.addEventListener('change', function() {
+            handleResetCheckbox(this, 'elec-input');
+        });
+    });
+
+    document.querySelectorAll('.water-reset-cb').forEach(cb => {
+        cb.addEventListener('change', function() {
+            handleResetCheckbox(this, 'water-input');
         });
     });
 
