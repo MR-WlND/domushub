@@ -38,7 +38,17 @@
         <div class="dashboard-user-pill">
             <div class="user-info">
                 <strong class="user-name">@yield('user_name', auth()->user()->name ?? 'Admin User')</strong>
-                <span class="user-role">@yield('user_role_label', 'SUPER ADMINISTRATOR')</span>
+                <span class="user-role">
+                    @yield('user_role_label',
+                        match(auth()->user()->role ?? 'admin') {
+                            'admin' => 'SUPER ADMINISTRATOR',
+                            'manager' => 'QUẢN LÝ',
+                            'staff' => 'NHÂN VIÊN',
+                            'technician' => 'KỸ THUẬT VIÊN',
+                            default => strtoupper(auth()->user()->role ?? 'ADMIN'),
+                        }
+                    )
+                </span>
             </div>
             <div class="user-avatar-container">
                 <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Avatar" class="user-avatar">

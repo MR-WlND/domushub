@@ -51,11 +51,14 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
-        if ($user->role !== 'admin') {
+        // Cho phép admin, manager, staff, technician đăng nhập vào admin portal
+        $allowedRoles = ['admin', 'manager', 'staff', 'technician'];
+
+        if (! in_array($user->role, $allowedRoles, true)) {
             Auth::logout();
 
             return back()->withErrors([
-                'email' => 'Tài khoản này không có quyền truy cập vào admin.',
+                'email' => 'Tài khoản này không có quyền truy cập vào hệ thống quản trị.',
             ])->onlyInput('email');
         }
 
@@ -292,7 +295,8 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        if ($role === 'admin') {
+        // Admin, manager, staff, technician đều về trang login admin
+        if (in_array($role, ['admin', 'manager', 'staff', 'technician'], true)) {
             return redirect()->route('admin.login');
         }
 

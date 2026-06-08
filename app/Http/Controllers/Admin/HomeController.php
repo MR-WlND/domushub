@@ -14,9 +14,22 @@ class HomeController extends Controller
 {
     /**
      * Màn hình tổng quan Admin Dashboard.
+     * Staff và Technician sẽ được redirect tới trang chức năng chính.
      */
-    public function index(): View
+    public function index(): View|\Illuminate\Http\RedirectResponse
     {
+        $user = auth()->user();
+
+        // Staff → redirect tới trang Điện nước
+        if ($user->role === 'staff') {
+            return redirect()->route('admin.utility-readings.index');
+        }
+
+        // Technician → redirect tới trang Phản ánh sự cố
+        if ($user->role === 'technician') {
+            return redirect()->route('admin.incidents.index');
+        }
+
         $totalBlocks = Block::count();
         $totalFloors = Floor::count();
         $totalApartments = Apartment::count();
