@@ -20,7 +20,7 @@
         <p class="page-subtitle">Tổng quan tài chính và tình trạng thu phí toàn tòa nhà</p>
     </div>
     <div class="page-actions">
-        <form method="GET" action="{{ route('admin.invoices.stats') }}" style="display:flex;gap:8px;align-items:center">
+        <form method="GET" action="{{ route('admin.statistics') }}" style="display:flex;gap:8px;align-items:center">
             <select name="year" class="period-select" onchange="this.form.submit()">
                 @foreach(range(now()->year, now()->year - 2) as $y)
                     <option value="{{ $y }}" {{ $y == $year ? 'selected' : '' }}>{{ $y }}</option>

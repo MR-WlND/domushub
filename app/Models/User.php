@@ -79,4 +79,34 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Apartment::class);
     }
+
+    // ── Role helpers ────────────────────────────────────────────────
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isManager(): bool
+    {
+        return $this->role === 'manager';
+    }
+
+    public function isStaff(): bool
+    {
+        return $this->role === 'staff';
+    }
+
+    public function isTechnician(): bool
+    {
+        return $this->role === 'technician';
+    }
+
+    /**
+     * Kiểm tra user có thuộc nhóm admin portal hay không
+     */
+    public function isAdminPortalUser(): bool
+    {
+        return in_array($this->role, ['admin', 'manager', 'staff', 'technician'], true);
+    }
 }

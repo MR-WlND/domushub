@@ -9,9 +9,15 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AdminMiddleware
 {
+    /**
+     * Các role được phép truy cập admin panel.
+     * Mỗi role sẽ thấy menu khác nhau tuỳ theo phân quyền trong sidebar.
+     */
+    protected array $allowedRoles = ['admin', 'manager', 'staff', 'technician'];
+
     public function handle(Request $request, Closure $next): Response
     {
-        if (! Auth::check() || Auth::user()->role !== 'admin') {
+        if (! Auth::check() || ! in_array(Auth::user()->role, $this->allowedRoles, true)) {
             abort(403, 'Bạn không có quyền truy cập.');
         }
 
