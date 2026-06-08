@@ -92,10 +92,19 @@
                 <label class="util-form-label">Chỉ số cũ <span style="color:#ef4444">*</span></label>
                 <input type="number" name="old_value" id="old_value"
                     value="{{ old('old_value', $reading->old_value) }}" min="0"
-                    class="util-form-input {{ $errors->has('old_value') ? 'util-form-input--error' : '' }}" required>
+                    class="util-form-input {{ $errors->has('old_value') ? 'util-form-input--error' : '' }} util-form-input--readonly" 
+                    required readonly>
                 @error('old_value')
                     <p class="util-form-error">{{ $message }}</p>
                 @enderror
+                @if(auth()->user()->role === 'admin')
+                <div style="margin-top: 6px;">
+                    <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 11px; font-weight: 600; color: #00236f;">
+                        <input type="checkbox" id="manual_adjust_cb" style="width: 14px; height: 14px; accent-color: #00236f; cursor: pointer; margin: 0;">
+                        ✏️ Điều chỉnh thủ công
+                    </label>
+                </div>
+                @endif
             </div>
             @else
             <input type="hidden" name="old_value" id="old_value" value="{{ $reading->old_value }}">
@@ -150,6 +159,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const oldValueInp = document.getElementById('old_value');
     const newValueInp = document.getElementById('new_value');
     const usageDisp   = document.getElementById('usage_display');
+    const manualAdjustCb = document.getElementById('manual_adjust_cb');
 
     function calcUsage() {
         const oldVal = parseInt(oldValueInp.value) || 0;
@@ -157,6 +167,21 @@ document.addEventListener('DOMContentLoaded', function () {
         const usage  = Math.max(0, newVal - oldVal);
         usageDisp.value = usage.toLocaleString('vi-VN');
         usageDisp.style.color = usage > 0 ? '#10b981' : '#94a3b8';
+    }
+
+    if (manualAdjustCb) {
+        manualAdjustCb.addEventListener('change', function() {
+            if (this.checked) {
+                oldValueInp.removeAttribute('readonly');
+                oldValueInp.classList.remove('util-form-input--readonly');
+            } else {
+                oldValueInp.setAttribute('readonly', true);
+                oldValueInp.classList.add('util-form-input--readonly');
+                // Restore original value when unchecked
+                oldValueInp.value = "{{ $reading->old_value }}";
+                calcUsage();
+            }
+        });
     }
 
     oldValueInp.addEventListener('input', calcUsage);

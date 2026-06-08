@@ -147,6 +147,14 @@
             @else
             <input type="hidden" id="usage_display" value="0">
             @endif
+
+            {{-- Cờ Thay công tơ mới --}}
+            <div class="util-form-group" style="grid-column: span 3; margin-top: 10px; margin-bottom: 10px;">
+                <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: #1e293b;">
+                    <input type="checkbox" name="is_reset" id="is_reset" value="1" {{ old('is_reset') ? 'checked' : '' }} style="width: 16px; height: 16px; accent-color: #00236f; cursor: pointer;">
+                    🔄 Thay công tơ mới (Chỉ số cũ sẽ đặt về 0 cho kỳ này)
+                </label>
+            </div>
         </div>
 
         {{-- Ảnh công tơ minh chứng --}}
@@ -188,10 +196,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const oldValueDisp = document.getElementById('old_value_display');
     const newValueInp  = document.getElementById('new_value');
     const usageDisp    = document.getElementById('usage_display');
+    const isResetCb    = document.getElementById('is_reset');
 
     // Dữ liệu được truyền từ Laravel
     const floorsData = @json($floors);
     const apartmentsData = @json($apartments);
+
+    let fetchedOldValue = 0;
 
     function populateFloors(blockId) {
         floorSelect.innerHTML = '<option value="">— Chọn tầng —</option>';
@@ -235,14 +246,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     blockSelect.addEventListener('change', function () {
         populateFloors(this.value);
-        oldValueDisp.value = 0;
-        calcUsage();
+        fetchedOldValue = 0;
+        updateOldValueDisplay();
     });
 
     floorSelect.addEventListener('change', function () {
         populateApartments(this.value);
-        oldValueDisp.value = 0;
-        calcUsage();
+        fetchedOldValue = 0;
+        updateOldValueDisplay();
     });
 
     function fetchOldValue() {
@@ -256,13 +267,22 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch(`{{ route('admin.utility-readings.get-old-value') }}?apartment_id=${aptId}&type=${t}&month=${m}&year=${y}`)
             .then(res => res.json())
             .then(data => {
-                oldValueDisp.value = data.old_value ?? 0;
-                calcUsage();
+                fetchedOldValue = data.old_value ?? 0;
+                updateOldValueDisplay();
             })
             .catch(() => {
-                oldValueDisp.value = 0;
-                calcUsage();
+                fetchedOldValue = 0;
+                updateOldValueDisplay();
             });
+    }
+
+    function updateOldValueDisplay() {
+        if (isResetCb && isResetCb.checked) {
+            oldValueDisp.value = 0;
+        } else {
+            oldValueDisp.value = fetchedOldValue;
+        }
+        calcUsage();
     }
 
     function calcUsage() {
@@ -278,6 +298,9 @@ document.addEventListener('DOMContentLoaded', function () {
     recordMonth.addEventListener('change', fetchOldValue);
     recordYear.addEventListener('change', fetchOldValue);
     newValueInp.addEventListener('input', calcUsage);
+    if (isResetCb) {
+        isResetCb.addEventListener('change', updateOldValueDisplay);
+    }
 
     // Xử lý xem trước ảnh
     const imageProof = document.getElementById('image_proof');

@@ -108,6 +108,7 @@ class UtilityMeterController extends Controller
             'record_year'   => 'required|integer|min:2020|max:2100',
             'new_value'     => 'required|integer|min:0',
             'image_proof'   => 'nullable|image|max:4096',
+            'is_reset'      => 'nullable|boolean',
         ], [
             'apartment_id.required' => 'Vui lòng chọn căn hộ.',
             'type.required'         => 'Vui lòng chọn loại (điện/nước).',
@@ -130,13 +131,14 @@ class UtilityMeterController extends Controller
             ]);
         }
 
-        // Tự động lấy chỉ số cũ
-        $oldValue = UtilityMeter::getPreviousNewValue(
+        // Tự động lấy chỉ số cũ (nếu thay công tơ mới thì đặt bằng 0)
+        $isReset = $request->boolean('is_reset');
+        $oldValue = $isReset ? 0 : (UtilityMeter::getPreviousNewValue(
             $validated['apartment_id'],
             $validated['type'],
             $validated['record_month'],
             $validated['record_year']
-        ) ?? 0;
+        ) ?? 0);
 
         $imageProofPath = null;
         if ($request->hasFile('image_proof')) {
@@ -153,6 +155,7 @@ class UtilityMeterController extends Controller
             'recorded_by'   => Auth::id(),
             'status'        => 'pending',
             'image_proof'   => $imageProofPath,
+            'is_reset'      => $isReset,
         ]);
 
         // Gửi thông báo cho nhân viên kế toán (staff) khi kỹ thuật viên ghi số
@@ -293,7 +296,8 @@ class UtilityMeterController extends Controller
                 if ($elecExists) {
                     $skipped++;
                 } else {
-                    $elecOld = UtilityMeter::getPreviousNewValue($aptId, 'electricity', $month, $year) ?? 0;
+                    $elecIsReset = isset($reading['elec_is_reset']) && (bool)$reading['elec_is_reset'];
+                    $elecOld = $elecIsReset ? 0 : (UtilityMeter::getPreviousNewValue($aptId, 'electricity', $month, $year) ?? 0);
                     UtilityMeter::create([
                         'apartment_id' => $aptId,
                         'type'         => 'electricity',
@@ -304,6 +308,7 @@ class UtilityMeterController extends Controller
                         'recorded_by'  => Auth::id(),
                         'status'       => 'pending',
                         'image_proof'  => $imageProofPath,
+                        'is_reset'     => $elecIsReset,
                     ]);
                     $saved++;
                     $elecSaved = true;
@@ -321,7 +326,8 @@ class UtilityMeterController extends Controller
                 if ($waterExists) {
                     $skipped++;
                 } else {
-                    $waterOld = UtilityMeter::getPreviousNewValue($aptId, 'water', $month, $year) ?? 0;
+                    $waterIsReset = isset($reading['water_is_reset']) && (bool)$reading['water_is_reset'];
+                    $waterOld = $waterIsReset ? 0 : (UtilityMeter::getPreviousNewValue($aptId, 'water', $month, $year) ?? 0);
                     UtilityMeter::create([
                         'apartment_id' => $aptId,
                         'type'         => 'water',
@@ -332,6 +338,7 @@ class UtilityMeterController extends Controller
                         'recorded_by'  => Auth::id(),
                         'status'       => 'pending',
                         'image_proof'  => $imageProofPath,
+                        'is_reset'     => $waterIsReset,
                     ]);
                     $saved++;
                     $waterSaved = true;
@@ -380,11 +387,16 @@ class UtilityMeterController extends Controller
      */
     public function edit(int $id): View
     {
-        if (auth()->user()->role === 'technician') {
-            abort(403, 'Bạn không có quyền chỉnh sửa chỉ số.');
-        }
-
         $reading = UtilityMeter::with('apartment.floor.block')->findOrFail($id);
+
+        if (auth()->user()->role === 'technician') {
+            if (!in_array($reading->status, ['pending', 'rejected'])) {
+                abort(403, 'Bạn không có quyền chỉnh sửa chỉ số đã được duyệt.');
+            }
+            if ($reading->recorded_by !== auth()->id()) {
+                abort(403, 'Bạn không có quyền chỉnh sửa chỉ số của kỹ thuật viên khác.');
+            }
+        }
 
         return view('admin.utility-readings.edit', compact('reading'));
     }
@@ -394,22 +406,50 @@ class UtilityMeterController extends Controller
      */
     public function update(Request $request, int $id): RedirectResponse
     {
-        if (auth()->user()->role === 'technician') {
-            abort(403, 'Bạn không có quyền chỉnh sửa chỉ số.');
-        }
-
         $reading = UtilityMeter::findOrFail($id);
 
-        $validated = $request->validate([
-            'old_value' => 'required|integer|min:0',
-            'new_value' => 'required|integer|min:0|gte:old_value',
-        ], [
+        if (auth()->user()->role === 'technician') {
+            if (!in_array($reading->status, ['pending', 'rejected'])) {
+                abort(403, 'Bạn không có quyền chỉnh sửa chỉ số đã được duyệt.');
+            }
+            if ($reading->recorded_by !== auth()->id()) {
+                abort(403, 'Bạn không có quyền chỉnh sửa chỉ số của kỹ thuật viên khác.');
+            }
+        }
+
+        $isAdmin = auth()->user()->role === 'admin';
+
+        $rules = [
+            'new_value' => 'required|integer|min:0',
+        ];
+
+        if ($isAdmin) {
+            $rules['old_value'] = 'required|integer|min:0';
+            $rules['new_value'] .= '|gte:old_value';
+        } else {
+            $rules['new_value'] .= '|gte:' . $reading->old_value;
+        }
+
+        $validated = $request->validate($rules, [
             'old_value.required' => 'Vui lòng nhập chỉ số cũ.',
             'new_value.required' => 'Vui lòng nhập chỉ số mới.',
             'new_value.gte'      => 'Chỉ số mới phải >= chỉ số cũ.',
         ]);
 
-        $reading->update($validated);
+        $updateData = [
+            'new_value' => $validated['new_value'],
+        ];
+
+        if ($isAdmin && $request->has('old_value')) {
+            $updateData['old_value'] = $validated['old_value'];
+        }
+
+        // Nếu kỹ thuật viên sửa đổi bản ghi bị từ chối/chờ duyệt, trả trạng thái về pending để kế toán duyệt lại
+        if (auth()->user()->role === 'technician') {
+            $updateData['status'] = 'pending';
+        }
+
+        $reading->update($updateData);
 
         // Chỉ đồng bộ hóa đơn nếu bản ghi đã được duyệt
         if ($reading->status === 'approved') {
@@ -468,6 +508,43 @@ class UtilityMeterController extends Controller
             'month' => $reading->record_month,
             'year'  => $reading->record_year,
         ])->with('success', 'Đã phê duyệt chỉ số và đồng bộ hóa đơn.');
+    }
+
+    /**
+     * Từ chối chỉ số đơn lẻ
+     */
+    public function reject(int $id): RedirectResponse
+    {
+        if (in_array(auth()->user()->role, ['technician'])) {
+            abort(403, 'Bạn không có quyền từ chối chỉ số.');
+        }
+
+        $reading = UtilityMeter::with('apartment')->findOrFail($id);
+        $reading->update(['status' => 'rejected']);
+
+        // Gửi thông báo cho kỹ thuật viên ghi số nếu có
+        $recorder = $reading->recorder;
+        if ($recorder) {
+            $typeName = $reading->type === 'electricity' ? 'Điện' : 'Nước';
+            $apartmentNumber = $reading->apartment->apartment_number ?? 'N/A';
+            
+            $notificationData = [
+                'title' => '❌ Chỉ số điện nước bị từ chối',
+                'message' => "Chỉ số <strong>{$typeName}</strong> mới cho căn hộ <strong>{$apartmentNumber}</strong> (Kỳ {$reading->record_month}/{$reading->record_year}) đã bị từ chối. Vui lòng kiểm tra và ghi lại.",
+                'url' => route('admin.utility-readings.index', [
+                    'month' => $reading->record_month,
+                    'year' => $reading->record_year
+                ]),
+                'type' => 'rejected',
+            ];
+            
+            $recorder->notify(new \App\Notifications\UtilityIndexRecordedNotification($notificationData));
+        }
+
+        return redirect()->route('admin.utility-readings.index', [
+            'month' => $reading->record_month,
+            'year'  => $reading->record_year,
+        ])->with('success', 'Đã từ chối chỉ số và gửi thông báo cho kỹ thuật viên.');
     }
 
     /**
@@ -594,20 +671,31 @@ class UtilityMeterController extends Controller
 
         $totalAmount = $elecAmount + $waterAmount;
 
-        // 4. Tạo hoặc cập nhật hóa đơn (bills)
-        $invoice = \App\Models\Invoice::updateOrCreate(
-            [
+        // 4. Tìm hóa đơn điện nước hiện có hoặc tạo mới (tránh ghi đè lên hóa đơn khác như phí gửi xe)
+        $invoice = \App\Models\Invoice::where('apartment_id', $apartmentId)
+            ->where('billing_month', $month)
+            ->where('billing_year', $year)
+            ->where('title', 'like', '%Phí điện nước%')
+            ->first();
+
+        if ($invoice) {
+            $invoice->update([
+                'title' => "Phí điện nước tháng {$month}/{$year}",
+                'total_amount' => $totalAmount,
+                // Giữ nguyên trạng thái nếu đã thanh toán, tránh chuyển ngược về unpaid trái phép
+                'status' => $invoice->status === 'paid' ? 'paid' : 'unpaid',
+            ]);
+        } else {
+            $invoice = \App\Models\Invoice::create([
                 'apartment_id' => $apartmentId,
                 'billing_month' => $month,
                 'billing_year' => $year,
-            ],
-            [
                 'title' => "Phí điện nước tháng {$month}/{$year}",
                 'due_date' => now()->addDays(10), // Hạn nộp 10 ngày từ ngày chốt
                 'total_amount' => $totalAmount,
                 'status' => 'unpaid',
-            ]
-        );
+            ]);
+        }
 
         // 5. Đồng bộ chi tiết hóa đơn (bill_details)
         // Xóa các chi tiết cũ liên quan đến điện/nước
