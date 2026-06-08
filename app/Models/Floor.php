@@ -17,7 +17,21 @@ class Floor extends Model
         'name',
         'status',
         'description',
+        'floor_type',
     ];
+
+    /**
+     * Nhãn loại tầng bằng tiếng Việt
+     */
+    public function getFloorTypeLabelAttribute(): string
+    {
+        return match ($this->floor_type) {
+            'commercial' => 'Thương mại',
+            'technical'  => 'Kỹ thuật',
+            'amenity'    => 'Tiện ích',
+            default      => 'Cư dân',
+        };
+    }
 
     /**
      * Tầng thuộc tòa nhà

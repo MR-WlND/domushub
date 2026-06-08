@@ -147,6 +147,9 @@
                                             <a href="{{ route('admin.floors.show', $floor->id) }}" class="infra-table-link">
                                                 {{ $floor->name ?? 'Tầng ' . $floor->floor_number }}
                                             </a>
+                                            <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
+                                                Loại: {{ $floor->floor_type_label }}
+                                            </div>
                                         </td>
                                         <td class="text-muted">{{ $floor->apartments_count }} căn</td>
                                         <td>
