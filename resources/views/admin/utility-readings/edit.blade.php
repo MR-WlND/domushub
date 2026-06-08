@@ -87,6 +87,7 @@
         @method('PUT')
 
         <div class="util-form-grid-3">
+            @if(auth()->user()->role !== 'technician')
             <div class="util-form-group">
                 <label class="util-form-label">Chỉ số cũ <span style="color:#ef4444">*</span></label>
                 <input type="number" name="old_value" id="old_value"
@@ -96,8 +97,11 @@
                     <p class="util-form-error">{{ $message }}</p>
                 @enderror
             </div>
+            @else
+            <input type="hidden" name="old_value" id="old_value" value="{{ $reading->old_value }}">
+            @endif
 
-            <div class="util-form-group">
+            <div class="util-form-group" style="{{ auth()->user()->role === 'technician' ? 'grid-column: span 3;' : '' }}">
                 <label class="util-form-label">Chỉ số mới <span style="color:#ef4444">*</span></label>
                 <input type="number" name="new_value" id="new_value"
                     value="{{ old('new_value', $reading->new_value) }}" min="0"
@@ -107,6 +111,7 @@
                 @enderror
             </div>
 
+            @if(auth()->user()->role !== 'technician')
             <div class="util-form-group">
                 <label class="util-form-label">Tiêu thụ (tự tính)</label>
                 <input type="text" id="usage_display" class="util-form-input util-form-input--readonly"
@@ -114,6 +119,9 @@
                     readonly style="font-weight: 700; color: #10b981;">
                 <p class="util-form-hint">Cập nhật tự động</p>
             </div>
+            @else
+            <input type="hidden" id="usage_display" value="{{ $reading->usage_amount }}">
+            @endif
         </div>
 
         <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: #92400e;">

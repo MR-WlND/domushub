@@ -413,9 +413,9 @@ class ApartmentController extends Controller
             // Dòng đầu tiên là header
             $header = $rows[0];
             
-            // Validate sơ bộ số cột (ít nhất phải có 12 cột cho cấu trúc mẫu đầy đủ)
-            if (count($header) < 12) {
-                return back()->with('error', 'Tệp Excel không đúng số cột quy định của file mẫu (yêu cầu 12 cột).');
+            // Validate sơ bộ số cột (ít nhất phải có 13 cột cho cấu trúc mẫu đầy đủ)
+            if (count($header) < 13) {
+                return back()->with('error', 'Tệp Excel không đúng số cột quy định của file mẫu (yêu cầu 13 cột).');
             }
 
             $successCount = 0;
@@ -445,11 +445,12 @@ class ApartmentController extends Controller
                     $blockDescription = trim($row[4] ?? '');
                     $floorNumberStr = trim($row[5] ?? '');
                     $floorName = trim($row[6] ?? '');
-                    $floorDescription = trim($row[7] ?? '');
-                    $apartmentNumber = trim($row[8] ?? '');
-                    $areaStr = trim($row[9] ?? '');
-                    $statusStr = trim($row[10] ?? '');
-                    $apartmentDescription = trim($row[11] ?? '');
+                    $floorTypeStr = trim($row[7] ?? '');
+                    $floorDescription = trim($row[8] ?? '');
+                    $apartmentNumber = trim($row[9] ?? '');
+                    $areaStr = trim($row[10] ?? '');
+                    $statusStr = trim($row[11] ?? '');
+                    $apartmentDescription = trim($row[12] ?? '');
 
                     $rowNum = $i + 1; // Số hàng trong Excel (1-indexed)
 
@@ -499,6 +500,17 @@ class ApartmentController extends Controller
                         }
                     }
 
+                    // Phân loại tầng từ tiếng Việt sang enum
+                    $floorType = 'residential';
+                    $floorTypeLower = mb_strtolower($floorTypeStr, 'UTF-8');
+                    if (str_contains($floorTypeLower, 'thương mại') || str_contains($floorTypeLower, 'commercial')) {
+                        $floorType = 'commercial';
+                    } elseif (str_contains($floorTypeLower, 'kỹ thuật') || str_contains($floorTypeLower, 'technical')) {
+                        $floorType = 'technical';
+                    } elseif (str_contains($floorTypeLower, 'tiện ích') || str_contains($floorTypeLower, 'amenity')) {
+                        $floorType = 'amenity';
+                    }
+
                     // 2. Tìm hoặc tạo Floor
                     $floor = Floor::where('block_id', $block->id)
                         ->where('floor_number', $floorNumber)
@@ -510,12 +522,14 @@ class ApartmentController extends Controller
                             'name' => $floorName ?: "Tầng {$floorNumber}",
                             'status' => 'active',
                             'description' => $floorDescription ?: null,
+                            'floor_type' => $floorType,
                         ]);
                     } else {
                         // Cập nhật thông tin floor nếu có giá trị mới
                         $updateData = [];
                         if ($floorName !== '') $updateData['name'] = $floorName;
                         if ($floorDescription !== '') $updateData['description'] = $floorDescription;
+                        if ($floorTypeStr !== '') $updateData['floor_type'] = $floorType;
                         if (!empty($updateData)) {
                             $floor->update($updateData);
                         }

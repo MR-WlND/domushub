@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UtilityMeter extends Model
 {
+    const STATUS_PENDING = 'pending';
+    const STATUS_APPROVED = 'approved';
+
     protected $table = 'utility_meters';
 
     protected $fillable = [
@@ -19,6 +22,7 @@ class UtilityMeter extends Model
         'usage_amount',
         'image_proof',
         'recorded_by',
+        'status',
     ];
 
     /*

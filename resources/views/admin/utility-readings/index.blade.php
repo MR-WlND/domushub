@@ -14,6 +14,7 @@
         <h1>⚡ Chốt số Điện Nước</h1>
         <p>Quản lý chỉ số điện nước theo tháng – Tháng {{ $month }}/{{ $year }}</p>
     </div>
+    @if(auth()->user()->role !== 'staff')
     <div class="util-header-actions">
         <button type="button" class="util-btn util-btn--outline" onclick="openImportModal()">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -36,6 +37,7 @@
             Ghi đơn lẻ
         </a>
     </div>
+    @endif
 </div>
 
 {{-- ── Flash Message ───────────────────────────────── --}}
@@ -138,24 +140,58 @@
 {{-- ── Data Table ──────────────────────────────────── --}}
 @if ($readings->count() > 0)
 <div class="util-table-card">
+    @if(auth()->user()->role !== 'technician')
+    <div id="batchApproveBar" style="display:none; align-items:center; justify-content:space-between; padding:12px 20px; background:#f0fdf4; border-bottom:1px solid #bbf7d0;">
+        <span style="font-size:13px; color:#15803d; font-weight:600;">
+            Đang chọn <span id="selectedCount">0</span> mục chờ phê duyệt
+        </span>
+        <form action="{{ route('admin.utility-readings.batch-approve') }}" method="POST" id="batchApproveForm" style="margin:0; display:flex; gap:10px;">
+            @csrf
+            <input type="hidden" name="month" value="{{ $month }}">
+            <input type="hidden" name="year" value="{{ $year }}">
+            <button type="submit" class="util-btn util-btn--primary util-btn--sm" style="background:#15803d; border-color:#15803d; font-size:12px; height:32px; padding:0 12px;">
+                Duyệt các mục đã chọn
+            </button>
+        </form>
+    </div>
+    @endif
     <div class="util-table-wrap">
         <table class="util-table">
             <thead>
                 <tr>
+                    @if(auth()->user()->role !== 'technician')
+                    <th style="width: 40px; text-align: center;">
+                        <input type="checkbox" id="selectAllReadings" style="width:15px;height:15px;accent-color:#00236f;cursor:pointer;">
+                    </th>
+                    @endif
                     <th>STT</th>
                     <th>Phòng</th>
                     <th>Tòa / Tầng</th>
                     <th>Loại</th>
+                    @if(auth()->user()->role !== 'technician')
                     <th>Chỉ số cũ</th>
+                    @endif
                     <th>Chỉ số mới</th>
+                    @if(auth()->user()->role !== 'technician')
                     <th>Tiêu thụ</th>
+                    @endif
+                    <th>Trạng thái</th>
                     <th>Người ghi</th>
+                    @if(auth()->user()->role !== 'technician')
                     <th>Thao tác</th>
+                    @endif
                 </tr>
             </thead>
             <tbody>
                 @foreach ($readings as $index => $reading)
                 <tr>
+                    @if(auth()->user()->role !== 'technician')
+                    <td style="text-align: center;">
+                        @if($reading->status === 'pending')
+                        <input type="checkbox" class="reading-checkbox" value="{{ $reading->id }}" style="width:15px;height:15px;accent-color:#00236f;cursor:pointer;">
+                        @endif
+                    </td>
+                    @endif
                     <td class="text-muted">{{ $readings->firstItem() + $index }}</td>
                     <td><span class="text-strong">{{ $reading->apartment->apartment_number ?? 'N/A' }}</span></td>
                     <td class="text-muted">
@@ -169,15 +205,42 @@
                             <span class="util-badge util-badge--water">💧 Nước</span>
                         @endif
                     </td>
+                    @if(auth()->user()->role !== 'technician')
                     <td class="text-muted">{{ number_format($reading->old_value) }}</td>
-                    <td class="text-strong">{{ number_format($reading->new_value) }}</td>
+                    @endif
+                    <td class="text-strong">
+                        {{ number_format($reading->new_value) }}
+                        @if($reading->image_proof)
+                        <span class="proof-photo-btn" data-img="{{ asset('storage/' . $reading->image_proof) }}" style="cursor:pointer; margin-left:6px; font-size:14px;" title="Xem minh chứng công tơ">
+                            📷
+                        </span>
+                        @endif
+                    </td>
+                    @if(auth()->user()->role !== 'technician')
                     <td>
                         <strong style="color: #00236f;">{{ number_format($reading->usage_amount) }}</strong>
                         <small style="color: #94a3b8;">{{ $reading->type === 'electricity' ? 'kWh' : 'm³' }}</small>
                     </td>
+                    @endif
+                    <td>
+                        @if($reading->status === 'approved')
+                            <span class="util-badge util-badge--success" style="background:#e6f4ea; color:#137333; font-size:11px;">✅ Đã chốt</span>
+                        @else
+                            <span class="util-badge util-badge--warning" style="background:#fef7e0; color:#b06000; font-size:11px;">⏳ Chờ chốt</span>
+                        @endif
+                    </td>
                     <td class="text-muted">{{ $reading->recorder->name ?? '—' }}</td>
+                    @if(auth()->user()->role !== 'technician')
                     <td>
                         <div class="util-actions">
+                            @if($reading->status === 'pending')
+                            <form action="{{ route('admin.utility-readings.approve', $reading->id) }}" method="POST" style="margin:0;">
+                                @csrf
+                                <button type="submit" class="util-btn util-btn--primary util-btn--xs" style="padding: 4px 8px; font-size:11px; height:auto; background:#15803d; border-color:#15803d; line-height:1;" title="Phê duyệt">
+                                    Duyệt
+                                </button>
+                            </form>
+                            @endif
                             <a href="{{ route('admin.utility-readings.edit', $reading->id) }}"
                                 class="util-btn-edit" title="Sửa">
                                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -201,6 +264,7 @@
                             </form>
                         </div>
                     </td>
+                    @endif
                 </tr>
                 @endforeach
             </tbody>
@@ -240,10 +304,12 @@
         <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>
     </svg>
     <p>Chưa có chỉ số nào được ghi cho tháng {{ $month }}/{{ $year }}.</p>
+    @if(auth()->user()->role !== 'staff')
     <div class="util-empty-actions">
         <a href="{{ route('admin.utility-readings.batch') }}" class="util-btn util-btn--secondary">⚡ Ghi hàng loạt</a>
         <a href="{{ route('admin.utility-readings.create') }}" class="util-btn util-btn--primary">+ Ghi đơn lẻ</a>
     </div>
+    @endif
 </div>
 @endif
 
@@ -348,6 +414,23 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+{{-- ── Proof Modal ────────────────────────────────────── --}}
+<div class="util-modal-backdrop" id="proofModal">
+    <div class="util-modal" style="max-width: 540px;">
+        <div class="util-modal-header">
+            <h3>📷 Ảnh chụp công tơ minh chứng</h3>
+            <button class="util-modal-close" onclick="closeProofModal()">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div class="util-modal-body" style="text-align: center; padding: 20px;">
+            <img id="proofModalImg" src="" alt="Ảnh minh chứng" style="max-width: 100%; max-height: 480px; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
         </div>
     </div>
 </div>
@@ -461,6 +544,70 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }, false);
     }
+
+    // Proof image popup modal
+    window.closeProofModal = function() {
+        document.getElementById('proofModal').classList.remove('active');
+    }
+
+    document.querySelectorAll('.proof-photo-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const imgUrl = this.dataset.img;
+            if (imgUrl) {
+                document.getElementById('proofModalImg').src = imgUrl;
+                document.getElementById('proofModal').classList.add('active');
+            }
+        });
+    });
+
+    // Batch approve selection
+    const selectAllReadings = document.getElementById('selectAllReadings');
+    const batchApproveBar = document.getElementById('batchApproveBar');
+    const selectedCount = document.getElementById('selectedCount');
+    const batchApproveForm = document.getElementById('batchApproveForm');
+    const readingCheckboxes = document.querySelectorAll('.reading-checkbox');
+
+    function updateBatchBar() {
+        if (!batchApproveBar) return;
+        const checkedBoxes = document.querySelectorAll('.reading-checkbox:checked');
+        const count = checkedBoxes.length;
+
+        if (count > 0) {
+            selectedCount.textContent = count;
+            batchApproveBar.style.display = 'flex';
+
+            // Clear previous ids and add checked ids
+            batchApproveForm.querySelectorAll('input[name="ids[]"]').forEach(el => el.remove());
+            checkedBoxes.forEach(cb => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'ids[]';
+                input.value = cb.value;
+                batchApproveForm.appendChild(input);
+            });
+        } else {
+            batchApproveBar.style.display = 'none';
+        }
+    }
+
+    if (selectAllReadings) {
+        selectAllReadings.addEventListener('change', function() {
+            readingCheckboxes.forEach(cb => {
+                cb.checked = this.checked;
+            });
+            updateBatchBar();
+        });
+    }
+
+    readingCheckboxes.forEach(cb => {
+      cb.addEventListener('change', function() {
+          updateBatchBar();
+          if (selectAllReadings) {
+              selectAllReadings.checked = (readingCheckboxes.length === document.querySelectorAll('.reading-checkbox:checked').length);
+          }
+      });
+  });
 });
 </script>
 @endpush

@@ -189,7 +189,7 @@
 </div>
 
 {{-- ── Batch Form ───────────────────────────────────── --}}
-<form action="{{ route('admin.utility-readings.batch.store') }}" method="POST" id="batchForm">
+<form action="{{ route('admin.utility-readings.batch.store') }}" method="POST" id="batchForm" enctype="multipart/form-data">
     @csrf
     <input type="hidden" name="record_month" value="{{ $selectedMonth }}">
     <input type="hidden" name="record_year"  value="{{ $selectedYear }}">
@@ -203,40 +203,47 @@
             <div style="display:flex;align-items:center;gap:16px;font-size:13px;color:#64748b;">
                 <span>⚡ Cột vàng = Điện &nbsp;|&nbsp; 💧 Cột xanh = Nước</span>
                 <label style="display:flex;align-items:center;gap:6px;font-weight:600;cursor:pointer;">
-                    <input type="checkbox" id="selectAll" checked style="width:15px;height:15px;accent-color:#00236f;">
+                    <input type="checkbox" id="selectAll" checked style="width:15px;height:15px;accent-color:#00236f;cursor:pointer;">
                     Chọn tất cả
                 </label>
             </div>
         </div>
 
         <div class="util-table-wrap">
-            <table class="util-table" style="min-width:900px;">
+            <table class="util-table">
                 <thead>
                     <tr>
-                        <th rowspan="2" style="width:40px; text-align:center; vertical-align:middle;">☑</th>
-                        <th rowspan="2" style="min-width:80px; vertical-align:middle; text-align:center;">Phòng</th>
-                        <th rowspan="2" style="vertical-align:middle; text-align:center;">Tòa / Tầng</th>
-
-                        {{-- Electricity Header Group --}}
-                        <th colspan="3" class="col-elec col-divider-border" style="text-align:center; font-weight:700; color:#92400e;">
+                        <th rowspan="2" style="width:40px; text-align:center;"></th>
+                        <th rowspan="2" style="width:80px; text-align:center;">PHÒNG</th>
+                        <th rowspan="2" style="width:150px; text-align:center;">TÒA / TẦNG</th>
+                        <th colspan="{{ auth()->user()->role === 'technician' ? '1' : '3' }}" class="col-elec col-divider-border" style="text-align:center; font-weight:700; color:#92400e;">
                             ⚡ ĐIỆN — THÁNG {{ $selectedMonth }}/{{ $selectedYear }}
                         </th>
-
+ 
                         {{-- Water Header Group --}}
-                        <th colspan="3" class="col-water" style="text-align:center; font-weight:700; color:#1e40af;">
+                        <th colspan="{{ auth()->user()->role === 'technician' ? '1' : '3' }}" class="col-water" style="text-align:center; font-weight:700; color:#1e40af;">
                             💧 NƯỚC — THÁNG {{ $selectedMonth }}/{{ $selectedYear }}
                         </th>
-
+ 
+                        <th rowspan="2" style="width:140px; text-align:center; vertical-align:middle;">Ảnh công tơ</th>
                         <th rowspan="2" style="min-width:90px; vertical-align:middle; text-align:center;">Trạng thái</th>
                     </tr>
                     <tr>
+                        @if(auth()->user()->role !== 'technician')
                         <th class="col-elec" style="text-align:center; font-size:12px; font-weight:600; color:#92400e;">CS Cũ</th>
-                        <th class="col-elec" style="text-align:center; font-size:12px; font-weight:600; color:#92400e;">CS Mới</th>
+                        @endif
+                        <th class="col-elec {{ auth()->user()->role === 'technician' ? 'col-divider-border' : '' }}" style="text-align:center; font-size:12px; font-weight:600; color:#92400e;">CS Mới</th>
+                        @if(auth()->user()->role !== 'technician')
                         <th class="col-elec col-divider-border" style="text-align:center; font-size:12px; font-weight:600; color:#92400e;">Tiêu thụ</th>
-
+                        @endif
+ 
+                        @if(auth()->user()->role !== 'technician')
                         <th class="col-water" style="text-align:center; font-size:12px; font-weight:600; color:#1e40af;">CS Cũ</th>
+                        @endif
                         <th class="col-water" style="text-align:center; font-size:12px; font-weight:600; color:#1e40af;">CS Mới</th>
+                        @if(auth()->user()->role !== 'technician')
                         <th class="col-water" style="text-align:center; font-size:12px; font-weight:600; color:#1e40af;">Tiêu thụ</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody>
@@ -252,21 +259,23 @@
                                 <span class="done-icon">✅</span>
                             @endif
                         </td>
-
+ 
                         {{-- Room --}}
                         <td style="text-align:center;"><strong class="text-strong">{{ $data['apartment']->apartment_number }}</strong></td>
-
+ 
                         {{-- Block/Floor --}}
                         <td class="text-muted" style="font-size:12px; text-align:center;">
                             {{ $data['apartment']->floor->block->name ?? '—' }}
                             / {{ $data['apartment']->floor->name ?? 'Tầng ' . $data['apartment']->floor->floor_number }}
                         </td>
-
+ 
                         {{-- ── ELECTRICITY ─────────────────────── --}}
+                        @if(auth()->user()->role !== 'technician')
                         <td class="col-elec" style="font-weight:600;color:#92400e;text-align:center;">
                             {{ number_format($data['elec_old']) }}
                         </td>
-                        <td class="col-elec" style="text-align:center;">
+                        @endif
+                        <td class="col-elec {{ auth()->user()->role === 'technician' ? 'col-divider-border' : '' }}" style="text-align:center;">
                             @if (!$data['elec_recorded'])
                                 <input type="hidden"
                                     name="readings[{{ $i }}][apartment_id]"
@@ -285,15 +294,19 @@
                                 <input type="hidden" name="readings[{{ $i }}][apartment_id]" value="{{ $data['apartment']->id }}">
                             @endif
                         </td>
+                        @if(auth()->user()->role !== 'technician')
                         <td class="col-elec col-divider-border" style="text-align:center;">
                             <span class="usage-chip {{ !$data['elec_recorded'] ? 'usage-chip--zero' : 'usage-chip--elec' }}"
                                 id="elec-usage-{{ $i }}">—</span>
                         </td>
-
+                        @endif
+ 
                         {{-- ── WATER ───────────────────────────── --}}
+                        @if(auth()->user()->role !== 'technician')
                         <td class="col-water" style="font-weight:600;color:#1e40af;text-align:center;">
                             {{ number_format($data['water_old']) }}
                         </td>
+                        @endif
                         <td class="col-water" style="text-align:center;">
                             @if (!$data['water_recorded'])
                                 <input type="number"
@@ -308,9 +321,23 @@
                                 <span style="color:#15803d;font-weight:600;font-size:13px;">✓ Đã chốt</span>
                             @endif
                         </td>
+                        @if(auth()->user()->role !== 'technician')
                         <td class="col-water" style="text-align:center;">
                             <span class="usage-chip {{ !$data['water_recorded'] ? 'usage-chip--zero' : 'usage-chip--water' }}"
                                 id="water-usage-{{ $i }}">—</span>
+                        </td>
+                        @endif
+
+                        {{-- Ảnh công tơ --}}
+                        <td style="text-align:center; vertical-align:middle;">
+                            @if (!$bothDoneRow)
+                                <input type="file"
+                                    name="readings[{{ $i }}][image_proof]"
+                                    accept="image/*"
+                                    style="font-size:11px; max-width:130px;">
+                            @else
+                                <span style="color:#64748b; font-size:12px;">—</span>
+                            @endif
                         </td>
 
                         {{-- Status --}}
