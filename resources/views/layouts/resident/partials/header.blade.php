@@ -12,19 +12,23 @@
             class="resident-header__link {{ request()->routeIs('resident.members.*') ? 'resident-header__link--active' : '' }}">
             Thành viên
         </a>
-        <a href="{{ route('resident.vehicles.index') }}"
-            class="resident-header__link {{ request()->routeIs('resident.vehicles.*') ? 'resident-header__link--active' : '' }}">
-            Phương Tiện
-        </a>
-        <a href="{{ route('resident.invoices.index') }}"
-            class="resident-header__link {{ request()->routeIs('resident.invoices.*') ? 'resident-header__link--active' : '' }}">
-            Hóa Đơn
-        </a>
+        <div class="resident-header__dropdown-container" id="services-menu-container">
+            <button class="resident-header__link resident-header__dropdown-trigger {{ (request()->routeIs('resident.vehicles.*') || request()->routeIs('resident.invoices.*')) ? 'resident-header__link--active' : '' }}">
+                Dịch vụ <i class="fa-solid fa-chevron-down nav-dropdown-icon"></i>
+            </button>
+            <div class="resident-header__nav-dropdown">
+                <a href="{{ route('resident.vehicles.index') }}" class="nav-dropdown-item {{ request()->routeIs('resident.vehicles.*') ? 'nav-dropdown-item--active' : '' }}">Phương tiện</a>
+                <a href="#" class="nav-dropdown-item">Tiện ích</a>
+                <a href="{{ route('resident.invoices.index') }}" class="nav-dropdown-item {{ request()->routeIs('resident.invoices.*') ? 'nav-dropdown-item--active' : '' }}">Hóa đơn</a>
+            </div>
+        </div>
+
         <a href="#" class="resident-header__link">
             Phản Ánh
         </a>
-        <a href="#" class="resident-header__link">
-            Tiện Ích
+        <a href="{{ route('resident.contact') }}"
+            class="resident-header__link {{ request()->routeIs('resident.contact') ? 'resident-header__link--active' : '' }}">
+            Liên hệ
         </a>
     </nav>
 
@@ -75,15 +79,27 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const userMenu = document.getElementById('user-menu-container');
+        const servicesMenu = document.getElementById('services-menu-container');
+
         if (userMenu) {
             userMenu.addEventListener('click', function(e) {
                 e.stopPropagation();
+                if (servicesMenu) servicesMenu.classList.remove('active');
                 this.classList.toggle('active');
             });
+        }
 
-            document.addEventListener('click', function() {
-                userMenu.classList.remove('active');
+        if (servicesMenu) {
+            servicesMenu.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (userMenu) userMenu.classList.remove('active');
+                this.classList.toggle('active');
             });
         }
+
+        document.addEventListener('click', function() {
+            if (userMenu) userMenu.classList.remove('active');
+            if (servicesMenu) servicesMenu.classList.remove('active');
+        });
     });
 </script>

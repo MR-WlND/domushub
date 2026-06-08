@@ -26,6 +26,7 @@ export default defineConfig({
                 'resources/css/pages/admin/floors/show.css',
                 'resources/css/pages/resident/profile/index.css',
                 'resources/css/pages/resident/members/index.css',
+                'resources/css/pages/resident/contact.css',
                 'resources/css/pages/admin/vehicles/index.css',
                 'resources/css/pages/admin/parking-lots/index.css',
                 'resources/css/pages/admin/utility-readings/index.css'

@@ -166,6 +166,10 @@ Route::middleware(['resident'])->group(function () {
         return view('resident.home.index');
     })->name('resident.dashboard');
 
+    Route::get('/resident/contact', function () {
+        return view('resident.contact.index');
+    })->name('resident.contact');
+
     // Profile
     Route::get('/resident/profile', [ProfileController::class, 'index'])->name('resident.profile.index');
     Route::put('/resident/profile', [ProfileController::class, 'update'])->name('resident.profile.update');
