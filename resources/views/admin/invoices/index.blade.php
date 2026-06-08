@@ -139,11 +139,10 @@
                         <a href="{{ route('admin.invoices.show', $inv) }}"
                            class="btn btn-outline btn-sm" title="Chi tiết">👁</a>
                         @if($inv->status !== 'paid')
-                        <form method="POST" action="{{ route('admin.invoices.mark-paid', $inv) }}" style="margin:0">
-                            @csrf @method('PATCH')
-                            <input type="hidden" name="payment_method" value="transfer">
-                            <button type="submit" class="btn btn-success btn-sm" title="Đánh dấu đã thu">✔</button>
-                        </form>
+                        <button type="button" class="btn btn-success btn-sm" title="Ghi nhận thanh toán nhanh" 
+                                onclick="openPaymentModal({{ $inv->id }}, '{{ $inv->invoice_code }}', '{{ addslashes($inv->title) }}', {{ $inv->amount }})">
+                            ✔
+                        </button>
                         @endif
                     </div>
                 </td>
@@ -184,5 +183,60 @@
     </div>
     @endif
 </div>
+
+{{-- Quick Payment Modal --}}
+<div class="modal-overlay" id="quickPaymentModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Thanh toán nhanh</h3>
+            <button class="modal-close" onclick="closePaymentModal()">&times;</button>
+        </div>
+        <form id="quickPaymentForm" method="POST" action="">
+            @csrf
+            <input type="hidden" name="amount" id="modal_amount">
+            <div class="modal-body">
+                <p id="modalInvoiceInfo" style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; font-weight: 500;"></p>
+                
+                <div class="form-field">
+                    <label for="modal_payment_method">Phương thức thanh toán</label>
+                    <select name="payment_method" id="modal_payment_method" class="form-input">
+                        <option value="transfer">🏦 Chuyển khoản ngân hàng</option>
+                        <option value="cash">💵 Tiền mặt</option>
+                        <option value="other">💳 Khác</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closePaymentModal()">Hủy</button>
+                <button type="submit" class="btn btn-success">Xác nhận</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openPaymentModal(invoiceId, invoiceCode, title, amount) {
+        const modal = document.getElementById('quickPaymentModal');
+        const form = document.getElementById('quickPaymentForm');
+        const info = document.getElementById('modalInvoiceInfo');
+        
+        form.action = `/admin/invoices/${invoiceId}/mark-paid`;
+        document.getElementById('modal_amount').value = amount;
+        info.innerHTML = `Hóa đơn: <strong>${invoiceCode}</strong><br>Nội dung: ${title}<br>Số tiền: <span style="color:var(--brand-600);font-weight:700">${Number(amount).toLocaleString('vi-VN')} đ</span>`;
+        
+        modal.classList.add('active');
+    }
+    
+    function closePaymentModal() {
+        document.getElementById('quickPaymentModal').classList.remove('active');
+    }
+    
+    // Close modal on click overlay
+    document.getElementById('quickPaymentModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closePaymentModal();
+        }
+    });
+</script>
 
 @endsection
