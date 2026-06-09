@@ -134,7 +134,7 @@
         {{-- DANH SÁCH CÁC BÌNH LUẬN --}}
         <div class="pc-comments-list">
             @if($post->comments->isEmpty())
-                <p style="text-align: center; color: var(--color-text-secondary); font-size: 0.9rem; margin: 2rem 0;">Chưa có bình luận nào. Hãy bắt đầu cuộc trò chuyện!</p>
+                <p id="empty-comments-placeholder" style="text-align: center; color: var(--color-text-secondary); font-size: 0.9rem; margin: 2rem 0;">Chưa có bình luận nào. Hãy bắt đầu cuộc trò chuyện!</p>
             @else
                 @foreach($post->comments as $comment)
                     <div class="pc-comment" id="comment-{{ $comment->id }}">
@@ -682,6 +682,183 @@
         const customReasonInput = document.getElementById('report-comment-reason-custom');
         if (customReasonInput) {
             customReasonInput.addEventListener('input', checkCommentReportFormStatus);
+        }
+    });
+</script>
+
+{{-- NHÚNG THƯ VIỆN BROADCASTING & LARAVEL ECHO --}}
+<script src="https://js.pusher.com/8.0.1/pusher.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.0/dist/echo.iife.js"></script>
+<style>
+    @keyframes highlight-new-comment {
+        0% { background-color: rgba(59, 130, 246, 0.15); border-left: 3px solid var(--color-primary); }
+        100% { background-color: transparent; }
+    }
+    .new-comment-highlight {
+        animation: highlight-new-comment 3s ease-out;
+    }
+</style>
+<script>
+    // === Cấu hình Real-time WebSockets cho Bình luận (Laravel Echo) ===
+    const currentUserId = {{ auth()->id() }};
+    const isPostOwner = {{ $post->user_id === auth()->id() ? 'true' : 'false' }};
+    const isAdmin = {{ auth()->user()->isAdminPortalUser() ? 'true' : 'false' }};
+    const currentPostId = {{ $post->id }};
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+    function nl2br(str) {
+        if (!str) return '';
+        return escapeHtml(str).replace(/\n/g, '<br>');
+    }
+
+    function createCommentHtml(comment) {
+        const avatarUrl = comment.user.avatar 
+            ? `/storage/${comment.user.avatar}` 
+            : `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.user.name)}&background=00236f&color=fff`;
+            
+        const apartmentText = comment.user.apartment 
+            ? `Căn hộ: ${escapeHtml(comment.user.apartment.apartment_number)}` 
+            : 'Ban Quản Trị';
+            
+        let replyTag = '';
+        if (comment.parent_id && comment.parent) {
+            replyTag = `
+                <span class="pc-comment__reply-tag">
+                    <i class="fa-solid fa-reply"></i> trả lời <strong>${escapeHtml(comment.parent.user.name)}</strong>
+                </span>
+            `;
+        }
+        
+        let deleteForm = '';
+        if (comment.user.id === currentUserId || isPostOwner || isAdmin) {
+            deleteForm = `
+                <form action="/resident/comments/${comment.id}" method="POST" style="display: inline; margin-left: 0.5rem;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bình luận này không?')">
+                    <input type="hidden" name="_token" value="${document.querySelector('input[name="_token"]').value}">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit" class="pc-comment__action-btn pc-comment__action-btn--delete">
+                        Xóa
+                    </button>
+                </form>
+            `;
+        }
+        
+        let reportBtn = '';
+        if (comment.user.id !== currentUserId) {
+            reportBtn = `
+                <button type="button" class="pc-comment__action-btn pc-comment__action-btn--report" style="color: var(--color-error); margin-left: auto; display: flex; align-items: center; gap: 0.25rem;" onclick="openCommentReportModal(${comment.id})">
+                    <i class="fa-regular fa-flag"></i> Báo cáo
+                </button>
+            `;
+        }
+        
+        return `
+            <div class="pc-comment new-comment-highlight" id="comment-${comment.id}">
+                <img src="${avatarUrl}" alt="Avatar" class="pc-comment__avatar">
+                
+                <div class="pc-comment__body">
+                    <div class="pc-comment__header">
+                        <div class="pc-comment__user-info">
+                            <span class="pc-comment__author-name">${escapeHtml(comment.user.name)}</span>
+                            <span class="pc-comment__apartment">${apartmentText}</span>
+                            ${replyTag}
+                        </div>
+                        <span class="pc-comment__time" title="${escapeHtml(comment.created_at_human)}">
+                            Vừa xong
+                        </span>
+                    </div>
+                    
+                    <p class="pc-comment__content">${nl2br(comment.content)}</p>
+                    
+                    <div class="pc-comment__actions" style="display: flex; width: 100%; align-items: center;">
+                        <button type="button" class="pc-comment__action-btn" onclick="replyToComment(${comment.id}, '${escapeHtml(comment.user.name)}')">
+                            Trả lời
+                        </button>
+                        ${deleteForm}
+                        ${reportBtn}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // Đảm bảo Pusher khả dụng toàn cục cho Laravel Echo
+        if (typeof window.Pusher === 'undefined' && typeof Pusher !== 'undefined') {
+            window.Pusher = Pusher;
+        }
+
+        const broadcastConnection = "{{ env('BROADCAST_CONNECTION', 'reverb') }}";
+        console.log("DomusHub WebSockets: Connecting using driver:", broadcastConnection);
+
+        let echoConfig = {};
+        
+        if (broadcastConnection === 'reverb') {
+            echoConfig = {
+                broadcaster: 'reverb',
+                key: "{{ env('REVERB_APP_KEY', 'domushub_key') }}",
+                wsHost: "{{ env('REVERB_HOST') }}" || window.location.hostname,
+                wsPort: parseInt("{{ env('REVERB_PORT', '8080') }}", 10),
+                wssPort: parseInt("{{ env('REVERB_PORT', '8080') }}", 10),
+                forceTLS: false,
+                enabledTransports: ['ws', 'wss'],
+            };
+        } else {
+            echoConfig = {
+                broadcaster: 'pusher',
+                key: "{{ env('PUSHER_APP_KEY') }}",
+                cluster: "{{ env('PUSHER_APP_CLUSTER') }}",
+                forceTLS: true
+            };
+        }
+
+        console.log("DomusHub Echo Config:", echoConfig);
+
+        // Khởi tạo Echo
+        if (typeof window.Echo === 'undefined' && typeof window.LaravelEcho !== 'undefined') {
+            window.Echo = new window.LaravelEcho(echoConfig);
+            console.log("DomusHub WebSockets: Echo initialized!");
+        }
+
+        if (window.Echo) {
+            console.log(`DomusHub WebSockets: Subscribing to 'post.${currentPostId}' channel...`);
+            window.Echo.channel(`post.${currentPostId}`)
+                .listen('CommentCreated', (e) => {
+                    console.log("DomusHub WebSockets: Received Event CommentCreated:", e);
+                    const emptyPlaceholder = document.getElementById('empty-comments-placeholder');
+                    if (emptyPlaceholder) {
+                        emptyPlaceholder.remove();
+                    }
+
+                    if (document.getElementById(`comment-${e.id}`)) return;
+
+                    const container = document.querySelector('.pc-comments-list');
+                    if (container) {
+                        const commentHtml = createCommentHtml(e);
+                        container.insertAdjacentHTML('beforeend', commentHtml);
+                        
+                        // Cập nhật lại số đếm tiêu đề bình luận
+                        const countEl = document.querySelector('.pc-comments__title');
+                        if (countEl) {
+                            const count = container.querySelectorAll('.pc-comment').length;
+                            countEl.innerHTML = `<i class="fa-regular fa-comments" style="margin-right: 0.5rem;"></i> Bình luận (${count})`;
+                        }
+
+                        showToast(`Cư dân ${e.user.name} vừa bình luận bài viết!`, 'success');
+                    }
+                });
+        } else {
+            console.error("DomusHub WebSockets: Failed to initialize Echo. Please check libraries.");
         }
     });
 </script>
