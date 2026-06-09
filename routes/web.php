@@ -90,6 +90,7 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/admin/utility-readings/get-old-value', [UtilityMeterController::class, 'getOldValue'])->name('admin.utility-readings.get-old-value');
     Route::get('/admin/utility-readings/import-template', [UtilityMeterController::class, 'downloadTemplate'])->name('admin.utility-readings.import-template');
     Route::post('/admin/utility-readings/import', [UtilityMeterController::class, 'import'])->name('admin.utility-readings.import');
+    Route::get('/admin/utility-readings/{id}', [UtilityMeterController::class, 'show'])->name('admin.utility-readings.show');
     Route::get('/admin/utility-readings/{id}/edit', [UtilityMeterController::class, 'edit'])->name('admin.utility-readings.edit');
     Route::put('/admin/utility-readings/{id}', [UtilityMeterController::class, 'update'])->name('admin.utility-readings.update');
     Route::delete('/admin/utility-readings/{id}', [UtilityMeterController::class, 'destroy'])->name('admin.utility-readings.destroy');
@@ -221,3 +222,15 @@ Route::middleware(['admin'])->name('admin.')->group(function () {
     Route::post('/admin/invitations', [AdminInvitationController::class, 'store'])->name('invitations.store');
     Route::delete('/admin/invitations/{id}', [AdminInvitationController::class, 'destroy'])->name('invitations.destroy');
 });
+
+// Fallback route to serve uploaded public storage files (useful if symlink is missing or fails on local Windows development)
+Route::get('/storage/{any}', function ($any) {
+    $path = storage_path('app/public/' . $any);
+    if (file_exists($path)) {
+        return response()->file($path);
+    }
+    abort(404);
+})->where('any', '.*');
+
+
+

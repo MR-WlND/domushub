@@ -1,0 +1,52 @@
+[
+    {
+        "id": "b8822fa2-bd0b-43c5-85b6-443b13dd2ce4",
+        "type": "App\\Notifications\\UtilityIndexRecordedNotification",
+        "notifiable_type": "App\\Models\\User",
+        "notifiable_id": 6,
+        "data": "{\"url\": \"http:\/\/127.0.0.1:8000\/admin\/utility-readings?month=6&year=2026\", \"type\": \"rejected\", \"title\": \"\u274c Ch\u1ec9 s\u1ed1 \u0111i\u1ec7n n\u01b0\u1edbc b\u1ecb t\u1eeb ch\u1ed1i\", \"message\": \"Ch\u1ec9 s\u1ed1 <strong>\u0110i\u1ec7n<\/strong> m\u1edbi cho c\u0103n h\u1ed9 <strong>D301<\/strong> (K\u1ef3 6\/2026) \u0111\u00e3 b\u1ecb t\u1eeb ch\u1ed1i b\u1edfi k\u1ebf to\u00e1n <strong>Nh\u1eadt Long<\/strong>. L\u00fd do: <em>\u1ea3nh kh\u00f4ng tr\u00f9ng kh\u1edbp d\u1eef li\u1ec7u<\/em>. Vui l\u00f2ng ki\u1ec3m tra v\u00e0 ghi l\u1ea1i.\"}",
+        "read_at": "2026-06-08 16:12:00",
+        "created_at": "2026-06-08 16:11:47",
+        "updated_at": "2026-06-08 16:12:00"
+    },
+    {
+        "id": "3e149fac-5f6a-491f-a597-8e08fa2655a7",
+        "type": "App\\Notifications\\UtilityIndexRecordedNotification",
+        "notifiable_type": "App\\Models\\User",
+        "notifiable_id": 1,
+        "data": "{\"url\": \"http:\/\/127.0.0.1:8000\/admin\/utility-readings?month=6&year=2026&highlight=85\", \"type\": \"single\", \"title\": \"\u23f3 Ch\u1ec9 s\u1ed1 m\u1edbi ch\u1edd ph\u00ea duy\u1ec7t\", \"message\": \"K\u1ef9 thu\u1eadt vi\u00ean <strong>Vi\u1ec7t H\u00f9ng \u0110\u1ed7<\/strong> \u0111\u00e3 g\u1eedi s\u1ed1 <strong>\u0110i\u1ec7n<\/strong> m\u1edbi cho c\u0103n h\u1ed9 <strong>D301<\/strong> (K\u1ef3 6\/2026): 222. Vui l\u00f2ng ki\u1ec3m tra v\u00e0 duy\u1ec7t.\"}",
+        "read_at": null,
+        "created_at": "2026-06-08 16:11:10",
+        "updated_at": "2026-06-08 16:11:10"
+    },
+    {
+        "id": "d2c4678b-98f1-44a5-a650-c32241964489",
+        "type": "App\\Notifications\\UtilityIndexRecordedNotification",
+        "notifiable_type": "App\\Models\\User",
+        "notifiable_id": 7,
+        "data": "{\"url\": \"http:\/\/127.0.0.1:8000\/admin\/utility-readings?month=6&year=2026&highlight=85\", \"type\": \"single\", \"title\": \"\u23f3 Ch\u1ec9 s\u1ed1 m\u1edbi ch\u1edd ph\u00ea duy\u1ec7t\", \"message\": \"K\u1ef9 thu\u1eadt vi\u00ean <strong>Vi\u1ec7t H\u00f9ng \u0110\u1ed7<\/strong> \u0111\u00e3 g\u1eedi s\u1ed1 <strong>\u0110i\u1ec7n<\/strong> m\u1edbi cho c\u0103n h\u1ed9 <strong>D301<\/strong> (K\u1ef3 6\/2026): 222. Vui l\u00f2ng ki\u1ec3m tra v\u00e0 duy\u1ec7t.\"}",
+        "read_at": null,
+        "created_at": "2026-06-08 16:11:10",
+        "updated_at": "2026-06-08 16:11:10"
+    },
+    {
+        "id": "a203a364-2c84-4b04-a458-2872d9855de5",
+        "type": "App\\Notifications\\UtilityIndexRecordedNotification",
+        "notifiable_type": "App\\Models\\User",
+        "notifiable_id": 6,
+        "data": "{\"url\": \"http:\/\/127.0.0.1:8000\/admin\/utility-readings?month=6&year=2026\", \"type\": \"rejected\", \"title\": \"\u274c Ch\u1ec9 s\u1ed1 \u0111i\u1ec7n n\u01b0\u1edbc b\u1ecb t\u1eeb ch\u1ed1i\", \"message\": \"Ch\u1ec9 s\u1ed1 <strong>\u0110i\u1ec7n<\/strong> m\u1edbi cho c\u0103n h\u1ed9 <strong>301<\/strong> (K\u1ef3 6\/2026) \u0111\u00e3 b\u1ecb t\u1eeb ch\u1ed1i b\u1edfi k\u1ebf to\u00e1n <strong>Nh\u1eadt Long<\/strong>. L\u00fd do: <em>\u1ea3nh m\u1edd<\/em>. Vui l\u00f2ng ki\u1ec3m tra v\u00e0 ghi l\u1ea1i.\"}",
+        "read_at": "2026-06-08 16:02:50",
+        "created_at": "2026-06-08 16:02:28",
+        "updated_at": "2026-06-08 16:02:50"
+    },
+    {
+        "id": "ae7cd164-a26d-4315-bec9-4a474883de0a",
+        "type": "App\\Notifications\\UtilityIndexRecordedNotification",
+        "notifiable_type": "App\\Models\\User",
+        "notifiable_id": 1,
+        "data": "{\"url\": \"http:\/\/127.0.0.1:8000\/admin\/utility-readings?month=6&year=2026\", \"type\": \"single\", \"title\": \"\u23f3 Ch\u1ec9 s\u1ed1 m\u1edbi ch\u1edd ph\u00ea duy\u1ec7t\", \"message\": \"K\u1ef9 thu\u1eadt vi\u00ean <strong>Vi\u1ec7t H\u00f9ng \u0110\u1ed7<\/strong> \u0111\u00e3 g\u1eedi s\u1ed1 <strong>\u0110i\u1ec7n<\/strong> m\u1edbi cho c\u0103n h\u1ed9 <strong>D101<\/strong> (K\u1ef3 6\/2026): 133. Vui l\u00f2ng ki\u1ec3m tra v\u00e0 duy\u1ec7t.\"}",
+        "read_at": null,
+        "created_at": "2026-06-08 15:39:03",
+        "updated_at": "2026-06-08 15:39:03"
+    }
+]

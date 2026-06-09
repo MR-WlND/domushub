@@ -11,7 +11,7 @@
 {{-- ── Page Header ─────────────────────────────────── --}}
 <div class="util-page-header">
     <div>
-        <h1>📝 Ghi chỉ số đơn lẻ</h1>
+        <h1>Ghi chỉ số đơn lẻ</h1>
         <p>Nhập chỉ số mới cho một căn hộ</p>
     </div>
     <a href="{{ route('admin.utility-readings.index') }}" class="util-btn util-btn--outline">
@@ -89,8 +89,8 @@
                 <select name="type" id="type"
                     class="util-form-input {{ $errors->has('type') ? 'util-form-input--error' : '' }}" required>
                     <option value="">— Chọn loại —</option>
-                    <option value="electricity" {{ old('type') == 'electricity' ? 'selected' : '' }}>⚡ Điện</option>
-                    <option value="water" {{ old('type') == 'water' ? 'selected' : '' }}>💧 Nước</option>
+                    <option value="electricity" {{ old('type') == 'electricity' ? 'selected' : '' }}>Điện</option>
+                    <option value="water" {{ old('type') == 'water' ? 'selected' : '' }}>Nước</option>
                 </select>
                 @error('type')
                     <p class="util-form-error">{{ $message }}</p>
@@ -152,7 +152,7 @@
             <div class="util-form-group" style="grid-column: span 3; margin-top: 10px; margin-bottom: 10px;">
                 <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: #1e293b;">
                     <input type="checkbox" name="is_reset" id="is_reset" value="1" {{ old('is_reset') ? 'checked' : '' }} style="width: 16px; height: 16px; accent-color: #00236f; cursor: pointer;">
-                    🔄 Thay công tơ mới (Chỉ số cũ sẽ đặt về 0 cho kỳ này)
+                    Thay công tơ mới (Chỉ số cũ sẽ đặt về 0 cho kỳ này)
                 </label>
             </div>
         </div>

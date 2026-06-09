@@ -74,7 +74,7 @@
 {{-- ── Page Header ─────────────────────────────────── --}}
 <div class="util-page-header">
     <div>
-        <h1>⚡💧 Ghi chỉ số hàng loạt</h1>
+        <h1>Ghi chỉ số hàng loạt</h1>
         <p>Chốt cả <strong>điện</strong> và <strong>nước</strong> cho nhiều căn hộ cùng lúc</p>
     </div>
     <a href="{{ route('admin.utility-readings.index') }}" class="util-btn util-btn--outline">
@@ -155,7 +155,7 @@
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 12px; margin-bottom: 20px;">
 
     <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:16px 20px;">
-        <div style="font-size:12px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">⚡ Điện – Tháng {{ $selectedMonth }}/{{ $selectedYear }}</div>
+        <div style="font-size:12px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Điện – Tháng {{ $selectedMonth }}/{{ $selectedYear }}</div>
         <div style="font-size:26px;font-weight:800;color:#b45309;">{{ $elecDone }}<span style="font-size:16px;font-weight:600;color:#d97706;"> / {{ $total }}</span></div>
         <div style="margin-top:8px;background:#e2e8f0;border-radius:999px;height:6px;overflow:hidden;">
             <div style="height:100%;width:{{ $elecPct }}%;background:linear-gradient(90deg,#f59e0b,#d97706);border-radius:999px;"></div>
@@ -164,7 +164,7 @@
     </div>
 
     <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:16px 20px;">
-        <div style="font-size:12px;font-weight:700;color:#1e40af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">💧 Nước – Tháng {{ $selectedMonth }}/{{ $selectedYear }}</div>
+        <div style="font-size:12px;font-weight:700;color:#1e40af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Nước – Tháng {{ $selectedMonth }}/{{ $selectedYear }}</div>
         <div style="font-size:26px;font-weight:800;color:#1d4ed8;">{{ $waterDone }}<span style="font-size:16px;font-weight:600;color:#3b82f6;"> / {{ $total }}</span></div>
         <div style="margin-top:8px;background:#e2e8f0;border-radius:999px;height:6px;overflow:hidden;">
             <div style="height:100%;width:{{ $waterPct }}%;background:linear-gradient(90deg,#3b82f6,#1d4ed8);border-radius:999px;"></div>
@@ -173,7 +173,7 @@
     </div>
 
     <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px 20px;">
-        <div style="font-size:12px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">✅ Hoàn tất cả 2</div>
+        <div style="font-size:12px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Hoàn tất cả 2</div>
         <div style="font-size:26px;font-weight:800;color:#15803d;">{{ $bothDone }}<span style="font-size:16px;font-weight:600;color:#22c55e;"> / {{ $total }}</span></div>
         <div style="margin-top:8px;background:#e2e8f0;border-radius:999px;height:6px;overflow:hidden;">
             <div style="height:100%;width:{{ $total > 0 ? round($bothDone/$total*100) : 0 }}%;background:linear-gradient(90deg,#10b981,#059669);border-radius:999px;"></div>
@@ -182,7 +182,7 @@
     </div>
 
     <div style="background:#f8faff;border:1px solid #e2e8f0;border-radius:12px;padding:16px 20px;display:flex;flex-direction:column;justify-content:center;gap:6px;">
-        <div style="font-size:13px;font-weight:600;color:#334155;">🏠 Tổng căn hộ: <strong>{{ $total }}</strong></div>
+        <div style="font-size:13px;font-weight:600;color:#334155;">Tổng căn hộ: <strong>{{ $total }}</strong></div>
         <div style="font-size:13px;color:#64748b;">Chưa chốt điện: <strong style="color:#f59e0b;">{{ $total - $elecDone }}</strong></div>
         <div style="font-size:13px;color:#64748b;">Chưa chốt nước: <strong style="color:#3b82f6;">{{ $total - $waterDone }}</strong></div>
     </div>
@@ -201,7 +201,7 @@
                 Danh sách căn hộ – Tháng {{ $selectedMonth }}/{{ $selectedYear }}
             </div>
             <div style="display:flex;align-items:center;gap:16px;font-size:13px;color:#64748b;">
-                <span>⚡ Cột vàng = Điện &nbsp;|&nbsp; 💧 Cột xanh = Nước</span>
+                <span>Cột vàng = Điện &nbsp;|&nbsp; Cột xanh = Nước</span>
                 <label style="display:flex;align-items:center;gap:6px;font-weight:600;cursor:pointer;">
                     <input type="checkbox" id="selectAll" checked style="width:15px;height:15px;accent-color:#00236f;cursor:pointer;">
                     Chọn tất cả
@@ -217,12 +217,12 @@
                         <th rowspan="2" style="width:80px; text-align:center;">PHÒNG</th>
                         <th rowspan="2" style="width:150px; text-align:center;">TÒA / TẦNG</th>
                         <th colspan="{{ auth()->user()->role === 'technician' ? '1' : '3' }}" class="col-elec col-divider-border" style="text-align:center; font-weight:700; color:#92400e;">
-                            ⚡ ĐIỆN — THÁNG {{ $selectedMonth }}/{{ $selectedYear }}
+                            ĐIỆN — THÁNG {{ $selectedMonth }}/{{ $selectedYear }}
                         </th>
  
                         {{-- Water Header Group --}}
                         <th colspan="{{ auth()->user()->role === 'technician' ? '1' : '3' }}" class="col-water" style="text-align:center; font-weight:700; color:#1e40af;">
-                            💧 NƯỚC — THÁNG {{ $selectedMonth }}/{{ $selectedYear }}
+                            NƯỚC — THÁNG {{ $selectedMonth }}/{{ $selectedYear }}
                         </th>
  
                         <th rowspan="2" style="width:140px; text-align:center; vertical-align:middle;">Ảnh công tơ</th>
@@ -256,7 +256,11 @@
                                 <input type="checkbox" class="row-check" data-index="{{ $i }}" checked
                                     style="width:15px;height:15px;accent-color:#00236f;cursor:pointer;">
                             @else
-                                <span class="done-icon">✅</span>
+                                <span class="done-icon">
+                                    <svg width="18" height="18" fill="none" stroke="#166534" stroke-width="2.5" viewBox="0 0 24 24" style="display:inline-block; vertical-align:middle;">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                </span>
                             @endif
                         </td>
  
@@ -367,13 +371,13 @@
                         {{-- Status --}}
                         <td style="text-align:center;">
                             @if ($bothDoneRow)
-                                <span class="util-badge util-badge--success">✅ Đã chốt</span>
+                                <span class="util-badge util-badge--success">Đã chốt</span>
                             @elseif ($data['elec_recorded'] || $data['water_recorded'])
                                 <span class="util-badge" style="background:#e0f2fe;color:#075985;font-size:11px;">
-                                    {{ $data['elec_recorded'] ? '⚡' : '' }}{{ $data['water_recorded'] ? '💧' : '' }} Chốt 1 phần
+                                    {{ $data['elec_recorded'] ? 'Điện ' : '' }}{{ $data['water_recorded'] ? 'Nước' : '' }} Chốt 1 phần
                                 </span>
                             @else
-                                <span class="util-badge util-badge--warning">⏳ Chưa chốt</span>
+                                <span class="util-badge util-badge--warning">Chưa chốt</span>
                             @endif
                         </td>
                     </tr>

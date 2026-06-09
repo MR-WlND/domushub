@@ -11,17 +11,11 @@
 {{-- ── Page Header ─────────────────────────────────── --}}
 <div class="util-page-header">
     <div>
-        <h1>⚡ Chốt số Điện Nước</h1>
+        <h1>Chốt số Điện Nước</h1>
         <p>Quản lý chỉ số điện nước theo tháng – Tháng {{ $month }}/{{ $year }}</p>
     </div>
     @if(auth()->user()->role !== 'staff')
     <div class="util-header-actions">
-        <button type="button" class="util-btn util-btn--outline" onclick="openImportModal()">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M4 16v1a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-1m-4-8-4-4m0 0L8 8m4-4v12"/>
-            </svg>
-            Nhập từ Excel/CSV
-        </button>
         <a href="{{ route('admin.utility-readings.batch') }}" class="util-btn util-btn--secondary">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
@@ -42,34 +36,34 @@
 
 {{-- ── Flash Message ───────────────────────────────── --}}
 @if (session('success'))
-    <div class="util-alert--success">✅ {{ session('success') }}</div>
+    <div class="util-alert--success">{{ session('success') }}</div>
 @endif
 @if (session('error'))
-    <div class="util-alert--danger">❌ {{ session('error') }}</div>
+    <div class="util-alert--danger">{{ session('error') }}</div>
 @endif
 
 {{-- ── Stat Cards ──────────────────────────────────── --}}
 <div class="util-stats-grid">
     <div class="util-stat-card">
-        <div class="util-stat-card__label">📋 Tổng bản ghi</div>
+        <div class="util-stat-card__label">Tổng bản ghi</div>
         <div class="util-stat-card__value">{{ number_format($stats['total_records']) }}</div>
     </div>
     <div class="util-stat-card" style="border-top: 3px solid #f59e0b;">
-        <div class="util-stat-card__label">⚡ Tổng tiêu thụ Điện</div>
+        <div class="util-stat-card__label">Tổng tiêu thụ Điện</div>
         <div class="util-stat-card__value">
             {{ number_format($stats['total_electricity']) }}
             <small>kWh</small>
         </div>
     </div>
     <div class="util-stat-card" style="border-top: 3px solid #3b82f6;">
-        <div class="util-stat-card__label">💧 Tổng tiêu thụ Nước</div>
+        <div class="util-stat-card__label">Tổng tiêu thụ Nước</div>
         <div class="util-stat-card__value">
             {{ number_format($stats['total_water']) }}
             <small>m³</small>
         </div>
     </div>
     <div class="util-stat-card" style="border-top: 3px solid #10b981;">
-        <div class="util-stat-card__label">🏠 Căn hộ đã chốt</div>
+        <div class="util-stat-card__label">Căn hộ đã chốt</div>
         <div class="util-stat-card__value">
             {{ $stats['apartments_recorded'] }}
             <small>/ {{ $stats['apartments_total'] }}</small>
@@ -112,8 +106,8 @@
                 <label>Loại</label>
                 <select name="type">
                     <option value="">Tất cả</option>
-                    <option value="electricity" {{ $type == 'electricity' ? 'selected' : '' }}>⚡ Điện</option>
-                    <option value="water" {{ $type == 'water' ? 'selected' : '' }}>💧 Nước</option>
+                    <option value="electricity" {{ $type == 'electricity' ? 'selected' : '' }}>Điện</option>
+                    <option value="water" {{ $type == 'water' ? 'selected' : '' }}>Nước</option>
                 </select>
             </div>
             <div>
@@ -168,9 +162,7 @@
                     <th>Phòng</th>
                     <th>Tòa / Tầng</th>
                     <th>Loại</th>
-                    @if(auth()->user()->role !== 'technician')
-                    <th>Chỉ số cũ</th>
-                    @endif
+
                     <th>Chỉ số mới</th>
                     @if(auth()->user()->role !== 'technician')
                     <th>Tiêu thụ</th>
@@ -182,7 +174,7 @@
             </thead>
             <tbody>
                 @foreach ($readings as $index => $reading)
-                <tr>
+                <tr id="reading-{{ $reading->id }}" class="{{ request('highlight') == $reading->id ? 'util-row-highlight' : '' }}">
                     @if(auth()->user()->role !== 'technician')
                     <td style="text-align: center;">
                         @if($reading->status === 'pending')
@@ -198,19 +190,19 @@
                     </td>
                     <td>
                         @if ($reading->type === 'electricity')
-                            <span class="util-badge util-badge--electricity">⚡ Điện</span>
+                            <span class="util-badge util-badge--electricity">Điện</span>
                         @else
-                            <span class="util-badge util-badge--water">💧 Nước</span>
+                            <span class="util-badge util-badge--water">Nước</span>
                         @endif
                     </td>
-                    @if(auth()->user()->role !== 'technician')
-                    <td class="text-muted">{{ number_format($reading->old_value) }}</td>
-                    @endif
+
                     <td class="text-strong">
                         {{ number_format($reading->new_value) }}
                         @if($reading->image_proof)
-                        <span class="proof-photo-btn" data-img="{{ asset('storage/' . $reading->image_proof) }}" style="cursor:pointer; margin-left:6px; font-size:14px;" title="Xem minh chứng công tơ">
-                            📷
+                        <span class="proof-photo-btn" data-img="{{ asset('storage/' . $reading->image_proof) }}" style="cursor:pointer; margin-left:6px; color:#0b57d0; display:inline-flex; align-items:center; vertical-align:middle;" title="Xem minh chứng công tơ">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                            </svg>
                         </span>
                         @endif
                     </td>
@@ -222,17 +214,23 @@
                     @endif
                     <td>
                         @if($reading->status === 'approved')
-                            <span class="util-badge util-badge--success" style="background:#e6f4ea; color:#137333; font-size:11px;">✅ Đã chốt</span>
+                            <span class="util-badge util-badge--success" style="background:#e6f4ea; color:#137333; font-size:11px;">Đã chốt</span>
                         @elseif($reading->status === 'rejected')
-                            <span class="util-badge util-badge--danger" style="background:#fce8e6; color:#c5221f; font-size:11px;">❌ Bị từ chối</span>
+                            <span class="util-badge util-badge--danger" style="background:#fce8e6; color:#c5221f; font-size:11px;">Bị từ chối</span>
                         @else
-                            <span class="util-badge util-badge--warning" style="background:#fef7e0; color:#b06000; font-size:11px;">⏳ Chờ chốt</span>
+                            <span class="util-badge util-badge--warning" style="background:#fef7e0; color:#b06000; font-size:11px;">Chờ chốt</span>
                         @endif
                     </td>
                     <td class="text-muted">{{ $reading->recorder->name ?? '—' }}</td>
                     <td>
                         <div class="util-actions">
                             @if(auth()->user()->role !== 'technician')
+                                <button type="button" class="util-btn-view" onclick="openDetailModal({{ $reading->id }})" title="Xem chi tiết">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                    </svg>
+                                </button>
                                 @if($reading->status === 'pending')
                                 <form action="{{ route('admin.utility-readings.approve', $reading->id) }}" method="POST" style="margin:0;">
                                     @csrf
@@ -240,9 +238,10 @@
                                         Duyệt
                                     </button>
                                 </form>
-                                <form action="{{ route('admin.utility-readings.reject', $reading->id) }}" method="POST" style="margin:0;" onsubmit="return confirm('Bạn có chắc muốn từ chối chỉ số này?')">
+                                <form action="{{ route('admin.utility-readings.reject', $reading->id) }}" method="POST" style="margin:0;" id="reject-form-{{ $reading->id }}">
                                     @csrf
-                                    <button type="submit" class="util-btn util-btn--danger util-btn--xs" style="padding: 4px 8px; font-size:11px; height:auto; background:#dc2626; border-color:#dc2626; color:white; line-height:1;" title="Từ chối">
+                                    <input type="hidden" name="reject_reason" id="reject-reason-{{ $reading->id }}">
+                                    <button type="button" class="util-btn util-btn--danger util-btn--xs" style="padding: 4px 8px; font-size:11px; height:auto; background:#dc2626; border-color:#dc2626; color:white; line-height:1;" title="Từ chối" onclick="confirmAndReject({{ $reading->id }})">
                                         Từ chối
                                     </button>
                                 </form>
@@ -269,6 +268,12 @@
                                     </button>
                                 </form>
                             @else
+                                <button type="button" class="util-btn-view" onclick="openDetailModal({{ $reading->id }})" title="Xem chi tiết">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                    </svg>
+                                </button>
                                 @if(in_array($reading->status, ['pending', 'rejected']) && $reading->recorded_by === auth()->id())
                                 <a href="{{ route('admin.utility-readings.edit', $reading->id) }}"
                                     class="util-btn-edit" title="Sửa">
@@ -277,8 +282,6 @@
                                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                                     </svg>
                                 </a>
-                                @else
-                                <span style="color:#94a3b8;">—</span>
                                 @endif
                             @endif
                         </div>
@@ -324,123 +327,32 @@
     <p>Chưa có chỉ số nào được ghi cho tháng {{ $month }}/{{ $year }}.</p>
     @if(auth()->user()->role !== 'staff')
     <div class="util-empty-actions">
-        <a href="{{ route('admin.utility-readings.batch') }}" class="util-btn util-btn--secondary">⚡ Ghi hàng loạt</a>
+        <a href="{{ route('admin.utility-readings.batch') }}" class="util-btn util-btn--secondary">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right: 6px;">
+                <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+                <rect x="9" y="3" width="6" height="4" rx="1"/>
+                <line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>
+            </svg>
+            Ghi hàng loạt
+        </a>
         <a href="{{ route('admin.utility-readings.create') }}" class="util-btn util-btn--primary">+ Ghi đơn lẻ</a>
     </div>
     @endif
 </div>
 @endif
 
-{{-- ── Import Modal ────────────────────────────────────── --}}
-<div class="util-modal-backdrop" id="importModal">
-    <div class="util-modal">
-        <div class="util-modal-header">
-            <h3>
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:inline-block; vertical-align:middle; margin-right:6px;">
-                    <path d="M12 10v6m0 0-3-3m3 3 3-3M3 17V7a2 2 0 0 1 2-2h6l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                </svg>
-                Nhập chỉ số từ Excel / CSV
-            </h3>
-            <button class="util-modal-close" onclick="closeImportModal()">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                </svg>
-            </button>
-        </div>
-        <div class="util-modal-body">
-            {{-- 1. Download template option --}}
-            <div class="util-template-box">
-                <div class="util-template-title">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:inline-block; vertical-align:middle; margin-right:4px;">
-                        <path d="M4 16v1a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-1m-4-4-4 4m0 0-4-4m4 4V4"/>
-                    </svg>
-                    Tải File Mẫu Tiện Lợi
-                </div>
-                <div class="util-template-desc">
-                    Hệ thống sẽ chuẩn bị sẵn danh sách căn hộ kèm **chỉ số cũ** của kỳ trước để bạn dễ dàng điền chỉ số mới.
-                </div>
-                <div class="util-template-select-row">
-                    <div>
-                        <select id="template_month">
-                            @for ($m = 1; $m <= 12; $m++)
-                                <option value="{{ $m }}" {{ $m == $month ? 'selected' : '' }}>Tháng {{ $m }}</option>
-                            @endfor
-                        </select>
-                    </div>
-                    <div>
-                        <select id="template_year">
-                            @for ($y = now()->year - 2; $y <= now()->year + 2; $y++)
-                                <option value="{{ $y }}" {{ $y == $year ? 'selected' : '' }}>Năm {{ $y }}</option>
-                            @endfor
-                        </select>
-                    </div>
-                    <button type="button" class="util-template-btn" onclick="downloadTemplateFile()">
-                        Tải mẫu (.xlsx)
-                    </button>
-                </div>
-            </div>
 
-            {{-- 2. Upload Form --}}
-            <form action="{{ route('admin.utility-readings.import') }}" method="POST" enctype="multipart/form-data" id="importForm">
-                @csrf
-                <input type="file" name="csv_file" id="csv_file" accept=".xlsx,.xls,.csv,text/csv,text/plain" style="display: none;" onchange="handleFileSelect(this)">
-                
-                <div class="util-form-group" style="margin-bottom: 20px;">
-                    <label class="util-form-label">Tháng / Năm áp dụng chỉ số <span class="required">*</span></label>
-                    <div style="display: flex; gap: 12px; margin-top: 4px;">
-                        <div style="flex: 1;">
-                            <select name="import_month" id="import_month" class="util-form-input">
-                                @for ($m = 1; $m <= 12; $m++)
-                                    <option value="{{ $m }}" {{ $m == $month ? 'selected' : '' }}>Tháng {{ $m }}</option>
-                                @endfor
-                            </select>
-                        </div>
-                        <div style="flex: 1;">
-                            <select name="import_year" id="import_year" class="util-form-input">
-                                @for ($y = now()->year - 2; $y <= now()->year + 2; $y++)
-                                    <option value="{{ $y }}" {{ $y == $year ? 'selected' : '' }}>Năm {{ $y }}</option>
-                                @endfor
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="util-drag-zone" id="dropZone" onclick="document.getElementById('csv_file').click()">
-                    <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                        <path d="M12 16v-8m0 8-4-4m4 4 4-4M3 15v3a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3v-3"/>
-                    </svg>
-                    <div class="util-drag-text">Kéo thả file Excel hoặc CSV vào đây hoặc <span>chọn từ máy tính</span></div>
-                    <div class="util-drag-sub">Hỗ trợ file .xlsx, .xls hoặc .csv dung lượng tối đa 4MB</div>
-                </div>
-
-                <div class="util-file-preview" id="filePreview">
-                    <div class="util-file-info">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style="color: #10b981; display:inline-block; vertical-align:middle; margin-right:4px;">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
-                        </svg>
-                        <span id="fileNameDisplay">file_name.csv</span>
-                    </div>
-                    <span class="util-file-remove" onclick="removeSelectedFile(event)">Xóa</span>
-                </div>
-
-                <div class="util-form-actions" style="margin-top: 24px; padding-top: 18px;">
-                    <button type="submit" class="util-btn util-btn--primary" id="btnSubmitImport" disabled style="width: 100%; justify-content: center;">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:inline-block; vertical-align:middle; margin-right:4px;">
-                            <path d="M5 13l4 4L19 7"/>
-                        </svg>
-                        Bắt đầu nhập dữ liệu
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
 {{-- ── Proof Modal ────────────────────────────────────── --}}
 <div class="util-modal-backdrop" id="proofModal">
     <div class="util-modal" style="max-width: 540px;">
         <div class="util-modal-header">
-            <h3>📷 Ảnh chụp công tơ minh chứng</h3>
+            <h3>
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:inline-block; vertical-align:middle; margin-right:6px; color:#0b57d0;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                </svg>
+                Ảnh chụp công tơ minh chứng
+            </h3>
             <button class="util-modal-close" onclick="closeProofModal()">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -448,49 +360,113 @@
             </button>
         </div>
         <div class="util-modal-body" style="text-align: center; padding: 20px;">
-            <img id="proofModalImg" src="" alt="Ảnh minh chứng" style="max-width: 100%; max-height: 480px; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+            <img id="proofModalImg" src="" alt="Ảnh minh chứng" style="max-width: 100%; max-height: 60vh; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
         </div>
     </div>
 </div>
+
+{{-- ── Detail Modal ────────────────────────────────────── --}}
+<div class="util-modal-backdrop" id="detailModal">
+    <div class="util-modal" style="max-width: 680px;">
+        <div class="util-modal-header">
+            <h3>
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:inline-block; vertical-align:middle; margin-right:6px; color:#0b57d0;">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="16" x2="12" y2="12" />
+                    <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+                Chi tiết chỉ số điện nước
+            </h3>
+            <button class="util-modal-close" onclick="closeDetailModal()">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div class="util-modal-body" style="padding: 24px;">
+            <div id="detailModalContent" style="display: none;">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px;">
+                    <div>
+                        <div style="font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase;">Căn hộ</div>
+                        <div style="font-size: 15px; font-weight: 700; color: #00236f;" id="detApartment"></div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase;">Tòa nhà / Tầng</div>
+                        <div style="font-size: 14px; font-weight: 600; color: #334155;" id="detLocation"></div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase;">Loại dịch vụ</div>
+                        <div style="font-size: 14px; font-weight: 600; color: #334155;" id="detType"></div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase;">Kỳ ghi nhận</div>
+                        <div style="font-size: 14px; font-weight: 600; color: #334155;" id="detPeriod"></div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase;">Chỉ số mới</div>
+                        <div style="font-size: 14px; font-weight: 600; color: #334155;" id="detNew"></div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase;">Trạng thái</div>
+                        <div style="margin-top: 4px;" id="detStatus"></div>
+                    </div>
+                    <div style="grid-column: span 2; background: #f8fafc; padding: 12px; border-radius: 8px;">
+                        <div style="font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase;">Lượng tiêu thụ thực tế</div>
+                        <div style="font-size: 18px; font-weight: 800; color: #00236f; margin-top: 4px;" id="detUsage"></div>
+                    </div>
+                    <div id="detRejectInfo" style="grid-column: span 2; background: #fef2f2; border: 1px solid #fecaca; padding: 12px; border-radius: 8px; display: none;">
+                        <div style="font-size: 11px; font-weight: 600; color: #b91c1c; text-transform: uppercase;">Lý do từ chối</div>
+                        <div style="font-size: 14px; font-weight: 600; color: #991b1b; margin-top: 4px;" id="detRejectReason"></div>
+                        <div style="font-size: 12px; color: #b91c1c; margin-top: 4px;">Người từ chối: <span id="detRejecter" style="font-weight: 700;"></span></div>
+                    </div>
+                    <div style="grid-column: span 2;">
+                        <div style="font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase;">Người ghi nhận</div>
+                        <div style="font-size: 14px; font-weight: 600; color: #334155;" id="detRecorder"></div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase;">Ngày ghi nhận</div>
+                        <div style="font-size: 13px; color: #64748b;" id="detCreatedAt"></div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase;">Cập nhật cuối</div>
+                        <div style="font-size: 13px; color: #64748b;" id="detUpdatedAt"></div>
+                    </div>
+                </div>
+
+                <div id="detImageContainer" style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 16px; text-align: center;">
+                    <div style="font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase; text-align: left; margin-bottom: 8px;">Ảnh công tơ minh chứng</div>
+                    <img id="detImage" src="" alt="Ảnh công tơ" style="max-width: 100%; max-height: 35vh; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                </div>
+                
+                <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px;">
+                    <a id="detLinkPrint" href="" target="_blank" class="util-btn util-btn--outline util-btn--sm" style="display: inline-flex; align-items: center; gap: 4px;">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.821V21h10.56v-7.179m-10.56 0H3.75A1.5 1.5 0 0 1 2.25 12.18V7.5a1.5 1.5 0 0 1 1.5-1.5h16.5a1.5 1.5 0 0 1 1.5 1.5v4.68a1.5 1.5 0 0 1-1.5 1.5H17.28m-10.56 0h10.56M9 3.75h6" />
+                        </svg>
+                        Mở tab & In
+                    </a>
+                    <button type="button" class="util-btn util-btn--outline util-btn--sm" onclick="closeDetailModal()">Đóng</button>
+                </div>
+            </div>
+            <div id="detailModalLoading" style="text-align: center; padding: 40px; color: #64748b;">
+                <div style="display: inline-block; width: 24px; height: 24px; border: 3px solid #cbd5e1; border-top-color: #00236f; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 12px;"></div>
+                <div>Đang tải dữ liệu...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+</style>
 
 @endsection
 
 @push('scripts')
 <script>
-// Modal toggling
-function openImportModal() {
-    document.getElementById('importModal').classList.add('active');
-}
 
-function closeImportModal() {
-    document.getElementById('importModal').classList.remove('active');
-    // Clear selected file if any
-    removeSelectedFile(null);
-}
-
-// Download template with dynamic month/year parameters
-function downloadTemplateFile() {
-    const month = document.getElementById('template_month').value;
-    const year = document.getElementById('template_year').value;
-    window.location.href = `{{ route('admin.utility-readings.import-template') }}?month=${month}&year=${year}`;
-}
-
-// File preview and selection
-function handleFileSelect(input) {
-    const file = input.files[0];
-    if (file) {
-        document.getElementById('fileNameDisplay').textContent = file.name;
-        document.getElementById('filePreview').style.display = 'flex';
-        document.getElementById('btnSubmitImport').disabled = false;
-    }
-}
-
-function removeSelectedFile(e) {
-    if (e) e.stopPropagation();
-    document.getElementById('csv_file').value = '';
-    document.getElementById('filePreview').style.display = 'none';
-    document.getElementById('btnSubmitImport').disabled = true;
-}
 
 document.addEventListener('DOMContentLoaded', function() {
     const blockSelect = document.querySelector('select[name="block_id"]');
@@ -534,34 +510,7 @@ document.addEventListener('DOMContentLoaded', function() {
         filterFloors();
     }
 
-    // Drag and drop events
-    const dropZone = document.getElementById('dropZone');
-    const fileInput = document.getElementById('csv_file');
 
-    if (dropZone && fileInput) {
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropZone.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                dropZone.classList.add('dragover');
-            }, false);
-        });
-
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                dropZone.classList.remove('dragover');
-            }, false);
-        });
-
-        dropZone.addEventListener('drop', (e) => {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            if (files.length) {
-                fileInput.files = files;
-                handleFileSelect(fileInput);
-            }
-        }, false);
-    }
 
     // Proof image popup modal
     window.closeProofModal = function() {
@@ -626,6 +575,134 @@ document.addEventListener('DOMContentLoaded', function() {
           }
       });
   });
+
+  // Close modals when clicking on the backdrop
+  document.querySelectorAll('.util-modal-backdrop').forEach(backdrop => {
+      backdrop.addEventListener('click', function(e) {
+          if (e.target === this) {
+              this.classList.remove('active');
+          }
+      });
+  });
+
+  // Close modals with Escape key
+  document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+          document.querySelectorAll('.util-modal-backdrop.active').forEach(modal => {
+              modal.classList.remove('active');
+          });
+      }
+  });
+
+  // Scroll to highlighted reading and trigger a smooth scroll
+  const highlightId = new URLSearchParams(window.location.search).get('highlight');
+  if (highlightId) {
+      const targetRow = document.getElementById('reading-' + highlightId);
+      if (targetRow) {
+          setTimeout(() => {
+              targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 300);
+      }
+  }
 });
+
+function openDetailModal(id) {
+    const modal = document.getElementById('detailModal');
+    const loading = document.getElementById('detailModalLoading');
+    const content = document.getElementById('detailModalContent');
+    
+    modal.classList.add('active');
+    loading.style.display = 'block';
+    content.style.display = 'none';
+
+    fetch(`/admin/utility-readings/${id}`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const reading = data.reading;
+            document.getElementById('detApartment').textContent = reading.apartment_number;
+            document.getElementById('detLocation').textContent = reading.location;
+            document.getElementById('detType').textContent = reading.type_label;
+            document.getElementById('detPeriod').textContent = `Tháng ${reading.record_month}/${reading.record_year}`;
+            document.getElementById('detNew').textContent = Number(reading.new_value).toLocaleString('vi-VN');
+            document.getElementById('detUsage').textContent = `${Number(reading.usage_amount).toLocaleString('vi-VN')} ${reading.type === 'electricity' ? 'kWh' : 'm³'}`;
+            document.getElementById('detRecorder').textContent = reading.recorder_name;
+            document.getElementById('detCreatedAt').textContent = reading.created_at;
+            document.getElementById('detUpdatedAt').textContent = reading.updated_at;
+
+            // Status badge
+            const statusEl = document.getElementById('detStatus');
+            statusEl.innerHTML = '';
+            const badge = document.createElement('span');
+            badge.className = 'util-badge';
+            if (reading.status === 'approved') {
+                badge.className += ' util-badge--success';
+                badge.textContent = 'Đã chốt';
+                badge.style.cssText = 'background:#e6f4ea; color:#137333; font-size:11px;';
+            } else if (reading.status === 'rejected') {
+                badge.className += ' util-badge--danger';
+                badge.textContent = 'Bị từ chối';
+                badge.style.cssText = 'background:#fce8e6; color:#c5221f; font-size:11px;';
+            } else {
+                badge.className += ' util-badge--warning';
+                badge.textContent = 'Chờ chốt';
+                badge.style.cssText = 'background:#fef7e0; color:#b06000; font-size:11px;';
+            }
+            statusEl.appendChild(badge);
+
+            // Reject reason details
+            const rejectInfoEl = document.getElementById('detRejectInfo');
+            const rejectReasonEl = document.getElementById('detRejectReason');
+            const rejecterEl = document.getElementById('detRejecter');
+            if (reading.status === 'rejected') {
+                rejectReasonEl.textContent = reading.reject_reason || 'Không rõ lý do';
+                rejecterEl.textContent = reading.rejecter_name || 'Kế toán viên';
+                rejectInfoEl.style.display = 'block';
+            } else {
+                rejectInfoEl.style.display = 'none';
+            }
+
+            // Image container
+            const imgContainer = document.getElementById('detImageContainer');
+            const imgEl = document.getElementById('detImage');
+            if (reading.image_proof_url) {
+                imgEl.src = reading.image_proof_url;
+                imgContainer.style.display = 'block';
+            } else {
+                imgContainer.style.display = 'none';
+            }
+
+            // Print / Link tab
+            document.getElementById('detLinkPrint').href = `/admin/utility-readings/${reading.id}`;
+
+            loading.style.display = 'none';
+            content.style.display = 'block';
+        }
+    })
+    .catch(err => {
+        console.error('Error fetching detail:', err);
+        closeDetailModal();
+    });
+}
+
+function closeDetailModal() {
+    document.getElementById('detailModal').classList.remove('active');
+}
+
+window.confirmAndReject = function(id) {
+    const reason = prompt("Nhập lý do từ chối chỉ số này:");
+    if (reason === null) return; // Hủy bỏ
+    if (reason.trim() === "") {
+        alert("Vui lòng cung cấp lý do từ chối.");
+        return;
+    }
+    document.getElementById('reject-reason-' + id).value = reason.trim();
+    document.getElementById('reject-form-' + id).submit();
+}
 </script>
 @endpush
