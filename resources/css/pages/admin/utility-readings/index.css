@@ -199,6 +199,7 @@
     align-items: center;
 }
 
+.util-btn-view,
 .util-btn-edit,
 .util-btn-delete {
     display: inline-flex;
@@ -213,6 +214,21 @@
     font-size: 14px;
     text-decoration: none;
     transition: all 0.15s ease;
+}
+
+.util-btn-view {
+    color: #64748b;
+}
+
+.util-btn-view:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #0b57d0;
+}
+
+.util-btn-edit,
+.util-btn-delete {
+    color: inherit;
 }
 
 .util-btn-edit:hover {
@@ -557,6 +573,9 @@ select.util-form-input {
     transform: scale(0.95);
     transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
     overflow: hidden;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .util-modal-backdrop.active .util-modal {
@@ -602,6 +621,8 @@ select.util-form-input {
 
 .util-modal-body {
     padding: 24px;
+    overflow-y: auto;
+    flex: 1;
 }
 
 /* Upload zone */
@@ -743,5 +764,17 @@ select.util-form-input {
 
 .util-template-btn:hover {
     background: #1e40af;
+}
+
+/* ---- Highlight Row ---- */
+@keyframes flash-yellow {
+    0% { background-color: #fef08a; }
+    100% { background-color: #fffbeb; }
+}
+
+.util-row-highlight {
+    animation: flash-yellow 2.5s ease-out;
+    background-color: #fffbeb !important;
+    border-left: 4px solid #f59e0b !important;
 }
 

@@ -25,6 +25,8 @@ class UtilityMeter extends Model
         'recorded_by',
         'status',
         'is_reset',
+        'rejected_by',
+        'reject_reason',
     ];
 
     /*
@@ -55,6 +57,11 @@ class UtilityMeter extends Model
     public function recorder(): BelongsTo
     {
         return $this->belongsTo(User::class, 'recorded_by');
+    }
+
+    public function rejecter(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'rejected_by');
     }
 
     /*

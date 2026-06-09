@@ -11,10 +11,10 @@
 {{-- ── Page Header ─────────────────────────────────── --}}
 <div class="util-page-header">
     <div>
-        <h1>✏️ Sửa chỉ số điện nước</h1>
+        <h1>Sửa chỉ số điện nước</h1>
         <p>
             Căn hộ <strong>{{ $reading->apartment->apartment_number }}</strong>
-            – {{ $reading->type === 'electricity' ? '⚡ Điện' : '💧 Nước' }}
+            – {{ $reading->type === 'electricity' ? 'Điện' : 'Nước' }}
             – Tháng {{ $reading->record_month }}/{{ $reading->record_year }}
         </p>
     </div>
@@ -38,6 +38,19 @@
     </div>
 @endif
 
+{{-- ── Rejection Info ────────────────────────────────── --}}
+@if($reading->status === 'rejected')
+    <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; color: #b91c1c;">
+        <div style="font-weight: 700; font-size: 14px; margin-bottom: 4px;">❌ Chỉ số này đã bị từ chối</div>
+        <div style="font-size: 13px; color: #991b1b;">
+            <strong>Lý do từ chối:</strong> <em>{{ $reading->reject_reason }}</em>
+        </div>
+        <div style="font-size: 11px; margin-top: 6px; color: #b91c1c; opacity: 0.9;">
+            Người từ chối: <strong>{{ $reading->rejecter->name ?? 'Kế toán viên' }}</strong>
+        </div>
+    </div>
+@endif
+
 {{-- ── Info Card ───────────────────────────────────── --}}
 <div style="background: #f0f7ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; display: flex; gap: 20px; flex-wrap: wrap;">
     <div>
@@ -54,9 +67,9 @@
         <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em;">Loại</div>
         <div style="margin-top: 4px;">
             @if ($reading->type === 'electricity')
-                <span class="util-badge util-badge--electricity">⚡ Điện</span>
+                <span class="util-badge util-badge--electricity">Điện</span>
             @else
-                <span class="util-badge util-badge--water">💧 Nước</span>
+                <span class="util-badge util-badge--water">Nước</span>
             @endif
         </div>
     </div>
@@ -101,7 +114,7 @@
                 <div style="margin-top: 6px;">
                     <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 11px; font-weight: 600; color: #00236f;">
                         <input type="checkbox" id="manual_adjust_cb" style="width: 14px; height: 14px; accent-color: #00236f; cursor: pointer; margin: 0;">
-                        ✏️ Điều chỉnh thủ công
+                        Điều chỉnh thủ công
                     </label>
                 </div>
                 @endif

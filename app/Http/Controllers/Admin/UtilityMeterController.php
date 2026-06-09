@@ -21,6 +21,25 @@ class UtilityMeterController extends Controller
      */
     public function index(Request $request): View
     {
+        if (!file_exists(public_path('storage'))) {
+            try {
+                \Illuminate\Support\Facades\Artisan::call('storage:link');
+            } catch (\Exception $e) {
+                // Ignore if symlink fails or permission is denied on local Windows development
+            }
+        }
+
+        // Programmatically run migrations if reject_reason column is not present
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('utility_meters', 'reject_reason')) {
+            try {
+                \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+            } catch (\Exception $e) {
+                // Ignore migration errors
+            }
+        }
+
+
+
         $blockId = $request->query('block_id');
         $floorId = $request->query('floor_id');
         $type    = $request->query('type');
@@ -54,6 +73,46 @@ class UtilityMeterController extends Controller
             $query->whereHas('apartment', fn ($q) => $q->where('floor_id', $floorId));
         } elseif ($blockId) {
             $query->whereHas('apartment.floor', fn ($q) => $q->where('block_id', $blockId));
+        }
+
+        $highlightId = $request->query('highlight');
+        if ($highlightId && !$request->has('page')) {
+            $target = UtilityMeter::find($highlightId);
+            if ($target) {
+                $month = $target->record_month;
+                $year = $target->record_year;
+
+                $countQuery = UtilityMeter::where('record_month', $month)
+                    ->where('record_year', $year);
+
+                if ($type) {
+                    $countQuery->where('type', $type);
+                }
+
+                if ($floorId) {
+                    $countQuery->whereHas('apartment', fn ($q) => $q->where('floor_id', $floorId));
+                } elseif ($blockId) {
+                    $countQuery->whereHas('apartment.floor', fn ($q) => $q->where('block_id', $blockId));
+                }
+
+                $allIds = $countQuery->orderBy('type')
+                    ->orderBy('apartment_id')
+                    ->pluck('id')
+                    ->toArray();
+
+                $index = array_search($highlightId, $allIds);
+                if ($index !== false) {
+                    $page = (int) floor($index / 20) + 1;
+                    if ($page > 1) {
+                        return redirect()->route('admin.utility-readings.index', array_merge($request->query(), [
+                            'month' => $month,
+                            'year' => $year,
+                            'page' => $page,
+                            'highlight' => $highlightId
+                        ]));
+                    }
+                }
+            }
         }
 
         $readings = $query->orderBy('type')
@@ -145,7 +204,7 @@ class UtilityMeterController extends Controller
             $imageProofPath = $request->file('image_proof')->store('proofs', 'public');
         }
 
-        UtilityMeter::create([
+        $meter = UtilityMeter::create([
             'apartment_id'  => $validated['apartment_id'],
             'type'          => $validated['type'],
             'record_month'  => $validated['record_month'],
@@ -171,7 +230,8 @@ class UtilityMeterController extends Controller
                 'message' => "Kỹ thuật viên <strong>{$recorderName}</strong> đã gửi số <strong>{$typeName}</strong> mới cho căn hộ <strong>{$apartmentNumber}</strong> (Kỳ {$validated['record_month']}/{$validated['record_year']}): {$validated['new_value']}. Vui lòng kiểm tra và duyệt.",
                 'url' => route('admin.utility-readings.index', [
                     'month' => $validated['record_month'],
-                    'year' => $validated['record_year']
+                    'year' => $validated['record_year'],
+                    'highlight' => $meter->id
                 ]),
                 'type' => 'single',
             ];
@@ -383,6 +443,42 @@ class UtilityMeterController extends Controller
     }
 
     /**
+     * Xem chi tiết chỉ số
+     */
+    public function show(int $id): \Illuminate\View\View|\Illuminate\Http\JsonResponse
+    {
+        $reading = UtilityMeter::with(['apartment.floor.block', 'recorder', 'rejecter'])->findOrFail($id);
+
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'reading' => [
+                    'id' => $reading->id,
+                    'apartment_number' => $reading->apartment->apartment_number ?? 'N/A',
+                    'location' => ($reading->apartment->floor->block->name ?? '') . ' / ' . ($reading->apartment->floor->name ?? ''),
+                    'type' => $reading->type,
+                    'type_label' => $reading->type_label,
+                    'record_month' => $reading->record_month,
+                    'record_year' => $reading->record_year,
+                    'old_value' => $reading->old_value,
+                    'new_value' => $reading->new_value,
+                    'usage_amount' => $reading->usage_amount,
+                    'status' => $reading->status,
+                    'is_reset' => $reading->is_reset,
+                    'image_proof_url' => $reading->image_proof ? asset('storage/' . $reading->image_proof) : null,
+                    'recorder_name' => $reading->recorder->name ?? 'Hệ thống',
+                    'reject_reason' => $reading->reject_reason,
+                    'rejecter_name' => $reading->rejecter ? $reading->rejecter->name : null,
+                    'created_at' => $reading->created_at->format('d/m/Y H:i'),
+                    'updated_at' => $reading->updated_at->format('d/m/Y H:i'),
+                ]
+            ]);
+        }
+
+        return view('admin.utility-readings.show', compact('reading'));
+    }
+
+    /**
      * Form chỉnh sửa
      */
     public function edit(int $id): View
@@ -513,27 +609,40 @@ class UtilityMeterController extends Controller
     /**
      * Từ chối chỉ số đơn lẻ
      */
-    public function reject(int $id): RedirectResponse
+    public function reject(Request $request, int $id): RedirectResponse
     {
         if (in_array(auth()->user()->role, ['technician'])) {
             abort(403, 'Bạn không có quyền từ chối chỉ số.');
         }
 
+        $request->validate([
+            'reject_reason' => 'required|string|max:500',
+        ], [
+            'reject_reason.required' => 'Vui lòng cung cấp lý do từ chối.',
+        ]);
+
         $reading = UtilityMeter::with('apartment')->findOrFail($id);
-        $reading->update(['status' => 'rejected']);
+        $reading->update([
+            'status' => 'rejected',
+            'rejected_by' => auth()->id(),
+            'reject_reason' => $request->input('reject_reason'),
+        ]);
 
         // Gửi thông báo cho kỹ thuật viên ghi số nếu có
         $recorder = $reading->recorder;
         if ($recorder) {
             $typeName = $reading->type === 'electricity' ? 'Điện' : 'Nước';
             $apartmentNumber = $reading->apartment->apartment_number ?? 'N/A';
+            $rejecterName = auth()->user()->name;
+            $reason = $request->input('reject_reason');
             
             $notificationData = [
                 'title' => '❌ Chỉ số điện nước bị từ chối',
-                'message' => "Chỉ số <strong>{$typeName}</strong> mới cho căn hộ <strong>{$apartmentNumber}</strong> (Kỳ {$reading->record_month}/{$reading->record_year}) đã bị từ chối. Vui lòng kiểm tra và ghi lại.",
+                'message' => "Chỉ số <strong>{$typeName}</strong> mới cho căn hộ <strong>{$apartmentNumber}</strong> (Kỳ {$reading->record_month}/{$reading->record_year}) đã bị từ chối bởi kế toán <strong>{$rejecterName}</strong>. Lý do: <em>{$reason}</em>. Vui lòng kiểm tra và ghi lại.",
                 'url' => route('admin.utility-readings.index', [
                     'month' => $reading->record_month,
-                    'year' => $reading->record_year
+                    'year' => $reading->record_year,
+                    'highlight' => $reading->id
                 ]),
                 'type' => 'rejected',
             ];
