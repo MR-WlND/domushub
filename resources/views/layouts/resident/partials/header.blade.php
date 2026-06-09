@@ -12,6 +12,10 @@
             class="resident-header__link {{ request()->routeIs('resident.members.*') ? 'resident-header__link--active' : '' }}">
             Thành viên
         </a>
+        <a href="{{ route('resident.posts.index') }}"
+            class="resident-header__link {{ request()->routeIs('resident.posts.*') ? 'resident-header__link--active' : '' }}">
+            Bảng tin
+        </a>
         <div class="resident-header__dropdown-container" id="services-menu-container">
             <button class="resident-header__link resident-header__dropdown-trigger {{ (request()->routeIs('resident.vehicles.*') || request()->routeIs('resident.invoices.*')) ? 'resident-header__link--active' : '' }}">
                 Dịch vụ <i class="fa-solid fa-chevron-down nav-dropdown-icon"></i>
