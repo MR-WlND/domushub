@@ -109,4 +109,36 @@ class User extends Authenticatable
     {
         return in_array($this->role, ['admin', 'manager', 'staff', 'technician'], true);
     }
+
+    /**
+     * Các bài viết của user
+     */
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    /**
+     * Các bình luận của user
+     */
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    /**
+     * Các báo cáo bài viết mà user đã thực hiện
+     */
+    public function reports()
+    {
+        return $this->hasMany(PostReport::class);
+    }
+
+    /**
+     * Các báo cáo bình luận mà user đã thực hiện
+     */
+    public function commentReports()
+    {
+        return $this->hasMany(CommentReport::class);
+    }
 }

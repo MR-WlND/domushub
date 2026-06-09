@@ -203,6 +203,16 @@ Route::middleware(['resident'])->group(function () {
         ->name('resident.vehicles.store');
     Route::delete('/resident/vehicles/{vehicle}', [App\Http\Controllers\Resident\VehicleController::class, 'destroy'])
         ->name('resident.vehicles.destroy');
+
+    // BẢNG TIN & BÌNH LUẬN PHÍA CƯ DÂN
+    Route::get('/resident/posts', [\App\Http\Controllers\Resident\PostController::class, 'index'])->name('resident.posts.index');
+    Route::post('/resident/posts', [\App\Http\Controllers\Resident\PostController::class, 'store'])->name('resident.posts.store');
+    Route::get('/resident/posts/{id}', [\App\Http\Controllers\Resident\PostController::class, 'show'])->name('resident.posts.show');
+    Route::delete('/resident/posts/{id}', [\App\Http\Controllers\Resident\PostController::class, 'destroy'])->name('resident.posts.destroy');
+    Route::post('/resident/posts/{id}/comments', [\App\Http\Controllers\Resident\PostController::class, 'storeComment'])->name('resident.posts.comments.store');
+    Route::delete('/resident/comments/{id}', [\App\Http\Controllers\Resident\PostController::class, 'destroyComment'])->name('resident.comments.destroy');
+    Route::post('/resident/posts/{id}/report', [\App\Http\Controllers\Resident\PostController::class, 'report'])->name('resident.posts.report');
+    Route::post('/resident/comments/{id}/report', [\App\Http\Controllers\Resident\PostController::class, 'reportComment'])->name('resident.comments.report');
 });
 
 Route::middleware(['admin'])->name('admin.')->group(function () {
@@ -221,6 +231,15 @@ Route::middleware(['admin'])->name('admin.')->group(function () {
     Route::get('/admin/invitations', [AdminInvitationController::class, 'index'])->name('invitations.index');
     Route::post('/admin/invitations', [AdminInvitationController::class, 'store'])->name('invitations.store');
     Route::delete('/admin/invitations/{id}', [AdminInvitationController::class, 'destroy'])->name('invitations.destroy');
+
+    // Quản lý bài đăng cư dân (Admin Portal)
+    Route::get('/admin/posts', [\App\Http\Controllers\Admin\PostController::class, 'index'])->name('posts.index');
+    Route::post('/admin/posts/{id}/toggle-status', [\App\Http\Controllers\Admin\PostController::class, 'toggleStatus'])->name('posts.toggle-status');
+    Route::post('/admin/posts/{id}/dismiss-reports', [\App\Http\Controllers\Admin\PostController::class, 'dismissReports'])->name('posts.dismiss-reports');
+    Route::get('/admin/posts/{id}/json', [\App\Http\Controllers\Admin\PostController::class, 'getPostJson'])->name('posts.json');
+    Route::delete('/admin/posts/{id}', [\App\Http\Controllers\Admin\PostController::class, 'destroy'])->name('posts.destroy');
+    Route::post('/admin/comments/{id}/dismiss-reports', [\App\Http\Controllers\Admin\PostController::class, 'dismissCommentReports'])->name('comments.dismiss-reports');
+    Route::delete('/admin/comments/{id}', [\App\Http\Controllers\Admin\PostController::class, 'destroyComment'])->name('comments.destroy');
 });
 
 // Fallback route to serve uploaded public storage files (useful if symlink is missing or fails on local Windows development)
