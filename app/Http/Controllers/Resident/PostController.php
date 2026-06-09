@@ -113,6 +113,9 @@ class PostController extends Controller
             }
         }
 
+        // Phát sự kiện real-time sau khi đã upload xong hình ảnh
+        broadcast(new \App\Events\PostCreated($post));
+
         return redirect()->route('resident.posts.index')->with('success', 'Đăng bài viết lên bảng tin thành công!');
     }
 
@@ -174,12 +177,15 @@ class PostController extends Controller
 
         $post = Post::findOrFail($postId);
 
-        Comment::create([
+        $comment = Comment::create([
             'post_id' => $post->id,
             'user_id' => Auth::id(),
             'parent_id' => $request->parent_id,
             'content' => $request->content,
         ]);
+
+        // Phát sự kiện real-time cho bình luận mới
+        broadcast(new \App\Events\CommentCreated($comment));
 
         return redirect()->back()->with('success', 'Đăng bình luận thành công!');
     }

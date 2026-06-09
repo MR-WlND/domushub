@@ -111,8 +111,9 @@
             </div>
 
             {{-- DANH SÁCH BÀI VIẾT (FEED) --}}
+            <div id="posts-list-container">
             @if($posts->isEmpty())
-                <div class="pc-card" style="text-align: center; padding: 3rem 1.5rem;">
+                <div class="pc-card" id="empty-feed-placeholder" style="text-align: center; padding: 3rem 1.5rem;">
                     <i class="fa-regular fa-comments" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
                     <h3 style="margin: 0 0 0.5rem 0; color: var(--color-text);">Chưa có bài viết nào</h3>
                     <p style="margin: 0; color: var(--color-text-secondary); font-size: 0.9rem;">Hãy là người đầu tiên chia sẻ thông tin gì đó trên bảng tin cư dân!</p>
@@ -220,6 +221,7 @@
                     {{ $posts->links() }}
                 </div>
             @endif
+            </div>
 
         </div>
 
@@ -667,5 +669,227 @@
     function closeLightbox() {
         document.getElementById('pcLightbox').style.display = "none";
     }
+</script>
+
+{{-- NHÚNG THƯ VIỆN BROADCASTING & LARAVEL ECHO --}}
+<script src="https://js.pusher.com/8.0.1/pusher.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.0/dist/echo.iife.js"></script>
+<style>
+    @keyframes highlight-new-post {
+        0% { background-color: rgba(59, 130, 246, 0.15); border-color: var(--color-primary); }
+        100% { background-color: var(--color-card-bg, #ffffff); }
+    }
+    .new-post-highlight {
+        animation: highlight-new-post 3s ease-out;
+    }
+</style>
+<script>
+    // === Cấu hình Real-time WebSockets (Laravel Echo) ===
+    const currentUserId = {{ auth()->id() }};
+    const isAdmin = {{ auth()->user()->isAdminPortalUser() ? 'true' : 'false' }};
+    const currentFilterType = "{{ request()->get('type', 'all') }}";
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+    function nl2br(str) {
+        if (!str) return '';
+        return escapeHtml(str).replace(/\n/g, '<br>');
+    }
+
+    function formatNumber(num) {
+        return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+    }
+
+    function createPostCardHtml(post) {
+        const avatarUrl = post.user.avatar 
+            ? `/storage/${post.user.avatar}` 
+            : `https://ui-avatars.com/api/?name=${encodeURIComponent(post.user.name)}&background=00236f&color=fff`;
+            
+        const apartmentText = post.user.apartment 
+            ? `Căn hộ: ${escapeHtml(post.user.apartment.apartment_number)}` 
+            : 'Ban Quản Trị';
+            
+        let tagHtml = '';
+        if (post.price !== null) {
+            tagHtml = `
+                <span class="pc-badge pc-badge--marketplace">Thanh lý</span>
+                <span class="pc-card__price">${formatNumber(post.price)}đ</span>
+            `;
+        } else {
+            tagHtml = `
+                <span class="pc-badge pc-badge--general">Chia sẻ</span>
+            `;
+        }
+        
+        let contentHtml = '';
+        if (post.content.length > 250) {
+            const shortContent = post.content.substring(0, 250) + '...';
+            contentHtml = `
+                <div class="pc-card__content-wrapper">
+                    <p class="pc-card__content" id="content-short-${post.id}">${nl2br(shortContent)}</p>
+                    <p class="pc-card__content" id="content-full-${post.id}" style="display: none;">${nl2br(post.content)}</p>
+                    <button type="button" class="pc-card__toggle-content-btn" id="btn-toggle-${post.id}" onclick="toggleContent(${post.id})">Xem thêm</button>
+                </div>
+            `;
+        } else {
+            contentHtml = `<p class="pc-card__content">${nl2br(post.content)}</p>`;
+        }
+        
+        let imagesHtml = '';
+        if (post.images && post.images.length > 0) {
+            const imgCount = post.images.length;
+            const displayCount = Math.min(imgCount, 5);
+            imagesHtml += `<div class="pc-card__image-grid pc-card__image-grid--${displayCount}">`;
+            
+            const maxVisible = 4;
+            const takeImages = post.images.slice(0, maxVisible);
+            takeImages.forEach((img, index) => {
+                const storageUrl = `/storage/${img.image_path}`;
+                imagesHtml += `
+                    <div class="pc-card__grid-item" onclick="openLightbox('${storageUrl}')">
+                        <img src="${storageUrl}" alt="Ảnh đính kèm" class="pc-card__grid-img">
+                        ${index === 3 && imgCount > 4 ? `<div class="pc-card__grid-overlay">+${imgCount - 4} ảnh</div>` : ''}
+                    </div>
+                `;
+            });
+            imagesHtml += `</div>`;
+        }
+        
+        let deleteForm = '';
+        if (post.user.id === currentUserId || isAdmin) {
+            deleteForm = `
+                <form action="/resident/posts/${post.id}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bài đăng này không?')">
+                    <input type="hidden" name="_token" value="${document.querySelector('input[name="_token"]').value}">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit" class="pc-card__delete-btn">
+                        <i class="fa-regular fa-trash-can"></i> Xóa bài
+                    </button>
+                </form>
+            `;
+        }
+
+        let reportBtn = '';
+        if (post.user.id !== currentUserId) {
+            reportBtn = `
+                <button type="button" class="pc-card__action-btn" style="color: var(--color-error); border: none; background: transparent; cursor: pointer; font-family: inherit; font-size: 0.875rem; font-weight: 600; padding: 0; outline: none;" onclick="openReportModal(${post.id})">
+                    <i class="fa-regular fa-flag"></i> Báo cáo
+                </button>
+            `;
+        }
+        
+        return `
+            <div class="pc-card new-post-highlight" data-post-id="${post.id}">
+                <div class="pc-card__author">
+                    <div class="pc-card__author-info">
+                        <img src="${avatarUrl}" alt="Avatar" class="pc-card__avatar">
+                        <div>
+                            <h4 class="pc-card__name">${escapeHtml(post.user.name)}</h4>
+                            <span class="pc-card__apartment">${apartmentText}</span>
+                        </div>
+                    </div>
+                    <span class="pc-card__date" title="${escapeHtml(post.created_at)}">${escapeHtml(post.created_at_human)}</span>
+                </div>
+
+                <div class="pc-card__tags">
+                    ${tagHtml}
+                </div>
+
+                <h3 class="pc-card__title">
+                    <a href="/resident/posts/${post.id}" class="pc-card__title-link">
+                        ${escapeHtml(post.title)}
+                    </a>
+                </h3>
+
+                ${contentHtml}
+                ${imagesHtml}
+
+                <div class="pc-card__footer">
+                    <div class="pc-card__actions" style="gap: 1.25rem;">
+                        <a href="/resident/posts/${post.id}" class="pc-card__action-btn">
+                            <i class="fa-regular fa-comment"></i> Bình luận (0)
+                        </a>
+                        ${reportBtn}
+                    </div>
+                    ${deleteForm}
+                </div>
+            </div>
+        `;
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // Đảm bảo Pusher khả dụng toàn cục cho Laravel Echo
+        if (typeof window.Pusher === 'undefined' && typeof Pusher !== 'undefined') {
+            window.Pusher = Pusher;
+        }
+
+        const broadcastConnection = "{{ env('BROADCAST_CONNECTION', 'reverb') }}";
+        console.log("DomusHub WebSockets: Connecting using driver:", broadcastConnection);
+
+        let echoConfig = {};
+        
+        if (broadcastConnection === 'reverb') {
+            echoConfig = {
+                broadcaster: 'reverb',
+                key: "{{ env('REVERB_APP_KEY', 'domushub_key') }}",
+                wsHost: "{{ env('REVERB_HOST') }}" || window.location.hostname,
+                wsPort: parseInt("{{ env('REVERB_PORT', '8080') }}", 10),
+                wssPort: parseInt("{{ env('REVERB_PORT', '8080') }}", 10),
+                forceTLS: false,
+                enabledTransports: ['ws', 'wss'],
+            };
+        } else {
+            echoConfig = {
+                broadcaster: 'pusher',
+                key: "{{ env('PUSHER_APP_KEY') }}",
+                cluster: "{{ env('PUSHER_APP_CLUSTER') }}",
+                forceTLS: true
+            };
+        }
+
+        console.log("DomusHub Echo Config:", echoConfig);
+
+        // Khởi tạo Echo
+        if (typeof window.Echo === 'undefined' && typeof window.LaravelEcho !== 'undefined') {
+            window.Echo = new window.LaravelEcho(echoConfig);
+            console.log("DomusHub WebSockets: Echo initialized!");
+        }
+
+        if (window.Echo) {
+            console.log("DomusHub WebSockets: Subscribing to 'community-feed' channel...");
+            window.Echo.channel('community-feed')
+                .listen('PostCreated', (e) => {
+                    console.log("DomusHub WebSockets: Received Event PostCreated:", e);
+                    if (currentFilterType === 'marketplace' && e.price === null) return;
+                    if (currentFilterType === 'general' && e.price !== null) return;
+
+                    const emptyPlaceholder = document.getElementById('empty-feed-placeholder');
+                    if (emptyPlaceholder) {
+                        emptyPlaceholder.remove();
+                    }
+
+                    if (document.querySelector(`.pc-card[data-post-id="${e.id}"]`)) return;
+
+                    const container = document.getElementById('posts-list-container');
+                    if (container) {
+                        const postHtml = createPostCardHtml(e);
+                        container.insertAdjacentHTML('afterbegin', postHtml);
+                        
+                        showToast(`Có bài đăng mới từ căn hộ ${e.user.apartment ? e.user.apartment.apartment_number : 'Ban Quản Trị'}!`, 'success');
+                    }
+                });
+        } else {
+            console.error("DomusHub WebSockets: Failed to initialize Echo. Please check libraries.");
+        }
+    });
 </script>
 @endsection
