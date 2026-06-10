@@ -7,8 +7,22 @@
         <a href="{{ route('resident.dashboard') }}" class="resident-header__link {{ request()->routeIs('resident.dashboard') ? 'resident-header__link--active' : '' }}">
             Home
         </a>
+<<<<<<< Updated upstream
         <a href="#" class="resident-header__link">
             Support
+=======
+        <a href="{{ route('resident.members.index') }}"
+            class="resident-header__link {{ request()->routeIs('resident.members.*') ? 'resident-header__link--active' : '' }}">
+            Thành viên
+        </a>
+        <a href="{{ route('resident.vehicles.index') }}"
+            class="resident-header__link {{ request()->routeIs('resident.vehicles.*') ? 'resident-header__link--active' : '' }}">
+            Phương Tiện
+        </a>
+        <a href="{{ route('resident.invoices.index') }}"
+            class="resident-header__link {{ request()->routeIs('resident.invoices.*') ? 'resident-header__link--active' : '' }}">
+            Hóa Đơn & Sao Kê
+>>>>>>> Stashed changes
         </a>
         <a href="#" class="resident-header__link">
             FAQs

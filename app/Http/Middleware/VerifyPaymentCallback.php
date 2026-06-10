@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
+class VerifyPaymentCallback
+{
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
+     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
+     */
+    public function handle(Request $request, Closure $next)
+    {
+        // Log callback
+        Log::info('Payment Callback Received', [
+            'method' => $request->method(),
+            'path' => $request->path(),
+            'ip' => $request->ip(),
+            'gateway' => $this->getGateway($request->path()),
+            'data' => $request->all(),
+        ]);
+
+        return $next($request);
+    }
+
+    /**
+     * Xác định gateway từ path
+     */
+    private function getGateway(string $path): ?string
+    {
+        if (strpos($path, 'momo') !== false) {
+            return 'momo';
+        } elseif (strpos($path, 'vnpay') !== false) {
+            return 'vnpay';
+        }
+
+        return null;
+    }
+}
