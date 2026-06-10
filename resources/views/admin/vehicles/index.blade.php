@@ -93,23 +93,23 @@
 
     {{-- Tabs Navigation --}}
     <div class="veh-tabs-nav" style="display: flex; gap: 12px; border-bottom: 1px solid #e2e8f0; margin-bottom: 20px;">
-        <a href="{{ route('admin.vehicles.index', array_merge(request()->query(), ['status' => ''])) }}" 
-           class="veh-tab-btn {{ request('status') == '' ? 'active' : '' }}" 
+        <a href="{{ route('admin.vehicles.index', array_merge(request()->query(), ['status' => ''])) }}"
+           class="veh-tab-btn {{ request('status') == '' ? 'active' : '' }}"
            style="padding: 12px 20px; color: {{ request('status') == '' ? '#0b57d0' : '#64748b' }}; border-bottom: 3px solid {{ request('status') == '' ? '#0b57d0' : 'transparent' }}; font-weight: 600; text-decoration: none;">
            Tất cả
         </a>
-        <a href="{{ route('admin.vehicles.index', array_merge(request()->query(), ['status' => 'pending'])) }}" 
-           class="veh-tab-btn {{ request('status') == 'pending' ? 'active' : '' }}" 
+        <a href="{{ route('admin.vehicles.index', array_merge(request()->query(), ['status' => 'pending'])) }}"
+           class="veh-tab-btn {{ request('status') == 'pending' ? 'active' : '' }}"
            style="padding: 12px 20px; color: {{ request('status') == 'pending' ? '#0b57d0' : '#64748b' }}; border-bottom: 3px solid {{ request('status') == 'pending' ? '#0b57d0' : 'transparent' }}; font-weight: 600; text-decoration: none;">
            Chờ duyệt
         </a>
-        <a href="{{ route('admin.vehicles.index', array_merge(request()->query(), ['status' => 'active'])) }}" 
-           class="veh-tab-btn {{ request('status') == 'active' ? 'active' : '' }}" 
+        <a href="{{ route('admin.vehicles.index', array_merge(request()->query(), ['status' => 'active'])) }}"
+           class="veh-tab-btn {{ request('status') == 'active' ? 'active' : '' }}"
            style="padding: 12px 20px; color: {{ request('status') == 'active' ? '#0b57d0' : '#64748b' }}; border-bottom: 3px solid {{ request('status') == 'active' ? '#0b57d0' : 'transparent' }}; font-weight: 600; text-decoration: none;">
            Đang hoạt động
         </a>
-        <a href="{{ route('admin.vehicles.index', array_merge(request()->query(), ['status' => 'locked'])) }}" 
-           class="veh-tab-btn {{ request('status') == 'locked' ? 'active' : '' }}" 
+        <a href="{{ route('admin.vehicles.index', array_merge(request()->query(), ['status' => 'locked'])) }}"
+           class="veh-tab-btn {{ request('status') == 'locked' ? 'active' : '' }}"
            style="padding: 12px 20px; color: {{ request('status') == 'locked' ? '#0b57d0' : '#64748b' }}; border-bottom: 3px solid {{ request('status') == 'locked' ? '#0b57d0' : 'transparent' }}; font-weight: 600; text-decoration: none;">
            Đã khóa
         </a>
@@ -134,7 +134,9 @@
                 <tbody>
                     @forelse($vehicles as $v)
                     @php
-                        $ownerName = $v->apartment?->residents?->first()?->user?->name ?? '—';
+                        $owner = $v->apartment?->residents?->first()?->user ?? null;
+                        $ownerName = $owner?->name ?? '—';
+                        $ownerPhone = $owner?->phone ?? null;
                         $blockName = $v->apartment?->floor?->block?->name ?? '—';
                         $floorName = $v->apartment?->floor?->name ?? '';
                     @endphp
@@ -156,6 +158,11 @@
                         <td>
                             <div class="veh-owner-cell">
                                 <span class="veh-owner-name">{{ $ownerName }}</span>
+                                @if($ownerPhone)
+                                    <a href="tel:{{ $ownerPhone }}" class="veh-owner-phone">{{ $ownerPhone }}</a>
+                                @else
+                                    <span class="veh-owner-empty">—</span>
+                                @endif
                             </div>
                         </td>
 
@@ -194,7 +201,7 @@
                         {{-- Thao tác --}}
                         <td class="text-right">
                             <div class="veh-table-actions">
-                                
+
                                 {{-- Ô tô chờ duyệt --}}
                                 @if($v->status === 'pending' && $v->vehicle_type === 'car')
                                     <form action="{{ route('admin.vehicles.assignLot', $v) }}" method="POST" style="display:flex; gap:6px;">

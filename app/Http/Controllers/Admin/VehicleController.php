@@ -20,7 +20,7 @@ class VehicleController extends Controller
             'apartment.floor.block',
             'apartment.residents.user',
             'parkingLot',
-        ]);
+        ])->withoutTrashed();
 
         // Filter: Tòa nhà
         if ($request->filled('block_id')) {
@@ -52,6 +52,11 @@ class VehicleController extends Controller
 
     public function assignLot(Request $request, Vehicle $vehicle)
     {
+        // Chỉ gán lốt cho ô tô
+        if (!$vehicle->isCar()) {
+            return back()->withErrors(['vehicle' => 'Chỉ có thể gán lốt cho ô tô.']);
+        }
+
         $request->validate([
             'parking_lot_id' => 'required|exists:parking_lots,id'
         ]);

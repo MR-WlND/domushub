@@ -67,7 +67,7 @@ class Vehicle extends Model
     public function isInside(): bool
     {
         $lastLog = \App\Models\VehicleLog::where('vehicle_id', $this->id)->latest()->first();
-        return $lastLog && $lastLog->action === 'in';
+        return $lastLog && $lastLog->status === 'inside';
     }
 
     /**

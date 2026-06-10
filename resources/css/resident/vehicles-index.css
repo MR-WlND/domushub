@@ -1,5 +1,5 @@
 /* ==========================================================================
-   1. LAYOUT CHUNG & HEADER (C?u trúc chung h? th?ng)
+   1. LAYOUT CHUNG & HEADER (C?u trï¿½c chung h? th?ng)
    ========================================================================== */
 .vp {
     max-width: 1080px;
@@ -15,11 +15,11 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 1.25rem 1.5rem;
-    background: #ffffff;
+    padding: 1.5rem 2rem;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
     border: 1px solid #e2e8f0;
     border-radius: 22px;
-    box-shadow: 0 12px 34px rgba(15, 23, 42, .05);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, .04);
 }
 
 .vp__eyebrow {
@@ -39,7 +39,7 @@
 }
 
 /* ==========================================================================
-   2. THÔNG BÁO ALERT (Success / Error)
+   2. THï¿½NG Bï¿½O ALERT (Success / Error)
    ========================================================================== */
 .vp-alert {
     display: flex;
@@ -55,11 +55,11 @@
 .vp-alert--error   { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
 
 /* ==========================================================================
-   3. TR?NG THÁI TR?NG (Empty State)
+   3. TR?NG THï¿½I TR?NG (Empty State)
    ========================================================================== */
 .vp-empty {
     background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-    border: 1px solid #dbeafe;
+    border: 2px solid #dbeafe;
     border-radius: 26px;
     padding: 4rem 2rem;
     text-align: center;
@@ -67,7 +67,7 @@
     flex-direction: column;
     align-items: center;
     gap: 1rem;
-    box-shadow: 0 18px 48px rgba(15, 23, 42, .08);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, .08);
 }
 
 .vp-empty__visual {
@@ -102,17 +102,17 @@
 }
 
 /* ==========================================================================
-   4. KH?I TH?NG KÊ (Stats Dashboard)
+   4. KH?I TH?NG Kï¿½ (Stats Dashboard)
    ========================================================================== */
 .vp-stats {
     background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
     border: 1px solid #e2e8f0;
     border-radius: 22px;
-    padding: 1.25rem 1.5rem;
+    padding: 1.5rem;
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 1rem;
-    box-shadow: 0 12px 30px rgba(15, 23, 42, .05);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, .04);
 }
 
 .vp-stat {
@@ -149,7 +149,7 @@
 .color-inactive { color: #dc2626 !important; }
 
 /* ==========================================================================
-   5. DANH SÁCH & TH? CARD PHÝÕNG TI?N (Vehicle Grid List)
+   5. DANH Sï¿½CH & TH? CARD PHï¿½ï¿½NG TI?N (Vehicle Grid List)
    ========================================================================== */
 .vp-list {
     display: grid;
@@ -162,19 +162,19 @@
     border-radius: 20px;
     padding: 1.25rem;
     display: grid;
-    grid-template-columns: 64px 1fr auto; /* C?t 1: ?nh (64px) | C?t 2: N?i dung | C?t 3: Tr?ng thái & QR */
+    grid-template-columns: 64px 1fr auto; /* C?t 1: ?nh (64px) | C?t 2: N?i dung | C?t 3: Tr?ng thï¿½i & QR */
     gap: 1.25rem;
     align-items: center;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(15, 23, 42, .04);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, .06);
     border: 1px solid #e2e8f0;
     transition: transform .2s ease, box-shadow .2s ease;
 }
 
 .vp-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 16px 40px rgba(15, 23, 42, .09);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, .12);
 }
 
 .vp-card__accent {
@@ -185,9 +185,11 @@
     width: 5px;
     border-radius: 20px 0 0 20px;
 }
-.card--active .vp-card__accent { background: #10b981; }
-.card--pending .vp-card__accent { background: #f59e0b; }
-.card--inactive .vp-card__accent { background: #ef4444; }
+.card--active .vp-card__accent { background: linear-gradient(180deg, #10b981 0%, #059669 100%); }
+.card--pending .vp-card__accent { background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%); }
+.card--pending_renewal .vp-card__accent { background: linear-gradient(180deg, #f97316 0%, #ea580c 100%); }
+.card--locked .vp-card__accent { background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%); }
+.card--inactive .vp-card__accent { background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%); }
 
 /* --- Khung ?nh Thumbnail & Fallback Icon --- */
 .vp-card__thumb {
@@ -227,7 +229,18 @@
 
 /* --- N?i dung chi ti?t xe --- */
 .vp-card__body { min-width: 0; }
-.vp-card__plate { font-size: 1.15rem; font-weight: 800; color: #0f172a; letter-spacing: 0.5px; margin: 0 0 0.4rem 0; }
+.vp-card__plate {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: 0.8px;
+    margin: 0 0 0.6rem 0;
+    font-family: 'Courier New', monospace;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
 
 .vp-card__meta {
     display: flex;
@@ -254,7 +267,7 @@
     align-items: center;
 }
 
-/* --- Khu v?c bên ph?i (QR & Tr?ng thái) --- */
+/* --- Khu v?c bï¿½n ph?i (QR & Tr?ng thï¿½i) --- */
 .vp-card__right {
     display: flex;
     flex-direction: column;
@@ -279,18 +292,22 @@
 }
 
 /* ==========================================================================
-   6. H? TH?NG BADGES & BUTTONS (Nh?n & Nút b?m)
+   6. H? TH?NG BADGES & BUTTONS (Nh?n & Nï¿½t b?m)
    ========================================================================== */
 .vp-badge {
     display: inline-flex;
     align-items: center;
-    padding: 5px 12px;
+    padding: 6px 14px;
     border-radius: 999px;
     font-size: 0.75rem;
     font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 .badge--active { background: #d1fae5; color: #065f46; }
 .badge--pending { background: #fef3c7; color: #92400e; }
+.badge--warning { background: #ffedd5; color: #c2410c; }
+.badge--danger { background: #fee2e2; color: #991b1b; }
 .badge--inactive { background: #fee2e2; color: #991b1b; }
 
 .vp-btn {
@@ -298,11 +315,11 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    height: 42px;
-    padding: 0 16px;
+    height: 44px;
+    padding: 0 18px;
     border-radius: 12px;
     font-size: 0.9rem;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     text-decoration: none;
     transition: all .2s ease;
@@ -310,19 +327,21 @@
 }
 
 .vp-btn--primary {
-    background: #1d4ed8;
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
     color: #ffffff;
-    box-shadow: 0 4px 12px rgba(29, 78, 216, 0.15);
+    box-shadow: 0 4px 12px rgba(29, 78, 216, 0.2);
 }
 .vp-btn--primary:hover {
-    background: #1e40af;
-    transform: translateY(-1px);
+    background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(29, 78, 216, 0.3);
 }
 
 .vp-btn--outline {
     background: #ffffff;
     border-color: #cbd5e1;
     color: #475569;
+    font-weight: 600;
 }
 .vp-btn--outline:hover {
     background: #f8fafc;
@@ -340,7 +359,7 @@
 .text-danger:hover { background: #fef2f2 !important; }
 
 /* ==========================================================================
-   7. C?U TRÚC PANEL FORM ÐÃNG K? (Dùng cho trang create.blade.php)
+   7. C?U TRï¿½C PANEL FORM ï¿½ï¿½NG K? (Dï¿½ng cho trang create.blade.php)
    ========================================================================== */
 .vp-panel {
     background: #ffffff;
@@ -405,7 +424,7 @@ select.vp-input {
     border-top: 1px solid #f1f5f9;
 }
 
-/* --- Khung upload ?nh kéo th? c?a Form --- */
+/* --- Khung upload ?nh kï¿½o th? c?a Form --- */
 .vp-upload {
     border: 2px dashed #cbd5e1;
     border-radius: 16px;
@@ -433,7 +452,7 @@ select.vp-input {
 .vp-upload__preview img { width: 100%; height: 100%; object-fit: cover; border-radius: 16px; }
 
 /* ==========================================================================
-   8. LIGHTBOX MODAL (Xem ?nh phóng to gi?a màn h?nh)
+   8. LIGHTBOX MODAL (Xem ?nh phï¿½ng to gi?a mï¿½n h?nh)
    ========================================================================== */
 .vp-img-modal {
     display: none; /* Ch? b?t flex qua JS */
@@ -480,7 +499,7 @@ select.vp-input {
 }
 
 /* ==========================================================================
-   9. RESPONSIVE DESIGN (Týõng thích thi?t b? di ð?ng)
+   9. RESPONSIVE DESIGN (Tï¿½ï¿½ng thï¿½ch thi?t b? di ï¿½?ng)
    ========================================================================== */
 @media (max-width: 980px) {
     .vp-list {
