@@ -113,9 +113,9 @@
                                  onclick="openImageModal(this.src)">
                         @else
                             <div class="vp-card__icon-fallback">
-                                @if($vehicle->vehicle_type === 'ô tô')
+                                @if($vehicle->vehicle_type === 'car')
                                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
-                                @elseif($vehicle->vehicle_type === 'xe điện')
+                                @elseif($vehicle->vehicle_type === 'electric_bike')
                                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                                 @else
                                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M12 17h5M5 17h2M12 12l2.5-5.5H19l-3 7H9.7L7 11.5"/></svg>
@@ -143,9 +143,13 @@
                     <div class="vp-card__right">
                         <div class="vp-badge-wrapper">
                             @if($vehicle->status === 'pending')
-                                <span class="vp-badge badge--pending">Chờ duyệt lốt</span>
+                                <span class="vp-badge badge--pending">Chờ duyệt</span>
                             @elseif($vehicle->status === 'active')
                                 <span class="vp-badge badge--active">Đang hoạt động</span>
+                            @elseif($vehicle->status === 'pending_renewal')
+                                <span class="vp-badge badge--warning">Chờ gia hạn phí</span>
+                            @elseif($vehicle->status === 'locked')
+                                <span class="vp-badge badge--danger">Đã khóa</span>
                             @else
                                 <span class="vp-badge badge--inactive">Đã hủy</span>
                             @endif
@@ -200,4 +204,4 @@
         document.getElementById('vpImageModal').style.display = "none";
     }
 </script>
-@endsection 
+@endsection

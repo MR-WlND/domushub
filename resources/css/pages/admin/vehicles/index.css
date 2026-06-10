@@ -20,9 +20,12 @@
 
 .vehicles-page__header h1 {
     margin: 0;
-    color: #00236f;
+    background: linear-gradient(135deg, #00236f 0%, #0b57d0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     font-size: 28px;
-    font-weight: 700;
+    font-weight: 800;
     line-height: 1.2;
 }
 
@@ -68,19 +71,20 @@
 }
 
 .veh-stat-card {
-    background: #ffffff;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
     border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    padding: 20px;
+    border-radius: 16px;
+    padding: 24px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    gap: 8px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .veh-stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 35, 111, 0.06);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 35, 111, 0.12);
+    border-color: #bfdbfe;
 }
 
 .veh-stat-card__label {
@@ -100,10 +104,11 @@
 
 /* ─── Filter Card ─── */
 .vehicles-filter-card {
-    background: #f8f9ff;
+    background: linear-gradient(135deg, #f8f9ff 0%, #f1f5f9 100%);
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 18px;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, .04);
 }
 
 .vehicles-filter-grid {
@@ -122,25 +127,32 @@
 
 .vehicles-filter-card select {
     width: 100%;
-    min-height: 40px;
+    min-height: 42px;
     padding: 0 40px 0 14px;
     border: 1px solid #d9e2f2;
-    border-radius: 10px;
+    border-radius: 12px;
     background: #ffffff;
     color: #0f172a;
     font-size: 14px;
+    font-weight: 500;
     outline: none;
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 12px center;
-    background-size: 16px;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    background-size: 18px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.vehicles-filter-card select:hover {
+    border-color: #bfdbfe;
+    background-color: #f8fbff;
 }
 
 .vehicles-filter-card select:focus {
     border-color: #0b57d0;
-    box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.08);
+    box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.1);
+    background-color: #ffffff;
 }
 
 .vehicles-filter-card select:disabled {
@@ -153,8 +165,9 @@
 .vehicles-table-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 14px;
+    border-radius: 16px;
     overflow: hidden;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, .06);
 }
 
 .vehicles-table-wrap {
@@ -169,18 +182,18 @@
 }
 
 .vehicles-table thead {
-    background: #f1f5f9;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
 }
 
 .vehicles-table thead th {
-    padding: 14px 18px;
+    padding: 16px 18px;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #64748b;
+    letter-spacing: 0.08em;
+    color: #e2e8f0;
     text-align: left;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 2px solid #334155;
     white-space: nowrap;
 }
 
@@ -194,7 +207,7 @@
 }
 
 .vehicles-table tbody tr:hover {
-    background-color: #f8faff;
+    background-color: #f0f9ff;
 }
 
 .vehicles-table tbody td {
@@ -212,7 +225,8 @@
     font-size: 15px;
     font-weight: 800;
     color: #0b57d0;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.04em;
+    font-family: 'Courier New', monospace;
 }
 
 .veh-location-cell {
@@ -253,20 +267,28 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 5px 12px;
+    padding: 6px 14px;
     border-radius: 9999px;
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 800;
     white-space: nowrap;
     flex-shrink: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .veh-status::before {
     content: '';
-    width: 7px;
-    height: 7px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     display: inline-block;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
 }
 
 .veh-status--active {
@@ -319,64 +341,77 @@
 .veh-table-actions {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     justify-content: flex-end;
+    flex-wrap: wrap;
 }
 
 .veh-table-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 34px;
-    height: 34px;
-    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
     border: 1px solid transparent;
     text-decoration: none;
     cursor: pointer;
     transition: all 0.2s ease;
     background: none;
     padding: 0;
+    font-weight: 600;
 }
 
 .veh-table-btn--approve, .veh-table-btn--unlock {
-    color: #16a34a;
+    color: #15803d;
     background: #dcfce7;
-    border-color: #bbf7d0;
+    border-color: #86efac;
 }
 
 .veh-table-btn--approve:hover, .veh-table-btn--unlock:hover {
     background: #bbf7d0;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(21, 128, 61, 0.2);
 }
 
 .veh-table-btn--lock {
-    color: #dc2626;
-    background: #fef2f2;
+    color: #991b1b;
+    background: #fee2e2;
     border-color: #fecaca;
 }
 
 .veh-table-btn--lock:hover {
-    background: #fee2e2;
-    transform: translateY(-1px);
+    background: #fecaca;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(153, 27, 27, 0.2);
 }
 
 .veh-table-btn--release {
-    color: #ea580c;
+    color: #c2410c;
     background: #ffedd5;
     border-color: #fed7aa;
 }
 
 .veh-table-btn--release:hover {
     background: #fed7aa;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(194, 65, 12, 0.2);
 }
 
 .veh-lot-select {
-    padding: 6px 10px;
+    padding: 6px 12px;
     border: 1px solid #e2e8f0;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 13px;
+    font-weight: 500;
     outline: none;
+    background: #ffffff;
+    transition: border-color 0.2s ease;
+}
+
+.veh-lot-select:focus {
+    border-color: #0b57d0;
+    box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.1);
 }
 
 .veh-table-btn--assign {
@@ -384,14 +419,17 @@
     background: #eff6ff;
     border-color: #bfdbfe;
     width: auto;
-    padding: 0 10px;
+    padding: 0 12px;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .veh-table-btn--assign:hover {
     background: #dbeafe;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(11, 87, 208, 0.2);
 }
 
 /* ─── Pagination ─── */
@@ -458,6 +496,24 @@
     width: 20px;
     height: 20px;
     vertical-align: middle;
+}
+
+/* ─── Empty State ─── */
+.vehicles-empty {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    border: 2px solid #dbeafe;
+    border-radius: 20px;
+    padding: 3rem 2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.vehicles-empty p {
+    color: #64748b;
+    font-size: 15px;
 }
 
 /* ─── Responsive ─── */

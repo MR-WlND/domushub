@@ -20,6 +20,7 @@ class VehicleController extends Controller
         $vehicles = Vehicle::with('parkingLot')
             ->where('apartment_id', $user->apartment_id)
             ->whereIn('status', ['pending', 'active', 'pending_renewal', 'locked'])
+            ->withoutTrashed()
             ->latest()
             ->get();
 
@@ -58,9 +59,10 @@ class VehicleController extends Controller
 
         $licensePlate = strtoupper($validated['license_plate']);
 
-        // Kiểm tra biển số xe đã tồn tại với trạng thái đang dùng
+        // Kiểm tra biển số xe đã tồn tại với trạng thái đang dùng (không tính xe đã xóa)
         $existingVehicle = Vehicle::where('license_plate', $licensePlate)
             ->whereIn('status', ['pending', 'active', 'pending_renewal', 'locked'])
+            ->withoutTrashed()
             ->first();
 
         if ($existingVehicle) {
@@ -88,8 +90,8 @@ class VehicleController extends Controller
                 ]);
             }
 
-            // Xe máy mới đăng ký → active ngay lập tức theo yêu cầu mới
-            $status = 'active';
+            // Xe máy mới đăng ký → chờ admin duyệt
+            $status = 'pending';
 
         } elseif ($validated['vehicle_type'] === 'car') {
             $limit = \App\Models\SystemSetting::get('max_car_per_apartment', 1);
@@ -124,6 +126,12 @@ class VehicleController extends Controller
         $imagePath = null;
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('vehicles', 'public');
+            // Validate ảnh được lưu thành công
+            if (!$imagePath) {
+                return back()->withInput()->withErrors([
+                    'image' => 'Không thể lưu ảnh. Vui lòng thử lại.'
+                ]);
+            }
         }
 
         // 5. Lưu xe mới
@@ -138,10 +146,7 @@ class VehicleController extends Controller
             'qr_code'        => null,
         ]);
 
-        $message = match ($validated['vehicle_type']) {
-            'car'       => 'Đăng ký ô tô thành công. Vui lòng chờ Ban quản lý cấp lốt đỗ xe.',
-            default     => 'Đăng ký phương tiện thành công. Vui lòng chờ Ban quản lý duyệt.',
-        };
+        $message = 'Đăng ký phương tiện thành công. Vui lòng chờ Ban quản lý duyệt.';
 
         return redirect()->route('resident.vehicles.index')->with('success', $message);
     }
