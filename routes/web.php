@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
-
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SepayController;
 // Root route - redirect to resident login
@@ -28,6 +27,14 @@ Route::post('/resident/reset-password', [AuthController::class, 'resetPassword']
 Route::get('/security/login', [AuthController::class, 'showSecurityLogin'])->name('security.login');
 Route::post('/security/login', [AuthController::class, 'loginSecurity'])->name('security.login.submit');
 
+// Manager Login Routes
+Route::get('/manager/login', [AuthController::class, 'showManagerLogin'])->name('manager.login');
+Route::post('/manager/login', [AuthController::class, 'loginManager'])->name('manager.login.submit');
+
+// Technician Login Routes
+Route::get('/technician/login', [AuthController::class, 'showTechnicianLogin'])->name('technician.login');
+Route::post('/technician/login', [AuthController::class, 'loginTechnician'])->name('technician.login.submit');
+
 // Logout (accessible from all roles)
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
@@ -37,12 +44,11 @@ Route::middleware(['admin'])->group(function () {
         return view('admin.dashboard.index');
     })->name('admin.dashboard');
 
-<<<<<<< Updated upstream
     // Quản lý hạ tầng
     Route::get('/admin/buildings', function () {
         return view('admin.dashboard.index');
     })->name('admin.buildings.index');
-=======
+
     // Notifications
     Route::get('/admin/notifications/recent', [\App\Http\Controllers\Admin\NotificationController::class, 'recent'])->name('admin.notifications.recent');
     Route::post('/admin/notifications/mark-read', [\App\Http\Controllers\Admin\NotificationController::class, 'markRead'])->name('admin.notifications.mark-read');
@@ -55,7 +61,6 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/admin/blocks/{block}/edit', [\App\Http\Controllers\Admin\BlockController::class, 'edit'])->name('admin.blocks.edit');
     Route::put('/admin/blocks/{block}', [\App\Http\Controllers\Admin\BlockController::class, 'update'])->name('admin.blocks.update');
     Route::delete('/admin/blocks/{block}', [\App\Http\Controllers\Admin\BlockController::class, 'destroy'])->name('admin.blocks.destroy');
->>>>>>> Stashed changes
 
     Route::get('/admin/apartments', function () {
         return view('admin.dashboard.index');
@@ -133,9 +138,6 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/dashboard', function () {
         return view('resident.home.index');
     })->name('resident.dashboard');
-<<<<<<< Updated upstream
-=======
-
     // Profile
     Route::get('/resident/profile', [ProfileController::class, 'index'])->name('resident.profile.index');
     Route::put('/resident/profile', [ProfileController::class, 'update'])->name('resident.profile.update');
@@ -186,5 +188,48 @@ Route::middleware(['admin'])->name('admin.')->group(function () {
 
     //sepay
     Route::post('/sepay/webhook', [SepayController::class, 'webhook']);
->>>>>>> Stashed changes
+});
+
+// ─── RESIDENT: Phản ánh sự cố ────────────────────────────────────────────────
+Route::middleware(['resident'])->group(function () {
+    Route::get('/resident/incidents', [\App\Http\Controllers\Resident\IncidentController::class, 'index'])
+        ->name('resident.incidents.index');
+    Route::get('/resident/incidents/create', [\App\Http\Controllers\Resident\IncidentController::class, 'create'])
+        ->name('resident.incidents.create');
+    Route::post('/resident/incidents', [\App\Http\Controllers\Resident\IncidentController::class, 'store'])
+        ->name('resident.incidents.store');
+    Route::get('/resident/incidents/{id}', [\App\Http\Controllers\Resident\IncidentController::class, 'show'])
+        ->name('resident.incidents.show');
+});
+
+// ─── MANAGER: Tiếp nhận & Điều phối ─────────────────────────────────────────
+Route::middleware(['manager'])->prefix('manager')->name('manager.')->group(function () {
+    Route::get('/dashboard', function () {
+        return redirect()->route('manager.incidents.index');
+    })->name('dashboard');
+
+    Route::get('/incidents', [\App\Http\Controllers\Manager\IncidentController::class, 'index'])
+        ->name('incidents.index');
+    Route::get('/incidents/{id}', [\App\Http\Controllers\Manager\IncidentController::class, 'show'])
+        ->name('incidents.show');
+    Route::post('/incidents/{id}/assign', [\App\Http\Controllers\Manager\IncidentController::class, 'assign'])
+        ->name('incidents.assign');
+    Route::post('/incidents/{id}/confirm', [\App\Http\Controllers\Manager\IncidentController::class, 'confirm'])
+        ->name('incidents.confirm');
+    Route::post('/incidents/{id}/close', [\App\Http\Controllers\Manager\IncidentController::class, 'close'])
+        ->name('incidents.close');
+});
+
+// ─── TECHNICIAN: Xử lý task ──────────────────────────────────────────────────
+Route::middleware(['technician'])->prefix('technician')->name('technician.')->group(function () {
+    Route::get('/dashboard', function () {
+        return redirect()->route('technician.incidents.index');
+    })->name('dashboard');
+
+    Route::get('/incidents', [\App\Http\Controllers\Technician\IncidentController::class, 'index'])
+        ->name('incidents.index');
+    Route::get('/incidents/{id}', [\App\Http\Controllers\Technician\IncidentController::class, 'show'])
+        ->name('incidents.show');
+    Route::post('/incidents/{id}/update-status', [\App\Http\Controllers\Technician\IncidentController::class, 'updateStatus'])
+        ->name('incidents.update-status');
 });

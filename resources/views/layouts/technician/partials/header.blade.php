@@ -1,0 +1,31 @@
+<header class="dashboard-topbar">
+    <button class="sidebar-toggle" onclick="openSidebar()" aria-label="Open menu">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+    </button>
+    <div class="dashboard-topbar__search">
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" class="search-input" placeholder="Tìm kiếm công việc...">
+    </div>
+    <div class="dashboard-topbar__actions">
+        <div class="header-divider"></div>
+        <div class="dashboard-user-pill">
+            <div class="user-info">
+                <strong class="user-name">{{ auth()->user()->name ?? 'KTV' }}</strong>
+                <span class="user-role">KỸ THUẬT VIÊN</span>
+            </div>
+            <div class="user-avatar-container">
+                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                    alt="Avatar" class="user-avatar">
+            </div>
+        </div>
+    </div>
+</header>
