@@ -79,30 +79,43 @@
             </div>
         @endif
 
-        {{-- Nút xóa bài đăng (chống IDOR) --}}
-        @if($post->user_id === auth()->id() || auth()->user()->isAdminPortalUser())
-            <div style="display: flex; justify-content: flex-end; border-top: 1px solid #f1f5f9; padding-top: 1rem;">
-                <form action="{{ route('resident.posts.destroy', $post->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bài đăng này không?')">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="pc-card__delete-btn">
-                        <i class="fa-regular fa-trash-can"></i> Xóa bài viết
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 1rem; margin-top: 1.5rem;">
+            {{-- Nút Thích bài viết --}}
+            <button type="button" class="pc-card__action-btn pc-like-btn {{ $post->likedByCurrentUser->isNotEmpty() ? 'pc-like-btn--active' : '' }}" onclick="toggleLike(event, {{ $post->id }}, 'post')" style="border: none; background: transparent; cursor: pointer; font-family: inherit; font-size: 0.875rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; outline: none;">
+                <i class="{{ $post->likedByCurrentUser->isNotEmpty() ? 'fa-solid' : 'fa-regular' }} fa-thumbs-up"></i>
+                <span>Thích bài viết</span> (<span class="like-count">{{ $post->likes_count }}</span>)
+            </button>
+
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                {{-- Nút sửa bài viết (chỉ dành cho tác giả) --}}
+                @if($post->user_id === auth()->id())
+                    <button type="button" class="pc-card__edit-btn" onclick="openEditPostModal({{ $post->id }}, '{{ addslashes($post->title) }}', '{{ addslashes($post->content) }}', '{{ $post->price }}')" style="color: var(--color-primary); background: transparent; border: none; cursor: pointer; font-size: 0.85rem; font-weight: 600; padding: 0.4rem 0.8rem; border-radius: var(--radius); transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.35rem;">
+                        <i class="fa-regular fa-pen-to-square"></i> Sửa bài viết
                     </button>
-                </form>
+                @endif
+
+                {{-- Nút xóa bài đăng (chống IDOR) --}}
+                @if($post->user_id === auth()->id() || auth()->user()->isAdminPortalUser())
+                    <form action="{{ route('resident.posts.destroy', $post->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bài đăng này không?')" style="margin: 0;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="pc-card__delete-btn">
+                            <i class="fa-regular fa-trash-can"></i> Xóa bài viết
+                        </button>
+                    </form>
+                @elseif($post->user_id !== auth()->id())
+                    <button type="button" class="pc-card__action-btn" style="color: var(--color-error); border: none; background: transparent; cursor: pointer; font-family: inherit; font-size: 0.875rem; font-weight: 600; padding: 0.4rem 0.8rem; outline: none;" onclick="openReportModal({{ $post->id }})">
+                        <i class="fa-regular fa-flag"></i> Báo cáo bài viết
+                    </button>
+                @endif
             </div>
-        @elseif($post->user_id !== auth()->id())
-            <div style="display: flex; justify-content: flex-end; border-top: 1px solid #f1f5f9; padding-top: 1rem;">
-                <button type="button" class="pc-card__action-btn" style="color: var(--color-error); border: none; background: transparent; cursor: pointer; font-family: inherit; font-size: 0.875rem; font-weight: 600; padding: 0.4rem 0.8rem; outline: none;" onclick="openReportModal({{ $post->id }})">
-                    <i class="fa-regular fa-flag"></i> Báo cáo bài viết
-                </button>
-            </div>
-        @endif
+        </div>
     </article>
 
     {{-- KHU VỰC BÌNH LUẬN --}}
     <section class="pc-comments-sec">
         <h3 class="pc-comments__title">
-            <i class="fa-regular fa-comments" style="margin-right: 0.5rem;"></i> Bình luận ({{ $post->comments->count() }})
+            <i class="fa-regular fa-comments" style="margin-right: 0.5rem;"></i> Bình luận (<span id="total-comments-count">{{ $totalComments }}</span>)
         </h3>
 
         {{-- FORM VIẾT BÌNH LUẬN --}}
@@ -133,66 +146,182 @@
 
         {{-- DANH SÁCH CÁC BÌNH LUẬN --}}
         <div class="pc-comments-list">
-            @if($post->comments->isEmpty())
+            {{-- Nút tải thêm bình luận cũ --}}
+            @if($totalComments > 10)
+                <div style="text-align: center; margin-bottom: 1.5rem;" id="load-older-container">
+                    <button type="button" class="pc-load-older-btn" id="load-older-btn" data-offset="10" data-total="{{ $totalComments }}" onclick="loadOlderComments()">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Xem thêm bình luận cũ hơn (<span id="older-count">{{ $totalComments - 10 }}</span>)
+                    </button>
+                </div>
+            @endif
+
+            @if($comments->isEmpty())
                 <p id="empty-comments-placeholder" style="text-align: center; color: var(--color-text-secondary); font-size: 0.9rem; margin: 2rem 0;">Chưa có bình luận nào. Hãy bắt đầu cuộc trò chuyện!</p>
             @else
-                @foreach($post->comments as $comment)
-                    <div class="pc-comment" id="comment-{{ $comment->id }}">
-                        <img src="{{ $comment->user->avatar ? asset('storage/' . $comment->user->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($comment->user->name) . '&background=00236f&color=fff' }}" 
-                             alt="Avatar" class="pc-comment__avatar">
-                        
-                        <div class="pc-comment__body">
-                            <div class="pc-comment__header">
-                                <div class="pc-comment__user-info">
-                                    <span class="pc-comment__author-name">{{ $comment->user->name }}</span>
-                                    
-                                    <span class="pc-comment__apartment">
-                                        @if($comment->user->apartment)
-                                            Căn hộ: {{ $comment->user->apartment->apartment_number }}
-                                        @else
-                                            Ban Quản Trị
-                                        @endif
-                                    </span>
-
-                                    {{-- Chỉ báo trả lời --}}
-                                    @if($comment->parent_id && $comment->parent)
-                                        <span class="pc-comment__reply-tag">
-                                            <i class="fa-solid fa-reply"></i> trả lời <strong>{{ $comment->parent->user->name ?? 'Cư dân' }}</strong>
+                @foreach($comments as $comment)
+                    <div class="pc-comment-thread" id="comment-thread-{{ $comment->id }}">
+                        {{-- BÌNH LUẬN CHA --}}
+                        <div class="pc-comment" id="comment-{{ $comment->id }}">
+                            <img src="{{ $comment->user->avatar ? asset('storage/' . $comment->user->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($comment->user->name) . '&background=00236f&color=fff' }}" 
+                                 alt="Avatar" class="pc-comment__avatar">
+                            
+                            <div class="pc-comment__body">
+                                <div class="pc-comment__header">
+                                    <div class="pc-comment__user-info">
+                                        <span class="pc-comment__author-name">{{ $comment->user->name }}</span>
+                                        
+                                        <span class="pc-comment__apartment">
+                                            @if($comment->user->apartment)
+                                                Căn hộ: {{ $comment->user->apartment->apartment_number }}
+                                            @else
+                                                Ban Quản Trị
+                                            @endif
                                         </span>
-                                    @endif
+                                    </div>
+                                    
+                                    <span class="pc-comment__time" title="{{ $comment->created_at }}">
+                                        {{ $comment->created_at->diffForHumans() }}
+                                    </span>
                                 </div>
                                 
-                                <span class="pc-comment__time" title="{{ $comment->created_at }}">
-                                    {{ $comment->created_at->diffForHumans() }}
-                                </span>
-                            </div>
-                            
-                            <p class="pc-comment__content">{!! nl2br(e($comment->content)) !!}</p>
-                            
-                            {{-- Các hành động trên bình luận --}}
-                            <div class="pc-comment__actions" style="display: flex; width: 100%; align-items: center;">
-                                <button type="button" class="pc-comment__action-btn" onclick="replyToComment({{ $comment->id }}, '{{ $comment->user->name }}')">
-                                    Trả lời
-                                </button>
+                                <div class="comment-content-wrap" id="comment-content-wrap-{{ $comment->id }}">
+                                    <p class="pc-comment__content" id="comment-text-{{ $comment->id }}">{!! nl2br(e($comment->content)) !!}</p>
+                                </div>
 
-                                {{-- Nút xóa bình luận (Chống IDOR: Tác giả bình luận, chủ bài viết, hoặc Admin mới xóa được) --}}
-                                @if($comment->user_id === auth()->id() || $post->user_id === auth()->id() || auth()->user()->isAdminPortalUser())
-                                    <form action="{{ route('resident.comments.destroy', $comment->id) }}" method="POST" style="display: inline; margin-left: 0.5rem;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bình luận này không?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="pc-comment__action-btn pc-comment__action-btn--delete">
-                                            Xóa
-                                        </button>
-                                    </form>
+                                {{-- Form chỉnh sửa inline ẩn --}}
+                                @if($comment->user_id === auth()->id())
+                                    <div class="comment-edit-inline-wrap" id="comment-edit-wrap-{{ $comment->id }}" style="display: none; margin: 0.5rem 0;">
+                                        <textarea class="pc-comments__input" id="comment-edit-input-{{ $comment->id }}" rows="2" style="min-height: 45px; resize: vertical;"></textarea>
+                                        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.4rem;">
+                                            <button type="button" class="pc-btn pc-btn--secondary" style="padding: 0.35rem 0.75rem; font-size: 0.775rem;" onclick="cancelEditComment({{ $comment->id }})">Hủy</button>
+                                            <button type="button" class="pc-btn" style="padding: 0.35rem 0.75rem; font-size: 0.775rem;" onclick="saveEditComment({{ $comment->id }})">Lưu</button>
+                                        </div>
+                                    </div>
                                 @endif
-
-                                {{-- Nút báo cáo bình luận (Chỉ xuất hiện khi bình luận không thuộc người đang đăng nhập) --}}
-                                @if($comment->user_id !== auth()->id())
-                                    <button type="button" class="pc-comment__action-btn pc-comment__action-btn--report" style="color: var(--color-error); margin-left: auto; display: flex; align-items: center; gap: 0.25rem;" onclick="openCommentReportModal({{ $comment->id }})">
-                                        <i class="fa-regular fa-flag"></i> Báo cáo
+                                
+                                {{-- Các hành động trên bình luận --}}
+                                <div class="pc-comment__actions" style="display: flex; width: 100%; align-items: center; gap: 1rem;">
+                                    {{-- Nút Thích bình luận --}}
+                                    <button type="button" class="pc-comment__action-btn pc-comment-like-btn {{ $comment->likedByCurrentUser->isNotEmpty() ? 'pc-comment-like-btn--active' : '' }}" onclick="toggleLike(event, {{ $comment->id }}, 'comment')">
+                                        <i class="{{ $comment->likedByCurrentUser->isNotEmpty() ? 'fa-solid' : 'fa-regular' }} fa-heart"></i>
+                                        <span>Thích</span> (<span class="like-count">{{ $comment->likes_count }}</span>)
                                     </button>
-                                @endif
+
+                                    <button type="button" class="pc-comment__action-btn" onclick="replyToComment({{ $comment->id }}, '{{ $comment->user->name }}')">
+                                        Trả lời
+                                    </button>
+
+                                    {{-- Nút Sửa bình luận --}}
+                                    @if($comment->user_id === auth()->id())
+                                        <button type="button" class="pc-comment__action-btn" onclick="startEditComment({{ $comment->id }})">
+                                            Sửa
+                                        </button>
+                                    @endif
+
+                                    {{-- Nút xóa bình luận --}}
+                                    @if($comment->user_id === auth()->id() || $post->user_id === auth()->id() || auth()->user()->isAdminPortalUser())
+                                        <form action="{{ route('resident.comments.destroy', $comment->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bình luận này không?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="pc-comment__action-btn pc-comment__action-btn--delete">
+                                                Xóa
+                                            </button>
+                                        </form>
+                                    @endif
+
+                                    {{-- Nút báo cáo bình luận --}}
+                                    @if($comment->user_id !== auth()->id())
+                                        <button type="button" class="pc-comment__action-btn pc-comment__action-btn--report" style="color: var(--color-error); margin-left: auto; display: flex; align-items: center; gap: 0.25rem;" onclick="openCommentReportModal({{ $comment->id }})">
+                                            <i class="fa-regular fa-flag"></i> Báo cáo
+                                        </button>
+                                    @endif
+                                </div>
                             </div>
+                        </div>
+
+                        {{-- NÚT XEM THÊM CÂU TRẢ LỜI --}}
+                        @if($comment->replies->count() > 0)
+                            <div class="pc-comment__replies-toggle-wrapper" id="replies-toggle-wrapper-{{ $comment->id }}">
+                                <button type="button" class="pc-comment__view-replies-btn" id="view-replies-btn-{{ $comment->id }}" onclick="toggleReplies({{ $comment->id }})">
+                                    <i class="fa-solid fa-share-nodes"></i> Xem <span class="reply-count">{{ $comment->replies->count() }}</span> câu trả lời
+                                </button>
+                            </div>
+                        @endif
+
+                        {{-- DANH SÁCH CÁC PHẢN HỒI CON --}}
+                        <div class="pc-comment-replies" id="replies-container-{{ $comment->id }}" style="display: none;">
+                            @foreach($comment->replies as $reply)
+                                <div class="pc-comment pc-comment--reply" id="comment-{{ $reply->id }}">
+                                    <img src="{{ $reply->user->avatar ? asset('storage/' . $reply->user->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($reply->user->name) . '&background=00236f&color=fff' }}" 
+                                         alt="Avatar" class="pc-comment__avatar pc-comment__avatar--reply">
+                                    
+                                    <div class="pc-comment__body">
+                                        <div class="pc-comment__header">
+                                            <div class="pc-comment__user-info">
+                                                <span class="pc-comment__author-name">{{ $reply->user->name }}</span>
+                                                <span class="pc-comment__apartment">
+                                                    @if($reply->user->apartment)
+                                                        Căn hộ: {{ $reply->user->apartment->apartment_number }}
+                                                    @else
+                                                        Ban Quản Trị
+                                                    @endif
+                                                </span>
+                                            </div>
+                                            <span class="pc-comment__time" title="{{ $reply->created_at }}">
+                                                {{ $reply->created_at->diffForHumans() }}
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="comment-content-wrap" id="comment-content-wrap-{{ $reply->id }}">
+                                            <p class="pc-comment__content" id="comment-text-{{ $reply->id }}">{!! nl2br(e($reply->content)) !!}</p>
+                                        </div>
+
+                                        {{-- Form chỉnh sửa inline ẩn --}}
+                                        @if($reply->user_id === auth()->id())
+                                            <div class="comment-edit-inline-wrap" id="comment-edit-wrap-{{ $reply->id }}" style="display: none; margin: 0.5rem 0;">
+                                                <textarea class="pc-comments__input" id="comment-edit-input-{{ $reply->id }}" rows="2" style="min-height: 45px; resize: vertical;"></textarea>
+                                                <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.4rem;">
+                                                    <button type="button" class="pc-btn pc-btn--secondary" style="padding: 0.35rem 0.75rem; font-size: 0.775rem;" onclick="cancelEditComment({{ $reply->id }})">Hủy</button>
+                                                    <button type="button" class="pc-btn" style="padding: 0.35rem 0.75rem; font-size: 0.775rem;" onclick="saveEditComment({{ $reply->id }})">Lưu</button>
+                                                </div>
+                                            </div>
+                                        @endif
+                                        
+                                        <div class="pc-comment__actions" style="display: flex; width: 100%; align-items: center; gap: 1rem;">
+                                            <button type="button" class="pc-comment__action-btn pc-comment-like-btn {{ $reply->likedByCurrentUser->isNotEmpty() ? 'pc-comment-like-btn--active' : '' }}" onclick="toggleLike(event, {{ $reply->id }}, 'comment')">
+                                                <i class="{{ $reply->likedByCurrentUser->isNotEmpty() ? 'fa-solid' : 'fa-regular' }} fa-heart"></i>
+                                                <span>Thích</span> (<span class="like-count">{{ $reply->likes_count }}</span>)
+                                            </button>
+
+                                            <button type="button" class="pc-comment__action-btn" onclick="replyToComment({{ $comment->id }}, '{{ $reply->user->name }}')">
+                                                Trả lời
+                                            </button>
+
+                                            @if($reply->user_id === auth()->id())
+                                                <button type="button" class="pc-comment__action-btn" onclick="startEditComment({{ $reply->id }})">
+                                                    Sửa
+                                                </button>
+                                            @endif
+
+                                            @if($reply->user_id === auth()->id() || $post->user_id === auth()->id() || auth()->user()->isAdminPortalUser())
+                                                <form action="{{ route('resident.comments.destroy', $reply->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bình luận này không?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="pc-comment__action-btn pc-comment__action-btn--delete">
+                                                        Xóa
+                                                    </button>
+                                                </form>
+                                            @endif
+
+                                            @if($reply->user_id !== auth()->id())
+                                                <button type="button" class="pc-comment__action-btn pc-comment__action-btn--report" style="color: var(--color-error); margin-left: auto; display: flex; align-items: center; gap: 0.25rem;" onclick="openCommentReportModal({{ $reply->id }})">
+                                                    <i class="fa-regular fa-flag"></i> Báo cáo
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
                     </div>
                 @endforeach
@@ -307,6 +436,48 @@
             <div class="rep-modal__footer">
                 <button type="button" class="pc-btn pc-btn--secondary" onclick="closeCommentReportModal()">Hủy bỏ</button>
                 <button type="submit" class="rep-modal__btn-submit" id="submit-comment-report-btn" disabled>Gửi báo cáo</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- Modal Chỉnh sửa Bài viết --}}
+<div id="editPostModal" class="rep-modal" onclick="handleEditModalClick(event)">
+    <div class="rep-modal__content" style="max-width: 580px;">
+        <div class="rep-modal__header">
+            <h3 class="rep-modal__title">
+                <i class="fa-regular fa-pen-to-square" style="color: var(--color-primary);"></i> Chỉnh sửa bài viết
+            </h3>
+            <button type="button" class="rep-modal__close" onclick="closeEditPostModal()">&times;</button>
+        </div>
+        <form id="edit-post-form" method="POST">
+            @csrf
+            @method('PUT')
+            <div class="rep-modal__body">
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div>
+                        <label class="rep-modal__label">Tiêu đề bài viết (không bắt buộc)</label>
+                        <input type="text" name="title" id="edit-post-title" class="pc-composer__title-input" placeholder="Nhập tiêu đề bài viết...">
+                    </div>
+                    <div>
+                        <label class="rep-modal__label">Nội dung bài viết</label>
+                        <textarea name="content" id="edit-post-content" class="pc-composer__body-input" rows="5" required placeholder="Bạn đang muốn chia sẻ điều gì..."></textarea>
+                    </div>
+                    
+                    {{-- Ô nhập giá thanh lý --}}
+                    <div id="edit-price-input-container">
+                        <label class="rep-modal__label">Giá thanh lý (để trống nếu là bài chia sẻ)</label>
+                        <div class="pc-composer__price-wrap" style="width: 100%; box-sizing: border-box; display: flex;">
+                            <i class="fa-solid fa-tags pc-composer__price-icon"></i>
+                            <input type="text" name="price" id="edit-post-price" class="pc-composer__price-input" placeholder="Nhập giá thanh lý (ví dụ: 150.000)..." style="flex: 1;">
+                            <span style="font-weight: 700; color: var(--color-secondary); font-size: 0.9rem; margin-right: 0.5rem;">đ</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="rep-modal__footer">
+                <button type="button" class="pc-btn pc-btn--secondary" onclick="closeEditPostModal()">Hủy bỏ</button>
+                <button type="submit" class="pc-btn">Lưu thay đổi</button>
             </div>
         </form>
     </div>
@@ -731,25 +902,35 @@
             ? `Căn hộ: ${escapeHtml(comment.user.apartment.apartment_number)}` 
             : 'Ban Quản Trị';
             
-        let replyTag = '';
-        if (comment.parent_id && comment.parent) {
-            replyTag = `
-                <span class="pc-comment__reply-tag">
-                    <i class="fa-solid fa-reply"></i> trả lời <strong>${escapeHtml(comment.parent.user.name)}</strong>
-                </span>
-            `;
-        }
-        
         let deleteForm = '';
         if (comment.user.id === currentUserId || isPostOwner || isAdmin) {
             deleteForm = `
-                <form action="/resident/comments/${comment.id}" method="POST" style="display: inline; margin-left: 0.5rem;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bình luận này không?')">
+                <form action="/resident/comments/${comment.id}" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bình luận này không?')">
                     <input type="hidden" name="_token" value="${document.querySelector('input[name="_token"]').value}">
                     <input type="hidden" name="_method" value="DELETE">
                     <button type="submit" class="pc-comment__action-btn pc-comment__action-btn--delete">
                         Xóa
                     </button>
                 </form>
+            `;
+        }
+
+        let editBtn = '';
+        let editForm = '';
+        if (comment.user.id === currentUserId) {
+            editBtn = `
+                <button type="button" class="pc-comment__action-btn" onclick="startEditComment(${comment.id})">
+                    Sửa
+                </button>
+            `;
+            editForm = `
+                <div class="comment-edit-inline-wrap" id="comment-edit-wrap-${comment.id}" style="display: none; margin: 0.5rem 0;">
+                    <textarea class="pc-comments__input" id="comment-edit-input-${comment.id}" rows="2" style="min-height: 45px; resize: vertical;"></textarea>
+                    <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.4rem;">
+                        <button type="button" class="pc-btn pc-btn--secondary" style="padding: 0.35rem 0.75rem; font-size: 0.775rem;" onclick="cancelEditComment(${comment.id})">Hủy</button>
+                        <button type="button" class="pc-btn" style="padding: 0.35rem 0.75rem; font-size: 0.775rem;" onclick="saveEditComment(${comment.id})">Lưu</button>
+                    </div>
+                </div>
             `;
         }
         
@@ -761,41 +942,567 @@
                 </button>
             `;
         }
+
+        const isLiked = comment.liked || false;
+        const likeBtnClass = isLiked ? 'pc-comment-like-btn pc-comment-like-btn--active' : 'pc-comment-like-btn';
+        const likeIconClass = isLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+        const likesCount = comment.likes_count || 0;
         
-        return `
-            <div class="pc-comment new-comment-highlight" id="comment-${comment.id}">
-                <img src="${avatarUrl}" alt="Avatar" class="pc-comment__avatar">
-                
-                <div class="pc-comment__body">
-                    <div class="pc-comment__header">
-                        <div class="pc-comment__user-info">
-                            <span class="pc-comment__author-name">${escapeHtml(comment.user.name)}</span>
-                            <span class="pc-comment__apartment">${apartmentText}</span>
-                            ${replyTag}
+        const isChild = comment.parent_id !== null;
+        
+        if (isChild) {
+            return `
+                <div class="pc-comment pc-comment--reply new-comment-highlight" id="comment-${comment.id}">
+                    <img src="${avatarUrl}" alt="Avatar" class="pc-comment__avatar pc-comment__avatar--reply">
+                    
+                    <div class="pc-comment__body">
+                        <div class="pc-comment__header">
+                            <div class="pc-comment__user-info">
+                                <span class="pc-comment__author-name">${escapeHtml(comment.user.name)}</span>
+                                <span class="pc-comment__apartment">${apartmentText}</span>
+                            </div>
+                            <span class="pc-comment__time" title="${escapeHtml(comment.created_at_human)}">
+                                Vừa xong
+                            </span>
                         </div>
-                        <span class="pc-comment__time" title="${escapeHtml(comment.created_at_human)}">
-                            Vừa xong
-                        </span>
-                    </div>
-                    
-                    <p class="pc-comment__content">${nl2br(comment.content)}</p>
-                    
-                    <div class="pc-comment__actions" style="display: flex; width: 100%; align-items: center;">
-                        <button type="button" class="pc-comment__action-btn" onclick="replyToComment(${comment.id}, '${escapeHtml(comment.user.name)}')">
-                            Trả lời
-                        </button>
-                        ${deleteForm}
-                        ${reportBtn}
+                        
+                        <div class="comment-content-wrap" id="comment-content-wrap-${comment.id}">
+                            <p class="pc-comment__content" id="comment-text-${comment.id}">${nl2br(comment.content)}</p>
+                        </div>
+                        ${editForm}
+                        
+                        <div class="pc-comment__actions" style="display: flex; width: 100%; align-items: center; gap: 1rem;">
+                            <button type="button" class="pc-comment__action-btn ${likeBtnClass}" onclick="toggleLike(event, ${comment.id}, 'comment')">
+                                <i class="${likeIconClass}"></i>
+                                <span>Thích</span> (<span class="like-count">${likesCount}</span>)
+                            </button>
+                            <button type="button" class="pc-comment__action-btn" onclick="replyToComment(${comment.parent_id}, '${escapeHtml(comment.user.name)}')">
+                                Trả lời
+                            </button>
+                            ${editBtn}
+                            ${deleteForm}
+                            ${reportBtn}
+                        </div>
                     </div>
                 </div>
-            </div>
-        `;
+            `;
+        } else {
+            return `
+                <div class="pc-comment-thread" id="comment-thread-${comment.id}">
+                    <div class="pc-comment new-comment-highlight" id="comment-${comment.id}">
+                        <img src="${avatarUrl}" alt="Avatar" class="pc-comment__avatar">
+                        
+                        <div class="pc-comment__body">
+                            <div class="pc-comment__header">
+                                <div class="pc-comment__user-info">
+                                    <span class="pc-comment__author-name">${escapeHtml(comment.user.name)}</span>
+                                    <span class="pc-comment__apartment">${apartmentText}</span>
+                                </div>
+                                <span class="pc-comment__time" title="${escapeHtml(comment.created_at_human)}">
+                                    Vừa xong
+                                </span>
+                            </div>
+                            
+                            <div class="comment-content-wrap" id="comment-content-wrap-${comment.id}">
+                                <p class="pc-comment__content" id="comment-text-${comment.id}">${nl2br(comment.content)}</p>
+                            </div>
+                            ${editForm}
+                            
+                            <div class="pc-comment__actions" style="display: flex; width: 100%; align-items: center; gap: 1rem;">
+                                <button type="button" class="pc-comment__action-btn ${likeBtnClass}" onclick="toggleLike(event, ${comment.id}, 'comment')">
+                                    <i class="${likeIconClass}"></i>
+                                    <span>Thích</span> (<span class="like-count">${likesCount}</span>)
+                                </button>
+                                <button type="button" class="pc-comment__action-btn" onclick="replyToComment(${comment.id}, '${escapeHtml(comment.user.name)}')">
+                                    Trả lời
+                                </button>
+                                ${editBtn}
+                                ${deleteForm}
+                                ${reportBtn}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${comment.replies && comment.replies.length > 0 ? `
+                        <div class="pc-comment__replies-toggle-wrapper" id="replies-toggle-wrapper-${comment.id}">
+                            <button type="button" class="pc-comment__view-replies-btn" id="view-replies-btn-${comment.id}" onclick="toggleReplies(${comment.id})">
+                                <i class="fa-solid fa-share-nodes"></i> Xem <span class="reply-count">${comment.replies.length}</span> câu trả lời
+                            </button>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="pc-comment-replies" id="replies-container-${comment.id}" style="display: none;">
+                        ${comment.replies ? comment.replies.map(reply => createCommentHtml(reply)).join('') : ''}
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    function toggleReplies(parentId) {
+        const container = document.getElementById(`replies-container-${parentId}`);
+        const btn = document.getElementById(`view-replies-btn-${parentId}`);
+        const thread = document.getElementById(`comment-thread-${parentId}`);
+        
+        if (!container || !btn) return;
+        
+        if (container.style.display === 'none') {
+            container.style.display = 'flex';
+            if (thread) thread.classList.add('has-replies-expanded');
+            
+            const countEl = btn.querySelector('.reply-count');
+            const count = countEl ? countEl.innerText : '';
+            
+            btn.innerHTML = `<i class="fa-solid fa-angle-up"></i> Ẩn câu trả lời<span class="reply-count" style="display:none;">${count}</span>`;
+        } else {
+            container.style.display = 'none';
+            if (thread) thread.classList.remove('has-replies-expanded');
+            
+            const countEl = btn.querySelector('.reply-count');
+            const count = countEl ? countEl.innerText : '';
+            
+            btn.innerHTML = `<i class="fa-solid fa-share-nodes"></i> Xem <span class="reply-count">${count}</span> câu trả lời`;
+        }
+    }
+
+    function ensureToggleRepliesButton(parentId) {
+        let btn = document.getElementById(`view-replies-btn-${parentId}`);
+        if (!btn) {
+            const parentComment = document.getElementById(`comment-${parentId}`);
+            if (parentComment) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'pc-comment__replies-toggle-wrapper';
+                wrapper.id = `replies-toggle-wrapper-${parentId}`;
+                wrapper.innerHTML = `
+                    <button type="button" class="pc-comment__view-replies-btn" id="view-replies-btn-${parentId}" onclick="toggleReplies(${parentId})">
+                        <i class="fa-solid fa-angle-up"></i> Ẩn câu trả lời<span class="reply-count" style="display:none;">0</span>
+                    </button>
+                `;
+                parentComment.insertAdjacentElement('afterend', wrapper);
+            }
+        }
+    }
+
+    function handleNewComment(comment) {
+        const emptyPlaceholder = document.getElementById('empty-comments-placeholder');
+        if (emptyPlaceholder) {
+            emptyPlaceholder.remove();
+        }
+
+        if (document.getElementById(`comment-${comment.id}`)) return;
+
+        const container = document.querySelector('.pc-comments-list');
+        if (!container) return;
+
+        const isChild = comment.parent_id !== null;
+        if (isChild) {
+            const parentId = comment.parent_id;
+            const repliesContainer = document.getElementById(`replies-container-${parentId}`);
+            if (repliesContainer) {
+                const childHtml = createCommentHtml(comment);
+                repliesContainer.insertAdjacentHTML('beforeend', childHtml);
+                
+                ensureToggleRepliesButton(parentId);
+                const toggleBtn = document.getElementById(`view-replies-btn-${parentId}`);
+                if (toggleBtn) {
+                    const countEls = toggleBtn.querySelectorAll('.reply-count');
+                    countEls.forEach(el => {
+                        const currentCount = parseInt(el.innerText, 10) || 0;
+                        el.innerText = currentCount + 1;
+                    });
+                }
+                
+                if (repliesContainer.style.display === 'none') {
+                    repliesContainer.style.display = 'flex';
+                    const thread = document.getElementById(`comment-thread-${parentId}`);
+                    if (thread) thread.classList.add('has-replies-expanded');
+                    if (toggleBtn) {
+                        const countEl = toggleBtn.querySelector('.reply-count');
+                        const count = countEl ? countEl.innerText : '';
+                        toggleBtn.innerHTML = `<i class="fa-solid fa-angle-up"></i> Ẩn câu trả lời<span class="reply-count" style="display:none;">${count}</span>`;
+                    }
+                }
+            }
+        } else {
+            const parentHtml = createCommentHtml(comment);
+            container.insertAdjacentHTML('beforeend', parentHtml);
+        }
+
+        const countEl = document.getElementById('total-comments-count');
+        if (countEl) {
+            const count = container.querySelectorAll('.pc-comment-thread').length;
+            countEl.innerText = count;
+        }
+    }
+
+    // AJAX Toggle Like
+    function toggleLike(event, id, type) {
+        event.preventDefault();
+        
+        const btn = event.currentTarget;
+        const countEl = btn.querySelector('.like-count');
+        const iconEl = btn.querySelector('i');
+        
+        const isActive = type === 'post' 
+            ? btn.classList.contains('pc-like-btn--active')
+            : btn.classList.contains('pc-comment-like-btn--active');
+            
+        let count = parseInt(countEl.innerText, 10) || 0;
+        
+        if (isActive) {
+            btn.classList.remove(type === 'post' ? 'pc-like-btn--active' : 'pc-comment-like-btn--active');
+            iconEl.className = type === 'post' ? 'fa-regular fa-thumbs-up' : 'fa-regular fa-heart';
+            countEl.innerText = Math.max(0, count - 1);
+        } else {
+            btn.classList.add(type === 'post' ? 'pc-like-btn--active' : 'pc-comment-like-btn--active');
+            iconEl.className = type === 'post' ? 'fa-solid fa-thumbs-up' : 'fa-solid fa-heart';
+            countEl.innerText = count + 1;
+        }
+
+        fetch('/resident/like', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                likeable_id: id,
+                likeable_type: type
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                countEl.innerText = data.likes_count;
+                if (data.liked) {
+                    btn.classList.add(type === 'post' ? 'pc-like-btn--active' : 'pc-comment-like-btn--active');
+                    iconEl.className = type === 'post' ? 'fa-solid fa-thumbs-up' : 'fa-solid fa-heart';
+                } else {
+                    btn.classList.remove(type === 'post' ? 'pc-like-btn--active' : 'pc-comment-like-btn--active');
+                    iconEl.className = type === 'post' ? 'fa-regular fa-thumbs-up' : 'fa-regular fa-heart';
+                }
+            }
+        })
+        .catch(err => {
+            console.error('Error toggling like:', err);
+            if (isActive) {
+                btn.classList.add(type === 'post' ? 'pc-like-btn--active' : 'pc-comment-like-btn--active');
+                iconEl.className = type === 'post' ? 'fa-solid fa-thumbs-up' : 'fa-solid fa-heart';
+                countEl.innerText = count;
+            } else {
+                btn.classList.remove(type === 'post' ? 'pc-like-btn--active' : 'pc-comment-like-btn--active');
+                iconEl.className = type === 'post' ? 'fa-regular fa-thumbs-up' : 'fa-regular fa-heart';
+                countEl.innerText = count;
+            }
+        });
+    }
+
+    // Modal Edit Post
+    function openEditPostModal(id, title, content, price) {
+        const modal = document.getElementById('editPostModal');
+        const form = document.getElementById('edit-post-form');
+        form.action = `/resident/posts/${id}`;
+        
+        document.getElementById('edit-post-title').value = title || '';
+        document.getElementById('edit-post-content').value = content || '';
+        
+        const priceInput = document.getElementById('edit-post-price');
+        if (price && parseFloat(price) > 0) {
+            priceInput.value = parseInt(price, 10).toLocaleString('vi-VN');
+        } else {
+            priceInput.value = '';
+        }
+        
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.classList.add('show');
+        }, 10);
+    }
+
+    function closeEditPostModal() {
+        const modal = document.getElementById('editPostModal');
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300);
+    }
+
+    function handleEditModalClick(event) {
+        if (event.target === document.getElementById('editPostModal')) {
+            closeEditPostModal();
+        }
+    }
+
+    // Định dạng tiền tệ cho input sửa bài
+    const editPriceInput = document.getElementById('edit-post-price');
+    if (editPriceInput) {
+        editPriceInput.addEventListener('input', function(e) {
+            let value = this.value.replace(/[^0-9]/g, '');
+            if (value) {
+                this.value = parseInt(value, 10).toLocaleString('vi-VN');
+            } else {
+                this.value = '';
+            }
+        });
+    }
+
+    // Xử lý submit sửa bài viết qua AJAX
+    const editPostForm = document.getElementById('edit-post-form');
+    if (editPostForm) {
+        editPostForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.setAttribute('disabled', 'disabled');
+            submitBtn.innerText = 'Đang lưu...';
+            
+            const priceInput = document.getElementById('edit-post-price');
+            let rawPrice = priceInput.value.replace(/[^0-9]/g, '');
+            
+            const formData = {
+                title: document.getElementById('edit-post-title').value.trim(),
+                content: document.getElementById('edit-post-content').value.trim(),
+                price: rawPrice || null,
+            };
+
+            fetch(this.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    ...formData,
+                    _method: 'PUT'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    closeEditPostModal();
+                    showToast('Cập nhật bài viết thành công!', 'success');
+                    
+                    // Cập nhật giao diện tại chi tiết bài viết
+                    const titleEl = document.querySelector('.pc-detail__title');
+                    if (titleEl) titleEl.innerText = data.post.title;
+
+                    const contentEl = document.querySelector('.pc-detail__content');
+                    if (contentEl) contentEl.innerHTML = nl2br(data.post.content);
+
+                    const priceEl = document.querySelector('.pc-card__price');
+                    if (priceEl && data.post.price !== null) {
+                        priceEl.innerText = formatNumber(data.post.price) + 'đ';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                showToast('Có lỗi xảy ra khi cập nhật. Vui lòng thử lại!', 'error');
+            })
+            .finally(() => {
+                submitBtn.removeAttribute('disabled');
+                submitBtn.innerText = 'Lưu thay đổi';
+            });
+        });
+    }
+
+    // Chỉnh sửa bình luận Inline
+    function startEditComment(id) {
+        const textEl = document.getElementById('comment-text-' + id);
+        const editWrap = document.getElementById('comment-edit-wrap-' + id);
+        const editInput = document.getElementById('comment-edit-input-' + id);
+        const contentWrap = document.getElementById('comment-content-wrap-' + id);
+
+        let plainText = textEl.innerHTML.replace(/<br\s*\/?>/gi, '\n');
+        const txt = document.createElement("textarea");
+        txt.innerHTML = plainText;
+        plainText = txt.value;
+
+        editInput.value = plainText;
+        contentWrap.style.display = 'none';
+        editWrap.style.display = 'block';
+        editInput.focus();
+    }
+
+    function cancelEditComment(id) {
+        const editWrap = document.getElementById('comment-edit-wrap-' + id);
+        const contentWrap = document.getElementById('comment-content-wrap-' + id);
+        
+        editWrap.style.display = 'none';
+        contentWrap.style.display = 'block';
+    }
+
+    function saveEditComment(id) {
+        const editInput = document.getElementById('comment-edit-input-' + id);
+        const content = editInput.value.trim();
+        if (!content) return;
+
+        const saveBtn = document.querySelector(`#comment-edit-wrap-${id} button:last-child`);
+        saveBtn.setAttribute('disabled', 'disabled');
+        saveBtn.innerText = 'Đang lưu...';
+
+        fetch(`/resident/comments/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                content: content,
+                _method: 'PUT'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const textEl = document.getElementById('comment-text-' + id);
+                textEl.innerHTML = nl2br(data.comment.content);
+                cancelEditComment(id);
+                showToast('Chỉnh sửa bình luận thành công!', 'success');
+            }
+        })
+        .catch(err => {
+            console.error('Error saving comment:', err);
+            showToast('Không thể lưu bình luận. Vui lòng thử lại!', 'error');
+        })
+        .finally(() => {
+            saveBtn.removeAttribute('disabled');
+            saveBtn.innerText = 'Lưu';
+        });
+    }
+
+    // AJAX load older comments
+    function loadOlderComments() {
+        const btn = document.getElementById('load-older-btn');
+        if (!btn) return;
+
+        const offset = parseInt(btn.getAttribute('data-offset'), 10);
+        const total = parseInt(btn.getAttribute('data-total'), 10);
+        
+        btn.setAttribute('disabled', 'disabled');
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tải...';
+
+        fetch(`/resident/posts/${currentPostId}/comments?offset=${offset}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.comments && data.comments.length > 0) {
+                const container = document.querySelector('.pc-comments-list');
+                const emptyPlaceholder = document.getElementById('empty-comments-placeholder');
+                if (emptyPlaceholder) {
+                    emptyPlaceholder.remove();
+                }
+
+                // Đo chiều cao trước khi prepend
+                const oldHeight = container.scrollHeight;
+
+                // Prepend older comments in reverse loop to preserve chronological order
+                const loadContainer = document.getElementById('load-older-container');
+                for (let i = data.comments.length - 1; i >= 0; i--) {
+                    const comment = data.comments[i];
+                    if (document.getElementById(`comment-${comment.id}`)) continue;
+                    
+                    const commentHtml = createCommentHtml(comment);
+                    if (loadContainer) {
+                        loadContainer.insertAdjacentHTML('afterend', commentHtml);
+                    } else {
+                        container.insertAdjacentHTML('afterbegin', commentHtml);
+                    }
+                }
+
+                // Khôi phục scroll position tránh bị nhảy trang
+                const newHeight = container.scrollHeight;
+                window.scrollBy(0, newHeight - oldHeight);
+
+                const newOffset = offset + data.comments.length;
+                btn.setAttribute('data-offset', newOffset);
+                
+                const remaining = total - newOffset;
+                if (remaining <= 0) {
+                    document.getElementById('load-older-container').remove();
+                } else {
+                    btn.removeAttribute('disabled');
+                    btn.innerHTML = `<i class="fa-solid fa-clock-rotate-left"></i> Xem thêm bình luận cũ hơn (<span id="older-count">${remaining}</span>)`;
+                }
+            } else {
+                const loadContainer = document.getElementById('load-older-container');
+                if (loadContainer) loadContainer.remove();
+            }
+        })
+        .catch(err => {
+            console.error('Error loading comments:', err);
+            btn.removeAttribute('disabled');
+            btn.innerHTML = `<i class="fa-solid fa-clock-rotate-left"></i> Xem thêm bình luận cũ hơn`;
+            showToast('Không thể tải bình luận cũ. Vui lòng thử lại!', 'error');
+        });
     }
 
     document.addEventListener("DOMContentLoaded", function() {
-        // Đảm bảo Pusher khả dụng toàn cục cho Laravel Echo
         if (typeof window.Pusher === 'undefined' && typeof Pusher !== 'undefined') {
             window.Pusher = Pusher;
+        }
+
+        // AJAX comment form submission
+        const commentForm = document.getElementById('comment-form');
+        if (commentForm) {
+            commentForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const textarea = document.getElementById('comment-content');
+                const content = textarea.value.trim();
+                if (!content) return;
+                
+                const parentIdInput = document.getElementById('comment-parent-id');
+                const parentId = parentIdInput.value;
+                
+                const submitBtn = this.querySelector('button[type="submit"]');
+                submitBtn.setAttribute('disabled', 'disabled');
+                submitBtn.innerText = 'Đang gửi...';
+                
+                fetch(this.action, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        content: content,
+                        parent_id: parentId || null
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Có lỗi xảy ra khi gửi bình luận.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        textarea.value = '';
+                        cancelReply();
+                        
+                        if (!document.getElementById(`comment-${data.comment.id}`)) {
+                            handleNewComment(data.comment);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                    showToast('Không thể gửi bình luận. Vui lòng thử lại!', 'error');
+                })
+                .finally(() => {
+                    submitBtn.removeAttribute('disabled');
+                    submitBtn.innerText = 'Gửi bình luận';
+                });
+            });
         }
 
         const broadcastConnection = "{{ env('BROADCAST_CONNECTION', 'reverb') }}";
@@ -824,7 +1531,6 @@
 
         console.log("DomusHub Echo Config:", echoConfig);
 
-        // Khởi tạo Echo
         if (typeof window.Echo === 'undefined' && typeof window.LaravelEcho !== 'undefined') {
             window.Echo = new window.LaravelEcho(echoConfig);
             console.log("DomusHub WebSockets: Echo initialized!");
@@ -835,26 +1541,51 @@
             window.Echo.channel(`post.${currentPostId}`)
                 .listen('CommentCreated', (e) => {
                     console.log("DomusHub WebSockets: Received Event CommentCreated:", e);
-                    const emptyPlaceholder = document.getElementById('empty-comments-placeholder');
-                    if (emptyPlaceholder) {
-                        emptyPlaceholder.remove();
+                    handleNewComment(e);
+                    showToast(`Cư dân ${e.user.name} vừa bình luận bài viết!`, 'success');
+                })
+                .listen('PostUpdated', (e) => {
+                    console.log("DomusHub WebSockets: Received Event PostUpdated (Detail):", e);
+                    const titleEl = document.querySelector('.pc-detail__title');
+                    if (titleEl) titleEl.innerText = e.title;
+
+                    const contentEl = document.querySelector('.pc-detail__content');
+                    if (contentEl) contentEl.innerHTML = nl2br(e.content);
+
+                    const priceEl = document.querySelector('.pc-card__price');
+                    if (priceEl && e.price !== null) {
+                        priceEl.innerText = formatNumber(e.price) + 'đ';
                     }
-
-                    if (document.getElementById(`comment-${e.id}`)) return;
-
-                    const container = document.querySelector('.pc-comments-list');
-                    if (container) {
-                        const commentHtml = createCommentHtml(e);
-                        container.insertAdjacentHTML('beforeend', commentHtml);
-                        
-                        // Cập nhật lại số đếm tiêu đề bình luận
-                        const countEl = document.querySelector('.pc-comments__title');
-                        if (countEl) {
-                            const count = container.querySelectorAll('.pc-comment').length;
-                            countEl.innerHTML = `<i class="fa-regular fa-comments" style="margin-right: 0.5rem;"></i> Bình luận (${count})`;
+                    
+                    showToast('Nội dung bài viết vừa được cập nhật!', 'success');
+                })
+                .listen('CommentUpdated', (e) => {
+                    console.log("DomusHub WebSockets: Received Event CommentUpdated:", e);
+                    const textEl = document.getElementById('comment-text-' + e.id);
+                    if (textEl) {
+                        textEl.innerHTML = nl2br(e.content);
+                        const commentCard = document.getElementById('comment-' + e.id);
+                        if (commentCard) {
+                            commentCard.classList.add('new-comment-highlight');
+                            setTimeout(() => commentCard.classList.remove('new-comment-highlight'), 3000);
                         }
-
-                        showToast(`Cư dân ${e.user.name} vừa bình luận bài viết!`, 'success');
+                    }
+                })
+                .listen('LikeToggled', (e) => {
+                    console.log("DomusHub WebSockets: Received Event LikeToggled (Detail):", e);
+                    if (e.likeable_type === 'post' && e.likeable_id == currentPostId) {
+                        const postLikeCountEl = document.querySelector('.pc-like-btn .like-count');
+                        if (postLikeCountEl) {
+                            postLikeCountEl.innerText = e.likes_count;
+                        }
+                    } else if (e.likeable_type === 'comment') {
+                        const commentEl = document.getElementById('comment-' + e.likeable_id);
+                        if (commentEl) {
+                            const commentLikeCountEl = commentEl.querySelector('.pc-comment-like-btn .like-count');
+                            if (commentLikeCountEl) {
+                                commentLikeCountEl.innerText = e.likes_count;
+                            }
+                        }
                     }
                 });
         } else {

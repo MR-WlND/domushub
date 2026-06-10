@@ -7,7 +7,7 @@
 @endpush
 
 @section('content')
-<div class="pc">
+<div class="pc" style="max-width: 800px;">
 
     {{-- HEADER --}}
     <div class="pc__header">
@@ -15,6 +15,22 @@
             <p class="pc__eyebrow">Cộng đồng</p>
             <h1 class="pc__title">Bảng tin cư dân</h1>
         </div>
+        
+        {{-- THANH TÌM KIẾM BÀI VIẾT --}}
+        <form action="{{ route('resident.posts.index') }}" method="GET" class="pc-search-form">
+            @if(request()->filled('type'))
+                <input type="hidden" name="type" value="{{ request('type') }}">
+            @endif
+            <div class="pc-search-wrap">
+                <i class="fa-solid fa-magnifying-glass pc-search-icon"></i>
+                <input type="text" name="search" class="pc-search-input" placeholder="Tìm kiếm bài viết..." value="{{ request('search') }}">
+                @if(request()->filled('search'))
+                    <a href="{{ route('resident.posts.index', request()->only('type')) }}" class="pc-search-clear" title="Xóa tìm kiếm">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                    </a>
+                @endif
+            </div>
+        </form>
     </div>
 
     {{-- THÔNG BÁO THÀNH CÔNG/LỖI --}}
@@ -43,6 +59,26 @@
         {{-- CỘT CHÍNH (FORM ĐĂNG BÀI & DANH SÁCH BÀI VIẾT) --}}
         <div class="pc-feed">
             
+            {{-- QUY CHẾ BẢNG TIN (Collapsible Banner) --}}
+            <div class="pc-alert pc-rules-banner" style="background-color: #f8fafc; border: 1px solid var(--color-outline-soft); color: var(--color-text-secondary); margin-bottom: 1.5rem; display: flex; flex-direction: column; align-items: stretch; gap: 0.75rem; border-radius: var(--radius-lg); padding: 1rem 1.25rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <span style="font-weight: 700; font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem; color: var(--color-text);">
+                        <i class="fa-solid fa-handshake-angle" style="color: var(--color-primary);"></i> Quy chế Bảng tin cư dân
+                    </span>
+                    <button type="button" onclick="toggleRulesBanner()" id="btn-toggle-rules" style="background: transparent; border: none; color: var(--color-primary); font-weight: 700; font-size: 0.825rem; cursor: pointer; outline: none; display: flex; align-items: center; gap: 0.25rem;">
+                        <span>Xem chi tiết</span> <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div id="rules-banner-content" style="display: none; font-size: 0.85rem; line-height: 1.6; border-top: 1px dashed var(--color-outline-soft); padding-top: 0.75rem; margin-top: 0.25rem;">
+                    <ul style="margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.5rem; color: var(--color-text-secondary);">
+                        <li><strong>Tôn trọng:</strong> Giữ thái độ hòa nhã, lịch sự khi thảo luận và bình luận bài viết.</li>
+                        <li><strong>Chính xác:</strong> Thông tin thanh lý hoặc chia sẻ phải rõ ràng, trung thực.</li>
+                        <li><strong>Không spam:</strong> Không đăng tin quảng cáo, rác hoặc thông tin vi phạm pháp luật.</li>
+                        <li><strong>Bảo mật:</strong> Không chia sẻ thông tin cá nhân của người khác khi chưa được phép.</li>
+                    </ul>
+                </div>
+            </div>
+
             {{-- BỘ SOẠN THẢO BÀI VIẾT MỚI --}}
             <div class="pc-composer">
                 <form action="{{ route('resident.posts.store') }}" method="POST" enctype="multipart/form-data" id="post-form">
@@ -192,6 +228,12 @@
                         {{-- Chân bài viết --}}
                         <div class="pc-card__footer">
                             <div class="pc-card__actions" style="gap: 1.25rem;">
+                                {{-- Nút Thích --}}
+                                <button type="button" class="pc-card__action-btn pc-like-btn {{ $post->likedByCurrentUser->isNotEmpty() ? 'pc-like-btn--active' : '' }}" onclick="toggleLike(event, {{ $post->id }}, 'post')">
+                                    <i class="{{ $post->likedByCurrentUser->isNotEmpty() ? 'fa-solid' : 'fa-regular' }} fa-thumbs-up"></i>
+                                    <span>Thích</span> (<span class="like-count">{{ $post->likes_count }}</span>)
+                                </button>
+
                                 <a href="{{ route('resident.posts.show', $post->id) }}" class="pc-card__action-btn">
                                     <i class="fa-regular fa-comment"></i> Bình luận ({{ $post->comments->count() }})
                                 </a>
@@ -202,16 +244,25 @@
                                 @endif
                             </div>
 
-                            {{-- Nút xóa bài viết (Bảo mật IDOR đã check ở Backend) --}}
-                            @if($post->user_id === auth()->id() || auth()->user()->isAdminPortalUser())
-                                <form action="{{ route('resident.posts.destroy', $post->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bài đăng này không?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="pc-card__delete-btn">
-                                        <i class="fa-regular fa-trash-can"></i> Xóa bài
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                {{-- Nút sửa bài viết (chỉ dành cho tác giả) --}}
+                                @if($post->user_id === auth()->id())
+                                    <button type="button" class="pc-card__edit-btn" onclick="openEditPostModal({{ $post->id }}, '{{ addslashes($post->title) }}', '{{ addslashes($post->content) }}', '{{ $post->price }}')">
+                                        <i class="fa-regular fa-pen-to-square"></i> Sửa bài
                                     </button>
-                                </form>
-                            @endif
+                                @endif
+
+                                {{-- Nút xóa bài viết (Bảo mật IDOR đã check ở Backend) --}}
+                                @if($post->user_id === auth()->id() || auth()->user()->isAdminPortalUser())
+                                    <form action="{{ route('resident.posts.destroy', $post->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bài đăng này không?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="pc-card__delete-btn">
+                                            <i class="fa-regular fa-trash-can"></i> Xóa
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 @endforeach
@@ -221,50 +272,6 @@
                     {{ $posts->links() }}
                 </div>
             @endif
-            </div>
-
-        </div>
-
-        {{-- CỘT PHỤ (SIDEBAR) --}}
-        <div class="pc-sidebar">
-            
-            {{-- Quy chế cộng đồng --}}
-            <div class="pc-widget">
-                <h3 class="pc-widget__title"><i class="fa-solid fa-handshake-angle" style="color: var(--color-primary); margin-right: 0.5rem;"></i>Quy chế Bảng tin</h3>
-                <ul class="pc-rules-list">
-                    <li><strong>Tôn trọng:</strong> Giữ thái độ hòa nhã, lịch sự khi thảo luận và bình luận bài viết.</li>
-                    <li><strong>Chính xác:</strong> Thông tin thanh lý hoặc chia sẻ phải rõ ràng, trung thực.</li>
-                    <li><strong>Không spam:</strong> Không đăng tin quảng cáo, rác hoặc thông tin vi phạm pháp luật.</li>
-                    <li><strong>Bảo mật:</strong> Không chia sẻ thông tin cá nhân của người khác khi chưa được phép.</li>
-                </ul>
-            </div>
-
-            {{-- Sản phẩm thanh lý nổi bật --}}
-            <div class="pc-widget">
-                <h3 class="pc-widget__title"><i class="fa-solid fa-store" style="color: var(--color-secondary); margin-right: 0.5rem;"></i>Gần đây trong Chợ thanh lý</h3>
-                <div class="pc-market-list">
-                    @if($featuredSales->isEmpty())
-                        <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin: 0; text-align: center;">Chưa có đồ thanh lý nào.</p>
-                    @else
-                        @foreach($featuredSales as $sale)
-                            <a href="{{ route('resident.posts.show', $sale->id) }}" class="pc-market-item">
-                                @if($sale->image)
-                                    <img src="{{ asset('storage/' . $sale->image) }}" alt="{{ $sale->title }}" class="pc-market-item__thumb">
-                                @else
-                                    <div class="pc-market-item__fallback">
-                                        <i class="fa-solid fa-box"></i>
-                                    </div>
-                                @endif
-                                <div class="pc-market-item__body">
-                                    <h4 class="pc-market-item__title">{{ $sale->title }}</h4>
-                                    <span class="pc-market-item__price">{{ number_format($sale->price, 0, ',', '.') }}đ</span>
-                                </div>
-                            </a>
-                        @endforeach
-                    @endif
-                </div>
-            </div>
-
         </div>
 
     </div>
@@ -324,6 +331,48 @@
             <div class="rep-modal__footer">
                 <button type="button" class="pc-btn pc-btn--secondary" onclick="closeReportModal()">Hủy bỏ</button>
                 <button type="submit" class="rep-modal__btn-submit" id="submit-report-btn" disabled>Gửi báo cáo</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- Modal Chỉnh sửa Bài viết --}}
+<div id="editPostModal" class="rep-modal" onclick="handleEditModalClick(event)">
+    <div class="rep-modal__content" style="max-width: 580px;">
+        <div class="rep-modal__header">
+            <h3 class="rep-modal__title">
+                <i class="fa-regular fa-pen-to-square" style="color: var(--color-primary);"></i> Chỉnh sửa bài viết
+            </h3>
+            <button type="button" class="rep-modal__close" onclick="closeEditPostModal()">&times;</button>
+        </div>
+        <form id="edit-post-form" method="POST">
+            @csrf
+            @method('PUT')
+            <div class="rep-modal__body">
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div>
+                        <label class="rep-modal__label">Tiêu đề bài viết (không bắt buộc)</label>
+                        <input type="text" name="title" id="edit-post-title" class="pc-composer__title-input" placeholder="Nhập tiêu đề bài viết...">
+                    </div>
+                    <div>
+                        <label class="rep-modal__label">Nội dung bài viết</label>
+                        <textarea name="content" id="edit-post-content" class="pc-composer__body-input" rows="5" required placeholder="Bạn đang muốn chia sẻ điều gì..."></textarea>
+                    </div>
+                    
+                    {{-- Ô nhập giá thanh lý --}}
+                    <div id="edit-price-input-container">
+                        <label class="rep-modal__label">Giá thanh lý (để trống nếu là bài chia sẻ)</label>
+                        <div class="pc-composer__price-wrap" style="width: 100%; box-sizing: border-box; display: flex;">
+                            <i class="fa-solid fa-tags pc-composer__price-icon"></i>
+                            <input type="text" name="price" id="edit-post-price" class="pc-composer__price-input" placeholder="Nhập giá thanh lý (ví dụ: 150.000)..." style="flex: 1;">
+                            <span style="font-weight: 700; color: var(--color-secondary); font-size: 0.9rem; margin-right: 0.5rem;">đ</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="rep-modal__footer">
+                <button type="button" class="pc-btn pc-btn--secondary" onclick="closeEditPostModal()">Hủy bỏ</button>
+                <button type="submit" class="pc-btn">Lưu thay đổi</button>
             </div>
         </form>
     </div>
@@ -669,6 +718,26 @@
     function closeLightbox() {
         document.getElementById('pcLightbox').style.display = "none";
     }
+
+    // Toggle collapsible rules banner
+    function toggleRulesBanner() {
+        const content = document.getElementById('rules-banner-content');
+        const btn = document.getElementById('btn-toggle-rules');
+        if (!content || !btn) return;
+        
+        const label = btn.querySelector('span');
+        const icon = btn.querySelector('i');
+        
+        if (content.style.display === 'none') {
+            content.style.display = 'block';
+            label.innerText = 'Thu gọn';
+            icon.className = 'fa-solid fa-chevron-up';
+        } else {
+            content.style.display = 'none';
+            label.innerText = 'Xem chi tiết';
+            icon.className = 'fa-solid fa-chevron-down';
+        }
+    }
 </script>
 
 {{-- NHÚNG THƯ VIỆN BROADCASTING & LARAVEL ECHO --}}
@@ -772,9 +841,18 @@
                     <input type="hidden" name="_token" value="${document.querySelector('input[name="_token"]').value}">
                     <input type="hidden" name="_method" value="DELETE">
                     <button type="submit" class="pc-card__delete-btn">
-                        <i class="fa-regular fa-trash-can"></i> Xóa bài
+                        <i class="fa-regular fa-trash-can"></i> Xóa
                     </button>
                 </form>
+            `;
+        }
+
+        let editBtn = '';
+        if (post.user.id === currentUserId) {
+            editBtn = `
+                <button type="button" class="pc-card__edit-btn" onclick="openEditPostModal(${post.id}, '${escapeHtml(post.title)}', '${escapeHtml(post.content)}', '${post.price || ''}')">
+                    <i class="fa-regular fa-pen-to-square"></i> Sửa bài
+                </button>
             `;
         }
 
@@ -786,6 +864,11 @@
                 </button>
             `;
         }
+
+        const isLiked = post.liked_by_current_user && post.liked_by_current_user.length > 0;
+        const likeBtnClass = isLiked ? 'pc-like-btn pc-like-btn--active' : 'pc-like-btn';
+        const likeIconClass = isLiked ? 'fa-solid fa-thumbs-up' : 'fa-regular fa-thumbs-up';
+        const likesCount = post.likes_count || 0;
         
         return `
             <div class="pc-card new-post-highlight" data-post-id="${post.id}">
@@ -815,19 +898,230 @@
 
                 <div class="pc-card__footer">
                     <div class="pc-card__actions" style="gap: 1.25rem;">
+                        <button type="button" class="pc-card__action-btn ${likeBtnClass}" onclick="toggleLike(event, ${post.id}, 'post')">
+                            <i class="${likeIconClass}"></i>
+                            <span>Thích</span> (<span class="like-count">${likesCount}</span>)
+                        </button>
                         <a href="/resident/posts/${post.id}" class="pc-card__action-btn">
                             <i class="fa-regular fa-comment"></i> Bình luận (0)
                         </a>
                         ${reportBtn}
                     </div>
-                    ${deleteForm}
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        ${editBtn}
+                        ${deleteForm}
+                    </div>
                 </div>
             </div>
         `;
     }
 
+    // AJAX Toggle Like
+    function toggleLike(event, id, type) {
+        event.preventDefault();
+        
+        const btn = event.currentTarget;
+        const countEl = btn.querySelector('.like-count');
+        const iconEl = btn.querySelector('i');
+        
+        const isActive = btn.classList.contains('pc-like-btn--active');
+        let count = parseInt(countEl.innerText, 10) || 0;
+        
+        if (isActive) {
+            btn.classList.remove('pc-like-btn--active');
+            iconEl.className = 'fa-regular fa-thumbs-up';
+            countEl.innerText = Math.max(0, count - 1);
+        } else {
+            btn.classList.add('pc-like-btn--active');
+            iconEl.className = 'fa-solid fa-thumbs-up';
+            countEl.innerText = count + 1;
+        }
+
+        fetch('/resident/like', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                likeable_id: id,
+                likeable_type: type
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                countEl.innerText = data.likes_count;
+                if (data.liked) {
+                    btn.classList.add('pc-like-btn--active');
+                    iconEl.className = 'fa-solid fa-thumbs-up';
+                } else {
+                    btn.classList.remove('pc-like-btn--active');
+                    iconEl.className = 'fa-regular fa-thumbs-up';
+                }
+            }
+        })
+        .catch(err => {
+            console.error('Error toggling like:', err);
+            if (isActive) {
+                btn.classList.add('pc-like-btn--active');
+                iconEl.className = 'fa-solid fa-thumbs-up';
+                countEl.innerText = count;
+            } else {
+                btn.classList.remove('pc-like-btn--active');
+                iconEl.className = 'fa-regular fa-thumbs-up';
+                countEl.innerText = count;
+            }
+        });
+    }
+
+    // Modal Edit Post
+    function openEditPostModal(id, title, content, price) {
+        const modal = document.getElementById('editPostModal');
+        const form = document.getElementById('edit-post-form');
+        form.action = `/resident/posts/${id}`;
+        
+        document.getElementById('edit-post-title').value = title || '';
+        document.getElementById('edit-post-content').value = content || '';
+        
+        const priceInput = document.getElementById('edit-post-price');
+        if (price && parseFloat(price) > 0) {
+            priceInput.value = parseInt(price, 10).toLocaleString('vi-VN');
+        } else {
+            priceInput.value = '';
+        }
+        
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.classList.add('show');
+        }, 10);
+    }
+
+    function closeEditPostModal() {
+        const modal = document.getElementById('editPostModal');
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300);
+    }
+
+    function handleEditModalClick(event) {
+        if (event.target === document.getElementById('editPostModal')) {
+            closeEditPostModal();
+        }
+    }
+
+    // Định dạng tiền tệ cho input sửa bài
+    const editPriceInput = document.getElementById('edit-post-price');
+    if (editPriceInput) {
+        editPriceInput.addEventListener('input', function(e) {
+            let value = this.value.replace(/[^0-9]/g, '');
+            if (value) {
+                this.value = parseInt(value, 10).toLocaleString('vi-VN');
+            } else {
+                this.value = '';
+            }
+        });
+    }
+
+    // Xử lý submit sửa bài viết qua AJAX
+    const editPostForm = document.getElementById('edit-post-form');
+    if (editPostForm) {
+        editPostForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.setAttribute('disabled', 'disabled');
+            submitBtn.innerText = 'Đang lưu...';
+            
+            const priceInput = document.getElementById('edit-post-price');
+            let rawPrice = priceInput.value.replace(/[^0-9]/g, '');
+            
+            const formData = {
+                title: document.getElementById('edit-post-title').value.trim(),
+                content: document.getElementById('edit-post-content').value.trim(),
+                price: rawPrice || null,
+            };
+
+            fetch(this.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    ...formData,
+                    _method: 'PUT'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    closeEditPostModal();
+                    showToast('Cập nhật bài viết thành công!', 'success');
+                    
+                    const postId = data.post.id;
+                    const postCard = document.querySelector(`.pc-card[data-post-id="${postId}"]`);
+                    if (postCard) {
+                        const titleLink = postCard.querySelector('.pc-card__title-link');
+                        if (titleLink) titleLink.innerText = data.post.title;
+
+                        const contentWrapper = postCard.querySelector('.pc-card__content-wrapper');
+                        const contentNormal = postCard.querySelector('.pc-card__content');
+                        if (contentWrapper) {
+                            const shortEl = document.getElementById('content-short-' + postId);
+                            const fullEl = document.getElementById('content-full-' + postId);
+                            if (data.post.content.length > 250) {
+                                if (shortEl) shortEl.innerHTML = nl2br(data.post.content.substring(0, 250) + '...');
+                                if (fullEl) fullEl.innerHTML = nl2br(data.post.content);
+                            } else {
+                                contentWrapper.outerHTML = `<p class="pc-card__content">${nl2br(data.post.content)}</p>`;
+                            }
+                        } else if (contentNormal) {
+                            if (data.post.content.length > 250) {
+                                const shortContent = data.post.content.substring(0, 250) + '...';
+                                contentNormal.outerHTML = `
+                                    <div class="pc-card__content-wrapper">
+                                        <p class="pc-card__content" id="content-short-${postId}">${nl2br(shortContent)}</p>
+                                        <p class="pc-card__content" id="content-full-${postId}" style="display: none;">${nl2br(data.post.content)}</p>
+                                        <button type="button" class="pc-card__toggle-content-btn" id="btn-toggle-${postId}" onclick="toggleContent(${postId})">Xem thêm</button>
+                                    </div>
+                                `;
+                            } else {
+                                contentNormal.innerHTML = nl2br(data.post.content);
+                            }
+                        }
+
+                        const tagsContainer = postCard.querySelector('.pc-card__tags');
+                        if (tagsContainer) {
+                            if (data.post.price !== null) {
+                                tagsContainer.innerHTML = `
+                                    <span class="pc-badge pc-badge--marketplace">Thanh lý</span>
+                                    <span class="pc-card__price">${formatNumber(data.post.price)}đ</span>
+                                `;
+                            } else {
+                                tagsContainer.innerHTML = `
+                                    <span class="pc-badge pc-badge--general">Chia sẻ</span>
+                                `;
+                            }
+                        }
+                    }
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                showToast('Có lỗi xảy ra khi cập nhật. Vui lòng thử lại!', 'error');
+            })
+            .finally(() => {
+                submitBtn.removeAttribute('disabled');
+                submitBtn.innerText = 'Lưu thay đổi';
+            });
+        });
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
-        // Đảm bảo Pusher khả dụng toàn cục cho Laravel Echo
         if (typeof window.Pusher === 'undefined' && typeof Pusher !== 'undefined') {
             window.Pusher = Pusher;
         }
@@ -858,7 +1152,6 @@
 
         console.log("DomusHub Echo Config:", echoConfig);
 
-        // Khởi tạo Echo
         if (typeof window.Echo === 'undefined' && typeof window.LaravelEcho !== 'undefined') {
             window.Echo = new window.LaravelEcho(echoConfig);
             console.log("DomusHub WebSockets: Echo initialized!");
@@ -885,6 +1178,66 @@
                         container.insertAdjacentHTML('afterbegin', postHtml);
                         
                         showToast(`Có bài đăng mới từ căn hộ ${e.user.apartment ? e.user.apartment.apartment_number : 'Ban Quản Trị'}!`, 'success');
+                    }
+                })
+                .listen('PostUpdated', (e) => {
+                    console.log("DomusHub WebSockets: Received Event PostUpdated:", e);
+                    const postCard = document.querySelector(`.pc-card[data-post-id="${e.id}"]`);
+                    if (postCard) {
+                        const titleLink = postCard.querySelector('.pc-card__title-link');
+                        if (titleLink) titleLink.innerText = e.title;
+
+                        const contentWrapper = postCard.querySelector('.pc-card__content-wrapper');
+                        const contentNormal = postCard.querySelector('.pc-card__content');
+                        if (contentWrapper) {
+                            const shortEl = document.getElementById('content-short-' + e.id);
+                            const fullEl = document.getElementById('content-full-' + e.id);
+                            if (e.content.length > 250) {
+                                if (shortEl) shortEl.innerHTML = nl2br(e.content.substring(0, 250) + '...');
+                                if (fullEl) fullEl.innerHTML = nl2br(e.content);
+                            } else {
+                                contentWrapper.outerHTML = `<p class="pc-card__content">${nl2br(e.content)}</p>`;
+                            }
+                        } else if (contentNormal) {
+                            if (e.content.length > 250) {
+                                const shortContent = e.content.substring(0, 250) + '...';
+                                contentNormal.outerHTML = `
+                                    <div class="pc-card__content-wrapper">
+                                        <p class="pc-card__content" id="content-short-${e.id}">${nl2br(shortContent)}</p>
+                                        <p class="pc-card__content" id="content-full-${e.id}" style="display: none;">${nl2br(e.content)}</p>
+                                        <button type="button" class="pc-card__toggle-content-btn" id="btn-toggle-${e.id}" onclick="toggleContent(${e.id})">Xem thêm</button>
+                                    </div>
+                                `;
+                            } else {
+                                contentNormal.innerHTML = nl2br(e.content);
+                            }
+                        }
+
+                        const tagsContainer = postCard.querySelector('.pc-card__tags');
+                        if (tagsContainer) {
+                            if (e.price !== null) {
+                                tagsContainer.innerHTML = `
+                                    <span class="pc-badge pc-badge--marketplace">Thanh lý</span>
+                                    <span class="pc-card__price">${formatNumber(e.price)}đ</span>
+                                `;
+                            } else {
+                                tagsContainer.innerHTML = `
+                                    <span class="pc-badge pc-badge--general">Chia sẻ</span>
+                                `;
+                            }
+                        }
+                    }
+                })
+                .listen('LikeToggled', (e) => {
+                    console.log("DomusHub WebSockets: Received Event LikeToggled:", e);
+                    if (e.likeable_type === 'post') {
+                        const postCard = document.querySelector(`.pc-card[data-post-id="${e.likeable_id}"]`);
+                        if (postCard) {
+                            const likeCountEl = postCard.querySelector('.like-count');
+                            if (likeCountEl) {
+                                likeCountEl.innerText = e.likes_count;
+                            }
+                        }
                     }
                 });
         } else {

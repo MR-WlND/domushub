@@ -57,16 +57,8 @@
 
 /* Layout Grid */
 .pc-layout {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 2rem;
-    align-items: start;
-}
-
-@media (max-width: 992px) {
-    .pc-layout {
-        grid-template-columns: 1fr;
-    }
+    display: block;
+    width: 100%;
 }
 
 /* Main Column: Create Post & Feed */
@@ -335,12 +327,13 @@
 /* Cấu hình Grid động theo số lượng ảnh */
 .pc-card__image-grid--1 {
     grid-template-columns: 1fr;
-    max-height: 350px;
+    max-height: 480px;
+    background-color: #f1f5f9;
 }
 .pc-card__image-grid--1 .pc-card__grid-img {
-    max-height: 350px;
+    max-height: 480px;
     width: 100%;
-    object-fit: cover;
+    object-fit: contain;
 }
 .pc-card__image-grid--2 {
     grid-template-columns: 1fr 1fr;
@@ -1280,6 +1273,255 @@
         border-width: 0;
         overflow: hidden;
     }
+}
+
+/* NÂNG CẤP BẢNG TIN - TÌM KIẾM */
+.pc-search-form {
+    margin: 0;
+    flex: 1;
+    max-width: 380px;
+}
+
+.pc-search-wrap {
+    position: relative;
+    width: 100%;
+}
+
+.pc-search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    pointer-events: none;
+    font-size: 0.9rem;
+}
+
+.pc-search-input {
+    width: 100%;
+    padding: 0.65rem 2.25rem 0.65rem 2.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-full, 9999px);
+    font-size: 0.875rem;
+    color: var(--color-text);
+    outline: none;
+    background-color: var(--color-card, #ffffff);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    transition: all 0.25s ease;
+    box-sizing: border-box;
+}
+
+.pc-search-input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    background-color: #ffffff;
+}
+
+.pc-search-input::placeholder {
+    color: #94a3b8;
+}
+
+.pc-search-clear {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.pc-search-clear:hover {
+    color: var(--color-error);
+}
+
+/* NÂNG CẤP BẢNG TIN - LƯỢT THÍCH */
+.pc-like-btn {
+    transition: all 0.2s ease !important;
+}
+
+.pc-like-btn--active {
+    color: var(--color-primary, #2563eb) !important;
+    font-weight: 700 !important;
+}
+
+.pc-like-btn--active i {
+    color: var(--color-primary, #2563eb);
+    transform: scale(1.1);
+}
+
+.pc-comment-like-btn {
+    transition: all 0.2s ease !important;
+}
+
+.pc-comment-like-btn--active {
+    color: #ec4899 !important; /* Màu hồng thả tim */
+    font-weight: 700 !important;
+}
+
+.pc-comment-like-btn--active i {
+    color: #ec4899;
+    transform: scale(1.1);
+}
+
+/* NÂNG CẤP BẢNG TIN - CHỈNH SỬA */
+.pc-card__edit-btn {
+    color: var(--color-text-secondary);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--radius);
+    transition: all var(--transition-fast) ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    outline: none;
+}
+
+.pc-card__edit-btn:hover {
+    background-color: #eff6ff;
+    color: var(--color-primary);
+}
+
+.comment-edit-inline-wrap textarea {
+    font-family: inherit;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* NÂNG CẤP BẢNG TIN - PHÂN TRANG BÌNH LUẬN */
+.pc-load-older-btn {
+    background-color: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-full, 9999px);
+    padding: 0.45rem 1.25rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    outline: none;
+}
+
+.pc-load-older-btn:hover:not(:disabled) {
+    background-color: #e2e8f0;
+    color: var(--color-primary);
+    border-color: #cbd5e1;
+}
+
+.pc-load-older-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* NÂNG CẤP BẢNG TIN - BÌNH LUẬN PHÂN NHÁNH THREADED COMMENTS */
+.pc-comment-thread {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Container chứa bình luận con */
+.pc-comment-replies {
+    margin-left: 2.5rem; /* Thụt lề con */
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    position: relative;
+}
+
+/* Avatar nhỏ cho bình luận con */
+.pc-comment__avatar--reply {
+    width: 32px !important;
+    height: 32px !important;
+}
+
+/* Điều chỉnh body của bình luận con */
+.pc-comment--reply .pc-comment__body {
+    padding: 0.65rem 0.95rem;
+}
+
+/* Đường thẳng nối dọc nhánh bình luận */
+.pc-comment-replies .pc-comment--reply::before {
+    content: '';
+    position: absolute;
+    left: -21px; /* Căn thẳng với tâm avatar cha */
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: #cbd5e1; /* Màu xám slate-300 */
+}
+
+/* Nhánh đầu tiên sẽ vươn lên trên nối với bình luận cha */
+.pc-comment-replies .pc-comment--reply:first-child::before {
+    top: -2.75rem; /* Vươn qua nút Xem phản hồi */
+}
+
+/* Nhánh cuối cùng dừng tại tâm của avatar con */
+.pc-comment-replies .pc-comment--reply:last-child::before {
+    bottom: auto;
+    height: 1rem; /* Dừng ở tâm avatar con (32px / 2 = 16px) */
+}
+
+/* Trường hợp chỉ có đúng 1 bình luận con */
+.pc-comment-replies .pc-comment--reply:first-child:last-child::before {
+    bottom: auto;
+    height: calc(2.75rem + 1rem);
+}
+
+/* Nhánh uốn cong nằm ngang nối vào avatar con */
+.pc-comment-replies .pc-comment--reply::after {
+    content: '';
+    position: absolute;
+    left: -21px;
+    top: 0;
+    width: 21px;
+    height: 1rem; /* Đến tâm avatar con */
+    border-bottom: 2px solid #cbd5e1;
+    border-left: 2px solid #cbd5e1;
+    border-bottom-left-radius: 8px; /* Bo góc uốn cong mềm mại */
+    pointer-events: none;
+}
+
+/* Wrapper cho nút mở rộng bình luận con */
+.pc-comment__replies-toggle-wrapper {
+    margin-left: 3.25rem; /* Thụt lề thẳng hàng với body bình luận cha */
+    margin-top: -0.25rem;
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+}
+
+/* Thiết kế nút Xem phản hồi tinh tế */
+.pc-comment__view-replies-btn {
+    background: transparent;
+    border: none;
+    color: #64748b; /* Chữ xám nhẹ slate-500 */
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm, 4px);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.pc-comment__view-replies-btn:hover {
+    color: var(--color-primary, #00236f);
+    background-color: #f1f5f9;
 }
 
 
