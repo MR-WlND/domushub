@@ -208,11 +208,15 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/posts', [\App\Http\Controllers\Resident\PostController::class, 'index'])->name('resident.posts.index');
     Route::post('/resident/posts', [\App\Http\Controllers\Resident\PostController::class, 'store'])->name('resident.posts.store');
     Route::get('/resident/posts/{id}', [\App\Http\Controllers\Resident\PostController::class, 'show'])->name('resident.posts.show');
+    Route::put('/resident/posts/{id}', [\App\Http\Controllers\Resident\PostController::class, 'update'])->name('resident.posts.update');
     Route::delete('/resident/posts/{id}', [\App\Http\Controllers\Resident\PostController::class, 'destroy'])->name('resident.posts.destroy');
     Route::post('/resident/posts/{id}/comments', [\App\Http\Controllers\Resident\PostController::class, 'storeComment'])->name('resident.posts.comments.store');
+    Route::put('/resident/comments/{id}', [\App\Http\Controllers\Resident\PostController::class, 'updateComment'])->name('resident.comments.update');
     Route::delete('/resident/comments/{id}', [\App\Http\Controllers\Resident\PostController::class, 'destroyComment'])->name('resident.comments.destroy');
     Route::post('/resident/posts/{id}/report', [\App\Http\Controllers\Resident\PostController::class, 'report'])->name('resident.posts.report');
     Route::post('/resident/comments/{id}/report', [\App\Http\Controllers\Resident\PostController::class, 'reportComment'])->name('resident.comments.report');
+    Route::post('/resident/like', [\App\Http\Controllers\Resident\PostController::class, 'toggleLike'])->name('resident.posts.like');
+    Route::get('/resident/posts/{id}/comments', [\App\Http\Controllers\Resident\PostController::class, 'loadComments'])->name('resident.posts.comments.load');
 });
 
 Route::middleware(['admin'])->name('admin.')->group(function () {

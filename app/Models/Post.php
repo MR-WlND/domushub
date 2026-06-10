@@ -30,6 +30,22 @@ class Post extends Model
     }
 
     /**
+     * Danh sách lượt thích của bài viết (quan hệ đa hình)
+     */
+    public function likes(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(Like::class, 'likeable');
+    }
+
+    /**
+     * Kiểm tra nhanh xem user hiện tại đã thích bài viết chưa (tránh N+1 query)
+     */
+    public function likedByCurrentUser(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(Like::class, 'likeable')->where('user_id', auth()->id());
+    }
+
+    /**
      * Mối quan hệ với danh sách các báo cáo của bài viết này
      */
     public function reports(): HasMany
