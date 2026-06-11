@@ -8,8 +8,10 @@ use App\Http\Controllers\Admin\ServicePriceController;
 use App\Http\Controllers\Admin\UtilityMeterController;
 use App\Http\Controllers\Resident\ProfileController;
 use App\Http\Controllers\Resident\InvoiceController as ResidentInvoiceController;
+use App\Http\Controllers\Resident\TicketController as ResidentTicketController;
 
 use App\Http\Controllers\Admin\InvitationController as AdminInvitationController;
+use App\Http\Controllers\Admin\TicketController as AdminTicketController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\UserController;
 
@@ -126,9 +128,11 @@ Route::middleware(['admin'])->group(function () {
     Route::put('/admin/parking-lots/{parkingLot}', [App\Http\Controllers\Admin\ParkingLotController::class, 'update'])->name('admin.parking-lots.update');
     Route::delete('/admin/parking-lots/{parkingLot}', [App\Http\Controllers\Admin\ParkingLotController::class, 'destroy'])->name('admin.parking-lots.destroy');
 
-    Route::get('/admin/incidents', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.incidents.index');
+    // QUẢN LÝ PHẢN ÁNH (ADMIN)
+    Route::get('/admin/tickets', [AdminTicketController::class, 'index'])->name('admin.tickets.index');
+    Route::get('/admin/tickets/{id}', [AdminTicketController::class, 'show'])->name('admin.tickets.show');
+    Route::post('/admin/tickets/{id}/assign', [AdminTicketController::class, 'assign'])->name('admin.tickets.assign');
+    Route::post('/admin/tickets/{id}/update-progress', [AdminTicketController::class, 'updateProgress'])->name('admin.tickets.update-progress');
 
     Route::get('/admin/amenities', function () {
         return view('admin.dashboard.index');
@@ -203,6 +207,14 @@ Route::middleware(['resident'])->group(function () {
         ->name('resident.vehicles.store');
     Route::delete('/resident/vehicles/{vehicle}', [App\Http\Controllers\Resident\VehicleController::class, 'destroy'])
         ->name('resident.vehicles.destroy');
+
+    // PHẢN ÁNH SỰ CỐ PHÍA CƯ DÂN
+    Route::get('/resident/tickets', [ResidentTicketController::class, 'index'])->name('resident.tickets.index');
+    Route::get('/resident/tickets/create', [ResidentTicketController::class, 'create'])->name('resident.tickets.create');
+    Route::post('/resident/tickets', [ResidentTicketController::class, 'store'])->name('resident.tickets.store');
+    Route::get('/resident/tickets/{id}', [ResidentTicketController::class, 'show'])->name('resident.tickets.show');
+    Route::post('/resident/tickets/{id}/cancel', [ResidentTicketController::class, 'cancel'])->name('resident.tickets.cancel');
+    Route::post('/resident/tickets/{id}/feedback', [ResidentTicketController::class, 'feedback'])->name('resident.tickets.feedback');
 });
 
 Route::middleware(['admin'])->name('admin.')->group(function () {

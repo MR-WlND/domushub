@@ -1,0 +1,489 @@
+/* ==========================================================================
+   TRANG QUẢN LÝ PHẢN ÁNH - ADMIN
+   ========================================================================== */
+
+.tickets-page {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.tickets-page__header h1 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+}
+
+.tickets-page__subtitle {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin: 4px 0 0;
+}
+
+/* --- Alerts --- */
+.tickets-alert {
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+.tickets-alert--success { background: #f0fdf4; color: #166534; border: 1px solid #86efac; }
+.tickets-alert--danger  { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+
+/* --- Stats --- */
+.tickets-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+}
+
+.tk-stat-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tk-stat-card__label {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.tk-stat-card__value {
+    font-size: 1.5rem;
+    font-weight: 800;
+}
+
+/* --- Filter Card --- */
+.tickets-filter-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+
+.tickets-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    align-items: end;
+}
+
+.tickets-filter-grid label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 6px;
+}
+
+.tickets-filter-grid select,
+.tickets-filter-grid input {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    color: #0f172a;
+    background: #fff;
+    transition: border-color 0.2s;
+}
+
+.tickets-filter-grid select:focus,
+.tickets-filter-grid input:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, .1);
+}
+
+/* --- Table --- */
+.tickets-table-card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    overflow: hidden;
+}
+
+.tickets-table-wrap {
+    overflow-x: auto;
+}
+
+.tickets-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+
+.tickets-table th {
+    background: #f8fafc;
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
+}
+
+.tickets-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+
+.tickets-table tbody tr {
+    transition: background 0.15s;
+}
+
+.tickets-table tbody tr:hover {
+    background: #faf5ff;
+}
+
+/* --- Status / Priority Badges (Table) --- */
+.tk-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.tk-status--pending     { background: #fef3c7; color: #92400e; }
+.tk-status--assigned    { background: #ede9fe; color: #5b21b6; }
+.tk-status--in_progress { background: #dbeafe; color: #1e40af; }
+.tk-status--completed   { background: #dcfce7; color: #166534; }
+.tk-status--cancelled   { background: #f1f5f9; color: #475569; }
+
+.tk-priority {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.tk-priority--low    { background: #f0fdf4; color: #15803d; }
+.tk-priority--medium { background: #fffbeb; color: #b45309; }
+.tk-priority--high   { background: #fef2f2; color: #dc2626; }
+.tk-priority--urgent { background: #fef2f2; color: #991b1b; animation: pulse-urgent 2s infinite; }
+
+@keyframes pulse-urgent {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.3); }
+    50% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
+}
+
+.tk-title-cell {
+    max-width: 280px;
+}
+
+.tk-title-cell__title {
+    font-weight: 700;
+    color: #0f172a;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tk-title-cell__desc {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* --- Table Actions --- */
+.tk-table-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
+.tk-table-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.tk-table-btn--view {
+    background: #f0f4ff;
+    color: #2563eb;
+}
+.tk-table-btn--view:hover {
+    background: #dbeafe;
+}
+
+.tk-table-btn--assign {
+    background: #f5f3ff;
+    color: #7c3aed;
+}
+.tk-table-btn--assign:hover {
+    background: #ede9fe;
+}
+
+/* --- Show Page --- */
+.tickets-show {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.tickets-show__main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.tickets-show__sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.tk-show-card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    overflow: hidden;
+}
+
+.tk-show-card__header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.tk-show-card__title {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #64748b;
+    font-weight: 700;
+}
+
+.tk-show-card__body {
+    padding: 1.25rem 1.5rem;
+}
+
+/* --- Info Grid --- */
+.tk-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.tk-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tk-info-item__label {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.tk-info-item__value {
+    font-size: 0.9rem;
+    color: #0f172a;
+    font-weight: 600;
+}
+
+/* --- Timeline (Admin) --- */
+.tk-admin-timeline {
+    position: relative;
+    padding-left: 28px;
+}
+
+.tk-admin-timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e2e8f0;
+}
+
+.tk-admin-timeline__item {
+    position: relative;
+    padding-bottom: 1.5rem;
+}
+
+.tk-admin-timeline__item:last-child {
+    padding-bottom: 0;
+}
+
+.tk-admin-timeline__dot {
+    position: absolute;
+    left: -22px;
+    top: 4px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 3px solid #ffffff;
+}
+
+.tk-admin-timeline__dot--pending     { background: #f59e0b; box-shadow: 0 0 0 2px #fef3c7; }
+.tk-admin-timeline__dot--assigned    { background: #8b5cf6; box-shadow: 0 0 0 2px #ede9fe; }
+.tk-admin-timeline__dot--in_progress { background: #3b82f6; box-shadow: 0 0 0 2px #dbeafe; }
+.tk-admin-timeline__dot--completed   { background: #22c55e; box-shadow: 0 0 0 2px #dcfce7; }
+.tk-admin-timeline__dot--cancelled   { background: #94a3b8; box-shadow: 0 0 0 2px #f1f5f9; }
+
+.tk-admin-timeline__content {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px 14px;
+}
+
+.tk-admin-timeline__status {
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.tk-admin-timeline__comment {
+    font-size: 0.85rem;
+    color: #475569;
+    margin-top: 4px;
+}
+
+.tk-admin-timeline__meta {
+    display: flex;
+    gap: 12px;
+    margin-top: 6px;
+    font-size: 0.76rem;
+    color: #94a3b8;
+}
+
+.tk-admin-timeline__proof img {
+    max-height: 160px;
+    border-radius: 8px;
+    margin-top: 8px;
+    object-fit: cover;
+}
+
+/* --- Forms in show page --- */
+.tk-form-group {
+    margin-bottom: 1rem;
+}
+
+.tk-form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 6px;
+}
+
+.tk-form-group select,
+.tk-form-group textarea,
+.tk-form-group input[type="file"] {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-family: inherit;
+    background: #fff;
+    transition: border-color 0.2s;
+}
+
+.tk-form-group select:focus,
+.tk-form-group textarea:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, .1);
+}
+
+.tk-form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.tk-form-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tk-form-submit--primary {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(124, 58, 237, .25);
+}
+.tk-form-submit--primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(124, 58, 237, .35);
+}
+
+/* --- Star Rating Display --- */
+.tk-rating-stars {
+    display: flex;
+    gap: 2px;
+    font-size: 1.2rem;
+}
+
+.tk-rating-stars .filled { color: #f59e0b; }
+.tk-rating-stars .empty  { color: #d1d5db; }
+
+/* --- Pagination --- */
+.tickets-pagination {
+    display: flex;
+    justify-content: center;
+    padding: 1rem 0;
+}
+
+/* --- Responsive --- */
+@media (max-width: 1024px) {
+    .tickets-stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .tickets-show {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .tickets-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
