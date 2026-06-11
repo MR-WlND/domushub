@@ -105,33 +105,31 @@
                     </div>
                 </div>
 
-                {{-- ẢNH ĐÍNH KÈM --}}
+                {{-- ẢNH ĐÍNH KÈM (nhiều ảnh) --}}
                 <div>
                     <label class="tk-label">
-                        Ảnh đính kèm (tùy chọn)
+                        Ảnh đính kèm (tùy chọn, tối đa 5 ảnh)
                     </label>
 
-                    <div class="tk-upload" id="upload-box" onclick="document.getElementById('ticket-image').click()">
-                        <input type="file"
-                               name="image"
-                               id="ticket-image"
-                               class="tk-upload__input"
-                               accept="image/*"
-                               onchange="previewTicketImage(this)">
+                    <input type="file"
+                           name="images[]"
+                           id="ticket-images"
+                           style="display: none;"
+                           accept="image/*"
+                           multiple
+                           onchange="previewTicketImages(this)">
+
+                    <div class="tk-upload" id="upload-box" onclick="document.getElementById('ticket-images').click()">
 
                         <div id="upload-placeholder" class="tk-upload__placeholder">
                             <div style="background: #f5f3ff; color: #7c3aed; padding: 12px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 4px;">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                             </div>
                             <p>Nhấp vào đây để tải ảnh sự cố lên</p>
-                            <span>Định dạng hỗ trợ: JPG, PNG, WEBP (Tối đa 2MB)</span>
+                            <span>Định dạng hỗ trợ: JPG, PNG, WEBP (Tối đa 2MB/ảnh, tối đa 5 ảnh)</span>
                         </div>
 
-                        <div id="upload-preview" class="tk-upload__preview" style="display: none;">
-                            <img id="preview-img" src="" alt="Ảnh xem trước">
-                            <div style="position: absolute; top: 12px; right: 12px; background: rgba(15, 23, 42, 0.75); color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; backdrop-filter: blur(4px); cursor: pointer;" onclick="event.stopPropagation(); removeTicketPreview();">
-                                Thay đổi ảnh khác
-                            </div>
+                        <div id="upload-preview" class="tk-upload__preview-grid" style="display: none;" onclick="event.stopPropagation();">
                         </div>
                     </div>
                 </div>
@@ -155,24 +153,59 @@
 </div>
 
 <script>
-function previewTicketImage(input) {
-    const file = input.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('preview-img').src = e.target.result;
-            document.getElementById('upload-placeholder').style.display = 'none';
-            document.getElementById('upload-preview').style.display = 'block';
-        }
-        reader.readAsDataURL(file);
+function previewTicketImages(input) {
+    const files = input.files;
+    const previewContainer = document.getElementById('upload-preview');
+    const placeholder = document.getElementById('upload-placeholder');
+
+    if (files.length > 5) {
+        alert('Chỉ được chọn tối đa 5 ảnh.');
+        input.value = '';
+        return;
+    }
+
+    if (files.length > 0) {
+        previewContainer.innerHTML = '';
+        placeholder.style.display = 'none';
+        previewContainer.style.display = 'grid';
+
+        Array.from(files).forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const div = document.createElement('div');
+                div.className = 'tk-upload__preview-item';
+                div.innerHTML = `
+                    <img src="${e.target.result}" alt="Ảnh ${index + 1}">
+                    <span class="tk-upload__preview-label">Ảnh ${index + 1}</span>
+                `;
+                previewContainer.appendChild(div);
+            }
+            reader.readAsDataURL(file);
+        });
+
+        // Nút thay đổi ảnh
+        const changeBtn = document.createElement('div');
+        changeBtn.className = 'tk-upload__change-btn';
+        changeBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Chọn lại ảnh
+        `;
+        changeBtn.onclick = function(e) {
+            e.stopPropagation();
+            removeTicketPreviews();
+            document.getElementById('ticket-images').click();
+        };
+        previewContainer.appendChild(changeBtn);
     }
 }
 
-function removeTicketPreview() {
-    document.getElementById('ticket-image').value = "";
+function removeTicketPreviews() {
+    document.getElementById('ticket-images').value = "";
     document.getElementById('upload-preview').style.display = 'none';
+    document.getElementById('upload-preview').innerHTML = '';
     document.getElementById('upload-placeholder').style.display = 'flex';
 }
 </script>
 
 @endsection
+

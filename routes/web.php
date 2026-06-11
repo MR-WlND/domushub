@@ -11,7 +11,7 @@ use App\Http\Controllers\Resident\InvoiceController as ResidentInvoiceController
 use App\Http\Controllers\Resident\TicketController as ResidentTicketController;
 
 use App\Http\Controllers\Admin\InvitationController as AdminInvitationController;
-use App\Http\Controllers\Admin\TicketController as AdminTicketController;
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\UserController;
 
@@ -128,11 +128,7 @@ Route::middleware(['admin'])->group(function () {
     Route::put('/admin/parking-lots/{parkingLot}', [App\Http\Controllers\Admin\ParkingLotController::class, 'update'])->name('admin.parking-lots.update');
     Route::delete('/admin/parking-lots/{parkingLot}', [App\Http\Controllers\Admin\ParkingLotController::class, 'destroy'])->name('admin.parking-lots.destroy');
 
-    // QUẢN LÝ PHẢN ÁNH (ADMIN)
-    Route::get('/admin/tickets', [AdminTicketController::class, 'index'])->name('admin.tickets.index');
-    Route::get('/admin/tickets/{id}', [AdminTicketController::class, 'show'])->name('admin.tickets.show');
-    Route::post('/admin/tickets/{id}/assign', [AdminTicketController::class, 'assign'])->name('admin.tickets.assign');
-    Route::post('/admin/tickets/{id}/update-progress', [AdminTicketController::class, 'updateProgress'])->name('admin.tickets.update-progress');
+
 
     Route::get('/admin/amenities', function () {
         return view('admin.dashboard.index');

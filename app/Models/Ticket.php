@@ -15,11 +15,15 @@ class Ticket extends Model
         'handler_id',
         'title',
         'description',
-        'image',
+        'images',
         'priority',
         'status',
         'rating',
         'feedback_comment',
+    ];
+
+    protected $casts = [
+        'images' => 'array',
     ];
 
     // ── Relationships ───────────────────────────────────────────
@@ -89,6 +93,14 @@ class Ticket extends Model
     public function canCancel(): bool
     {
         return $this->status === 'pending';
+    }
+
+    /**
+     * Kiểm tra user cụ thể có quyền hủy phản ánh không (chỉ người gửi)
+     */
+    public function canCancelBy(int $userId): bool
+    {
+        return $this->canCancel() && $this->sender_id === $userId;
     }
 
     public function canFeedback(): bool

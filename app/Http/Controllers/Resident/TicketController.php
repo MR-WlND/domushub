@@ -7,6 +7,7 @@ use App\Models\Ticket;
 use App\Models\TicketProgress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class TicketController extends Controller
 {
@@ -60,25 +61,40 @@ class TicketController extends Controller
             ]);
         }
 
+        // ── Giới hạn spam: tối đa 3 phản ánh/ngày/user ──
+        $todayCount = Ticket::where('sender_id', $user->id)
+            ->whereDate('created_at', Carbon::today())
+            ->count();
+
+        if ($todayCount >= 3) {
+            return back()->withInput()->withErrors([
+                'limit' => 'Bạn đã gửi tối đa 3 phản ánh trong ngày hôm nay. Vui lòng thử lại vào ngày mai.'
+            ]);
+        }
+
         $validated = $request->validate([
             'title'       => ['required', 'string', 'max:200'],
             'description' => ['required', 'string', 'max:2000'],
             'priority'    => ['required', 'in:low,medium,high,urgent'],
-            'image'       => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'images'      => ['nullable', 'array', 'max:5'],
+            'images.*'    => ['image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ], [
             'title.required'       => 'Vui lòng nhập tiêu đề phản ánh.',
             'title.max'            => 'Tiêu đề không được quá 200 ký tự.',
             'description.required' => 'Vui lòng mô tả chi tiết sự cố.',
             'description.max'      => 'Mô tả không được quá 2000 ký tự.',
             'priority.required'    => 'Vui lòng chọn mức độ ưu tiên.',
-            'image.image'          => 'File tải lên phải là hình ảnh.',
-            'image.max'            => 'Dung lượng ảnh tối đa 2MB.',
+            'images.max'           => 'Tối đa 5 ảnh đính kèm.',
+            'images.*.image'       => 'File tải lên phải là hình ảnh.',
+            'images.*.max'         => 'Dung lượng mỗi ảnh tối đa 2MB.',
         ]);
 
-        // Xử lý ảnh
-        $imagePath = null;
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('tickets', 'public');
+        // Xử lý nhiều ảnh
+        $imagePaths = [];
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                $imagePaths[] = $file->store('tickets', 'public');
+            }
         }
 
         $ticket = Ticket::create([
@@ -87,7 +103,7 @@ class TicketController extends Controller
             'title'        => $validated['title'],
             'description'  => $validated['description'],
             'priority'     => $validated['priority'],
-            'image'        => $imagePath,
+            'images'       => !empty($imagePaths) ? $imagePaths : null,
             'status'       => 'pending',
         ]);
 
@@ -127,8 +143,9 @@ class TicketController extends Controller
         $ticket = Ticket::where('apartment_id', $user->apartment_id)
             ->findOrFail($id);
 
-        if (!$ticket->canCancel()) {
-            return back()->withErrors(['ticket' => 'Chỉ có thể hủy phản ánh đang ở trạng thái chờ xử lý.']);
+        // Chỉ người gửi phản ánh mới được hủy
+        if (!$ticket->canCancelBy($user->id)) {
+            return back()->withErrors(['ticket' => 'Chỉ người gửi phản ánh mới có thể hủy, và phản ánh phải đang ở trạng thái chờ xử lý.']);
         }
 
         $ticket->update(['status' => 'cancelled']);
