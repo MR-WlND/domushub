@@ -25,9 +25,9 @@ class HomeController extends Controller
             return redirect()->route('admin.utility-readings.index');
         }
 
-        // Technician → redirect tới trang Phản ánh sự cố
+        // Technician → redirect tới trang Điện nước
         if ($user->role === 'technician') {
-            return redirect()->route('admin.tickets.index');
+            return redirect()->route('admin.utility-readings.index');
         }
 
         $totalBlocks = Block::count();

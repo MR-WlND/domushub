@@ -57,13 +57,19 @@
                     {{ $ticket->description }}
                 </p>
 
-                @if($ticket->image)
+                @if($ticket->images && count($ticket->images) > 0)
                     <div style="margin-top: 1.25rem;">
-                        <p style="font-size: 0.82rem; color: #94a3b8; font-weight: 600; margin-bottom: 8px;">ẢNH ĐÍNH KÈM</p>
-                        <img src="{{ asset('storage/' . $ticket->image) }}"
-                             alt="Ảnh phản ánh"
-                             style="max-height: 300px; border-radius: 12px; object-fit: cover; cursor: pointer; border: 1px solid #e2e8f0;"
-                             onclick="openImgModal(this.src)">
+                        <p style="font-size: 0.82rem; color: #94a3b8; font-weight: 600; margin-bottom: 8px;">ẢNH ĐÍNH KÈM ({{ count($ticket->images) }} ảnh)</p>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">
+                            @foreach($ticket->images as $img)
+                                <img src="{{ asset('storage/' . $img) }}"
+                                     alt="Ảnh phản ánh"
+                                     style="width: 100%; height: 150px; border-radius: 10px; object-fit: cover; cursor: pointer; border: 1px solid #e2e8f0; transition: transform 0.2s;"
+                                     onmouseover="this.style.transform='scale(1.03)'"
+                                     onmouseout="this.style.transform='scale(1)'"
+                                     onclick="openImgModal(this.src)">
+                            @endforeach
+                        </div>
                     </div>
                 @endif
             </div>
@@ -210,8 +216,8 @@
                 @endif
             </div>
 
-            {{-- CANCEL BUTTON --}}
-            @if($ticket->canCancel())
+            {{-- CANCEL BUTTON - Chỉ người gửi phản ánh mới thấy --}}
+            @if($ticket->canCancelBy(auth()->id()))
                 <form method="POST"
                       action="{{ route('resident.tickets.cancel', $ticket->id) }}"
                       onsubmit="return confirm('Bạn có chắc chắn muốn hủy phản ánh này? Thao tác không thể hoàn tác.')">

@@ -146,13 +146,7 @@
                 </svg>
                 <span>Quản lý lốt đỗ</span>
             </a>
-            <a href="{{ route('admin.tickets.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.tickets.*') ? 'dashboard-nav__item--active' : '' }}">
-                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                    <circle cx="12" cy="13" r="4"></circle>
-                </svg>
-                <span>Phê duyệt phản ánh</span>
-            </a>
+
             <a href="{{ route('admin.amenities.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.amenities.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -165,21 +159,7 @@
         </div>
         @endif
 
-        {{-- ============================================================== --}}
-        {{-- PHẢN ÁNH SỰ CỐ - Technician --}}
-        {{-- Technician chỉ thấy danh sách phản ánh được giao --}}
-        {{-- ============================================================== --}}
-        @if($role === 'technician')
-        <div class="nav-section">
-            <span class="nav-section__label">PHẢN ÁNH SỰ CỐ</span>
-            <a href="{{ route('admin.tickets.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.tickets.*') ? 'dashboard-nav__item--active' : '' }}">
-                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
-                </svg>
-                <span>Phản ánh được giao</span>
-            </a>
-        </div>
-        @endif
+
 
         {{-- ============================================================== --}}
         {{-- TƯƠNG TÁC & BẢNG TIN - Admin & Manager --}}
