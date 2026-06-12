@@ -217,6 +217,13 @@ Route::middleware(['resident'])->group(function () {
     Route::post('/resident/comments/{id}/report', [\App\Http\Controllers\Resident\PostController::class, 'reportComment'])->name('resident.comments.report');
     Route::post('/resident/like', [\App\Http\Controllers\Resident\PostController::class, 'toggleLike'])->name('resident.posts.like');
     Route::get('/resident/posts/{id}/comments', [\App\Http\Controllers\Resident\PostController::class, 'loadComments'])->name('resident.posts.comments.load');
+    Route::get('/resident/search-members', [\App\Http\Controllers\Resident\PostController::class, 'searchMembersForMention'])->name('resident.posts.search-members');
+    Route::post('/resident/comments/{id}/pin', [\App\Http\Controllers\Resident\PostController::class, 'togglePinComment'])->name('resident.comments.pin');
+    Route::get('/resident/reactions/{likeable_type}/{likeable_id}', [\App\Http\Controllers\Resident\PostController::class, 'getReactions'])->name('resident.reactions');
+
+    // THÔNG BÁO CƯ DÂN
+    Route::get('/resident/notifications', [\App\Http\Controllers\Resident\NotificationController::class, 'index'])->name('resident.notifications.index');
+    Route::post('/resident/notifications/mark-read/{id?}', [\App\Http\Controllers\Resident\NotificationController::class, 'markRead'])->name('resident.notifications.mark-read');
 });
 
 Route::middleware(['admin'])->name('admin.')->group(function () {
@@ -254,6 +261,10 @@ Route::get('/storage/{any}', function ($any) {
     }
     abort(404);
 })->where('any', '.*');
+
+
+
+
 
 
 

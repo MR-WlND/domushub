@@ -33,6 +33,7 @@ class CommentUpdated implements ShouldBroadcast
             'id' => $this->comment->id,
             'post_id' => $this->comment->post_id,
             'content' => $this->comment->content,
+            'is_pinned' => $this->comment->is_pinned,
         ];
     }
 }

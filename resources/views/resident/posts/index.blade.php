@@ -104,9 +104,10 @@
                     <div class="pc-composer__price-container" id="price-input-container" style="display: {{ old('price') ? 'block' : 'none' }}; margin-top: 0.75rem;">
                         <div class="pc-composer__price-wrap">
                             <i class="fa-solid fa-tags pc-composer__price-icon"></i>
-                            <input type="text" name="price" id="post-price" class="pc-composer__price-input" placeholder="Nhập giá thanh lý (ví dụ: 150.000)..." value="{{ old('price') }}">
+                            <input type="tel" name="price" id="post-price" class="pc-composer__price-input" placeholder="Nhập giá thanh lý (ví dụ: 150.000)..." value="{{ old('price') }}">
                             <span style="font-weight: 700; color: var(--color-secondary); font-size: 0.9rem; margin-right: 0.5rem;">đ</span>
                         </div>
+                        <div id="post-price-preview" style="font-size: 0.825rem; color: var(--color-success); font-weight: 600; margin-top: 0.35rem; margin-left: 1.8rem; display: none;"></div>
                     </div>
 
                     {{-- Thanh công cụ Toolbar --}}
@@ -142,7 +143,7 @@
                     Chia sẻ
                 </a>
                 <a href="{{ route('resident.posts.index', ['type' => 'marketplace']) }}" class="pc-filter-tab {{ request()->get('type') === 'marketplace' ? 'pc-filter-tab--active' : '' }}">
-                    Thanh lý & Chợ
+                    Thanh lý
                 </a>
             </div>
 
@@ -229,10 +230,50 @@
                         <div class="pc-card__footer">
                             <div class="pc-card__actions" style="gap: 1.25rem;">
                                 {{-- Nút Thích --}}
-                                <button type="button" class="pc-card__action-btn pc-like-btn {{ $post->likedByCurrentUser->isNotEmpty() ? 'pc-like-btn--active' : '' }}" onclick="toggleLike(event, {{ $post->id }}, 'post')">
-                                    <i class="{{ $post->likedByCurrentUser->isNotEmpty() ? 'fa-solid' : 'fa-regular' }} fa-thumbs-up"></i>
-                                    <span>Thích</span> (<span class="like-count">{{ $post->likes_count }}</span>)
-                                </button>
+                                <div class="pc-like-container">
+                                    <div class="pc-reactions-popup">
+                                        <span class="pc-reaction-option" data-label="Thích" onclick="toggleLike(event, {{ $post->id }}, 'post', 'like')">👍</span>
+                                        <span class="pc-reaction-option" data-label="Yêu thích" onclick="toggleLike(event, {{ $post->id }}, 'post', 'love')">❤️</span>
+                                        <span class="pc-reaction-option" data-label="Haha" onclick="toggleLike(event, {{ $post->id }}, 'post', 'haha')">😆</span>
+                                        <span class="pc-reaction-option" data-label="Wow" onclick="toggleLike(event, {{ $post->id }}, 'post', 'wow')">😮</span>
+                                        <span class="pc-reaction-option" data-label="Buồn" onclick="toggleLike(event, {{ $post->id }}, 'post', 'sad')">😢</span>
+                                        <span class="pc-reaction-option" data-label="Phẫn nộ" onclick="toggleLike(event, {{ $post->id }}, 'post', 'angry')">😡</span>
+                                    </div>
+
+                                    @php
+                                        $userLike = $post->likedByCurrentUser->first();
+                                        $activeReaction = $userLike ? $userLike->type : null;
+                                        
+                                        $likeBtnClass = 'pc-like-btn';
+                                        $likeIconHtml = '<i class="fa-regular fa-thumbs-up"></i>';
+                                        $likeText = 'Thích';
+                                        
+                                        if ($activeReaction) {
+                                            $likeBtnClass .= ' pc-like-btn--active reaction-active-' . $activeReaction;
+                                            $likeIconHtml = match($activeReaction) {
+                                                'love' => '❤️',
+                                                'haha' => '😆',
+                                                'wow' => '😮',
+                                                'sad' => '😢',
+                                                'angry' => '😡',
+                                                default => '👍',
+                                            };
+                                            $likeText = match($activeReaction) {
+                                                'love' => 'Yêu thích',
+                                                'haha' => 'Haha',
+                                                'wow' => 'Wow',
+                                                'sad' => 'Buồn',
+                                                'angry' => 'Phẫn nộ',
+                                                default => 'Thích',
+                                            };
+                                        }
+                                    @endphp
+
+                                    <button type="button" class="pc-card__action-btn {{ $likeBtnClass }}" onclick="toggleLike(event, {{ $post->id }}, 'post')" style="border: none; background: transparent; cursor: pointer; font-family: inherit; font-size: 0.875rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; outline: none;">
+                                        <span class="reaction-icon-span">{!! $likeIconHtml !!}</span>
+                                        <span class="reaction-text-span">{{ $likeText }}</span> (<span class="like-count">{{ $post->likes_count }}</span>)
+                                    </button>
+                                </div>
 
                                 <a href="{{ route('resident.posts.show', $post->id) }}" class="pc-card__action-btn">
                                     <i class="fa-regular fa-comment"></i> Bình luận ({{ $post->comments->count() }})
@@ -364,9 +405,10 @@
                         <label class="rep-modal__label">Giá thanh lý (để trống nếu là bài chia sẻ)</label>
                         <div class="pc-composer__price-wrap" style="width: 100%; box-sizing: border-box; display: flex;">
                             <i class="fa-solid fa-tags pc-composer__price-icon"></i>
-                            <input type="text" name="price" id="edit-post-price" class="pc-composer__price-input" placeholder="Nhập giá thanh lý (ví dụ: 150.000)..." style="flex: 1;">
+                            <input type="tel" name="price" id="edit-post-price" class="pc-composer__price-input" placeholder="Nhập giá thanh lý (ví dụ: 150.000)..." style="flex: 1;">
                             <span style="font-weight: 700; color: var(--color-secondary); font-size: 0.9rem; margin-right: 0.5rem;">đ</span>
                         </div>
+                        <div id="edit-post-price-preview" style="font-size: 0.825rem; color: var(--color-success); font-weight: 600; margin-top: 0.35rem; margin-left: 1.8rem; display: none;"></div>
                     </div>
                 </div>
             </div>
@@ -679,21 +721,60 @@
         }
     }
 
-    // Định dạng tiền tệ tự động cho input giá tiền
-    const priceInput = document.getElementById('post-price');
-    if (priceInput) {
-        priceInput.addEventListener('input', function(e) {
-            // Lấy giá trị thô chỉ chứa số
-            let value = this.value.replace(/[^0-9]/g, '');
+    // Hàm khởi tạo định dạng tiền tệ chuyên nghiệp: gõ số thô để tránh xung đột Unikey, hiển thị preview thời gian thực và format đẹp mắt khi blur
+    function initPriceFormatter(inputId, previewId) {
+        const input = document.getElementById(inputId);
+        const preview = document.getElementById(previewId);
+        if (!input || !preview) return;
+
+        function updatePreview() {
+            let digits = input.value.replace(/\D/g, '');
+            if (digits) {
+                let formatted = parseInt(digits, 10).toLocaleString('vi-VN');
+                preview.innerText = `Định dạng: ${formatted}đ`;
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        input.addEventListener('input', function() {
+            // Chỉ giữ lại chữ số thô khi đang gõ để tránh xung đột Unikey
+            let cursor = this.selectionStart;
+            let originalLength = this.value.length;
             
-            if (value) {
-                // Định dạng thêm dấu chấm phân cách hàng nghìn
-                this.value = parseInt(value, 10).toLocaleString('vi-VN');
+            let clean = this.value.replace(/\D/g, '');
+            this.value = clean;
+            
+            // Khôi phục con trỏ
+            let newCursor = cursor - (originalLength - clean.length);
+            if (newCursor < 0) newCursor = 0;
+            this.setSelectionRange(newCursor, newCursor);
+            
+            updatePreview();
+        });
+
+        input.addEventListener('focus', function() {
+            // Khi focus, chuyển về số thô để sửa đổi không bị lỗi
+            let digits = this.value.replace(/\D/g, '');
+            this.value = digits;
+            updatePreview();
+        });
+
+        input.addEventListener('blur', function() {
+            // Khi blur, định dạng đẹp mắt trong ô nhập
+            let digits = this.value.replace(/\D/g, '');
+            if (digits) {
+                this.value = parseInt(digits, 10).toLocaleString('vi-VN');
             } else {
                 this.value = '';
             }
+            preview.style.display = 'none'; // Ẩn xem trước khi đã blur
         });
     }
+
+    // Khởi tạo định dạng tiền cho ô nhập đăng bài viết
+    initPriceFormatter('post-price', 'post-price-preview');
 
     // Xử lý trước khi submit form để loại bỏ định dạng hiển thị của giá trước khi gửi lên controller
     const postForm = document.getElementById('post-form');
@@ -865,9 +946,20 @@
             `;
         }
 
-        const isLiked = post.liked_by_current_user && post.liked_by_current_user.length > 0;
-        const likeBtnClass = isLiked ? 'pc-like-btn pc-like-btn--active' : 'pc-like-btn';
-        const likeIconClass = isLiked ? 'fa-solid fa-thumbs-up' : 'fa-regular fa-thumbs-up';
+        let activeReaction = null;
+        if (post.liked_by_current_user && post.liked_by_current_user.length > 0) {
+            activeReaction = post.liked_by_current_user[0].type || 'like';
+        }
+
+        let likeBtnClass = 'pc-like-btn';
+        let likeIconHtml = '<i class="fa-regular fa-thumbs-up"></i>';
+        let likeText = 'Thích';
+
+        if (activeReaction) {
+            likeBtnClass += ' pc-like-btn--active reaction-active-' + activeReaction;
+            likeIconHtml = getReactionEmoji(activeReaction);
+            likeText = getReactionText(activeReaction);
+        }
         const likesCount = post.likes_count || 0;
         
         return `
@@ -898,10 +990,20 @@
 
                 <div class="pc-card__footer">
                     <div class="pc-card__actions" style="gap: 1.25rem;">
-                        <button type="button" class="pc-card__action-btn ${likeBtnClass}" onclick="toggleLike(event, ${post.id}, 'post')">
-                            <i class="${likeIconClass}"></i>
-                            <span>Thích</span> (<span class="like-count">${likesCount}</span>)
-                        </button>
+                        <div class="pc-like-container">
+                            <div class="pc-reactions-popup">
+                                <span class="pc-reaction-option" data-label="Thích" onclick="toggleLike(event, ${post.id}, 'post', 'like')">👍</span>
+                                <span class="pc-reaction-option" data-label="Yêu thích" onclick="toggleLike(event, ${post.id}, 'post', 'love')">❤️</span>
+                                <span class="pc-reaction-option" data-label="Haha" onclick="toggleLike(event, ${post.id}, 'post', 'haha')">😆</span>
+                                <span class="pc-reaction-option" data-label="Wow" onclick="toggleLike(event, ${post.id}, 'post', 'wow')">😮</span>
+                                <span class="pc-reaction-option" data-label="Buồn" onclick="toggleLike(event, ${post.id}, 'post', 'sad')">😢</span>
+                                <span class="pc-reaction-option" data-label="Phẫn nộ" onclick="toggleLike(event, ${post.id}, 'post', 'angry')">😡</span>
+                            </div>
+                            <button type="button" class="pc-card__action-btn ${likeBtnClass}" onclick="toggleLike(event, ${post.id}, 'post')" style="border: none; background: transparent; cursor: pointer; font-family: inherit; font-size: 0.875rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; outline: none;">
+                                <span class="reaction-icon-span">${likeIconHtml}</span>
+                                <span class="reaction-text-span">${likeText}</span> (<span class="like-count">${likesCount}</span>)
+                            </button>
+                        </div>
                         <a href="/resident/posts/${post.id}" class="pc-card__action-btn">
                             <i class="fa-regular fa-comment"></i> Bình luận (0)
                         </a>
@@ -916,27 +1018,45 @@
         `;
     }
 
-    // AJAX Toggle Like
-    function toggleLike(event, id, type) {
-        event.preventDefault();
-        
-        const btn = event.currentTarget;
-        const countEl = btn.querySelector('.like-count');
-        const iconEl = btn.querySelector('i');
-        
-        const isActive = btn.classList.contains('pc-like-btn--active');
-        let count = parseInt(countEl.innerText, 10) || 0;
-        
-        if (isActive) {
-            btn.classList.remove('pc-like-btn--active');
-            iconEl.className = 'fa-regular fa-thumbs-up';
-            countEl.innerText = Math.max(0, count - 1);
-        } else {
-            btn.classList.add('pc-like-btn--active');
-            iconEl.className = 'fa-solid fa-thumbs-up';
-            countEl.innerText = count + 1;
+    function getReactionEmoji(type) {
+        switch(type) {
+            case 'love': return '❤️';
+            case 'haha': return '😆';
+            case 'wow': return '😮';
+            case 'sad': return '😢';
+            case 'angry': return '😡';
+            default: return '👍';
         }
+    }
 
+    function getReactionText(type) {
+        switch(type) {
+            case 'love': return 'Yêu thích';
+            case 'haha': return 'Haha';
+            case 'wow': return 'Wow';
+            case 'sad': return 'Buồn';
+            case 'angry': return 'Phẫn nộ';
+            default: return 'Thích';
+        }
+    }
+
+    // AJAX Toggle Like / Reaction
+    function toggleLike(event, id, type, reactionType = null) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        const target = event.currentTarget;
+        let btn = target;
+        if (target.classList.contains('pc-reaction-option')) {
+            btn = target.closest('.pc-like-container').querySelector('.pc-card__action-btn, .pc-comment-like-btn');
+        }
+        
+        const countEl = btn.querySelector('.like-count');
+        const iconSpan = btn.querySelector('.reaction-icon-span');
+        const textSpan = btn.querySelector('.reaction-text-span');
+        
+        const reqReactionType = reactionType || 'like';
+        
         fetch('/resident/like', {
             method: 'POST',
             headers: {
@@ -946,33 +1066,31 @@
             },
             body: JSON.stringify({
                 likeable_id: id,
-                likeable_type: type
+                likeable_type: type,
+                type: reqReactionType
             })
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
                 countEl.innerText = data.likes_count;
-                if (data.liked) {
-                    btn.classList.add('pc-like-btn--active');
-                    iconEl.className = 'fa-solid fa-thumbs-up';
+                
+                // Reset classes
+                btn.className = type === 'post' ? 'pc-card__action-btn pc-like-btn' : 'pc-comment__action-btn pc-comment-like-btn';
+                
+                if (data.liked && data.reaction_type) {
+                    btn.classList.add(type === 'post' ? 'pc-like-btn--active' : 'pc-comment-like-btn--active');
+                    btn.classList.add('reaction-active-' + data.reaction_type);
+                    if (iconSpan) iconSpan.innerHTML = getReactionEmoji(data.reaction_type);
+                    if (textSpan) textSpan.innerText = getReactionText(data.reaction_type);
                 } else {
-                    btn.classList.remove('pc-like-btn--active');
-                    iconEl.className = 'fa-regular fa-thumbs-up';
+                    if (iconSpan) iconSpan.innerHTML = type === 'post' ? '<i class="fa-regular fa-thumbs-up"></i>' : '<i class="fa-regular fa-heart"></i>';
+                    if (textSpan) textSpan.innerText = 'Thích';
                 }
             }
         })
         .catch(err => {
-            console.error('Error toggling like:', err);
-            if (isActive) {
-                btn.classList.add('pc-like-btn--active');
-                iconEl.className = 'fa-solid fa-thumbs-up';
-                countEl.innerText = count;
-            } else {
-                btn.classList.remove('pc-like-btn--active');
-                iconEl.className = 'fa-regular fa-thumbs-up';
-                countEl.innerText = count;
-            }
+            console.error('Error toggling reaction:', err);
         });
     }
 
@@ -1012,18 +1130,8 @@
         }
     }
 
-    // Định dạng tiền tệ cho input sửa bài
-    const editPriceInput = document.getElementById('edit-post-price');
-    if (editPriceInput) {
-        editPriceInput.addEventListener('input', function(e) {
-            let value = this.value.replace(/[^0-9]/g, '');
-            if (value) {
-                this.value = parseInt(value, 10).toLocaleString('vi-VN');
-            } else {
-                this.value = '';
-            }
-        });
-    }
+    // Khởi tạo định dạng tiền cho ô nhập sửa bài viết
+    initPriceFormatter('edit-post-price', 'edit-post-price-preview');
 
     // Xử lý submit sửa bài viết qua AJAX
     const editPostForm = document.getElementById('edit-post-form');
