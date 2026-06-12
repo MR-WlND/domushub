@@ -127,6 +127,18 @@
                 </svg>
                 <span>Danh sách cư dân</span>
             </a>
+            <a href="{{ route('admin.tickets.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.tickets.index') || request()->routeIs('admin.tickets.show') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <span>Tiếp nhận phản ánh</span>
+            </a>
+            <a href="{{ route('admin.tickets.dispatch') }}" class="dashboard-nav__item {{ request()->routeIs('admin.tickets.dispatch') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                </svg>
+                <span>Điều phối kỹ thuật</span>
+            </a>
             <a href="{{ route('admin.vehicles.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.vehicles.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="1" y="3" width="15" height="13" rx="2"></rect>

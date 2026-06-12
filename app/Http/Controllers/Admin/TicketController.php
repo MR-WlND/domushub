@@ -158,4 +158,38 @@ class TicketController extends Controller
 
         return back()->with('success', $message);
     }
+
+    /**
+     * Giao diện điều phối kỹ thuật (admin/manager)
+     */
+    public function dispatchIndex(Request $request)
+    {
+        $user = Auth::user();
+        if ($user->role === 'technician') {
+            abort(403, 'Bạn không có quyền truy cập trang điều phối kỹ thuật.');
+        }
+
+        // Lấy danh sách kỹ thuật viên đang hoạt động cùng số công việc đang phụ trách
+        $technicians = User::where('role', 'technician')
+            ->where('status', 'active')
+            ->withCount(['handledTickets as active_tickets_count' => function ($query) {
+                $query->whereIn('status', ['assigned', 'in_progress']);
+            }])
+            ->orderBy('name')
+            ->get();
+
+        // Lấy danh sách các phản ánh chưa phân công (chờ điều phối)
+        $pendingTickets = Ticket::with(['apartment.floor.block', 'sender'])
+            ->where('status', 'pending')
+            ->latest()
+            ->get();
+
+        // Lấy danh sách các phản ánh đang xử lý/đã phân công
+        $activeTickets = Ticket::with(['apartment.floor.block', 'sender', 'handler'])
+            ->whereIn('status', ['assigned', 'in_progress'])
+            ->latest()
+            ->get();
+
+        return view('admin.tickets.dispatch', compact('technicians', 'pendingTickets', 'activeTickets'));
+    }
 }
