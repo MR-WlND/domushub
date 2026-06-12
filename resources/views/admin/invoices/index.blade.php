@@ -11,24 +11,28 @@
             <p class="inv-admin__eyebrow">Tài chính</p>
             <h1 class="inv-admin__title">Quản lý Hóa đơn</h1>
         </div>
+        <div style="display:flex;gap:10px">
+            <a href="{{ route('admin.invoices.batch') }}" class="inv-admin__btn inv-admin__btn--primary">Xuất hàng loạt</a>
+            <a href="{{ route('admin.invoices.create') }}" class="inv-admin__btn" style="background:#f1f5f9;color:#475569;border:1px solid #e2e8f0">Tạo đơn lẻ</a>
+        </div>
     </div>
 
     {{-- Flash --}}
     @if(session('success'))
-        <div class="inv-admin__alert inv-admin__alert--success">✅ {{ session('success') }}</div>
+        <div class="inv-admin__alert inv-admin__alert--success">{{ session('success') }}</div>
     @endif
 
     {{-- Bộ lọc --}}
     <div class="inv-admin__filter-bar">
         <form method="GET" action="{{ route('admin.invoices.index') }}" class="inv-admin__filter-form">
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="🔍 Tìm mã HD, tiêu đề, căn hộ..."
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Tìm mã HD, tiêu đề, căn hộ..."
                    class="inv-admin__input">
 
             <select name="status" class="inv-admin__select" onchange="this.form.submit()">
                 <option value="">Tất cả trạng thái</option>
-                <option value="paid" {{ request('status')=='paid' ? 'selected' : '' }}>✅ Đã thanh toán</option>
-                <option value="unpaid" {{ request('status')=='unpaid' ? 'selected' : '' }}>⏳ Chưa thanh toán</option>
-                <option value="overdue" {{ request('status')=='overdue' ? 'selected' : '' }}>🚨 Quá hạn</option>
+                <option value="paid" {{ request('status')=='paid' ? 'selected' : '' }}>Đã thanh toán</option>
+                <option value="unpaid" {{ request('status')=='unpaid' ? 'selected' : '' }}>Chưa thanh toán</option>
+                <option value="overdue" {{ request('status')=='overdue' ? 'selected' : '' }}>Quá hạn</option>
             </select>
 
             <button type="submit" class="inv-admin__btn inv-admin__btn--primary">Lọc</button>
@@ -87,7 +91,7 @@
                               onsubmit="return confirm('Đánh dấu đã thu hóa đơn {{ $inv->invoice_code }}?')">
                             @csrf @method('PATCH')
                             <input type="hidden" name="payment_method" value="cash">
-                            <button type="submit" class="inv-admin__btn inv-admin__btn--sm inv-admin__btn--success">✔ Thu</button>
+                            <button type="submit" class="inv-admin__btn inv-admin__btn--sm inv-admin__btn--success">Thu tiền</button>
                         </form>
                         @endif
                     </td>
@@ -95,7 +99,7 @@
                 @empty
                 <tr>
                     <td colspan="8">
-                        <div class="inv-admin__empty">📄 Không có hóa đơn nào</div>
+                        <div class="inv-admin__empty">Không có hóa đơn nào</div>
                     </td>
                 </tr>
                 @endforelse
