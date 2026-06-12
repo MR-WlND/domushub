@@ -1524,4 +1524,196 @@
     background-color: #f1f5f9;
 }
 
+/* =========================================================================
+   Reactions Popup & Custom Reactions (Facebook Style)
+   ========================================================================= */
+
+.pc-like-container {
+    position: relative;
+    display: inline-block;
+}
+
+.pc-reactions-popup {
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 9999px;
+    padding: 8px 12px;
+    display: flex;
+    gap: 12px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(8px);
+    transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+/* Cầu nối hover: Giúp di chuột lên popup không bị tắt */
+.pc-reactions-popup::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: 16px;
+    background: transparent;
+}
+
+.pc-like-container:hover .pc-reactions-popup {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+}
+
+.pc-reaction-option {
+    font-size: 1.6rem;
+    cursor: pointer;
+    transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    user-select: none;
+}
+
+.pc-reaction-option:hover {
+    transform: scale(1.4) translateY(-5px);
+}
+
+/* Tooltip cho từng cảm xúc */
+.pc-reaction-option {
+    position: relative;
+}
+
+.pc-reaction-option::after {
+    content: attr(data-label);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-5px);
+    background-color: rgba(15, 23, 42, 0.85);
+    color: #ffffff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 3px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+
+.pc-reaction-option:hover::after {
+    opacity: 1;
+}
+
+/* Màu sắc của nút thích dựa theo từng cảm xúc hoạt động */
+.reaction-active-like {
+    color: #0b57d0 !important;
+}
+.reaction-active-love {
+    color: #ec4899 !important;
+}
+.reaction-active-haha {
+    color: #f59e0b !important;
+}
+.reaction-active-wow {
+    color: #f59e0b !important;
+}
+.reaction-active-sad {
+    color: #6366f1 !important;
+}
+.reaction-active-angry {
+    color: #ef4444 !important;
+}
+
+/* Icon động hoặc biểu tượng bên cạnh số đếm cảm xúc */
+.reactions-icons-summary {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 4px;
+}
+
+.reactions-icons-summary span {
+    margin-left: -4px;
+    font-size: 0.85rem;
+}
+
+.reactions-icons-summary span:first-child {
+    margin-left: 0;
+}
+
+/* Tribute.js Dropdown Mentions styling */
+.tribute-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: auto;
+    max-height: 250px;
+    max-width: 320px;
+    overflow-y: auto;
+    background-color: #ffffff;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-md);
+    z-index: 999999 !important;
+}
+
+.tribute-container ul {
+    margin: 0;
+    padding: 0.5rem 0;
+    list-style: none;
+}
+
+.tribute-container li {
+    padding: 0;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.tribute-container li.highlight,
+.tribute-container li:hover {
+    background-color: #f1f5f9;
+}
+
+/* Pinned Comment styling */
+.pc-comment--pinned {
+    background-color: #fffbeb !important;
+    border-left: 3.5px solid #d97706 !important;
+    border-radius: 0 var(--radius-lg) var(--radius-lg) 0 !important;
+}
+
+/* Comment Image Previews & Attachments */
+.pc-comment__image-preview-remove:hover {
+    background-color: rgba(220, 38, 38, 0.9) !important;
+}
+
+.pc-comment__image-attach:hover {
+    filter: brightness(0.95);
+    transition: filter 0.2s;
+}
+
+/* Reactions Modal tab adjustments */
+.react-tab:hover {
+    color: var(--color-primary) !important;
+}
+
+.react-tab--active {
+    border-bottom: 3px solid var(--color-primary) !important;
+    color: var(--color-primary) !important;
+}
+
+/* Comment Mention highlighting (Facebook style) */
+.comment-mention {
+    color: #1877f2 !important;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.comment-mention:hover {
+    text-decoration: underline;
+}
+
+
 

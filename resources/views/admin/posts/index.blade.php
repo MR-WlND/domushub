@@ -16,7 +16,7 @@
     ];
     $typeLabels = [
         'general' => 'Chia sẻ',
-        'marketplace' => 'Thanh lý & Chợ',
+        'marketplace' => 'Thanh lý',
     ];
 @endphp
 

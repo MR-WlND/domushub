@@ -9,6 +9,8 @@ use App\Models\PostReport;
 use App\Models\CommentReport;
 use App\Models\PostImage;
 use App\Models\Like;
+use App\Models\User;
+use App\Models\Apartment;
 use App\Events\PostUpdated;
 use App\Events\CommentUpdated;
 use App\Events\LikeToggled;
@@ -157,6 +159,9 @@ class PostController extends Controller
             ->get()
             ->reverse();
 
+        // Ghim bình luận lên đầu bằng cách sắp xếp lại collection
+        $comments = $comments->sortByDesc('is_pinned')->values();
+
         return view('resident.posts.show', compact('post', 'comments', 'totalComments'));
     }
 
@@ -190,21 +195,89 @@ class PostController extends Controller
         $request->validate([
             'content' => 'required|string',
             'parent_id' => 'nullable|exists:comments,id',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ], [
             'content.required' => 'Vui lòng nhập nội dung bình luận.',
+            'image.image' => 'File tải lên phải là hình ảnh.',
+            'image.mimes' => 'Hình ảnh phải có định dạng: jpeg, png, jpg, gif, webp.',
+            'image.max' => 'Dung lượng hình ảnh không được vượt quá 2MB.',
         ]);
 
         $post = Post::findOrFail($postId);
+
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('comments', 'public');
+        }
 
         $comment = Comment::create([
             'post_id' => $post->id,
             'user_id' => Auth::id(),
             'parent_id' => $request->parent_id,
             'content' => $request->content,
+            'image_path' => $imagePath,
+            'is_pinned' => false,
         ]);
 
         // Phát sự kiện real-time cho bình luận mới
         broadcast(new \App\Events\CommentCreated($comment));
+
+        // Quét cư dân được tag nhắc tên bằng kí tự phân tách zero-width space (\x{200B})
+        $mentionedUserIds = [];
+        preg_match_all('/@([^@\x{200B}]+)\x{200B}/u', $comment->content, $matches, PREG_SET_ORDER);
+        foreach ($matches as $match) {
+            $fullName = trim($match[1]);
+            
+            // Kiểm tra định dạng đầy đủ: Tên Cư Dân (Căn hộ XXX)
+            if (preg_match('/^([^\(\n\r]+?)\s*\(Căn hộ\s*([^\)]+?)\)$/u', $fullName, $subMatches)) {
+                $name = trim($subMatches[1]);
+                $room = trim($subMatches[2]);
+                $user = User::where('name', $name)
+                    ->where('role', 'resident')
+                    ->whereHas('apartment', function($q) use ($room) {
+                        $q->where('apartment_number', $room);
+                    })
+                    ->first();
+                if ($user) {
+                    $mentionedUserIds[] = $user->id;
+                }
+            } else {
+                // Định dạng rút gọn: Tên Cư Dân
+                $user = User::where('name', $fullName)
+                    ->where('role', 'resident')
+                    ->first();
+                if ($user) {
+                    $mentionedUserIds[] = $user->id;
+                }
+            }
+        }
+
+        $mentionedUserIds = array_unique($mentionedUserIds);
+
+        // Gửi thông báo nhắc tên cho những cư dân được tag (tránh tự tag bản thân)
+        foreach ($mentionedUserIds as $uId) {
+            if ($uId !== Auth::id()) {
+                $userToNotify = User::find($uId);
+                if ($userToNotify) {
+                    $userToNotify->notify(new \App\Notifications\CommentMentionNotification($comment));
+                }
+            }
+        }
+
+        // Gửi thông báo tương tác thông thường, loại trừ những người đã nhận thông báo nhắc tên
+        if ($comment->parent_id) {
+            $parentComment = Comment::find($comment->parent_id);
+            if ($parentComment && $parentComment->user_id !== Auth::id() && !in_array($parentComment->user_id, $mentionedUserIds)) {
+                $parentComment->user->notify(new \App\Notifications\CommentRepliedNotification($comment));
+            }
+            if ($post->user_id !== Auth::id() && (!$parentComment || $post->user_id !== $parentComment->user_id) && !in_array($post->user_id, $mentionedUserIds)) {
+                $post->user->notify(new \App\Notifications\PostCommentedNotification($comment));
+            }
+        } else {
+            if ($post->user_id !== Auth::id() && !in_array($post->user_id, $mentionedUserIds)) {
+                $post->user->notify(new \App\Notifications\PostCommentedNotification($comment));
+            }
+        }
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
@@ -229,6 +302,11 @@ class PostController extends Controller
             $comment->post->user_id !== Auth::id() && 
             !Auth::user()->isAdminPortalUser()) {
             abort(403, 'Bạn không có quyền thực hiện hành động này.');
+        }
+
+        // Xóa file ảnh vật lý đính kèm nếu có
+        if ($comment->image_path) {
+            Storage::disk('public')->delete($comment->image_path);
         }
 
         $comment->delete();
@@ -429,18 +507,20 @@ class PostController extends Controller
     }
 
     /**
-     * Thích / Bỏ thích Bài viết hoặc Bình luận (Polymorphic Like)
+     * Thích / Bỏ thích Bài viết hoặc Bình luận (Polymorphic Like / Reaction)
      */
     public function toggleLike(Request $request)
     {
         $request->validate([
             'likeable_id' => 'required|integer',
             'likeable_type' => 'required|string|in:post,comment',
+            'type' => 'nullable|string|in:like,love,haha,wow,sad,angry',
         ]);
 
         $userId = Auth::id();
         $likeableId = $request->likeable_id;
         $type = $request->likeable_type;
+        $reactionType = $request->type ?? 'like';
         $likeableClass = $type === 'post' ? Post::class : Comment::class;
 
         $likeable = $likeableClass::findOrFail($likeableId);
@@ -451,27 +531,101 @@ class PostController extends Controller
             'likeable_type' => $likeableClass,
         ])->first();
 
+        $liked = false;
+        $activeReactionType = null;
+
         if ($existingLike) {
-            $existingLike->delete();
-            $liked = false;
+            if ($existingLike->type === $reactionType) {
+                // Cùng loại cảm xúc -> xóa cảm xúc (Bỏ thích)
+                $existingLike->delete();
+            } else {
+                // Khác loại cảm xúc -> cập nhật sang cảm xúc mới
+                $existingLike->update(['type' => $reactionType]);
+                $liked = true;
+                $activeReactionType = $reactionType;
+
+                // Xử lý thông báo (Lưu ý A - tránh spam thông báo)
+                $recipient = $likeable->user;
+                if ($recipient && $recipient->id !== $userId) {
+                    $oldNotif = $recipient->notifications()
+                        ->where('type', \App\Notifications\ReactionNotification::class)
+                        ->where('data->sender_id', $userId)
+                        ->where('data->likeable_id', $likeableId)
+                        ->where('data->likeable_type', $likeableClass)
+                        ->first();
+
+                    if ($oldNotif) {
+                        $data = $oldNotif->data;
+                        $reactionLabel = match($reactionType) {
+                            'love' => 'yêu thích',
+                            'haha' => 'haha',
+                            'wow' => 'ngạc nhiên',
+                            'sad' => 'buồn',
+                            'angry' => 'phẫn nộ',
+                            default => 'thích',
+                        };
+                        $targetLabel = $type === 'post' ? 'bài viết' : 'bình luận';
+                        $senderName = Auth::user()->apartment ? 'Căn hộ ' . Auth::user()->apartment->apartment_number : Auth::user()->name;
+                        
+                        $data['message'] = "{$senderName} đã bày tỏ cảm xúc {$reactionLabel} về {$targetLabel} của bạn.";
+                        $data['reaction_type'] = $reactionType;
+                        
+                        $oldNotif->data = $data;
+                        $oldNotif->read_at = null;
+                        $oldNotif->save();
+                    } else {
+                        // Nếu không có thông báo cũ, gửi thông báo mới
+                        $newLike = Like::where([
+                            'user_id' => $userId,
+                            'likeable_id' => $likeableId,
+                            'likeable_type' => $likeableClass,
+                        ])->first();
+                        if ($newLike) {
+                            $recipient->notify(new \App\Notifications\ReactionNotification($newLike, $likeable, $type));
+                        }
+                    }
+                }
+            }
         } else {
-            Like::create([
+            // Chưa có -> Tạo cảm xúc mới
+            $like = Like::create([
                 'user_id' => $userId,
                 'likeable_id' => $likeableId,
                 'likeable_type' => $likeableClass,
+                'type' => $reactionType,
             ]);
             $liked = true;
+            $activeReactionType = $reactionType;
+
+            // Bắn thông báo mới cho chủ sở hữu
+            $recipient = $likeable->user;
+            if ($recipient && $recipient->id !== $userId) {
+                $recipient->notify(new \App\Notifications\ReactionNotification($like, $likeable, $type));
+            }
         }
 
         $likesCount = $likeable->likes()->count();
+        
+        // Thống kê các loại reaction khác nhau đang có
+        $reactionsSummary = Like::where([
+                'likeable_id' => $likeableId,
+                'likeable_type' => $likeableClass,
+            ])
+            ->select('type', \Illuminate\Support\Facades\DB::raw('count(*) as count'))
+            ->groupBy('type')
+            ->pluck('count', 'type')
+            ->toArray();
+
         $postId = $type === 'post' ? $likeable->id : $likeable->post_id;
 
-        broadcast(new LikeToggled($type, $likeableId, $likesCount, $postId))->toOthers();
+        broadcast(new LikeToggled($type, $likeableId, $likesCount, $postId, $activeReactionType, $reactionsSummary))->toOthers();
 
         return response()->json([
             'success' => true,
             'liked' => $liked,
+            'reaction_type' => $activeReactionType,
             'likes_count' => $likesCount,
+            'reactions_summary' => $reactionsSummary,
         ]);
     }
 
@@ -503,12 +657,17 @@ class PostController extends Controller
             ->reverse()
             ->values();
 
+        // Sắp xếp bình luận được ghim lên đầu
+        $comments = $comments->sortByDesc('is_pinned')->values();
+
         $formatted = $comments->map(function($comment) {
             return [
                 'id' => $comment->id,
                 'post_id' => $comment->post_id,
                 'parent_id' => $comment->parent_id,
                 'content' => $comment->content,
+                'image_path' => $comment->image_path ? asset('storage/' . $comment->image_path) : null,
+                'is_pinned' => $comment->is_pinned,
                 'created_at_human' => $comment->created_at->diffForHumans(),
                 'user' => [
                     'id' => $comment->user->id,
@@ -528,6 +687,8 @@ class PostController extends Controller
                         'post_id' => $reply->post_id,
                         'parent_id' => $reply->parent_id,
                         'content' => $reply->content,
+                        'image_path' => $reply->image_path ? asset('storage/' . $reply->image_path) : null,
+                        'is_pinned' => $reply->is_pinned,
                         'created_at_human' => $reply->created_at->diffForHumans(),
                         'user' => [
                             'id' => $reply->user->id,
@@ -549,6 +710,113 @@ class PostController extends Controller
         return response()->json([
             'success' => true,
             'comments' => $formatted,
+        ]);
+    }
+
+    /**
+     * Lấy danh sách thành viên cư dân để gợi ý tag tên (@mentions)
+     */
+    public function searchMembersForMention(Request $request)
+    {
+        $users = User::with('apartment')
+            ->where('status', 'active')
+            ->where('role', 'resident')
+            ->where('id', '!=', Auth::id())
+            ->get();
+
+        $formatted = $users->map(function($u) {
+            $apartmentNo = $u->apartment ? ' (Căn hộ ' . $u->apartment->apartment_number . ')' : '';
+            return [
+                'key' => $u->name . $apartmentNo,
+                'value' => '@' . $u->name . $apartmentNo,
+                'id' => $u->id,
+                'avatar' => $u->avatar ? asset('storage/' . $u->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($u->name) . '&background=00236f&color=fff',
+            ];
+        });
+
+        return response()->json($formatted);
+    }
+
+    /**
+     * Ghim hoặc bỏ ghim bình luận lên đầu bài viết
+     */
+    public function togglePinComment($id)
+    {
+        $comment = Comment::findOrFail($id);
+        $post = $comment->post;
+
+        // Chỉ chủ bài viết hoặc admin portal mới được ghim bình luận
+        if ($post->user_id !== Auth::id() && !Auth::user()->isAdminPortalUser()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn không có quyền thực hiện hành động này.'
+            ], 403);
+        }
+
+        // Chỉ ghim được bình luận cấp 1 (bình luận cha)
+        if ($comment->parent_id !== null) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Chỉ có thể ghim bình luận chính, không thể ghim phản hồi con.'
+            ], 400);
+        }
+
+        $isPinned = !$comment->is_pinned;
+
+        if ($isPinned) {
+            // Hủy ghim toàn bộ các bình luận khác trong cùng bài viết này
+            Comment::where('post_id', $post->id)
+                ->where('id', '!=', $comment->id)
+                ->update(['is_pinned' => false]);
+        }
+
+        $comment->update(['is_pinned' => $isPinned]);
+
+        // Phát sự kiện cập nhật bình luận real-time
+        broadcast(new \App\Events\CommentUpdated($comment))->toOthers();
+
+        return response()->json([
+            'success' => true,
+            'is_pinned' => $isPinned,
+            'message' => $isPinned ? 'Đã ghim bình luận thành công!' : 'Đã bỏ ghim bình luận thành công!'
+        ]);
+    }
+
+    /**
+     * Lấy danh sách cư dân đã thả cảm xúc (Reactions Modal)
+     */
+    public function getReactions($likeableType, $likeableId)
+    {
+        if (!in_array($likeableType, ['post', 'comment'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Loại tương tác không hợp lệ.'
+            ], 400);
+        }
+
+        $likeableClass = $likeableType === 'post' ? Post::class : Comment::class;
+        $likeable = $likeableClass::findOrFail($likeableId);
+
+        $reactions = Like::with(['user.apartment'])
+            ->where('likeable_id', $likeableId)
+            ->where('likeable_type', $likeableClass)
+            ->get();
+
+        $formatted = $reactions->map(function ($like) {
+            return [
+                'user_id' => $like->user_id,
+                'name' => $like->user->name,
+                'avatar' => $like->user->avatar ? asset('storage/' . $like->user->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($like->user->name) . '&background=00236f&color=fff',
+                'apartment' => $like->user->apartment ? [
+                    'apartment_number' => $like->user->apartment->apartment_number,
+                ] : null,
+                'type' => $like->type ?? 'like',
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'reactions' => $formatted,
         ]);
     }
 }

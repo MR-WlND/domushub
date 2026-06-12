@@ -16,13 +16,17 @@ class LikeToggled implements ShouldBroadcast
     public $likeableId;
     public $likesCount;
     public $postId;
+    public $reactionType;
+    public $reactionsSummary;
 
-    public function __construct(string $likeableType, int $likeableId, int $likesCount, int $postId)
+    public function __construct(string $likeableType, int $likeableId, int $likesCount, int $postId, ?string $reactionType = null, array $reactionsSummary = [])
     {
         $this->likeableType = $likeableType;
         $this->likeableId = $likeableId;
         $this->likesCount = $likesCount;
         $this->postId = $postId;
+        $this->reactionType = $reactionType;
+        $this->reactionsSummary = $reactionsSummary;
     }
 
     public function broadcastOn(): array
@@ -42,6 +46,8 @@ class LikeToggled implements ShouldBroadcast
             'likeable_type' => $this->likeableType,
             'likeable_id' => $this->likeableId,
             'likes_count' => $this->likesCount,
+            'reaction_type' => $this->reactionType,
+            'reactions_summary' => $this->reactionsSummary,
         ];
     }
 }

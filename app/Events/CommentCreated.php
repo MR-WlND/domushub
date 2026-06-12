@@ -43,6 +43,8 @@ class CommentCreated implements ShouldBroadcast
             'post_id' => $this->comment->post_id,
             'parent_id' => $this->comment->parent_id,
             'content' => $this->comment->content,
+            'image_path' => $this->comment->image_path,
+            'is_pinned' => $this->comment->is_pinned,
             'created_at_human' => $this->comment->created_at->diffForHumans(),
             'user' => [
                 'id' => $this->comment->user->id,
