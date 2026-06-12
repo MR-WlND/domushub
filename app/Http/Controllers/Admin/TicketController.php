@@ -18,11 +18,31 @@ class TicketController extends Controller
     {
         $user = Auth::user();
 
-        $query = Ticket::with(['apartment.floor.block', 'sender', 'handler'])->latest();
+        $request->validate([
+            'status'   => 'nullable|in:pending,assigned,in_progress,completed,cancelled',
+            'priority' => 'nullable|in:low,medium,high,urgent',
+            'block_id' => 'nullable|integer|exists:blocks,id',
+            'search'   => 'nullable|string|max:200',
+        ]);
+
+        $priorityOrder = ['urgent' => 0, 'high' => 1, 'medium' => 2, 'low' => 3];
+        $statusOrder   = ['pending' => 0, 'assigned' => 1, 'in_progress' => 2, 'completed' => 3, 'cancelled' => 4];
+
+        $query = Ticket::with(['apartment.floor.block', 'sender', 'handler'])
+            ->orderByRaw("FIELD(priority, 'urgent','high','medium','low')")
+            ->orderByRaw("FIELD(status, 'pending','assigned','in_progress','completed','cancelled')")
+            ->orderBy('created_at', 'asc');
 
         // Technician chỉ thấy ticket được giao
         if ($user->role === 'technician') {
             $query->where('handler_id', $user->id);
+        }
+
+        // Lọc theo tòa nhà
+        if ($request->filled('block_id')) {
+            $query->whereHas('apartment.floor', function ($q) use ($request) {
+                $q->where('block_id', $request->block_id);
+            });
         }
 
         // Lọc theo trạng thái
@@ -69,7 +89,9 @@ class TicketController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('admin.tickets.index', compact('tickets', 'stats', 'technicians'));
+        $blocks = \App\Models\Block::orderBy('name')->get();
+
+        return view('admin.tickets.index', compact('tickets', 'stats', 'technicians', 'blocks'));
     }
 
     /**
@@ -116,6 +138,16 @@ class TicketController extends Controller
             'updated_by' => Auth::id(),
         ]);
 
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success'      => true,
+                'message'      => 'Đã phân công cho ' . ($handler->name ?? 'N/A'),
+                'handler_name' => $handler->name ?? 'N/A',
+                'status'       => 'assigned',
+                'status_label' => 'Đã phân công',
+            ]);
+        }
+
         return back()->with('success', 'Đã phân công kỹ thuật viên xử lý phản ánh thành công.');
     }
 
@@ -152,9 +184,22 @@ class TicketController extends Controller
             'updated_by'  => Auth::id(),
         ]);
 
+        $statusLabels = [
+            'in_progress' => 'Đang xử lý',
+            'completed'   => 'Hoàn thành',
+        ];
         $message = $validated['status'] === 'completed'
             ? 'Phản ánh đã được đánh dấu hoàn thành.'
             : 'Tiến trình xử lý đã được cập nhật.';
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success'      => true,
+                'message'      => $message,
+                'status'       => $validated['status'],
+                'status_label' => $statusLabels[$validated['status']] ?? $validated['status'],
+            ]);
+        }
 
         return back()->with('success', $message);
     }

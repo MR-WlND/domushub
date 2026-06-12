@@ -116,6 +116,7 @@ Route::middleware(['admin'])->group(function () {
 
     // Quản lý phản ánh & điều phối kỹ thuật (admin / manager)
     Route::get('/admin/tickets', [App\Http\Controllers\Admin\TicketController::class, 'index'])->name('admin.tickets.index');
+    Route::get('/admin/tickets/report', function () { return view('admin.tickets.report'); })->name('admin.tickets.report');
     Route::get('/admin/tickets/dispatch', [App\Http\Controllers\Admin\TicketController::class, 'dispatchIndex'])->name('admin.tickets.dispatch');
     Route::get('/admin/tickets/{id}', [App\Http\Controllers\Admin\TicketController::class, 'show'])->name('admin.tickets.show');
     Route::post('/admin/tickets/{id}/assign', [App\Http\Controllers\Admin\TicketController::class, 'assign'])->name('admin.tickets.assign');
