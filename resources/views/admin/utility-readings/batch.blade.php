@@ -357,16 +357,42 @@
                         @endif
 
                         {{-- Ảnh công tơ --}}
-                        <td style="text-align:center; vertical-align:middle;">
+                        <td style="text-align:center; vertical-align:middle; min-width:140px;">
                             @if (!$bothDoneRow)
-                                <input type="file"
-                                    name="readings[{{ $i }}][image_proof]"
-                                    accept="image/*"
-                                    style="font-size:11px; max-width:130px;">
+                                <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
+                                    {{-- Nút chụp camera --}}
+                                    <button type="button"
+                                        onclick="document.getElementById('cam_{{ $i }}').click()"
+                                        style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;background:linear-gradient(135deg,#0b57d0,#1a73e8);color:#fff;border:none;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;">
+                                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
+                                        </svg>
+                                        Chụp
+                                    </button>
+                                    {{-- Nút thư viện --}}
+                                    <button type="button"
+                                        onclick="document.getElementById('gal_{{ $i }}').click()"
+                                        style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;background:#f8fafc;color:#334155;border:1px solid #cbd5e1;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;">
+                                        📁 Chọn ảnh
+                                    </button>
+                                    {{-- Hidden inputs --}}
+                                    <input type="file" id="cam_{{ $i }}"
+                                        name="readings[{{ $i }}][images][]"
+                                        accept="image/*" capture="environment" multiple style="display:none;"
+                                        data-gallery="preview_{{ $i }}">
+                                    <input type="file" id="gal_{{ $i }}"
+                                        name="readings[{{ $i }}][images][]"
+                                        accept="image/*" multiple style="display:none;"
+                                        data-gallery="preview_{{ $i }}">
+                                    {{-- Preview thumbnails --}}
+                                    <div id="preview_{{ $i }}"
+                                        style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:4px;"></div>
+                                </div>
                             @else
                                 <span style="color:#64748b; font-size:12px;">—</span>
                             @endif
                         </td>
+
 
                         {{-- Status --}}
                         <td style="text-align:center;">
@@ -575,6 +601,102 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+    // ── Multi-image preview cho batch ─────────────────
+    // Lưu DataTransfer per-row để gộp ảnh từ camera + gallery
+    const rowFilesMap = {};
+    const MAX_BATCH_IMAGES = 5;
+
+    function getBatchDT(rowId) {
+        if (!rowFilesMap[rowId]) rowFilesMap[rowId] = new DataTransfer();
+        return rowFilesMap[rowId];
+    }
+
+    function addBatchFiles(camInp, rowId) {
+        const dt = getBatchDT(rowId);
+        const remaining = MAX_BATCH_IMAGES - dt.files.length;
+        const files = camInp.files;
+        let added = 0;
+        for (let i = 0; i < files.length && added < remaining; i++) {
+            dt.items.add(files[i]);
+            added++;
+        }
+        // Gán lại files vào input camera (sẽ được submit)
+        camInp.files = dt.files;
+        renderBatchPreview(rowId);
+    }
+
+    function renderBatchPreview(rowId) {
+        const container = document.getElementById('preview_' + rowId);
+        if (!container) return;
+        const dt = getBatchDT(rowId);
+        container.innerHTML = '';
+        for (let i = 0; i < dt.files.length; i++) {
+            const file = dt.files[i];
+            const wrap = document.createElement('div');
+            wrap.style.cssText = 'position:relative;width:48px;height:48px;border-radius:6px;overflow:hidden;border:1.5px solid #e2e8f0;';
+            const img = document.createElement('img');
+            img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+            const reader = new FileReader();
+            reader.onload = e => { img.src = e.target.result; };
+            reader.readAsDataURL(file);
+            // Nút xóa nhỏ
+            const del = document.createElement('button');
+            del.type = 'button';
+            del.innerHTML = '✕';
+            del.dataset.rowId = rowId;
+            del.dataset.idx = i;
+            del.style.cssText = 'position:absolute;top:1px;right:1px;background:rgba(239,68,68,.8);color:#fff;border:none;border-radius:50%;width:16px;height:16px;font-size:9px;line-height:1;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;';
+            del.addEventListener('click', function() {
+                removeBatchFileAt(this.dataset.rowId, parseInt(this.dataset.idx));
+            });
+            wrap.appendChild(img);
+            wrap.appendChild(del);
+            container.appendChild(wrap);
+        }
+    }
+
+    function removeBatchFileAt(rowId, idx) {
+        const dt = getBatchDT(rowId);
+        const newDT = new DataTransfer();
+        const files = dt.files;
+        for (let i = 0; i < files.length; i++) {
+            if (i !== idx) newDT.items.add(files[i]);
+        }
+        rowFilesMap[rowId] = newDT;
+        // Gán lại vào camera input của row
+        const camInp = document.getElementById('cam_' + rowId);
+        if (camInp) camInp.files = newDT.files;
+        renderBatchPreview(rowId);
+    }
+
+    // Gắn sự kiện cho tất cả inputs ảnh trong batch
+    document.querySelectorAll('input[id^="cam_"]').forEach(function(inp) {
+        const rowId = inp.id.replace('cam_', '');
+        inp.addEventListener('change', function() {
+            addBatchFiles(this, rowId);
+            this.value = '';
+        });
+    });
+    document.querySelectorAll('input[id^="gal_"]').forEach(function(inp) {
+        const rowId = inp.id.replace('gal_', '');
+        const camInp = document.getElementById('cam_' + rowId);
+        inp.addEventListener('change', function() {
+            if (camInp) {
+                // Thêm files từ gallery vào DT của row, sau đó gán vào camInp để submit
+                const dt = getBatchDT(rowId);
+                const remaining = MAX_BATCH_IMAGES - dt.files.length;
+                const files = this.files;
+                let added = 0;
+                for (let i = 0; i < files.length && added < remaining; i++) {
+                    dt.items.add(files[i]);
+                    added++;
+                }
+                camInp.files = dt.files;
+                renderBatchPreview(rowId);
+            }
+            this.value = '';
+        });
+    });
 });
 </script>
 @endpush
