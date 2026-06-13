@@ -15,7 +15,7 @@ return new class extends Migration
         }
 
         Schema::table('floors', function (Blueprint $table) {
-            $table->string('floor_type', 30)->default('residential')->after('name');
+            $table->string('floor_type', 30)->default('residential')->after('floor_number');
         });
     }
 

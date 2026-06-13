@@ -157,15 +157,51 @@
             </div>
         </div>
 
-        {{-- Ảnh công tơ minh chứng --}}
+        {{-- ── Ảnh minh chứng công tơ ── --}}
         <div class="util-form-group" style="margin-top: 15px; margin-bottom: 20px;">
-            <label class="util-form-label">Ảnh minh chứng công tơ</label>
-            <input type="file" name="image_proof" id="image_proof" accept="image/*" class="util-form-input">
-            <p class="util-form-hint">Hỗ trợ các file định dạng ảnh (JPG, PNG, WebP) tối đa 4MB.</p>
-            <div id="image_preview_container" style="margin-top: 10px; display: none;">
-                <img id="image_preview" src="" alt="Xem trước ảnh công tơ" style="max-width: 240px; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+            <label class="util-form-label">
+                📷 Ảnh minh chứng công tơ
+                <span style="font-weight:400; color:#64748b; font-size:12px;">(Tối đa 5 ảnh, mỗi ảnh ≤ 4MB)</span>
+            </label>
+
+            {{-- Hai nút chọn ảnh --}}
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+                {{-- Nút chụp ảnh trực tiếp (camera, ưu tiên camera sau trên mobile) --}}
+                <button type="button" id="btn_camera" onclick="document.getElementById('image_camera').click()"
+                    style="display:inline-flex;align-items:center;gap:7px;padding:9px 18px;background:linear-gradient(135deg,#0b57d0,#1a73e8);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(11,87,208,.25);transition:opacity .2s;">
+                    <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                    Chụp ảnh
+                </button>
+
+                {{-- Nút chọn từ thư viện --}}
+                <button type="button" id="btn_gallery" onclick="document.getElementById('image_gallery').click()"
+                    style="display:inline-flex;align-items:center;gap:7px;padding:9px 18px;background:#fff;color:#1e293b;border:1.5px solid #cbd5e1;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;transition:border-color .2s;">
+                    <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    Chọn từ thư viện
+                </button>
             </div>
+
+            {{-- Hidden inputs --}}
+            <input type="file" name="images[]" id="image_camera"
+                accept="image/*" capture="environment" multiple style="display:none;">
+            <input type="file" name="images[]" id="image_gallery"
+                accept="image/*" multiple style="display:none;">
+
+            {{-- Gallery preview --}}
+            <div id="image_preview_gallery"
+                style="display:flex; flex-wrap:wrap; gap:10px; margin-top:6px;"></div>
+
+            <p class="util-form-hint" style="margin-top:8px;">
+                💡 Nhấn <strong>Chụp ảnh</strong> để mở camera điện thoại, hoặc <strong>Chọn từ thư viện</strong> để upload ảnh có sẵn.
+            </p>
         </div>
+
 
         {{-- Actions --}}
         <div class="util-form-actions">
@@ -302,27 +338,100 @@ document.addEventListener('DOMContentLoaded', function () {
         isResetCb.addEventListener('change', updateOldValueDisplay);
     }
 
-    // Xử lý xem trước ảnh
-    const imageProof = document.getElementById('image_proof');
-    const previewContainer = document.getElementById('image_preview_container');
-    const previewImg = document.getElementById('image_preview');
+    // ── Multi-image upload & preview ────────────────────
+    const MAX_IMAGES = 5;
+    // allFiles: DataTransfer để gộp files từ cả camera và gallery
+    let allFiles = new DataTransfer();
 
-    if (imageProof) {
-        imageProof.addEventListener('change', function () {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    previewImg.src = e.target.result;
-                    previewContainer.style.display = 'block';
-                }
-                reader.readAsDataURL(file);
-            } else {
-                previewImg.src = '';
-                previewContainer.style.display = 'none';
-            }
-        });
+    const gallery   = document.getElementById('image_preview_gallery');
+    const camInput  = document.getElementById('image_camera');
+    const galInput  = document.getElementById('image_gallery');
+
+    function addFiles(fileList) {
+        const remaining = MAX_IMAGES - allFiles.files.length;
+        if (remaining <= 0) {
+            alert(`⚠️ Tối đa ${MAX_IMAGES} ảnh minh chứng.`);
+            return;
+        }
+        let added = 0;
+        for (let i = 0; i < fileList.length; i++) {
+            if (added >= remaining) break;
+            allFiles.items.add(fileList[i]);
+            added++;
+        }
+        // Gán lại files vào input camera (là input name="images[]" sẽ được submit)
+        camInput.files = allFiles.files;
+        renderGallery();
     }
+
+    function renderGallery() {
+        gallery.innerHTML = '';
+        const files = allFiles.files;
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const wrapper = document.createElement('div');
+            wrapper.style.cssText = 'position:relative; width:110px; height:110px; border-radius:10px; overflow:hidden; border:2px solid #e2e8f0; box-shadow:0 2px 8px rgba(0,0,0,.08);';
+
+            const img = document.createElement('img');
+            img.style.cssText = 'width:100%; height:100%; object-fit:cover;';
+            const reader = new FileReader();
+            reader.onload = e => { img.src = e.target.result; };
+            reader.readAsDataURL(file);
+
+            // Số thứ tự
+            const badge = document.createElement('span');
+            badge.textContent = i + 1;
+            badge.style.cssText = 'position:absolute;top:5px;left:5px;background:rgba(0,0,0,.55);color:#fff;font-size:11px;font-weight:700;padding:2px 6px;border-radius:6px;';
+
+            // Nút xóa
+            const delBtn = document.createElement('button');
+            delBtn.type = 'button';
+            delBtn.innerHTML = '✕';
+            delBtn.title = 'Xóa ảnh này';
+            delBtn.dataset.idx = i;
+            delBtn.style.cssText = 'position:absolute;top:4px;right:4px;background:rgba(239,68,68,.85);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:12px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;';
+            delBtn.addEventListener('click', function () {
+                removeFileAt(parseInt(this.dataset.idx));
+            });
+
+            wrapper.appendChild(img);
+            wrapper.appendChild(badge);
+            wrapper.appendChild(delBtn);
+            gallery.appendChild(wrapper);
+        }
+
+        // Cập nhật màu nút camera nếu đã đủ ảnh
+        const btnCam = document.getElementById('btn_camera');
+        const btnGal = document.getElementById('btn_gallery');
+        if (files.length >= MAX_IMAGES) {
+            btnCam.style.opacity = '0.4';
+            btnGal.style.opacity = '0.4';
+        } else {
+            btnCam.style.opacity = '1';
+            btnGal.style.opacity = '1';
+        }
+    }
+
+    function removeFileAt(idx) {
+        const newDT = new DataTransfer();
+        const files = allFiles.files;
+        for (let i = 0; i < files.length; i++) {
+            if (i !== idx) newDT.items.add(files[i]);
+        }
+        allFiles = newDT;
+        camInput.files = allFiles.files;
+        renderGallery();
+    }
+
+    camInput.addEventListener('change', function () {
+        addFiles(this.files);
+        this.value = ''; // reset để có thể chọn lại cùng file
+    });
+
+    galInput.addEventListener('change', function () {
+        addFiles(this.files);
+        this.value = '';
+    });
 
     // Khôi phục giá trị cũ nếu có lỗi validate hoặc chọn lại
     const oldApartmentId = "{{ old('apartment_id') }}";
@@ -340,3 +449,4 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 @endpush
+

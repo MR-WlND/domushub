@@ -22,11 +22,19 @@ class UtilityMeter extends Model
         'new_value',
         'usage_amount',
         'image_proof',
+        'images',
         'recorded_by',
         'status',
         'is_reset',
         'rejected_by',
         'reject_reason',
+    ];
+
+    /**
+     * Tự động cast cột `images` (JSON) ↔ PHP array
+     */
+    protected $casts = [
+        'images' => 'array',
     ];
 
     /*

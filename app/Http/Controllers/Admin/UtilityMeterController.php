@@ -166,15 +166,17 @@ class UtilityMeterController extends Controller
             'record_month'  => 'required|integer|min:1|max:12',
             'record_year'   => 'required|integer|min:2020|max:2100',
             'new_value'     => 'required|integer|min:0',
-            'image_proof'   => 'nullable|image|max:4096',
+            'images'        => 'nullable|array|max:5',
+            'images.*'      => 'image|max:4096',
             'is_reset'      => 'nullable|boolean',
         ], [
             'apartment_id.required' => 'Vui lòng chọn căn hộ.',
             'type.required'         => 'Vui lòng chọn loại (điện/nước).',
             'new_value.required'    => 'Vui lòng nhập chỉ số mới.',
             'new_value.min'         => 'Chỉ số mới phải >= 0.',
-            'image_proof.image'     => 'Tệp minh chứng phải là hình ảnh.',
-            'image_proof.max'       => 'Dung lượng ảnh tối đa là 4MB.',
+            'images.max'            => 'Tối đa 5 ảnh minh chứng.',
+            'images.*.image'        => 'Tệp minh chứng phải là hình ảnh.',
+            'images.*.max'          => 'Dung lượng mỗi ảnh tối đa là 4MB.',
         ]);
 
         // Kiểm tra trùng
@@ -200,8 +202,14 @@ class UtilityMeterController extends Controller
         ) ?? 0);
 
         $imageProofPath = null;
-        if ($request->hasFile('image_proof')) {
-            $imageProofPath = $request->file('image_proof')->store('proofs', 'public');
+        $imagePaths = [];
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $img) {
+                $path = $img->store('proofs', 'public');
+                $imagePaths[] = $path;
+            }
+            // Backward compat: giữ image_proof là ảnh đầu tiên
+            $imageProofPath = $imagePaths[0] ?? null;
         }
 
         $meter = UtilityMeter::create([
@@ -214,6 +222,7 @@ class UtilityMeterController extends Controller
             'recorded_by'   => Auth::id(),
             'status'        => 'pending',
             'image_proof'   => $imageProofPath,
+            'images'        => !empty($imagePaths) ? $imagePaths : null,
             'is_reset'      => $isReset,
         ]);
 
@@ -339,10 +348,15 @@ class UtilityMeterController extends Controller
             $elecSaved = false;
             $waterSaved = false;
 
-            // Tải ảnh công tơ nếu có
+            // Tải nhiều ảnh công tơ nếu có
             $imageProofPath = null;
-            if ($request->hasFile("readings.{$i}.image_proof")) {
-                $imageProofPath = $request->file("readings.{$i}.image_proof")->store('proofs', 'public');
+            $imagePaths = [];
+            if ($request->hasFile("readings.{$i}.images")) {
+                foreach ($request->file("readings.{$i}.images") as $img) {
+                    $p = $img->store('proofs', 'public');
+                    $imagePaths[] = $p;
+                }
+                $imageProofPath = $imagePaths[0] ?? null;
             }
 
             // ── Điện ────────────────────────────────────
@@ -368,6 +382,7 @@ class UtilityMeterController extends Controller
                         'recorded_by'  => Auth::id(),
                         'status'       => 'pending',
                         'image_proof'  => $imageProofPath,
+                        'images'       => !empty($imagePaths) ? $imagePaths : null,
                         'is_reset'     => $elecIsReset,
                     ]);
                     $saved++;
@@ -398,6 +413,7 @@ class UtilityMeterController extends Controller
                         'recorded_by'  => Auth::id(),
                         'status'       => 'pending',
                         'image_proof'  => $imageProofPath,
+                        'images'       => !empty($imagePaths) ? $imagePaths : null,
                         'is_reset'     => $waterIsReset,
                     ]);
                     $saved++;
@@ -450,6 +466,17 @@ class UtilityMeterController extends Controller
         $reading = UtilityMeter::with(['apartment.floor.block', 'recorder', 'rejecter'])->findOrFail($id);
 
         if (request()->ajax() || request()->wantsJson()) {
+            // Tạo danh sách URL ảnh
+            $imagesUrls = [];
+            if (!empty($reading->images)) {
+                foreach ($reading->images as $imgPath) {
+                    $imagesUrls[] = asset('storage/' . $imgPath);
+                }
+            } elseif ($reading->image_proof) {
+                // Backward compat với bản ghi cũ chỉ có 1 ảnh
+                $imagesUrls[] = asset('storage/' . $reading->image_proof);
+            }
+
             return response()->json([
                 'success' => true,
                 'reading' => [
@@ -465,6 +492,7 @@ class UtilityMeterController extends Controller
                     'usage_amount' => $reading->usage_amount,
                     'status' => $reading->status,
                     'is_reset' => $reading->is_reset,
+                    'images_urls' => $imagesUrls,
                     'image_proof_url' => $reading->image_proof ? asset('storage/' . $reading->image_proof) : null,
                     'recorder_name' => $reading->recorder->name ?? 'Hệ thống',
                     'reject_reason' => $reading->reject_reason,
@@ -540,6 +568,23 @@ class UtilityMeterController extends Controller
             $updateData['old_value'] = $validated['old_value'];
         }
 
+        // Xử lý ảnh upload thêm
+        if ($request->hasFile('images')) {
+            $request->validate([
+                'images'   => 'array|max:5',
+                'images.*' => 'image|max:4096',
+            ]);
+            $existingImages = $reading->images ?? [];
+            foreach ($request->file('images') as $img) {
+                $existingImages[] = $img->store('proofs', 'public');
+            }
+            $updateData['images'] = $existingImages;
+            // Cập nhật image_proof (backward compat)
+            if (empty($reading->image_proof) && !empty($existingImages)) {
+                $updateData['image_proof'] = $existingImages[0];
+            }
+        }
+
         // Nếu kỹ thuật viên sửa đổi bản ghi bị từ chối/chờ duyệt, trả trạng thái về pending để kế toán duyệt lại
         if (auth()->user()->role === 'technician') {
             $updateData['status'] = 'pending';
@@ -556,6 +601,39 @@ class UtilityMeterController extends Controller
             'month' => $reading->record_month,
             'year'  => $reading->record_year,
         ])->with('success', 'Đã cập nhật chỉ số thành công.');
+    }
+
+    /**
+     * Xóa 1 ảnh khỏi danh sách ảnh của bản ghi
+     */
+    public function removeImage(Request $request, int $id): RedirectResponse
+    {
+        $reading = UtilityMeter::findOrFail($id);
+
+        // Chỉ cho phép người ghi hoặc admin sửa ảnh
+        if (auth()->user()->role === 'technician' && $reading->recorded_by !== auth()->id()) {
+            abort(403, 'Bạn không có quyền xóa ảnh của bản ghi này.');
+        }
+
+        $index = (int) $request->input('index', -1);
+        $images = $reading->images ?? [];
+
+        if ($index >= 0 && isset($images[$index])) {
+            // Xóa file khỏi storage
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($images[$index]);
+            array_splice($images, $index, 1);
+
+            $updateData = ['images' => !empty($images) ? array_values($images) : null];
+
+            // Cập nhật image_proof nếu ảnh đầu tiên bị xóa
+            if ($index === 0) {
+                $updateData['image_proof'] = !empty($images) ? $images[0] : null;
+            }
+
+            $reading->update($updateData);
+        }
+
+        return back()->with('success', 'Đã xóa ảnh minh chứng.');
     }
 
     /**

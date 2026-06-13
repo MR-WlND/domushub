@@ -95,7 +95,7 @@
         <h4>Chỉnh sửa chỉ số</h4>
     </div>
 
-    <form action="{{ route('admin.utility-readings.update', $reading->id) }}" method="POST">
+    <form action="{{ route('admin.utility-readings.update', $reading->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
@@ -146,6 +146,67 @@
             @endif
         </div>
 
+        {{-- ── Ảnh minh chứng hiện tại ── --}}
+        @php
+            $existingImages = $reading->images ?? [];
+            if (empty($existingImages) && $reading->image_proof) {
+                $existingImages = [$reading->image_proof];
+            }
+        @endphp
+        @if (!empty($existingImages))
+        <div style="margin-bottom:20px;">
+            <label class="util-form-label">📷 Ảnh minh chứng hiện tại</label>
+            <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;">
+                @foreach ($existingImages as $idx => $img)
+                <div style="position:relative;width:120px;height:120px;border-radius:10px;overflow:hidden;border:2px solid #e2e8f0;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+                    <a href="{{ asset('storage/'.$img) }}" target="_blank">
+                        <img src="{{ asset('storage/'.$img) }}" alt="Ảnh {{ $idx+1 }}"
+                            style="width:100%;height:100%;object-fit:cover;">
+                    </a>
+                    <span style="position:absolute;top:4px;left:4px;background:rgba(0,0,0,.5);color:#fff;font-size:10px;font-weight:700;padding:2px 5px;border-radius:5px;">{{ $idx+1 }}</span>
+                    {{-- Nút xóa ảnh --}}
+                    <form method="POST" action="{{ route('admin.utility-readings.remove-image', $reading->id) }}"
+                        style="position:absolute;top:3px;right:3px;"
+                        onsubmit="return confirm('Xóa ảnh này?')">
+                        @csrf @method('DELETE')
+                        <input type="hidden" name="index" value="{{ $idx }}">
+                        <button type="submit"
+                            style="background:rgba(239,68,68,.85);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:11px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                            ✕
+                        </button>
+                    </form>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        {{-- ── Upload thêm ảnh mới ── --}}
+        @if (count($existingImages) < 5)
+        <div style="margin-bottom:20px;">
+            <label class="util-form-label">
+                ➕ Thêm ảnh minh chứng
+                <span style="font-weight:400;color:#64748b;font-size:12px;">(Tối đa 5 ảnh tổng cộng)</span>
+            </label>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin:10px 0;">
+                <button type="button" onclick="document.getElementById('edit_cam').click()"
+                    style="display:inline-flex;align-items:center;gap:7px;padding:8px 16px;background:linear-gradient(135deg,#0b57d0,#1a73e8);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
+                    </svg>
+                    Chụp ảnh
+                </button>
+                <button type="button" onclick="document.getElementById('edit_gal').click()"
+                    style="display:inline-flex;align-items:center;gap:7px;padding:8px 16px;background:#fff;color:#1e293b;border:1.5px solid #cbd5e1;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;">
+                    📁 Chọn ảnh
+                </button>
+            </div>
+            <input type="file" id="edit_cam" name="images[]" accept="image/*" capture="environment" multiple style="display:none;">
+            <input type="file" id="edit_gal" name="images[]" accept="image/*" multiple style="display:none;">
+            <div id="edit_preview" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+        </div>
+        @endif
+
         <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: #92400e;">
             ⚠️ Lưu ý: Sửa chỉ số cũ sẽ ảnh hưởng đến lượng tiêu thụ được tính toán.
         </div>
@@ -161,6 +222,7 @@
             <a href="{{ route('admin.utility-readings.index', ['month' => $reading->record_month, 'year' => $reading->record_year]) }}"
                 class="util-btn util-btn--outline">Hủy</a>
         </div>
+
     </form>
 </div>
 
@@ -190,7 +252,6 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 oldValueInp.setAttribute('readonly', true);
                 oldValueInp.classList.add('util-form-input--readonly');
-                // Restore original value when unchecked
                 oldValueInp.value = "{{ $reading->old_value }}";
                 calcUsage();
             }
@@ -199,6 +260,71 @@ document.addEventListener('DOMContentLoaded', function () {
 
     oldValueInp.addEventListener('input', calcUsage);
     newValueInp.addEventListener('input', calcUsage);
+
+    // ── Multi-image upload cho edit ─────────────────
+    let editDT = new DataTransfer();
+    const MAX_EDIT = 5 - {{ count($existingImages ?? []) }};
+    const editCam = document.getElementById('edit_cam');
+    const editGal = document.getElementById('edit_gal');
+    const editPreview = document.getElementById('edit_preview');
+
+    function addEditFiles(files) {
+        const remaining = MAX_EDIT - editDT.files.length;
+        let added = 0;
+        for (let i = 0; i < files.length && added < remaining; i++) {
+            editDT.items.add(files[i]);
+            added++;
+        }
+        if (editCam) editCam.files = editDT.files;
+        renderEditPreview();
+    }
+
+    function renderEditPreview() {
+        if (!editPreview) return;
+        editPreview.innerHTML = '';
+        for (let i = 0; i < editDT.files.length; i++) {
+            const file = editDT.files[i];
+            const wrap = document.createElement('div');
+            wrap.style.cssText = 'position:relative;width:90px;height:90px;border-radius:8px;overflow:hidden;border:2px solid #e2e8f0;';
+            const img = document.createElement('img');
+            img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+            const reader = new FileReader();
+            reader.onload = e => { img.src = e.target.result; };
+            reader.readAsDataURL(file);
+            const del = document.createElement('button');
+            del.type = 'button';
+            del.innerHTML = '✕';
+            del.dataset.idx = i;
+            del.style.cssText = 'position:absolute;top:3px;right:3px;background:rgba(239,68,68,.85);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;';
+            del.addEventListener('click', function() {
+                const idx = parseInt(this.dataset.idx);
+                const newDT = new DataTransfer();
+                for (let j = 0; j < editDT.files.length; j++) {
+                    if (j !== idx) newDT.items.add(editDT.files[j]);
+                }
+                editDT = newDT;
+                if (editCam) editCam.files = editDT.files;
+                renderEditPreview();
+            });
+            wrap.appendChild(img);
+            wrap.appendChild(del);
+            editPreview.appendChild(wrap);
+        }
+    }
+
+    if (editCam) {
+        editCam.addEventListener('change', function() { addEditFiles(this.files); this.value = ''; });
+    }
+    if (editGal) {
+        editGal.addEventListener('change', function() {
+            const files = this.files;
+            const remaining = MAX_EDIT - editDT.files.length;
+            for (let i = 0; i < files.length && i < remaining; i++) editDT.items.add(files[i]);
+            if (editCam) editCam.files = editDT.files;
+            renderEditPreview();
+            this.value = '';
+        });
+    }
 });
 </script>
 @endpush
