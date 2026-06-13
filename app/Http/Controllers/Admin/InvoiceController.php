@@ -117,7 +117,7 @@ class InvoiceController extends Controller
      */
     public function show(Invoice $invoice)
     {
-        $invoice->load(['apartment.floor.block', 'details.servicePrice']);
+        $invoice->load(['apartment.floor.block', 'details.servicePrice', 'payments']);
         return view('admin.invoices.show', compact('invoice'));
     }
 

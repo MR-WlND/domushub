@@ -40,6 +40,12 @@ Route::post('/security/login', [AuthController::class, 'loginSecurity'])->name('
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // =========================================================================
+// VNPay IPN – Webhook nhận thông báo server-to-server từ VNPay
+// KHÔNG đặt trong middleware auth vì VNPay gọi trực tiếp không có session
+// =========================================================================
+Route::get('/vnpay/ipn', [\App\Http\Controllers\Resident\InvoiceController::class, 'vnpayIpn'])->name('vnpay.ipn');
+
+// =========================================================================
 // DASHBOARD ADMIN ROUTES
 // =========================================================================
 Route::middleware(['admin'])->group(function () {
@@ -104,6 +110,9 @@ Route::middleware(['admin'])->group(function () {
     Route::delete('/admin/service-prices/{id}', [ServicePriceController::class, 'destroy'])->name('admin.service-prices.destroy');
 
     Route::get('/admin/invoices', [InvoiceController::class, 'index'])->name('admin.invoices.index');
+    Route::get('/admin/invoices/create', [InvoiceController::class, 'create'])->name('admin.invoices.create');
+    Route::post('/admin/invoices', [InvoiceController::class, 'store'])->name('admin.invoices.store');
+    Route::get('/admin/invoices/{invoice}', [InvoiceController::class, 'show'])->name('admin.invoices.show');
     Route::patch('/admin/invoices/{invoice}/mark-paid', [InvoiceController::class, 'markAsPaid'])->name('admin.invoices.mark-paid');
 
 
@@ -184,7 +193,10 @@ Route::middleware(['resident'])->group(function () {
 
     // Hoá đơn cư dân
     Route::get('/resident/invoices', [ResidentInvoiceController::class, 'index'])->name('resident.invoices.index');
-    Route::post('/resident/invoices/{id}/pay', [ResidentInvoiceController::class, 'pay'])->name('resident.invoices.pay');
+    Route::get('/resident/invoices/history', [ResidentInvoiceController::class, 'history'])->name('resident.invoices.history');
+    Route::get('/resident/invoices/vnpay-return', [ResidentInvoiceController::class, 'vnpayReturn'])->name('resident.invoices.vnpay-return');
+    Route::get('/resident/invoices/{id}', [ResidentInvoiceController::class, 'show'])->name('resident.invoices.show');
+    Route::post('/resident/invoices/pay', [ResidentInvoiceController::class, 'pay'])->name('resident.invoices.pay');
 
     // Quản lý thành viên gia đình & nhân khẩu & mã mời
     Route::get('/resident/members', [\App\Http\Controllers\Resident\MemberController::class, 'index'])->name('resident.members.index');

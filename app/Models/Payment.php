@@ -16,6 +16,8 @@ class Payment extends Model
         'amount',
         'payment_method',
         'transaction_code',
+        'receipt_code',
+        'vnp_txn_ref',
         'status',
         'paid_at',
     ];
@@ -27,5 +29,17 @@ class Payment extends Model
     public function invoice()
     {
         return $this->belongsTo(Invoice::class, 'bill_id');
+    }
+
+    /**
+     * Sinh mã biên lai nội bộ duy nhất dạng: REC-YYYYMMDD-XXXXX
+     */
+    public static function generateReceiptCode(): string
+    {
+        do {
+            $code = 'REC-' . now()->format('Ymd') . '-' . strtoupper(substr(uniqid(), -5));
+        } while (static::where('receipt_code', $code)->exists());
+
+        return $code;
     }
 }
