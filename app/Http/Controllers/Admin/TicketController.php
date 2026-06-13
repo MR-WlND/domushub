@@ -205,6 +205,94 @@ class TicketController extends Controller
     }
 
     /**
+     * Technician tự nhận nhiệm vụ (assigned → in_progress)
+     */
+    public function acceptTask(Request $request, $id)
+    {
+        $user   = Auth::user();
+        $ticket = Ticket::findOrFail($id);
+
+        // Chỉ technician được giao mới có thể nhận
+        if ($ticket->handler_id !== $user->id) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Bạn không được phân công phản ánh này.'], 403);
+            }
+            return back()->withErrors(['ticket' => 'Bạn không được phân công phản ánh này.']);
+        }
+
+        if ($ticket->status !== 'assigned') {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Phản ánh không ở trạng thái chờ nhận.'], 422);
+            }
+            return back()->withErrors(['ticket' => 'Phản ánh không ở trạng thái chờ nhận.']);
+        }
+
+        $ticket->update(['status' => 'in_progress']);
+
+        TicketProgress::create([
+            'ticket_id'  => $ticket->id,
+            'status'     => 'in_progress',
+            'comment'    => 'Kỹ thuật viên đã nhận và bắt đầu xử lý.',
+            'updated_by' => $user->id,
+        ]);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success'      => true,
+                'message'      => 'Đã nhận nhiệm vụ thành công!',
+                'status'       => 'in_progress',
+                'status_label' => 'Đang xử lý',
+            ]);
+        }
+
+        return back()->with('success', 'Đã nhận nhiệm vụ! Chúc bạn xử lý thành công.');
+    }
+
+    /**
+     * Dashboard nhiệm vụ riêng của Technician
+     */
+    public function myTasks(Request $request)
+    {
+        $user = Auth::user();
+
+        // Danh sách nhiệm vụ mới được giao (assigned) - chưa nhận
+        $newTasks = Ticket::with(['apartment.floor.block', 'sender'])
+            ->where('handler_id', $user->id)
+            ->where('status', 'assigned')
+            ->orderByRaw("FIELD(priority, 'urgent','high','medium','low')")
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        // Danh sách nhiệm vụ đang xử lý (in_progress)
+        $activeTasks = Ticket::with(['apartment.floor.block', 'sender', 'progress'])
+            ->where('handler_id', $user->id)
+            ->where('status', 'in_progress')
+            ->orderByRaw("FIELD(priority, 'urgent','high','medium','low')")
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        // Danh sách nhiệm vụ hoàn thành gần đây (10 cái gần nhất)
+        $completedTasks = Ticket::with(['apartment.floor.block'])
+            ->where('handler_id', $user->id)
+            ->where('status', 'completed')
+            ->orderBy('updated_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        // Thống kê cá nhân
+        $stats = [
+            'new'       => $newTasks->count(),
+            'active'    => $activeTasks->count(),
+            'completed' => Ticket::where('handler_id', $user->id)->where('status', 'completed')->count(),
+            'total'     => Ticket::where('handler_id', $user->id)->count(),
+        ];
+
+        return view('admin.tickets.technician', compact(
+            'newTasks', 'activeTasks', 'completedTasks', 'stats'
+        ));
+    }
+
+    /**
      * Giao diện điều phối kỹ thuật (admin/manager)
      */
     public function dispatchIndex(Request $request)

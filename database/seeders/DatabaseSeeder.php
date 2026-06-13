@@ -26,10 +26,12 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             SecuritySeeder::class,
             ResidentSeeder::class,
+            TechnicianSeeder::class,
             BlockFloorApartmentSeeder::class,
             ServicePriceSeeder::class,
             InvoiceSeeder::class,
             SystemSettingSeeder::class,
+            SampleTicketSeeder::class,
         ]);
 
     }

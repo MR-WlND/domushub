@@ -196,15 +196,20 @@
                     </div>
                     <div class="tk-show-card__body">
                         <form method="POST"
+                              id="progressFormDetail"
                               action="{{ route('admin.tickets.update-progress', $ticket->id) }}"
                               enctype="multipart/form-data">
                             @csrf
                             <div class="tk-form-group">
                                 <label>Trạng thái mới</label>
-                                <select name="status" required>
-                                    <option value="" disabled selected>-- Chọn --</option>
-                                    <option value="in_progress">Đang xử lý</option>
-                                    <option value="completed">Hoàn thành</option>
+                                <select name="status" id="progressStatusDetail" required>
+                                    @if($ticket->status === 'in_progress')
+                                        <option value="completed" selected>Hoàn thành</option>
+                                    @else
+                                        <option value="" disabled selected>-- Chọn --</option>
+                                        <option value="in_progress">Đang xử lý</option>
+                                        <option value="completed">Hoàn thành</option>
+                                    @endif
                                 </select>
                             </div>
                             <div class="tk-form-group">
@@ -271,6 +276,20 @@ function openAdminImgModal(src) {
 function closeAdminImgModal() {
     document.getElementById('adminImgModal').style.display = 'none';
 }
+
+// ── Xác nhận cập nhật tiến độ ở trang chi tiết ─────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+    const progressFormDetail = document.getElementById('progressFormDetail');
+    if (progressFormDetail) {
+        progressFormDetail.addEventListener('submit', function (e) {
+            const statusSelect = document.getElementById('progressStatusDetail');
+            const statusText = statusSelect.value === 'completed' ? 'Hoàn thành' : 'Đang xử lý';
+            if (!confirm(`Bạn có chắc chắn muốn cập nhật trạng thái phản ánh này thành "${statusText}" không?`)) {
+                e.preventDefault();
+            }
+        });
+    }
+});
 </script>
 
 @endsection
