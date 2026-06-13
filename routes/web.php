@@ -112,6 +112,10 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/admin/invoices', [InvoiceController::class, 'index'])->name('admin.invoices.index');
     Route::get('/admin/invoices/create', [InvoiceController::class, 'create'])->name('admin.invoices.create');
     Route::post('/admin/invoices', [InvoiceController::class, 'store'])->name('admin.invoices.store');
+
+    Route::get('/admin/invoices/batch', [InvoiceController::class, 'batchCreate'])->name('admin.invoices.batch');
+    Route::post('/admin/invoices/batch', [InvoiceController::class, 'batchStore'])->name('admin.invoices.batch.store');
+
     Route::get('/admin/invoices/{invoice}', [InvoiceController::class, 'show'])->name('admin.invoices.show');
     Route::patch('/admin/invoices/{invoice}/mark-paid', [InvoiceController::class, 'markAsPaid'])->name('admin.invoices.mark-paid');
 
