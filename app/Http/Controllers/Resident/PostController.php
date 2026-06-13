@@ -819,4 +819,38 @@ class PostController extends Controller
             'reactions' => $formatted,
         ]);
     }
+
+    /**
+     * Chia sẻ bài đăng trực tiếp cho cư dân khác trong hệ thống
+     */
+    public function shareToUser(Request $request, $id)
+    {
+        $request->validate([
+            'target_user_id' => 'required|exists:users,id',
+            'message' => 'nullable|string|max:255',
+        ], [
+            'target_user_id.required' => 'Vui lòng chọn cư dân để chia sẻ.',
+            'target_user_id.exists' => 'Cư dân được chia sẻ không tồn tại.',
+            'message.max' => 'Lời nhắn không được vượt quá 255 ký tự.',
+        ]);
+
+        $post = Post::findOrFail($id);
+        $targetUser = User::findOrFail($request->target_user_id);
+
+        if ($targetUser->id === Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn không thể tự chia sẻ bài viết cho chính mình.'
+            ], 400);
+        }
+
+        // Gửi thông báo chia sẻ bài đăng tới cư dân đích
+        $targetUser->notify(new \App\Notifications\PostSharedNotification($post, Auth::user(), $request->message));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã chia sẻ bài viết thành công đến cư dân ' . $targetUser->name . '!'
+        ]);
+    }
 }
+

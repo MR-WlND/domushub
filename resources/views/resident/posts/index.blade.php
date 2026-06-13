@@ -278,6 +278,9 @@
                                 <a href="{{ route('resident.posts.show', $post->id) }}" class="pc-card__action-btn">
                                     <i class="fa-regular fa-comment"></i> Bình luận ({{ $post->comments->count() }})
                                 </a>
+                                <button type="button" class="pc-card__action-btn" onclick="openShareModal({{ $post->id }}, '{{ route('resident.posts.show', $post->id) }}')">
+                                    <i class="fa-regular fa-share-from-square"></i> Chia sẻ
+                                </button>
                                 @if($post->user_id !== auth()->id())
                                     <button type="button" class="pc-card__action-btn" style="color: var(--color-error); border: none; background: transparent; cursor: pointer; font-family: inherit; font-size: 0.875rem; font-weight: 600; padding: 0; outline: none;" onclick="openReportModal({{ $post->id }})">
                                         <i class="fa-regular fa-flag"></i> Báo cáo
@@ -420,10 +423,232 @@
     </div>
 </div>
 
+{{-- Modal Chia sẻ Bài viết --}}
+<div id="sharePostModal" class="rep-modal" onclick="handleShareOutsideModalClick(event)">
+    <div class="rep-modal__content" style="max-width: 480px;">
+        <div class="rep-modal__header">
+            <h3 class="rep-modal__title">
+                <i class="fa-regular fa-share-from-square" style="color: var(--color-primary);"></i> Chia sẻ bài viết
+            </h3>
+            <button type="button" class="rep-modal__close" onclick="closeShareModal()">&times;</button>
+        </div>
+        <div class="rep-modal__body">
+            <!-- Option 1: Copy link -->
+            <div style="margin-bottom: 1.5rem;">
+                <label class="rep-modal__label">Liên kết bài viết</label>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="text" id="share-post-url" class="pc-composer__title-input" readonly style="flex: 1; margin: 0; background-color: #f8fafc; cursor: text;">
+                    <button type="button" class="pc-btn" onclick="copyShareLink()">Sao chép</button>
+                </div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 1.5rem 0;">
+
+            <!-- Option 2: Share internally -->
+            <form id="share-internal-form" onsubmit="submitInternalShare(event)">
+                @csrf
+                <input type="hidden" id="share-target-post-id" value="">
+                
+                <div style="margin-bottom: 1rem; position: relative;">
+                    <label class="rep-modal__label">Chọn cư dân nhận chia sẻ</label>
+                    <input type="text" id="share-member-search" class="pc-composer__title-input" placeholder="Nhập tên cư dân hoặc căn hộ..." autocomplete="off" oninput="filterShareMembers()" style="margin: 0;">
+                    <input type="hidden" id="share-target-user-id" value="">
+                    
+                    <!-- Dropdown danh sách cư dân -->
+                    <div id="share-members-dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: var(--radius); max-height: 180px; overflow-y: auto; z-index: 1000; box-shadow: var(--color-shadow-lg); margin-top: 2px;">
+                        <!-- JS renders matching residents here -->
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label class="rep-modal__label">Lời nhắn kèm theo (tùy chọn)</label>
+                    <textarea id="share-message" class="rep-modal__textarea" rows="2" placeholder="Nhập lời nhắn gửi đến cư dân..." style="min-height: 50px;"></textarea>
+                </div>
+
+                <div class="rep-modal__footer" style="padding: 0;">
+                    <button type="button" class="pc-btn pc-btn--secondary" onclick="closeShareModal()">Hủy bỏ</button>
+                    <button type="submit" class="rep-modal__btn-submit" id="submit-share-btn" disabled>Gửi chia sẻ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 {{-- Toast Container hiển thị thông báo góc màn hình --}}
 <div id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 10001; display: flex; flex-direction: column; gap: 0.5rem; max-width: 350px;"></div>
 
 <script>
+    let shareMembersList = [];
+    let selectedShareUserId = null;
+
+    function openShareModal(postId, postUrl) {
+        document.getElementById('share-target-post-id').value = postId;
+        document.getElementById('share-post-url').value = postUrl;
+        document.getElementById('share-member-search').value = '';
+        document.getElementById('share-target-user-id').value = '';
+        document.getElementById('share-message').value = '';
+        document.getElementById('share-members-dropdown').style.display = 'none';
+        document.getElementById('submit-share-btn').setAttribute('disabled', 'disabled');
+        selectedShareUserId = null;
+
+        const modal = document.getElementById('sharePostModal');
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.classList.add('show');
+        }, 10);
+
+        if (shareMembersList.length === 0) {
+            fetch('/resident/search-members')
+                .then(res => res.json())
+                .then(data => {
+                    shareMembersList = data;
+                })
+                .catch(err => console.error('Error fetching members:', err));
+        }
+    }
+
+    function closeShareModal() {
+        const modal = document.getElementById('sharePostModal');
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300);
+    }
+
+    function handleShareOutsideModalClick(event) {
+        if (event.target === document.getElementById('sharePostModal')) {
+            closeShareModal();
+        }
+    }
+
+    function copyShareLink() {
+        const urlInput = document.getElementById('share-post-url');
+        urlInput.select();
+        urlInput.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(urlInput.value).then(() => {
+            showToast('Đã sao chép liên kết bài viết vào bộ nhớ tạm!');
+        }).catch(err => {
+            console.error('Failed to copy:', err);
+            showToast('Không thể sao chép liên kết.', 'error');
+        });
+    }
+
+    function filterShareMembers() {
+        const searchInput = document.getElementById('share-member-search');
+        const dropdown = document.getElementById('share-members-dropdown');
+        const query = searchInput.value.trim().toLowerCase();
+
+        document.getElementById('share-target-user-id').value = '';
+        document.getElementById('submit-share-btn').setAttribute('disabled', 'disabled');
+        selectedShareUserId = null;
+
+        if (query.length < 1) {
+            dropdown.style.display = 'none';
+            return;
+        }
+
+        const filtered = shareMembersList.filter(m => 
+            m.key.toLowerCase().includes(query)
+        );
+
+        if (filtered.length === 0) {
+            dropdown.innerHTML = '<div style="padding: 10px; color: #64748b; font-size: 13px; text-align: center;">Không tìm thấy cư dân phù hợp</div>';
+            dropdown.style.display = 'block';
+            return;
+        }
+
+        dropdown.innerHTML = '';
+        filtered.forEach(m => {
+            const item = document.createElement('div');
+            item.style.cssText = `
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                padding: 0.65rem 0.85rem;
+                cursor: pointer;
+                border-bottom: 1px solid #f1f5f9;
+                transition: background-color 0.15s;
+            `;
+            item.innerHTML = `
+                <img src="${m.avatar}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;">
+                <span style="font-size: 13px; font-weight: 500; color: #0f172a;">${escapeHtml(m.key)}</span>
+            `;
+            item.addEventListener('mouseenter', () => {
+                item.style.backgroundColor = '#f1f5f9';
+            });
+            item.addEventListener('mouseleave', () => {
+                item.style.backgroundColor = 'transparent';
+            });
+            item.addEventListener('click', () => {
+                searchInput.value = m.key;
+                document.getElementById('share-target-user-id').value = m.id;
+                selectedShareUserId = m.id;
+                document.getElementById('submit-share-btn').removeAttribute('disabled');
+                dropdown.style.display = 'none';
+            });
+            dropdown.appendChild(item);
+        });
+        dropdown.style.display = 'block';
+    }
+
+    // Đóng dropdown khi click ngoài
+    document.addEventListener('click', function(e) {
+        const dropdown = document.getElementById('share-members-dropdown');
+        const searchInput = document.getElementById('share-member-search');
+        if (dropdown && e.target !== searchInput && e.target !== dropdown && !dropdown.contains(e.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+
+    function submitInternalShare(event) {
+        event.preventDefault();
+        const postId = document.getElementById('share-target-post-id').value;
+        const targetUserId = selectedShareUserId;
+        const message = document.getElementById('share-message').value.trim();
+
+        if (!targetUserId) {
+            showToast('Vui lòng chọn cư dân để chia sẻ.', 'error');
+            return;
+        }
+
+        const submitBtn = document.getElementById('submit-share-btn');
+        submitBtn.setAttribute('disabled', 'disabled');
+        submitBtn.innerText = 'Đang chia sẻ...';
+
+        const tokenInput = document.querySelector('input[name="_token"]');
+        const csrfToken = tokenInput ? tokenInput.value : '';
+
+        fetch(`/resident/posts/${postId}/share-to-user`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                target_user_id: targetUserId,
+                message: message
+            })
+        })
+        .then(res => {
+            if (!res.ok) {
+                return res.json().then(err => { throw err; });
+            }
+            return res.json();
+        })
+        .then(data => {
+            closeShareModal();
+            showToast(data.message || 'Chia sẻ bài viết thành công!', 'success');
+        })
+        .catch(err => {
+            showToast(err.message || 'Có lỗi xảy ra. Vui lòng thử lại!', 'error');
+        })
+        .finally(() => {
+            submitBtn.removeAttribute('disabled');
+            submitBtn.innerText = 'Gửi chia sẻ';
+        });
+    }
+
     // Hàm hiển thị thông báo Toast mượt mà
     function showToast(message, type = 'success') {
         const container = document.getElementById('toast-container');
@@ -1007,6 +1232,9 @@
                         <a href="/resident/posts/${post.id}" class="pc-card__action-btn">
                             <i class="fa-regular fa-comment"></i> Bình luận (0)
                         </a>
+                        <button type="button" class="pc-card__action-btn" onclick="openShareModal(${post.id}, '${window.location.origin}/resident/posts/${post.id}')">
+                            <i class="fa-regular fa-share-from-square"></i> Chia sẻ
+                        </button>
                         ${reportBtn}
                     </div>
                     <div style="display: flex; gap: 0.5rem; align-items: center;">

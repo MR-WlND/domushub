@@ -956,7 +956,16 @@
     padding-left: 0.5rem;
 }
 
+.pc-comment__actions form {
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
+}
+
 .pc-comment__action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
     background: transparent;
     border: none;
     color: var(--color-outline);
@@ -965,6 +974,7 @@
     cursor: pointer;
     padding: 0;
     transition: color var(--transition-fast);
+    line-height: 1;
 }
 
 .pc-comment__action-btn:hover {
@@ -1530,7 +1540,8 @@
 
 .pc-like-container {
     position: relative;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
 }
 
 .pc-reactions-popup {
