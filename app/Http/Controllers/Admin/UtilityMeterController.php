@@ -16,25 +16,29 @@ use Illuminate\View\View;
 
 class UtilityMeterController extends Controller
 {
+    public function __construct()
+    {
+        // Programmatically run migrations if reject_reason or images column is not present
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('utility_meters', 'images') ||
+            !\Illuminate\Support\Facades\Schema::hasColumn('utility_meters', 'reject_reason')) {
+            try {
+                \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+            } catch (\Exception $e) {
+                // Ignore migration errors
+            }
+        }
+    }
+
     /**
      * Danh sách chỉ số điện nước + thống kê tổng quan
      */
-    public function index(Request $request): View
+    public function index(Request $request): View|RedirectResponse
     {
         if (!file_exists(public_path('storage'))) {
             try {
                 \Illuminate\Support\Facades\Artisan::call('storage:link');
             } catch (\Exception $e) {
                 // Ignore if symlink fails or permission is denied on local Windows development
-            }
-        }
-
-        // Programmatically run migrations if reject_reason column is not present
-        if (!\Illuminate\Support\Facades\Schema::hasColumn('utility_meters', 'reject_reason')) {
-            try {
-                \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-            } catch (\Exception $e) {
-                // Ignore migration errors
             }
         }
 
@@ -227,10 +231,12 @@ class UtilityMeterController extends Controller
         ]);
 
         // Gửi thông báo cho nhân viên kế toán (staff) khi kỹ thuật viên ghi số
-        if (Auth::user()->role === 'technician') {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if ($user && $user->role === 'technician') {
             $apartment = Apartment::find($validated['apartment_id']);
             $typeName = $validated['type'] === 'electricity' ? 'Điện' : 'Nước';
-            $recorderName = Auth::user()->name;
+            $recorderName = $user->name;
             $apartmentNumber = $apartment->apartment_number ?? 'N/A';
             
             $accountants = \App\Models\User::whereIn('role', ['staff', 'manager', 'admin'])->get();
@@ -427,8 +433,10 @@ class UtilityMeterController extends Controller
         }
 
         // Gửi thông báo cho nhân viên kế toán (staff) khi kỹ thuật viên ghi số hàng loạt
-        if ($saved > 0 && Auth::user()->role === 'technician') {
-            $recorderName = Auth::user()->name;
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if ($saved > 0 && $user && $user->role === 'technician') {
+            $recorderName = $user->name;
             $countApts = count($affectedApartments);
             
             $accountants = \App\Models\User::whereIn('role', ['staff', 'manager', 'admin'])->get();
@@ -513,11 +521,14 @@ class UtilityMeterController extends Controller
     {
         $reading = UtilityMeter::with('apartment.floor.block')->findOrFail($id);
 
-        if (auth()->user()->role === 'technician') {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if ($user->role === 'technician') {
             if (!in_array($reading->status, ['pending', 'rejected'])) {
                 abort(403, 'Bạn không có quyền chỉnh sửa chỉ số đã được duyệt.');
             }
-            if ($reading->recorded_by !== auth()->id()) {
+            if ($reading->recorded_by !== Auth::id()) {
                 abort(403, 'Bạn không có quyền chỉnh sửa chỉ số của kỹ thuật viên khác.');
             }
         }
@@ -532,16 +543,19 @@ class UtilityMeterController extends Controller
     {
         $reading = UtilityMeter::findOrFail($id);
 
-        if (auth()->user()->role === 'technician') {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if ($user->role === 'technician') {
             if (!in_array($reading->status, ['pending', 'rejected'])) {
                 abort(403, 'Bạn không có quyền chỉnh sửa chỉ số đã được duyệt.');
             }
-            if ($reading->recorded_by !== auth()->id()) {
+            if ($reading->recorded_by !== Auth::id()) {
                 abort(403, 'Bạn không có quyền chỉnh sửa chỉ số của kỹ thuật viên khác.');
             }
         }
 
-        $isAdmin = auth()->user()->role === 'admin';
+        $isAdmin = $user->role === 'admin';
 
         $rules = [
             'new_value' => 'required|integer|min:0',
@@ -641,7 +655,9 @@ class UtilityMeterController extends Controller
      */
     public function destroy(int $id): RedirectResponse
     {
-        if (auth()->user()->role === 'technician') {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if ($user && $user->role === 'technician') {
             abort(403, 'Bạn không có quyền xóa chỉ số.');
         }
 
@@ -668,7 +684,9 @@ class UtilityMeterController extends Controller
      */
     public function approve(int $id): RedirectResponse
     {
-        if (in_array(auth()->user()->role, ['technician'])) {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if ($user && in_array($user->role, ['technician'])) {
             abort(403, 'Bạn không có quyền phê duyệt chỉ số.');
         }
 
@@ -689,7 +707,9 @@ class UtilityMeterController extends Controller
      */
     public function reject(Request $request, int $id): RedirectResponse
     {
-        if (in_array(auth()->user()->role, ['technician'])) {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if ($user && in_array($user->role, ['technician'])) {
             abort(403, 'Bạn không có quyền từ chối chỉ số.');
         }
 
@@ -702,7 +722,7 @@ class UtilityMeterController extends Controller
         $reading = UtilityMeter::with('apartment')->findOrFail($id);
         $reading->update([
             'status' => 'rejected',
-            'rejected_by' => auth()->id(),
+            'rejected_by' => Auth::id(),
             'reject_reason' => $request->input('reject_reason'),
         ]);
 
@@ -711,7 +731,7 @@ class UtilityMeterController extends Controller
         if ($recorder) {
             $typeName = $reading->type === 'electricity' ? 'Điện' : 'Nước';
             $apartmentNumber = $reading->apartment->apartment_number ?? 'N/A';
-            $rejecterName = auth()->user()->name;
+            $rejecterName = $user->name ?? 'Hệ thống';
             $reason = $request->input('reject_reason');
             
             $notificationData = [
@@ -739,7 +759,9 @@ class UtilityMeterController extends Controller
      */
     public function batchApprove(Request $request): RedirectResponse
     {
-        if (in_array(auth()->user()->role, ['technician'])) {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if ($user && in_array($user->role, ['technician'])) {
             abort(403, 'Bạn không có quyền phê duyệt chỉ số.');
         }
 
