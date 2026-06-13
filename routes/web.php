@@ -218,6 +218,7 @@ Route::middleware(['resident'])->group(function () {
     Route::post('/resident/like', [\App\Http\Controllers\Resident\PostController::class, 'toggleLike'])->name('resident.posts.like');
     Route::get('/resident/posts/{id}/comments', [\App\Http\Controllers\Resident\PostController::class, 'loadComments'])->name('resident.posts.comments.load');
     Route::get('/resident/search-members', [\App\Http\Controllers\Resident\PostController::class, 'searchMembersForMention'])->name('resident.posts.search-members');
+    Route::post('/resident/posts/{id}/share-to-user', [\App\Http\Controllers\Resident\PostController::class, 'shareToUser'])->name('resident.posts.share-to-user');
     Route::post('/resident/comments/{id}/pin', [\App\Http\Controllers\Resident\PostController::class, 'togglePinComment'])->name('resident.comments.pin');
     Route::get('/resident/reactions/{likeable_type}/{likeable_id}', [\App\Http\Controllers\Resident\PostController::class, 'getReactions'])->name('resident.reactions');
 
