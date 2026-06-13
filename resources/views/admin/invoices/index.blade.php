@@ -55,7 +55,7 @@
                     <th>Tháng</th>
                     <th>Hạn TT</th>
                     <th>Trạng thái</th>
-                    <th></th>
+                    <th>Thao tác</th>
                 </tr>
             </thead>
             <tbody>
@@ -82,8 +82,9 @@
                         @endif
                     </td>
                     <td>
+                        <a href="{{ route('admin.invoices.show', $inv) }}" class="inv-admin__btn inv-admin__btn--sm inv-admin__btn--ghost" style="color: #2563eb; border-color: #bfdbfe; margin-right: 5px;">Chi tiết</a>
                         @if($inv->status !== 'paid')
-                        <form method="POST" action="{{ route('admin.invoices.mark-paid', $inv) }}"
+                        <form method="POST" action="{{ route('admin.invoices.mark-paid', $inv) }}" style="display:inline-block;"
                               onsubmit="return confirm('Đánh dấu đã thu hóa đơn {{ $inv->invoice_code }}?')">
                             @csrf @method('PATCH')
                             <input type="hidden" name="payment_method" value="cash">

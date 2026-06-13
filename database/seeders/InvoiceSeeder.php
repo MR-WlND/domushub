@@ -61,14 +61,14 @@ class InvoiceSeeder extends Seeder
             // Lấy phí dịch vụ để gán vào chi tiết hóa đơn
             $servicePrice = ServicePrice::where('type', 'service')->first() ?? ServicePrice::first();
 
-            // --- TẠO HÓA ĐƠN CHƯA THANH TOÁN (1,000đ) để test chức năng thanh toán ---
+            // --- TẠO HÓA ĐƠN CHƯA THANH TOÁN (100,000đ) để test chức năng thanh toán ---
             $unpaidBill = Invoice::create([
                 'apartment_id'  => $apartmentA->id,
                 'title'         => 'Phí quản lý thử nghiệm tháng 06/2026',
                 'billing_month' => 6,
                 'billing_year'  => 2026,
                 'due_date'      => Carbon::create(2026, 6, 25),
-                'total_amount'  => 1000,
+                'total_amount'  => 100000,
                 'status'        => 'unpaid',
             ]);
 
@@ -77,18 +77,18 @@ class InvoiceSeeder extends Seeder
                     'bill_id'          => $unpaidBill->id,
                     'service_price_id' => $servicePrice->id,
                     'quantity'         => 1,
-                    'amount'           => 1000,
+                    'amount'           => 100000,
                 ]);
             }
 
-            // --- TẠO HÓA ĐƠN QUÁ HẠN (1,000đ) để test hiển thị quá hạn và thanh toán ---
+            // --- TẠO HÓA ĐƠN QUÁ HẠN (100,000đ) để test hiển thị quá hạn và thanh toán ---
             $overdueBill = Invoice::create([
                 'apartment_id'  => $apartmentA->id,
                 'title'         => 'Tiền điện nước thử nghiệm tháng 05/2026',
                 'billing_month' => 5,
                 'billing_year'  => 2026,
                 'due_date'      => Carbon::create(2026, 5, 15),
-                'total_amount'  => 1000,
+                'total_amount'  => 100000,
                 'status'        => 'overdue',
             ]);
 
@@ -97,18 +97,18 @@ class InvoiceSeeder extends Seeder
                     'bill_id'          => $overdueBill->id,
                     'service_price_id' => $servicePrice->id,
                     'quantity'         => 1,
-                    'amount'           => 1000,
+                    'amount'           => 100000,
                 ]);
             }
 
-            // --- TẠO HÓA ĐƠN ĐÃ THANH TOÁN (1,000đ) để test lịch sử thanh toán ---
+            // --- TẠO HÓA ĐƠN ĐÃ THANH TOÁN (100,000đ) để test lịch sử thanh toán ---
             $paidBill = Invoice::create([
                 'apartment_id'  => $apartmentA->id,
                 'title'         => 'Phí gửi xe thử nghiệm tháng 05/2026',
                 'billing_month' => 5,
                 'billing_year'  => 2026,
                 'due_date'      => Carbon::create(2026, 5, 15),
-                'total_amount'  => 1000,
+                'total_amount'  => 100000,
                 'status'        => 'paid',
             ]);
 
@@ -117,15 +117,17 @@ class InvoiceSeeder extends Seeder
                     'bill_id'          => $paidBill->id,
                     'service_price_id' => $servicePrice->id,
                     'quantity'         => 1,
-                    'amount'           => 1000,
+                    'amount'           => 100000,
                 ]);
             }
 
             Payment::create([
                 'bill_id'          => $paidBill->id,
-                'amount'           => 1000,
+                'amount'           => 100000,
                 'payment_method'   => 'bank_transfer',
                 'transaction_code' => 'TEST-PAID-001',
+                'receipt_code'     => 'REC-20260510-TEST1',
+                'vnp_txn_ref'      => null, // Không có mã VNPay vì là bank_transfer
                 'status'           => 'success',
                 'paid_at'          => Carbon::create(2026, 5, 10),
             ]);
@@ -150,6 +152,6 @@ class InvoiceSeeder extends Seeder
             ]);
         }
 
-        $this->command->info('Đã tạo thành công hóa đơn thử nghiệm 1,000đ cho Cư Dân A và liên kết phòng!');
+        $this->command->info('Đã tạo thành công hóa đơn thử nghiệm 100,000đ cho Cư Dân A và liên kết phòng!');
     }
 }
