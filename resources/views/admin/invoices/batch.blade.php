@@ -1,0 +1,244 @@
+@extends('layouts.admin.master')
+
+@section('page_title', 'Xuất hóa đơn hàng loạt')
+
+@section('content')
+<div class="batch-page">
+
+    {{-- Header --}}
+    <div class="batch-header">
+        <div>
+            <p class="batch-eyebrow">Tài chính</p>
+            <h1 class="batch-title">Xuất hóa đơn hàng loạt</h1>
+            <p class="batch-sub">Tự động tạo hóa đơn cho tất cả căn hộ đang hoạt động theo biểu giá hiện tại</p>
+        </div>
+        <a href="{{ route('admin.invoices.index') }}" class="batch-btn batch-btn--ghost">Danh sách hóa đơn</a>
+    </div>
+
+    {{-- Flash --}}
+    @if(session('success'))
+        <div class="batch-alert batch-alert--success">{{ session('success') }}</div>
+    @endif
+    @if(session('error'))
+        <div class="batch-alert batch-alert--error">{{ session('error') }}</div>
+    @endif
+    @if($errors->any())
+        <div class="batch-alert batch-alert--error">
+            @foreach($errors->all() as $e)<div>• {{ $e }}</div>@endforeach
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('admin.invoices.batch.store') }}" id="batchForm">
+        @csrf
+        <div class="batch-layout">
+
+            {{-- Cấu hình hóa đơn --}}
+            <div class="batch-config">
+                <div class="batch-section">
+                    <h3 class="batch-section-title">Thông số chung</h3>
+                    <div class="batch-fields">
+                        <div class="batch-field">
+                            <label>Tháng phát hành <span class="batch-req">*</span></label>
+                            <input type="month" name="billing_month"
+                                   value="{{ old('billing_month', now()->format('Y-m')) }}" required>
+                        </div>
+                        <div class="batch-field">
+                            <label>Hạn thanh toán <span class="batch-req">*</span></label>
+                            <input type="date" name="due_date"
+                                   value="{{ old('due_date', now()->addDays(20)->format('Y-m-d')) }}" required>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Chọn loại phí --}}
+                <div class="batch-section">
+                    <h3 class="batch-section-title">Chọn loại phí phát hành</h3>
+                    <p class="batch-hint">Chọn ít nhất một loại. Hệ thống sẽ áp dụng đơn giá đang <strong>Đang dùng</strong> cho từng loại.</p>
+
+                    @php
+                        $typeKeys   = ['electricity','water','management_fee','parking','internet','service'];
+                        $activeTypes = $activePrices->keyBy('type');
+                    @endphp
+
+                    <div class="batch-price-list">
+                        @foreach($typeKeys as $type)
+                        @php $price = $activeTypes->get($type); @endphp
+                        <label class="batch-price-item {{ $price ? '' : 'batch-price-item--disabled' }}">
+                            <input type="checkbox" name="types[]" value="{{ $type }}"
+                                   {{ old('types') && in_array($type, old('types')) ? 'checked' : '' }}
+                                   {{ !$price ? 'disabled' : '' }}
+                                   class="batch-check">
+                            <div class="batch-price-info">
+                                <div>
+                                    <div class="batch-price-name">{{ $price ? $price->name : \App\Models\Invoice::typeLabel($type) }}</div>
+                                    @if($price)
+                                        <div class="batch-price-val">{{ number_format($price->unit_price) }}đ / đơn vị</div>
+                                    @else
+                                        <div class="batch-price-na">Chưa có đơn giá</div>
+                                    @endif
+                                </div>
+                            </div>
+                            @if($price)
+                                <span class="batch-price-active">Hoạt động</span>
+                            @endif
+                        </label>
+                        @endforeach
+                    </div>
+                    @error('types')<span class="batch-error">{{ $message }}</span>@enderror
+                </div>
+
+                {{-- Tùy chọn nâng cao --}}
+                <div class="batch-section">
+                    <h3 class="batch-section-title">Tùy chọn</h3>
+                    <div class="batch-options">
+                        <label class="batch-option">
+                            <input type="checkbox" name="skip_existing" value="1" checked>
+                            <span>Bỏ qua nếu đã có hóa đơn cùng tháng + loại phí</span>
+                        </label>
+                        <label class="batch-option">
+                            <input type="checkbox" name="only_occupied" value="1" checked>
+                            <span>Chỉ căn hộ đang có người ở (occupied)</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Preview danh sách căn hộ --}}
+            <div class="batch-preview">
+                <div class="batch-section">
+                    <h3 class="batch-section-title">Căn hộ sẽ được áp dụng</h3>
+                    <div class="batch-apt-scroll">
+                        <table class="batch-apt-table">
+                            <thead>
+                                <tr><th>Căn hộ</th><th>Tòa</th><th>Tầng</th><th>Trạng thái</th></tr>
+                            </thead>
+                            <tbody>
+                                @forelse($apartments as $apt)
+                                <tr>
+                                    <td class="batch-apt-num">{{ $apt->apartment_number }}</td>
+                                    <td>{{ optional(optional($apt->floor)->block)->name ?? '—' }}</td>
+                                    <td>Tầng {{ optional($apt->floor)->floor_number ?? '—' }}</td>
+                                    <td>
+                                        @if($apt->status === 'occupied')
+                                            <span class="batch-badge batch-badge--occupied">Đang ở</span>
+                                        @elseif($apt->status === 'vacant')
+                                            <span class="batch-badge batch-badge--vacant">Trống</span>
+                                        @else
+                                            <span class="batch-badge batch-badge--other">{{ $apt->status }}</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr><td colspan="4" class="batch-empty">Không có căn hộ nào</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="batch-apt-summary">
+                        Tổng: <strong>{{ $apartments->count() }}</strong> căn hộ —
+                        Đang ở: <strong>{{ $apartments->where('status','occupied')->count() }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Submit --}}
+        <div class="batch-submit-bar">
+            <div class="batch-submit-info">
+                Thao tác này sẽ tạo hóa đơn hàng loạt. Kiểm tra kỹ trước khi xác nhận.
+            </div>
+            <button type="submit" class="batch-btn batch-btn--primary"
+                    onclick="return confirm('Xác nhận xuất hóa đơn hàng loạt?')">
+                Xuất hóa đơn hàng loạt
+            </button>
+        </div>
+    </form>
+</div>
+
+<style>
+.batch-page { max-width: 1200px; margin: 0 auto; padding: 24px 20px; }
+
+.batch-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+.batch-eyebrow { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin: 0 0 4px; font-weight: 600; }
+.batch-title { font-size: 1.6rem; font-weight: 700; color: #0f172a; margin: 0 0 4px; }
+.batch-sub { font-size: 0.875rem; color: #64748b; margin: 0; }
+
+.batch-alert { padding: 12px 16px; border-radius: 8px; font-size: 0.875rem; font-weight: 500; margin-bottom: 16px; }
+.batch-alert--success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+.batch-alert--error   { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
+
+.batch-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+@media (max-width: 860px) { .batch-layout { grid-template-columns: 1fr; } }
+
+.batch-section { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 20px; margin-bottom: 16px; }
+.batch-section:last-child { margin-bottom: 0; }
+.batch-section-title { font-size: 0.9rem; font-weight: 700; color: #1e293b; margin: 0 0 14px; }
+.batch-hint { font-size: 0.8rem; color: #64748b; margin: -8px 0 14px; }
+
+.batch-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.batch-field { display: flex; flex-direction: column; gap: 5px; }
+.batch-field label { font-size: 0.78rem; font-weight: 600; color: #64748b; }
+.batch-field input, .batch-field select {
+    padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px;
+    font-size: 0.875rem; background: #f8fafc; outline: none;
+}
+.batch-field input:focus { border-color: #3b82f6; background: #fff; }
+.batch-req { color: #ef4444; }
+
+.batch-price-list { display: flex; flex-direction: column; gap: 8px; }
+.batch-price-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px;
+    cursor: pointer; transition: border-color .15s, background .15s;
+}
+.batch-price-item:has(.batch-check:checked) { border-color: #3b82f6; background: #eff6ff; }
+.batch-price-item:hover:not(.batch-price-item--disabled) { border-color: #93c5fd; }
+.batch-price-item--disabled { opacity: 0.45; cursor: not-allowed; }
+.batch-check { width: 16px; height: 16px; cursor: pointer; accent-color: #2563eb; }
+.batch-price-info { display: flex; align-items: center; gap: 10px; flex: 1; }
+.batch-price-name { font-size: 0.875rem; font-weight: 600; color: #1e293b; }
+.batch-price-val  { font-size: 0.78rem; color: #2563eb; font-family: monospace; font-weight: 600; }
+.batch-price-na   { font-size: 0.75rem; color: #94a3b8; }
+.batch-price-active { font-size: 0.7rem; font-weight: 600; background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 4px; }
+
+.batch-options { display: flex; flex-direction: column; gap: 10px; }
+.batch-option { display: flex; align-items: center; gap: 10px; font-size: 0.875rem; color: #334155; cursor: pointer; }
+.batch-option input { width: 16px; height: 16px; accent-color: #2563eb; }
+
+.batch-apt-scroll { max-height: 340px; overflow-y: auto; border-radius: 8px; border: 1px solid #e2e8f0; }
+.batch-apt-table { width: 100%; border-collapse: collapse; }
+.batch-apt-table th {
+    position: sticky; top: 0; background: #f8fafc;
+    padding: 8px 12px; font-size: 0.72rem; text-transform: uppercase;
+    color: #64748b; font-weight: 700; border-bottom: 1px solid #e2e8f0; text-align: left;
+}
+.batch-apt-table td { padding: 10px 12px; font-size: 0.85rem; border-bottom: 1px solid #f1f5f9; }
+.batch-apt-table tr:last-child td { border-bottom: none; }
+.batch-apt-num { font-weight: 600; color: #1e40af; }
+.batch-apt-summary { font-size: 0.8rem; color: #64748b; padding: 10px 4px 0; }
+
+.batch-badge { font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+.batch-badge--occupied { background: #dcfce7; color: #15803d; }
+.batch-badge--vacant   { background: #f1f5f9; color: #64748b; }
+.batch-badge--other    { background: #fef3c7; color: #b45309; }
+
+.batch-empty { text-align: center; padding: 24px; color: #94a3b8; }
+
+.batch-submit-bar {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+    padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; gap: 16px;
+}
+.batch-submit-info { font-size: 0.85rem; color: #b45309; background: #fef3c7; padding: 8px 14px; border-radius: 6px; }
+
+.batch-btn {
+    padding: 9px 18px; border-radius: 7px; font-size: 0.875rem; font-weight: 600;
+    cursor: pointer; border: none; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+}
+.batch-btn--primary { background: #2563eb; color: #fff; }
+.batch-btn--primary:hover { background: #1d4ed8; }
+.batch-btn--ghost { background: none; color: #475569; border: 1px solid #e2e8f0; }
+.batch-btn--ghost:hover { background: #f8fafc; }
+
+.batch-error { font-size: 0.75rem; color: #dc2626; display: block; margin-top: 6px; }
+</style>
+@endsection

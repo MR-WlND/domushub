@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 
 use App\Models\Invoice;
 use App\Models\Apartment;
+use App\Models\InvoiceDetail;
+use App\Models\ServicePrice;
 use Illuminate\Http\Request;
 
 class InvoiceController extends Controller
@@ -119,6 +121,89 @@ class InvoiceController extends Controller
     {
         $invoice->load(['apartment.floor.block', 'details.servicePrice', 'payments']);
         return view('admin.invoices.show', compact('invoice'));
+    }
+
+    /**
+     * Form xuất hóa đơn hàng loạt.
+     */
+    public function batchCreate()
+    {
+        $apartments   = Apartment::with('floor.block')->orderBy('id')->get();
+        $activePrices = ServicePrice::where('status', 'active')->get();
+
+        return view('admin.invoices.batch', compact('apartments', 'activePrices'));
+    }
+
+    /**
+     * Xử lý xuất hóa đơn hàng loạt.
+     */
+    public function batchStore(Request $request)
+    {
+        $request->validate([
+            'billing_month' => 'required|string',
+            'due_date'      => 'required|date',
+            'types'         => 'required|array|min:1',
+            'types.*'       => 'in:electricity,water,management_fee,parking,internet,service,other',
+        ], [
+            'types.required' => 'Vui lòng chọn ít nhất một loại phí.',
+        ]);
+
+        [$year, $month] = explode('-', $request->billing_month);
+        $skipExisting  = $request->boolean('skip_existing', true);
+        $onlyOccupied  = $request->boolean('only_occupied', true);
+
+        $aptQuery = Apartment::query();
+        if ($onlyOccupied) {
+            $aptQuery->where('status', 'occupied');
+        }
+        $apartments = $aptQuery->get();
+
+        $activePrices = ServicePrice::where('status', 'active')
+            ->whereIn('type', $request->types)
+            ->get()
+            ->keyBy('type');
+
+        $created = 0;
+        $skipped = 0;
+
+        foreach ($apartments as $apartment) {
+            foreach ($request->types as $type) {
+                $servicePrice = $activePrices->get($type);
+                if (!$servicePrice) { $skipped++; continue; }
+
+                if ($skipExisting) {
+                    $exists = Invoice::where('apartment_id', $apartment->id)
+                        ->where('billing_month', (int) $month)
+                        ->where('billing_year', (int) $year)
+                        ->whereHas('details.servicePrice', fn($q) => $q->where('type', $type))
+                        ->exists();
+
+                    if ($exists) { $skipped++; continue; }
+                }
+
+                $invoice = Invoice::create([
+                    'apartment_id'  => $apartment->id,
+                    'title'         => $servicePrice->name . ' tháng ' . $month . '/' . $year,
+                    'billing_month' => (int) $month,
+                    'billing_year'  => (int) $year,
+                    'due_date'      => $request->due_date,
+                    'total_amount'  => $servicePrice->unit_price,
+                    'status'        => 'unpaid',
+                ]);
+
+                InvoiceDetail::create([
+                    'bill_id'          => $invoice->id,
+                    'service_price_id' => $servicePrice->id,
+                    'quantity'         => 1,
+                    'amount'           => $servicePrice->unit_price,
+                ]);
+
+                $created++;
+            }
+        }
+
+        return redirect()->route('admin.invoices.index')
+            ->with('success', "Đã tạo {$created} hóa đơn" . ($skipped ? ", bỏ qua {$skipped} (đã tồn tại hoặc thiếu đơn giá)." : '.'));
     }
 
     /**
