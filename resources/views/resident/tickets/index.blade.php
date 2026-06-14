@@ -139,11 +139,13 @@
                     <div class="tk-card__right">
                         <span class="tk-badge badge--{{ $ticket->status }}">{{ $ticket->statusLabel() }}</span>
                         @if($ticket->rating)
-                            <div class="tk-rating-display">
-                                @for($i = 1; $i <= 5; $i++)
-                                    <span class="tk-star {{ $i <= $ticket->rating ? 'tk-star--filled' : 'tk-star--empty' }}">★</span>
-                                @endfor
-                            </div>
+                            <span class="tk-rating-badge">
+                                ★ {{ $ticket->rating }}/5
+                            </span>
+                        @elseif($ticket->status === 'completed' && !$ticket->rating)
+                            <span class="tk-rating-pending">
+                                ✍ Cần đánh giá
+                            </span>
                         @endif
                     </div>
                 </a>

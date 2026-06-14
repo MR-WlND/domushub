@@ -91,20 +91,34 @@
                     {{-- Rating Display --}}
                     @if($ticket->rating)
                         <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f1f5f9;">
-                            <p style="font-size: 0.78rem; color: #94a3b8; font-weight: 600; margin-bottom: 6px;">ĐÁNH GIÁ CỦA CƯ DÂN</p>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <div class="tk-rating-stars">
-                                    @for($i = 1; $i <= 5; $i++)
-                                        <span class="{{ $i <= $ticket->rating ? 'filled' : 'empty' }}">★</span>
-                                    @endfor
+                            <p style="font-size: 0.78rem; color: #94a3b8; font-weight: 700; margin-bottom: 10px; letter-spacing: 0.08em;">⭐ ĐÁNH GIÁ CỦA CƯ DÂN</p>
+                            <div style="background: linear-gradient(135deg,#fffbeb,#fef3c7); border: 1.5px solid #fde68a; border-radius: 14px; padding: 1rem 1.25rem;">
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                    <div style="display:flex;gap:3px;">
+                                        @for($i = 1; $i <= 5; $i++)
+                                            <span style="font-size: 1.5rem; color: {{ $i <= $ticket->rating ? '#f59e0b' : '#d1d5db' }};">★</span>
+                                        @endfor
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 1.5rem; font-weight: 900; color: #f59e0b; line-height:1;">{{ $ticket->rating }}/5</div>
+                                        <div style="font-size: 0.78rem; color: #92400e; font-weight: 600;">
+                                            {{ ['','Rất tệ','Chưa hài lòng','Bình thường','Hài lòng','Xuất sắc'][$ticket->rating] }}
+                                        </div>
+                                    </div>
                                 </div>
-                                <span style="font-weight: 800; color: #f59e0b;">{{ $ticket->rating }}/5</span>
+                                @if($ticket->feedback_comment)
+                                    <div style="font-size: 0.88rem; color: #78350f; line-height: 1.6; background: rgba(255,255,255,0.6); border-radius: 8px; padding: 8px 12px; border-left: 3px solid #f59e0b; font-style: italic;">
+                                        "{{ $ticket->feedback_comment }}"
+                                    </div>
+                                @endif
                             </div>
-                            @if($ticket->feedback_comment)
-                                <p style="font-size: 0.88rem; color: #475569; margin-top: 6px; font-style: italic;">
-                                    "{{ $ticket->feedback_comment }}"
-                                </p>
-                            @endif
+                        </div>
+                    @elseif($ticket->status === 'completed')
+                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f1f5f9;">
+                            <p style="font-size: 0.78rem; color: #94a3b8; font-weight: 700; margin-bottom: 8px;">⭐ ĐÁNH GIÁ CỦA CƯ DÂN</p>
+                            <span style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:#ede9fe;color:#5b21b6;border-radius:20px;font-size:0.8rem;font-weight:600;">
+                                ✍ Cư dân chưa đánh giá
+                            </span>
                         </div>
                     @endif
                 </div>
@@ -246,6 +260,17 @@
                         <div style="display: flex; justify-content: space-between; font-size: 0.88rem;">
                             <span style="color: #64748b;">KTV phụ trách</span>
                             <strong>{{ $ticket->handler->name }}</strong>
+                        </div>
+                    @endif
+                    @if($ticket->rating)
+                        <div style="display: flex; justify-content: space-between; font-size: 0.88rem; align-items: center;">
+                            <span style="color: #64748b;">Đánh giá</span>
+                            <strong style="color: #f59e0b;">
+                                @for($i = 1; $i <= 5; $i++)
+                                    <span style="color: {{ $i <= $ticket->rating ? '#f59e0b' : '#d1d5db' }};">★</span>
+                                @endfor
+                                {{ $ticket->rating }}/5
+                            </strong>
                         </div>
                     @endif
                 </div>

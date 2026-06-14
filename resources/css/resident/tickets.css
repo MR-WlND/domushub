@@ -705,12 +705,13 @@
     cursor: pointer;
 }
 
-/* --- Rating Stars --- */
+/* --- Rating Stars (Upgraded) --- */
 .tk-rating {
     display: flex;
     flex-direction: row-reverse;
-    justify-content: flex-end;
-    gap: 4px;
+    justify-content: flex-start;
+    gap: 6px;
+    padding: 8px 0;
 }
 
 .tk-rating input {
@@ -719,9 +720,15 @@
 
 .tk-rating label {
     cursor: pointer;
-    font-size: 1.8rem;
+    font-size: 2.4rem;
     color: #d1d5db;
-    transition: color 0.15s;
+    transition: color 0.15s, transform 0.15s, text-shadow 0.15s;
+    line-height: 1;
+}
+
+.tk-rating label:hover {
+    transform: scale(1.2);
+    text-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
 }
 
 .tk-rating label:hover,
@@ -730,17 +737,189 @@
     color: #f59e0b;
 }
 
+.tk-rating input:checked + label {
+    text-shadow: 0 0 14px rgba(245, 158, 11, 0.6);
+}
+
+/* Rating hint text */
+.tk-rating-hint {
+    font-size: 0.82rem;
+    color: #64748b;
+    margin-top: 6px;
+    font-style: italic;
+    min-height: 18px;
+    transition: all 0.2s;
+}
+
+/* Rating card (form wrapper) */
+.tk-rating-card {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border: 1.5px solid #fde68a;
+    border-radius: 18px;
+    padding: 1.5rem;
+}
+
+.tk-rating-card__title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1rem;
+    font-weight: 800;
+    color: #92400e;
+    margin-bottom: 1.25rem;
+}
+
+/* Display stars (read-only) */
 .tk-rating-display {
     display: flex;
-    gap: 2px;
+    gap: 3px;
+    align-items: center;
 }
 
 .tk-star {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
+    transition: transform 0.15s;
 }
 
-.tk-star--filled { color: #f59e0b; }
-.tk-star--empty  { color: #d1d5db; }
+.tk-star--filled {
+    color: #f59e0b;
+    text-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+}
+
+.tk-star--empty { color: #d1d5db; }
+
+/* Feedback display card */
+.tk-feedback-display {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border: 1.5px solid #86efac;
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.tk-feedback-display__score {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.tk-feedback-display__number {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: #f59e0b;
+    line-height: 1;
+}
+
+.tk-feedback-display__label {
+    font-size: 0.82rem;
+    color: #166534;
+    font-weight: 600;
+}
+
+.tk-feedback-display__comment {
+    font-size: 0.9rem;
+    color: #166534;
+    line-height: 1.6;
+    background: rgba(255,255,255,0.6);
+    border-radius: 10px;
+    padding: 10px 14px;
+    border-left: 3px solid #22c55e;
+    font-style: italic;
+}
+
+/* Badge sao trong danh sách */
+.tk-rating-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    background: #fef3c7;
+    color: #92400e;
+    border-radius: 20px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    border: 1px solid #fde68a;
+}
+
+.tk-rating-pending {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    background: #ede9fe;
+    color: #5b21b6;
+    border-radius: 20px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    border: 1px solid #ddd6fe;
+}
+
+/* --- Header completed state --- */
+.tk__header--completed {
+    background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+    border-color: #86efac;
+}
+
+/* --- Completion Banner --- */
+.tk-completion-banner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 24px;
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border: 2px solid #4ade80;
+    border-radius: 18px;
+    box-shadow: 0 4px 20px rgba(34, 197, 94, 0.15);
+    animation: bannerSlideIn 0.4s ease;
+}
+
+@keyframes bannerSlideIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.tk-completion-banner__icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #dcfce7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 2px solid #86efac;
+}
+
+.tk-completion-banner__text {
+    flex: 1;
+    min-width: 0;
+}
+
+.tk-completion-banner__title {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #166534;
+    margin-bottom: 4px;
+}
+
+.tk-completion-banner__sub {
+    font-size: 0.85rem;
+    color: #15803d;
+    line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+    .tk-completion-banner {
+        flex-direction: column;
+        text-align: center;
+    }
+    .tk-completion-banner .tk-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
 
 /* --- Pagination --- */
 .tk-pagination {

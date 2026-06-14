@@ -237,4 +237,68 @@ class TicketController extends Controller
 
         return view('admin.tickets.dispatch', compact('technicians', 'pendingTickets', 'activeTickets'));
     }
+
+    /**
+     * Báo cáo đánh giá tổng hợp
+     */
+    public function report(Request $request)
+    {
+        // Thống kê chung về đánh giá
+        $totalRated = Ticket::whereNotNull('rating')->count();
+        $totalCompleted = Ticket::where('status', 'completed')->count();
+        $avgRating = Ticket::whereNotNull('rating')->avg('rating');
+
+        // Phân bố theo số sao (1-5)
+        $ratingDistribution = [];
+        for ($i = 1; $i <= 5; $i++) {
+            $count = Ticket::where('rating', $i)->count();
+            $ratingDistribution[$i] = [
+                'count'   => $count,
+                'percent' => $totalRated > 0 ? round($count / $totalRated * 100) : 0,
+            ];
+        }
+
+        // Top KTV được đánh giá (trung bình cao nhất, tối thiểu 3 đánh giá)
+        $topTechnicians = User::where('role', 'technician')
+            ->withCount(['handledTickets as rated_count' => function ($q) {
+                $q->whereNotNull('rating');
+            }])
+            ->withAvg(['handledTickets as avg_rating' => function ($q) {
+                $q->whereNotNull('rating');
+            }], 'rating')
+            ->having('rated_count', '>=', 1)
+            ->orderByDesc('avg_rating')
+            ->orderByDesc('rated_count')
+            ->limit(10)
+            ->get();
+
+        // Danh sách đánh giá gần đây
+        $recentRatings = Ticket::with(['sender', 'handler', 'apartment.floor.block'])
+            ->whereNotNull('rating')
+            ->orderByDesc('updated_at')
+            ->limit(20)
+            ->get();
+
+        // Thống kê theo tháng (6 tháng gần nhất)
+        $monthlyStats = [];
+        for ($m = 5; $m >= 0; $m--) {
+            $date = now()->subMonths($m);
+            $monthlyStats[] = [
+                'label'      => $date->format('m/Y'),
+                'avg_rating' => round(Ticket::whereNotNull('rating')
+                    ->whereYear('updated_at', $date->year)
+                    ->whereMonth('updated_at', $date->month)
+                    ->avg('rating') ?? 0, 1),
+                'count'      => Ticket::whereNotNull('rating')
+                    ->whereYear('updated_at', $date->year)
+                    ->whereMonth('updated_at', $date->month)
+                    ->count(),
+            ];
+        }
+
+        return view('admin.tickets.report', compact(
+            'totalRated', 'totalCompleted', 'avgRating',
+            'ratingDistribution', 'topTechnicians', 'recentRatings', 'monthlyStats'
+        ));
+    }
 }
