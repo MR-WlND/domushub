@@ -295,7 +295,7 @@ class PostController extends Controller
      */
     public function destroyComment($id)
     {
-        $comment = Comment::findOrFail($id);
+        $comment = Comment::withTrashed()->findOrFail($id);
 
         // Bảo mật tuyệt đối: chỉ người viết bình luận, chủ bài đăng đó hoặc admin mới được quyền xóa
         if ($comment->user_id !== Auth::id() && 
@@ -304,14 +304,35 @@ class PostController extends Controller
             abort(403, 'Bạn không có quyền thực hiện hành động này.');
         }
 
-        // Xóa file ảnh vật lý đính kèm nếu có
+        // 1. Tìm và xóa vĩnh viễn tất cả câu trả lời con (replies) và dữ liệu đính kèm của chúng
+        $replies = Comment::withTrashed()->where('parent_id', $comment->id)->get();
+        foreach ($replies as $reply) {
+            // Xóa file ảnh vật lý của câu trả lời con
+            if ($reply->image_path) {
+                Storage::disk('public')->delete($reply->image_path);
+            }
+            // Xóa các lượt thích (likes) của câu trả lời con
+            $reply->likes()->delete();
+            // Xóa các báo cáo (reports) của câu trả lời con
+            $reply->reports()->delete();
+            // Xóa vĩnh viễn khỏi database
+            $reply->forceDelete();
+        }
+
+        // 2. Xóa dữ liệu đính kèm của chính bình luận cha
+        // Xóa file ảnh vật lý của bình luận cha
         if ($comment->image_path) {
             Storage::disk('public')->delete($comment->image_path);
         }
+        // Xóa các lượt thích (likes) của bình luận cha
+        $comment->likes()->delete();
+        // Xóa các báo cáo (reports) của bình luận cha
+        $comment->reports()->delete();
 
-        $comment->delete();
+        // 3. Xóa vĩnh viễn bình luận cha khỏi database
+        $comment->forceDelete();
 
-        return redirect()->back()->with('success', 'Xóa bình luận thành công!');
+        return redirect()->back()->with('success', 'Xóa bình luận và toàn bộ phản hồi con liên quan thành công!');
     }
 
     /**
@@ -416,6 +437,10 @@ class PostController extends Controller
         $hiddenGlobally = false;
         if ($reportsCount >= 5) {
             $comment->content = '[Bình luận này đã bị ẩn tạm thời do nhận nhiều báo cáo vi phạm]';
+            if ($comment->image_path) {
+                Storage::disk('public')->delete($comment->image_path);
+                $comment->image_path = null;
+            }
             $comment->save();
             $hiddenGlobally = true;
         }
