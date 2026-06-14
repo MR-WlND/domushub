@@ -20,6 +20,7 @@ class Ticket extends Model
         'status',
         'rating',
         'feedback_comment',
+        'reopened_count',
     ];
 
     protected $casts = [
@@ -106,5 +107,10 @@ class Ticket extends Model
     public function canFeedback(): bool
     {
         return $this->status === 'completed' && is_null($this->rating);
+    }
+
+    public function needsRecheck(): bool
+    {
+        return $this->status === 'in_progress' && $this->reopened_count > 0;
     }
 }

@@ -188,47 +188,6 @@
                 </div>
             @endif
 
-            {{-- Update Progress Form --}}
-            @if(in_array($ticket->status, ['assigned', 'in_progress']))
-                <div class="tk-show-card">
-                    <div class="tk-show-card__header">
-                        <span class="tk-show-card__title">Cập nhật tiến trình</span>
-                    </div>
-                    <div class="tk-show-card__body">
-                        <form method="POST"
-                              id="progressFormDetail"
-                              action="{{ route('admin.tickets.update-progress', $ticket->id) }}"
-                              enctype="multipart/form-data">
-                            @csrf
-                            <div class="tk-form-group">
-                                <label>Trạng thái mới</label>
-                                <select name="status" id="progressStatusDetail" required>
-                                    @if($ticket->status === 'in_progress')
-                                        <option value="in_progress" selected>Đang xử lý</option>
-                                        <option value="completed">Hoàn thành</option>
-                                    @else
-                                        <option value="" disabled selected>-- Chọn --</option>
-                                        <option value="in_progress">Đang xử lý</option>
-                                        <option value="completed">Hoàn thành</option>
-                                    @endif
-                                </select>
-                            </div>
-                            <div class="tk-form-group">
-                                <label>Báo cáo hoàn thành <span style="font-size: 0.8rem; color: #64748b;">(bắt buộc khi hoàn thành)</span></label>
-                                <textarea name="comment" placeholder="Mô tả công việc đã thực hiện, vật tư sử dụng, kết quả..."></textarea>
-                            </div>
-                            <div class="tk-form-group">
-                                <label>Ảnh nghiệm thu <span style="font-size: 0.8rem; color: #64748b;">(bắt buộc khi hoàn thành)</span></label>
-                                <input type="file" name="image_proof" accept="image/*">
-                            </div>
-                            <button type="submit" class="tk-form-submit tk-form-submit--primary" style="width: 100%; justify-content: center;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                                Cập nhật
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            @endif
 
             {{-- Quick Info --}}
             <div class="tk-show-card">
@@ -277,20 +236,6 @@ function openAdminImgModal(src) {
 function closeAdminImgModal() {
     document.getElementById('adminImgModal').style.display = 'none';
 }
-
-// ── Xác nhận cập nhật tiến độ ở trang chi tiết ─────────────────────────
-document.addEventListener('DOMContentLoaded', function() {
-    const progressFormDetail = document.getElementById('progressFormDetail');
-    if (progressFormDetail) {
-        progressFormDetail.addEventListener('submit', function (e) {
-            const statusSelect = document.getElementById('progressStatusDetail');
-            const statusText = statusSelect.value === 'completed' ? 'Hoàn thành' : 'Đang xử lý';
-            if (!confirm(`Bạn có chắc chắn muốn cập nhật trạng thái phản ánh này thành "${statusText}" không?`)) {
-                e.preventDefault();
-            }
-        });
-    }
-});
 </script>
 
 @endsection

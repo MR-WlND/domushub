@@ -11,9 +11,6 @@ use Illuminate\Support\Facades\Auth;
 
 class TicketController extends Controller
 {
-    /**
-     * Danh sách tất cả phản ánh (admin/manager) hoặc chỉ được giao (technician)
-     */
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -25,51 +22,38 @@ class TicketController extends Controller
             'search'   => 'nullable|string|max:200',
         ]);
 
-        $priorityOrder = ['urgent' => 0, 'high' => 1, 'medium' => 2, 'low' => 3];
-        $statusOrder   = ['pending' => 0, 'assigned' => 1, 'in_progress' => 2, 'completed' => 3, 'cancelled' => 4];
-
         $query = Ticket::with(['apartment.floor.block', 'sender', 'handler'])
             ->orderByRaw("FIELD(priority, 'urgent','high','medium','low')")
             ->orderByRaw("FIELD(status, 'pending','assigned','in_progress','completed','cancelled')")
             ->orderBy('created_at', 'asc');
 
-        // Technician chỉ thấy ticket được giao
         if ($user->role === 'technician') {
             $query->where('handler_id', $user->id);
         }
 
-        // Lọc theo tòa nhà
         if ($request->filled('block_id')) {
-            $query->whereHas('apartment.floor', function ($q) use ($request) {
-                $q->where('block_id', $request->block_id);
-            });
+            $query->whereHas('apartment.floor', fn($q) => $q->where('block_id', $request->block_id));
         }
 
-        // Lọc theo trạng thái
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Lọc theo mức độ ưu tiên
         if ($request->filled('priority')) {
             $query->where('priority', $request->priority);
         }
 
-        // Tìm kiếm
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
                   ->orWhere('id', $search)
-                  ->orWhereHas('apartment', function ($aq) use ($search) {
-                      $aq->where('apartment_number', 'like', "%{$search}%");
-                  });
+                  ->orWhereHas('apartment', fn($aq) => $aq->where('apartment_number', 'like', "%{$search}%"));
             });
         }
 
         $tickets = $query->paginate(15)->withQueryString();
 
-        // Thống kê
         $baseQuery = Ticket::query();
         if ($user->role === 'technician') {
             $baseQuery->where('handler_id', $user->id);
@@ -83,36 +67,179 @@ class TicketController extends Controller
             'completed'   => (clone $baseQuery)->where('status', 'completed')->count(),
         ];
 
-        // Danh sách technician để phân công
-        $technicians = User::where('role', 'technician')
-            ->where('status', 'active')
-            ->orderBy('name')
-            ->get();
-
+        $technicians = User::where('role', 'technician')->where('status', 'active')->orderBy('name')->get();
         $blocks = \App\Models\Block::orderBy('name')->get();
 
         return view('admin.tickets.index', compact('tickets', 'stats', 'technicians', 'blocks'));
     }
 
-    /**
-     * Xem chi tiết phản ánh
-     */
+    public function report(Request $request)
+    {
+        $request->validate([
+            'status'        => 'nullable|in:pending_review,approved,rework',
+            'block_id'      => 'nullable|integer|exists:blocks,id',
+            'technician_id' => 'nullable|integer|exists:users,id',
+            'from'          => 'nullable|date',
+            'to'            => 'nullable|date',
+            'search'        => 'nullable|string|max:200',
+        ]);
+
+        $query = Ticket::with(['apartment.floor.block', 'sender', 'handler', 'progress.updatedBy'])
+            ->orderBy('created_at', 'desc');
+
+        if ($request->filled('block_id')) {
+            $query->whereHas('apartment.floor', fn ($q) => $q->where('block_id', $request->block_id));
+        }
+
+        if ($request->filled('technician_id')) {
+            $query->where('handler_id', $request->technician_id);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('id', $search)
+                  ->orWhereHas('apartment', fn ($aq) => $aq->where('apartment_number', 'like', "%{$search}%"))
+                  ->orWhereHas('handler', fn ($hq) => $hq->where('name', 'like', "%{$search}%"))
+                  ->orWhereHas('sender', fn ($sq) => $sq->where('name', 'like', "%{$search}%"));
+            });
+        }
+
+        if ($request->filled('from')) {
+            $query->whereDate('created_at', '>=', $request->from);
+        }
+
+        if ($request->filled('to')) {
+            $query->whereDate('created_at', '<=', $request->to);
+        }
+
+        $tickets = $query->get();
+
+        if ($request->filled('status')) {
+            $status = $request->status;
+            $tickets = $tickets->filter(function ($ticket) use ($status) {
+                $last = $ticket->progress->last();
+                return match ($status) {
+                    'pending_review' => $ticket->status === 'completed' && $last?->status === 'completed',
+                    'approved'       => $last?->status === 'approved',
+                    'rework'         => ($ticket->status === 'in_progress' && $ticket->reopened_count > 0) || $last?->status === 'rejected',
+                    default          => true,
+                };
+            })->values();
+        }
+
+        $totalReports = $tickets->count();
+
+        $pendingReview = $tickets->filter(function ($ticket) {
+            $last = $ticket->progress->last();
+            return $ticket->status === 'completed' && $last?->status === 'completed';
+        });
+
+        $approvedReports = $tickets->filter(function ($ticket) {
+            $last = $ticket->progress->last();
+            return $last?->status === 'approved';
+        });
+
+        $reworkReports = $tickets->filter(function ($ticket) {
+            $last = $ticket->progress->last();
+            return ($ticket->status === 'in_progress' && $ticket->reopened_count > 0)
+                || $last?->status === 'rejected';
+        });
+
+        $technicians = User::where('role', 'technician')->where('status', 'active')->orderBy('name')->get();
+        $blocks = \App\Models\Block::orderBy('name')->get();
+
+        return view('admin.tickets.report', compact(
+            'pendingReview',
+            'approvedReports',
+            'reworkReports',
+            'technicians',
+            'blocks',
+            'totalReports'
+        ));
+    }
+
+    public function approveReview(Request $request, $id)
+    {
+        $ticket = Ticket::with('progress')->findOrFail($id);
+
+        if (!in_array(Auth::user()->role, ['admin', 'manager'], true)) {
+            abort(403, 'Bạn không có quyền thực hiện thao tác này.');
+        }
+
+        $lastProgress = $ticket->progress->last();
+        if ($ticket->status !== 'completed' || $lastProgress?->status === 'approved') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ticket không ở trạng thái chờ nghiệm thu.',
+            ], 422);
+        }
+
+        TicketProgress::create([
+            'ticket_id'  => $ticket->id,
+            'status'     => 'approved',
+            'comment'    => 'Admin đã nghiệm thu hoàn thành.',
+            'updated_by' => Auth::id(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Báo cáo đã được xác nhận nghiệm thu.',
+        ]);
+    }
+
+    public function rejectReview(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'reject_reason' => ['required', 'string', 'max:500'],
+        ], [
+            'reject_reason.required' => 'Vui lòng nhập lý do yêu cầu làm lại.',
+            'reject_reason.max'      => 'Lý do tối đa 500 ký tự.',
+        ]);
+
+        $ticket = Ticket::with('progress')->findOrFail($id);
+
+        if (!in_array(Auth::user()->role, ['admin', 'manager'], true)) {
+            abort(403, 'Bạn không có quyền thực hiện thao tác này.');
+        }
+
+        $lastProgress = $ticket->progress->last();
+        if ($ticket->status !== 'completed' || $lastProgress?->status === 'rejected') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ticket không ở trạng thái chờ nghiệm thu.',
+            ], 422);
+        }
+
+        $ticket->update([
+            'status'         => 'in_progress',
+            'reopened_count' => $ticket->reopened_count + 1,
+        ]);
+
+        TicketProgress::create([
+            'ticket_id'  => $ticket->id,
+            'status'     => 'rejected',
+            'comment'    => 'Admin yêu cầu làm lại. Lý do: ' . $validated['reject_reason'],
+            'updated_by' => Auth::id(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Yêu cầu làm lại đã được gửi đến kỹ thuật viên.',
+        ]);
+    }
+
     public function show($id)
     {
         $ticket = Ticket::with(['apartment.floor.block', 'sender', 'handler', 'progress.updatedBy'])
             ->findOrFail($id);
 
-        $technicians = User::where('role', 'technician')
-            ->where('status', 'active')
-            ->orderBy('name')
-            ->get();
+        $technicians = User::where('role', 'technician')->where('status', 'active')->orderBy('name')->get();
 
         return view('admin.tickets.show', compact('ticket', 'technicians'));
     }
 
-    /**
-     * Phân công technician xử lý
-     */
     public function assign(Request $request, $id)
     {
         $ticket = Ticket::findOrFail($id);
@@ -152,7 +279,7 @@ class TicketController extends Controller
     }
 
     /**
-     * Cập nhật tiến trình xử lý
+     * Cập nhật tiến trình — chỉ KTV được giao mới dùng
      */
     public function updateProgress(Request $request, $id)
     {
@@ -179,39 +306,47 @@ class TicketController extends Controller
             'image_proof' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ];
 
-        if ($request->input('status') === 'completed') {
+        // KTV báo hoàn thành: bắt buộc comment + ảnh nghiệm thu
+        if ($request->input('status') === 'completed' && $user->role === 'technician') {
             $rules['comment']     = ['required', 'string', 'max:1000'];
             $rules['image_proof'] = ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'];
         }
 
         $validated = $request->validate($rules, [
-            'status.required'     => 'Vui lòng chọn trạng thái.',
-            'comment.required'    => 'Vui lòng nhập báo cáo hoàn thành.',
-            'comment.max'         => 'Báo cáo hoàn thành tối đa 1000 ký tự.',
-            'image_proof.required'=> 'Vui lòng tải lên ảnh nghiệm thu khi hoàn thành.',
-            'image_proof.max'     => 'Dung lượng ảnh tối đa 2MB.',
+            'status.required'      => 'Vui lòng chọn trạng thái.',
+            'comment.required'     => 'Vui lòng nhập báo cáo hoàn thành.',
+            'image_proof.required' => 'Vui lòng tải lên ảnh nghiệm thu khi hoàn thành.',
+            'image_proof.max'      => 'Dung lượng ảnh tối đa 2MB.',
         ]);
 
-        // Xử lý ảnh nghiệm thu
         $imageProof = null;
         if ($request->hasFile('image_proof')) {
             $imageProof = $request->file('image_proof')->store('ticket-progress', 'public');
         }
 
-        $ticket->update(['status' => $validated['status']]);
+        $updateData = ['status' => $validated['status']];
+
+        // Nếu KTV hoàn thành lại sau khi bị reopen → reset rating cũ để cư dân đánh giá lại
+        if ($validated['status'] === 'completed' && $ticket->reopened_count > 0) {
+            $updateData['rating']           = null;
+            $updateData['feedback_comment'] = null;
+        }
+
+        $ticket->update($updateData);
+
+        $comment = $validated['comment'] ?? null;
+        if ($validated['status'] === 'completed' && $ticket->reopened_count > 0 && !$comment) {
+            $comment = 'KTV đã kiểm tra và xử lý lại sau phản hồi của cư dân.';
+        }
 
         TicketProgress::create([
             'ticket_id'   => $ticket->id,
             'status'      => $validated['status'],
-            'comment'     => $validated['comment'] ?? null,
+            'comment'     => $comment,
             'image_proof' => $imageProof,
             'updated_by'  => Auth::id(),
         ]);
 
-        $statusLabels = [
-            'in_progress' => 'Đang xử lý',
-            'completed'   => 'Hoàn thành',
-        ];
         $message = $validated['status'] === 'completed'
             ? 'Phản ánh đã được đánh dấu hoàn thành.'
             : 'Tiến trình xử lý đã được cập nhật.';
@@ -221,22 +356,18 @@ class TicketController extends Controller
                 'success'      => true,
                 'message'      => $message,
                 'status'       => $validated['status'],
-                'status_label' => $statusLabels[$validated['status']] ?? $validated['status'],
+                'status_label' => $validated['status'] === 'completed' ? 'Hoàn thành' : 'Đang xử lý',
             ]);
         }
 
         return back()->with('success', $message);
     }
 
-    /**
-     * Technician tự nhận nhiệm vụ (assigned → in_progress)
-     */
     public function acceptTask(Request $request, $id)
     {
         $user   = Auth::user();
         $ticket = Ticket::findOrFail($id);
 
-        // Chỉ technician được giao mới có thể nhận
         if ($ticket->handler_id !== $user->id) {
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json(['success' => false, 'message' => 'Bạn không được phân công phản ánh này.'], 403);
@@ -272,14 +403,10 @@ class TicketController extends Controller
         return back()->with('success', 'Đã nhận nhiệm vụ! Chúc bạn xử lý thành công.');
     }
 
-    /**
-     * Dashboard nhiệm vụ riêng của Technician
-     */
     public function myTasks(Request $request)
     {
         $user = Auth::user();
 
-        // Danh sách nhiệm vụ mới được giao (assigned) - chưa nhận
         $newTasks = Ticket::with(['apartment.floor.block', 'sender'])
             ->where('handler_id', $user->id)
             ->where('status', 'assigned')
@@ -287,15 +414,15 @@ class TicketController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
 
-        // Danh sách nhiệm vụ đang xử lý (in_progress)
+        // Ưu tiên hiện ticket cần kiểm tra lại (reopened_count > 0) lên đầu
         $activeTasks = Ticket::with(['apartment.floor.block', 'sender', 'progress'])
             ->where('handler_id', $user->id)
             ->where('status', 'in_progress')
             ->orderByRaw("FIELD(priority, 'urgent','high','medium','low')")
+            ->orderByDesc('reopened_count')
             ->orderBy('created_at', 'asc')
             ->get();
 
-        // Danh sách nhiệm vụ hoàn thành gần đây (10 cái gần nhất)
         $completedTasks = Ticket::with(['apartment.floor.block'])
             ->where('handler_id', $user->id)
             ->where('status', 'completed')
@@ -303,10 +430,10 @@ class TicketController extends Controller
             ->limit(10)
             ->get();
 
-        // Thống kê cá nhân
         $stats = [
             'new'       => $newTasks->count(),
             'active'    => $activeTasks->count(),
+            'recheck'   => $activeTasks->where('reopened_count', '>', 0)->count(),
             'completed' => Ticket::where('handler_id', $user->id)->where('status', 'completed')->count(),
             'total'     => Ticket::where('handler_id', $user->id)->count(),
         ];
@@ -316,9 +443,6 @@ class TicketController extends Controller
         ));
     }
 
-    /**
-     * Giao diện điều phối kỹ thuật (admin/manager)
-     */
     public function dispatchIndex(Request $request)
     {
         $user = Auth::user();
@@ -326,7 +450,6 @@ class TicketController extends Controller
             abort(403, 'Bạn không có quyền truy cập trang điều phối kỹ thuật.');
         }
 
-        // Lấy danh sách kỹ thuật viên đang hoạt động cùng số công việc đang phụ trách
         $technicians = User::where('role', 'technician')
             ->where('status', 'active')
             ->withCount(['handledTickets as active_tickets_count' => function ($query) {
@@ -335,13 +458,11 @@ class TicketController extends Controller
             ->orderBy('name')
             ->get();
 
-        // Lấy danh sách các phản ánh chưa phân công (chờ điều phối)
         $pendingTickets = Ticket::with(['apartment.floor.block', 'sender'])
             ->where('status', 'pending')
             ->latest()
             ->get();
 
-        // Lấy danh sách các phản ánh đang xử lý/đã phân công
         $activeTickets = Ticket::with(['apartment.floor.block', 'sender', 'handler'])
             ->whereIn('status', ['assigned', 'in_progress'])
             ->latest()
