@@ -168,13 +168,36 @@ class PostController extends Controller
      */
     public function destroyComment($id)
     {
-        $comment = Comment::findOrFail($id);
-        $comment->content = '[Bình luận này đã bị xóa bởi Ban quản trị do vi phạm quy chuẩn cộng đồng]';
-        $comment->save();
+        $comment = Comment::withTrashed()->findOrFail($id);
 
-        // Xóa toàn bộ báo cáo liên quan sau khi đã xử lý xóa nội dung vi phạm
+        // 1. Tìm và xóa vĩnh viễn tất cả câu trả lời con (replies) và dữ liệu đính kèm của chúng
+        $replies = Comment::withTrashed()->where('parent_id', $comment->id)->get();
+        foreach ($replies as $reply) {
+            // Xóa file ảnh vật lý của câu trả lời con
+            if ($reply->image_path) {
+                Storage::disk('public')->delete($reply->image_path);
+            }
+            // Xóa các lượt thích (likes) của câu trả lời con
+            $reply->likes()->delete();
+            // Xóa các báo cáo (reports) của câu trả lời con
+            $reply->reports()->delete();
+            // Xóa vĩnh viễn câu trả lời con khỏi database
+            $reply->forceDelete();
+        }
+
+        // 2. Xóa dữ liệu đính kèm của chính bình luận cha
+        // Xóa file ảnh vật lý của bình luận cha
+        if ($comment->image_path) {
+            Storage::disk('public')->delete($comment->image_path);
+        }
+        // Xóa các lượt thích (likes) của bình luận cha
+        $comment->likes()->delete();
+        // Xóa các báo cáo (reports) của bình luận cha
         $comment->reports()->delete();
+        
+        // 3. Xóa vĩnh viễn bình luận cha khỏi database
+        $comment->forceDelete();
 
-        return redirect()->back()->with('success', 'Đã xóa nội dung bình luận vi phạm thành công.');
+        return redirect()->back()->with('success', 'Đã xóa vĩnh viễn bình luận và toàn bộ phản hồi con liên quan thành công.');
     }
 }
