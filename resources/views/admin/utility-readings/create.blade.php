@@ -166,7 +166,7 @@
 
             {{-- Hai nút chọn ảnh --}}
             <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
-                {{-- Nút chụp ảnh trực tiếp (camera, ưu tiên camera sau trên mobile) --}}
+                {{-- Nút chụp ảnh: KHÔNG dùng multiple vì xung đột với capture --}}
                 <button type="button" id="btn_camera" onclick="document.getElementById('image_camera').click()"
                     style="display:inline-flex;align-items:center;gap:7px;padding:9px 18px;background:linear-gradient(135deg,#0b57d0,#1a73e8);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(11,87,208,.25);transition:opacity .2s;">
                     <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -176,7 +176,7 @@
                     Chụp ảnh
                 </button>
 
-                {{-- Nút chọn từ thư viện --}}
+                {{-- Nút chọn từ thư viện: dùng multiple --}}
                 <button type="button" id="btn_gallery" onclick="document.getElementById('image_gallery').click()"
                     style="display:inline-flex;align-items:center;gap:7px;padding:9px 18px;background:#fff;color:#1e293b;border:1.5px solid #cbd5e1;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;transition:border-color .2s;">
                     <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -187,10 +187,19 @@
                 </button>
             </div>
 
-            {{-- Hidden inputs --}}
-            <input type="file" name="images[]" id="image_camera"
-                accept="image/*" capture="environment" multiple style="display:none;">
-            <input type="file" name="images[]" id="image_gallery"
+            {{--
+                FIX: camera input KHÔNG có `multiple` vì xung đột với `capture`.
+                     Camera chụp 1 ảnh/lần, nhấn nhiều lần để thêm.
+                     Gallery input có `multiple` để chọn nhiều ảnh cùng lúc.
+                     Cả 2 đều KHÔNG có name[] ở đây - JS sẽ gộp vào 1 input ảo khi submit.
+            --}}
+            <input type="file" id="image_camera"
+                accept="image/*" capture="environment" style="display:none;">
+            <input type="file" id="image_gallery"
+                accept="image/*" multiple style="display:none;">
+
+            {{-- Input ẩn thực sự submit (được JS gán files vào) --}}
+            <input type="file" name="images[]" id="image_submit_proxy"
                 accept="image/*" multiple style="display:none;">
 
             {{-- Gallery preview --}}
@@ -198,7 +207,7 @@
                 style="display:flex; flex-wrap:wrap; gap:10px; margin-top:6px;"></div>
 
             <p class="util-form-hint" style="margin-top:8px;">
-                💡 Nhấn <strong>Chụp ảnh</strong> để mở camera điện thoại, hoặc <strong>Chọn từ thư viện</strong> để upload ảnh có sẵn.
+                💡 Nhấn <strong>Chụp ảnh</strong> để mở camera, hoặc <strong>Chọn từ thư viện</strong> để upload ảnh có sẵn. Có thể nhấn nhiều lần để thêm ảnh.
             </p>
         </div>
 
@@ -340,17 +349,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ── Multi-image upload & preview ────────────────────
     const MAX_IMAGES = 5;
-    // allFiles: DataTransfer để gộp files từ cả camera và gallery
     let allFiles = new DataTransfer();
 
-    const gallery   = document.getElementById('image_preview_gallery');
-    const camInput  = document.getElementById('image_camera');
-    const galInput  = document.getElementById('image_gallery');
+    const gallery    = document.getElementById('image_preview_gallery');
+    const camInput   = document.getElementById('image_camera');   // capture="environment", NO multiple
+    const galInput   = document.getElementById('image_gallery');   // multiple, NO capture
+    const proxyInput = document.getElementById('image_submit_proxy'); // thực sự submit
+
+    function syncProxy() {
+        // Gán toàn bộ files vào proxy input để form submit
+        proxyInput.files = allFiles.files;
+    }
 
     function addFiles(fileList) {
         const remaining = MAX_IMAGES - allFiles.files.length;
         if (remaining <= 0) {
-            alert(`⚠️ Tối đa ${MAX_IMAGES} ảnh minh chứng.`);
+            alert(`⚠️ Tối đa ${MAX_IMAGES} ảnh minh chứng. Xóa bớt ảnh cũ trước khi thêm.`);
             return;
         }
         let added = 0;
@@ -359,8 +373,7 @@ document.addEventListener('DOMContentLoaded', function () {
             allFiles.items.add(fileList[i]);
             added++;
         }
-        // Gán lại files vào input camera (là input name="images[]" sẽ được submit)
-        camInput.files = allFiles.files;
+        syncProxy();
         renderGallery();
     }
 
@@ -400,16 +413,14 @@ document.addEventListener('DOMContentLoaded', function () {
             gallery.appendChild(wrapper);
         }
 
-        // Cập nhật màu nút camera nếu đã đủ ảnh
+        // Dim nút khi đã đủ ảnh
         const btnCam = document.getElementById('btn_camera');
         const btnGal = document.getElementById('btn_gallery');
-        if (files.length >= MAX_IMAGES) {
-            btnCam.style.opacity = '0.4';
-            btnGal.style.opacity = '0.4';
-        } else {
-            btnCam.style.opacity = '1';
-            btnGal.style.opacity = '1';
-        }
+        const isFull = files.length >= MAX_IMAGES;
+        btnCam.style.opacity = isFull ? '0.4' : '1';
+        btnCam.style.pointerEvents = isFull ? 'none' : '';
+        btnGal.style.opacity = isFull ? '0.4' : '1';
+        btnGal.style.pointerEvents = isFull ? 'none' : '';
     }
 
     function removeFileAt(idx) {
@@ -419,17 +430,23 @@ document.addEventListener('DOMContentLoaded', function () {
             if (i !== idx) newDT.items.add(files[i]);
         }
         allFiles = newDT;
-        camInput.files = allFiles.files;
+        syncProxy();
         renderGallery();
     }
 
+    // Camera: chụp 1 ảnh/lần (KHÔNG có multiple → mở camera thực sự)
     camInput.addEventListener('change', function () {
-        addFiles(this.files);
-        this.value = ''; // reset để có thể chọn lại cùng file
+        if (this.files.length > 0) {
+            addFiles(this.files);
+        }
+        this.value = ''; // reset để chụp lại được
     });
 
+    // Gallery: chọn nhiều ảnh cùng lúc
     galInput.addEventListener('change', function () {
-        addFiles(this.files);
+        if (this.files.length > 0) {
+            addFiles(this.files);
+        }
         this.value = '';
     });
 

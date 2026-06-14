@@ -375,15 +375,17 @@
                                         style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;background:#f8fafc;color:#334155;border:1px solid #cbd5e1;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;">
                                         📁 Chọn ảnh
                                     </button>
-                                    {{-- Hidden inputs --}}
+                                    {{-- Hidden inputs: camera NO multiple, gallery YES multiple --}}
                                     <input type="file" id="cam_{{ $i }}"
-                                        name="readings[{{ $i }}][images][]"
-                                        accept="image/*" capture="environment" multiple style="display:none;"
-                                        data-gallery="preview_{{ $i }}">
+                                        accept="image/*" capture="environment" style="display:none;"
+                                        data-row="{{ $i }}">
                                     <input type="file" id="gal_{{ $i }}"
-                                        name="readings[{{ $i }}][images][]"
                                         accept="image/*" multiple style="display:none;"
-                                        data-gallery="preview_{{ $i }}">
+                                        data-row="{{ $i }}">
+                                    {{-- Proxy input thực sự submit --}}
+                                    <input type="file" id="proxy_{{ $i }}"
+                                        name="readings[{{ $i }}][images][]"
+                                        accept="image/*" multiple style="display:none;">
                                     {{-- Preview thumbnails --}}
                                     <div id="preview_{{ $i }}"
                                         style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:4px;"></div>
@@ -655,6 +657,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function syncBatchProxy(rowId) {
+        const proxyInp = document.getElementById('proxy_' + rowId);
+        if (proxyInp) proxyInp.files = getBatchDT(rowId).files;
+    }
+
     function removeBatchFileAt(rowId, idx) {
         const dt = getBatchDT(rowId);
         const newDT = new DataTransfer();
@@ -663,26 +670,27 @@ document.addEventListener('DOMContentLoaded', function () {
             if (i !== idx) newDT.items.add(files[i]);
         }
         rowFilesMap[rowId] = newDT;
-        // Gán lại vào camera input của row
-        const camInp = document.getElementById('cam_' + rowId);
-        if (camInp) camInp.files = newDT.files;
+        syncBatchProxy(rowId);
         renderBatchPreview(rowId);
     }
 
-    // Gắn sự kiện cho tất cả inputs ảnh trong batch
+    // Camera inputs: capture="environment", NO multiple → mở camera thực sự
     document.querySelectorAll('input[id^="cam_"]').forEach(function(inp) {
         const rowId = inp.id.replace('cam_', '');
         inp.addEventListener('change', function() {
-            addBatchFiles(this, rowId);
+            if (this.files.length > 0) {
+                addBatchFiles(this, rowId);
+                syncBatchProxy(rowId);
+            }
             this.value = '';
         });
     });
+
+    // Gallery inputs: multiple, NO capture → chọn nhiều ảnh từ thư viện
     document.querySelectorAll('input[id^="gal_"]').forEach(function(inp) {
         const rowId = inp.id.replace('gal_', '');
-        const camInp = document.getElementById('cam_' + rowId);
         inp.addEventListener('change', function() {
-            if (camInp) {
-                // Thêm files từ gallery vào DT của row, sau đó gán vào camInp để submit
+            if (this.files.length > 0) {
                 const dt = getBatchDT(rowId);
                 const remaining = MAX_BATCH_IMAGES - dt.files.length;
                 const files = this.files;
@@ -691,7 +699,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     dt.items.add(files[i]);
                     added++;
                 }
-                camInp.files = dt.files;
+                syncBatchProxy(rowId);
                 renderBatchPreview(rowId);
             }
             this.value = '';
