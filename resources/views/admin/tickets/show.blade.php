@@ -143,7 +143,7 @@
                                         </div>
                                         @if($prog->image_proof)
                                             <div class="tk-admin-timeline__proof">
-                                                <img src="{{ asset('storage/' . $prog->image_proof) }}" alt="Ảnh chứng minh"
+                                                <img src="{{ asset('storage/' . $prog->image_proof) }}" alt="Ảnh nghiệm thu"
                                                      onclick="openAdminImgModal(this.src)" style="cursor: pointer;">
                                             </div>
                                         @endif
@@ -204,7 +204,8 @@
                                 <label>Trạng thái mới</label>
                                 <select name="status" id="progressStatusDetail" required>
                                     @if($ticket->status === 'in_progress')
-                                        <option value="completed" selected>Hoàn thành</option>
+                                        <option value="in_progress" selected>Đang xử lý</option>
+                                        <option value="completed">Hoàn thành</option>
                                     @else
                                         <option value="" disabled selected>-- Chọn --</option>
                                         <option value="in_progress">Đang xử lý</option>
@@ -213,11 +214,11 @@
                                 </select>
                             </div>
                             <div class="tk-form-group">
-                                <label>Ghi chú</label>
-                                <textarea name="comment" placeholder="Mô tả công việc đã thực hiện..."></textarea>
+                                <label>Báo cáo hoàn thành <span style="font-size: 0.8rem; color: #64748b;">(bắt buộc khi hoàn thành)</span></label>
+                                <textarea name="comment" placeholder="Mô tả công việc đã thực hiện, vật tư sử dụng, kết quả..."></textarea>
                             </div>
                             <div class="tk-form-group">
-                                <label>Ảnh chứng minh (tùy chọn)</label>
+                                <label>Ảnh nghiệm thu <span style="font-size: 0.8rem; color: #64748b;">(bắt buộc khi hoàn thành)</span></label>
                                 <input type="file" name="image_proof" accept="image/*">
                             </div>
                             <button type="submit" class="tk-form-submit tk-form-submit--primary" style="width: 100%; justify-content: center;">

@@ -211,7 +211,7 @@
                                                 @elseif(($resident->relationship ?? '') === 'tenant')
                                                     <span class="badge-relationship tenant">Người thuê</span>
                                                 @else
-                                                    <span class="badge-relationship family">Thành viên</span>
+                                                    <span class="badge-relationship family">Thành viên gia đình</span>
                                                 @endif
                                             </td>
                                             <td>

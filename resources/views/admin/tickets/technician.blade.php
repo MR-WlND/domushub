@@ -183,23 +183,27 @@
         </div>
 
         <div class="ktv-modal__field">
-            <label for="progressComment">Ghi chú công việc</label>
+            <label for="progressComment">Báo cáo hoàn thành <span id="commentFieldNote" class="ktv-field-note">(bắt buộc khi hoàn thành)</span></label>
             <textarea name="comment" id="progressComment" placeholder="Mô tả công việc đã thực hiện, vật tư sử dụng, kết quả..."></textarea>
         </div>
 
         <div class="ktv-modal__field">
-            <label>Ảnh chứng minh <span class="optional">(tùy chọn)</span></label>
-            <div class="ktv-modal__upload" id="uploadZone" onclick="document.getElementById('imgProofInput').click()">
+            <label>Ảnh nghiệm thu / ảnh tiến trình <span id="proofFieldNote" class="ktv-field-note">(tùy chọn, có thể chụp ảnh khi đang xử lý)</span></label>
+            <div class="ktv-modal__upload" id="uploadZone" onclick="openFilePicker()">
                 <input type="file" name="image_proof" id="imgProofInput" accept="image/*" style="display:none" onchange="handleFileSelect(this)">
                 <div id="uploadPlaceholder">
                     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#94a3b8" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                    <span>Nhấn để chọn ảnh</span>
+                    <span>Nhấn để chọn ảnh nghiệm thu</span>
                 </div>
                 <div id="uploadPreview" style="display:none">
                     <img id="previewImg" src="" alt="preview">
                     <span id="previewName"></span>
                 </div>
             </div>
+            <button type="button" class="ktv-btn ktv-btn--sm ktv-btn--ghost" style="margin-top:0.75rem;" onclick="openCameraCapture()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 7h-2a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2"/><path d="M9 7l1.5-3h3L15 7"/><circle cx="12" cy="15" r="3"/></svg>
+                Mở camera máy tính
+            </button>
         </div>
 
         <div class="ktv-modal__footer">
@@ -212,6 +216,19 @@
     </form>
 </div>
 
+<div id="cameraModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:10000;cursor:pointer;pointer-events:none;" onclick="closeCameraModal()"></div>
+<div id="cameraModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%, -50%);width:92vw;max-width:520px;background:#fff;border-radius:16px;box-shadow:0 24px 48px rgba(15,23,42,0.25);z-index:10001;padding:16px;pointer-events:none;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-weight:700;font-size:0.95rem;color:#0f172a;">Camera máy tính</div>
+        <button type="button" class="ktv-btn ktv-btn--ghost" style="padding:6px 10px;font-size:0.85rem;" onclick="closeCameraModal()">Đóng</button>
+    </div>
+    <video id="cameraVideo" autoplay playsinline style="width:100%;height:auto;border-radius:14px;background:#000;"></video>
+    <div style="display:flex;justify-content:flex-end;gap:0.75rem;margin-top:12px;">
+        <button type="button" class="ktv-btn ktv-btn--ghost" onclick="closeCameraModal()">Hủy</button>
+        <button type="button" class="ktv-btn ktv-btn--primary" onclick="captureCameraPhoto()">Chụp ảnh</button>
+    </div>
+</div>
+
 <script>
 const CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
 
@@ -219,7 +236,7 @@ const CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '{{ c
 document.querySelectorAll('.ktv-accept-btn').forEach(btn => {
     btn.addEventListener('click', async function (e) {
         e.stopPropagation();
-        
+
         if (!confirm('Bạn có chắc chắn muốn nhận nhiệm vụ này và bắt đầu thực hiện không?')) {
             return;
         }
@@ -280,35 +297,40 @@ function openProgressModal(btn) {
         `<span class="ktv-modal__apt">${apt} · ${block}</span>
          <span class="tk-priority tk-priority--${pri}">${getPriorityLabel(pri)}</span>`;
 
-    // Ẩn/hiện tùy chọn "Đang xử lý (tiếp tục)" dựa vào trạng thái hiện tại
     const statusSelect = document.getElementById('progressStatus');
-    const inProgressOpt = statusSelect.querySelector('option[value="in_progress"]');
-    if (status === 'in_progress') {
-        if (inProgressOpt) {
-            inProgressOpt.style.display = 'none';
-            inProgressOpt.disabled = true;
-        }
-    } else {
-        if (inProgressOpt) {
-            inProgressOpt.style.display = 'block';
-            inProgressOpt.disabled = false;
-        }
-    }
 
-    // Reset form
+    // Mặc định giữ lại trạng thái hiện tại nếu đang xử lý, hoặc yêu cầu chọn nếu mới được phân công.
     if (status === 'in_progress') {
-        statusSelect.value = 'completed';
+        statusSelect.value = 'in_progress';
     } else {
         statusSelect.value = '';
     }
+
+    updateProgressModalNotes(statusSelect.value);
     document.getElementById('progressComment').value = '';
-    document.getElementById('imgProofInput').value   = '';
-    document.getElementById('uploadPreview').style.display    = 'none';
+    document.getElementById('imgProofInput').value = '';
+    document.getElementById('uploadPreview').style.display = 'none';
     document.getElementById('uploadPlaceholder').style.display = 'flex';
 
     document.getElementById('progressModalOverlay').classList.add('active');
     document.getElementById('progressModal').classList.add('active');
     document.body.style.overflow = 'hidden';
+}
+
+function updateProgressModalNotes(status) {
+    const proofNote = document.getElementById('proofFieldNote');
+    const commentNote = document.getElementById('commentFieldNote');
+    if (!proofNote || !commentNote) {
+        return;
+    }
+
+    if (status === 'completed') {
+        proofNote.textContent = '(bắt buộc khi hoàn thành)';
+        commentNote.textContent = '(bắt buộc khi hoàn thành)';
+    } else {
+        proofNote.textContent = '(tùy chọn)';
+        commentNote.textContent = '(tùy chọn)';
+    }
 }
 
 function closeProgressModal() {
@@ -317,16 +339,131 @@ function closeProgressModal() {
     document.body.style.overflow = '';
 }
 
+let cameraStream = null;
+
+function openFilePicker() {
+    const input = document.getElementById('imgProofInput');
+    input.click();
+}
+
+function openCameraCapture() {
+    const overlay = document.getElementById('cameraModalOverlay');
+    const modal = document.getElementById('cameraModal');
+    const video = document.getElementById('cameraVideo');
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('Trình duyệt của bạn không hỗ trợ mở camera.');
+        return;
+    }
+
+    overlay.style.display = 'block';
+    overlay.style.pointerEvents = 'auto';
+    modal.style.display = 'block';
+    modal.style.pointerEvents = 'auto';
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+            cameraStream = stream;
+            video.srcObject = stream;
+            video.play();
+        })
+        .catch(error => {
+            let message = 'Không thể mở camera. Vui lòng kiểm tra quyền truy cập.';
+            if (error && error.name) {
+                switch (error.name) {
+                    case 'NotAllowedError':
+                    case 'PermissionDeniedError':
+                        message = 'Quyền truy cập camera bị từ chối. Vui lòng cho phép truy cập camera cho trang này và thử lại.';
+                        break;
+                    case 'NotFoundError':
+                    case 'DevicesNotFoundError':
+                        message = 'Không tìm thấy thiết bị camera. Vui lòng kiểm tra camera hoặc kết nối thiết bị.';
+                        break;
+                    case 'NotReadableError':
+                    case 'TrackStartError':
+                        message = 'Camera đang bị ứng dụng khác sử dụng. Vui lòng đóng ứng dụng khác và thử lại.';
+                        break;
+                    case 'OverconstrainedError':
+                    case 'ConstraintNotSatisfiedError':
+                        message = 'Không thể mở camera với cấu hình hiện tại. Vui lòng thử lại.';
+                        break;
+                }
+            }
+            alert(message + '\nNếu không được, bạn có thể chọn ảnh nghiệm thu thủ công từ máy tính.');
+            closeCameraModal();
+        });
+}
+
+function closeCameraModal() {
+    const overlay = document.getElementById('cameraModalOverlay');
+    const modal = document.getElementById('cameraModal');
+    const video = document.getElementById('cameraVideo');
+
+    overlay.style.display = 'none';
+    overlay.style.pointerEvents = 'none';
+    modal.style.display = 'none';
+    modal.style.pointerEvents = 'none';
+
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+    }
+
+    if (video) {
+        video.srcObject = null;
+    }
+}
+
+function captureCameraPhoto() {
+    const video = document.getElementById('cameraVideo');
+    if (!video || !video.videoWidth || !video.videoHeight) {
+        alert('Camera chưa sẵn sàng. Vui lòng thử lại.');
+        return;
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const context = canvas.getContext('2d');
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob(blob => {
+        if (!blob) {
+            alert('Không thể chụp ảnh. Vui lòng thử lại.');
+            return;
+        }
+
+        const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        const input = document.getElementById('imgProofInput');
+        input.files = dataTransfer.files;
+        handleFileSelect(input);
+        closeCameraModal();
+    }, 'image/jpeg', 0.92);
+}
+
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeProgressModal(); });
 
+const progressStatusSelect = document.getElementById('progressStatus');
+if (progressStatusSelect) {
+    progressStatusSelect.addEventListener('change', function () {
+        updateProgressModalNotes(this.value);
+    });
+}
+
 // ── Xác nhận cập nhật tiến độ ─────────────────────────────────────────
-document.getElementById('progressForm').addEventListener('submit', function (e) {
-    const statusSelect = document.getElementById('progressStatus');
-    const statusText = statusSelect.value === 'completed' ? 'Hoàn thành' : 'Đang xử lý';
-    if (!confirm(`Bạn có chắc chắn muốn cập nhật trạng thái nhiệm vụ này thành "${statusText}" không?`)) {
-        e.preventDefault();
-    }
-});
+const progressForm = document.getElementById('progressForm');
+if (progressForm) {
+    progressForm.addEventListener('submit', function (e) {
+        const statusSelect = document.getElementById('progressStatus');
+        if (!statusSelect) return;
+        const statusText = statusSelect.value === 'completed' ? 'Hoàn thành' : 'Đang xử lý';
+        if (!confirm(`Bạn có chắc chắn muốn cập nhật trạng thái nhiệm vụ này thành "${statusText}" không?`)) {
+            e.preventDefault();
+        }
+    });
+}
 
 // ── Upload preview ────────────────────────────────────────────────────
 function handleFileSelect(input) {
