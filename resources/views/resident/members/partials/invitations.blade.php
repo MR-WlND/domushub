@@ -168,7 +168,7 @@
                                 </td>
                                 <td>
                                     @if ($invite->intended_relationship === 'family_member')
-                                        <span class="badge badge--family"><i class="fa-solid fa-house-user"></i> Gia đình</span>
+                                        <span class="badge badge--family"><i class="fa-solid fa-house-user"></i> Thành viên gia đình</span>
                                     @elseif ($invite->intended_relationship === 'tenant')
                                         <span class="badge badge--tenant"><i class="fa-solid fa-key"></i> Người thuê</span>
                                     @else

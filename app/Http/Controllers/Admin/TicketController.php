@@ -156,19 +156,43 @@ class TicketController extends Controller
      */
     public function updateProgress(Request $request, $id)
     {
+        $user   = Auth::user();
         $ticket = Ticket::findOrFail($id);
 
-        $validated = $request->validate([
+        if (in_array($ticket->status, ['completed', 'cancelled'], true)) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Không thể cập nhật tiến độ cho phản ánh đã đóng.'], 422);
+            }
+            return back()->withErrors(['ticket' => 'Không thể cập nhật tiến độ cho phản ánh đã đóng.']);
+        }
+
+        if ($user->role === 'technician' && $ticket->handler_id !== $user->id) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Bạn không có quyền cập nhật tiến độ cho phản ánh này.'], 403);
+            }
+            return back()->withErrors(['ticket' => 'Bạn không có quyền cập nhật tiến độ cho phản ánh này.']);
+        }
+
+        $rules = [
             'status'      => ['required', 'in:in_progress,completed'],
             'comment'     => ['nullable', 'string', 'max:1000'],
             'image_proof' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-        ], [
-            'status.required' => 'Vui lòng chọn trạng thái.',
-            'comment.max'     => 'Ghi chú tối đa 1000 ký tự.',
-            'image_proof.max' => 'Dung lượng ảnh tối đa 2MB.',
+        ];
+
+        if ($request->input('status') === 'completed') {
+            $rules['comment']     = ['required', 'string', 'max:1000'];
+            $rules['image_proof'] = ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'];
+        }
+
+        $validated = $request->validate($rules, [
+            'status.required'     => 'Vui lòng chọn trạng thái.',
+            'comment.required'    => 'Vui lòng nhập báo cáo hoàn thành.',
+            'comment.max'         => 'Báo cáo hoàn thành tối đa 1000 ký tự.',
+            'image_proof.required'=> 'Vui lòng tải lên ảnh nghiệm thu khi hoàn thành.',
+            'image_proof.max'     => 'Dung lượng ảnh tối đa 2MB.',
         ]);
 
-        // Xử lý ảnh chứng minh
+        // Xử lý ảnh nghiệm thu
         $imageProof = null;
         if ($request->hasFile('image_proof')) {
             $imageProof = $request->file('image_proof')->store('ticket-progress', 'public');

@@ -66,13 +66,21 @@ class MemberController extends Controller
             ->sortBy('name')
             ->values();
 
-        // Lấy danh sách cư dân liên kết tài khoản
+        // Lấy danh sách cư dân liên kết tài khoản (không bao gồm user hiện tại)
         $registeredMembers = Resident::with(['user', 'apartment.floor.block'])
             ->whereIn('apartment_id', $apartmentIds)
             ->where('user_id', '!=', $user->id)
             ->whereNull('deleted_at')
             ->orderBy('created_at')
             ->get();
+
+        // Lấy thông tin resident của user hiện tại để hiển thị đúng vai trò
+        $selfResident = Resident::with(['apartment.floor.block'])
+            ->where('user_id', $user->id)
+            ->whereIn('apartment_id', $apartmentIds)
+            ->whereNull('deleted_at')
+            ->orderBy('created_at')
+            ->first();
 
         // Lấy danh sách nhân khẩu gia đình khai báo
         $declaredMembers = ApartmentMember::with(['apartment.floor.block'])
@@ -104,6 +112,7 @@ class MemberController extends Controller
             'apartments',
             'blocks',
             'registeredMembers',
+            'selfResident',
             'declaredMembers',
             'invitations',
             'totalMembersCount',
