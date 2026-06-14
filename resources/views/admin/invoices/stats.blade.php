@@ -1,15 +1,6 @@
-@extends('admin.layout')
+@extends('layouts.admin.master')
 
-@section('title', 'Thống kê Hóa đơn')
-
-@push('page_css')
-@vite(['resources/css/admin/invoices.css'])
-@endpush
-
-@section('breadcrumb')
-    <span class="sep">›</span>
-    <span class="current">Thống kê hóa đơn</span>
-@endsection
+@section('page_title', 'Thống kê Hóa đơn')
 
 @section('content')
 

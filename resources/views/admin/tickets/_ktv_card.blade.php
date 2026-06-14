@@ -6,11 +6,12 @@
     $slaLimit = match($ticket->priority) {
         'urgent' => 2, 'high' => 8, 'medium' => 24, default => 72
     };
-    $overdue = $ageHours >= $slaLimit && $mode !== 'done';
+    $overdue      = $ageHours >= $slaLimit && $mode !== 'done';
+    $needsRecheck = $mode === 'active' && $ticket->reopened_count > 0;
     $lastProgress = $ticket->progress?->last();
 @endphp
 
-<div class="ktv-card ktv-card--{{ $mode }} {{ $overdue ? 'ktv-card--overdue' : '' }}" id="card-{{ $ticket->id }}">
+<div class="ktv-card ktv-card--{{ $mode }} {{ $overdue ? 'ktv-card--overdue' : '' }} {{ $needsRecheck ? 'ktv-card--recheck' : '' }}" id="card-{{ $ticket->id }}">
 
     {{-- Priority bar --}}
     <div class="ktv-card__bar ktv-card__bar--{{ $ticket->priority }}"></div>
@@ -21,8 +22,10 @@
         <div class="ktv-card__top">
             <span class="ktv-card__id">#{{ $ticket->id }}</span>
             <span class="tk-priority tk-priority--{{ $ticket->priority }}">{{ $ticket->priorityLabel() }}</span>
-            @if($overdue)
-                <span class="ktv-card__sla">⚠ Trễ SLA</span>
+            @if($needsRecheck)
+                <span class="ktv-card__recheck-badge">Cần kiểm tra lại</span>
+            @elseif($overdue)
+                <span class="ktv-card__sla">Trễ SLA</span>
             @endif
         </div>
 
@@ -52,6 +55,16 @@
                 </div>
             @endif
         </div>
+
+        {{-- Recheck notice --}}
+        @if($needsRecheck)
+            <div class="ktv-card__recheck-notice">
+                Cư dân đánh giá {{ $ticket->rating }} sao — yêu cầu kiểm tra lại (lần {{ $ticket->reopened_count }})
+                @if($ticket->feedback_comment)
+                    <div class="ktv-card__recheck-reason">"{{ $ticket->feedback_comment }}"</div>
+                @endif
+            </div>
+        @endif
 
         {{-- Last progress (for active tasks) --}}
         @if($mode === 'active' && $lastProgress?->comment)

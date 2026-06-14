@@ -106,6 +106,11 @@ Route::middleware(['admin'])->group(function () {
     Route::delete('/admin/service-prices/{id}', [ServicePriceController::class, 'destroy'])->name('admin.service-prices.destroy');
 
     Route::get('/admin/invoices', [InvoiceController::class, 'index'])->name('admin.invoices.index');
+    Route::get('/admin/invoices/batch', [InvoiceController::class, 'batchCreate'])->name('admin.invoices.batch');
+    Route::post('/admin/invoices/batch', [InvoiceController::class, 'batchStore'])->name('admin.invoices.batch.store');
+    Route::get('/admin/invoices/create', [InvoiceController::class, 'create'])->name('admin.invoices.create');
+    Route::post('/admin/invoices', [InvoiceController::class, 'store'])->name('admin.invoices.store');
+    Route::get('/admin/invoices/{invoice}', [InvoiceController::class, 'show'])->name('admin.invoices.show');
     Route::patch('/admin/invoices/{invoice}/mark-paid', [InvoiceController::class, 'markAsPaid'])->name('admin.invoices.mark-paid');
 
 
@@ -116,7 +121,9 @@ Route::middleware(['admin'])->group(function () {
 
     // Quản lý phản ánh & điều phối kỹ thuật (admin / manager)
     Route::get('/admin/tickets', [App\Http\Controllers\Admin\TicketController::class, 'index'])->name('admin.tickets.index');
-    Route::get('/admin/tickets/report', function () { return view('admin.tickets.report'); })->name('admin.tickets.report');
+    Route::get('/admin/tickets/report', [App\Http\Controllers\Admin\TicketController::class, 'report'])->name('admin.tickets.report');
+    Route::post('/admin/tickets/{id}/review/approve', [App\Http\Controllers\Admin\TicketController::class, 'approveReview'])->name('admin.tickets.review.approve');
+    Route::post('/admin/tickets/{id}/review/reject', [App\Http\Controllers\Admin\TicketController::class, 'rejectReview'])->name('admin.tickets.review.reject');
     Route::get('/admin/tickets/dispatch', [App\Http\Controllers\Admin\TicketController::class, 'dispatchIndex'])->name('admin.tickets.dispatch');
     Route::get('/admin/tickets/my-tasks', [App\Http\Controllers\Admin\TicketController::class, 'myTasks'])->name('admin.tickets.my-tasks');
     Route::get('/admin/tickets/{id}', [App\Http\Controllers\Admin\TicketController::class, 'show'])->name('admin.tickets.show');
@@ -221,24 +228,19 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/tickets/{id}', [ResidentTicketController::class, 'show'])->name('resident.tickets.show');
     Route::post('/resident/tickets/{id}/cancel', [ResidentTicketController::class, 'cancel'])->name('resident.tickets.cancel');
     Route::post('/resident/tickets/{id}/feedback', [ResidentTicketController::class, 'feedback'])->name('resident.tickets.feedback');
-});
+    // Quản lý tài khoản người dùng
+    Route::get('/admin/users', [UserController::class, 'index'])->name('admin.users.index');
+    Route::get('/admin/users/create', [UserController::class, 'create'])->name('admin.users.create');
+    Route::post('/admin/users', [UserController::class, 'store'])->name('admin.users.store');
+    Route::get('/admin/users/{id}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
+    Route::put('/admin/users/{id}', [UserController::class, 'update'])->name('admin.users.update');
+    Route::put('/admin/users/{id}/update-status', [UserController::class, 'updateStatus'])->name('admin.users.updateStatus');
+    Route::put('/admin/users/{id}/reset-password', [UserController::class, 'resetPassword'])->name('admin.users.resetPassword');
 
-Route::middleware(['admin'])->name('admin.')->group(function () {
-    // Route xem danh sách và lọc
-    Route::get('/users', [UserController::class, 'index'])->name('users.index');
-    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
-    Route::post('/users', [UserController::class, 'store'])->name('users.store');
-    Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
-    Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
-
-    // Route xử lý cập nhật trạng thái/vai trò
-    Route::put('/users/{id}/update-status', [UserController::class, 'updateStatus'])->name('users.updateStatus');
-    Route::put('/users/{id}/reset-password', [UserController::class, 'resetPassword'])->name('users.resetPassword');
-
-    // Quản lý mã mời (Invitations)
-    Route::get('/admin/invitations', [AdminInvitationController::class, 'index'])->name('invitations.index');
-    Route::post('/admin/invitations', [AdminInvitationController::class, 'store'])->name('invitations.store');
-    Route::delete('/admin/invitations/{id}', [AdminInvitationController::class, 'destroy'])->name('invitations.destroy');
+    // Quản lý mã mời
+    Route::get('/admin/invitations', [AdminInvitationController::class, 'index'])->name('admin.invitations.index');
+    Route::post('/admin/invitations', [AdminInvitationController::class, 'store'])->name('admin.invitations.store');
+    Route::delete('/admin/invitations/{id}', [AdminInvitationController::class, 'destroy'])->name('admin.invitations.destroy');
 });
 
 // Fallback route to serve uploaded public storage files (useful if symlink is missing or fails on local Windows development)

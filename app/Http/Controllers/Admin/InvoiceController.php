@@ -81,10 +81,11 @@ class InvoiceController extends Controller
 
         // Ensure ServicePrice exists
         $servicePrice = \App\Models\ServicePrice::firstOrCreate(
-            ['type' => $validated['type'], 'status' => 'active'],
+            ['type' => $validated['type']],
             [
                 'name' => 'Phí ' . Invoice::typeLabel($validated['type']),
                 'unit_price' => $validated['amount'],
+                'status' => 'active',
                 'description' => 'Tự động tạo từ màn hình phát hành hóa đơn'
             ]
         );

@@ -85,6 +85,17 @@
                 <div class="ktv-stat__lbl">Tổng nhiệm vụ</div>
             </div>
         </div>
+        @if($stats['recheck'] > 0)
+        <div class="ktv-stat ktv-stat--recheck">
+            <div class="ktv-stat__icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+            </div>
+            <div>
+                <div class="ktv-stat__num">{{ $stats['recheck'] }}</div>
+                <div class="ktv-stat__lbl">Cần kiểm tra lại</div>
+            </div>
+        </div>
+        @endif
     </div>
 
     {{-- Kanban Columns --}}
@@ -507,5 +518,46 @@ function showKtvToast(msg, type = 'success') {
     }, 3500);
 }
 </script>
+
+<style>
+.ktv-card--recheck {
+    border-color: #f97316 !important;
+    box-shadow: 0 0 0 2px rgba(249,115,22,0.15) !important;
+}
+.ktv-card__recheck-badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    background: #fff7ed;
+    color: #c2410c;
+    border: 1px solid #fed7aa;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.ktv-card__recheck-notice {
+    margin: 8px 0 4px;
+    padding: 8px 10px;
+    background: #fff7ed;
+    border-left: 3px solid #f97316;
+    border-radius: 0 6px 6px 0;
+    font-size: 0.78rem;
+    color: #9a3412;
+    font-weight: 500;
+    line-height: 1.5;
+}
+.ktv-card__recheck-reason {
+    margin-top: 4px;
+    font-style: italic;
+    color: #c2410c;
+    font-weight: 400;
+}
+.ktv-stat--recheck {
+    border-color: #fed7aa;
+    background: #fff7ed;
+}
+.ktv-stat--recheck .ktv-stat__num { color: #c2410c; }
+.ktv-stat--recheck .ktv-stat__icon { background: #ffedd5; color: #ea580c; }
+</style>
 
 @endsection

@@ -18,162 +18,142 @@
             <p class="rpt-page__subtitle">Tổng hợp kết quả xử lý sự cố do kỹ thuật viên gửi về, chờ admin xác nhận.</p>
         </div>
         <button class="rpt-btn rpt-btn--ghost" onclick="window.print()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
             In báo cáo
         </button>
     </div>
 
     {{-- Stats --}}
     <div class="rpt-stats">
-        <div class="rpt-stat rpt-stat--blue">
-            <div class="rpt-stat__icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            </div>
+        <div class="rpt-stat rpt-stat--neutral">
+            <div class="rpt-stat__icon"></div>
             <div>
-                <p class="rpt-stat__val">—</p>
+                <p class="rpt-stat__val">{{ number_format($totalReports) }}</p>
                 <p class="rpt-stat__lbl">Tổng báo cáo</p>
             </div>
         </div>
-        <div class="rpt-stat rpt-stat--yellow">
-            <div class="rpt-stat__icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </div>
+        <div class="rpt-stat rpt-stat--neutral">
+            <div class="rpt-stat__icon"></div>
             <div>
-                <p class="rpt-stat__val">—</p>
+                <p class="rpt-stat__val">{{ number_format($pendingReview->count()) }}</p>
                 <p class="rpt-stat__lbl">Chờ nghiệm thu</p>
             </div>
         </div>
-        <div class="rpt-stat rpt-stat--green">
-            <div class="rpt-stat__icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            </div>
+        <div class="rpt-stat rpt-stat--neutral">
+            <div class="rpt-stat__icon"></div>
             <div>
-                <p class="rpt-stat__val">—</p>
+                <p class="rpt-stat__val">{{ number_format($approvedReports->count()) }}</p>
                 <p class="rpt-stat__lbl">Đã nghiệm thu</p>
             </div>
         </div>
-        <div class="rpt-stat rpt-stat--red">
-            <div class="rpt-stat__icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.57"/></svg>
-            </div>
+        <div class="rpt-stat rpt-stat--neutral">
+            <div class="rpt-stat__icon"></div>
             <div>
-                <p class="rpt-stat__val">—</p>
+                <p class="rpt-stat__val">{{ number_format($reworkReports->count()) }}</p>
                 <p class="rpt-stat__lbl">Yêu cầu làm lại</p>
             </div>
         </div>
     </div>
 
     {{-- Filter --}}
-    <div class="rpt-filter">
+    <form method="GET" action="{{ route('admin.tickets.report') }}" class="rpt-filter">
         <div class="rpt-filter__search">
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" placeholder="Tìm mã, tiêu đề, căn hộ, KTV...">
+            <input type="text" name="search" placeholder="Tìm mã, tiêu đề, căn hộ, KTV..." value="{{ request('search') }}">
         </div>
-        <select class="rpt-filter__select">
-            <option>Tất cả tòa</option>
+        <select name="block_id" class="rpt-filter__select">
+            <option value="">Tất cả tòa</option>
+            @foreach($blocks as $block)
+                <option value="{{ $block->id }}" {{ request('block_id') == $block->id ? 'selected' : '' }}>{{ $block->name }}</option>
+            @endforeach
         </select>
-        <select class="rpt-filter__select">
-            <option>Tất cả trạng thái</option>
-            <option>Chờ nghiệm thu</option>
-            <option>Đã nghiệm thu</option>
-            <option>Yêu cầu làm lại</option>
+        <select name="status" class="rpt-filter__select">
+            <option value="">Tất cả trạng thái</option>
+            <option value="pending_review" {{ request('status') === 'pending_review' ? 'selected' : '' }}>Chờ nghiệm thu</option>
+            <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Đã nghiệm thu</option>
+            <option value="rework" {{ request('status') === 'rework' ? 'selected' : '' }}>Yêu cầu làm lại</option>
         </select>
-        <select class="rpt-filter__select">
-            <option>Tất cả KTV</option>
+        <select name="technician_id" class="rpt-filter__select">
+            <option value="">Tất cả KTV</option>
+            @foreach($technicians as $tech)
+                <option value="{{ $tech->id }}" {{ request('technician_id') == $tech->id ? 'selected' : '' }}>{{ $tech->name }}</option>
+            @endforeach
         </select>
-        <input type="date" class="rpt-filter__date" title="Từ ngày">
-        <input type="date" class="rpt-filter__date" title="Đến ngày">
+        <input type="date" name="from" class="rpt-filter__date" title="Từ ngày" value="{{ request('from') }}">
+        <input type="date" name="to" class="rpt-filter__date" title="Đến ngày" value="{{ request('to') }}">
         <button class="rpt-btn rpt-btn--primary">Lọc</button>
-    </div>
+    </form>
 
     {{-- ── SECTION: Chờ nghiệm thu ── --}}
     <div class="rpt-section">
-        <div class="rpt-section__header rpt-section__header--yellow">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <div class="rpt-section__header rpt-section__header--neutral">
             <span>Chờ nghiệm thu</span>
-            <span class="rpt-section__count">0 báo cáo</span>
+            <span class="rpt-section__count">{{ $pendingReview->count() }} báo cáo</span>
         </div>
 
-        {{-- Empty state --}}
-        <div class="rpt-empty">
-            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            <p>Chưa có báo cáo nào chờ nghiệm thu</p>
-        </div>
-
-        {{-- Khi có data, mỗi báo cáo render theo cấu trúc này --}}
-        {{--
-        <div class="rpt-card rpt-card--pending">
-            <div class="rpt-card__left">
-                <div class="rpt-card__head">
-                    <span class="rpt-card__id">#ID</span>
-                    <span class="rpt-badge rpt-badge--urgent">Khẩn cấp</span>
-                </div>
-                <h3 class="rpt-card__title">Tiêu đề sự cố</h3>
-                <div class="rpt-card__meta">
-                    <span>🏢 Tòa · Tầng</span>
-                    <span>👤 KTV: Tên KTV</span>
-                    <span>⏱ Xử lý trong: X giờ Y phút</span>
-                    <span>🕐 Hoàn thành: X giờ trước</span>
-                </div>
-
-                <div class="rpt-card__report">
-                    <p class="rpt-card__report-label">📋 Báo cáo của KTV</p>
-                    <p class="rpt-card__report-text">Nội dung báo cáo...</p>
-                </div>
-
-                <div class="rpt-card__images">
-                    <div class="rpt-card__image-group">
-                        <p class="rpt-card__image-label">Trước xử lý</p>
-                        <img src="..." class="rpt-card__thumb" onclick="openLightbox(this.src, 'Trước xử lý')">
-                    </div>
-                    <div class="rpt-card__image-group">
-                        <p class="rpt-card__image-label">Sau xử lý</p>
-                        <img src="..." class="rpt-card__thumb" onclick="openLightbox(this.src, 'Sau xử lý')">
-                    </div>
-                </div>
-
-                <div class="rpt-card__timeline">
-                    <div class="rpt-card__tl-item">
-                        <span class="rpt-card__tl-dot rpt-card__tl-dot--blue"></span>
-                        <span class="rpt-card__tl-lbl">Tiếp nhận</span>
-                        <span class="rpt-card__tl-val">HH:mm · dd/mm/yyyy</span>
-                    </div>
-                    <div class="rpt-card__tl-item">
-                        <span class="rpt-card__tl-dot rpt-card__tl-dot--orange"></span>
-                        <span class="rpt-card__tl-lbl">Bắt đầu xử lý</span>
-                        <span class="rpt-card__tl-val">HH:mm · dd/mm/yyyy</span>
-                    </div>
-                    <div class="rpt-card__tl-item">
-                        <span class="rpt-card__tl-dot rpt-card__tl-dot--green"></span>
-                        <span class="rpt-card__tl-lbl">KTV hoàn thành</span>
-                        <span class="rpt-card__tl-val">HH:mm · dd/mm/yyyy</span>
-                    </div>
-                </div>
+        @if($pendingReview->isEmpty())
+            <div class="rpt-empty">
+                <p>Chưa có báo cáo nào chờ nghiệm thu</p>
             </div>
+        @else
+            @foreach($pendingReview as $ticket)
+                @php
+                    $lastProgress = $ticket->progress->last();
+                    $reportText = $lastProgress?->comment ?? 'Không có báo cáo chi tiết.';
+                    $proofImage = $lastProgress?->image_proof ? asset('storage/' . $lastProgress->image_proof) : null;
+                @endphp
+                <div class="rpt-card rpt-card--pending">
+                    <div class="rpt-card__left">
+                        <div class="rpt-card__head">
+                            <span class="rpt-card__id">#{{ $ticket->id }}</span>
+                            @if($ticket->priority === 'urgent')
+                                <span class="rpt-badge rpt-badge--urgent">Khẩn cấp</span>
+                            @elseif($ticket->priority === 'high')
+                                <span class="rpt-badge rpt-badge--high">Cao</span>
+                            @endif
+                        </div>
+                        <h3 class="rpt-card__title">{{ $ticket->title }}</h3>
+                        <div class="rpt-card__meta">
+                            <span>{{ $ticket->apartment?->floor?->block?->name ?? 'Chưa có tòa' }} · Tầng {{ $ticket->apartment?->floor?->floor_number ?? 'N/A' }}</span>
+                            <span>KTV: {{ $ticket->handler?->name ?? 'Chưa phân công' }}</span>
+                            <span>Căn hộ: {{ $ticket->apartment?->apartment_number ?? 'N/A' }}</span>
+                            <span>Hoàn thành: {{ $lastProgress?->created_at?->format('d/m/Y H:i') ?? $ticket->updated_at->format('d/m/Y H:i') }}</span>
+                        </div>
 
-            <div class="rpt-card__right">
-                <button class="rpt-btn rpt-btn--success rpt-btn--full"
-                        onclick="confirmApprove(ID)">
-                    ✅ Nghiệm thu đạt
-                </button>
-                <button class="rpt-btn rpt-btn--danger rpt-btn--full"
-                        onclick="openRejectModal(ID)">
-                    🔄 Yêu cầu làm lại
-                </button>
-                <a href="#" class="rpt-btn rpt-btn--ghost rpt-btn--full">
-                    Xem chi tiết ↗
-                </a>
-            </div>
-        </div>
-        --}}
+                        <div class="rpt-card__report">
+                            <p class="rpt-card__report-label">Báo cáo của KTV</p>
+                            <p class="rpt-card__report-text">{{ Str::limit($reportText, 220) }}</p>
+                        </div>
+
+                        @if($proofImage)
+                            <div class="rpt-card__images">
+                                <div class="rpt-card__image-group">
+                                    <p class="rpt-card__image-label">Ảnh nghiệm thu</p>
+                                    <img src="{{ $proofImage }}" class="rpt-card__thumb" onclick="openLightbox(this.src, 'Ảnh nghiệm thu')">
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+
+                    <div class="rpt-card__right">
+                        <button class="rpt-btn rpt-btn--success rpt-btn--full" data-approve-ticket="{{ $ticket->id }}">
+                            Xác nhận nghiệm thu
+                        </button>
+                        <button class="rpt-btn rpt-btn--danger rpt-btn--full" data-reject-ticket="{{ $ticket->id }}">
+                            Yêu cầu làm lại
+                        </button>
+                        <a href="{{ route('admin.tickets.show', $ticket->id) }}" class="rpt-btn rpt-btn--ghost rpt-btn--full">
+                            Xem chi tiết
+                        </a>
+                    </div>
+                </div>
+            @endforeach
+        @endif
     </div>
 
     {{-- ── SECTION: Đã nghiệm thu ── --}}
     <div class="rpt-section">
-        <div class="rpt-section__header rpt-section__header--green">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <div class="rpt-section__header rpt-section__header--neutral">
             <span>Đã nghiệm thu</span>
-            <span class="rpt-section__count">0 báo cáo</span>
+            <span class="rpt-section__count">{{ $approvedReports->count() }} báo cáo</span>
         </div>
 
         <div class="rpt-table-wrap">
@@ -184,16 +164,30 @@
                         <th>Tiêu đề sự cố</th>
                         <th>Căn hộ</th>
                         <th>KTV xử lý</th>
-                        <th>Thời gian xử lý</th>
                         <th>Ngày nghiệm thu</th>
                         <th>Người nghiệm thu</th>
                         <th></th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td colspan="8" class="rpt-table__empty">Chưa có báo cáo nào được nghiệm thu</td>
-                    </tr>
+                    @forelse($approvedReports as $ticket)
+                        @php
+                            $lastProgress = $ticket->progress->last();
+                        @endphp
+                        <tr>
+                            <td>#{{ $ticket->id }}</td>
+                            <td>{{ Str::limit($ticket->title, 40) }}</td>
+                            <td>{{ $ticket->apartment?->apartment_number ?? 'N/A' }}</td>
+                            <td>{{ $ticket->handler?->name ?? 'N/A' }}</td>
+                            <td>{{ optional($lastProgress?->created_at)->format('d/m/Y H:i') }}</td>
+                            <td>{{ $lastProgress?->updatedBy?->name ?? auth()->user()->name }}</td>
+                            <td><a href="{{ route('admin.tickets.show', $ticket->id) }}" class="rpt-btn rpt-btn--ghost rpt-btn--sm">Chi tiết</a></td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="rpt-table__empty">Chưa có báo cáo nào được nghiệm thu</td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
@@ -201,16 +195,46 @@
 
     {{-- ── SECTION: Yêu cầu làm lại ── --}}
     <div class="rpt-section">
-        <div class="rpt-section__header rpt-section__header--red">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.57"/></svg>
+        <div class="rpt-section__header rpt-section__header--neutral">
             <span>Yêu cầu làm lại</span>
-            <span class="rpt-section__count">0 báo cáo</span>
+            <span class="rpt-section__count">{{ $reworkReports->count() }} báo cáo</span>
         </div>
 
-        <div class="rpt-empty">
-            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.57"/></svg>
-            <p>Không có báo cáo nào yêu cầu làm lại</p>
-        </div>
+        @if($reworkReports->isEmpty())
+            <div class="rpt-empty">
+                <p>Không có báo cáo nào yêu cầu làm lại</p>
+            </div>
+        @else
+            <div class="rpt-table-wrap">
+                <table class="rpt-table">
+                    <thead>
+                        <tr>
+                            <th>Mã</th>
+                            <th>Tiêu đề</th>
+                            <th>Căn hộ</th>
+                            <th>KTV</th>
+                            <th>Lần yêu cầu</th>
+                            <th>Ghi chú yêu cầu</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($reworkReports as $ticket)
+                            @php $lastProgress = $ticket->progress->last(); @endphp
+                            <tr>
+                                <td>#{{ $ticket->id }}</td>
+                                <td>{{ Str::limit($ticket->title, 40) }}</td>
+                                <td>{{ $ticket->apartment?->apartment_number ?? 'N/A' }}</td>
+                                <td>{{ $ticket->handler?->name ?? 'N/A' }}</td>
+                                <td>{{ $ticket->reopened_count }}</td>
+                                <td>{{ Str::limit($lastProgress?->comment ?? 'Không có lý do.', 80) }}</td>
+                                <td><a href="{{ route('admin.tickets.show', $ticket->id) }}" class="rpt-btn rpt-btn--ghost rpt-btn--sm">Chi tiết</a></td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
     </div>
 
 </div>
@@ -218,14 +242,12 @@
 {{-- ── Modal: Xác nhận nghiệm thu đạt ── --}}
 <div class="rpt-modal-overlay" id="approveOverlay">
     <div class="rpt-modal">
-        <div class="rpt-modal__icon rpt-modal__icon--green">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        </div>
+        <div class="rpt-modal__icon rpt-modal__icon--green"></div>
         <h3 class="rpt-modal__title">Xác nhận nghiệm thu đạt?</h3>
         <p class="rpt-modal__desc">Thao tác này sẽ đánh dấu sự cố đã xử lý xong và thông báo đến cư dân.</p>
         <div class="rpt-modal__actions">
             <button class="rpt-btn rpt-btn--ghost" onclick="closeModals()">Hủy</button>
-            <button class="rpt-btn rpt-btn--success" onclick="submitApprove()">✅ Xác nhận đạt</button>
+            <button class="rpt-btn rpt-btn--success" onclick="submitApprove()">Xác nhận đạt</button>
         </div>
     </div>
 </div>
@@ -233,9 +255,7 @@
 {{-- ── Modal: Yêu cầu làm lại ── --}}
 <div class="rpt-modal-overlay" id="rejectOverlay">
     <div class="rpt-modal">
-        <div class="rpt-modal__icon rpt-modal__icon--red">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.57"/></svg>
-        </div>
+        <div class="rpt-modal__icon rpt-modal__icon--red"></div>
         <h3 class="rpt-modal__title">Yêu cầu làm lại</h3>
         <p class="rpt-modal__desc">Nhập lý do để KTV biết cần sửa gì. Lý do này sẽ được gửi đến KTV phụ trách.</p>
         <div class="rpt-modal__field">
@@ -245,7 +265,7 @@
         </div>
         <div class="rpt-modal__actions">
             <button class="rpt-btn rpt-btn--ghost" onclick="closeModals()">Hủy</button>
-            <button class="rpt-btn rpt-btn--danger" onclick="submitReject()">🔄 Gửi yêu cầu làm lại</button>
+            <button class="rpt-btn rpt-btn--danger" onclick="submitReject()">Gửi yêu cầu làm lại</button>
         </div>
     </div>
 </div>
@@ -270,9 +290,33 @@ function confirmApprove(id) {
     document.getElementById('approveOverlay').classList.add('rpt-modal-overlay--visible');
 }
 function submitApprove() {
-    // TODO: gọi API approve khi có data
-    console.log('Approve ticket:', pendingId);
-    closeModals();
+    if (!pendingId) {
+        closeModals();
+        return;
+    }
+    const url = `/admin/tickets/${pendingId}/review/approve`;
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({}),
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.message || 'Không thể xác nhận nghiệm thu.');
+            closeModals();
+        }
+    })
+    .catch(() => {
+        alert('Có lỗi khi gửi yêu cầu nghiệm thu. Vui lòng thử lại.');
+        closeModals();
+    });
 }
 
 // ── Reject ─────────────────────────────────────────────────────────
@@ -290,9 +334,30 @@ function submitReject() {
         document.getElementById('rejectReason').focus();
         return;
     }
-    // TODO: gọi API reject khi có data
-    console.log('Reject ticket:', pendingId, '| Lý do:', reason);
-    closeModals();
+
+    const url = `/admin/tickets/${pendingId}/review/reject`;
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({ reject_reason: reason }),
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.message || 'Không thể gửi yêu cầu làm lại.');
+            closeModals();
+        }
+    })
+    .catch(() => {
+        alert('Có lỗi khi gửi yêu cầu làm lại. Vui lòng thử lại.');
+        closeModals();
+    });
 }
 
 // ── Close modals ───────────────────────────────────────────────────
@@ -314,6 +379,20 @@ function closeLightbox() {
     document.body.style.overflow = '';
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('[data-approve-ticket]').forEach(el => {
+        el.addEventListener('click', () => {
+            confirmApprove(el.getAttribute('data-approve-ticket'));
+        });
+    });
+
+    document.querySelectorAll('[data-reject-ticket]').forEach(el => {
+        el.addEventListener('click', () => {
+            openRejectModal(el.getAttribute('data-reject-ticket'));
+        });
+    });
+});
+
 document.addEventListener('keydown', e => {
     if (e.key === 'Escape') { closeModals(); closeLightbox(); }
 });
@@ -333,10 +412,9 @@ document.addEventListener('keydown', e => {
 .rpt-stat__icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .rpt-stat__val { font-size: 1.6rem; font-weight: 800; line-height: 1; margin: 0 0 3px; }
 .rpt-stat__lbl { font-size: .72rem; font-weight: 600; color: #64748b; margin: 0; text-transform: uppercase; letter-spacing: .04em; }
-.rpt-stat--blue   .rpt-stat__icon { background: #eff6ff; color: #2563eb; } .rpt-stat--blue   .rpt-stat__val { color: #2563eb; }
-.rpt-stat--yellow .rpt-stat__icon { background: #fffbeb; color: #d97706; } .rpt-stat--yellow .rpt-stat__val { color: #d97706; }
-.rpt-stat--green  .rpt-stat__icon { background: #f0fdf4; color: #16a34a; } .rpt-stat--green  .rpt-stat__val { color: #16a34a; }
-.rpt-stat--red    .rpt-stat__icon { background: #fef2f2; color: #dc2626; } .rpt-stat--red    .rpt-stat__val { color: #dc2626; }
+.rpt-stat--neutral { border-color: #e2e8f0; }
+.rpt-stat--neutral .rpt-stat__icon { background: #f8fafc; color: #64748b; }
+.rpt-stat--neutral .rpt-stat__val { color: #111827; }
 
 /* ── Filter ── */
 .rpt-filter { background: #fff; border-radius: 12px; padding: 14px 18px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; box-shadow: 0 1px 3px rgba(0,0,0,.06); border: 1px solid #f1f5f9; }
@@ -347,30 +425,27 @@ document.addEventListener('keydown', e => {
 /* ── Buttons ── */
 .rpt-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 18px; border-radius: 9px; font-size: .85rem; font-weight: 700; cursor: pointer; border: none; transition: all .15s; white-space: nowrap; text-decoration: none; }
 .rpt-btn--full { width: 100%; }
-.rpt-btn--primary { background: linear-gradient(135deg,#7c3aed,#6d28d9); color: #fff; box-shadow: 0 3px 10px rgba(124,58,237,.25); }
-.rpt-btn--success { background: #16a34a; color: #fff; } .rpt-btn--success:hover { background: #15803d; }
-.rpt-btn--danger  { background: #fee2e2; color: #b91c1c; } .rpt-btn--danger:hover { background: #fecaca; }
-.rpt-btn--ghost   { background: #f1f5f9; color: #475569; } .rpt-btn--ghost:hover { background: #e2e8f0; }
+.rpt-btn--primary { background: #1f2937; color: #fff; box-shadow: 0 8px 20px rgba(15,23,42,.08); }
+.rpt-btn--primary:hover { background: #111827; }
+.rpt-btn--success { background: #0f5132; color: #fff; } .rpt-btn--success:hover { background: #0d452d; }
+.rpt-btn--danger  { background: #7f1d1d; color: #fff; } .rpt-btn--danger:hover { background: #6b1818; }
+.rpt-btn--ghost   { background: #f8fafc; color: #334155; } .rpt-btn--ghost:hover { background: #e2e8f0; }
 .rpt-btn--sm { padding: 5px 12px; font-size: .78rem; }
 
 /* ── Section ── */
 .rpt-section { display: flex; flex-direction: column; gap: 12px; }
 .rpt-section__header { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 10px; font-size: .88rem; font-weight: 700; border-left: 4px solid; }
 .rpt-section__count { margin-left: auto; font-size: .75rem; font-weight: 700; padding: 2px 10px; border-radius: 20px; }
-.rpt-section__header--yellow { background: #fffbeb; color: #92400e; border-color: #f59e0b; }
-.rpt-section__header--yellow .rpt-section__count { background: #fef3c7; color: #92400e; }
-.rpt-section__header--green  { background: #f0fdf4; color: #166534; border-color: #22c55e; }
-.rpt-section__header--green  .rpt-section__count { background: #dcfce7; color: #166534; }
-.rpt-section__header--red    { background: #fef2f2; color: #991b1b; border-color: #ef4444; }
-.rpt-section__header--red    .rpt-section__count { background: #fee2e2; color: #991b1b; }
+.rpt-section__header--neutral { background: #f8fafc; color: #1f2937; border-color: #cbd5e1; }
+.rpt-section__header--neutral .rpt-section__count { background: #eef2ff; color: #1f2937; }
 
 /* ── Empty state ── */
 .rpt-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 36px 20px; background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; color: #94a3b8; font-size: .88rem; }
 
 /* ── Card layout 2 cột ── */
 .rpt-card { background: #fff; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 1px 4px rgba(0,0,0,.07); display: grid; grid-template-columns: 1fr 180px; gap: 0; overflow: hidden; }
-.rpt-card--pending { border-top: 3px solid #f59e0b; }
-.rpt-card--redo    { border-top: 3px solid #ef4444; }
+.rpt-card--pending { border-top: 3px solid #cbd5e1; }
+.rpt-card--redo    { border-top: 3px solid #cbd5e1; }
 
 /* Left: thông tin */
 .rpt-card__left { padding: 18px; display: flex; flex-direction: column; gap: 12px; border-right: 1px solid #f1f5f9; }
