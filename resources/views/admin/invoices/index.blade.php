@@ -88,12 +88,11 @@
                     <td>
                         <a href="{{ route('admin.invoices.show', $inv) }}" class="inv-admin__btn inv-admin__btn--sm inv-admin__btn--ghost" style="color: #2563eb; border-color: #bfdbfe; margin-right: 5px;">Chi tiết</a>
                         @if($inv->status !== 'paid')
-                        <form method="POST" action="{{ route('admin.invoices.mark-paid', $inv) }}" style="display:inline-block;"
-                              onsubmit="return confirm('Đánh dấu đã thu hóa đơn {{ $inv->invoice_code }}?')">
-                            @csrf @method('PATCH')
-                            <input type="hidden" name="payment_method" value="cash">
-                            <button type="submit" class="inv-admin__btn inv-admin__btn--sm inv-admin__btn--success">Thu tiền</button>
-                        </form>
+                        <button type="button" class="inv-admin__btn inv-admin__btn--sm inv-admin__btn--success"
+                                title="Ghi nhận thanh toán nhanh"
+                                onclick="openPaymentModal({{ $inv->id }}, '{{ $inv->invoice_code }}', '{{ addslashes($inv->title) }}', {{ $inv->total_amount }})">
+                            Thu tiền
+                        </button>
                         @endif
                     </td>
                 </tr>
@@ -124,11 +123,42 @@
     </div>
 </div>
 
+{{-- Quick Payment Modal --}}
+<div class="modal-overlay" id="quickPaymentModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Thanh toán nhanh</h3>
+            <button class="modal-close" onclick="closePaymentModal()">&times;</button>
+        </div>
+        <form id="quickPaymentForm" method="POST" action="">
+            @csrf
+            @method('PATCH')
+            <input type="hidden" name="amount" id="modal_amount">
+            <div class="modal-body">
+                <p id="modalInvoiceInfo" style="font-size: 13px; color: #64748b; margin-bottom: 16px; font-weight: 500;"></p>
+
+                <div class="form-field">
+                    <label for="modal_payment_method">Phương thức thanh toán</label>
+                    <select name="payment_method" id="modal_payment_method" class="inv-admin__select" style="width:100%">
+                        <option value="transfer">🏦 Chuyển khoản ngân hàng</option>
+                        <option value="cash">💵 Tiền mặt</option>
+                        <option value="other">💳 Khác</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="inv-admin__btn" onclick="closePaymentModal()" style="background:#f1f5f9;color:#475569;border:1px solid #e2e8f0">Hủy</button>
+                <button type="submit" class="inv-admin__btn inv-admin__btn--success">Xác nhận</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <style>
 .inv-admin { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
 
 /* Header */
-.inv-admin__header { margin-bottom: 20px; }
+.inv-admin__header { display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; }
 .inv-admin__eyebrow { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin: 0 0 4px; font-weight: 600; }
 .inv-admin__title { font-size: 1.6rem; font-weight: 700; color: #0f172a; margin: 0; }
 
@@ -198,5 +228,58 @@
 }
 .inv-admin__page-btn:hover { background: #f1f5f9; }
 .inv-admin__page-btn--active { background: #2563eb; color: #fff; border-color: #2563eb; }
+
+/* Modal */
+.modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.45);
+    z-index: 1000; align-items: center; justify-content: center;
+}
+.modal-overlay.active { display: flex; }
+.modal-content {
+    background: #fff; border-radius: 12px; width: 100%; max-width: 440px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15); overflow: hidden;
+}
+.modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px; border-bottom: 1px solid #e2e8f0;
+}
+.modal-title { font-size: 1rem; font-weight: 700; color: #0f172a; margin: 0; }
+.modal-close {
+    background: none; border: none; font-size: 1.4rem; cursor: pointer;
+    color: #94a3b8; line-height: 1; padding: 0 4px;
+}
+.modal-close:hover { color: #475569; }
+.modal-body { padding: 20px; }
+.modal-footer {
+    display: flex; justify-content: flex-end; gap: 10px;
+    padding: 14px 20px; border-top: 1px solid #e2e8f0; background: #f8fafc;
+}
+.form-field label { display: block; font-size: 0.8rem; font-weight: 600; color: #475569; margin-bottom: 6px; }
 </style>
+
+<script>
+    function openPaymentModal(invoiceId, invoiceCode, title, amount) {
+        const modal = document.getElementById('quickPaymentModal');
+        const form = document.getElementById('quickPaymentForm');
+        const info = document.getElementById('modalInvoiceInfo');
+
+        form.action = `/admin/invoices/${invoiceId}/mark-paid`;
+        document.getElementById('modal_amount').value = amount;
+        info.innerHTML = `Hóa đơn: <strong>${invoiceCode}</strong><br>Nội dung: ${title}<br>Số tiền: <span style="color:#2563eb;font-weight:700">${Number(amount).toLocaleString('vi-VN')} đ</span>`;
+
+        modal.classList.add('active');
+    }
+
+    function closePaymentModal() {
+        document.getElementById('quickPaymentModal').classList.remove('active');
+    }
+
+    // Close modal on click overlay
+    document.getElementById('quickPaymentModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closePaymentModal();
+        }
+    });
+</script>
+
 @endsection

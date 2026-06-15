@@ -19,7 +19,9 @@ class Invoice extends Model
         'billing_year',
         'due_date',
         'total_amount',
+        'paid_amount',
         'status',
+        'created_by',
     ];
 
     protected $casts = [
@@ -76,6 +78,17 @@ class Invoice extends Model
         return (float) $this->total_amount;
     }
 
+    public function getRemainingAmountAttribute(): float
+    {
+        return max(0, (float) $this->total_amount - (float) $this->paid_amount);
+    }
+
+    public function getPaidPercentAttribute(): int
+    {
+        if ($this->total_amount <= 0) return 0;
+        return (int) min(100, round($this->paid_amount / $this->total_amount * 100));
+    }
+
     public function getBillingMonthAttribute($value)
     {
         return Carbon::createFromDate($this->billing_year, (int) $value, 1);
@@ -86,11 +99,12 @@ class Invoice extends Model
     public static function statusLabel(string $status): string
     {
         return match ($status) {
-            'paid' => 'Đã thanh toán',
-            'unpaid' => 'Chưa thanh toán',
+            'paid'    => 'Đã thanh toán',
+            'partial' => 'Thanh toán một phần',
+            'unpaid'  => 'Chưa thanh toán',
             'overdue' => 'Quá hạn',
             'cancelled' => 'Đã hủy',
-            default => $status,
+            default   => $status,
         };
     }
 
