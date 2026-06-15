@@ -615,7 +615,7 @@ function openDetailModal(id) {
     loading.style.display = 'block';
     content.style.display = 'none';
 
-    fetch(`/admin/utility-readings/${id}`, {
+    fetch(`{{ url('admin/utility-readings') }}/${id}`, {
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
             'Accept': 'application/json'
@@ -667,18 +667,48 @@ function openDetailModal(id) {
                 rejectInfoEl.style.display = 'none';
             }
 
-            // Image container
+            // Image gallery container
             const imgContainer = document.getElementById('detImageContainer');
-            const imgEl = document.getElementById('detImage');
-            if (reading.image_proof_url) {
-                imgEl.src = reading.image_proof_url;
+            const imgsUrls = reading.images_urls || (reading.image_proof_url ? [reading.image_proof_url] : []);
+
+            imgContainer.innerHTML = '';
+            if (imgsUrls.length > 0) {
+                const label = document.createElement('div');
+                label.style.cssText = 'font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;margin-bottom:10px;';
+                label.textContent = `📷 Ảnh công tơ minh chứng (${imgsUrls.length} ảnh)`;
+                imgContainer.appendChild(label);
+
+                const galleryWrap = document.createElement('div');
+                galleryWrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:10px;justify-content:center;';
+
+                imgsUrls.forEach((url, idx) => {
+                    const thumb = document.createElement('img');
+                    thumb.src = url;
+                    thumb.alt = `Ảnh ${idx+1}`;
+                    thumb.style.cssText = 'width:130px;height:130px;object-fit:cover;border-radius:9px;border:2px solid #e2e8f0;cursor:zoom-in;transition:transform .15s,box-shadow .15s;';
+                    thumb.title = `Ảnh ${idx+1} – Click để xem to`;
+                    thumb.addEventListener('mouseenter', function() {
+                        this.style.transform = 'scale(1.05)';
+                        this.style.boxShadow = '0 6px 20px rgba(0,0,0,.18)';
+                    });
+                    thumb.addEventListener('mouseleave', function() {
+                        this.style.transform = '';
+                        this.style.boxShadow = '';
+                    });
+                    thumb.addEventListener('click', function() {
+                        // Open in new tab for fullscreen view
+                        window.open(url, '_blank');
+                    });
+                    galleryWrap.appendChild(thumb);
+                });
+                imgContainer.appendChild(galleryWrap);
                 imgContainer.style.display = 'block';
             } else {
                 imgContainer.style.display = 'none';
             }
 
             // Print / Link tab
-            document.getElementById('detLinkPrint').href = `/admin/utility-readings/${reading.id}`;
+    document.getElementById('detLinkPrint').href = `{{ url('admin/utility-readings') }}/${reading.id}`;
 
             loading.style.display = 'none';
             content.style.display = 'block';
