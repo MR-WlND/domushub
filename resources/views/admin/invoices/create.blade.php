@@ -1,17 +1,6 @@
-@extends('admin.layout')
+@extends('layouts.admin.master')
 
-@section('title', 'Tạo Hóa đơn')
-
-@push('page_css')
-@vite(['resources/css/admin/invoices.css'])
-@endpush
-
-@section('breadcrumb')
-    <span class="sep">›</span>
-    <a href="{{ route('admin.invoices.index') }}">Hóa đơn</a>
-    <span class="sep">›</span>
-    <span class="current">Tạo mới</span>
-@endsection
+@section('page_title', 'Tạo Hóa đơn')
 
 @section('content')
 

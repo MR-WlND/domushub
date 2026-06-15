@@ -113,6 +113,35 @@
         @endif
 
         {{-- ============================================================== --}}
+        {{-- NHIỆM VỤ KỸ THUẬT - Chỉ Technician --}}
+        {{-- ============================================================== --}}
+        @if($role === 'technician')
+        <div class="nav-section">
+            <span class="nav-section__label">NHIỆM VỤ KỸ THUẬT</span>
+            <a href="{{ route('admin.tickets.my-tasks') }}" class="dashboard-nav__item {{ request()->routeIs('admin.tickets.my-tasks') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                </svg>
+                <span>Nhiệm vụ của tôi</span>
+                {{-- Badge: số nhiệm vụ đang chờ --}}
+                @php
+                    $myPendingCount = \App\Models\Ticket::where('handler_id', auth()->id())
+                        ->whereIn('status', ['assigned', 'in_progress'])->count();
+                @endphp
+                @if($myPendingCount > 0)
+                    <span style="margin-left:auto; background:#f97316; color:#fff; font-size:.68rem; font-weight:800; padding:1px 7px; border-radius:12px; min-width:20px; text-align:center;">{{ $myPendingCount }}</span>
+                @endif
+            </a>
+            <a href="{{ route('admin.tickets.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.tickets.index') || request()->routeIs('admin.tickets.show') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <span>Tất cả phản ánh</span>
+            </a>
+        </div>
+        @endif
+
+        {{-- ============================================================== --}}
         {{-- DỊCH VỤ CƯ DÂN - Admin & Manager --}}
         {{-- ============================================================== --}}
         @if(in_array($role, ['admin', 'manager']))
@@ -126,6 +155,27 @@
                     <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                 </svg>
                 <span>Danh sách cư dân</span>
+            </a>
+            <a href="{{ route('admin.tickets.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.tickets.index') || request()->routeIs('admin.tickets.show') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <span>Tiếp nhận phản ánh</span>
+            </a>
+            <a href="{{ route('admin.tickets.dispatch') }}" class="dashboard-nav__item {{ request()->routeIs('admin.tickets.dispatch') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                </svg>
+                <span>Điều phối kỹ thuật</span>
+            </a>
+            <a href="{{ route('admin.tickets.report') }}" class="dashboard-nav__item {{ request()->routeIs('admin.tickets.report') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="9" y1="13" x2="15" y2="13"></line>
+                    <line x1="9" y1="17" x2="15" y2="17"></line>
+                </svg>
+                <span>Nghiệm thu báo cáo</span>
             </a>
             <a href="{{ route('admin.vehicles.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.vehicles.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -146,13 +196,7 @@
                 </svg>
                 <span>Quản lý lốt đỗ</span>
             </a>
-            <a href="{{ route('admin.incidents.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.incidents.*') ? 'dashboard-nav__item--active' : '' }}">
-                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                    <circle cx="12" cy="13" r="4"></circle>
-                </svg>
-                <span>Phê duyệt phản ánh</span>
-            </a>
+
             <a href="{{ route('admin.amenities.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.amenities.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -165,21 +209,7 @@
         </div>
         @endif
 
-        {{-- ============================================================== --}}
-        {{-- PHẢN ÁNH SỰ CỐ - Technician --}}
-        {{-- Technician chỉ thấy danh sách phản ánh được giao --}}
-        {{-- ============================================================== --}}
-        @if($role === 'technician')
-        <div class="nav-section">
-            <span class="nav-section__label">PHẢN ÁNH SỰ CỐ</span>
-            <a href="{{ route('admin.incidents.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.incidents.*') ? 'dashboard-nav__item--active' : '' }}">
-                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
-                </svg>
-                <span>Phản ánh được giao</span>
-            </a>
-        </div>
-        @endif
+
 
         {{-- ============================================================== --}}
         {{-- TƯƠNG TÁC & BẢNG TIN - Admin & Manager --}}

@@ -25,9 +25,9 @@ class HomeController extends Controller
             return redirect()->route('admin.utility-readings.index');
         }
 
-        // Technician → redirect tới trang Phản ánh sự cố
+        // Technician → redirect tới trang Điện nước
         if ($user->role === 'technician') {
-            return redirect()->route('admin.incidents.index');
+            return redirect()->route('admin.utility-readings.index');
         }
 
         $totalBlocks = Block::count();
@@ -36,7 +36,7 @@ class HomeController extends Controller
         $occupiedApartments = Apartment::where('status', 'occupied')->count();
         $vacantApartments = Apartment::where('status', 'vacant')->count();
         $maintenanceApartments = Apartment::where('status', 'maintenance')->count();
-        $activeBlocks = Block::where('status', 'active')->count();
+        $activeBlocks = $totalBlocks;
 
         return view('admin.dashboard.index', compact(
             'totalBlocks', 'totalFloors', 'totalApartments', 'occupiedApartments',
