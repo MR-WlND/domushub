@@ -170,6 +170,20 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/admin/activity-logs', function () {
         return view('admin.dashboard.index');
     })->name('admin.activity-logs.index');
+
+    // Quản lý tài khoản người dùng
+    Route::get('/admin/users', [UserController::class, 'index'])->name('admin.users.index');
+    Route::get('/admin/users/create', [UserController::class, 'create'])->name('admin.users.create');
+    Route::post('/admin/users', [UserController::class, 'store'])->name('admin.users.store');
+    Route::get('/admin/users/{id}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
+    Route::put('/admin/users/{id}', [UserController::class, 'update'])->name('admin.users.update');
+    Route::put('/admin/users/{id}/update-status', [UserController::class, 'updateStatus'])->name('admin.users.updateStatus');
+    Route::put('/admin/users/{id}/reset-password', [UserController::class, 'resetPassword'])->name('admin.users.resetPassword');
+
+    // Quản lý mã mời
+    Route::get('/admin/invitations', [AdminInvitationController::class, 'index'])->name('admin.invitations.index');
+    Route::post('/admin/invitations', [AdminInvitationController::class, 'store'])->name('admin.invitations.store');
+    Route::delete('/admin/invitations/{id}', [AdminInvitationController::class, 'destroy'])->name('admin.invitations.destroy');
 });
 
 
@@ -242,19 +256,6 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/tickets/{id}', [ResidentTicketController::class, 'show'])->name('resident.tickets.show');
     Route::post('/resident/tickets/{id}/cancel', [ResidentTicketController::class, 'cancel'])->name('resident.tickets.cancel');
     Route::post('/resident/tickets/{id}/feedback', [ResidentTicketController::class, 'feedback'])->name('resident.tickets.feedback');
-    // Quản lý tài khoản người dùng
-    Route::get('/admin/users', [UserController::class, 'index'])->name('admin.users.index');
-    Route::get('/admin/users/create', [UserController::class, 'create'])->name('admin.users.create');
-    Route::post('/admin/users', [UserController::class, 'store'])->name('admin.users.store');
-    Route::get('/admin/users/{id}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
-    Route::put('/admin/users/{id}', [UserController::class, 'update'])->name('admin.users.update');
-    Route::put('/admin/users/{id}/update-status', [UserController::class, 'updateStatus'])->name('admin.users.updateStatus');
-    Route::put('/admin/users/{id}/reset-password', [UserController::class, 'resetPassword'])->name('admin.users.resetPassword');
-
-    // Quản lý mã mời
-    Route::get('/admin/invitations', [AdminInvitationController::class, 'index'])->name('admin.invitations.index');
-    Route::post('/admin/invitations', [AdminInvitationController::class, 'store'])->name('admin.invitations.store');
-    Route::delete('/admin/invitations/{id}', [AdminInvitationController::class, 'destroy'])->name('admin.invitations.destroy');
 });
 
 // Fallback route to serve uploaded public storage files (useful if symlink is missing or fails on local Windows development)
