@@ -145,6 +145,9 @@
                 <a href="{{ route('resident.posts.index', ['type' => 'marketplace']) }}" class="pc-filter-tab {{ request()->get('type') === 'marketplace' ? 'pc-filter-tab--active' : '' }}">
                     Thanh lý
                 </a>
+                <a href="{{ route('resident.posts.index', ['type' => 'mine']) }}" class="pc-filter-tab {{ request()->get('type') === 'mine' ? 'pc-filter-tab--active' : '' }}">
+                    Của tôi
+                </a>
             </div>
 
             {{-- DANH SÁCH BÀI VIẾT (FEED) --}}
@@ -1332,6 +1335,7 @@
                     console.log("DomusHub WebSockets: Received Event PostCreated:", e);
                     if (currentFilterType === 'marketplace' && e.price === null) return;
                     if (currentFilterType === 'general' && e.price !== null) return;
+                    if (currentFilterType === 'mine' && e.user.id !== currentUserId) return;
 
                     const emptyPlaceholder = document.getElementById('empty-feed-placeholder');
                     if (emptyPlaceholder) {

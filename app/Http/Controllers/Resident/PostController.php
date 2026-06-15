@@ -49,6 +49,8 @@ class PostController extends Controller
             $query->whereNotNull('price');
         } elseif ($request->get('type') === 'general') {
             $query->whereNull('price');
+        } elseif ($request->get('type') === 'mine') {
+            $query->where('user_id', Auth::id());
         }
  
         $posts = $query->paginate(10)->withQueryString();
