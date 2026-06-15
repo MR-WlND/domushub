@@ -12,6 +12,10 @@
             class="resident-header__link {{ request()->routeIs('resident.members.*') ? 'resident-header__link--active' : '' }}">
             Thành viên
         </a>
+        <a href="{{ route('resident.posts.index') }}"
+            class="resident-header__link {{ request()->routeIs('resident.posts.*') ? 'resident-header__link--active' : '' }}">
+            Bảng tin
+        </a>
         <div class="resident-header__dropdown-container" id="services-menu-container">
             <button class="resident-header__link resident-header__dropdown-trigger {{ (request()->routeIs('resident.vehicles.*') || request()->routeIs('resident.invoices.*')) ? 'resident-header__link--active' : '' }}">
                 Dịch vụ <i class="fa-solid fa-chevron-down nav-dropdown-icon"></i>
@@ -35,13 +39,27 @@
     </nav>
 
     <div class="resident-header__actions">
-        <div class="header-icon-wrapper">
+        @csrf {{-- CSRF token for AJAX requests --}}
+        {{-- Bell notification --}}
+        <div class="header-icon-wrapper" id="residentNotificationBellWrapper" style="position: relative;">
             <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22"
                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                 stroke-linejoin="round">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                 <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
             </svg>
+            <span class="notification-badge" id="residentNotificationBadge" style="display: none;">0</span>
+
+            {{-- Notifications Dropdown --}}
+            <div class="notification-dropdown" id="residentNotificationDropdown">
+                <div class="notification-dropdown__header" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f1f5f9; background-color: #f8fafc;">
+                    <span style="font-weight: 700; color: #0f172a; font-size: 14px;">Thông báo</span>
+                    <button type="button" id="residentMarkAllReadBtn" style="border: none; background: transparent; color: #0b57d0; font-size: 12px; font-weight: 600; cursor: pointer; padding: 0;">Đánh dấu tất cả đã đọc</button>
+                </div>
+                <div id="residentNotificationList" style="max-height: 320px; overflow-y: auto;">
+                    <!-- Sẽ được thêm bằng JS -->
+                </div>
+            </div>
         </div>
 
         <div class="header-icon-wrapper">
@@ -87,6 +105,7 @@
             userMenu.addEventListener('click', function(e) {
                 e.stopPropagation();
                 if (servicesMenu) servicesMenu.classList.remove('active');
+                if (dropdown) dropdown.style.display = 'none';
                 this.classList.toggle('active');
             });
         }
@@ -95,13 +114,141 @@
             servicesMenu.addEventListener('click', function(e) {
                 e.stopPropagation();
                 if (userMenu) userMenu.classList.remove('active');
+                if (dropdown) dropdown.style.display = 'none';
                 this.classList.toggle('active');
+            });
+        }
+
+        // Xử lý thông báo cư dân
+        const bellWrapper = document.getElementById('residentNotificationBellWrapper');
+        const badge = document.getElementById('residentNotificationBadge');
+        const dropdown = document.getElementById('residentNotificationDropdown');
+        const listContainer = document.getElementById('residentNotificationList');
+        const markAllReadBtn = document.getElementById('residentMarkAllReadBtn');
+
+        let notificationsData = [];
+
+        function loadNotifications() {
+            fetch('{{ route("resident.notifications.index") }}')
+                .then(res => res.json())
+                .then(data => {
+                    notificationsData = data.notifications || [];
+                    const unreadCount = data.unread_count || 0;
+                    
+                    if (unreadCount > 0) {
+                        badge.innerText = unreadCount;
+                        badge.style.display = 'flex';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                    renderNotifications();
+                })
+                .catch(err => console.error('Error fetching notifications:', err));
+        }
+
+        function renderNotifications() {
+            if (notificationsData.length === 0) {
+                listContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #64748b; font-size: 13px;">Chưa có thông báo nào.</div>';
+                return;
+            }
+
+            listContainer.innerHTML = '';
+            notificationsData.forEach(notif => {
+                const item = document.createElement('a');
+                item.href = notif.url || '#';
+                item.className = 'notification-item' + (!notif.read_at ? ' notification-item--unread' : '');
+                item.innerHTML = `
+                    <div class="notification-item__title">${escapeHtml(notif.title)}</div>
+                    <div style="font-size: 12px; color: #475569; margin-top: 2px;">${escapeHtml(notif.message)}</div>
+                    <span class="notification-item__time">${notif.created_at}</span>
+                `;
+
+                item.addEventListener('click', function(e) {
+                    if (!notif.read_at) {
+                        e.preventDefault();
+                        markNotificationRead(notif.id, notif.url);
+                    }
+                });
+
+                listContainer.appendChild(item);
+            });
+        }
+
+        function markNotificationRead(id, redirectUrl) {
+            const csrfToken = document.querySelector('input[name="_token"]')?.value || '';
+            fetch(`/resident/notifications/mark-read/${id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    if (redirectUrl) {
+                        window.location.href = redirectUrl;
+                    } else {
+                        loadNotifications();
+                    }
+                }
+            })
+            .catch(err => console.error('Error marking notification read:', err));
+        }
+
+        if (markAllReadBtn) {
+            markAllReadBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const csrfToken = document.querySelector('input[name="_token"]')?.value || '';
+                fetch('/resident/notifications/mark-read/all', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        loadNotifications();
+                    }
+                })
+                .catch(err => console.error('Error marking all notifications read:', err));
+            });
+        }
+
+        if (bellWrapper) {
+            bellWrapper.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (userMenu) userMenu.classList.remove('active');
+                if (servicesMenu) servicesMenu.classList.remove('active');
+                
+                const isVisible = dropdown.style.display === 'block';
+                dropdown.style.display = isVisible ? 'none' : 'block';
             });
         }
 
         document.addEventListener('click', function() {
             if (userMenu) userMenu.classList.remove('active');
             if (servicesMenu) servicesMenu.classList.remove('active');
+            if (dropdown) dropdown.style.display = 'none';
         });
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        loadNotifications();
+        setInterval(loadNotifications, 60000);
     });
 </script>
