@@ -3,18 +3,102 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-
 use App\Models\Invoice;
 use App\Models\Apartment;
 use App\Models\InvoiceDetail;
 use App\Models\ServicePrice;
+use App\Models\Payment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class InvoiceController extends Controller
 {
     /**
+     * Thống kê hóa đơn.
+     */
+    public function stats(Request $request)
+    {
+        $year = (int) $request->get('year', now()->year);
+
+        // KPI tổng quát
+        $totalRevenue     = Invoice::where('status', 'paid')->sum('total_amount');
+        $thisMonthRevenue = Invoice::where('status', 'paid')
+                               ->whereMonth('updated_at', now()->month)
+                               ->whereYear('updated_at', now()->year)
+                               ->sum('total_amount');
+        $totalInvoices    = Invoice::count();
+        $paidCount        = Invoice::where('status', 'paid')->count();
+        $unpaidCount      = Invoice::where('status', 'unpaid')->count();
+        $overdueCount     = Invoice::where('status', 'unpaid')->where('due_date', '<', now())->count();
+        $totalUnpaid      = Invoice::where('status', 'unpaid')->sum('total_amount');
+        $totalOverdue     = Invoice::where('status', 'unpaid')->where('due_date', '<', now())->sum('total_amount');
+
+        // Doanh thu 12 tháng của năm được chọn
+        $revenueByMonth = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $base = Invoice::where('billing_year', $year)->where('billing_month', $m);
+            $revenueByMonth[] = [
+                'label'   => 'T' . $m,
+                'paid'    => (clone $base)->where('status', 'paid')->sum('total_amount'),
+                'unpaid'  => (clone $base)->where('status', 'unpaid')->where('due_date', '>=', now())->sum('total_amount'),
+                'overdue' => (clone $base)->where('status', 'unpaid')->where('due_date', '<', now())->sum('total_amount'),
+            ];
+        }
+
+        // Phân tích theo loại phí (join qua bill_details -> service_prices)
+        $typeLabels = [
+            'electricity'    => 'Tiền điện',
+            'water'          => 'Tiền nước',
+            'management_fee' => 'Phí quản lý',
+            'parking'        => 'Phí đỗ xe',
+            'other'          => 'Khác',
+        ];
+        $byType = DB::table('bills')
+            ->join('bill_details', 'bills.id', '=', 'bill_details.bill_id')
+            ->join('service_prices', 'bill_details.service_price_id', '=', 'service_prices.id')
+            ->whereNull('bills.deleted_at')
+            ->select('service_prices.type', DB::raw('SUM(bills.total_amount) as total'))
+            ->groupBy('service_prices.type')
+            ->get()
+            ->map(fn($r) => [
+                'type'  => $r->type,
+                'label' => $typeLabels[$r->type] ?? $r->type,
+                'total' => (float) $r->total,
+            ]);
+
+        // Hóa đơn gần đây
+        $recentInvoices = Invoice::with(['apartment.floor.block'])
+            ->orderByDesc('created_at')->limit(8)->get();
+
+        // Top nợ đọng theo căn hộ
+        $topDebt = Invoice::with(['apartment.floor.block'])
+            ->where('status', 'unpaid')
+            ->select('apartment_id', DB::raw('SUM(total_amount) as debt'), DB::raw('COUNT(*) as count'))
+            ->groupBy('apartment_id')
+            ->orderByDesc('debt')
+            ->limit(7)
+            ->get();
+
+        // Tỉ lệ thu tiền theo tháng
+        $collectionRate = collect(array_map(function ($m) use ($year) {
+            $total = Invoice::where('billing_year', $year)->where('billing_month', $m)->count();
+            $paid  = Invoice::where('billing_year', $year)->where('billing_month', $m)->where('status', 'paid')->count();
+            return ['month' => $m, 'rate' => $total > 0 ? round($paid / $total * 100) : 0];
+        }, range(1, 12)));
+
+        return view('admin.invoices.stats', compact(
+            'year', 'totalRevenue', 'thisMonthRevenue',
+            'totalInvoices', 'paidCount', 'unpaidCount',
+            'overdueCount', 'totalUnpaid', 'totalOverdue',
+            'revenueByMonth', 'byType', 'recentInvoices',
+            'topDebt', 'collectionRate'
+        ));
+    }
+
+    /**
      * Danh sách hóa đơn có filter.
      */
+
     public function index(Request $request)
     {
         $query = Invoice::with(['apartment.floor.block', 'details.servicePrice'])
@@ -208,33 +292,97 @@ class InvoiceController extends Controller
     }
 
     /**
-     * Đánh dấu đã thanh toán.
+     * Đánh dấu đã thanh toán (hỗ trợ thanh toán một phần, ghi chú, lưu người ghi nhận).
      */
     public function markAsPaid(Request $request, Invoice $invoice)
     {
+        $maxAmount = $invoice->remaining_amount > 0 ? $invoice->remaining_amount : $invoice->total_amount;
+
         $validated = $request->validate([
             'payment_method' => 'required|in:cash,transfer,other',
+            'amount'         => 'required|numeric|min:1|max:' . $maxAmount,
+            'note'           => 'nullable|string|max:500',
         ]);
 
-        $invoice->update([
-            'status' => 'paid',
-        ]);
-
-        // Log payment in payments table
         $paymentMethodMap = [
             'cash'     => 'cash',
             'transfer' => 'bank_transfer',
             'other'    => 'other',
         ];
 
-        \App\Models\Payment::create([
-            'bill_id'        => $invoice->id,
-            'amount'         => $invoice->total_amount,
-            'payment_method' => $paymentMethodMap[$validated['payment_method']] ?? 'other',
-            'status'         => 'success',
-            'paid_at'        => now(),
+        DB::transaction(function () use ($invoice, $validated, $paymentMethodMap) {
+            // Tạo bản ghi payment
+            Payment::create([
+                'bill_id'        => $invoice->id,
+                'amount'         => $validated['amount'],
+                'payment_method' => $paymentMethodMap[$validated['payment_method']] ?? 'other',
+                'note'           => $validated['note'] ?? null,
+                'recorded_by'    => auth()->id(),
+                'status'         => 'success',
+                'paid_at'        => now(),
+            ]);
+
+            // Cộng vào paid_amount của bill
+            $newPaidAmount = (float) $invoice->paid_amount + (float) $validated['amount'];
+
+            // Xác định status mới
+            $newStatus = $newPaidAmount >= (float) $invoice->total_amount ? 'paid' : 'partial';
+
+            $invoice->update([
+                'paid_amount' => $newPaidAmount,
+                'status'      => $newStatus,
+            ]);
+        });
+
+        $message = (float)($invoice->fresh()->paid_amount) >= (float)$invoice->total_amount
+            ? 'Hóa đơn đã được thanh toán đầy đủ.'
+            : 'Ghi nhận thanh toán ' . number_format($validated['amount']) . 'đ thành công. Còn lại: ' . number_format($invoice->fresh()->remaining_amount) . 'đ.';
+
+        return back()->with('success', $message);
+    }
+
+    /**
+     * Hủy (refund) một lần thanh toán.
+     */
+    public function refundPayment(Request $request, Payment $payment)
+    {
+        if ($payment->is_refunded) {
+            return back()->with('error', 'Thanh toán này đã được hủy trước đó.');
+        }
+
+        $validated = $request->validate([
+            'refund_note' => 'nullable|string|max:500',
         ]);
 
-        return back()->with('success', 'Hóa đơn đã được đánh dấu là đã thanh toán.');
+        DB::transaction(function () use ($payment, $validated) {
+            $invoice = $payment->invoice;
+
+            // Cập nhật payment thành refunded
+            $payment->update([
+                'status'      => 'refunded',
+                'refunded_at' => now(),
+                'refund_note' => $validated['refund_note'] ?? null,
+                'refunded_by' => auth()->id(),
+            ]);
+
+            // Trừ paid_amount của bill
+            $newPaidAmount = max(0, (float) $invoice->paid_amount - (float) $payment->amount);
+
+            // Xác định lại status
+            if ($newPaidAmount <= 0) {
+                $newStatus = 'unpaid';
+            } elseif ($newPaidAmount < (float) $invoice->total_amount) {
+                $newStatus = 'partial';
+            } else {
+                $newStatus = 'paid';
+            }
+
+            $invoice->update([
+                'paid_amount' => $newPaidAmount,
+                'status'      => $newStatus,
+            ]);
+        });
+
+        return back()->with('success', 'Hủy thanh toán thành công. Trạng thái hóa đơn đã được cập nhật.');
     }
 }
