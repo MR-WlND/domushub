@@ -11,6 +11,17 @@ class Payment extends Model
 
     protected $table = 'payments';
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($payment) {
+            if (empty($payment->receipt_code)) {
+                $payment->receipt_code = static::generateReceiptCode();
+            }
+        });
+    }
+
     protected $fillable = [
         'bill_id',
         'amount',
@@ -21,6 +32,8 @@ class Payment extends Model
         'status',
         'paid_at',
         'note',
+        'proof_image',
+        'payer_name',
         'recorded_by',
         'refunded_at',
         'refund_note',

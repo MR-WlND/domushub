@@ -66,6 +66,7 @@
                         <th>Tên khoản phí</th>
                         <th class="text-right">Số lượng</th>
                         <th class="text-right">Thành tiền</th>
+                        <th class="text-right" style="padding-right: 15px;">Trạng thái</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -87,10 +88,17 @@
                                 @endif
                             </td>
                             <td class="text-right val-subtotal">{{ number_format($detail->amount, 0, ',', '.') }} đ</td>
+                            <td class="text-right" style="padding-right: 15px;">
+                                @if($detail->status === 'paid')
+                                    <span class="pay-badge pay-badge--paid" style="font-size: 0.7rem; padding: 2px 6px;">Đã đóng</span>
+                                @else
+                                    <span class="pay-badge pay-badge--overdue" style="font-size: 0.7rem; padding: 2px 6px;">Chưa đóng</span>
+                                @endif
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="3" class="text-center text-muted">Không có thông tin chi tiết khoản phí.</td>
+                            <td colspan="4" class="text-center text-muted">Không có thông tin chi tiết khoản phí.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -103,41 +111,85 @@
             <span class="total-val">{{ number_format($invoice->total_amount, 0, ',', '.') }} đ</span>
         </div>
 
-        {{-- Payment History Info (Only if Paid) --}}
-        @if($invoice->status === 'paid' && $invoice->payments->isNotEmpty())
-            @php 
-                $payment = $invoice->payments->first(); 
-
-                // Phương thức thanh toán
-                $methodLabel = match($payment->payment_method) {
-                    'vnpay'         => 'VNPay',
-                    'bank_transfer' => 'Chuyển khoản ngân hàng',
-                    'cash'          => 'Tiền mặt (Nộp trực tiếp)',
-                    default         => ucfirst($payment->payment_method),
-                };
-
-                // Mã giao dịch VNPay (từ trường vnp_txn_ref mới)
-                // Nếu là bản ghi cũ chưa có vnp_txn_ref, fallback về parse transaction_code
-                if ($payment->vnp_txn_ref) {
-                    $vnpTxnNo = $payment->vnp_txn_ref;
-                } elseif (str_contains($payment->transaction_code ?? '', '|')) {
-                    $vnpTxnNo = explode('|', $payment->transaction_code)[0];
-                } else {
-                    $vnpTxnNo = $payment->transaction_code ?? '—';
+        {{-- Payment History Info --}}
+        <div class="detail-card__payment">
+            <h3 class="section-title">Lịch sử giao dịch</h3>
+            @php
+                $details = $invoice->details()->orderBy('id')->get();
+                $payments = $invoice->payments()->orderBy('id')->get();
+                $detailAllocations = [];
+                $detailPaidState = [];
+                
+                foreach ($details as $d) {
+                    $detailPaidState[$d->id] = [
+                        'name' => $d->servicePrice->name ?? 'Dịch vụ',
+                        'amount' => (float)$d->amount,
+                        'remaining' => (float)$d->amount
+                    ];
+                }
+                
+                foreach ($payments as $p) {
+                    if ($p->status === 'refunded') continue;
+                    
+                    $pAmount = (float)$p->amount;
+                    $coveredServices = [];
+                    
+                    foreach ($detailPaidState as $dId => &$dState) {
+                        if ($pAmount <= 0) break;
+                        if ($dState['remaining'] <= 0) continue;
+                        
+                        $allocation = min($pAmount, $dState['remaining']);
+                        $dState['remaining'] -= $allocation;
+                        $pAmount -= $allocation;
+                        
+                        $coveredServices[] = $dState['name'];
+                    }
+                    
+                    $detailAllocations[$p->id] = array_unique($coveredServices);
                 }
             @endphp
-            <div class="detail-card__payment">
-                <h3 class="section-title">Thông tin giao dịch</h3>
-                <div class="payment-grid">
+            @forelse($invoice->payments as $payment)
+                @php 
+                    // Phương thức thanh toán
+                    $methodLabel = match($payment->payment_method) {
+                        'vnpay'         => 'VNPay',
+                        'bank_transfer' => 'Chuyển khoản ngân hàng',
+                        'cash'          => 'Tiền mặt (Nộp trực tiếp)',
+                        default         => ucfirst($payment->payment_method),
+                    };
 
+                    // Mã giao dịch VNPay
+                    if ($payment->vnp_txn_ref) {
+                        $vnpTxnNo = $payment->vnp_txn_ref;
+                    } elseif (str_contains($payment->transaction_code ?? '', '|')) {
+                        $vnpTxnNo = explode('|', $payment->transaction_code)[0];
+                    } else {
+                        $vnpTxnNo = $payment->transaction_code ?? '—';
+                    }
+                @endphp
+                <div class="payment-transaction" style="margin-bottom: 24px;">
                     <div class="payment-info-item">
                         <span class="info-label">Mã hóa đơn hệ thống:</span>
                         <span class="info-val code-val">{{ $invoice->invoice_code }}</span>
                     </div>
                     <div class="payment-info-item">
+                        <span class="info-label">Số tiền thanh toán:</span>
+                        <span class="info-val">{{ number_format($payment->amount, 0, ',', '.') }} đ</span>
+                    </div>
+                    <div class="payment-info-item">
                         <span class="info-label">Phương thức thanh toán:</span>
                         <span class="info-val">{{ $methodLabel }}</span>
                     </div>
+                    <div class="payment-info-item">
+                        <span class="info-label">Người nộp (Cư dân):</span>
+                        <span class="info-val">{{ $payment->payer_name ?: ($invoice->apartment->owner_name ?? 'Cư dân căn hộ') }}</span>
+                    </div>
+                    @if($payment->recorder && $payment->recorder->name !== '—')
+                    <div class="payment-info-item">
+                        <span class="info-label">Người thu (Nhân viên):</span>
+                        <span class="info-val">{{ $payment->recorder->name }}</span>
+                    </div>
+                    @endif
                     @if($payment->payment_method === 'vnpay')
                     <div class="payment-info-item">
                         <span class="info-label">Mã giao dịch đối soát (VNPay):</span>
@@ -148,9 +200,46 @@
                         <span class="info-label">Thời gian thanh toán:</span>
                         <span class="info-val">{{ $payment->paid_at ? $payment->paid_at->format('d/m/Y H:i') : '—' }}</span>
                     </div>
+                    @php
+                        $displayNote = $payment->note;
+                        if (empty($displayNote)) {
+                            $allocatedServices = $detailAllocations[$payment->id] ?? [];
+                            if (!empty($allocatedServices)) {
+                                $displayNote = 'Thanh toán dịch vụ: ' . implode(', ', $allocatedServices);
+                            } else {
+                                $displayNote = 'Thanh toán hóa đơn';
+                            }
+                        }
+                    @endphp
+                    <div class="payment-info-item">
+                        <span class="info-label">Nội dung / Dịch vụ:</span>
+                        <span class="info-val" style="color: #0d9488;">{{ $displayNote }}</span>
+                    </div>
+                    @if($payment->proof_image)
+                    <div class="payment-info-item">
+                        <span class="info-label">Ảnh hóa đơn (bill):</span>
+                        <span class="info-val">
+                            <a href="{{ asset('storage/' . $payment->proof_image) }}" target="_blank" style="color: #2563eb; font-weight: 600; text-decoration: underline;">
+                                Xem ảnh hóa đơn
+                            </a>
+                        </span>
+                    </div>
+                    @endif
+                    <div class="payment-info-item">
+                        <span class="info-label">Thao tác:</span>
+                        <span class="info-val">
+                            <a href="{{ route('resident.payments.receipt', $payment->id) }}" target="_blank" style="color: #0d9488; font-weight: 600; text-decoration: underline; display: inline-flex; align-items: center; gap: 4px;">
+                                🖨 In biên lai
+                            </a>
+                        </span>
+                    </div>
                 </div>
-            </div>
-        @endif
+            @empty
+                <div style="font-size: 0.85rem; color: #64748b; padding: 15px 0; text-align: center;">
+                    Chưa có giao dịch nào được ghi nhận cho hóa đơn này.
+                </div>
+            @endforelse
+        </div>
 
         {{-- Pay Button (Only if Unpaid/Overdue) --}}
         @if($invoice->status !== 'paid')

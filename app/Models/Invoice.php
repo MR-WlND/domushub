@@ -120,4 +120,27 @@ class Invoice extends Model
             default => 'Khác',
         };
     }
+
+    /**
+     * Tự động tính toán lại trạng thái của các dòng chi tiết hóa đơn (InvoiceDetail)
+     * dựa trên tổng số tiền đã thanh toán (paid_amount).
+     */
+    public function recalculateDetailsStatus()
+    {
+        $paidAmount = (float) $this->paid_amount;
+        $details = $this->details()->orderBy('id')->get();
+        
+        foreach ($details as $detail) {
+            if ($paidAmount >= (float) $detail->amount) {
+                if ($detail->status !== 'paid') {
+                    $detail->update(['status' => 'paid']);
+                }
+                $paidAmount -= (float) $detail->amount;
+            } else {
+                if ($detail->status !== 'unpaid') {
+                    $detail->update(['status' => 'unpaid']);
+                }
+            }
+        }
+    }
 }

@@ -121,13 +121,33 @@ class InvoiceController extends Controller
         }
 
         if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
-                $cleanSearch = str_replace('BILL-', '', $request->search);
-                $q->where('title', 'like', '%' . $request->search . '%')
-                  ->orWhere('id', 'like', '%' . $cleanSearch . '%')
-                  ->orWhereHas('apartment', function ($a) use ($request) {
-                      $a->where('apartment_number', 'like', '%' . $request->search . '%');
-                  });
+            $search = trim($request->search);
+            $cleanSearch = ltrim(str_ireplace('BILL-', '', $search), '0');
+
+            $query->where(function ($q) use ($search, $cleanSearch) {
+                // Tìm theo tiêu đề hoặc ID hóa đơn
+                $q->where('title', 'like', '%' . $search . '%');
+                if (is_numeric($cleanSearch)) {
+                    $q->orWhere('id', $cleanSearch);
+                }
+
+                // Tìm theo thông tin căn hộ hoặc cư dân
+                $q->orWhereHas('apartment', function ($a) use ($search) {
+                    $a->where(function ($sq) use ($search) {
+                        $sq->where('apartment_number', 'like', '%' . $search . '%')
+                           ->orWhereHas('floor.block', function ($b) use ($search) {
+                               $b->where('name', 'like', '%' . $search . '%')
+                                 ->orWhere('code', 'like', '%' . $search . '%')
+                                 ->orWhere(DB::raw("CONCAT(blocks.code, apartments.apartment_number)"), 'like', '%' . str_replace(['-', ' '], '', $search) . '%')
+                                 ->orWhere(DB::raw("CONCAT(blocks.name, ' ', apartments.apartment_number)"), 'like', '%' . $search . '%');
+                           });
+                    })
+                    ->orWhereHas('residents.user', function ($u) use ($search) {
+                        $u->where('name', 'like', '%' . $search . '%')
+                          ->orWhere('email', 'like', '%' . $search . '%')
+                          ->orWhere('phone', 'like', '%' . $search . '%');
+                    });
+                });
             });
         }
 
@@ -176,16 +196,36 @@ class InvoiceController extends Controller
             ]
         );
 
-        // Create the Invoice (bill)
-        $invoice = Invoice::create([
-            'apartment_id'  => $validated['apartment_id'],
-            'title'         => $validated['title'],
-            'billing_month' => $billingMonth,
-            'billing_year'  => $billingYear,
-            'due_date'      => $validated['due_date'],
-            'total_amount'  => $validated['amount'],
-            'status'        => 'unpaid',
-        ]);
+        // Find if an invoice already exists for the apartment in this month/year
+        $invoice = Invoice::where('apartment_id', $validated['apartment_id'])
+            ->where('billing_month', $billingMonth)
+            ->where('billing_year', $billingYear)
+            ->first();
+
+        if ($invoice) {
+            // Check if this service type already exists
+            $exists = \App\Models\InvoiceDetail::where('bill_id', $invoice->id)
+                ->where('service_price_id', $servicePrice->id)
+                ->exists();
+
+            if ($exists) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Hóa đơn tháng này của căn hộ đã có loại phí này.');
+            }
+
+            $invoice->increment('total_amount', $validated['amount']);
+        } else {
+            $invoice = Invoice::create([
+                'apartment_id'  => $validated['apartment_id'],
+                'title'         => 'Hóa đơn tháng ' . $billingMonth . '/' . $billingYear,
+                'billing_month' => $billingMonth,
+                'billing_year'  => $billingYear,
+                'due_date'      => $validated['due_date'],
+                'total_amount'  => $validated['amount'],
+                'status'        => 'unpaid',
+            ]);
+        }
 
         // Create InvoiceDetail
         \App\Models\InvoiceDetail::create([
@@ -204,6 +244,7 @@ class InvoiceController extends Controller
      */
     public function show(Invoice $invoice)
     {
+        $invoice->recalculateDetailsStatus();
         $invoice->load(['apartment.floor.block', 'details.servicePrice', 'payments']);
         return view('admin.invoices.show', compact('invoice'));
     }
@@ -252,29 +293,39 @@ class InvoiceController extends Controller
         $skipped = 0;
 
         foreach ($apartments as $apartment) {
+            // Find or create the single invoice for this apartment for the billing month and year
+            $invoice = Invoice::where('apartment_id', $apartment->id)
+                ->where('billing_month', (int) $month)
+                ->where('billing_year', (int) $year)
+                ->first();
+
+            $invoiceCreated = false;
+            $invoiceAmountAdded = 0;
+
             foreach ($request->types as $type) {
                 $servicePrice = $activePrices->get($type);
                 if (!$servicePrice) { $skipped++; continue; }
 
-                if ($skipExisting) {
-                    $exists = Invoice::where('apartment_id', $apartment->id)
-                        ->where('billing_month', (int) $month)
-                        ->where('billing_year', (int) $year)
-                        ->whereHas('details.servicePrice', fn($q) => $q->where('type', $type))
+                if ($invoice && $skipExisting) {
+                    $exists = InvoiceDetail::where('bill_id', $invoice->id)
+                        ->where('service_price_id', $servicePrice->id)
                         ->exists();
 
                     if ($exists) { $skipped++; continue; }
                 }
 
-                $invoice = Invoice::create([
-                    'apartment_id'  => $apartment->id,
-                    'title'         => $servicePrice->name . ' tháng ' . $month . '/' . $year,
-                    'billing_month' => (int) $month,
-                    'billing_year'  => (int) $year,
-                    'due_date'      => $request->due_date,
-                    'total_amount'  => $servicePrice->unit_price,
-                    'status'        => 'unpaid',
-                ]);
+                if (!$invoice) {
+                    $invoice = Invoice::create([
+                        'apartment_id'  => $apartment->id,
+                        'title'         => 'Hóa đơn tháng ' . (int)$month . '/' . (int)$year,
+                        'billing_month' => (int) $month,
+                        'billing_year'  => (int) $year,
+                        'due_date'      => $request->due_date,
+                        'total_amount'  => 0,
+                        'status'        => 'unpaid',
+                    ]);
+                    $invoiceCreated = true;
+                }
 
                 InvoiceDetail::create([
                     'bill_id'          => $invoice->id,
@@ -283,7 +334,14 @@ class InvoiceController extends Controller
                     'amount'           => $servicePrice->unit_price,
                 ]);
 
-                $created++;
+                $invoiceAmountAdded += $servicePrice->unit_price;
+            }
+
+            if ($invoiceAmountAdded > 0) {
+                $invoice->increment('total_amount', $invoiceAmountAdded);
+                if ($invoiceCreated) {
+                    $created++;
+                }
             }
         }
 
@@ -302,6 +360,8 @@ class InvoiceController extends Controller
             'payment_method' => 'required|in:cash,transfer,other',
             'amount'         => 'required|numeric|min:1|max:' . $maxAmount,
             'note'           => 'nullable|string|max:500',
+            'proof_image'    => 'nullable|image|max:4096', // Max 4MB
+            'payer_name'     => 'nullable|string|max:255',
         ]);
 
         $paymentMethodMap = [
@@ -310,13 +370,20 @@ class InvoiceController extends Controller
             'other'    => 'other',
         ];
 
-        DB::transaction(function () use ($invoice, $validated, $paymentMethodMap) {
+        $proofPath = null;
+        if ($request->hasFile('proof_image')) {
+            $proofPath = $request->file('proof_image')->store('proofs', 'public');
+        }
+
+        DB::transaction(function () use ($invoice, $validated, $paymentMethodMap, $proofPath) {
             // Tạo bản ghi payment
             Payment::create([
                 'bill_id'        => $invoice->id,
                 'amount'         => $validated['amount'],
                 'payment_method' => $paymentMethodMap[$validated['payment_method']] ?? 'other',
                 'note'           => $validated['note'] ?? null,
+                'proof_image'    => $proofPath,
+                'payer_name'     => $validated['payer_name'] ?? null,
                 'recorded_by'    => auth()->id(),
                 'status'         => 'success',
                 'paid_at'        => now(),
@@ -332,6 +399,8 @@ class InvoiceController extends Controller
                 'paid_amount' => $newPaidAmount,
                 'status'      => $newStatus,
             ]);
+
+            $invoice->recalculateDetailsStatus();
         });
 
         $message = (float)($invoice->fresh()->paid_amount) >= (float)$invoice->total_amount
@@ -381,8 +450,82 @@ class InvoiceController extends Controller
                 'paid_amount' => $newPaidAmount,
                 'status'      => $newStatus,
             ]);
+
+            $invoice->recalculateDetailsStatus();
         });
 
         return back()->with('success', 'Hủy thanh toán thành công. Trạng thái hóa đơn đã được cập nhật.');
+    }
+
+    /**
+     * Ghi nhận thanh toán cho một chi tiết dịch vụ đơn lẻ.
+     */
+    public function markDetailAsPaid(Request $request, $id)
+    {
+        $detail = \App\Models\InvoiceDetail::with('invoice')->findOrFail($id);
+
+        if ($detail->status === 'paid') {
+            return back()->with('error', 'Khoản phí này đã được thanh toán trước đó.');
+        }
+
+        $validated = $request->validate([
+            'payment_method' => 'required|in:cash,transfer,other',
+            'note'           => 'nullable|string|max:500',
+            'proof_image'    => 'nullable|image|max:4096', // Max 4MB
+            'payer_name'     => 'nullable|string|max:255',
+        ]);
+
+        $paymentMethodMap = [
+            'cash'     => 'cash',
+            'transfer' => 'bank_transfer',
+            'other'    => 'other',
+        ];
+
+        $proofPath = null;
+        if ($request->hasFile('proof_image')) {
+            $proofPath = $request->file('proof_image')->store('proofs', 'public');
+        }
+
+        DB::transaction(function () use ($detail, $validated, $paymentMethodMap, $proofPath) {
+            $invoice = $detail->invoice;
+
+            // Cập nhật trạng thái chi tiết
+            $detail->update(['status' => 'paid']);
+
+            // Cập nhật hóa đơn chính
+            $newPaidAmount = (float)$invoice->paid_amount + (float)$detail->amount;
+            $newStatus = $newPaidAmount >= (float)$invoice->total_amount ? 'paid' : 'partial';
+
+            $invoice->update([
+                'paid_amount' => $newPaidAmount,
+                'status'      => $newStatus,
+            ]);
+
+            $invoice->recalculateDetailsStatus();
+
+            // Tạo bản ghi giao dịch thanh toán
+            Payment::create([
+                'bill_id'        => $invoice->id,
+                'amount'         => $detail->amount,
+                'payment_method' => $paymentMethodMap[$validated['payment_method']] ?? 'cash',
+                'note'           => $validated['note'] ?? ('Thanh toán riêng lẻ: ' . ($detail->servicePrice->name ?? 'Phí dịch vụ')),
+                'proof_image'    => $proofPath,
+                'payer_name'     => $validated['payer_name'] ?? null,
+                'recorded_by'    => auth()->id(),
+                'status'         => 'success',
+                'paid_at'        => now(),
+            ]);
+        });
+
+        return back()->with('success', 'Ghi nhận thanh toán thành công cho dịch vụ: ' . ($detail->servicePrice->name ?? 'Phí dịch vụ'));
+    }
+
+    /**
+     * In biên lai thu tiền cho một giao dịch cụ thể.
+     */
+    public function printReceipt(Payment $payment)
+    {
+        $payment->load(['invoice.apartment.floor.block', 'recorder']);
+        return view('admin.invoices.receipt', compact('payment'));
     }
 }

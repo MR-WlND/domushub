@@ -90,7 +90,7 @@
                         @if($inv->status !== 'paid')
                         <button type="button" class="inv-admin__btn inv-admin__btn--sm inv-admin__btn--success"
                                 title="Ghi nhận thanh toán nhanh"
-                                onclick="openPaymentModal({{ $inv->id }}, '{{ $inv->invoice_code }}', '{{ addslashes($inv->title) }}', {{ $inv->total_amount }})">
+                                onclick="openPaymentModal({{ $inv->id }}, '{{ $inv->invoice_code }}', '{{ addslashes($inv->title) }}', {{ $inv->remaining_amount ?: $inv->total_amount }}, '{{ addslashes($inv->apartment->owner_name ?? '') }}', 'Căn {{ optional($inv->apartment)->apartment_number ?? '—' }} ({{ optional(optional(optional($inv->apartment)->floor)->block)->name ?? '' }})', 'Tháng {{ $inv->billing_month->format('m/Y') }}')">
                             Thu tiền
                         </button>
                         @endif
@@ -130,7 +130,7 @@
             <h3 class="modal-title">Thanh toán nhanh</h3>
             <button class="modal-close" onclick="closePaymentModal()">&times;</button>
         </div>
-        <form id="quickPaymentForm" method="POST" action="">
+        <form id="quickPaymentForm" method="POST" action="" enctype="multipart/form-data" onsubmit="return confirmQuickPayment(event);">
             @csrf
             @method('PATCH')
             <input type="hidden" name="amount" id="modal_amount">
@@ -144,6 +144,41 @@
                         <option value="cash">💵 Tiền mặt</option>
                         <option value="other">💳 Khác</option>
                     </select>
+                </div>
+
+                <div class="form-field" style="margin-top: 15px;">
+                    <label for="modal_payer_name">Người nộp tiền <span style="font-weight:400;text-transform:none;color:#757682;">(tuỳ chọn)</span></label>
+                    <input type="text" name="payer_name" id="modal_payer_name" class="inv-admin__input" style="width:100%" placeholder="Tên người thanh toán...">
+                </div>
+
+                <div class="form-field" style="margin-top: 15px;">
+                    <label for="modal_proof_image">Minh chứng thanh toán <span style="font-weight:400;text-transform:none;color:#757682;">(Ảnh chụp bill / Biên lai)</span></label>
+                    <div class="custom-file-upload-box" style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 12px; background: #fff; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 42px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);">
+                        <span id="file_name_label_modal_proof_image" style="color: #64748b; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 55%; font-weight: 500;">Chưa chọn tệp nào</span>
+                        <div style="display: flex; gap: 6px; flex-shrink: 0;">
+                            <button type="button" onclick="document.getElementById('modal_proof_image').click()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                📁 Chọn tệp
+                            </button>
+                            <button type="button" onclick="startCamera('modal_proof_image')" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                📸 Mở Camera
+                            </button>
+                        </div>
+                    </div>
+                    <input type="file" name="proof_image" id="modal_proof_image" class="form-input" style="display: none;" accept="image/*" capture="environment" onchange="updateFileNameLabel(this, 'modal_proof_image')">
+
+                    <div class="camera-wrapper" style="margin-top: 10px;">
+                        <div id="camera_container_modal_proof_image" style="display:none; margin-top:10px; position:relative; background:#000; border-radius:8px; overflow:hidden;">
+                            <video id="video_modal_proof_image" autoplay playsinline style="width:100%; max-height:250px; object-fit:cover; display:block;"></video>
+                            <div style="position:absolute; bottom:10px; left:50%; transform:translateX(-50%); display:flex; gap:8px; z-index:10;">
+                                <button type="button" onclick="captureSnapshot('modal_proof_image')" style="background:#10b981; color:#fff; border:none; padding:6px 14px; border-radius:20px; font-weight:600; cursor:pointer; font-size:0.8rem;">📸 Chụp</button>
+                                <button type="button" onclick="stopCamera('modal_proof_image')" style="background:#ef4444; color:#fff; border:none; padding:6px 14px; border-radius:20px; font-weight:600; cursor:pointer; font-size:0.8rem;">✕ Đóng</button>
+                            </div>
+                        </div>
+                        <div id="preview_container_modal_proof_image" style="display:none; margin-top:10px; position:relative; max-width: 150px;">
+                            <img id="img_preview_modal_proof_image" src="" style="width:100%; border-radius:6px; border:1px solid #cbd5e1; display:block;">
+                            <button type="button" onclick="removeCapturedPhoto('modal_proof_image')" style="position:absolute; top:-5px; right:-5px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; cursor:pointer; padding:0;">×</button>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -258,19 +293,147 @@
 </style>
 
 <script>
-    function openPaymentModal(invoiceId, invoiceCode, title, amount) {
+    const activeStreams = {};
+
+    let currentInvoiceAmount = 0;
+    let currentInvoiceCode = '';
+    let currentApartmentInfo = '';
+    let currentBillingMonth = '';
+
+    function updateFileNameLabel(input, inputId) {
+        const label = document.getElementById('file_name_label_' + inputId);
+        if (input.files && input.files.length > 0) {
+            label.textContent = input.files[0].name;
+            label.style.color = '#0f172a';
+        } else {
+            label.textContent = 'Chưa chọn tệp nào';
+            label.style.color = '#64748b';
+        }
+    }
+
+    async function startCamera(inputId) {
+        stopCamera(inputId);
+
+        const video = document.getElementById('video_' + inputId);
+        const container = document.getElementById('camera_container_' + inputId);
+        
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: 'environment' } 
+            });
+            activeStreams[inputId] = stream;
+            video.srcObject = stream;
+            container.style.display = 'block';
+        } catch (err) {
+            alert('Không thể truy cập camera. Vui lòng cấp quyền camera cho trang web hoặc chọn ảnh từ thiết bị.');
+            console.error('Error accessing camera: ', err);
+        }
+    }
+
+    function stopCamera(inputId) {
+        if (activeStreams[inputId]) {
+            activeStreams[inputId].getTracks().forEach(track => track.stop());
+            delete activeStreams[inputId];
+        }
+        const container = document.getElementById('camera_container_' + inputId);
+        if (container) {
+            container.style.display = 'none';
+        }
+        const video = document.getElementById('video_' + inputId);
+        if (video) {
+            video.srcObject = null;
+        }
+    }
+
+    function captureSnapshot(inputId) {
+        const video = document.getElementById('video_' + inputId);
+        if (!video || !video.srcObject) return;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob((blob) => {
+            if (!blob) return;
+
+            const file = new File([blob], "captured_bill.png", { type: "image/png" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            document.getElementById(inputId).files = dataTransfer.files;
+
+            const previewImg = document.getElementById('img_preview_' + inputId);
+            const previewContainer = document.getElementById('preview_container_' + inputId);
+            previewImg.src = URL.createObjectURL(blob);
+            previewContainer.style.display = 'block';
+
+            const label = document.getElementById('file_name_label_' + inputId);
+            if (label) {
+                label.textContent = 'captured_bill.png (Chụp từ Camera)';
+                label.style.color = '#0f172a';
+            }
+
+            stopCamera(inputId);
+        }, 'image/png');
+    }
+
+    function removeCapturedPhoto(inputId) {
+        document.getElementById(inputId).value = '';
+        const label = document.getElementById('file_name_label_' + inputId);
+        if (label) {
+            label.textContent = 'Chưa chọn tệp nào';
+            label.style.color = '#64748b';
+        }
+        const previewContainer = document.getElementById('preview_container_' + inputId);
+        if (previewContainer) {
+            previewContainer.style.display = 'none';
+        }
+        const previewImg = document.getElementById('img_preview_' + inputId);
+        if (previewImg) {
+            previewImg.src = '';
+        }
+    }
+
+    function confirmQuickPayment(event) {
+        const methodSelect = document.getElementById('modal_payment_method');
+        const methodVal = methodSelect.options[methodSelect.selectedIndex].text;
+        const payerVal = document.getElementById('modal_payer_name').value || 'Cư dân';
+        
+        const formattedAmount = Number(currentInvoiceAmount).toLocaleString('vi-VN') + ' đ';
+
+        const msg = `Vui lòng xác nhận thông tin thanh toán nhanh:\n\n` +
+                    `• Hóa đơn: ${currentInvoiceCode}\n` +
+                    `• Căn hộ: ${currentApartmentInfo}\n` +
+                    `• Kỳ hóa đơn: ${currentBillingMonth}\n` +
+                    `• Số tiền thu: ${formattedAmount}\n` +
+                    `• Phương thức: ${methodVal}\n` +
+                    `• Người nộp tiền: ${payerVal}\n\n` +
+                    `Bạn có chắc chắn muốn ghi nhận thanh toán này?`;
+                    
+        return confirm(msg);
+    }
+
+    function openPaymentModal(invoiceId, invoiceCode, title, amount, ownerName, apartmentInfo, billingMonth) {
         const modal = document.getElementById('quickPaymentModal');
         const form = document.getElementById('quickPaymentForm');
         const info = document.getElementById('modalInvoiceInfo');
 
+        currentInvoiceAmount = amount;
+        currentInvoiceCode = invoiceCode;
+        currentApartmentInfo = apartmentInfo;
+        currentBillingMonth = billingMonth;
+
         form.action = `/admin/invoices/${invoiceId}/mark-paid`;
         document.getElementById('modal_amount').value = amount;
+        document.getElementById('modal_payer_name').value = ownerName;
         info.innerHTML = `Hóa đơn: <strong>${invoiceCode}</strong><br>Nội dung: ${title}<br>Số tiền: <span style="color:#2563eb;font-weight:700">${Number(amount).toLocaleString('vi-VN')} đ</span>`;
 
         modal.classList.add('active');
     }
 
     function closePaymentModal() {
+        stopCamera('modal_proof_image');
         document.getElementById('quickPaymentModal').classList.remove('active');
     }
 
