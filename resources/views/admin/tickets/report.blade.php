@@ -94,58 +94,96 @@
                 <p>Chưa có báo cáo nào chờ nghiệm thu</p>
             </div>
         @else
-            @foreach($pendingReview as $ticket)
-                @php
-                    $lastProgress = $ticket->progress->last();
-                    $reportText = $lastProgress?->comment ?? 'Không có báo cáo chi tiết.';
-                    $proofImage = $lastProgress?->image_proof ? asset('storage/' . $lastProgress->image_proof) : null;
-                @endphp
-                <div class="rpt-card rpt-card--pending">
-                    <div class="rpt-card__left">
-                        <div class="rpt-card__head">
-                            <span class="rpt-card__id">#{{ $ticket->id }}</span>
-                            @if($ticket->priority === 'urgent')
-                                <span class="rpt-badge rpt-badge--urgent">Khẩn cấp</span>
-                            @elseif($ticket->priority === 'high')
-                                <span class="rpt-badge rpt-badge--high">Cao</span>
-                            @endif
-                        </div>
-                        <h3 class="rpt-card__title">{{ $ticket->title }}</h3>
-                        <div class="rpt-card__meta">
-                            <span>{{ $ticket->apartment?->floor?->block?->name ?? 'Chưa có tòa' }} · Tầng {{ $ticket->apartment?->floor?->floor_number ?? 'N/A' }}</span>
-                            <span>KTV: {{ $ticket->handler?->name ?? 'Chưa phân công' }}</span>
-                            <span>Căn hộ: {{ $ticket->apartment?->apartment_number ?? 'N/A' }}</span>
-                            <span>Hoàn thành: {{ $lastProgress?->created_at?->format('d/m/Y H:i') ?? $ticket->updated_at->format('d/m/Y H:i') }}</span>
-                        </div>
+            <div class="rpt-table-wrap">
+                <table class="rpt-table">
+                    <thead>
+                        <tr>
+                            <th>Mã</th>
+                            <th>Tiêu đề sự cố</th>
+                            <th>Căn hộ</th>
+                            <th>KTV xử lý</th>
+                            <th>Ngày hoàn thành</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                            @foreach($pendingReview as $ticket)
+                            @php
+                                $lastProgress = $ticket->progress->last();
+                                $reportText = $lastProgress?->comment ?? 'Không có báo cáo chi tiết.';
+                                $proofImage = $lastProgress?->image_proof ? asset('storage/' . $lastProgress->image_proof) : null;
+                            @endphp
+                            <!-- Dòng chính -->
+                            <tr class="rpt-table__main-row" data-ticket-id="{{ $ticket->id }}">
+                                <td class="rpt-table__id">#{{ $ticket->id }}</td>
+                                <td>
+                                    <span style="font-weight: 700;">{{ Str::limit($ticket->title, 40) }}</span>
+                                    @if($ticket->priority === 'urgent')
+                                        <span class="rpt-badge rpt-badge--urgent" style="margin-left: 6px;">Khẩn cấp</span>
+                                    @elseif($ticket->priority === 'high')
+                                        <span class="rpt-badge rpt-badge--high" style="margin-left: 6px;">Cao</span>
+                                    @endif
+                                </td>
+                                <td>{{ $ticket->apartment?->apartment_number ?? 'N/A' }}</td>
+                                <td>{{ $ticket->handler?->name ?? 'N/A' }}</td>
+                                <td>{{ $lastProgress?->created_at?->format('d/m/Y H:i') ?? $ticket->updated_at->format('d/m/Y H:i') }}</td>
+                                <td>
+                                    <button class="rpt-btn rpt-btn--ghost rpt-btn--sm btn-toggle-detail" onclick="toggleTableDetail({{ $ticket->id }})">
+                                        Chi tiết
+                                    </button>
+                                </td>
+                            </tr>
+                            
+                            <!-- Dòng chi tiết inline -->
+                            <tr class="rpt-table__detail-row" id="detail-row-{{ $ticket->id }}" style="display: none;">
+                                <td colspan="6" class="rpt-table__detail-cell">
+                                    <div class="rpt-table__detail-content">
+                                        <div class="rpt-table__detail-grid">
+                                            {{-- Left Side: Report content --}}
+                                            <div class="rpt-table__detail-left">
+                                                <div class="rpt-table__detail-meta">
+                                                    <span>Tòa nhà: <strong>{{ $ticket->apartment?->floor?->block?->name ?? 'Chưa có tòa' }}</strong></span>
+                                                    <span>Tầng: <strong>{{ $ticket->apartment?->floor?->floor_number ?? 'N/A' }}</strong></span>
+                                                </div>
+                                                
+                                                <div class="rpt-table__detail-body">
+                                                    <div class="rpt-table__detail-report">
+                                                        <div class="rpt-table__detail-report-body">
+                                                            <p class="rpt-table__detail-label">Báo cáo của KTV</p>
+                                                            <p class="rpt-table__detail-text">{{ $reportText }}</p>
+                                                        </div>
 
-                        <div class="rpt-card__report">
-                            <p class="rpt-card__report-label">Báo cáo của KTV</p>
-                            <p class="rpt-card__report-text">{{ Str::limit($reportText, 220) }}</p>
-                        </div>
+                                                        @if($proofImage)
+                                                            <div class="rpt-table__detail-image-box">
+                                                                <p class="rpt-table__detail-label rpt-table__detail-label--thumb">Ảnh</p>
+                                                                <img data-src="{{ $proofImage }}" src="" class="rpt-table__detail-thumb rpt-table__detail-thumb--lazy" onclick="openLightbox(this.src, \"Ảnh nghiệm thu\")">
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
 
-                        @if($proofImage)
-                            <div class="rpt-card__images">
-                                <div class="rpt-card__image-group">
-                                    <p class="rpt-card__image-label">Ảnh nghiệm thu</p>
-                                    <img src="{{ $proofImage }}" class="rpt-card__thumb" onclick="openLightbox(this.src, 'Ảnh nghiệm thu')">
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-
-                    <div class="rpt-card__right">
-                        <button class="rpt-btn rpt-btn--success rpt-btn--full" data-approve-ticket="{{ $ticket->id }}">
-                            Xác nhận nghiệm thu
-                        </button>
-                        <button class="rpt-btn rpt-btn--danger rpt-btn--full" data-reject-ticket="{{ $ticket->id }}">
-                            Yêu cầu làm lại
-                        </button>
-                        <a href="{{ route('admin.tickets.show', $ticket->id) }}" class="rpt-btn rpt-btn--ghost rpt-btn--full">
-                            Xem chi tiết
-                        </a>
-                    </div>
-                </div>
-            @endforeach
+                                            {{-- Right Side: Actions --}}
+                                            <div class="rpt-table__detail-right">
+                                                <button class="rpt-btn rpt-btn--success rpt-btn--full" data-approve-ticket="{{ $ticket->id }}">
+                                                    Xác nhận nghiệm thu
+                                                </button>
+                                                <button class="rpt-btn rpt-btn--danger rpt-btn--full" data-reject-ticket="{{ $ticket->id }}">
+                                                    Yêu cầu làm lại
+                                                </button>
+                                                <a href="{{ route('admin.tickets.show', $ticket->id) }}" class="rpt-btn rpt-btn--ghost rpt-btn--full">
+                                                    Xem chi tiết
+                                                </a>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         @endif
     </div>
 
@@ -283,6 +321,37 @@
 
 <script>
 let pendingId = null;
+
+// ── Toggle Accordion Details ─────────────────────────────────────────
+function toggleTableDetail(id) {
+    const row = document.getElementById(`detail-row-${id}`);
+    if (!row) return;
+
+    const isHidden = row.style.display === 'none' || row.style.display === '';
+    row.style.display = isHidden ? 'table-row' : 'none';
+
+    // Lazy load the proof image if it exists
+    const lazyImg = row.querySelector('.rpt-table__detail-thumb--lazy');
+    if (lazyImg && lazyImg.getAttribute('data-src')) {
+        lazyImg.setAttribute('src', lazyImg.getAttribute('data-src'));
+        lazyImg.removeAttribute('data-src');
+    }
+}
+
+// Backward compatibility (if other templates call the old name)
+function toggleReportDetails(id) {
+    toggleTableDetail(id);
+}
+
+// Ensure print mode loads all images
+window.addEventListener('beforeprint', () => {
+    document.querySelectorAll('.rpt-card__thumb--lazy').forEach(img => {
+        if (img.getAttribute('data-src')) {
+            img.setAttribute('src', img.getAttribute('data-src'));
+            img.removeAttribute('data-src');
+        }
+    });
+});
 
 // ── Approve ────────────────────────────────────────────────────────
 function confirmApprove(id) {
@@ -442,34 +511,122 @@ document.addEventListener('keydown', e => {
 /* ── Empty state ── */
 .rpt-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 36px 20px; background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; color: #94a3b8; font-size: .88rem; }
 
-/* ── Card layout 2 cột ── */
-.rpt-card { background: #fff; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 1px 4px rgba(0,0,0,.07); display: grid; grid-template-columns: 1fr 180px; gap: 0; overflow: hidden; }
-.rpt-card--pending { border-top: 3px solid #cbd5e1; }
-.rpt-card--redo    { border-top: 3px solid #cbd5e1; }
+/* ── Bảng chi tiết inline ── */
+.rpt-table__main-row {
+    transition: background-color 0.15s ease;
+}
+.rpt-table__main-row:hover td {
+    background-color: #faf5ff !important;
+}
 
-/* Left: thông tin */
-.rpt-card__left { padding: 18px; display: flex; flex-direction: column; gap: 12px; border-right: 1px solid #f1f5f9; }
+.rpt-table__detail-row td {
+    padding: 0 !important;
+    background-color: #f8fafc !important;
+    border-bottom: 1px solid #e2e8f0;
+}
 
-/* Right: actions luôn visible */
-.rpt-card__right { padding: 16px 14px; display: flex; flex-direction: column; gap: 8px; justify-content: flex-start; background: #fafafa; }
+.rpt-table__detail-content {
+    padding: 20px 24px;
+    background-color: #f8fafc;
+    border-top: 1px solid #f1f5f9;
+}
 
-.rpt-card__head  { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.rpt-card__id    { font-family: monospace; font-size: .82rem; font-weight: 800; color: #7c3aed; background: #f5f3ff; padding: 2px 8px; border-radius: 6px; }
-.rpt-card__title { font-size: .95rem; font-weight: 700; color: #0f172a; margin: 0; }
-.rpt-card__meta  { display: flex; gap: 10px; flex-wrap: wrap; font-size: .8rem; color: #64748b; }
+.rpt-table__detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 200px;
+    gap: 24px;
+}
 
-.rpt-card__report { background: #f8fafc; border-radius: 9px; padding: 11px 13px; border: 1px solid #e2e8f0; }
-.rpt-card__report-label { font-size: .72rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .05em; margin: 0 0 5px; }
-.rpt-card__report-text  { font-size: .87rem; color: #334155; line-height: 1.6; margin: 0; }
+.rpt-table__detail-left {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
 
-.rpt-card__reject-reason { background: #fff5f5; border-radius: 9px; padding: 11px 13px; border: 1px solid #fecaca; }
+.rpt-table__detail-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 0.8rem;
+    color: #64748b;
+}
 
-/* Thumbnails → lightbox */
-.rpt-card__images { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.rpt-card__image-group { display: flex; flex-direction: column; gap: 4px; }
-.rpt-card__image-label { font-size: .7rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .04em; margin: 0; }
-.rpt-card__thumb { width: 100%; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0; cursor: zoom-in; transition: opacity .15s; }
-.rpt-card__thumb:hover { opacity: .85; }
+.rpt-table__detail-body {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.rpt-table__detail-report {
+    flex: 1;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    padding: 14px 16px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    position: relative;
+    min-height: 96px;
+}
+
+.rpt-table__detail-report-body {
+    padding-right: 92px; /* leave space for the corner thumbnail */
+}
+
+.rpt-table__detail-label--thumb {
+    margin: 0 0 4px;
+    display: none; /* keep the corner clean */
+}
+
+
+.rpt-table__detail-label {
+    font-size: .7rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin: 0 0 6px;
+}
+
+.rpt-table__detail-text {
+    font-size: .88rem;
+    color: #334155;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Small square image box */
+.rpt-table__detail-image-box {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+    width: 60px;
+}
+
+
+.rpt-table__detail-thumb {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    cursor: zoom-in;
+    transition: transform 0.2s, opacity 0.15s;
+}
+
+.rpt-table__detail-thumb:hover {
+    opacity: 0.85;
+    transform: scale(1.02);
+}
+
+.rpt-table__detail-right {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: flex-start;
+}
 
 /* Timeline */
 .rpt-card__timeline { display: flex; flex-direction: column; gap: 5px; }
@@ -529,8 +686,23 @@ document.addEventListener('keydown', e => {
 @media (max-width: 768px) {
     .rpt-stats { grid-template-columns: repeat(2,1fr); }
     .rpt-card  { grid-template-columns: 1fr; }
+    .rpt-card__body-grid { grid-template-columns: 1fr; }
     .rpt-card__right { border-top: 1px solid #f1f5f9; border-right: none; flex-direction: row; flex-wrap: wrap; background: #fff; }
     .rpt-card__right .rpt-btn { flex: 1; }
+    
+    .rpt-card__header-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .rpt-card__header-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+    .rpt-card__meta-collapsed {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
 }
 @media (max-width: 480px) {
     .rpt-page__header { flex-direction: column; }
@@ -541,6 +713,9 @@ document.addEventListener('keydown', e => {
 @media print {
     .rpt-filter, .rpt-card__right, .rpt-page__header button { display: none !important; }
     .rpt-card { grid-template-columns: 1fr; break-inside: avoid; }
+    .rpt-card__collapse-content { max-height: none !important; opacity: 1 !important; display: block !important; }
+    .rpt-card__body-grid { grid-template-columns: 1fr !important; }
+    .rpt-card__toggle-icon { display: none !important; }
 }
 </style>
 @endsection
