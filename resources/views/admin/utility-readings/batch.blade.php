@@ -600,77 +600,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
-    // ── Multi-image preview cho batch ─────────────────
-    // Lưu DataTransfer per-row để gộp ảnh từ camera + gallery
-    const rowFilesMap = {};
-    const MAX_BATCH_IMAGES = 5;
-
-    function getBatchDT(rowId) {
-        if (!rowFilesMap[rowId]) rowFilesMap[rowId] = new DataTransfer();
-        return rowFilesMap[rowId];
-    }
-
-    function addBatchFiles(camInp, rowId) {
-        const dt = getBatchDT(rowId);
-        const remaining = MAX_BATCH_IMAGES - dt.files.length;
-        const files = camInp.files;
-        let added = 0;
-        for (let i = 0; i < files.length && added < remaining; i++) {
-            dt.items.add(files[i]);
-            added++;
-        }
-        // Gán lại files vào input camera (sẽ được submit)
-        camInp.files = dt.files;
-        renderBatchPreview(rowId);
-    }
-
-    function renderBatchPreview(rowId) {
-        const container = document.getElementById('preview_' + rowId);
-        if (!container) return;
-        const dt = getBatchDT(rowId);
-        container.innerHTML = '';
-        for (let i = 0; i < dt.files.length; i++) {
-            const file = dt.files[i];
-            const wrap = document.createElement('div');
-            wrap.style.cssText = 'position:relative;width:48px;height:48px;border-radius:6px;overflow:hidden;border:1.5px solid #e2e8f0;';
-            const img = document.createElement('img');
-            img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
-            const reader = new FileReader();
-            reader.onload = e => { img.src = e.target.result; };
-            reader.readAsDataURL(file);
-            // Nút xóa nhỏ
-            const del = document.createElement('button');
-            del.type = 'button';
-            del.innerHTML = '✕';
-            del.dataset.rowId = rowId;
-            del.dataset.idx = i;
-            del.style.cssText = 'position:absolute;top:1px;right:1px;background:rgba(239,68,68,.8);color:#fff;border:none;border-radius:50%;width:16px;height:16px;font-size:9px;line-height:1;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;';
-            del.addEventListener('click', function() {
-                removeBatchFileAt(this.dataset.rowId, parseInt(this.dataset.idx));
-            });
-            wrap.appendChild(img);
-            wrap.appendChild(del);
-            container.appendChild(wrap);
-        }
-    }
-
-    function syncBatchProxy(rowId) {
-        const proxyInp = document.getElementById('proxy_' + rowId);
-        if (proxyInp) proxyInp.files = getBatchDT(rowId).files;
-    }
-
-    function removeBatchFileAt(rowId, idx) {
-        const dt = getBatchDT(rowId);
-        const newDT = new DataTransfer();
-        const files = dt.files;
-        for (let i = 0; i < files.length; i++) {
-            if (i !== idx) newDT.items.add(files[i]);
-        }
-        rowFilesMap[rowId] = newDT;
-        syncBatchProxy(rowId);
-        renderBatchPreview(rowId);
-    }
-
     // Camera inputs: capture="environment", NO multiple → mở camera thực sự
     document.querySelectorAll('input[id^="cam_"]').forEach(function(inp) {
         const rowId = inp.id.replace('cam_', '');
@@ -703,6 +632,78 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+
+// ── Multi-image preview cho batch ─────────────────
+// Lưu DataTransfer per-row để gộp ảnh từ camera + gallery
+const rowFilesMap = {};
+const MAX_BATCH_IMAGES = 5;
+
+function getBatchDT(rowId) {
+    if (!rowFilesMap[rowId]) rowFilesMap[rowId] = new DataTransfer();
+    return rowFilesMap[rowId];
+}
+
+function addBatchFiles(camInp, rowId) {
+    const dt = getBatchDT(rowId);
+    const remaining = MAX_BATCH_IMAGES - dt.files.length;
+    const files = camInp.files;
+    let added = 0;
+    for (let i = 0; i < files.length && added < remaining; i++) {
+        dt.items.add(files[i]);
+        added++;
+    }
+    // Gán lại files vào input camera (sẽ được submit)
+    camInp.files = dt.files;
+    renderBatchPreview(rowId);
+}
+
+function renderBatchPreview(rowId) {
+    const container = document.getElementById('preview_' + rowId);
+    if (!container) return;
+    const dt = getBatchDT(rowId);
+    container.innerHTML = '';
+    for (let i = 0; i < dt.files.length; i++) {
+        const file = dt.files[i];
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'position:relative;width:48px;height:48px;border-radius:6px;overflow:hidden;border:1.5px solid #e2e8f0;';
+        const img = document.createElement('img');
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+        const reader = new FileReader();
+        reader.onload = e => { img.src = e.target.result; };
+        reader.readAsDataURL(file);
+        // Nút xóa nhỏ
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.innerHTML = '✕';
+        del.dataset.rowId = rowId;
+        del.dataset.idx = i;
+        del.style.cssText = 'position:absolute;top:1px;right:1px;background:rgba(239,68,68,.8);color:#fff;border:none;border-radius:50%;width:16px;height:16px;font-size:9px;line-height:1;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;';
+        del.addEventListener('click', function() {
+            removeBatchFileAt(this.dataset.rowId, parseInt(this.dataset.idx));
+        });
+        wrap.appendChild(img);
+        wrap.appendChild(del);
+        container.appendChild(wrap);
+    }
+}
+
+function syncBatchProxy(rowId) {
+    const proxyInp = document.getElementById('proxy_' + rowId);
+    if (proxyInp) proxyInp.files = getBatchDT(rowId).files;
+}
+
+function removeBatchFileAt(rowId, idx) {
+    const dt = getBatchDT(rowId);
+    const newDT = new DataTransfer();
+    const files = dt.files;
+    for (let i = 0; i < files.length; i++) {
+        if (i !== idx) newDT.items.add(files[i]);
+    }
+    rowFilesMap[rowId] = newDT;
+    syncBatchProxy(rowId);
+    renderBatchPreview(rowId);
+}
+
 
 // ── Camera Modal WebRTC cho Batch ────────────────────────────────────────
 let batchCameraStream = null;
