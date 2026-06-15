@@ -5,6 +5,26 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $apartment_id
+ * @property string $type
+ * @property int $record_month
+ * @property int $record_year
+ * @property int $old_value
+ * @property int $new_value
+ * @property int $usage_amount
+ * @property string|null $image_proof
+ * @property array|null $images
+ * @property int $recorded_by
+ * @property string $status
+ * @property bool $is_reset
+ * @property int|null $rejected_by
+ * @property string|null $reject_reason
+ * @property-read \App\Models\Apartment $apartment
+ * @property-read \App\Models\User|null $recorder
+ * @property-read \App\Models\User|null $rejecter
+ */
 class UtilityMeter extends Model
 {
     const STATUS_PENDING = 'pending';
@@ -22,11 +42,19 @@ class UtilityMeter extends Model
         'new_value',
         'usage_amount',
         'image_proof',
+        'images',
         'recorded_by',
         'status',
         'is_reset',
         'rejected_by',
         'reject_reason',
+    ];
+
+    /**
+     * Tự động cast cột `images` (JSON) ↔ PHP array
+     */
+    protected $casts = [
+        'images' => 'array',
     ];
 
     /*

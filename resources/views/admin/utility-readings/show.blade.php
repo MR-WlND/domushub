@@ -198,12 +198,39 @@
         </div>
     </div>
 
-    @if($reading->image_proof)
+    @php
+        $proofImages = $reading->images ?? [];
+        if (empty($proofImages) && $reading->image_proof) {
+            $proofImages = [$reading->image_proof];
+        }
+    @endphp
+
+    @if(!empty($proofImages))
     <div class="proof-section">
-        <div class="detail-label">Ảnh công tơ minh chứng</div>
-        <div class="proof-img-container">
-            <img src="{{ asset('storage/' . $reading->image_proof) }}" alt="Ảnh minh chứng công tơ" class="proof-img">
+        <div class="detail-label">📷 Ảnh công tơ minh chứng ({{ count($proofImages) }} ảnh)</div>
+        <div style="display:flex; flex-wrap:wrap; gap:12px; margin-top:14px;">
+            @foreach($proofImages as $idx => $imgPath)
+            <div style="position:relative; width:160px; height:160px; border-radius:12px; overflow:hidden; border:2px solid #e2e8f0; box-shadow:0 3px 12px rgba(0,0,0,.07); cursor:pointer; transition:transform .15s, box-shadow .15s;"
+                onclick="openLightbox({{ $idx }})"
+                onmouseenter="this.style.transform='scale(1.03)'; this.style.boxShadow='0 6px 20px rgba(0,0,0,.14)';"
+                onmouseleave="this.style.transform=''; this.style.boxShadow='0 3px 12px rgba(0,0,0,.07)';">
+                <img src="{{ asset('storage/'.$imgPath) }}" alt="Ảnh minh chứng {{ $idx+1 }}"
+                    style="width:100%; height:100%; object-fit:cover;">
+                <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.45));padding:8px 10px;color:#fff;font-size:11px;font-weight:600;">
+                    Ảnh {{ $idx+1 }} – Nhấn để xem
+                </div>
+            </div>
+            @endforeach
         </div>
+    </div>
+
+    {{-- Lightbox --}}
+    <div id="lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;align-items:center;justify-content:center;flex-direction:column;">
+        <button onclick="closeLightbox()" style="position:absolute;top:18px;right:22px;background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:50%;width:40px;height:40px;font-size:20px;cursor:pointer;line-height:1;">✕</button>
+        <button onclick="prevImg()" id="lb_prev" style="position:absolute;left:18px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:22px;cursor:pointer;">‹</button>
+        <button onclick="nextImg()" id="lb_next" style="position:absolute;right:18px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:22px;cursor:pointer;">›</button>
+        <img id="lb_img" src="" alt="" style="max-width:90vw;max-height:82vh;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.5);">
+        <div style="margin-top:12px;color:rgba(255,255,255,.7);font-size:13px;" id="lb_counter"></div>
     </div>
     @else
     <div class="proof-section" style="text-align: center; color: #94a3b8; padding: 20px 0;">
@@ -211,3 +238,39 @@
     </div>
     @endif
 </article>
+
+@push('scripts')
+<script>
+const lightboxImgs = @json(array_map(fn($p) => asset('storage/'.$p), $proofImages));
+let lbIdx = 0;
+
+function openLightbox(idx) {
+    lbIdx = idx;
+    const lb = document.getElementById('lightbox');
+    lb.style.display = 'flex';
+    updateLightbox();
+    document.addEventListener('keydown', handleLbKey);
+}
+function closeLightbox() {
+    document.getElementById('lightbox').style.display = 'none';
+    document.removeEventListener('keydown', handleLbKey);
+}
+function updateLightbox() {
+    document.getElementById('lb_img').src = lightboxImgs[lbIdx];
+    document.getElementById('lb_counter').textContent = `Ảnh ${lbIdx+1} / ${lightboxImgs.length}`;
+    document.getElementById('lb_prev').style.display = lightboxImgs.length > 1 ? '' : 'none';
+    document.getElementById('lb_next').style.display = lightboxImgs.length > 1 ? '' : 'none';
+}
+function prevImg() { lbIdx = (lbIdx - 1 + lightboxImgs.length) % lightboxImgs.length; updateLightbox(); }
+function nextImg() { lbIdx = (lbIdx + 1) % lightboxImgs.length; updateLightbox(); }
+function handleLbKey(e) {
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') prevImg();
+    if (e.key === 'ArrowRight') nextImg();
+}
+// Click backdrop to close
+document.getElementById('lightbox').addEventListener('click', function(e) {
+    if (e.target === this) closeLightbox();
+});
+</script>
+@endpush

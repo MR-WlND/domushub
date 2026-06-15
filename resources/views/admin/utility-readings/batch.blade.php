@@ -357,16 +357,41 @@
                         @endif
 
                         {{-- Ảnh công tơ --}}
-                        <td style="text-align:center; vertical-align:middle;">
+                        <td style="text-align:center; vertical-align:middle; min-width:140px;">
                             @if (!$bothDoneRow)
-                                <input type="file"
-                                    name="readings[{{ $i }}][image_proof]"
-                                    accept="image/*"
-                                    style="font-size:11px; max-width:130px;">
+                                <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
+                                    {{-- Nút chụp camera (WebRTC) --}}
+                                    <button type="button"
+                                        onclick="openCameraModalBatch({{ $i }})"
+                                        style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;background:linear-gradient(135deg,#0b57d0,#1a73e8);color:#fff;border:none;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;">
+                                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
+                                        </svg>
+                                        📸 Chụp
+                                    </button>
+                                    {{-- Nút thư viện --}}
+                                    <button type="button"
+                                        onclick="document.getElementById('gal_{{ $i }}').click()"
+                                        style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;background:#f8fafc;color:#334155;border:1px solid #cbd5e1;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;">
+                                        📁 Chọn ảnh
+                                    </button>
+                                    {{-- Gallery input (multiple, không capture) --}}
+                                    <input type="file" id="gal_{{ $i }}"
+                                        accept="image/*" multiple style="display:none;"
+                                        data-row="{{ $i }}">
+                                    {{-- Proxy input thực sự submit --}}
+                                    <input type="file" id="proxy_{{ $i }}"
+                                        name="readings[{{ $i }}][images][]"
+                                        accept="image/*" multiple style="display:none;">
+                                    {{-- Preview thumbnails --}}
+                                    <div id="preview_{{ $i }}"
+                                        style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:4px;"></div>
+                                </div>
                             @else
                                 <span style="color:#64748b; font-size:12px;">—</span>
                             @endif
                         </td>
+
 
                         {{-- Status --}}
                         <td style="text-align:center;">
@@ -575,6 +600,270 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+    // Camera inputs: capture="environment", NO multiple → mở camera thực sự
+    document.querySelectorAll('input[id^="cam_"]').forEach(function(inp) {
+        const rowId = inp.id.replace('cam_', '');
+        inp.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                addBatchFiles(this, rowId);
+                syncBatchProxy(rowId);
+            }
+            this.value = '';
+        });
+    });
+
+    // Gallery inputs: multiple, NO capture → chọn nhiều ảnh từ thư viện
+    document.querySelectorAll('input[id^="gal_"]').forEach(function(inp) {
+        const rowId = inp.id.replace('gal_', '');
+        inp.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                const dt = getBatchDT(rowId);
+                const remaining = MAX_BATCH_IMAGES - dt.files.length;
+                const files = this.files;
+                let added = 0;
+                for (let i = 0; i < files.length && added < remaining; i++) {
+                    dt.items.add(files[i]);
+                    added++;
+                }
+                syncBatchProxy(rowId);
+                renderBatchPreview(rowId);
+            }
+            this.value = '';
+        });
+    });
 });
+
+// ── Multi-image preview cho batch ─────────────────
+// Lưu DataTransfer per-row để gộp ảnh từ camera + gallery
+const rowFilesMap = {};
+const MAX_BATCH_IMAGES = 5;
+
+function getBatchDT(rowId) {
+    if (!rowFilesMap[rowId]) rowFilesMap[rowId] = new DataTransfer();
+    return rowFilesMap[rowId];
+}
+
+function addBatchFiles(camInp, rowId) {
+    const dt = getBatchDT(rowId);
+    const remaining = MAX_BATCH_IMAGES - dt.files.length;
+    const files = camInp.files;
+    let added = 0;
+    for (let i = 0; i < files.length && added < remaining; i++) {
+        dt.items.add(files[i]);
+        added++;
+    }
+    // Gán lại files vào input camera (sẽ được submit)
+    camInp.files = dt.files;
+    renderBatchPreview(rowId);
+}
+
+function renderBatchPreview(rowId) {
+    const container = document.getElementById('preview_' + rowId);
+    if (!container) return;
+    const dt = getBatchDT(rowId);
+    container.innerHTML = '';
+    for (let i = 0; i < dt.files.length; i++) {
+        const file = dt.files[i];
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'position:relative;width:48px;height:48px;border-radius:6px;overflow:hidden;border:1.5px solid #e2e8f0;';
+        const img = document.createElement('img');
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+        const reader = new FileReader();
+        reader.onload = e => { img.src = e.target.result; };
+        reader.readAsDataURL(file);
+        // Nút xóa nhỏ
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.innerHTML = '✕';
+        del.dataset.rowId = rowId;
+        del.dataset.idx = i;
+        del.style.cssText = 'position:absolute;top:1px;right:1px;background:rgba(239,68,68,.8);color:#fff;border:none;border-radius:50%;width:16px;height:16px;font-size:9px;line-height:1;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;';
+        del.addEventListener('click', function() {
+            removeBatchFileAt(this.dataset.rowId, parseInt(this.dataset.idx));
+        });
+        wrap.appendChild(img);
+        wrap.appendChild(del);
+        container.appendChild(wrap);
+    }
+}
+
+function syncBatchProxy(rowId) {
+    const proxyInp = document.getElementById('proxy_' + rowId);
+    if (proxyInp) proxyInp.files = getBatchDT(rowId).files;
+}
+
+function removeBatchFileAt(rowId, idx) {
+    const dt = getBatchDT(rowId);
+    const newDT = new DataTransfer();
+    const files = dt.files;
+    for (let i = 0; i < files.length; i++) {
+        if (i !== idx) newDT.items.add(files[i]);
+    }
+    rowFilesMap[rowId] = newDT;
+    syncBatchProxy(rowId);
+    renderBatchPreview(rowId);
+}
+
+
+// ── Camera Modal WebRTC cho Batch ────────────────────────────────────────
+let batchCameraStream = null;
+let batchCameraRowId  = null;
+
+function openCameraModalBatch(rowId) {
+    batchCameraRowId = rowId;
+
+    // Nếu modal chưa có trong DOM thì tạo
+    if (!document.getElementById('batchCameraModal')) {
+        createBatchCameraModal();
+    }
+
+    document.getElementById('batchCameraOverlay').style.display = 'block';
+    document.getElementById('batchCameraModal').style.display   = 'block';
+    document.body.style.overflow = 'hidden';
+    document.getElementById('batchCameraLoading').style.display = 'flex';
+
+    const facing = document.getElementById('batchCameraSelect')?.value || 'environment';
+    startBatchCamera(facing);
+}
+
+function createBatchCameraModal() {
+    const overlay = document.createElement('div');
+    overlay.id = 'batchCameraOverlay';
+    overlay.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;';
+    overlay.onclick = closeBatchCameraModal;
+    document.body.appendChild(overlay);
+
+    const modal = document.createElement('div');
+    modal.id = 'batchCameraModal';
+    modal.style.cssText = 'display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:94vw;max-width:520px;background:#fff;border-radius:20px;box-shadow:0 24px 60px rgba(0,0,0,.3);z-index:10000;overflow:hidden;';
+    modal.innerHTML = `
+        <div style="background:linear-gradient(135deg,#0b57d0,#1a73e8);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;">
+            <div style="color:#fff;font-weight:700;font-size:0.95rem;">📸 Chụp ảnh công tơ</div>
+            <button type="button" onclick="closeBatchCameraModal()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:1.1rem;cursor:pointer;">✕</button>
+        </div>
+        <div style="padding:8px 14px;background:#f8fafc;display:flex;align-items:center;gap:8px;border-bottom:1px solid #e2e8f0;">
+            <label style="font-size:12px;font-weight:600;color:#475569;">Camera:</label>
+            <select id="batchCameraSelect" onchange="switchBatchCamera()" style="flex:1;padding:4px 8px;border:1px solid #cbd5e1;border-radius:7px;font-size:12px;">
+                <option value="environment">📷 Camera sau</option>
+                <option value="user">🤳 Camera trước</option>
+            </select>
+        </div>
+        <div style="background:#000;position:relative;aspect-ratio:4/3;max-height:320px;overflow:hidden;">
+            <video id="batchCameraVideo" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover;display:block;"></video>
+            <div style="position:absolute;inset:0;pointer-events:none;">
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:70%;height:70%;border:2px dashed rgba(255,255,255,0.5);border-radius:8px;"></div>
+            </div>
+            <div id="batchCameraLoading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;background:rgba(0,0,0,0.5);">🔄 Đang khởi động camera...</div>
+        </div>
+        <div style="padding:14px;display:flex;gap:10px;justify-content:center;background:#f8fafc;">
+            <button type="button" onclick="captureBatchPhoto()" style="display:inline-flex;align-items:center;gap:7px;padding:11px 24px;background:linear-gradient(135deg,#0b57d0,#1a73e8);color:#fff;border:none;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(11,87,208,.35);">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                Chụp
+            </button>
+            <button type="button" onclick="closeBatchCameraModal()" style="padding:11px 18px;background:#f1f5f9;color:#475569;border:none;border-radius:11px;font-size:13px;font-weight:600;cursor:pointer;">Hủy</button>
+        </div>
+        <canvas id="batchCameraCanvas" style="display:none;"></canvas>
+    `;
+    document.body.appendChild(modal);
+}
+
+async function startBatchCamera(facing) {
+    const video   = document.getElementById('batchCameraVideo');
+    const loading = document.getElementById('batchCameraLoading');
+
+    if (batchCameraStream) {
+        batchCameraStream.getTracks().forEach(t => t.stop());
+        batchCameraStream = null;
+    }
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        loading.textContent = '❌ Trình duyệt không hỗ trợ camera.';
+        return;
+    }
+
+    try {
+        batchCameraStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: facing, width: { ideal: 1920 }, height: { ideal: 1080 } }
+        });
+        video.srcObject = batchCameraStream;
+        video.onloadedmetadata = () => { loading.style.display = 'none'; };
+    } catch (err) {
+        let msg = '❌ Không thể mở camera.';
+        if (err.name === 'NotAllowedError')  msg = '🔒 Quyền camera bị chặn. Cho phép trong thanh địa chỉ và thử lại.';
+        if (err.name === 'NotFoundError')    msg = '📷 Không tìm thấy camera. Kiểm tra webcam.';
+        if (err.name === 'NotReadableError') msg = '⚠️ Camera đang dùng bởi ứng dụng khác.';
+        if (err.name === 'OverconstrainedError') {
+            try {
+                batchCameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = batchCameraStream;
+                video.onloadedmetadata = () => { loading.style.display = 'none'; };
+                return;
+            } catch(e2) { msg = '❌ ' + e2.message; }
+        }
+        loading.innerHTML = `<div style="text-align:center;padding:16px;color:#fff;">${msg}<br><br><button onclick="closeBatchCameraModal()" style="padding:7px 14px;background:#fff;color:#1e293b;border:none;border-radius:7px;cursor:pointer;font-weight:600;">Đóng</button></div>`;
+    }
+}
+
+function switchBatchCamera() {
+    const facing = document.getElementById('batchCameraSelect').value;
+    const loading = document.getElementById('batchCameraLoading');
+    loading.textContent = '🔄 Đang chuyển camera...';
+    loading.style.display = 'flex';
+    startBatchCamera(facing);
+}
+
+function captureBatchPhoto() {
+    const video  = document.getElementById('batchCameraVideo');
+    const canvas = document.getElementById('batchCameraCanvas');
+    if (!video.videoWidth) { alert('Camera chưa sẵn sàng.'); return; }
+
+    canvas.width  = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+
+    canvas.toBlob(blob => {
+        if (!blob) { alert('Không thể chụp ảnh.'); return; }
+
+        // Flash
+        const flash = document.createElement('div');
+        flash.style.cssText = 'position:fixed;inset:0;background:#fff;opacity:0.8;z-index:99999;pointer-events:none;transition:opacity .3s;';
+        document.body.appendChild(flash);
+        setTimeout(() => { flash.style.opacity='0'; setTimeout(()=>flash.remove(),300); }, 50);
+
+        const rowId = batchCameraRowId;
+        const file  = new File([blob], `cam_${rowId}_${Date.now()}.jpg`, { type: 'image/jpeg' });
+        const dt    = getBatchDT(rowId);
+
+        if (dt.files.length >= 5) {
+            alert('⚠️ Tối đa 5 ảnh cho mỗi hàng.');
+            closeBatchCameraModal();
+            return;
+        }
+
+        dt.items.add(file);
+        syncBatchProxy(rowId);
+        renderBatchPreview(rowId);
+        closeBatchCameraModal();
+    }, 'image/jpeg', 0.92);
+}
+
+function closeBatchCameraModal() {
+    const overlay = document.getElementById('batchCameraOverlay');
+    const modal   = document.getElementById('batchCameraModal');
+    if (overlay) overlay.style.display = 'none';
+    if (modal)   modal.style.display   = 'none';
+    document.body.style.overflow = '';
+
+    if (batchCameraStream) {
+        batchCameraStream.getTracks().forEach(t => t.stop());
+        batchCameraStream = null;
+    }
+    const video = document.getElementById('batchCameraVideo');
+    if (video) video.srcObject = null;
+    const loading = document.getElementById('batchCameraLoading');
+    if (loading) { loading.style.display='flex'; loading.textContent='🔄 Đang khởi động camera...'; }
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBatchCameraModal(); });
 </script>
 @endpush

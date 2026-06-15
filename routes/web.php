@@ -105,6 +105,7 @@ Route::middleware(['admin'])->group(function () {
     Route::post('/admin/utility-readings/{id}/approve', [UtilityMeterController::class, 'approve'])->name('admin.utility-readings.approve');
     Route::post('/admin/utility-readings/{id}/reject', [UtilityMeterController::class, 'reject'])->name('admin.utility-readings.reject');
     Route::post('/admin/utility-readings/batch-approve', [UtilityMeterController::class, 'batchApprove'])->name('admin.utility-readings.batch-approve');
+    Route::delete('/admin/utility-readings/{id}/image', [UtilityMeterController::class, 'removeImage'])->name('admin.utility-readings.remove-image');
 
     Route::get('/admin/service-prices', [ServicePriceController::class, 'index'])->name('admin.service-prices.index');
     Route::post('/admin/service-prices', [ServicePriceController::class, 'store'])->name('admin.service-prices.store');
