@@ -80,6 +80,14 @@ class User extends Authenticatable
         return $this->belongsTo(Apartment::class);
     }
 
+    /**
+     * Danh sách phản ánh kỹ thuật viên này phụ trách xử lý
+     */
+    public function handledTickets()
+    {
+        return $this->hasMany(Ticket::class, 'handler_id');
+    }
+
     // ── Role helpers ────────────────────────────────────────────────
 
     public function isAdmin(): bool

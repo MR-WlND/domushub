@@ -24,7 +24,8 @@
             </div>
         </div>
 
-        <a href="#" class="resident-header__link">
+        <a href="{{ route('resident.tickets.index') }}"
+            class="resident-header__link {{ request()->routeIs('resident.tickets.*') ? 'resident-header__link--active' : '' }}">
             Phản Ánh
         </a>
         <a href="{{ route('resident.contact') }}"

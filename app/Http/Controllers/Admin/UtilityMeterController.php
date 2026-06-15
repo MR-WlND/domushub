@@ -29,16 +29,6 @@ class UtilityMeterController extends Controller
             }
         }
 
-        // Programmatically run migrations if reject_reason column is not present
-        if (!\Illuminate\Support\Facades\Schema::hasColumn('utility_meters', 'reject_reason')) {
-            try {
-                \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-            } catch (\Exception $e) {
-                // Ignore migration errors
-            }
-        }
-
-
 
         $blockId = $request->query('block_id');
         $floorId = $request->query('floor_id');

@@ -43,9 +43,26 @@
                             @endforeach
                         </td>
                         <td>
-                            <span class="badge badge--owner">
-                                <i class="fa-solid fa-crown"></i> Chủ hộ
-                            </span>
+                            @php
+                                $selfRelationship = $selfResident->relationship ?? null;
+                            @endphp
+                            @if ($selfRelationship === 'owner')
+                                <span class="badge badge--owner">
+                                    <i class="fa-solid fa-crown"></i> Chủ hộ
+                                </span>
+                            @elseif ($selfRelationship === 'family_member')
+                                <span class="badge badge--family">
+                                    <i class="fa-solid fa-house-user"></i> Thành viên gia đình
+                                </span>
+                            @elseif ($selfRelationship === 'tenant')
+                                <span class="badge badge--tenant">
+                                    <i class="fa-solid fa-key"></i> Người thuê
+                                </span>
+                            @else
+                                <span class="badge badge--secondary">
+                                    {{ $selfRelationship ?? '—' }}
+                                </span>
+                            @endif
                         </td>
                         <td>—</td>
                         @if ($isOwner)
@@ -77,7 +94,7 @@
                             <td>
                                 @if ($member->relationship === 'family_member')
                                     <span class="badge badge--family">
-                                        <i class="fa-solid fa-house-user"></i> Thành viên
+                                        <i class="fa-solid fa-house-user"></i> Thành viên gia đình
                                     </span>
                                 @elseif ($member->relationship === 'tenant')
                                     <span class="badge badge--tenant">

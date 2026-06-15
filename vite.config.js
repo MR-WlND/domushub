@@ -29,7 +29,11 @@ export default defineConfig({
                 'resources/css/pages/resident/contact.css',
                 'resources/css/pages/admin/vehicles/index.css',
                 'resources/css/pages/admin/parking-lots/index.css',
-                'resources/css/pages/admin/utility-readings/index.css'
+                'resources/css/pages/admin/utility-readings/index.css',
+                'resources/css/resident/tickets.css',
+                'resources/css/pages/admin/tickets/index.css',
+                'resources/css/pages/admin/tickets/technician.css'
+
             ],
             refresh: true,
             fonts: [
