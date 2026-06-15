@@ -589,6 +589,9 @@ class UtilityMeterController extends Controller
                 'images.*' => 'image|max:4096',
             ]);
             $existingImages = $reading->images ?? [];
+            if (empty($existingImages) && $reading->image_proof) {
+                $existingImages = [$reading->image_proof];
+            }
             foreach ($request->file('images') as $img) {
                 $existingImages[] = $img->store('proofs', 'public');
             }
@@ -631,6 +634,9 @@ class UtilityMeterController extends Controller
 
         $index = (int) $request->input('index', -1);
         $images = $reading->images ?? [];
+        if (empty($images) && $reading->image_proof) {
+            $images = [$reading->image_proof];
+        }
 
         if ($index >= 0 && isset($images[$index])) {
             // Xóa file khỏi storage
