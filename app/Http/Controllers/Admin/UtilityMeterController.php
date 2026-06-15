@@ -882,19 +882,24 @@ class UtilityMeterController extends Controller
             $waterAmount = $waterReading->usage_amount * $waterService->unit_price;
         }
 
-        $totalAmount = $elecAmount + $waterAmount;
-
-        // 4. Tìm hóa đơn điện nước hiện có hoặc tạo mới (tránh ghi đè lên hóa đơn khác như phí gửi xe)
+        // 4. Tìm hóa đơn hiện có hoặc tạo mới
         $invoice = \App\Models\Invoice::where('apartment_id', $apartmentId)
             ->where('billing_month', $month)
             ->where('billing_year', $year)
-            ->where('title', 'like', '%Phí điện nước%')
             ->first();
 
         if ($invoice) {
+            $oldDetails = $invoice->details()->whereIn('service_price_id', [$elecService->id, $waterService->id])->get();
+            $oldAmount = $oldDetails->sum('amount');
+            
+            // Xóa các chi tiết cũ liên quan đến điện/nước
+            $invoice->details()->whereIn('service_price_id', [$elecService->id, $waterService->id])->delete();
+
+            $newTotalAmount = max(0, $invoice->total_amount - $oldAmount + $totalAmount);
+
             $invoice->update([
-                'title' => "Phí điện nước tháng {$month}/{$year}",
-                'total_amount' => $totalAmount,
+                'title' => "Hóa đơn tháng {$month}/{$year}",
+                'total_amount' => $newTotalAmount,
                 // Giữ nguyên trạng thái nếu đã thanh toán, tránh chuyển ngược về unpaid trái phép
                 'status' => $invoice->status === 'paid' ? 'paid' : 'unpaid',
             ]);
@@ -903,7 +908,7 @@ class UtilityMeterController extends Controller
                 'apartment_id' => $apartmentId,
                 'billing_month' => $month,
                 'billing_year' => $year,
-                'title' => "Phí điện nước tháng {$month}/{$year}",
+                'title' => "Hóa đơn tháng {$month}/{$year}",
                 'due_date' => now()->addDays(10), // Hạn nộp 10 ngày từ ngày chốt
                 'total_amount' => $totalAmount,
                 'status' => 'unpaid',
@@ -911,9 +916,6 @@ class UtilityMeterController extends Controller
         }
 
         // 5. Đồng bộ chi tiết hóa đơn (bill_details)
-        // Xóa các chi tiết cũ liên quan đến điện/nước
-        $invoice->details()->whereIn('service_price_id', [$elecService->id, $waterService->id])->delete();
-
         if ($elecReading && $elecReading->usage_amount > 0) {
             \App\Models\InvoiceDetail::create([
                 'bill_id' => $invoice->id,
