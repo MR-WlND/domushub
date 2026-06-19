@@ -79,8 +79,10 @@
                     <tr>
                         <th>Tên dịch vụ</th>
                         <th>Loại phí</th>
-                        <th class="text-right">Số lượng / Chỉ số</th>
+                        <th class="text-right">Số lượng</th>
                         <th class="text-right">Thành tiền</th>
+                        <th style="padding-left: 15px;">Trạng thái</th>
+                        <th class="text-right" style="padding-right: 15px;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -101,10 +103,28 @@
                                 {{ $detail->quantity }}
                             </td>
                             <td class="text-right val-subtotal">{{ number_format($detail->amount, 0, ',', '.') }} đ</td>
+                            <td style="padding-left: 15px;">
+                                @if($detail->status === 'paid')
+                                    <span class="pay-badge pay-badge--paid" style="font-size: 0.7rem; padding: 2px 6px;">Đã thanh toán</span>
+                                @else
+                                    <span class="pay-badge pay-badge--overdue" style="font-size: 0.7rem; padding: 2px 6px;">Chưa thanh toán</span>
+                                @endif
+                            </td>
+                            <td class="text-right" style="padding-right: 15px;">
+                                @if($detail->status !== 'paid')
+                                    <button type="button" class="btn-sm-danger" 
+                                            style="background:#ecfdf5; color:#059669; border-color:#a7f3d0; padding: 4px 8px; cursor: pointer;"
+                                            onclick="openDetailPaymentModal({{ $detail->id }}, '{{ addslashes($detail->servicePrice->name ?? 'Phí dịch vụ') }}', {{ $detail->amount }})">
+                                        Thu tiền
+                                    </button>
+                                @else
+                                    —
+                                @endif
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="text-center text-muted">Không có thông tin chi tiết dịch vụ.</td>
+                            <td colspan="6" class="text-center text-muted">Không có thông tin chi tiết dịch vụ.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -118,10 +138,43 @@
         </div>
 
         {{-- Lịch sử thanh toán --}}
-        @if($invoice->payments->isNotEmpty())
         <div class="detail-card__payment" style="border-bottom: 1px solid var(--color-background, #f8f9ff);">
-            <h3 class="section-title">Thông tin giao dịch</h3>
-            @foreach($invoice->payments as $pm)
+            <h3 class="section-title">Lịch sử giao dịch</h3>
+            @php
+                $details = $invoice->details()->orderBy('id')->get();
+                $payments = $invoice->payments()->orderBy('id')->get();
+                $detailAllocations = [];
+                $detailPaidState = [];
+                
+                foreach ($details as $d) {
+                    $detailPaidState[$d->id] = [
+                        'name' => $d->servicePrice->name ?? 'Dịch vụ',
+                        'amount' => (float)$d->amount,
+                        'remaining' => (float)$d->amount
+                    ];
+                }
+                
+                foreach ($payments as $p) {
+                    if ($p->status === 'refunded') continue;
+                    
+                    $pAmount = (float)$p->amount;
+                    $coveredServices = [];
+                    
+                    foreach ($detailPaidState as $dId => &$dState) {
+                        if ($pAmount <= 0) break;
+                        if ($dState['remaining'] <= 0) continue;
+                        
+                        $allocation = min($pAmount, $dState['remaining']);
+                        $dState['remaining'] -= $allocation;
+                        $pAmount -= $allocation;
+                        
+                        $coveredServices[] = $dState['name'];
+                    }
+                    
+                    $detailAllocations[$p->id] = array_unique($coveredServices);
+                }
+            @endphp
+            @forelse($invoice->payments as $pm)
                 @php
                     $methodLabel = match($pm->payment_method) {
                         'vnpay'         => 'VNPay',
@@ -138,7 +191,7 @@
                         $vnpTxnNo = $pm->transaction_code ?? '—';
                     }
                 @endphp
-                <div class="payment-grid" style="margin-bottom: 20px; border-bottom: 1px dashed var(--color-outline-soft); padding-bottom: 20px; {{ $pm->is_refunded ? 'opacity:.65;' : '' }}">
+                <div class="payment-transaction" style="margin-bottom: 24px; {{ $pm->is_refunded ? 'opacity:.65;' : '' }}">
                     <div class="payment-info-item">
                         <span class="info-label">Mã hóa đơn hệ thống:</span>
                         <span class="info-val code-val">{{ $invoice->invoice_code }}</span>
@@ -153,6 +206,16 @@
                         <span class="info-label">Phương thức thanh toán:</span>
                         <span class="info-val">{{ $methodLabel }}</span>
                     </div>
+                    <div class="payment-info-item">
+                        <span class="info-label">Người nộp (Cư dân):</span>
+                        <span class="info-val">{{ $pm->payer_name ?: ($invoice->apartment->owner_name ?? 'Cư dân căn hộ') }}</span>
+                    </div>
+                    @if($pm->recorder)
+                    <div class="payment-info-item">
+                        <span class="info-label">Người thu (Nhân viên):</span>
+                        <span class="info-val">{{ $pm->recorder->name }}</span>
+                    </div>
+                    @endif
                     @if($pm->payment_method === 'vnpay')
                     <div class="payment-info-item">
                         <span class="info-label">Mã giao dịch đối soát (VNPay):</span>
@@ -163,6 +226,31 @@
                         <span class="info-label">Thời gian thanh toán:</span>
                         <span class="info-val">{{ $pm->paid_at ? $pm->paid_at->format('d/m/Y H:i') : '—' }}</span>
                     </div>
+                    @php
+                        $displayNote = $pm->note;
+                        if (empty($displayNote)) {
+                            $allocatedServices = $detailAllocations[$pm->id] ?? [];
+                            if (!empty($allocatedServices)) {
+                                $displayNote = 'Thanh toán dịch vụ: ' . implode(', ', $allocatedServices);
+                            } else {
+                                $displayNote = 'Thanh toán hóa đơn';
+                            }
+                        }
+                    @endphp
+                    <div class="payment-info-item">
+                        <span class="info-label">Nội dung / Dịch vụ:</span>
+                        <span class="info-val" style="color: #0d9488;">{{ $displayNote }}</span>
+                    </div>
+                    @if($pm->proof_image)
+                    <div class="payment-info-item">
+                        <span class="info-label">Ảnh hóa đơn (bill):</span>
+                        <span class="info-val">
+                            <a href="{{ asset('storage/' . $pm->proof_image) }}" target="_blank" style="color: #2563eb; font-weight: 600; text-decoration: underline;">
+                                Xem ảnh hóa đơn
+                            </a>
+                        </span>
+                    </div>
+                    @endif
                     <div class="payment-info-item">
                         <span class="info-label">Trạng thái:</span>
                         <span class="info-val">
@@ -176,10 +264,23 @@
                             @endif
                         </span>
                     </div>
+                    @if(!$pm->is_refunded)
+                    <div class="payment-info-item">
+                        <span class="info-label">Thao tác:</span>
+                        <span class="info-val">
+                            <a href="{{ route('admin.payments.receipt', $pm->id) }}" target="_blank" style="color: #0d9488; font-weight: 600; text-decoration: underline; display: inline-flex; align-items: center; gap: 4px;">
+                                🖨 In biên lai
+                            </a>
+                        </span>
+                    </div>
+                    @endif
                 </div>
-            @endforeach
+            @empty
+                <div style="font-size: 0.85rem; color: #64748b; padding: 15px 0; text-align: center;">
+                    Chưa có giao dịch nào được ghi nhận cho hóa đơn này.
+                </div>
+            @endforelse
         </div>
-        @endif
 
         {{-- Form ghi nhận thanh toán thủ công --}}
         @if($invoice->status !== 'paid')
@@ -194,7 +295,7 @@
                 @endif
             </p>
 
-            <form method="POST" action="{{ route('admin.invoices.mark-paid', $invoice) }}">
+            <form method="POST" action="{{ route('admin.invoices.mark-paid', $invoice) }}" enctype="multipart/form-data" onsubmit="return confirmManualPayment(event);">
                 @csrf
                 @method('PATCH')
                 <div class="payment-form-grid">
@@ -227,19 +328,83 @@
                     </div>
                 </div>
 
-                {{-- Ghi chú --}}
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <label class="form-label" for="note">Ghi chú / Mã tham chiếu <span style="font-weight:400;text-transform:none;color:#757682;">(tuỳ chọn)</span></label>
-                    <input
-                        type="text"
-                        name="note"
-                        id="note"
-                        class="form-input"
-                        placeholder="VD: Chuyển khoản số GD #123456, hoặc ghi chú khác..."
-                        value="{{ old('note') }}">
+                <div class="payment-form-grid" style="margin-top: 15px;">
+                    {{-- Người nộp tiền --}}
+                    <div class="form-group">
+                        <label class="form-label" for="payer_name">Người nộp tiền <span style="font-weight:400;text-transform:none;color:#757682;">(tuỳ chọn)</span></label>
+                        <input
+                            type="text"
+                            name="payer_name"
+                            id="payer_name"
+                            class="form-input"
+                            placeholder="Tên người thanh toán..."
+                            value="{{ old('payer_name', $invoice->apartment->owner_name ?? '') }}">
+                        @error('payer_name')
+                        <span class="form-error">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    {{-- Ghi chú --}}
+                    <div class="form-group">
+                        <label class="form-label" for="note">Ghi chú <span style="font-weight:400;text-transform:none;color:#757682;">(tuỳ chọn)</span></label>
+                        <input
+                            type="text"
+                            name="note"
+                            id="note"
+                            class="form-input"
+                            placeholder="VD: Chuyển khoản ngày 15/06..."
+                            value="{{ old('note') }}">
+                        @error('note')
+                        <span class="form-error">{{ $message }}</span>
+                        @enderror
+                    </div>
                 </div>
 
-                <div style="text-align: right;">
+                <div style="margin-top: 15px;">
+                    {{-- Ảnh hóa đơn --}}
+                    <div class="form-group">
+                        <label class="form-label" for="proof_image">Minh chứng thanh toán <span style="font-weight:400;text-transform:none;color:#757682;">(Ảnh chụp bill / Biên lai)</span></label>
+                        <div class="custom-file-upload-box" style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 12px; background: #fff; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 42px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);">
+                            <span id="file_name_label_proof_image" style="color: #64748b; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 55%; font-weight: 500;">Chưa chọn tệp nào</span>
+                            <div style="display: flex; gap: 6px; flex-shrink: 0;">
+                                <button type="button" onclick="document.getElementById('proof_image').click()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                    📁 Chọn tệp
+                                </button>
+                                <button type="button" onclick="startCamera('proof_image')" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                    📸 Mở Camera
+                                </button>
+                            </div>
+                        </div>
+                        <input
+                            type="file"
+                            name="proof_image"
+                            id="proof_image"
+                            class="form-input"
+                            accept="image/*"
+                            capture="environment"
+                            style="display: none;"
+                            onchange="updateFileNameLabel(this, 'proof_image')">
+                        @error('proof_image')
+                        <span class="form-error">{{ $message }}</span>
+                        @enderror
+
+                        <div class="camera-wrapper" style="margin-top: 10px;">
+                            <div id="camera_container_proof_image" style="display:none; margin-top:10px; position:relative; background:#000; border-radius:8px; overflow:hidden;">
+                                <video id="video_proof_image" autoplay playsinline style="width:100%; max-height:250px; object-fit:cover; display:block;"></video>
+                                <div style="position:absolute; bottom:10px; left:50%; transform:translateX(-50%); display:flex; gap:8px; z-index:10;">
+                                    <button type="button" onclick="captureSnapshot('proof_image')" style="background:#10b981; color:#fff; border:none; padding:6px 14px; border-radius:20px; font-weight:600; cursor:pointer; font-size:0.8rem;">📸 Chụp</button>
+                                    <button type="button" onclick="stopCamera('proof_image')" style="background:#ef4444; color:#fff; border:none; padding:6px 14px; border-radius:20px; font-weight:600; cursor:pointer; font-size:0.8rem;">✕ Đóng</button>
+                                </div>
+                            </div>
+                            <div id="preview_container_proof_image" style="display:none; margin-top:10px; position:relative; max-width: 150px;">
+                                <img id="img_preview_proof_image" src="" style="width:100%; border-radius:6px; border:1px solid #cbd5e1; display:block;">
+                                <button type="button" onclick="removeCapturedPhoto('proof_image')" style="position:absolute; top:-5px; right:-5px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; cursor:pointer; padding:0;">×</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="text-align: right; margin-top: 15px;">
                     <button type="submit" class="btn-pay-now">
                         ✔ Xác nhận Thanh toán
                     </button>
@@ -579,16 +744,22 @@
         }
         /* Tên dịch vụ: rộng nhất */
         .items-table th:nth-child(1),
-        .items-table td:nth-child(1) { width: 42% !important; }
+        .items-table td:nth-child(1) { width: 35% !important; }
         /* Loại phí */
         .items-table th:nth-child(2),
-        .items-table td:nth-child(2) { width: 20% !important; }
+        .items-table td:nth-child(2) { width: 15% !important; }
         /* Số lượng */
         .items-table th:nth-child(3),
-        .items-table td:nth-child(3) { width: 18% !important; text-align: right !important; }
+        .items-table td:nth-child(3) { width: 15% !important; text-align: right !important; }
         /* Thành tiền */
         .items-table th:nth-child(4),
-        .items-table td:nth-child(4) { width: 20% !important; text-align: right !important; }
+        .items-table td:nth-child(4) { width: 15% !important; text-align: right !important; }
+        /* Trạng thái */
+        .items-table th:nth-child(5),
+        .items-table td:nth-child(5) { width: 20% !important; }
+        /* Thao tác (ẩn khi in) */
+        .items-table th:nth-child(6),
+        .items-table td:nth-child(6) { display: none !important; }
 
         /* Badge không cần border-radius khi in */
         .pay-badge, .badge {
@@ -606,6 +777,279 @@
         .detail-card { page-break-inside: avoid; }
         .detail-card__items { page-break-inside: auto; }
     }
+
+    /* Modal Overlay and Content Styles */
+    .modal-overlay {
+        display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.45);
+        z-index: 1000; align-items: center; justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-content {
+        background: #fff; border-radius: 12px; width: 100%; max-width: 440px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.15); overflow: hidden;
+        text-align: left;
+    }
+    .modal-header {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 16px 20px; border-bottom: 1px solid #e2e8f0;
+    }
+    .modal-title { font-size: 1rem; font-weight: 700; color: #0f172a; margin: 0; }
+    .modal-close {
+        background: none; border: none; font-size: 1.4rem; cursor: pointer;
+        color: #94a3b8; line-height: 1; padding: 0 4px;
+    }
+    .modal-close:hover { color: #475569; }
+    .modal-body { padding: 20px; }
+    .modal-footer {
+        display: flex; justify-content: flex-end; gap: 10px;
+        padding: 14px 20px; border-top: 1px solid #e2e8f0; background: #f8fafc;
+    }
+    .form-field { margin-bottom: 15px; }
+    .form-field label { display: block; font-size: 0.8rem; font-weight: 600; color: #475569; margin-bottom: 6px; text-transform: uppercase; }
 </style>
+
+{{-- Detail Payment Modal --}}
+<div class="modal-overlay" id="detailPaymentModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Thu tiền dịch vụ lẻ</h3>
+            <button class="modal-close" onclick="closeDetailPaymentModal()">&times;</button>
+        </div>
+        <form id="detailPaymentForm" method="POST" action="" enctype="multipart/form-data" onsubmit="return confirmDetailPayment(event);">
+            @csrf
+            <div class="modal-body">
+                <p id="modalDetailInfo" style="font-size: 13px; color: #64748b; margin-bottom: 16px; font-weight: 500;"></p>
+
+                <div class="form-field">
+                    <label for="modal_detail_payment_method">Phương thức thanh toán</label>
+                    <select name="payment_method" id="modal_detail_payment_method" class="form-input" style="width:100%">
+                        <option value="transfer">🏦 Chuyển khoản ngân hàng</option>
+                        <option value="cash">💵 Tiền mặt</option>
+                        <option value="other">💳 Khác</option>
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <label for="modal_detail_payer_name">Người nộp tiền (tùy chọn)</label>
+                    <input type="text" name="payer_name" id="modal_detail_payer_name" class="form-input" style="width:100%" placeholder="Tên người thanh toán..." value="{{ $invoice->apartment->owner_name ?? '' }}">
+                </div>
+
+                <div class="form-field">
+                    <label for="modal_detail_proof_image">Minh chứng thanh toán (Ảnh chụp bill / Biên lai)</label>
+                    <div class="custom-file-upload-box" style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 12px; background: #fff; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 42px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);">
+                        <span id="file_name_label_modal_detail_proof_image" style="color: #64748b; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 55%; font-weight: 500;">Chưa chọn tệp nào</span>
+                        <div style="display: flex; gap: 6px; flex-shrink: 0;">
+                            <button type="button" onclick="document.getElementById('modal_detail_proof_image').click()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                📁 Chọn tệp
+                            </button>
+                            <button type="button" onclick="startCamera('modal_detail_proof_image')" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                📸 Mở Camera
+                            </button>
+                        </div>
+                    </div>
+                    <input type="file" name="proof_image" id="modal_detail_proof_image" class="form-input" style="display: none;" accept="image/*" capture="environment" onchange="updateFileNameLabel(this, 'modal_detail_proof_image')">
+
+                    <div class="camera-wrapper" style="margin-top: 10px;">
+                        <div id="camera_container_modal_detail_proof_image" style="display:none; margin-top:10px; position:relative; background:#000; border-radius:8px; overflow:hidden;">
+                            <video id="video_modal_detail_proof_image" autoplay playsinline style="width:100%; max-height:250px; object-fit:cover; display:block;"></video>
+                            <div style="position:absolute; bottom:10px; left:50%; transform:translateX(-50%); display:flex; gap:8px; z-index:10;">
+                                <button type="button" onclick="captureSnapshot('modal_detail_proof_image')" style="background:#10b981; color:#fff; border:none; padding:6px 14px; border-radius:20px; font-weight:600; cursor:pointer; font-size:0.8rem;">📸 Chụp</button>
+                                <button type="button" onclick="stopCamera('modal_detail_proof_image')" style="background:#ef4444; color:#fff; border:none; padding:6px 14px; border-radius:20px; font-weight:600; cursor:pointer; font-size:0.8rem;">✕ Đóng</button>
+                            </div>
+                        </div>
+                        <div id="preview_container_modal_detail_proof_image" style="display:none; margin-top:10px; position:relative; max-width: 150px;">
+                            <img id="img_preview_modal_detail_proof_image" src="" style="width:100%; border-radius:6px; border:1px solid #cbd5e1; display:block;">
+                            <button type="button" onclick="removeCapturedPhoto('modal_detail_proof_image')" style="position:absolute; top:-5px; right:-5px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; cursor:pointer; padding:0;">×</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <label for="modal_detail_note">Ghi chú (tùy chọn)</label>
+                    <input type="text" name="note" id="modal_detail_note" class="form-input" style="width:100%" placeholder="Nhập ghi chú...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="inv-admin__btn" onclick="closeDetailPaymentModal()" style="background:#f1f5f9;color:#475569;border:1px solid #e2e8f0; padding: 7px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Hủy</button>
+                <button type="submit" class="btn-pay-now" style="background:#10b981; border: none; padding: 7px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; color:#fff; cursor: pointer;">Xác nhận</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Global variable to keep track of camera streams
+    const activeStreams = {};
+
+    function updateFileNameLabel(input, inputId) {
+        const label = document.getElementById('file_name_label_' + inputId);
+        if (input.files && input.files.length > 0) {
+            label.textContent = input.files[0].name;
+            label.style.color = '#0f172a';
+        } else {
+            label.textContent = 'Chưa chọn tệp nào';
+            label.style.color = '#64748b';
+        }
+    }
+
+    async function startCamera(inputId) {
+        // Stop any active stream for this input first
+        stopCamera(inputId);
+
+        const video = document.getElementById('video_' + inputId);
+        const container = document.getElementById('camera_container_' + inputId);
+        
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: 'environment' } 
+            });
+            activeStreams[inputId] = stream;
+            video.srcObject = stream;
+            container.style.display = 'block';
+        } catch (err) {
+            alert('Không thể truy cập camera. Vui lòng cấp quyền camera cho trang web hoặc chọn ảnh từ thiết bị.');
+            console.error('Error accessing camera: ', err);
+        }
+    }
+
+    function stopCamera(inputId) {
+        if (activeStreams[inputId]) {
+            activeStreams[inputId].getTracks().forEach(track => track.stop());
+            delete activeStreams[inputId];
+        }
+        const container = document.getElementById('camera_container_' + inputId);
+        if (container) {
+            container.style.display = 'none';
+        }
+        const video = document.getElementById('video_' + inputId);
+        if (video) {
+            video.srcObject = null;
+        }
+    }
+
+    function captureSnapshot(inputId) {
+        const video = document.getElementById('video_' + inputId);
+        if (!video || !video.srcObject) return;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob((blob) => {
+            if (!blob) return;
+
+            // Create File from Blob and put it in input
+            const file = new File([blob], "captured_bill.png", { type: "image/png" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            document.getElementById(inputId).files = dataTransfer.files;
+
+            // Show preview image
+            const previewImg = document.getElementById('img_preview_' + inputId);
+            const previewContainer = document.getElementById('preview_container_' + inputId);
+            previewImg.src = URL.createObjectURL(blob);
+            previewContainer.style.display = 'block';
+
+            // Update custom file label
+            const label = document.getElementById('file_name_label_' + inputId);
+            if (label) {
+                label.textContent = 'captured_bill.png (Chụp từ Camera)';
+                label.style.color = '#0f172a';
+            }
+
+            // Stop camera
+            stopCamera(inputId);
+        }, 'image/png');
+    }
+
+    function removeCapturedPhoto(inputId) {
+        document.getElementById(inputId).value = '';
+        const label = document.getElementById('file_name_label_' + inputId);
+        if (label) {
+            label.textContent = 'Chưa chọn tệp nào';
+            label.style.color = '#64748b';
+        }
+        const previewContainer = document.getElementById('preview_container_' + inputId);
+        if (previewContainer) {
+            previewContainer.style.display = 'none';
+        }
+        const previewImg = document.getElementById('img_preview_' + inputId);
+        if (previewImg) {
+            previewImg.src = '';
+        }
+    }
+
+    let currentDetailAmount = 0;
+    let currentDetailServiceName = '';
+
+    const invoiceApartment = "Căn {{ $invoice->apartment->apartment_number ?? '—' }} ({{ optional(optional($invoice->apartment)->floor)->block->name ?? '' }})";
+    const invoiceBillingPeriod = "Tháng {{ str_pad($invoice->billing_month->month, 2, '0', STR_PAD_LEFT) }}/{{ $invoice->billing_year }}";
+
+    function confirmManualPayment(event) {
+        const amountVal = document.getElementById('amount').value;
+        const methodSelect = document.getElementById('payment_method');
+        const methodVal = methodSelect.options[methodSelect.selectedIndex].text;
+        const payerVal = document.getElementById('payer_name').value || '{{ $invoice->apartment->owner_name ?? 'Cư dân' }}';
+        
+        const formattedAmount = Number(amountVal).toLocaleString('vi-VN') + ' đ';
+
+        const msg = `Vui lòng xác nhận thông tin thanh toán:\n\n` +
+                    `• Căn hộ: ${invoiceApartment}\n` +
+                    `• Kỳ hóa đơn: ${invoiceBillingPeriod}\n` +
+                    `• Số tiền thu: ${formattedAmount}\n` +
+                    `• Phương thức: ${methodVal}\n` +
+                    `• Người nộp tiền: ${payerVal}\n\n` +
+                    `Bạn có chắc chắn muốn ghi nhận thanh toán này?`;
+                    
+        return confirm(msg);
+    }
+
+    function confirmDetailPayment(event) {
+        const methodSelect = document.getElementById('modal_detail_payment_method');
+        const methodVal = methodSelect.options[methodSelect.selectedIndex].text;
+        const payerVal = document.getElementById('modal_detail_payer_name').value || '{{ $invoice->apartment->owner_name ?? 'Cư dân' }}';
+        
+        const formattedAmount = Number(currentDetailAmount).toLocaleString('vi-VN') + ' đ';
+
+        const msg = `Vui lòng xác nhận thông tin thanh toán dịch vụ lẻ:\n\n` +
+                    `• Căn hộ: ${invoiceApartment}\n` +
+                    `• Kỳ hóa đơn: ${invoiceBillingPeriod}\n` +
+                    `• Dịch vụ: ${currentDetailServiceName}\n` +
+                    `• Số tiền thu: ${formattedAmount}\n` +
+                    `• Phương thức: ${methodVal}\n` +
+                    `• Người nộp tiền: ${payerVal}\n\n` +
+                    `Bạn có chắc chắn muốn ghi nhận thanh toán lẻ này?`;
+                    
+        return confirm(msg);
+    }
+
+    function openDetailPaymentModal(detailId, serviceName, amount) {
+        const modal = document.getElementById('detailPaymentModal');
+        const form = document.getElementById('detailPaymentForm');
+        const info = document.getElementById('modalDetailInfo');
+
+        currentDetailAmount = amount;
+        currentDetailServiceName = serviceName;
+
+        form.action = `/admin/invoices/details/${detailId}/mark-paid`;
+        info.innerHTML = `Dịch vụ: <strong>${serviceName}</strong><br>Số tiền cần thu: <span style="color:#2563eb;font-weight:700">${Number(amount).toLocaleString('vi-VN')} đ</span>`;
+
+        modal.classList.add('active');
+    }
+
+    function closeDetailPaymentModal() {
+        stopCamera('modal_detail_proof_image');
+        document.getElementById('detailPaymentModal').classList.remove('active');
+    }
+
+    // Close detail modal on click overlay
+    document.getElementById('detailPaymentModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeDetailPaymentModal();
+        }
+    });
+</script>
 @endsection
 

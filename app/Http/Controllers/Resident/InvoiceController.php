@@ -74,6 +74,8 @@ class InvoiceController extends Controller
             ->whereIn('apartment_id', $apartmentIds)
             ->findOrFail($id);
 
+        $invoice->recalculateDetailsStatus();
+
         return view('resident.invoices.detail', compact('invoice'));
     }
 
@@ -304,6 +306,7 @@ class InvoiceController extends Controller
                     'vnp_txn_ref'      => $txnNo,
                     'status'           => 'success',
                     'paid_at'          => $paidAt,
+                    'payer_name'       => auth()->user()->name ?? ($invoice->apartment->owner_name ?? 'Cư dân'),
                 ]);
             }
         });
@@ -339,5 +342,34 @@ class InvoiceController extends Controller
             // Tránh làm gián đoạn luồng thanh toán nếu xảy ra lỗi gửi thông báo
             logger()->error('Lỗi khi gửi thông báo thanh toán cho admin: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * In biên lai thu tiền cho cư dân.
+     */
+    public function printReceipt(\App\Models\Payment $payment)
+    {
+        $payment->load(['invoice.apartment.floor.block', 'recorder']);
+        
+        $isAuthorized = false;
+        
+        if (auth()->user()->role === 'admin' || auth()->user()->role === 'staff' || auth()->user()->role === 'manager') {
+            $isAuthorized = true;
+        } else {
+            $apartmentIds = \Illuminate\Support\Facades\DB::table('residents')
+                ->where('user_id', auth()->id())
+                ->pluck('apartment_id')
+                ->toArray();
+                
+            if (in_array($payment->invoice->apartment_id, $apartmentIds)) {
+                $isAuthorized = true;
+            }
+        }
+        
+        if (!$isAuthorized) {
+            abort(403, 'Bạn không có quyền truy cập biên lai này.');
+        }
+        
+        return view('admin.invoices.receipt', compact('payment'));
     }
 }

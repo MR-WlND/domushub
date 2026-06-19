@@ -752,6 +752,16 @@
         gap: 12px;
     }
 
+    .payment-transaction {
+        border: 1px solid var(--color-outline-soft, #c5c5d3);
+        border-radius: var(--radius-md, 12px);
+        padding: 20px;
+        background-color: var(--color-background, #f8f9ff);
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
     .payment-info-item {
         display: flex;
         align-items: center;
