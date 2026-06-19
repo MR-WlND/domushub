@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Block;
 use App\Models\Floor;
 use App\Models\Apartment;
+use App\Models\Ticket;
 
 class HomeController extends Controller
 {
@@ -45,9 +46,17 @@ class HomeController extends Controller
     }
 
     /**
-     * Màn hình thống kê báo cáo (có bộ lọc theo năm).
+     * Màn hình thống kê báo cáo (Chuyển hướng đến trang mặc định).
      */
-    public function statistics(Request $request): View
+    public function statistics(Request $request)
+    {
+        return redirect()->route('admin.statistics.finance', $request->query());
+    }
+
+    /**
+     * Màn hình thống kê Tài chính & Tiêu thụ.
+     */
+    public function statisticsFinance(Request $request): View
     {
         // Lấy danh sách các năm có dữ liệu để hiện trong bộ lọc
         $availableYears = DB::table('bills')
@@ -64,9 +73,7 @@ class HomeController extends Controller
             $selectedYear = $availableYears[0];
         }
 
-        // ----------------------------------------------------------------
         // 1. KPI TỔNG QUAN (Toàn thời gian)
-        // ----------------------------------------------------------------
         $totalBilled = DB::table('bills')
             ->whereNull('deleted_at')
             ->where('status', '!=', 'cancelled')
@@ -79,14 +86,13 @@ class HomeController extends Controller
 
         $totalUnpaid = DB::table('bills')
             ->whereNull('deleted_at')
-            ->whereIn('status', ['unpaid', 'overdue'])
-            ->sum('total_amount');
+            ->where('status', '!=', 'cancelled')
+            ->selectRaw('SUM(total_amount - paid_amount) as unpaid')
+            ->value('unpaid') ?? 0;
 
         $collectionRate = $totalBilled > 0 ? ($totalCollected / $totalBilled) * 100 : 0;
 
-        // ----------------------------------------------------------------
         // 2. DOANH THU THEO THÁNG (lọc theo năm đã chọn)
-        // ----------------------------------------------------------------
         $monthlyRevenue = DB::table('bills')
             ->select(
                 'billing_year',
@@ -101,23 +107,7 @@ class HomeController extends Controller
             ->orderBy('billing_month')
             ->get();
 
-        // Dữ liệu cho biểu đồ Line/Bar Chart (12 tháng, điền 0 nếu không có dữ liệu)
-        $monthlyBilledData    = array_fill(1, 12, 0);
-        $monthlyCollectedData = array_fill(1, 12, 0);
-
-        foreach ($monthlyRevenue as $row) {
-            $monthlyBilledData[$row->billing_month]    = (float) $row->total_billed;
-            $monthlyCollectedData[$row->billing_month] = (float) $row->total_collected;
-        }
-
-        // Format lại thành mảng đánh số từ 0 cho JSON
-        $monthlyLabels        = ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12'];
-        $monthlyBilledData    = array_values($monthlyBilledData);
-        $monthlyCollectedData = array_values($monthlyCollectedData);
-
-        // ----------------------------------------------------------------
         // 3. KPI RIÊNG CHO NĂM ĐƯỢC CHỌN
-        // ----------------------------------------------------------------
         $yearBilled = DB::table('bills')
             ->whereNull('deleted_at')
             ->where('status', '!=', 'cancelled')
@@ -133,47 +123,182 @@ class HomeController extends Controller
 
         $yearUnpaid = DB::table('bills')
             ->whereNull('deleted_at')
-            ->whereIn('status', ['unpaid', 'overdue'])
+            ->where('status', '!=', 'cancelled')
             ->where('billing_year', $selectedYear)
-            ->sum('total_amount');
+            ->selectRaw('SUM(total_amount - paid_amount) as unpaid')
+            ->value('unpaid') ?? 0;
 
         $yearCollectionRate = $yearBilled > 0 ? ($yearCollected / $yearBilled) * 100 : 0;
 
-        // ----------------------------------------------------------------
-        // 4. CƠ CẤU DỊCH VỤ (theo năm đã chọn)
-        // ----------------------------------------------------------------
-        $serviceDistribution = DB::table('bill_details')
+        // 4. Cấu trúc doanh thu theo tháng và loại dịch vụ (biểu đồ stacked bar)
+        // Chỉ tính các hóa đơn đã thanh toán (paid) theo năm đã chọn
+        $monthlyServiceRevenue = DB::table('bill_details')
             ->join('bills', 'bill_details.bill_id', '=', 'bills.id')
             ->join('service_prices', 'bill_details.service_price_id', '=', 'service_prices.id')
             ->select(
+                'bills.billing_month',
                 'service_prices.type',
-                'service_prices.name',
                 DB::raw('SUM(bill_details.amount) as total_amount')
             )
             ->whereNull('bills.deleted_at')
-            ->where('bills.status', '!=', 'cancelled')
+            ->where('bills.status', 'paid')
             ->where('bills.billing_year', $selectedYear)
-            ->groupBy('service_prices.type', 'service_prices.name')
-            ->orderByDesc('total_amount')
+            ->groupBy('bills.billing_month', 'service_prices.type')
             ->get();
 
-        $serviceLabels = [];
-        $serviceData   = [];
-        foreach ($serviceDistribution as $row) {
-            $serviceLabels[] = $row->name;
-            $serviceData[]   = (float) $row->total_amount;
+        $categories = [
+            'electricity' => 'Điện',
+            'water' => 'Nước',
+            'management_fee' => 'Phí quản lý',
+            'other' => 'Khác',
+        ];
+
+        $stackedData = [];
+        foreach ($categories as $catKey => $catName) {
+            $stackedData[$catKey] = array_fill(1, 12, 0);
         }
 
-        return view('admin.statistics.index', compact(
-            // KPI toàn thời gian
+        foreach ($monthlyServiceRevenue as $row) {
+            $month = $row->billing_month;
+            $type = $row->type;
+            $amount = (float) $row->total_amount;
+
+            if (array_key_exists($type, $stackedData)) {
+                $stackedData[$type][$month] += $amount;
+            } else {
+                $stackedData['other'][$month] += $amount;
+            }
+        }
+
+        // Format lại dữ liệu dạng mảng JSON liên tục từ T1-T12
+        $monthlyStackedData = [];
+        foreach ($stackedData as $catKey => $monthValues) {
+            $monthlyStackedData[$catKey] = array_values($monthValues);
+        }
+
+        // 5. Tỷ lệ hoàn thành đóng phí của tháng hiện tại/gần nhất có dữ liệu của năm được chọn
+        $latestMonthRow = DB::table('bills')
+            ->whereNull('deleted_at')
+            ->where('status', '!=', 'cancelled')
+            ->where('billing_year', $selectedYear)
+            ->select('billing_month')
+            ->orderBy('billing_month', 'desc')
+            ->first();
+
+        $latestMonth = $latestMonthRow ? $latestMonthRow->billing_month : null;
+        $paidAmount = 0;
+        $unpaidAmount = 0;
+
+        if ($latestMonth) {
+            $monthStats = DB::table('bills')
+                ->whereNull('deleted_at')
+                ->where('billing_year', $selectedYear)
+                ->where('billing_month', $latestMonth)
+                ->select('status', DB::raw('SUM(total_amount) as total'))
+                ->groupBy('status')
+                ->get();
+
+            foreach ($monthStats as $row) {
+                if ($row->status === 'paid') {
+                    $paidAmount += (float) $row->total;
+                } elseif (in_array($row->status, ['unpaid', 'overdue'])) {
+                    $unpaidAmount += (float) $row->total;
+                }
+            }
+        }
+
+        $monthlyLabels = ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12'];
+
+        return view('admin.statistics.finance', compact(
+            'availableYears', 'selectedYear',
             'totalBilled', 'totalCollected', 'totalUnpaid', 'collectionRate',
-            // KPI theo năm
             'yearBilled', 'yearCollected', 'yearUnpaid', 'yearCollectionRate',
-            // Biểu đồ
-            'monthlyLabels', 'monthlyBilledData', 'monthlyCollectedData',
-            'serviceLabels', 'serviceData',
-            // Bảng & bộ lọc
-            'monthlyRevenue', 'availableYears', 'selectedYear'
+            'monthlyRevenue', 'monthlyLabels',
+            'monthlyStackedData', 'latestMonth', 'paidAmount', 'unpaidAmount'
+        ));
+    }
+
+    /**
+     * Màn hình thống kê Vận hành & SLA.
+     */
+    public function statisticsOperations(Request $request): View
+    {
+        // Lấy danh sách các năm có phản ánh để hiện trong bộ lọc
+        $availableYears = DB::table('tickets')
+            ->whereNull('deleted_at')
+            ->selectRaw('DISTINCT YEAR(created_at) as ticket_year')
+            ->orderBy('ticket_year', 'desc')
+            ->pluck('ticket_year')
+            ->toArray();
+
+        if (empty($availableYears)) {
+            $availableYears = [(int) date('Y')];
+        }
+
+        // Năm được chọn
+        $selectedYear = $request->get('year', date('Y'));
+        if (!in_array($selectedYear, $availableYears) && count($availableYears) > 0) {
+            $selectedYear = $availableYears[0];
+        }
+
+        // 1. Số lượng phản ánh theo status lọc theo năm
+        $ticketStats = DB::table('tickets')
+            ->whereNull('deleted_at')
+            ->whereYear('created_at', $selectedYear)
+            ->select('status', DB::raw('count(*) as count'))
+            ->groupBy('status')
+            ->pluck('count', 'status')
+            ->toArray();
+
+        $pendingCount    = $ticketStats['pending'] ?? 0;
+        $assignedCount   = $ticketStats['assigned'] ?? 0;
+        $inProgressCount = $ticketStats['in_progress'] ?? 0;
+        $completedCount  = $ticketStats['completed'] ?? 0;
+        $cancelledCount  = $ticketStats['cancelled'] ?? 0;
+        $totalTickets    = array_sum($ticketStats);
+
+        // 2. Thống kê phân bố đánh giá (1-5 sao)
+        $csatStats = DB::table('tickets')
+            ->whereNull('deleted_at')
+            ->where('status', 'completed')
+            ->whereYear('created_at', $selectedYear)
+            ->whereNotNull('rating')
+            ->select('rating', DB::raw('count(*) as count'))
+            ->groupBy('rating')
+            ->pluck('count', 'rating')
+            ->toArray();
+
+        $csatData = [
+            1 => $csatStats[1] ?? 0,
+            2 => $csatStats[2] ?? 0,
+            3 => $csatStats[3] ?? 0,
+            4 => $csatStats[4] ?? 0,
+            5 => $csatStats[5] ?? 0,
+        ];
+
+        $totalRated = array_sum($csatData);
+        $averageRating = 0;
+        if ($totalRated > 0) {
+            $sumRating = 0;
+            foreach ($csatData as $rating => $count) {
+                $sumRating += $rating * $count;
+            }
+            $averageRating = round($sumRating / $totalRated, 1);
+        }
+
+        // 3. Danh sách 5 đánh giá phản ánh gần nhất để hiển thị trực quan
+        $recentFeedbacks = Ticket::with(['sender', 'apartment'])
+            ->where('status', 'completed')
+            ->whereYear('created_at', $selectedYear)
+            ->whereNotNull('rating')
+            ->orderBy('updated_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        return view('admin.statistics.operations', compact(
+            'availableYears', 'selectedYear',
+            'totalTickets', 'pendingCount', 'assignedCount', 'inProgressCount', 'completedCount', 'cancelledCount',
+            'csatData', 'totalRated', 'averageRating', 'recentFeedbacks'
         ));
     }
 }
