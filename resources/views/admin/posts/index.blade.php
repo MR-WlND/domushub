@@ -45,6 +45,9 @@
             <a href="{{ route('admin.posts.index', ['tab' => 'comments']) }}" class="posts-page__tab {{ $activeTab === 'comments' ? 'posts-page__tab--active' : '' }}">
                 <i class="fa-regular fa-comment-dots"></i> Bình luận bị báo cáo
             </a>
+            <a href="{{ route('admin.posts.index', ['tab' => 'banned_users']) }}" class="posts-page__tab {{ $activeTab === 'banned_users' ? 'posts-page__tab--active' : '' }}">
+                <i class="fa-solid fa-user-slash"></i> Cư dân bị khóa
+            </a>
         </div>
 
         @if($activeTab === 'posts')
@@ -124,6 +127,44 @@
                                                 @endif
                                                 • {{ $post->created_at->format('H:i d/m/Y') }}
                                             </span>
+                                            
+                                            @if($post->user && $post->user->role === 'resident')
+                                                <div class="ban-controls" style="display: flex; gap: 0.5rem; margin-top: 0.4rem; flex-wrap: wrap;">
+                                                    {{-- Form khóa/mở đăng bài --}}
+                                                    <form action="{{ route('admin.users.ban-posting', $post->user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
+                                                        @csrf
+                                                        <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" style="font-size: 0.725rem; padding: 3px 6px; border-radius: 4px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; color: var(--color-text-secondary); font-weight: 600;" title="Khóa quyền đăng bài viết">
+                                                            <option value="" disabled selected>🔏 Đăng bài: {{ $post->user->isBannedPosting() ? 'Bị khóa' : 'Mở' }}</option>
+                                                            @if($post->user->isBannedPosting())
+                                                                <option value="unban">Mở khóa đăng bài</option>
+                                                            @else
+                                                                <option value="1">Khóa đăng bài 1 ngày</option>
+                                                                <option value="3">Khóa đăng bài 3 ngày</option>
+                                                                <option value="7">Khóa đăng bài 7 ngày</option>
+                                                                <option value="30">Khóa đăng bài 30 ngày</option>
+                                                                <option value="permanent">Khóa đăng bài vĩnh viễn</option>
+                                                            @endif
+                                                        </select>
+                                                    </form>
+
+                                                    {{-- Form khóa/mở bình luận --}}
+                                                    <form action="{{ route('admin.users.ban-commenting', $post->user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
+                                                        @csrf
+                                                        <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" style="font-size: 0.725rem; padding: 3px 6px; border-radius: 4px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; color: var(--color-text-secondary); font-weight: 600;" title="Khóa quyền bình luận">
+                                                            <option value="" disabled selected>💬 Bình luận: {{ $post->user->isBannedCommenting() ? 'Bị khóa' : 'Mở' }}</option>
+                                                            @if($post->user->isBannedCommenting())
+                                                                <option value="unban">Mở khóa bình luận</option>
+                                                            @else
+                                                                <option value="1">Khóa bình luận 1 ngày</option>
+                                                                <option value="3">Khóa bình luận 3 ngày</option>
+                                                                <option value="7">Khóa bình luận 7 ngày</option>
+                                                                <option value="30">Khóa bình luận 30 ngày</option>
+                                                                <option value="permanent">Khóa bình luận vĩnh viễn</option>
+                                                            @endif
+                                                        </select>
+                                                    </form>
+                                                </div>
+                                            @endif
                                         </div>
                                     </td>
                                     <td>
@@ -135,45 +176,62 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <span class="status-pill status-pill--{{ $post->status }}">
-                                            <span class="status-dot"></span>
-                                            {{ $statusLabels[$post->status] ?? $post->status }}
-                                        </span>
+                                        @if($post->trashed())
+                                            <span class="status-pill status-pill--hidden" style="background-color: #fee2e2; color: #991b1b;">
+                                                <span class="status-dot" style="background-color: #991b1b;"></span>
+                                                Đã bị xóa
+                                            </span>
+                                        @else
+                                            <span class="status-pill status-pill--{{ $post->status }}">
+                                                <span class="status-dot"></span>
+                                                {{ $statusLabels[$post->status] ?? $post->status }}
+                                            </span>
+                                        @endif
                                     </td>
                                     <td>
                                         <div class="admin-actions">
-                                            {{-- Nút Ẩn/Hiện bài viết --}}
-                                            <form action="{{ route('admin.posts.toggle-status', $post->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn thay đổi trạng thái hiển thị của bài đăng này?')">
-                                                @csrf
-                                                @if ($post->status === 'published')
-                                                    <button type="submit" class="admin-action-btn admin-action-btn--toggle">
-                                                        <i class="fa-solid fa-eye-slash"></i> Ẩn bài viết
-                                                    </button>
-                                                @else
-                                                    <button type="submit" class="admin-action-btn admin-action-btn--toggle" style="color: #4f46e5; border-color: #c7d2fe;">
-                                                        <i class="fa-solid fa-eye"></i> Hiện bài viết
-                                                    </button>
-                                                @endif
-                                            </form>
-
-                                            {{-- Nút Bỏ qua báo cáo (chỉ hiện khi có lượt báo cáo) --}}
-                                            @if($post->reports_count > 0)
-                                                <form action="{{ route('admin.posts.dismiss-reports', $post->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn bỏ qua và gỡ bỏ toàn bộ lượt báo cáo của bài viết này?')">
+                                            @if($post->trashed())
+                                                {{-- Nút Khôi phục bài viết --}}
+                                                <form action="{{ route('admin.posts.restore', $post->id) }}" method="POST" style="display: inline;">
                                                     @csrf
-                                                    <button type="submit" class="admin-action-btn admin-action-btn--dismiss">
-                                                        <i class="fa-solid fa-shield-halved"></i> Bỏ qua báo cáo
+                                                    <button type="submit" class="admin-action-btn admin-action-btn--toggle" style="color: #4f46e5; border-color: #c7d2fe;">
+                                                        <i class="fa-solid fa-rotate-left"></i> Khôi phục bài viết
+                                                    </button>
+                                                </form>
+                                            @else
+                                                {{-- Nút Ẩn/Hiện bài viết --}}
+                                                <form action="{{ route('admin.posts.toggle-status', $post->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn thay đổi trạng thái hiển thị của bài đăng này?')">
+                                                    @csrf
+                                                    @if ($post->status === 'published')
+                                                        <button type="submit" class="admin-action-btn admin-action-btn--toggle">
+                                                            <i class="fa-solid fa-eye-slash"></i> Ẩn bài viết
+                                                        </button>
+                                                    @else
+                                                        <button type="submit" class="admin-action-btn admin-action-btn--toggle" style="color: #4f46e5; border-color: #c7d2fe;">
+                                                            <i class="fa-solid fa-eye"></i> Hiện bài viết
+                                                        </button>
+                                                    @endif
+                                                </form>
+
+                                                {{-- Nút Bỏ qua báo cáo (chỉ hiện khi có lượt báo cáo) --}}
+                                                @if($post->reports_count > 0)
+                                                    <form action="{{ route('admin.posts.dismiss-reports', $post->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn bỏ qua và gỡ bỏ toàn bộ lượt báo cáo của bài viết này?')">
+                                                        @csrf
+                                                        <button type="submit" class="admin-action-btn admin-action-btn--dismiss">
+                                                            <i class="fa-solid fa-shield-halved"></i> Bỏ qua báo cáo
+                                                        </button>
+                                                    </form>
+                                                @endif
+
+                                                {{-- Nút Xóa bài viết --}}
+                                                <form action="{{ route('admin.posts.destroy', $post->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Hành động này sẽ ẩn bài đăng khỏi phía cư dân nhưng vẫn giữ lại lịch sử báo cáo cho Admin. Bạn có chắc chắn muốn tiếp tục?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="admin-action-btn admin-action-btn--delete">
+                                                        <i class="fa-solid fa-trash-can"></i> Xóa bài viết
                                                     </button>
                                                 </form>
                                             @endif
-
-                                            {{-- Nút Xóa bài viết vĩnh viễn --}}
-                                            <form action="{{ route('admin.posts.destroy', $post->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Hành động này sẽ xóa vĩnh viễn bài đăng và tất cả các bình luận liên quan. Bạn có chắc chắn muốn tiếp tục?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="admin-action-btn admin-action-btn--delete">
-                                                    <i class="fa-solid fa-trash-can"></i> Xóa vĩnh viễn
-                                                </button>
-                                            </form>
                                         </div>
                                     </td>
                                 </tr>
@@ -196,9 +254,8 @@
                     <div>
                         {{ $posts->appends(request()->query())->links('admin.users.pagination') }}
                     </div>
-                </div>
             </div>
-        @else
+        @elseif($activeTab === 'comments')
             {{-- BỘ LỌC TÌM KIẾM BÌNH LUẬN --}}
             <form class="posts-filter" method="GET" action="{{ route('admin.posts.index') }}">
                 <input type="hidden" name="tab" value="comments">
@@ -243,7 +300,12 @@
                                 </div>
                             </div>
                             
-                            <div class="violator-content">
+                            <div class="violator-content" @if($comment->trashed()) style="background: #f8fafc; color: #64748b; text-decoration: line-through; border-left: 3px solid #cbd5e1;" @endif>
+                                @if($comment->trashed())
+                                    <span style="color: #dc2626; font-weight: 700; font-size: 0.725rem; background: #fee2e2; padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.25rem; margin-right: 0.5rem; text-decoration: none !important;">
+                                        <i class="fa-solid fa-trash-can"></i> Đã bị xóa (Vi phạm)
+                                    </span>
+                                @endif
                                 {{ $comment->content }}
                             </div>
 
@@ -282,14 +344,46 @@
                                 </button>
                             </form>
 
-                            {{-- Nút Xóa bình luận --}}
-                            <form action="{{ route('admin.comments.destroy', $comment->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa nội dung bình luận vi phạm này? (Nội dung sẽ được cập nhật thành thông báo vi phạm)')">
-                                @csrf
-                                @method('DELETE')
                                 <button type="submit" class="admin-action-btn admin-action-btn--delete" style="padding: 0.5rem 1rem;">
                                     <i class="fa-solid fa-trash-can"></i> Xóa bình luận
                                 </button>
                             </form>
+
+                            @if($comment->user && $comment->user->role === 'resident')
+                                {{-- Form khóa/mở đăng bài --}}
+                                <form action="{{ route('admin.users.ban-posting', $comment->user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
+                                    @csrf
+                                    <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" style="font-size: 0.825rem; padding: 0.5rem; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; height: 38px; color: var(--color-text-secondary); font-weight: 600;" title="Khóa quyền đăng bài viết">
+                                        <option value="" disabled selected>🔏 Đăng bài: {{ $comment->user->isBannedPosting() ? 'Bị khóa' : 'Mở' }}</option>
+                                        @if($comment->user->isBannedPosting())
+                                            <option value="unban">Mở khóa đăng bài</option>
+                                        @else
+                                            <option value="1">Khóa đăng bài 1 ngày</option>
+                                            <option value="3">Khóa đăng bài 3 ngày</option>
+                                            <option value="7">Khóa đăng bài 7 ngày</option>
+                                            <option value="30">Khóa đăng bài 30 ngày</option>
+                                            <option value="permanent">Khóa đăng bài vĩnh viễn</option>
+                                        @endif
+                                    </select>
+                                </form>
+
+                                {{-- Form khóa/mở bình luận --}}
+                                <form action="{{ route('admin.users.ban-commenting', $comment->user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
+                                    @csrf
+                                    <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" style="font-size: 0.825rem; padding: 0.5rem; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; height: 38px; color: var(--color-text-secondary); font-weight: 600;" title="Khóa quyền bình luận">
+                                        <option value="" disabled selected>💬 Bình luận: {{ $comment->user->isBannedCommenting() ? 'Bị khóa' : 'Mở' }}</option>
+                                        @if($comment->user->isBannedCommenting())
+                                            <option value="unban">Mở khóa bình luận</option>
+                                        @else
+                                            <option value="1">Khóa bình luận 1 ngày</option>
+                                            <option value="3">Khóa bình luận 3 ngày</option>
+                                            <option value="7">Khóa bình luận 7 ngày</option>
+                                            <option value="30">Khóa bình luận 30 ngày</option>
+                                            <option value="permanent">Khóa bình luận vĩnh viễn</option>
+                                        @endif
+                                    </select>
+                                </form>
+                            @endif
                         </div>
                     </div>
                 @empty
@@ -308,6 +402,208 @@
                     </div>
                 </div>
             @endif
+        @elseif($activeTab === 'banned_users')
+            {{-- BỘ LỌC TÌM KIẾM CƯ DÂN BỊ KHÓA --}}
+            <form class="posts-filter" method="GET" action="{{ route('admin.posts.index') }}">
+                <input type="hidden" name="tab" value="banned_users">
+                <label class="posts-filter__field" style="flex: 2;">
+                    <span>Tìm kiếm cư dân bị khóa</span>
+                    <input type="search" name="search" value="{{ request('search') }}" placeholder="Tên cư dân, email hoặc số điện thoại...">
+                </label>
+                <div class="posts-filter__actions" style="margin-top: auto; align-self: flex-end;">
+                    <button type="submit" class="posts-button posts-button--primary">Lọc</button>
+                    <a href="{{ route('admin.posts.index', ['tab' => 'banned_users']) }}" class="posts-button posts-button--secondary">Xóa lọc</a>
+                </div>
+            </form>
+
+            {{-- BẢNG DANH SÁCH CƯ DÂN BỊ KHÓA --}}
+            <div class="posts-table-card">
+                <div class="posts-table-wrap">
+                    <table class="posts-table">
+                        <thead>
+                            <tr>
+                                <th>Cư dân</th>
+                                <th>Khóa đăng bài</th>
+                                <th>Khóa bình luận</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($bannedUsers as $user)
+                                <tr>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                            @if($user->avatar)
+                                                <img src="/storage/{{ $user->avatar }}" alt="Avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1.5px solid #e2e8f0;">
+                                            @else
+                                                <div style="width: 40px; height: 40px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #475569; border: 1.5px solid #e2e8f0;">
+                                                    {{ mb_substr($user->name, 0, 1) }}
+                                                </div>
+                                            @endif
+                                            <div>
+                                                <div style="font-weight: 700; color: #0f172a;">{{ $user->name }}</div>
+                                                <div style="font-size: 0.775rem; color: #64748b; margin-top: 0.1rem;">
+                                                    @if($user->apartment)
+                                                        Căn: <strong>{{ $user->apartment->apartment_number }}</strong>
+                                                    @else
+                                                        Căn: <em>Chưa nhận</em>
+                                                    @endif
+                                                </div>
+                                                <div style="font-size: 0.725rem; color: #94a3b8; margin-top: 0.1rem;">
+                                                    {{ $user->email }} | SĐT: {{ $user->phone ?? 'N/A' }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if($user->isBannedPosting())
+                                            @php
+                                                $now = now();
+                                                $postingUntil = \Carbon\Carbon::parse($user->banned_posting_until);
+                                                $diffDays = $now->diffInDays($postingUntil);
+                                                
+                                                if ($diffDays > 30000) {
+                                                    $postingRemaining = 'Bị khóa vĩnh viễn';
+                                                    $postingBadgeClass = 'status-pill--hidden';
+                                                } elseif ($diffDays >= 1) {
+                                                    $postingRemaining = 'Bị khóa (Còn ' . $diffDays . ' ngày)';
+                                                    $postingBadgeClass = 'status-pill--hidden';
+                                                } else {
+                                                    $diffHours = $now->diffInHours($postingUntil);
+                                                    if ($diffHours >= 1) {
+                                                        $postingRemaining = 'Bị khóa (Còn ' . $diffHours . ' giờ)';
+                                                        $postingBadgeClass = 'status-pill--hidden';
+                                                    } else {
+                                                        $diffMins = $now->diffInMinutes($postingUntil);
+                                                        $postingRemaining = 'Bị khóa (Còn ' . ($diffMins > 0 ? $diffMins : 1) . ' phút)';
+                                                        $postingBadgeClass = 'status-pill--hidden';
+                                                    }
+                                                }
+                                            @endphp
+                                            <span class="status-pill {{ $postingBadgeClass }}">
+                                                <span class="status-dot"></span>
+                                                {{ $postingRemaining }}
+                                            </span>
+                                            <div style="font-size: 0.725rem; color: #64748b; margin-top: 0.25rem;">
+                                                Đến: {{ $postingUntil->format('H:i d/m/Y') }}
+                                            </div>
+                                        @else
+                                            <span class="status-pill status-pill--published">
+                                                <span class="status-dot"></span>
+                                                Hoạt động
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($user->isBannedCommenting())
+                                            @php
+                                                $now = now();
+                                                $commentingUntil = \Carbon\Carbon::parse($user->banned_commenting_until);
+                                                $diffDays = $now->diffInDays($commentingUntil);
+                                                
+                                                if ($diffDays > 30000) {
+                                                    $commentingRemaining = 'Bị khóa vĩnh viễn';
+                                                    $commentingBadgeClass = 'status-pill--hidden';
+                                                } elseif ($diffDays >= 1) {
+                                                    $commentingRemaining = 'Bị khóa (Còn ' . $diffDays . ' ngày)';
+                                                    $commentingBadgeClass = 'status-pill--hidden';
+                                                } else {
+                                                    $diffHours = $now->diffInHours($commentingUntil);
+                                                    if ($diffHours >= 1) {
+                                                        $commentingRemaining = 'Bị khóa (Còn ' . $diffHours . ' giờ)';
+                                                        $commentingBadgeClass = 'status-pill--hidden';
+                                                    } else {
+                                                        $diffMins = $now->diffInMinutes($commentingUntil);
+                                                        $commentingRemaining = 'Bị khóa (Còn ' . ($diffMins > 0 ? $diffMins : 1) . ' phút)';
+                                                        $commentingBadgeClass = 'status-pill--hidden';
+                                                    }
+                                                }
+                                            @endphp
+                                            <span class="status-pill {{ $commentingBadgeClass }}">
+                                                <span class="status-dot"></span>
+                                                {{ $commentingRemaining }}
+                                            </span>
+                                            <div style="font-size: 0.725rem; color: #64748b; margin-top: 0.25rem;">
+                                                Đến: {{ $commentingUntil->format('H:i d/m/Y') }}
+                                            </div>
+                                        @else
+                                            <span class="status-pill status-pill--published">
+                                                <span class="status-dot"></span>
+                                                Hoạt động
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <div class="ban-controls" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                            {{-- Form thay đổi hoặc mở khóa đăng bài --}}
+                                            <form action="{{ route('admin.users.ban-posting', $user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
+                                                @csrf
+                                                <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" style="font-size: 0.825rem; padding: 0.4rem 0.5rem; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; color: var(--color-text-secondary); font-weight: 600;" title="Quản lý quyền đăng bài">
+                                                    <option value="" disabled selected>🔏 Đăng bài: {{ $user->isBannedPosting() ? 'Bị khóa' : 'Mở' }}</option>
+                                                    @if($user->isBannedPosting())
+                                                        <option value="unban">Mở khóa đăng bài</option>
+                                                        <option value="1">Gia hạn khóa 1 ngày</option>
+                                                        <option value="3">Gia hạn khóa 3 ngày</option>
+                                                        <option value="7">Gia hạn khóa 7 ngày</option>
+                                                        <option value="30">Gia hạn khóa 30 ngày</option>
+                                                        <option value="permanent">Gia hạn khóa vĩnh viễn</option>
+                                                    @else
+                                                        <option value="1">Khóa đăng bài 1 ngày</option>
+                                                        <option value="3">Khóa đăng bài 3 ngày</option>
+                                                        <option value="7">Khóa đăng bài 7 ngày</option>
+                                                        <option value="30">Khóa đăng bài 30 ngày</option>
+                                                        <option value="permanent">Khóa đăng bài vĩnh viễn</option>
+                                                    @endif
+                                                </select>
+                                            </form>
+
+                                            {{-- Form thay đổi hoặc mở khóa bình luận --}}
+                                            <form action="{{ route('admin.users.ban-commenting', $user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
+                                                @csrf
+                                                <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" style="font-size: 0.825rem; padding: 0.4rem 0.5rem; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; color: var(--color-text-secondary); font-weight: 600;" title="Quản lý quyền bình luận">
+                                                    <option value="" disabled selected>💬 Bình luận: {{ $user->isBannedCommenting() ? 'Bị khóa' : 'Mở' }}</option>
+                                                    @if($user->isBannedCommenting())
+                                                        <option value="unban">Mở khóa bình luận</option>
+                                                        <option value="1">Gia hạn khóa 1 ngày</option>
+                                                        <option value="3">Gia hạn khóa 3 ngày</option>
+                                                        <option value="7">Gia hạn khóa 7 ngày</option>
+                                                        <option value="30">Gia hạn khóa 30 ngày</option>
+                                                        <option value="permanent">Gia hạn khóa vĩnh viễn</option>
+                                                    @else
+                                                        <option value="1">Khóa bình luận 1 ngày</option>
+                                                        <option value="3">Khóa bình luận 3 ngày</option>
+                                                        <option value="7">Khóa bình luận 7 ngày</option>
+                                                        <option value="30">Khóa bình luận 30 ngày</option>
+                                                        <option value="permanent">Khóa bình luận vĩnh viễn</option>
+                                                    @endif
+                                                </select>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4">
+                                        <div class="posts-empty">Hiện tại không có cư dân nào bị khóa quyền tương tác.</div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                {{-- PHÂN TRANG CƯ DÂN BỊ KHÓA --}}
+                @if($bannedUsers->total() > 0)
+                    <div class="posts-table-footer">
+                        <div class="posts-table-footer__stats">
+                            Hiển thị {{ $bannedUsers->count() }} trên {{ $bannedUsers->total() }} cư dân
+                        </div>
+                        <div>
+                            {{ $bannedUsers->appends(request()->query())->links('admin.users.pagination') }}
+                        </div>
+                    </div>
+                @endif
+            </div>
         @endif
     </div>
 
@@ -455,6 +751,48 @@
                         closeBtn.style.height = '36px';
                         closeBtn.innerText = 'Đóng';
                         closeBtn.onclick = closeAdminPostModal;
+
+                        if (post.user && post.user.role === 'resident' && showActions) {
+                            // Tạo form ban đăng bài
+                            const banPostingForm = document.createElement('form');
+                            banPostingForm.action = `/admin/users/${post.user.id}/ban-posting`;
+                            banPostingForm.method = 'POST';
+                            banPostingForm.style.display = 'inline-block';
+                            
+                            const isBannedPosting = data.is_banned_posting;
+                            
+                            banPostingForm.innerHTML = `
+                                <input type="hidden" name="_token" value="${document.querySelector('input[name="_token"]').value}">
+                                <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" style="font-size: 0.825rem; padding: 0 0.5rem; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; height: 36px; color: var(--color-text-secondary); font-weight: 600;" title="Khóa quyền đăng bài viết">
+                                    <option value="" disabled selected>🔏 Đăng bài: ${isBannedPosting ? 'Bị khóa' : 'Mở'}</option>
+                                    ${isBannedPosting 
+                                        ? '<option value="unban">Mở khóa đăng bài</option>' 
+                                        : '<option value="1">Khóa đăng bài 1 ngày</option><option value="3">Khóa đăng bài 3 ngày</option><option value="7">Khóa đăng bài 7 ngày</option><option value="30">Khóa đăng bài 30 ngày</option><option value="permanent">Khóa đăng bài vĩnh viễn</option>'
+                                    }
+                                </select>
+                            `;
+                            actionsContainer.appendChild(banPostingForm);
+
+                            // Tạo form ban bình luận
+                            const banCommentingForm = document.createElement('form');
+                            banCommentingForm.action = `/admin/users/${post.user.id}/ban-commenting`;
+                            banCommentingForm.method = 'POST';
+                            banCommentingForm.style.display = 'inline-block';
+                            
+                            const isBannedCommenting = data.is_banned_commenting;
+                            
+                            banCommentingForm.innerHTML = `
+                                <input type="hidden" name="_token" value="${document.querySelector('input[name="_token"]').value}">
+                                <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" style="font-size: 0.825rem; padding: 0 0.5rem; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; height: 36px; color: var(--color-text-secondary); font-weight: 600;" title="Khóa quyền bình luận">
+                                    <option value="" disabled selected>💬 Bình luận: ${isBannedCommenting ? 'Bị khóa' : 'Mở'}</option>
+                                    ${isBannedCommenting 
+                                        ? '<option value="unban">Mở khóa bình luận</option>' 
+                                        : '<option value="1">Khóa bình luận 1 ngày</option><option value="3">Khóa bình luận 3 ngày</option><option value="7">Khóa bình luận 7 ngày</option><option value="30">Khóa bình luận 30 ngày</option><option value="permanent">Khóa bình luận vĩnh viễn</option>'
+                                    }
+                                </select>
+                            `;
+                            actionsContainer.appendChild(banCommentingForm);
+                        }
                         
                         // Nút Bỏ qua báo cáo (nếu có báo cáo và được cho phép hành động)
                         if (reportsCount > 0 && showActions) {
@@ -475,45 +813,59 @@
                             actionsContainer.appendChild(dismissForm);
                         }
                         
-                        // Nút Ẩn/Hiện bài viết (chỉ nếu được cho phép hành động)
+                        // Nút Ẩn/Hiện/Khôi phục & Xóa bài viết (chỉ nếu được cho phép hành động)
                         if (showActions) {
-                            const toggleForm = document.createElement('form');
-                            toggleForm.action = `/admin/posts/${post.id}/toggle-status`;
-                            toggleForm.method = 'POST';
-                            toggleForm.style.display = 'inline';
-                            toggleForm.onsubmit = function() {
-                                return confirm('Bạn có chắc chắn muốn thay đổi trạng thái hiển thị của bài đăng này?');
-                            };
-                            
-                            const toggleBtnHtml = post.status === 'published' 
-                                ? `<button type="submit" class="admin-action-btn admin-action-btn--toggle" style="height:36px; padding: 0 1rem; border-radius:6px; margin: 0;"><i class="fa-solid fa-eye-slash"></i> Ẩn bài viết</button>`
-                                : `<button type="submit" class="admin-action-btn admin-action-btn--toggle" style="height:36px; padding: 0 1rem; border-radius:6px; color:#4f46e5; border-color:#c7d2fe; margin: 0;"><i class="fa-solid fa-eye"></i> Hiện bài viết</button>`;
+                            if (post.deleted_at !== null) {
+                                // Nút Khôi phục bài viết
+                                const restoreForm = document.createElement('form');
+                                restoreForm.action = `/admin/posts/${post.id}/restore`;
+                                restoreForm.method = 'POST';
+                                restoreForm.style.display = 'inline';
+                                restoreForm.innerHTML = `
+                                    <input type="hidden" name="_token" value="${document.querySelector('input[name="_token"]').value}">
+                                    <button type="submit" class="admin-action-btn admin-action-btn--toggle" style="height:36px; padding: 0 1rem; border-radius:6px; color:#4f46e5; border-color:#c7d2fe; margin: 0;">
+                                        <i class="fa-solid fa-rotate-left"></i> Khôi phục bài viết
+                                    </button>
+                                `;
+                                actionsContainer.appendChild(restoreForm);
+                            } else {
+                                // Nút Ẩn/Hiện bài viết
+                                const toggleForm = document.createElement('form');
+                                toggleForm.action = `/admin/posts/${post.id}/toggle-status`;
+                                toggleForm.method = 'POST';
+                                toggleForm.style.display = 'inline';
+                                toggleForm.onsubmit = function() {
+                                    return confirm('Bạn có chắc chắn muốn thay đổi trạng thái hiển thị của bài đăng này?');
+                                };
                                 
-                            toggleForm.innerHTML = `
-                                <input type="hidden" name="_token" value="${document.querySelector('input[name="_token"]').value}">
-                                ${toggleBtnHtml}
-                            `;
-                            actionsContainer.appendChild(toggleForm);
-                        }
-                        
-                        // Nút Xóa vĩnh viễn (chỉ nếu được cho phép hành động)
-                        if (showActions) {
-                            const deleteForm = document.createElement('form');
-                            deleteForm.action = `/admin/posts/${post.id}`;
-                            deleteForm.method = 'POST';
-                            deleteForm.style.display = 'inline';
-                            deleteForm.onsubmit = function() {
-                                return confirm('Hành động này sẽ xóa vĩnh viễn bài đăng và tất cả các ảnh/bình luận liên quan. Bạn có chắc chắn muốn tiếp tục?');
-                            };
-                            
-                            deleteForm.innerHTML = `
-                                <input type="hidden" name="_token" value="${document.querySelector('input[name="_token"]').value}">
-                                <input type="hidden" name="_method" value="DELETE">
-                                <button type="submit" class="admin-action-btn admin-action-btn--delete" style="height:36px; padding: 0 1rem; border-radius:6px; margin: 0;">
-                                    <i class="fa-solid fa-trash-can"></i> Xóa vĩnh viễn
-                                </button>
-                            `;
-                            actionsContainer.appendChild(deleteForm);
+                                const toggleBtnHtml = post.status === 'published' 
+                                    ? `<button type="submit" class="admin-action-btn admin-action-btn--toggle" style="height:36px; padding: 0 1rem; border-radius:6px; margin: 0;"><i class="fa-solid fa-eye-slash"></i> Ẩn bài viết</button>`
+                                    : `<button type="submit" class="admin-action-btn admin-action-btn--toggle" style="height:36px; padding: 0 1rem; border-radius:6px; color:#4f46e5; border-color:#c7d2fe; margin: 0;"><i class="fa-solid fa-eye"></i> Hiện bài viết</button>`;
+                                    
+                                toggleForm.innerHTML = `
+                                    <input type="hidden" name="_token" value="${document.querySelector('input[name="_token"]').value}">
+                                    ${toggleBtnHtml}
+                                `;
+                                actionsContainer.appendChild(toggleForm);
+
+                                // Nút Xóa bài viết (soft delete)
+                                const deleteForm = document.createElement('form');
+                                deleteForm.action = `/admin/posts/${post.id}`;
+                                deleteForm.method = 'POST';
+                                deleteForm.style.display = 'inline';
+                                deleteForm.onsubmit = function() {
+                                    return confirm('Hành động này sẽ ẩn bài đăng khỏi phía cư dân nhưng vẫn giữ lại lịch sử báo cáo cho Admin. Bạn có chắc chắn muốn tiếp tục?');
+                                };
+                                
+                                deleteForm.innerHTML = `
+                                    <input type="hidden" name="_token" value="${document.querySelector('input[name="_token"]').value}">
+                                    <input type="hidden" name="_method" value="DELETE">
+                                    <button type="submit" class="admin-action-btn admin-action-btn--delete" style="height:36px; padding: 0 1rem; border-radius:6px; margin: 0;">
+                                        <i class="fa-solid fa-trash-can"></i> Xóa bài viết
+                                    </button>
+                                `;
+                                actionsContainer.appendChild(deleteForm);
+                            }
                         }
                         actionsContainer.appendChild(closeBtn);
                     }

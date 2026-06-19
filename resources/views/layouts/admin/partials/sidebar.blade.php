@@ -85,11 +85,18 @@
         @if(in_array($role, ['admin', 'staff', 'technician']))
         <div class="nav-section">
             <span class="nav-section__label">ĐIỆN NƯỚC & HOÁ ĐƠN</span>
-            <a href="{{ route('admin.utility-readings.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.utility-readings.*') ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ route('admin.utility-readings.index') }}" class="dashboard-nav__item {{ (request()->routeIs('admin.utility-readings.*') && !request()->routeIs('admin.utility-readings.logs')) ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"></path>
                 </svg>
                 <span>Chốt số điện nước</span>
+            </a>
+            <a href="{{ route('admin.utility-readings.logs') }}" class="dashboard-nav__item {{ request()->routeIs('admin.utility-readings.logs') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9"></path>
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+                <span>Lịch sử ghi số</span>
             </a>
             @if($role === 'admin')
             <a href="{{ route('admin.service-prices.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.service-prices.*') ? 'dashboard-nav__item--active' : '' }}">

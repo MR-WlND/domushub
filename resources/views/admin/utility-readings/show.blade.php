@@ -135,7 +135,7 @@
             <strong>Lý do từ chối:</strong> <em>{{ $reading->reject_reason }}</em>
         </div>
         <div style="font-size: 11px; margin-top: 6px; color: #b91c1c; opacity: 0.9;">
-            Người từ chối: <strong>{{ $reading->rejecter->name ?? 'Kế toán viên' }}</strong>
+            Người từ chối: <strong>{{ $reading->rejecter->name ?? 'Kế toán viên' }}</strong> | Ngày từ chối: <strong>{{ $reading->updated_at->format('d/m/Y H:i') }}</strong>
         </div>
     </div>
     @endif

@@ -63,6 +63,16 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
+        // Kiểm tra xem cư dân có bị khóa quyền đăng bài hay không
+        if (Auth::user()->isBannedPosting()) {
+            $bannedTime = \Carbon\Carbon::parse(Auth::user()->banned_posting_until)->format('H:i d/m/Y');
+            $msg = "Tài khoản của bạn đang bị khóa quyền đăng bài viết đến {$bannedTime} do vi phạm nội quy.";
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $msg], 403);
+            }
+            return redirect()->back()->withErrors(['content' => $msg])->withInput();
+        }
+
         // 1. Xử lý định dạng tiền tệ trước khi validate
         if ($request->filled('price')) {
             // Loại bỏ dấu phân cách hàng nghìn (chấm/phẩy) và khoảng trắng để lấy số thuần
@@ -194,6 +204,16 @@ class PostController extends Controller
      */
     public function storeComment(Request $request, $postId)
     {
+        // Kiểm tra xem cư dân có bị khóa quyền bình luận hay không
+        if (Auth::user()->isBannedCommenting()) {
+            $bannedTime = \Carbon\Carbon::parse(Auth::user()->banned_commenting_until)->format('H:i d/m/Y');
+            $msg = "Tài khoản của bạn đang bị khóa quyền bình luận đến {$bannedTime} do vi phạm nội quy.";
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $msg], 403);
+            }
+            return redirect()->back()->with('error', $msg);
+        }
+
         $request->validate([
             'content' => 'required|string',
             'parent_id' => 'nullable|exists:comments,id',
@@ -465,6 +485,16 @@ class PostController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // Kiểm tra xem cư dân có bị khóa quyền đăng bài hay không
+        if (Auth::user()->isBannedPosting()) {
+            $bannedTime = \Carbon\Carbon::parse(Auth::user()->banned_posting_until)->format('H:i d/m/Y');
+            $msg = "Tài khoản của bạn đang bị khóa quyền sửa/đăng bài viết đến {$bannedTime} do vi phạm nội quy.";
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $msg], 403);
+            }
+            return redirect()->back()->with('error', $msg);
+        }
+
         if ($request->filled('price')) {
             $cleanPrice = preg_replace('/[^0-9]/', '', $request->price);
             $request->merge(['price' => $cleanPrice]);
@@ -506,6 +536,16 @@ class PostController extends Controller
      */
     public function updateComment(Request $request, $id)
     {
+        // Kiểm tra xem cư dân có bị khóa quyền bình luận hay không
+        if (Auth::user()->isBannedCommenting()) {
+            $bannedTime = \Carbon\Carbon::parse(Auth::user()->banned_commenting_until)->format('H:i d/m/Y');
+            $msg = "Tài khoản của bạn đang bị khóa quyền chỉnh sửa bình luận đến {$bannedTime} do vi phạm nội quy.";
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $msg], 403);
+            }
+            return redirect()->back()->with('error', $msg);
+        }
+
         $request->validate([
             'content' => 'required|string',
         ]);
