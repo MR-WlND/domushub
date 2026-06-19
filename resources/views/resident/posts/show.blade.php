@@ -7,8 +7,25 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tributejs/5.1.3/tribute.css">
 @endpush
 
+@push('scripts')
+    <script src="https://cdn.ckeditor.com/ckeditor5/36.0.1/classic/ckeditor.js"></script>
+@endpush
+
 @section('content')
 @php
+    if (!function_exists('cleanPostContentBlade')) {
+        function cleanPostContentBlade($content) {
+            $allowed = '<p><a><strong><em><u><ul><ol><li><br><blockquote><sub><sup>';
+            $stripped = strip_tags($content, $allowed);
+            // Remove inline event handlers (onxxxx=...)
+            $stripped = preg_replace('/on\w+\s*=\s*(["\'])(.*?)\1/is', '', $stripped);
+            $stripped = preg_replace('/on\w+\s*=\s*([^\s>]+)/is', '', $stripped);
+            // Remove javascript: links
+            $stripped = preg_replace('/href\s*=\s*(["\'])\s*javascript:(.*?)\1/is', '', $stripped);
+            return $stripped;
+        }
+    }
+
     if (!function_exists('formatCommentContentBlade')) {
         function formatCommentContentBlade($content) {
             $escaped = e($content);
@@ -47,7 +64,7 @@
                     <h4 class="pc-card__name">{{ $post->user->name }}</h4>
                     <span class="pc-card__apartment">
                         @if($post->user->apartment)
-                            Căn hộ: {{ $post->user->apartment->apartment_number }}
+                            Cư dân
                         @else
                             Ban Quản Trị
                         @endif
@@ -69,7 +86,7 @@
         </div>
 
         {{-- Nội dung chữ --}}
-        <div class="pc-detail__content">{!! nl2br(e($post->content)) !!}</div>
+        <div class="pc-detail__content post-text-content" id="post-content-{{ $post->id }}">{!! cleanPostContentBlade($post->content) !!}</div>
 
         {{-- Ảnh đính kèm (Lưới ảnh CSS động kiểu Facebook) --}}
         @if($post->images->isNotEmpty())
@@ -241,7 +258,7 @@
                                         
                                         <span class="pc-comment__apartment">
                                             @if($comment->user->apartment)
-                                                Căn hộ: {{ $comment->user->apartment->apartment_number }}
+                                                Cư dân
                                             @else
                                                 Ban Quản Trị
                                             @endif
@@ -385,7 +402,7 @@
                                                 <span class="pc-comment__author-name">{{ $reply->user->name }}</span>
                                                 <span class="pc-comment__apartment">
                                                     @if($reply->user->apartment)
-                                                        Căn hộ: {{ $reply->user->apartment->apartment_number }}
+                                                        Cư dân
                                                     @else
                                                         Ban Quản Trị
                                                     @endif
@@ -629,7 +646,7 @@
                     </div>
                     <div>
                         <label class="rep-modal__label">Nội dung bài viết</label>
-                        <textarea name="content" id="edit-post-content" class="pc-composer__body-input" rows="5" required placeholder="Bạn đang muốn chia sẻ điều gì..."></textarea>
+                        <textarea name="content" id="edit-post-content" class="pc-composer__body-input" rows="5" placeholder="Bạn đang muốn chia sẻ điều gì..."></textarea>
                     </div>
                     
                     {{-- Ô nhập giá thanh lý --}}
@@ -686,6 +703,16 @@
 <div id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 10001; display: flex; flex-direction: column; gap: 0.5rem; max-width: 350px;"></div>
 
 <script>
+    let editEditorInstance;
+
+    function cleanHtmlJS(html) {
+        if (!html) return '';
+        let clean = html;
+        clean = clean.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+        clean = clean.replace(/on\w+\s*=\s*(["'])(.*?)\1/gi, '');
+        return clean;
+    }
+
     function openShareModal(postId, postUrl, postTitle = '') {
         if (!postTitle) {
             // Lấy tiêu đề bài viết từ DOM
@@ -1167,7 +1194,7 @@
             : `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.user.name)}&background=00236f&color=fff`;
             
         const apartmentText = comment.user.apartment 
-            ? `Căn hộ: ${escapeHtml(comment.user.apartment.apartment_number)}` 
+            ? 'Cư dân' 
             : 'Ban Quản Trị';
             
         let deleteForm = '';
@@ -1542,7 +1569,12 @@
         form.action = `/resident/posts/${id}`;
         
         document.getElementById('edit-post-title').value = title || '';
-        document.getElementById('edit-post-content').value = content || '';
+        
+        if (editEditorInstance) {
+            editEditorInstance.setData(content || '');
+        } else {
+            document.getElementById('edit-post-content').value = content || '';
+        }
         
         const priceInput = document.getElementById('edit-post-price');
         if (price && parseFloat(price) > 0) {
@@ -1633,6 +1665,19 @@
             e.preventDefault();
             
             const submitBtn = this.querySelector('button[type="submit"]');
+            
+            let editContent = '';
+            if (editEditorInstance) {
+                editContent = editEditorInstance.getData().trim();
+            } else {
+                editContent = document.getElementById('edit-post-content').value.trim();
+            }
+
+            if (!editContent) {
+                showToast('Vui lòng nhập nội dung bài viết.', 'error');
+                return;
+            }
+
             submitBtn.setAttribute('disabled', 'disabled');
             submitBtn.innerText = 'Đang lưu...';
             
@@ -1641,7 +1686,7 @@
             
             const formData = {
                 title: document.getElementById('edit-post-title').value.trim(),
-                content: document.getElementById('edit-post-content').value.trim(),
+                content: editContent,
                 price: rawPrice || null,
             };
 
@@ -1668,7 +1713,7 @@
                     if (titleEl) titleEl.innerText = data.post.title;
 
                     const contentEl = document.querySelector('.pc-detail__content');
-                    if (contentEl) contentEl.innerHTML = nl2br(data.post.content);
+                    if (contentEl) contentEl.innerHTML = cleanHtmlJS(data.post.content);
 
                     const priceEl = document.querySelector('.pc-card__price');
                     if (priceEl && data.post.price !== null) {
@@ -1824,6 +1869,22 @@
     }
 
     document.addEventListener("DOMContentLoaded", function() {
+        // Khởi tạo CKEditor cho phần sửa bài viết
+        const editPostTextarea = document.getElementById('edit-post-content');
+        if (editPostTextarea) {
+            ClassicEditor
+                .create(editPostTextarea, {
+                    toolbar: ['bold', 'italic', 'underline', 'bulletedList', 'numberedList', 'undo', 'redo'],
+                    placeholder: 'Bạn đang muốn chia sẻ điều gì...'
+                })
+                .then(editor => {
+                    editEditorInstance = editor;
+                })
+                .catch(error => {
+                    console.error('Lỗi khởi tạo CKEditor sửa bài:', error);
+                });
+        }
+
         if (typeof window.Pusher === 'undefined' && typeof Pusher !== 'undefined') {
             window.Pusher = Pusher;
         }
@@ -2164,7 +2225,7 @@
         }
         
         filtered.forEach(r => {
-            const apartmentNo = r.apartment ? `Căn hộ: ${r.apartment.apartment_number}` : 'Ban Quản Trị';
+            const apartmentNo = r.apartment ? 'Cư dân' : 'Ban Quản Trị';
             const emoji = getReactionEmoji(r.type);
             
             const row = document.createElement('div');

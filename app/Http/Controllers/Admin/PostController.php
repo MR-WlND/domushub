@@ -18,8 +18,31 @@ class PostController extends Controller
     {
         $activeTab = $request->get('tab', 'posts');
 
+        if ($activeTab === 'banned_users') {
+            $query = \App\Models\User::with('apartment')
+                ->where('role', 'resident')
+                ->where(function($q) {
+                    $q->where('banned_posting_until', '>', now())
+                      ->orWhere('banned_commenting_until', '>', now());
+                })
+                ->orderBy('updated_at', 'desc');
+
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%")
+                      ->orWhere('phone', 'like', "%{$search}%");
+                });
+            }
+
+            $bannedUsers = $query->paginate(15)->withQueryString();
+
+            return view('admin.posts.index', compact('bannedUsers', 'activeTab'));
+        }
+
         if ($activeTab === 'comments') {
-            $query = Comment::with(['user.apartment', 'post.user', 'reports.user.apartment'])
+            $query = Comment::withTrashed()->with(['user.apartment', 'post.user', 'reports.user.apartment'])
                 ->has('reports')
                 ->withCount('reports')
                 ->orderBy('created_at', 'desc');
@@ -39,7 +62,7 @@ class PostController extends Controller
             return view('admin.posts.index', compact('reportedComments', 'activeTab'));
         }
 
-        $query = Post::with(['user.apartment', 'comments'])
+        $query = Post::withTrashed()->with(['user.apartment', 'comments'])
             ->withCount('reports')
             ->orderBy('created_at', 'desc');
 
@@ -108,7 +131,7 @@ class PostController extends Controller
      */
     public function getPostJson($id)
     {
-        $post = Post::with([
+        $post = Post::withTrashed()->with([
             'user.apartment',
             'images',
             'reports' => function($q) {
@@ -116,9 +139,14 @@ class PostController extends Controller
             }
         ])->withCount('reports')->findOrFail($id);
 
+        $isBannedPosting = $post->user ? $post->user->isBannedPosting() : false;
+        $isBannedCommenting = $post->user ? $post->user->isBannedCommenting() : false;
+
         return response()->json([
             'success' => true,
-            'post' => $post
+            'post' => $post,
+            'is_banned_posting' => $isBannedPosting,
+            'is_banned_commenting' => $isBannedCommenting,
         ]);
     }
 
@@ -140,16 +168,12 @@ class PostController extends Controller
      */
     public function destroy($id)
     {
-        $post = Post::with('images')->findOrFail($id);
+        $post = Post::findOrFail($id);
 
-        // Xóa các file hình ảnh đính kèm vật lý khỏi ổ cứng
-        foreach ($post->images as $img) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($img->image_path);
-        }
-
+        // Chỉ soft-delete bài viết để ẩn ở phía cư dân, giữ lại hình ảnh và lịch sử báo cáo cho Admin
         $post->delete();
 
-        return redirect()->back()->with('success', 'Đã xóa bài viết vĩnh viễn khỏi hệ thống.');
+        return redirect()->back()->with('success', 'Đã xóa bài viết khỏi phía cư dân thành công và lưu lại lịch sử.');
     }
 
     /**
@@ -168,36 +192,126 @@ class PostController extends Controller
      */
     public function destroyComment($id)
     {
-        $comment = Comment::withTrashed()->findOrFail($id);
+        $comment = Comment::findOrFail($id);
 
-        // 1. Tìm và xóa vĩnh viễn tất cả câu trả lời con (replies) và dữ liệu đính kèm của chúng
-        $replies = Comment::withTrashed()->where('parent_id', $comment->id)->get();
-        foreach ($replies as $reply) {
-            // Xóa file ảnh vật lý của câu trả lời con
-            if ($reply->image_path) {
-                Storage::disk('public')->delete($reply->image_path);
-            }
-            // Xóa các lượt thích (likes) của câu trả lời con
-            $reply->likes()->delete();
-            // Xóa các báo cáo (reports) của câu trả lời con
-            $reply->reports()->delete();
-            // Xóa vĩnh viễn câu trả lời con khỏi database
-            $reply->forceDelete();
-        }
+        // Soft-delete tất cả câu trả lời con (replies) để ẩn ở phía cư dân
+        Comment::where('parent_id', $comment->id)->delete();
 
-        // 2. Xóa dữ liệu đính kèm của chính bình luận cha
-        // Xóa file ảnh vật lý của bình luận cha
-        if ($comment->image_path) {
-            Storage::disk('public')->delete($comment->image_path);
-        }
-        // Xóa các lượt thích (likes) của bình luận cha
-        $comment->likes()->delete();
-        // Xóa các báo cáo (reports) của bình luận cha
-        $comment->reports()->delete();
+        // Soft-delete chính bình luận (ẩn khỏi phía cư dân, giữ lại các báo cáo để xem lịch sử)
+        $comment->delete();
+
+        return redirect()->back()->with('success', 'Đã xóa bình luận khỏi phía cư dân thành công và lưu lại lịch sử.');
+    }
+
+    /**
+     * Khóa hoặc mở khóa quyền đăng bài của cư dân
+     */
+    public function banPosting(Request $request, $userId)
+    {
+        $user = \App\Models\User::findOrFail($userId);
         
-        // 3. Xóa vĩnh viễn bình luận cha khỏi database
-        $comment->forceDelete();
+        $request->validate([
+            'duration' => 'required|string|in:unban,1,3,7,30,permanent',
+        ]);
 
-        return redirect()->back()->with('success', 'Đã xóa vĩnh viễn bình luận và toàn bộ phản hồi con liên quan thành công.');
+        $duration = $request->duration;
+        
+        if ($duration === 'unban') {
+            $user->banned_posting_until = null;
+            $message = "Đã mở khóa quyền đăng bài cho cư dân {$user->name} thành công.";
+        } else {
+            $days = match ($duration) {
+                '1' => 1,
+                '3' => 3,
+                '7' => 7,
+                '30' => 30,
+                'permanent' => 36500, // ~100 năm
+            };
+            
+            $user->banned_posting_until = now()->addDays($days);
+            
+            $durationLabel = match ($duration) {
+                '1' => '1 ngày',
+                '3' => '3 ngày',
+                '7' => '7 ngày',
+                '30' => '30 ngày',
+                'permanent' => 'vĩnh viễn',
+            };
+            
+            $message = "Đã khóa quyền đăng bài của cư dân {$user->name} trong {$durationLabel} thành công.";
+        }
+
+        $user->save();
+
+        return redirect()->back()->with('success', $message);
+    }
+
+    /**
+     * Khóa hoặc mở khóa quyền bình luận của cư dân
+     */
+    public function banCommenting(Request $request, $userId)
+    {
+        $user = \App\Models\User::findOrFail($userId);
+        
+        $request->validate([
+            'duration' => 'required|string|in:unban,1,3,7,30,permanent',
+        ]);
+
+        $duration = $request->duration;
+        
+        if ($duration === 'unban') {
+            $user->banned_commenting_until = null;
+            $message = "Đã mở khóa quyền bình luận cho cư dân {$user->name} thành công.";
+        } else {
+            $days = match ($duration) {
+                '1' => 1,
+                '3' => 3,
+                '7' => 7,
+                '30' => 30,
+                'permanent' => 36500, // ~100 năm
+            };
+            
+            $user->banned_commenting_until = now()->addDays($days);
+            
+            $durationLabel = match ($duration) {
+                '1' => '1 ngày',
+                '3' => '3 ngày',
+                '7' => '7 ngày',
+                '30' => '30 ngày',
+                'permanent' => 'vĩnh viễn',
+            };
+            
+            $message = "Đã khóa quyền bình luận của cư dân {$user->name} trong {$durationLabel} thành công.";
+        }
+
+        $user->save();
+
+        return redirect()->back()->with('success', $message);
+    }
+
+    /**
+     * Khôi phục bài viết đã bị soft delete
+     */
+    public function restore($id)
+    {
+        $post = Post::withTrashed()->findOrFail($id);
+        $post->restore();
+
+        return redirect()->back()->with('success', "Đã khôi phục bài viết \"{$post->title}\" thành công.");
+    }
+
+    /**
+     * Khôi phục bình luận đã bị soft delete
+     */
+    public function restoreComment($id)
+    {
+        $comment = Comment::withTrashed()->findOrFail($id);
+        
+        // Khôi phục câu trả lời con nếu có
+        Comment::onlyTrashed()->where('parent_id', $comment->id)->restore();
+
+        $comment->restore();
+
+        return redirect()->back()->with('success', 'Đã khôi phục bình luận và các phản hồi liên quan thành công.');
     }
 }
