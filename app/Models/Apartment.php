@@ -124,4 +124,20 @@ class Apartment extends Model
             default       => 'Không xác định',
         };
     }
+
+    /**
+     * Lấy tên chủ hộ hoặc cư dân đầu tiên của căn hộ
+     */
+    public function getOwnerNameAttribute(): string
+    {
+        $owner = $this->residents()
+            ->where('relationship', 'owner')
+            ->first();
+            
+        if (!$owner) {
+            $owner = $this->residents()->first();
+        }
+        
+        return $owner ? ($owner->user->name ?? 'Cư dân căn hộ') : 'Cư dân căn hộ';
+    }
 }

@@ -55,16 +55,37 @@ class CalculateParkingFee extends Command
                 ]
             );
 
-            // Tạo hóa đơn
-            $invoice = Invoice::create([
-                'apartment_id'  => $apartment->id,
-                'title'         => 'Phí gửi xe tháng ' . Carbon::now()->format('m/Y'),
-                'billing_month' => Carbon::now()->month,
-                'billing_year'  => Carbon::now()->year,
-                'total_amount'  => $totalAmount,
-                'status'        => 'unpaid',
-                'due_date'      => Carbon::now()->addDays(10), // Hạn nộp 10 ngày
-            ]);
+            // Tìm hóa đơn hiện có hoặc tạo mới
+            $invoice = Invoice::where('apartment_id', $apartment->id)
+                ->where('billing_month', Carbon::now()->month)
+                ->where('billing_year', Carbon::now()->year)
+                ->first();
+
+            if ($invoice) {
+                // Xóa chi tiết cũ nếu có
+                $oldDetails = InvoiceDetail::where('bill_id', $invoice->id)
+                    ->where('service_price_id', $parkingService->id)
+                    ->get();
+                $oldAmount = $oldDetails->sum('amount');
+                InvoiceDetail::where('bill_id', $invoice->id)
+                    ->where('service_price_id', $parkingService->id)
+                    ->delete();
+
+                $invoice->update([
+                    'title' => 'Hóa đơn tháng ' . Carbon::now()->format('m/Y'),
+                    'total_amount' => max(0, $invoice->total_amount - $oldAmount + $totalAmount),
+                ]);
+            } else {
+                $invoice = Invoice::create([
+                    'apartment_id'  => $apartment->id,
+                    'title'         => 'Hóa đơn tháng ' . Carbon::now()->format('m/Y'),
+                    'billing_month' => Carbon::now()->month,
+                    'billing_year'  => Carbon::now()->year,
+                    'total_amount'  => $totalAmount,
+                    'status'        => 'unpaid',
+                    'due_date'      => Carbon::now()->addDays(10), // Hạn nộp 10 ngày
+                ]);
+            }
 
             // Thêm chi tiết hóa đơn
             if ($motoCount > 0) {

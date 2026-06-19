@@ -15,6 +15,7 @@ class InvoiceDetail extends Model
         'service_price_id',
         'quantity',
         'amount',
+        'status',
     ];
 
     public function invoice()
