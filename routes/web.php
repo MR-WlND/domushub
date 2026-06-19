@@ -197,17 +197,21 @@ Route::middleware(['security'])->group(function () {
         return view('security.dashboard.index');
     })->name('security.dashboard');
 
-    Route::get('/security/vehicle-checkin', function () {
-        return view('security.vehicle-checkin.index');
-    })->name('security.vehicle-checkin.index');
+    // Quét QR xe vào
+    Route::get('/security/vehicle-checkin', [\App\Http\Controllers\Security\VehicleCheckinController::class, 'index'])->name('security.vehicle-checkin.index');
+    Route::post('/security/vehicle-checkin/scan', [\App\Http\Controllers\Security\VehicleCheckinController::class, 'scan'])->name('security.vehicle-checkin.scan');
+    Route::post('/security/vehicle-checkin/confirm', [\App\Http\Controllers\Security\VehicleCheckinController::class, 'checkin'])->name('security.vehicle-checkin.confirm');
 
-    Route::get('/security/vehicle-checkout', function () {
-        return view('security.vehicle-checkout.index');
-    })->name('security.vehicle-checkout.index');
+    // Quét QR xe ra
+    Route::get('/security/vehicle-checkout', [\App\Http\Controllers\Security\VehicleCheckoutController::class, 'index'])->name('security.vehicle-checkout.index');
+    Route::post('/security/vehicle-checkout/scan', [\App\Http\Controllers\Security\VehicleCheckoutController::class, 'scan'])->name('security.vehicle-checkout.scan');
+    Route::post('/security/vehicle-checkout/confirm', [\App\Http\Controllers\Security\VehicleCheckoutController::class, 'checkout'])->name('security.vehicle-checkout.confirm');
 
-    Route::get('/security/visitor-check', function () {
-        return view('security.visitor-check.index');
-    })->name('security.visitor-check.index');
+    // Quét QR khách
+    Route::get('/security/visitor-check', [\App\Http\Controllers\Security\VisitorCheckinController::class, 'index'])->name('security.visitor-check.index');
+    Route::post('/security/visitor-check/scan', [\App\Http\Controllers\Security\VisitorCheckinController::class, 'scan'])->name('security.visitor-check.scan');
+    Route::post('/security/visitor-check/checkin', [\App\Http\Controllers\Security\VisitorCheckinController::class, 'checkin'])->name('security.visitor-check.checkin');
+    Route::post('/security/visitor-check/checkout', [\App\Http\Controllers\Security\VisitorCheckinController::class, 'checkout'])->name('security.visitor-check.checkout');
 });
 
 
@@ -252,6 +256,13 @@ Route::middleware(['resident'])->group(function () {
         ->name('resident.vehicles.store');
     Route::delete('/resident/vehicles/{vehicle}', [App\Http\Controllers\Resident\VehicleController::class, 'destroy'])
         ->name('resident.vehicles.destroy');
+
+    // QUẢN LÝ KHÁCH PHÍA CƯ DÂN
+    Route::get('/resident/visitors', [\App\Http\Controllers\Resident\VisitorController::class, 'index'])->name('resident.visitors.index');
+    Route::get('/resident/visitors/create', [\App\Http\Controllers\Resident\VisitorController::class, 'create'])->name('resident.visitors.create');
+    Route::post('/resident/visitors', [\App\Http\Controllers\Resident\VisitorController::class, 'store'])->name('resident.visitors.store');
+    Route::get('/resident/visitors/{id}', [\App\Http\Controllers\Resident\VisitorController::class, 'show'])->name('resident.visitors.show');
+    Route::delete('/resident/visitors/{id}', [\App\Http\Controllers\Resident\VisitorController::class, 'destroy'])->name('resident.visitors.destroy');
     // PHẢN ÁNH SỰ CỐ PHÍA CƯ DÂN
     Route::get('/resident/tickets', [ResidentTicketController::class, 'index'])->name('resident.tickets.index');
     Route::get('/resident/tickets/create', [ResidentTicketController::class, 'create'])->name('resident.tickets.create');
