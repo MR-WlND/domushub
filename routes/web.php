@@ -55,6 +55,7 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/admin/statistics', [HomeController::class, 'statistics'])->name('admin.statistics');
     Route::get('/admin/statistics/finance', [HomeController::class, 'statisticsFinance'])->name('admin.statistics.finance');
     Route::get('/admin/statistics/operations', [HomeController::class, 'statisticsOperations'])->name('admin.statistics.operations');
+    Route::get('/admin/statistics/residents', [HomeController::class, 'statisticsResidents'])->name('admin.statistics.residents');
 
     // Block/Building routes (used in views)
     Route::get('/admin/blocks', [\App\Http\Controllers\Admin\BlockController::class, 'index'])->name('admin.blocks.index');

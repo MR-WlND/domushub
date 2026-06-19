@@ -33,7 +33,8 @@ export default defineConfig({
                 'resources/css/resident/tickets.css',
                 'resources/css/pages/admin/tickets/index.css',
                 'resources/css/pages/admin/tickets/technician.css',
-                'resources/css/pages/admin/statistics.css'
+                'resources/css/pages/admin/statistics.css',
+
 
             ],
             refresh: true,

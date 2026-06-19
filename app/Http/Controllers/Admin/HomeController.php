@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Block;
 use App\Models\Floor;
 use App\Models\Apartment;
+use App\Models\Resident;
 use App\Models\Ticket;
 
 class HomeController extends Controller
@@ -299,6 +300,105 @@ class HomeController extends Controller
             'availableYears', 'selectedYear',
             'totalTickets', 'pendingCount', 'assignedCount', 'inProgressCount', 'completedCount', 'cancelledCount',
             'csatData', 'totalRated', 'averageRating', 'recentFeedbacks'
+        ));
+    }
+
+    /**
+     * Màn hình thống kê Cư dân & Hạ tầng.
+     */
+    public function statisticsResidents(Request $request): View
+    {
+        // ── 1. TỔNG QUAN HẠ TẦNG ──────────────────────────────────────
+        $totalBlocks     = Block::count();
+        $totalFloors     = Floor::count();
+        $totalApartments = Apartment::count();
+        $occupied        = Apartment::where('status', 'occupied')->count();
+        $vacant          = Apartment::where('status', 'vacant')->count();
+        $maintenance     = Apartment::where('status', 'maintenance')->count();
+        $occupancyRate   = $totalApartments > 0 ? round(($occupied / $totalApartments) * 100, 1) : 0;
+
+        // ── 2. TỔNG QUAN CƯ DÂN ───────────────────────────────────────
+        $totalResidents = Resident::count();
+        $ownerCount     = Resident::where('relationship', 'owner')->count();
+        $tenantCount    = Resident::where('relationship', 'tenant')->count();
+        $familyCount    = Resident::where('relationship', 'family_member')->count();
+
+        // ── 3. TỶ LỆ LOẠI CƯ DÂN (cho pie chart) ─────────────────────
+        $residentTypeData = [
+            'owner'         => $ownerCount,
+            'tenant'        => $tenantCount,
+            'family_member' => $familyCount,
+        ];
+
+        // ── 4. PHÂN BỐ CĂN HỘ THEO TÒNG NHÀ ─────────────────────────
+        $blockStats = Block::withCount([
+            'apartments',
+            'apartments as occupied_count' => fn($q) => $q->where('status', 'occupied'),
+            'apartments as vacant_count'   => fn($q) => $q->where('status', 'vacant'),
+            'apartments as maintenance_count' => fn($q) => $q->where('status', 'maintenance'),
+        ])->orderBy('name')->get();
+
+        // ── 5. XU HƯỚNG CƯ DÂN ĐĂNG KÝ THEO THÁNG (12 tháng gần nhất) ─
+        $residentTrend = DB::table('residents')
+            ->whereNull('deleted_at')
+            ->where('created_at', '>=', now()->subMonths(11)->startOfMonth())
+            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as count")
+            ->groupBy('month')
+            ->orderBy('month')
+            ->pluck('count', 'month')
+            ->toArray();
+
+        // Tạo mảng đủ 12 tháng (kể cả tháng = 0)
+        $trendLabels = [];
+        $trendValues = [];
+        for ($i = 11; $i >= 0; $i--) {
+            $key = now()->subMonths($i)->format('Y-m');
+            $label = now()->subMonths($i)->format('T' . now()->subMonths($i)->month . '/' . now()->subMonths($i)->year);
+            $trendLabels[] = 'T' . now()->subMonths($i)->month . '/' . now()->subMonths($i)->format('y');
+            $trendValues[] = $residentTrend[$key] ?? 0;
+        }
+
+        // ── 6. TOP CĂN HỘ ĐÔNG NGƯỜI NHẤT ────────────────────────────
+        $topApartments = DB::table('residents')
+            ->join('apartments', 'residents.apartment_id', '=', 'apartments.id')
+            ->join('floors', 'apartments.floor_id', '=', 'floors.id')
+            ->join('blocks', 'floors.block_id', '=', 'blocks.id')
+            ->whereNull('residents.deleted_at')
+            ->select(
+                'apartments.apartment_number',
+                'blocks.name as block_name',
+                DB::raw('COUNT(residents.id) as resident_count')
+            )
+            ->groupBy('apartments.id', 'apartments.apartment_number', 'blocks.name')
+            ->orderByDesc('resident_count')
+            ->limit(10)
+            ->get();
+
+        // ── 7. THỐNG KÊ THEO TẦNG (heatmap-style) ─────────────────────
+        $floorStats = DB::table('floors')
+            ->join('blocks', 'floors.block_id', '=', 'blocks.id')
+            ->leftJoin('apartments', 'apartments.floor_id', '=', 'floors.id')
+            ->select(
+                'floors.id',
+                'floors.floor_number',
+                'blocks.name as block_name',
+                DB::raw('COUNT(apartments.id) as total_apts'),
+                DB::raw("SUM(CASE WHEN apartments.status = 'occupied' THEN 1 ELSE 0 END) as occupied_apts")
+            )
+            ->groupBy('floors.id', 'floors.floor_number', 'blocks.name')
+            ->orderBy('blocks.name')
+            ->orderBy('floors.floor_number')
+            ->get();
+
+        return view('admin.statistics.residents', compact(
+            'totalBlocks', 'totalFloors', 'totalApartments',
+            'occupied', 'vacant', 'maintenance', 'occupancyRate',
+            'totalResidents', 'ownerCount', 'tenantCount', 'familyCount',
+            'residentTypeData',
+            'blockStats',
+            'trendLabels', 'trendValues',
+            'topApartments',
+            'floorStats'
         ));
     }
 }

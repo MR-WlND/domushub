@@ -273,3 +273,12 @@
     border-radius: 10px;
     transition: width 0.4s;
 }
+
+/* Equal grid variant (for two equal-width table cards) */
+.charts-grid--equal {
+    grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 1100px) {
+    .charts-grid--equal { grid-template-columns: 1fr; }
+}

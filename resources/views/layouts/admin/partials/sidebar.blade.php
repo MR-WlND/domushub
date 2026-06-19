@@ -51,6 +51,9 @@
                     <a href="{{ route('admin.statistics.operations') }}" class="dashboard-nav__subitem {{ request()->routeIs('admin.statistics.operations') ? 'dashboard-nav__subitem--active' : '' }}">
                         Thống kê Vận hành
                     </a>
+                    <a href="{{ route('admin.statistics.residents') }}" class="dashboard-nav__subitem {{ request()->routeIs('admin.statistics.residents') ? 'dashboard-nav__subitem--active' : '' }}">
+                        Cư dân &amp; Hạ tầng
+                    </a>
                 </div>
             </div>
         </div>
