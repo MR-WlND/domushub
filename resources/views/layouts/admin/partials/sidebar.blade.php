@@ -34,14 +34,25 @@
                 </svg>
                 <span>Trang tổng quan</span>
             </a>
-            <a href="{{ route('admin.statistics') }}" class="dashboard-nav__item {{ request()->routeIs('admin.statistics') ? 'dashboard-nav__item--active' : '' }}">
-                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="20" x2="18" y2="10"></line>
-                    <line x1="12" y1="20" x2="12" y2="4"></line>
-                    <line x1="6" y1="20" x2="6" y2="14"></line>
-                </svg>
-                <span>Báo cáo & Thống kê</span>
-            </a>
+            <div class="dashboard-nav__group {{ request()->routeIs('admin.statistics.*') || request()->routeIs('admin.statistics') ? 'dashboard-nav__group--open' : '' }}">
+                <a href="{{ route('admin.statistics.finance') }}" class="dashboard-nav__item dashboard-nav__item--parent {{ request()->routeIs('admin.statistics.*') || request()->routeIs('admin.statistics') ? 'dashboard-nav__item--active' : '' }}" onclick="toggleSubmenu(event, this)">
+                    <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    <span>Báo cáo & Thống kê</span>
+                    <svg class="dashboard-nav__chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </a>
+                <div class="dashboard-nav__submenu">
+                    <a href="{{ route('admin.statistics.finance') }}" class="dashboard-nav__subitem {{ request()->routeIs('admin.statistics.finance') ? 'dashboard-nav__subitem--active' : '' }}">
+                        Thống kê Tài chính
+                    </a>
+                    <a href="{{ route('admin.statistics.operations') }}" class="dashboard-nav__subitem {{ request()->routeIs('admin.statistics.operations') ? 'dashboard-nav__subitem--active' : '' }}">
+                        Thống kê Vận hành
+                    </a>
+                </div>
+            </div>
         </div>
         @endif
 
@@ -280,4 +291,88 @@
             </form>
         </div>
     </div>
+
+    <style>
+        /* Submenu styling for Admin Sidebar - Synced with reference layout */
+        .dashboard-nav__group {
+            display: flex;
+            flex-direction: column;
+        }
+        .dashboard-nav__item--parent {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .dashboard-nav__chevron {
+            margin-left: auto;
+            color: #5f6368;
+            transition: transform 0.25s ease;
+            flex-shrink: 0;
+        }
+        .dashboard-nav__item--active .dashboard-nav__chevron {
+            color: #0b57d0;
+        }
+        .dashboard-nav__submenu {
+            display: none;
+            flex-direction: column;
+            background-color: #eff5ff !important; /* Màu nền xanh nhạt dính liền */
+            border-left: 2px solid #0b57d0 !important; /* Đường kẻ dọc màu xanh đậm bên trái */
+            margin-left: 24px;
+            margin-right: 12px;
+            margin-top: 4px;
+            margin-bottom: 4px;
+            border-radius: 4px;
+            padding: 4px !important;
+            box-shadow: none !important;
+            border-top: none !important;
+            border-right: none !important;
+            border-bottom: none !important;
+        }
+        .dashboard-nav__group--open .dashboard-nav__submenu {
+            display: flex;
+        }
+        .dashboard-nav__group--open .dashboard-nav__chevron {
+            transform: rotate(180deg);
+        }
+        .dashboard-nav__subitem {
+            display: flex !important;
+            align-items: center;
+            color: #3c4563 !important;
+            text-decoration: none !important;
+            padding: 8px 16px !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            transition: all 0.18s ease;
+            border-radius: 4px;
+            margin: 2px 0;
+            border-left: none !important;
+            background: transparent !important;
+        }
+        .dashboard-nav__subitem:hover {
+            background-color: rgba(11, 87, 208, 0.05) !important;
+            color: #0b57d0 !important;
+            padding-left: 16px !important;
+        }
+        .dashboard-nav__subitem--active {
+            background-color: #dce9ff !important;
+            color: #0b57d0 !important;
+            font-weight: 600 !important;
+            border-left: none !important;
+        }
+    </style>
+
+    <script>
+        function toggleSubmenu(event, element) {
+            const group = element.parentElement;
+            const isActive = element.classList.contains('dashboard-nav__item--active');
+            
+            if (isActive) {
+                // If clicked while active, toggle the open/close state instead of re-navigating
+                event.preventDefault();
+                group.classList.toggle('dashboard-nav__group--open');
+            }
+            // If not active, let the browser navigate to the default page and the server will render it open
+        }
+    </script>
 </aside>
+ 

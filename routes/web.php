@@ -53,6 +53,8 @@ Route::get('/vnpay/ipn', [\App\Http\Controllers\Resident\InvoiceController::clas
 Route::middleware(['admin'])->group(function () {
     Route::get('admin', [HomeController::class, 'index'])->name('admin.dashboard');
     Route::get('/admin/statistics', [HomeController::class, 'statistics'])->name('admin.statistics');
+    Route::get('/admin/statistics/finance', [HomeController::class, 'statisticsFinance'])->name('admin.statistics.finance');
+    Route::get('/admin/statistics/operations', [HomeController::class, 'statisticsOperations'])->name('admin.statistics.operations');
 
     // Block/Building routes (used in views)
     Route::get('/admin/blocks', [\App\Http\Controllers\Admin\BlockController::class, 'index'])->name('admin.blocks.index');
@@ -128,7 +130,6 @@ Route::middleware(['admin'])->group(function () {
     Route::post('/admin/payments/{payment}/refund', [InvoiceController::class, 'refundPayment'])->name('admin.payments.refund');
     Route::get('/admin/payments/{payment}/receipt', [InvoiceController::class, 'printReceipt'])->name('admin.payments.receipt');
 
-
     // Dịch vụ cư dân
     Route::get('/admin/residents', function () {
         return view('admin.dashboard.index');
@@ -160,8 +161,6 @@ Route::middleware(['admin'])->group(function () {
     Route::put('/admin/parking-lots/{parkingLot}', [App\Http\Controllers\Admin\ParkingLotController::class, 'update'])->name('admin.parking-lots.update');
     Route::delete('/admin/parking-lots/{parkingLot}', [App\Http\Controllers\Admin\ParkingLotController::class, 'destroy'])->name('admin.parking-lots.destroy');
 
-
-
     Route::get('/admin/amenities', function () {
         return view('admin.dashboard.index');
     })->name('admin.amenities.index');
@@ -190,9 +189,7 @@ Route::middleware(['admin'])->group(function () {
     Route::delete('/admin/invitations/{id}', [AdminInvitationController::class, 'destroy'])->name('admin.invitations.destroy');
 });
 
-
 // DASHBOARD SECURITY ROUTES
-
 Route::middleware(['security'])->group(function () {
     Route::get('/security/dashboard', function () {
         return view('security.dashboard.index');
@@ -211,11 +208,8 @@ Route::middleware(['security'])->group(function () {
     })->name('security.visitor-check.index');
 });
 
-
-//  DASHBOARD RESIDENT ROUTES
-
+// DASHBOARD RESIDENT ROUTES
 Route::middleware(['resident'])->group(function () {
-
     Route::get('/resident/dashboard', function () {
         return view('resident.home.index');
     })->name('resident.dashboard');
@@ -253,6 +247,7 @@ Route::middleware(['resident'])->group(function () {
         ->name('resident.vehicles.store');
     Route::delete('/resident/vehicles/{vehicle}', [App\Http\Controllers\Resident\VehicleController::class, 'destroy'])
         ->name('resident.vehicles.destroy');
+
     // PHẢN ÁNH SỰ CỐ PHÍA CƯ DÂN
     Route::get('/resident/tickets', [ResidentTicketController::class, 'index'])->name('resident.tickets.index');
     Route::get('/resident/tickets/create', [ResidentTicketController::class, 'create'])->name('resident.tickets.create');
@@ -299,7 +294,7 @@ Route::middleware(['admin'])->name('admin.')->group(function () {
     Route::post('/admin/users/{id}/ban-commenting', [\App\Http\Controllers\Admin\PostController::class, 'banCommenting'])->name('users.ban-commenting');
 });
 
-// Fallback route to serve uploaded public storage files (useful if symlink is missing or fails on local Windows development)
+// Fallback route to serve uploaded public storage files
 Route::get('/storage/{any}', function ($any) {
     $path = storage_path('app/public/' . $any);
     if (file_exists($path)) {
@@ -307,13 +302,3 @@ Route::get('/storage/{any}', function ($any) {
     }
     abort(404);
 })->where('any', '.*');
-
-
-
-
-
-
-
-
-
-
