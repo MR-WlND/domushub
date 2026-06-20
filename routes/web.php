@@ -54,8 +54,11 @@ Route::middleware(['admin'])->group(function () {
     Route::get('admin', [HomeController::class, 'index'])->name('admin.dashboard');
     Route::get('/admin/statistics', [HomeController::class, 'statistics'])->name('admin.statistics');
     Route::get('/admin/statistics/finance', [HomeController::class, 'statisticsFinance'])->name('admin.statistics.finance');
+    Route::get('/admin/statistics/finance/export', [HomeController::class, 'exportFinanceExcel'])->name('admin.statistics.finance.export');
     Route::get('/admin/statistics/operations', [HomeController::class, 'statisticsOperations'])->name('admin.statistics.operations');
+    Route::get('/admin/statistics/operations/export', [HomeController::class, 'exportOperationsExcel'])->name('admin.statistics.operations.export');
     Route::get('/admin/statistics/residents', [HomeController::class, 'statisticsResidents'])->name('admin.statistics.residents');
+    Route::get('/admin/statistics/residents/export', [HomeController::class, 'exportResidentsExcel'])->name('admin.statistics.residents.export');
 
     // Block/Building routes (used in views)
     Route::get('/admin/blocks', [\App\Http\Controllers\Admin\BlockController::class, 'index'])->name('admin.blocks.index');
