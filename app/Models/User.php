@@ -30,6 +30,8 @@ class User extends Authenticatable
         'status',
         'avatar',
         'apartment_id',
+        'banned_posting_until',
+        'banned_commenting_until',
     ];
 
     /**
@@ -148,5 +150,27 @@ class User extends Authenticatable
     public function commentReports()
     {
         return $this->hasMany(CommentReport::class);
+    }
+
+    /**
+     * Kiểm tra user có bị khóa quyền đăng bài hay không
+     */
+    public function isBannedPosting(): bool
+    {
+        if (is_null($this->banned_posting_until)) {
+            return false;
+        }
+        return \Carbon\Carbon::parse($this->banned_posting_until)->isFuture();
+    }
+
+    /**
+     * Kiểm tra user có bị khóa quyền bình luận hay không
+     */
+    public function isBannedCommenting(): bool
+    {
+        if (is_null($this->banned_commenting_until)) {
+            return false;
+        }
+        return \Carbon\Carbon::parse($this->banned_commenting_until)->isFuture();
     }
 }

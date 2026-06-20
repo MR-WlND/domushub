@@ -6,7 +6,25 @@
     @vite(['resources/css/resident/posts.css'])
 @endpush
 
+@push('scripts')
+    <script src="https://cdn.ckeditor.com/ckeditor5/36.0.1/classic/ckeditor.js"></script>
+@endpush
+
 @section('content')
+@php
+    if (!function_exists('cleanPostContentBlade')) {
+        function cleanPostContentBlade($content) {
+            $allowed = '<p><a><strong><em><u><ul><ol><li><br><blockquote><sub><sup>';
+            $stripped = strip_tags($content, $allowed);
+            // Remove inline event handlers (onxxxx=...)
+            $stripped = preg_replace('/on\w+\s*=\s*(["\'])(.*?)\1/is', '', $stripped);
+            $stripped = preg_replace('/on\w+\s*=\s*([^\s>]+)/is', '', $stripped);
+            // Remove javascript: links
+            $stripped = preg_replace('/href\s*=\s*(["\'])\s*javascript:(.*?)\1/is', '', $stripped);
+            return $stripped;
+        }
+    }
+@endphp
 <div class="pc" style="max-width: 800px;">
 
     {{-- HEADER --}}
@@ -88,13 +106,13 @@
                              alt="Avatar" class="pc-composer__avatar">
                         <div class="pc-composer__author-info">
                             <h4 class="pc-composer__author-name">{{ auth()->user()->name }}</h4>
-                            <span class="pc-composer__author-apartment">Cư dân {{ auth()->user()->apartment->apartment_number ?? '' }}</span>
+                            <span class="pc-composer__author-apartment">Cư dân</span>
                         </div>
                     </div>
 
                     <div class="pc-composer__inputs">
                         <input type="text" name="title" class="pc-composer__title-input" placeholder="Nhập tiêu đề bài viết... (không bắt buộc)" value="{{ old('title') }}">
-                        <textarea name="content" class="pc-composer__body-input" placeholder="Bạn đang muốn chia sẻ điều gì với cư dân hôm nay..." rows="4" required>{{ old('content') }}</textarea>
+                        <textarea name="content" id="editor-post-content" class="pc-composer__body-input" placeholder="Bạn đang muốn chia sẻ điều gì với cư dân hôm nay..." rows="4">{{ old('content') }}</textarea>
                     </div>
                     
                     {{-- Khung Preview nhiều ảnh đính kèm --}}
@@ -171,7 +189,7 @@
                                     <h4 class="pc-card__name">{{ $post->user->name }}</h4>
                                     <span class="pc-card__apartment">
                                         @if($post->user->apartment)
-                                            Căn hộ: {{ $post->user->apartment->apartment_number }}
+                                            Cư dân
                                         @else
                                             Ban Quản Trị
                                         @endif
@@ -200,15 +218,11 @@
                             </a>
                         </h3>
                         
-                        @if(mb_strlen($post->content) > 250)
-                            <div class="pc-card__content-wrapper">
-                                <p class="pc-card__content" id="content-short-{{ $post->id }}">{!! nl2br(e(Str::limit($post->content, 250, '...'))) !!}</p>
-                                <p class="pc-card__content" id="content-full-{{ $post->id }}" style="display: none;">{!! nl2br(e($post->content)) !!}</p>
-                                <button type="button" class="pc-card__toggle-content-btn" id="btn-toggle-{{ $post->id }}" onclick="toggleContent({{ $post->id }})">Xem thêm</button>
+                        <div class="pc-card__content-wrapper">
+                            <div class="pc-card__content post-text-content" id="post-content-{{ $post->id }}">
+                                {!! cleanPostContentBlade($post->content) !!}
                             </div>
-                        @else
-                            <p class="pc-card__content">{!! nl2br(e($post->content)) !!}</p>
-                        @endif
+                        </div>
 
                         {{-- Ảnh đính kèm (Lưới ảnh CSS động kiểu Facebook) --}}
                         @if($post->images->isNotEmpty())
@@ -403,7 +417,7 @@
                     </div>
                     <div>
                         <label class="rep-modal__label">Nội dung bài viết</label>
-                        <textarea name="content" id="edit-post-content" class="pc-composer__body-input" rows="5" required placeholder="Bạn đang muốn chia sẻ điều gì..."></textarea>
+                        <textarea name="content" id="edit-post-content" class="pc-composer__body-input" rows="5" placeholder="Bạn đang muốn chia sẻ điều gì..."></textarea>
                     </div>
                     
                     {{-- Ô nhập giá thanh lý --}}
@@ -836,10 +850,65 @@
     // Khởi tạo định dạng tiền cho ô nhập đăng bài viết
     initPriceFormatter('post-price', 'post-price-preview');
 
+    let postEditorInstance;
+    let editEditorInstance;
+
+    function cleanHtmlJS(html) {
+        if (!html) return '';
+        let clean = html;
+        clean = clean.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+        clean = clean.replace(/on\w+\s*=\s*(["'])(.*?)\1/gi, '');
+        return clean;
+    }
+
+    function initPostCollapsibility() {
+        document.querySelectorAll('.post-text-content').forEach(el => {
+            if (el.dataset.collapsibleInit) return;
+            el.dataset.collapsibleInit = "true";
+
+            const scrollHeight = el.scrollHeight;
+            const limitHeight = 150;
+            
+            if (scrollHeight > limitHeight + 30) {
+                el.classList.add('post-text-content--collapsed');
+                
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'pc-card__toggle-content-btn';
+                btn.innerText = 'Xem thêm';
+                btn.onclick = function() {
+                    if (el.classList.contains('post-text-content--collapsed')) {
+                        el.classList.remove('post-text-content--collapsed');
+                        btn.innerText = 'Thu gọn';
+                    } else {
+                        el.classList.add('post-text-content--collapsed');
+                        btn.innerText = 'Xem thêm';
+                        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                };
+                el.parentNode.insertBefore(btn, el.nextSibling);
+            }
+        });
+    }
+
     // Xử lý trước khi submit form để loại bỏ định dạng hiển thị của giá trước khi gửi lên controller
     const postForm = document.getElementById('post-form');
     if (postForm) {
-        postForm.addEventListener('submit', function() {
+        postForm.addEventListener('submit', function(e) {
+            // Đồng bộ dữ liệu CKEditor
+            if (postEditorInstance) {
+                postEditorInstance.updateSourceElement();
+            }
+
+            // Validate nội dung
+            const contentVal = postEditorInstance ? postEditorInstance.getData().trim() : document.getElementById('editor-post-content').value.trim();
+            if (!contentVal) {
+                e.preventDefault();
+                showToast('Vui lòng nhập nội dung bài đăng.', 'error');
+                return;
+            }
+
+            const priceInput = document.getElementById('post-price');
             if (priceInput && priceInput.value) {
                 // Trả về số thô
                 priceInput.value = priceInput.value.replace(/[^0-9]/g, '');
@@ -926,7 +995,7 @@
             : `https://ui-avatars.com/api/?name=${encodeURIComponent(post.user.name)}&background=00236f&color=fff`;
             
         const apartmentText = post.user.apartment 
-            ? `Căn hộ: ${escapeHtml(post.user.apartment.apartment_number)}` 
+            ? 'Cư dân' 
             : 'Ban Quản Trị';
             
         let tagHtml = '';
@@ -941,19 +1010,13 @@
             `;
         }
         
-        let contentHtml = '';
-        if (post.content.length > 250) {
-            const shortContent = post.content.substring(0, 250) + '...';
-            contentHtml = `
-                <div class="pc-card__content-wrapper">
-                    <p class="pc-card__content" id="content-short-${post.id}">${nl2br(shortContent)}</p>
-                    <p class="pc-card__content" id="content-full-${post.id}" style="display: none;">${nl2br(post.content)}</p>
-                    <button type="button" class="pc-card__toggle-content-btn" id="btn-toggle-${post.id}" onclick="toggleContent(${post.id})">Xem thêm</button>
+        let contentHtml = `
+            <div class="pc-card__content-wrapper">
+                <div class="pc-card__content post-text-content" id="post-content-${post.id}">
+                    ${cleanHtmlJS(post.content)}
                 </div>
-            `;
-        } else {
-            contentHtml = `<p class="pc-card__content">${nl2br(post.content)}</p>`;
-        }
+            </div>
+        `;
         
         let imagesHtml = '';
         if (post.images && post.images.length > 0) {
@@ -1164,7 +1227,12 @@
         form.action = `/resident/posts/${id}`;
         
         document.getElementById('edit-post-title').value = title || '';
-        document.getElementById('edit-post-content').value = content || '';
+        
+        if (editEditorInstance) {
+            editEditorInstance.setData(content || '');
+        } else {
+            document.getElementById('edit-post-content').value = content || '';
+        }
         
         const priceInput = document.getElementById('edit-post-price');
         if (price && parseFloat(price) > 0) {
@@ -1203,6 +1271,19 @@
             e.preventDefault();
             
             const submitBtn = this.querySelector('button[type="submit"]');
+            
+            let editContent = '';
+            if (editEditorInstance) {
+                editContent = editEditorInstance.getData().trim();
+            } else {
+                editContent = document.getElementById('edit-post-content').value.trim();
+            }
+
+            if (!editContent) {
+                showToast('Vui lòng nhập nội dung bài viết.', 'error');
+                return;
+            }
+
             submitBtn.setAttribute('disabled', 'disabled');
             submitBtn.innerText = 'Đang lưu...';
             
@@ -1211,7 +1292,7 @@
             
             const formData = {
                 title: document.getElementById('edit-post-title').value.trim(),
-                content: document.getElementById('edit-post-content').value.trim(),
+                content: editContent,
                 price: rawPrice || null,
             };
 
@@ -1239,30 +1320,18 @@
                         const titleLink = postCard.querySelector('.pc-card__title-link');
                         if (titleLink) titleLink.innerText = data.post.title;
 
-                        const contentWrapper = postCard.querySelector('.pc-card__content-wrapper');
-                        const contentNormal = postCard.querySelector('.pc-card__content');
-                        if (contentWrapper) {
-                            const shortEl = document.getElementById('content-short-' + postId);
-                            const fullEl = document.getElementById('content-full-' + postId);
-                            if (data.post.content.length > 250) {
-                                if (shortEl) shortEl.innerHTML = nl2br(data.post.content.substring(0, 250) + '...');
-                                if (fullEl) fullEl.innerHTML = nl2br(data.post.content);
-                            } else {
-                                contentWrapper.outerHTML = `<p class="pc-card__content">${nl2br(data.post.content)}</p>`;
+                        const contentEl = document.getElementById('post-content-' + postId);
+                        if (contentEl) {
+                            // Reset collapsibility
+                            contentEl.classList.remove('post-text-content--collapsed');
+                            delete contentEl.dataset.collapsibleInit;
+                            const existingBtn = contentEl.nextElementSibling;
+                            if (existingBtn && existingBtn.classList.contains('pc-card__toggle-content-btn')) {
+                                existingBtn.remove();
                             }
-                        } else if (contentNormal) {
-                            if (data.post.content.length > 250) {
-                                const shortContent = data.post.content.substring(0, 250) + '...';
-                                contentNormal.outerHTML = `
-                                    <div class="pc-card__content-wrapper">
-                                        <p class="pc-card__content" id="content-short-${postId}">${nl2br(shortContent)}</p>
-                                        <p class="pc-card__content" id="content-full-${postId}" style="display: none;">${nl2br(data.post.content)}</p>
-                                        <button type="button" class="pc-card__toggle-content-btn" id="btn-toggle-${postId}" onclick="toggleContent(${postId})">Xem thêm</button>
-                                    </div>
-                                `;
-                            } else {
-                                contentNormal.innerHTML = nl2br(data.post.content);
-                            }
+                            
+                            contentEl.innerHTML = cleanHtmlJS(data.post.content);
+                            initPostCollapsibility();
                         }
 
                         const tagsContainer = postCard.querySelector('.pc-card__tags');
@@ -1293,6 +1362,40 @@
     }
 
     document.addEventListener("DOMContentLoaded", function() {
+        // Khởi tạo CKEditor 5
+        const postTextarea = document.getElementById('editor-post-content');
+        if (postTextarea) {
+            ClassicEditor
+                .create(postTextarea, {
+                    toolbar: ['bold', 'italic', 'underline', 'bulletedList', 'numberedList', 'undo', 'redo'],
+                    placeholder: 'Bạn đang muốn chia sẻ điều gì với cư dân hôm nay...'
+                })
+                .then(editor => {
+                    postEditorInstance = editor;
+                })
+                .catch(error => {
+                    console.error('Lỗi khởi tạo CKEditor đăng bài:', error);
+                });
+        }
+
+        const editPostTextarea = document.getElementById('edit-post-content');
+        if (editPostTextarea) {
+            ClassicEditor
+                .create(editPostTextarea, {
+                    toolbar: ['bold', 'italic', 'underline', 'bulletedList', 'numberedList', 'undo', 'redo'],
+                    placeholder: 'Bạn đang muốn chia sẻ điều gì...'
+                })
+                .then(editor => {
+                    editEditorInstance = editor;
+                })
+                .catch(error => {
+                    console.error('Lỗi khởi tạo CKEditor sửa bài:', error);
+                });
+        }
+
+        // Khởi tạo tính năng rút gọn bài viết dài
+        initPostCollapsibility();
+
         if (typeof window.Pusher === 'undefined' && typeof Pusher !== 'undefined') {
             window.Pusher = Pusher;
         }
@@ -1348,8 +1451,9 @@
                     if (container) {
                         const postHtml = createPostCardHtml(e);
                         container.insertAdjacentHTML('afterbegin', postHtml);
+                        initPostCollapsibility();
                         
-                        showToast(`Có bài đăng mới từ căn hộ ${e.user.apartment ? e.user.apartment.apartment_number : 'Ban Quản Trị'}!`, 'success');
+                        showToast(`Có bài đăng mới từ ${e.user.apartment ? 'Cư dân' : 'Ban Quản Trị'}!`, 'success');
                     }
                 })
                 .listen('PostUpdated', (e) => {
@@ -1359,30 +1463,18 @@
                         const titleLink = postCard.querySelector('.pc-card__title-link');
                         if (titleLink) titleLink.innerText = e.title;
 
-                        const contentWrapper = postCard.querySelector('.pc-card__content-wrapper');
-                        const contentNormal = postCard.querySelector('.pc-card__content');
-                        if (contentWrapper) {
-                            const shortEl = document.getElementById('content-short-' + e.id);
-                            const fullEl = document.getElementById('content-full-' + e.id);
-                            if (e.content.length > 250) {
-                                if (shortEl) shortEl.innerHTML = nl2br(e.content.substring(0, 250) + '...');
-                                if (fullEl) fullEl.innerHTML = nl2br(e.content);
-                            } else {
-                                contentWrapper.outerHTML = `<p class="pc-card__content">${nl2br(e.content)}</p>`;
+                        const contentEl = document.getElementById('post-content-' + e.id);
+                        if (contentEl) {
+                            // Reset collapsibility
+                            contentEl.classList.remove('post-text-content--collapsed');
+                            delete contentEl.dataset.collapsibleInit;
+                            const existingBtn = contentEl.nextElementSibling;
+                            if (existingBtn && existingBtn.classList.contains('pc-card__toggle-content-btn')) {
+                                existingBtn.remove();
                             }
-                        } else if (contentNormal) {
-                            if (e.content.length > 250) {
-                                const shortContent = e.content.substring(0, 250) + '...';
-                                contentNormal.outerHTML = `
-                                    <div class="pc-card__content-wrapper">
-                                        <p class="pc-card__content" id="content-short-${e.id}">${nl2br(shortContent)}</p>
-                                        <p class="pc-card__content" id="content-full-${e.id}" style="display: none;">${nl2br(e.content)}</p>
-                                        <button type="button" class="pc-card__toggle-content-btn" id="btn-toggle-${e.id}" onclick="toggleContent(${e.id})">Xem thêm</button>
-                                    </div>
-                                `;
-                            } else {
-                                contentNormal.innerHTML = nl2br(e.content);
-                            }
+                            
+                            contentEl.innerHTML = cleanHtmlJS(e.content);
+                            initPostCollapsibility();
                         }
 
                         const tagsContainer = postCard.querySelector('.pc-card__tags');
