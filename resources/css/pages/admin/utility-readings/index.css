@@ -108,30 +108,122 @@
 }
 
 .util-filter-grid select,
-.util-filter-grid input[type="number"] {
+.util-filter-grid input,
+.util-filter-grid .util-form-input {
     width: 100%;
-    height: 40px;
+    height: 40px !important;
     padding: 8px 12px;
     border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    font-size: 14px;
+    border-radius: 8px !important;
+    font-size: 13px !important;
     color: #1e293b;
     background: #ffffff;
     outline: none;
-    transition: border-color 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
     box-sizing: border-box;
 }
 
 .util-filter-grid select:focus,
-.util-filter-grid input:focus {
+.util-filter-grid input:focus,
+.util-filter-grid .util-form-input:focus {
     border-color: #0b57d0;
     box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.08);
+}
+
+/* Custom select dropdown styling within filter grid */
+.util-filter-grid select.util-form-input {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 14px;
+    padding-right: 32px;
 }
 
 .util-filter-actions {
     display: flex;
     gap: 8px;
     align-items: end;
+}
+
+/* ---- Filter Search Input with Icon ---- */
+.filter-search-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.filter-search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+}
+
+.filter-search-input {
+    padding-left: 34px !important;
+}
+
+/* ---- Responsive Filter Grids ---- */
+.util-filter-grid--logs {
+    grid-template-columns: repeat(6, 1fr);
+}
+
+.util-filter-grid--index {
+    grid-template-columns: repeat(6, 1fr);
+}
+
+/* Grid Column Spans & Alignments */
+.util-filter-grid__search {
+    grid-column: span 2;
+}
+
+.util-filter-actions--logs {
+    grid-column: 6 / 7;
+}
+
+/* Media Queries for Logs Grid */
+@media (max-width: 1200px) {
+    .util-filter-grid--logs {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .util-filter-grid__search {
+        grid-column: span 2;
+    }
+    .util-filter-actions--logs {
+        grid-column: 3 / 4;
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 768px) {
+    .util-filter-grid--logs {
+        grid-template-columns: 1fr;
+    }
+    .util-filter-grid__search {
+        grid-column: span 1;
+    }
+    .util-filter-actions--logs {
+        grid-column: span 1;
+        justify-content: flex-start;
+        margin-top: 10px;
+    }
+}
+
+/* Media Queries for Index Grid */
+@media (max-width: 1024px) {
+    .util-filter-grid--index {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .util-filter-grid--index {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* ---- Table ---- */

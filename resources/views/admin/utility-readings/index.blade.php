@@ -79,10 +79,10 @@
 {{-- ── Filter Panel ────────────────────────────────── --}}
 <div class="util-filter-panel">
     <form action="{{ route('admin.utility-readings.index') }}" method="GET">
-        <div class="util-filter-grid">
+        <div class="util-filter-grid util-filter-grid--index">
             <div>
                 <label>Tòa nhà</label>
-                <select name="block_id">
+                <select name="block_id" class="util-form-input">
                     <option value="">Tất cả tòa</option>
                     @foreach ($blocks as $block)
                         <option value="{{ $block->id }}" {{ $blockId == $block->id ? 'selected' : '' }}>
@@ -93,7 +93,7 @@
             </div>
             <div>
                 <label>Tầng</label>
-                <select name="floor_id">
+                <select name="floor_id" class="util-form-input">
                     <option value="">Tất cả tầng</option>
                     @foreach ($floors as $floor)
                         <option value="{{ $floor->id }}" data-block-id="{{ $floor->block_id }}" {{ $floorId == $floor->id ? 'selected' : '' }}>
@@ -104,7 +104,7 @@
             </div>
             <div>
                 <label>Loại</label>
-                <select name="type">
+                <select name="type" class="util-form-input">
                     <option value="">Tất cả</option>
                     <option value="electricity" {{ $type == 'electricity' ? 'selected' : '' }}>Điện</option>
                     <option value="water" {{ $type == 'water' ? 'selected' : '' }}>Nước</option>
@@ -112,16 +112,24 @@
             </div>
             <div>
                 <label>Tháng</label>
-                <input type="number" name="month" value="{{ $month }}" min="1" max="12" placeholder="Tháng">
+                <select name="month" class="util-form-input">
+                    @for ($m = 1; $m <= 12; $m++)
+                        <option value="{{ $m }}" {{ $month == $m ? 'selected' : '' }}>Tháng {{ $m }}</option>
+                    @endfor
+                </select>
             </div>
             <div>
                 <label>Năm</label>
-                <input type="number" name="year" value="{{ $year }}" min="2020" max="2100" placeholder="Năm">
+                <select name="year" class="util-form-input">
+                    @for ($y = date('Y') + 1; $y >= 2020; $y--)
+                        <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>Năm {{ $y }}</option>
+                    @endfor
+                </select>
             </div>
             <div class="util-filter-actions">
                 <button type="submit" class="util-btn util-btn--primary util-btn--sm">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align: middle;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3H2l4 6.28V17l4 2v-7.72L16 3z" />
                     </svg>
                     Lọc
                 </button>

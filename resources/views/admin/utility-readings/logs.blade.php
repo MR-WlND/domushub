@@ -27,14 +27,21 @@
 {{-- ── Filter Panel ────────────────────────────────── --}}
 <div class="util-filter-panel">
     <form action="{{ route('admin.utility-readings.logs') }}" method="GET">
-        <div class="util-filter-grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));">
-            <div>
+        <div class="util-filter-grid util-filter-grid--logs">
+            <div class="util-filter-grid__search">
                 <label>Tìm kiếm</label>
-                <input type="text" name="search" value="{{ $search }}" placeholder="Số phòng, tên người ghi..." class="util-form-input" style="height: 40px; border-radius: 8px; font-size: 13px;">
+                <div class="filter-search-wrapper">
+                    <span class="filter-search-icon">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                    </span>
+                    <input type="text" name="search" value="{{ $search }}" placeholder="Số phòng, tên người..." class="util-form-input filter-search-input">
+                </div>
             </div>
             <div>
                 <label>Tòa nhà</label>
-                <select name="block_id">
+                <select name="block_id" class="util-form-input">
                     <option value="">Tất cả tòa</option>
                     @foreach ($blocks as $block)
                         <option value="{{ $block->id }}" {{ $blockId == $block->id ? 'selected' : '' }}>
@@ -45,7 +52,7 @@
             </div>
             <div>
                 <label>Tầng</label>
-                <select name="floor_id">
+                <select name="floor_id" class="util-form-input">
                     <option value="">Tất cả tầng</option>
                     @foreach ($floors as $floor)
                         <option value="{{ $floor->id }}" data-block-id="{{ $floor->block_id }}" {{ $floorId == $floor->id ? 'selected' : '' }}>
@@ -56,7 +63,7 @@
             </div>
             <div>
                 <label>Loại</label>
-                <select name="type">
+                <select name="type" class="util-form-input">
                     <option value="">Tất cả loại</option>
                     <option value="electricity" {{ $type == 'electricity' ? 'selected' : '' }}>Điện</option>
                     <option value="water" {{ $type == 'water' ? 'selected' : '' }}>Nước</option>
@@ -64,7 +71,7 @@
             </div>
             <div>
                 <label>Hành động</label>
-                <select name="action">
+                <select name="action" class="util-form-input">
                     <option value="">Tất cả thao tác</option>
                     <option value="recorded" {{ $action == 'recorded' ? 'selected' : '' }}>Ghi số</option>
                     <option value="updated" {{ $action == 'updated' ? 'selected' : '' }}>Chỉnh sửa</option>
@@ -74,16 +81,26 @@
             </div>
             <div>
                 <label>Tháng kỳ chốt</label>
-                <input type="number" name="month" value="{{ $month }}" min="1" max="12" placeholder="Tháng" style="height: 40px;">
+                <select name="month" class="util-form-input">
+                    <option value="">Tất cả tháng</option>
+                    @for ($m = 1; $m <= 12; $m++)
+                        <option value="{{ $m }}" {{ $month == $m ? 'selected' : '' }}>Tháng {{ $m }}</option>
+                    @endfor
+                </select>
             </div>
             <div>
                 <label>Năm kỳ chốt</label>
-                <input type="number" name="year" value="{{ $year }}" min="2020" max="2100" placeholder="Năm" style="height: 40px;">
+                <select name="year" class="util-form-input">
+                    <option value="">Tất cả năm</option>
+                    @for ($y = date('Y') + 1; $y >= 2020; $y--)
+                        <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>Năm {{ $y }}</option>
+                    @endfor
+                </select>
             </div>
-            <div class="util-filter-actions">
+            <div class="util-filter-actions util-filter-actions--logs">
                 <button type="submit" class="util-btn util-btn--primary util-btn--sm">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align: middle;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3H2l4 6.28V17l4 2v-7.72L16 3z" />
                     </svg>
                     Lọc
                 </button>
