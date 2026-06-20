@@ -22,6 +22,7 @@ class TicketController extends Controller
             'search'   => 'nullable|string|max:200',
         ]);
 
+        // ── Tab 1: Tickets list ──
         $query = Ticket::with(['apartment.floor.block', 'sender', 'handler'])
             ->orderByRaw("FIELD(priority, 'urgent','high','medium','low')")
             ->orderByRaw("FIELD(status, 'pending','assigned','in_progress','completed','cancelled')")
@@ -67,10 +68,66 @@ class TicketController extends Controller
             'completed'   => (clone $baseQuery)->where('status', 'completed')->count(),
         ];
 
-        $technicians = User::where('role', 'technician')->where('status', 'active')->orderBy('name')->get();
+        $technicians = User::where('role', 'technician')
+            ->where('status', 'active')
+            ->withCount(['handledTickets as active_tickets_count' => fn($q) => $q->whereIn('status', ['assigned', 'in_progress'])])
+            ->orderBy('name')
+            ->get();
+
         $blocks = \App\Models\Block::orderBy('name')->get();
 
-        return view('admin.tickets.index', compact('tickets', 'stats', 'technicians', 'blocks'));
+        // ── Tab 2: Dispatch data (admin/manager only) ──
+        $pendingTickets = collect();
+        $activeTickets  = collect();
+        $dispatchStats  = ['pending' => 0, 'active' => 0];
+
+        if (in_array($user->role, ['admin', 'manager'])) {
+            $pendingTickets = Ticket::with(['apartment.floor.block', 'sender'])
+                ->where('status', 'pending')->latest()->get();
+
+            $activeTickets = Ticket::with(['apartment.floor.block', 'sender', 'handler'])
+                ->whereIn('status', ['assigned', 'in_progress'])->latest()->get();
+
+            $dispatchStats = [
+                'pending' => $pendingTickets->count(),
+                'active'  => $activeTickets->count(),
+            ];
+        }
+
+        // ── Tab 3: Report data (admin/manager only) ──
+        $pendingReview   = collect();
+        $approvedReports = collect();
+        $reworkReports   = collect();
+        $reportStats     = ['total' => 0, 'pending' => 0, 'approved' => 0, 'rework' => 0];
+
+        if (in_array($user->role, ['admin', 'manager'])) {
+            $allTickets = Ticket::with(['apartment.floor.block', 'handler', 'progress.updatedBy'])->get();
+
+            $pendingReview = $allTickets->filter(function ($t) {
+                $last = $t->progress->last();
+                return $t->status === 'completed' && $last?->status === 'completed';
+            });
+
+            $approvedReports = $allTickets->filter(fn($t) => $t->progress->last()?->status === 'approved');
+
+            $reworkReports = $allTickets->filter(function ($t) {
+                $last = $t->progress->last();
+                return ($t->status === 'in_progress' && $t->reopened_count > 0) || $last?->status === 'rejected';
+            });
+
+            $reportStats = [
+                'total'    => $pendingReview->count() + $approvedReports->count() + $reworkReports->count(),
+                'pending'  => $pendingReview->count(),
+                'approved' => $approvedReports->count(),
+                'rework'   => $reworkReports->count(),
+            ];
+        }
+
+        return view('admin.tickets.index', compact(
+            'tickets', 'stats', 'technicians', 'blocks',
+            'pendingTickets', 'activeTickets', 'dispatchStats',
+            'pendingReview', 'approvedReports', 'reworkReports', 'reportStats'
+        ));
     }
 
     public function report(Request $request)
