@@ -98,6 +98,7 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/admin/utility-readings/get-old-value', [UtilityMeterController::class, 'getOldValue'])->name('admin.utility-readings.get-old-value');
     Route::get('/admin/utility-readings/import-template', [UtilityMeterController::class, 'downloadTemplate'])->name('admin.utility-readings.import-template');
     Route::post('/admin/utility-readings/import', [UtilityMeterController::class, 'import'])->name('admin.utility-readings.import');
+    Route::get('/admin/utility-readings/logs', [UtilityMeterController::class, 'logs'])->name('admin.utility-readings.logs');
     Route::get('/admin/utility-readings/{id}', [UtilityMeterController::class, 'show'])->name('admin.utility-readings.show');
     Route::get('/admin/utility-readings/{id}/edit', [UtilityMeterController::class, 'edit'])->name('admin.utility-readings.edit');
     Route::put('/admin/utility-readings/{id}', [UtilityMeterController::class, 'update'])->name('admin.utility-readings.update');
@@ -297,12 +298,16 @@ Route::middleware(['resident'])->group(function () {
 Route::middleware(['admin'])->name('admin.')->group(function () {
     // Quản lý bài đăng cư dân (Admin Portal)
     Route::get('/admin/posts', [\App\Http\Controllers\Admin\PostController::class, 'index'])->name('posts.index');
+    Route::post('/admin/posts/{id}/restore', [\App\Http\Controllers\Admin\PostController::class, 'restore'])->name('posts.restore');
     Route::post('/admin/posts/{id}/toggle-status', [\App\Http\Controllers\Admin\PostController::class, 'toggleStatus'])->name('posts.toggle-status');
     Route::post('/admin/posts/{id}/dismiss-reports', [\App\Http\Controllers\Admin\PostController::class, 'dismissReports'])->name('posts.dismiss-reports');
     Route::get('/admin/posts/{id}/json', [\App\Http\Controllers\Admin\PostController::class, 'getPostJson'])->name('posts.json');
     Route::delete('/admin/posts/{id}', [\App\Http\Controllers\Admin\PostController::class, 'destroy'])->name('posts.destroy');
     Route::post('/admin/comments/{id}/dismiss-reports', [\App\Http\Controllers\Admin\PostController::class, 'dismissCommentReports'])->name('comments.dismiss-reports');
     Route::delete('/admin/comments/{id}', [\App\Http\Controllers\Admin\PostController::class, 'destroyComment'])->name('comments.destroy');
+    Route::post('/admin/comments/{id}/restore', [\App\Http\Controllers\Admin\PostController::class, 'restoreComment'])->name('comments.restore');
+    Route::post('/admin/users/{id}/ban-posting', [\App\Http\Controllers\Admin\PostController::class, 'banPosting'])->name('users.ban-posting');
+    Route::post('/admin/users/{id}/ban-commenting', [\App\Http\Controllers\Admin\PostController::class, 'banCommenting'])->name('users.ban-commenting');
 });
 
 // Fallback route to serve uploaded public storage files (useful if symlink is missing or fails on local Windows development)
