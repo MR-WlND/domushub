@@ -149,6 +149,12 @@
         </form>
     </div>
     @endif
+    <div class="util-table-controls" style="padding: 10px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: flex-end; align-items: center; background: #f8fafc; gap: 8px;">
+        <label class="util-toggle-label" style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #475569; cursor: pointer; user-select: none; margin: 0;">
+            <input type="checkbox" id="toggleProofImages" style="width: 16px; height: 16px; accent-color: #00236f; cursor: pointer;">
+            Hiện ảnh công tơ thu nhỏ
+        </label>
+    </div>
     <div class="util-table-wrap">
         <table class="util-table">
             <thead>
@@ -197,14 +203,21 @@
                     </td>
 
                     <td class="text-strong">
-                        {{ number_format($reading->new_value) }}
-                        @if($reading->image_proof)
-                        <span class="proof-photo-btn" data-img="{{ asset('storage/' . $reading->image_proof) }}" style="cursor:pointer; margin-left:6px; color:#0b57d0; display:inline-flex; align-items:center; vertical-align:middle;" title="Xem minh chứng công tơ">
-                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                            </svg>
-                        </span>
-                        @endif
+                        <div style="display: inline-flex; align-items: center; gap: 8px;">
+                            <span>{{ number_format($reading->new_value) }}</span>
+                            @if($reading->image_proof)
+                            <span class="proof-photo-btn" data-img="{{ asset('storage/' . $reading->image_proof) }}" style="cursor:pointer; color:#0b57d0; display:inline-flex; align-items:center; vertical-align:middle;" title="Xem minh chứng công tơ">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                                </svg>
+                            </span>
+                            <div class="proof-thumbnail-container">
+                                <div class="proof-photo-wrapper">
+                                    <img src="{{ asset('storage/' . $reading->image_proof) }}" class="proof-thumbnail" data-img="{{ asset('storage/' . $reading->image_proof) }}" data-info="Phòng {{ $reading->apartment->apartment_number ?? 'N/A' }} - {{ $reading->type === 'electricity' ? 'Điện' : 'Nước' }}" alt="Proof">
+                                </div>
+                            </div>
+                            @endif
+                        </div>
                     </td>
                     @if(auth()->user()->role !== 'technician')
                     <td>
@@ -417,7 +430,7 @@
                     <div id="detRejectInfo" style="grid-column: span 2; background: #fef2f2; border: 1px solid #fecaca; padding: 12px; border-radius: 8px; display: none;">
                         <div style="font-size: 11px; font-weight: 600; color: #b91c1c; text-transform: uppercase;">Lý do từ chối</div>
                         <div style="font-size: 14px; font-weight: 600; color: #991b1b; margin-top: 4px;" id="detRejectReason"></div>
-                        <div style="font-size: 12px; color: #b91c1c; margin-top: 4px;">Người từ chối: <span id="detRejecter" style="font-weight: 700;"></span></div>
+                        <div style="font-size: 12px; color: #b91c1c; margin-top: 4px;">Người từ chối: <span id="detRejecter" style="font-weight: 700;"></span> | Ngày từ chối: <span id="detRejectTime" style="font-weight: 700;"></span></div>
                     </div>
                     <div style="grid-column: span 2;">
                         <div style="font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase;">Người ghi nhận</div>
@@ -461,6 +474,12 @@
     to { transform: rotate(360deg); }
 }
 </style>
+
+{{-- ── Global Proof Preview tooltip ─────────────────── --}}
+<div id="globalProofPreview">
+    <div class="proof-hover-header"></div>
+    <img src="" alt="Xem trước">
+</div>
 
 @endsection
 
@@ -517,7 +536,33 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('proofModal').classList.remove('active');
     }
 
-    document.querySelectorAll('.proof-photo-btn').forEach(btn => {
+    const previewEl = document.getElementById('globalProofPreview');
+    const previewImg = previewEl ? previewEl.querySelector('img') : null;
+    const previewHeader = previewEl ? previewEl.querySelector('.proof-hover-header') : null;
+
+    function positionPreview(target, preview) {
+        const rect = target.getBoundingClientRect();
+        const previewWidth = 250; // width of preview element
+        const previewHeight = 280; // approximate max height including padding & header
+
+        let left = rect.left + (rect.width / 2) - (previewWidth / 2);
+        let top = rect.top - previewHeight - 10;
+
+        // Check window boundaries
+        if (left < 10) left = 10;
+        if (left + previewWidth > window.innerWidth - 10) {
+            left = window.innerWidth - previewWidth - 10;
+        }
+        if (top < 10) {
+            // Show below target if it goes off top of screen
+            top = rect.bottom + 10;
+        }
+
+        preview.style.left = left + 'px';
+        preview.style.top = top + 'px';
+    }
+
+    document.querySelectorAll('.proof-photo-btn, .proof-thumbnail').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
             const imgUrl = this.dataset.img;
@@ -526,7 +571,54 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('proofModal').classList.add('active');
             }
         });
+
+        // Add hover preview to thumbnails
+        if (btn.classList.contains('proof-thumbnail') && previewEl && previewImg && previewHeader) {
+            btn.addEventListener('mouseenter', function(e) {
+                const imgUrl = this.dataset.img;
+                const info = this.dataset.info || 'Minh chứng công tơ';
+                previewImg.src = imgUrl;
+                previewHeader.textContent = info;
+                
+                positionPreview(this, previewEl);
+                previewEl.classList.add('active');
+            });
+
+            btn.addEventListener('mousemove', function(e) {
+                positionPreview(this, previewEl);
+            });
+
+            btn.addEventListener('mouseleave', function() {
+                previewEl.classList.remove('active');
+            });
+        }
     });
+
+    // Toggle showing proof thumbnails
+    const toggleProofImages = document.getElementById('toggleProofImages');
+    const tableWrap = document.querySelector('.util-table-wrap');
+
+    if (toggleProofImages && tableWrap) {
+        // Load state from localStorage, default to true for convenience
+        const showImagesState = localStorage.getItem('domushub_show_proof_images');
+        if (showImagesState === 'false') {
+            toggleProofImages.checked = false;
+            tableWrap.classList.remove('show-proof-thumbnails');
+        } else {
+            toggleProofImages.checked = true;
+            tableWrap.classList.add('show-proof-thumbnails');
+        }
+
+        toggleProofImages.addEventListener('change', function() {
+            if (this.checked) {
+                tableWrap.classList.add('show-proof-thumbnails');
+                localStorage.setItem('domushub_show_proof_images', 'true');
+            } else {
+                tableWrap.classList.remove('show-proof-thumbnails');
+                localStorage.setItem('domushub_show_proof_images', 'false');
+            }
+        });
+    }
 
     // Batch approve selection
     const selectAllReadings = document.getElementById('selectAllReadings');
@@ -659,9 +751,13 @@ function openDetailModal(id) {
             const rejectInfoEl = document.getElementById('detRejectInfo');
             const rejectReasonEl = document.getElementById('detRejectReason');
             const rejecterEl = document.getElementById('detRejecter');
+            const rejectTimeEl = document.getElementById('detRejectTime');
             if (reading.status === 'rejected') {
                 rejectReasonEl.textContent = reading.reject_reason || 'Không rõ lý do';
                 rejecterEl.textContent = reading.rejecter_name || 'Kế toán viên';
+                if (rejectTimeEl) {
+                    rejectTimeEl.textContent = reading.updated_at || '';
+                }
                 rejectInfoEl.style.display = 'block';
             } else {
                 rejectInfoEl.style.display = 'none';

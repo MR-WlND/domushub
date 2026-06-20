@@ -4,6 +4,35 @@
 
 @push('styles')
     @vite(['resources/css/resident/tickets.css'])
+    <style>
+        .tk-upload__preview-item {
+            position: relative;
+        }
+        .tk-upload__preview-item-remove {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: rgba(15, 23, 42, 0.75);
+            color: #ffffff;
+            border: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+            z-index: 10;
+        }
+        .tk-upload__preview-item-remove:hover {
+            background: rgba(220, 38, 38, 0.9);
+            transform: scale(1.15);
+        }
+        .tk-upload__preview-item-remove i {
+            font-size: 10px;
+        }
+    </style>
 @endpush
 
 @section('content')
@@ -153,57 +182,93 @@
 </div>
 
 <script>
+// Biến toàn cục lưu trữ DataTransfer để quản lý danh sách file được chọn
+let ticketFilesTransfer = new DataTransfer();
+
 function previewTicketImages(input) {
     const files = input.files;
+    if (!files) return;
+
+    // Duyệt và thêm các file mới vào DataTransfer (giới hạn tối đa 5 ảnh)
+    for (let i = 0; i < files.length; i++) {
+        if (ticketFilesTransfer.files.length >= 5) {
+            alert('Chỉ được chọn tối đa 5 ảnh.');
+            break;
+        }
+        ticketFilesTransfer.items.add(files[i]);
+    }
+    
+    // Cập nhật lại danh sách file cho input để form submit gửi đi đầy đủ
+    input.files = ticketFilesTransfer.files;
+    
+    // Render giao diện preview
+    renderTicketPreviews();
+}
+
+function renderTicketPreviews() {
     const previewContainer = document.getElementById('upload-preview');
     const placeholder = document.getElementById('upload-placeholder');
-
-    if (files.length > 5) {
-        alert('Chỉ được chọn tối đa 5 ảnh.');
-        input.value = '';
+    
+    previewContainer.innerHTML = '';
+    
+    if (ticketFilesTransfer.files.length === 0) {
+        placeholder.style.display = 'flex';
+        previewContainer.style.display = 'none';
         return;
     }
-
-    if (files.length > 0) {
-        previewContainer.innerHTML = '';
-        placeholder.style.display = 'none';
-        previewContainer.style.display = 'grid';
-
-        Array.from(files).forEach((file, index) => {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const div = document.createElement('div');
-                div.className = 'tk-upload__preview-item';
-                div.innerHTML = `
-                    <img src="${e.target.result}" alt="Ảnh ${index + 1}">
-                    <span class="tk-upload__preview-label">Ảnh ${index + 1}</span>
-                `;
-                previewContainer.appendChild(div);
-            }
-            reader.readAsDataURL(file);
-        });
-
-        // Nút thay đổi ảnh
+    
+    placeholder.style.display = 'none';
+    previewContainer.style.display = 'grid';
+    
+    Array.from(ticketFilesTransfer.files).forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const div = document.createElement('div');
+            div.className = 'tk-upload__preview-item';
+            div.innerHTML = `
+                <img src="${e.target.result}" alt="Ảnh ${index + 1}">
+                <span class="tk-upload__preview-label">Ảnh ${index + 1}</span>
+                <button type="button" class="tk-upload__preview-item-remove" onclick="removeTicketImage(event, ${index})" title="Xóa ảnh này">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            `;
+            previewContainer.appendChild(div);
+        }
+        reader.readAsDataURL(file);
+    });
+    
+    // Nút thêm ảnh mới
+    if (ticketFilesTransfer.files.length < 5) {
         const changeBtn = document.createElement('div');
         changeBtn.className = 'tk-upload__change-btn';
         changeBtn.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            Chọn lại ảnh
+            Thêm ảnh
         `;
         changeBtn.onclick = function(e) {
             e.stopPropagation();
-            removeTicketPreviews();
             document.getElementById('ticket-images').click();
         };
         previewContainer.appendChild(changeBtn);
     }
 }
 
-function removeTicketPreviews() {
-    document.getElementById('ticket-images').value = "";
-    document.getElementById('upload-preview').style.display = 'none';
-    document.getElementById('upload-preview').innerHTML = '';
-    document.getElementById('upload-placeholder').style.display = 'flex';
+function removeTicketImage(event, index) {
+    event.stopPropagation();
+    const input = document.getElementById('ticket-images');
+    
+    // Tạo DataTransfer mới bỏ qua file ở index cần xóa
+    const newTransfer = new DataTransfer();
+    const files = ticketFilesTransfer.files;
+    for (let i = 0; i < files.length; i++) {
+        if (i !== index) {
+            newTransfer.items.add(files[i]);
+        }
+    }
+    
+    ticketFilesTransfer = newTransfer;
+    input.files = ticketFilesTransfer.files;
+    renderTicketPreviews();
 }
 </script>
 
