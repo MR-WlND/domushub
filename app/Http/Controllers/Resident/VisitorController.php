@@ -62,16 +62,21 @@ class VisitorController extends Controller
         }
 
         $validated = $request->validate([
-            'guest_name'  => ['required', 'string', 'max:100'],
-            'guest_phone' => ['nullable', 'string', 'max:20', 'regex:/^[0-9\+\-\s]+$/'],
-            'expired_at'  => ['required', 'date', 'after:now'],
-            'note'        => ['nullable', 'string', 'max:500'],
+            'guest_name'    => ['required', 'string', 'max:100'],
+            'guest_phone'   => ['nullable', 'string', 'max:20', 'regex:/^[0-9\+\-\s]+$/'],
+            'expired_at'    => ['required', 'date', 'after:now'],
+            'note'          => ['nullable', 'string', 'max:500'],
+            'vehicle_plate' => ['nullable', 'string', 'max:20', 'regex:/^[A-Za-z0-9\-\.\s]+$/'],
+            'vehicle_type'  => ['nullable', 'required_with:vehicle_plate', 'in:motorbike,electric_bike,car'],
         ], [
             'guest_name.required'  => 'Vui lòng nhập tên khách.',
             'guest_name.max'       => 'Tên khách không quá 100 ký tự.',
             'guest_phone.regex'    => 'Số điện thoại không hợp lệ.',
             'expired_at.required'  => 'Vui lòng chọn thời gian hợp lệ.',
             'expired_at.after'     => 'Thời gian hợp lệ phải ở tương lai.',
+            'vehicle_plate.regex'  => 'Biển số xe không hợp lệ.',
+            'vehicle_type.required_with' => 'Vui lòng chọn loại xe khi nhập biển số.',
+            'vehicle_type.in'      => 'Loại xe không hợp lệ.',
         ]);
 
         $token = Visitor::generateToken();
@@ -85,6 +90,8 @@ class VisitorController extends Controller
             'qr_token'      => $token,
             'expired_at'    => $validated['expired_at'],
             'note'          => $validated['note'] ?? null,
+            'vehicle_plate' => !empty($validated['vehicle_plate']) ? strtoupper($validated['vehicle_plate']) : null,
+            'vehicle_type'  => $validated['vehicle_type'] ?? null,
             'status'        => 'pending',
         ]);
 

@@ -139,7 +139,7 @@ class VehicleCheckinController extends Controller
             'brand'         => $vehicle->brand,
             'status'        => $vehicle->status,
             'status_label'  => $vehicle->statusLabel(),
-            'apartment'     => $apartment ? $apartment->unit_number : '—',
+            'apartment'     => $apartment ? $apartment->apartment_number : '—',
             'block'         => $block ? $block->name : '—',
             'parking_lot'   => $vehicle->parkingLot?->lot_number,
             'image'         => $vehicle->image ? asset('storage/' . $vehicle->image) : null,

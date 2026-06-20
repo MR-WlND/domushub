@@ -1,207 +1,237 @@
-/* ==========================================================================
-   1. LAYOUT CHUNG & HEADER (C?u tr�c chung h? th?ng)
-   ========================================================================== */
+/* ============================================================
+   RESIDENT VEHICLES — Unified Design System
+   Prefix: vp- (Vehicle Page)
+   ============================================================ */
+
+/* ─── Layout ─── */
 .vp {
     max-width: 1080px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 20px;
     padding: 0 1rem;
 }
 
+/* ─── Header ─── */
 .vp__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 1.5rem 2rem;
-    background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
-    border: 1px solid #e2e8f0;
-    border-radius: 22px;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, .04);
+    padding: 1.25rem 1.5rem;
+    background: #ffffff;
+    border: 1px solid #e8ecf4;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, .04);
 }
 
 .vp__eyebrow {
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
     text-transform: uppercase;
-    letter-spacing: 0.18em;
-    color: #1d4ed8;
+    letter-spacing: 0.12em;
+    color: #6366f1;
     font-weight: 700;
-    margin-bottom: 0.3rem;
+    margin-bottom: 2px;
 }
 
 .vp__title {
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: 800;
     color: #0f172a;
     margin: 0;
+    line-height: 1.2;
 }
 
-/* ==========================================================================
-   2. TH�NG B�O ALERT (Success / Error)
-   ========================================================================== */
+/* ─── Alert ─── */
 .vp-alert {
     display: flex;
-    align-items: center;
-    gap: 12px;
+    align-items: flex-start;
+    gap: 10px;
     padding: 14px 18px;
-    border-radius: 18px;
-    font-size: 0.95rem;
+    border-radius: 12px;
+    font-size: 0.875rem;
     font-weight: 600;
-    box-shadow: inset 0 0 0 1px rgba(15, 23, 42, .08);
+    animation: vpFadeIn .25s ease;
 }
-.vp-alert--success { background: #f0fdf4; border-color: #86efac; color: #166534; }
-.vp-alert--error   { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
 
-/* ==========================================================================
-   3. TR?NG TH�I TR?NG (Empty State)
-   ========================================================================== */
+@keyframes vpFadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.vp-alert--success {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.vp-alert--error {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+/* ─── Empty State ─── */
 .vp-empty {
-    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-    border: 2px solid #dbeafe;
-    border-radius: 26px;
-    padding: 4rem 2rem;
+    background: #ffffff;
+    border: 1px solid #e8ecf4;
+    border-radius: 16px;
+    padding: 3.5rem 2rem;
     text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, .08);
+    gap: 0.75rem;
 }
 
 .vp-empty__visual {
     position: relative;
-    width: 110px;
-    height: 110px;
+    width: 90px;
+    height: 90px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 0.2rem;
+    margin-bottom: 0.5rem;
 }
 
 .vp-empty__circle {
     position: absolute;
     border-radius: 50%;
 }
-.vp-empty__circle--outer { width: 110px; height: 110px; background: rgba(59, 130, 246, .12); }
-.vp-empty__circle--inner { width: 76px; height: 76px; background: #eff6ff; }
+.vp-empty__circle--outer { width: 90px; height: 90px; background: #eef2ff; }
+.vp-empty__circle--inner { width: 62px; height: 62px; background: #e0e7ff; }
 
 .vp-empty__icon-wrap {
     position: relative;
     z-index: 1;
-    color: #1d4ed8;
+    color: #6366f1;
 }
 
-.vp-empty__title { font-size: 1.15rem; font-weight: 800; color: #0f172a; }
+.vp-empty__title {
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
 .vp-empty__desc {
-    font-size: 0.95rem;
-    color: #475569;
-    max-width: 380px;
-    line-height: 1.75;
+    font-size: 0.875rem;
+    color: #64748b;
+    max-width: 360px;
+    line-height: 1.6;
+    margin: 0;
 }
 
-/* ==========================================================================
-   4. KH?I TH?NG K� (Stats Dashboard)
-   ========================================================================== */
+/* ─── Stats ─── */
 .vp-stats {
-    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-    border: 1px solid #e2e8f0;
-    border-radius: 22px;
-    padding: 1.5rem;
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 1rem;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, .04);
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
 }
 
 .vp-stat {
+    background: #ffffff;
+    border: 1px solid #e8ecf4;
+    border-radius: 14px;
+    padding: 14px 16px;
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1rem 1.15rem;
-    border-radius: 18px;
-    background: white;
-    border: 1px solid #eef2ff;
+    gap: 12px;
+    transition: box-shadow .15s ease;
+}
+
+.vp-stat:hover {
+    box-shadow: 0 4px 12px rgba(15, 23, 42, .06);
 }
 
 .vp-stat__icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f1f5f9;
-    color: #475569;
+    flex-shrink: 0;
 }
 
-.stat--all .vp-stat__icon { background: #eff6ff; color: #2563eb; }
-.stat--pending .vp-stat__icon { background: #fffbeb; color: #d97706; }
-.stat--active .vp-stat__icon { background: #f0fdf4; color: #166534; }
-.stat--inactive .vp-stat__icon { background: #fef2f2; color: #dc2626; }
+.stat--all .vp-stat__icon { background: #eef2ff; color: #4f46e5; }
+.stat--pending .vp-stat__icon { background: #fef9c3; color: #a16207; }
+.stat--active .vp-stat__icon { background: #dcfce7; color: #15803d; }
+.stat--inactive .vp-stat__icon { background: #fee2e2; color: #b91c1c; }
 
-.vp-stat__num { font-size: 1.5rem; font-weight: 800; color: #0f172a; line-height: 1.2; }
-.vp-stat__label { font-size: 0.78rem; color: #64748b; font-weight: 600; display: block; }
+.vp-stat__num {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.1;
+}
 
-.color-pending { color: #d97706 !important; }
-.color-active { color: #166534 !important; }
-.color-inactive { color: #dc2626 !important; }
+.vp-stat__label {
+    font-size: 0.6875rem;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    display: block;
+    margin-top: 1px;
+}
 
-/* ==========================================================================
-   5. DANH S�CH & TH? CARD PH��NG TI?N (Vehicle Grid List)
-   ========================================================================== */
+.color-pending { color: #a16207 !important; }
+.color-active { color: #15803d !important; }
+.color-inactive { color: #b91c1c !important; }
+
+/* ─── Vehicle Cards List ─── */
 .vp-list {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .vp-card {
     background: #ffffff;
-    border-radius: 20px;
-    padding: 1.25rem;
+    border-radius: 14px;
+    padding: 16px 20px;
     display: grid;
-    grid-template-columns: 64px 1fr auto; /* C?t 1: ?nh (64px) | C?t 2: N?i dung | C?t 3: Tr?ng th�i & QR */
-    gap: 1.25rem;
+    grid-template-columns: 52px 1fr auto;
+    gap: 16px;
     align-items: center;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, .06);
-    border: 1px solid #e2e8f0;
-    transition: transform .2s ease, box-shadow .2s ease;
+    border: 1px solid #e8ecf4;
+    transition: box-shadow .15s ease, border-color .15s ease;
 }
 
 .vp-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(15, 23, 42, .12);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, .07);
+    border-color: #cbd5e1;
 }
 
+/* Accent bar */
 .vp-card__accent {
     position: absolute;
     left: 0;
     top: 0;
     bottom: 0;
-    width: 5px;
-    border-radius: 20px 0 0 20px;
+    width: 3px;
 }
-.card--active .vp-card__accent { background: linear-gradient(180deg, #10b981 0%, #059669 100%); }
-.card--pending .vp-card__accent { background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%); }
-.card--pending_renewal .vp-card__accent { background: linear-gradient(180deg, #f97316 0%, #ea580c 100%); }
-.card--locked .vp-card__accent { background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%); }
-.card--inactive .vp-card__accent { background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%); }
+.card--active .vp-card__accent { background: #22c55e; }
+.card--pending .vp-card__accent { background: #eab308; }
+.card--pending_renewal .vp-card__accent { background: #f97316; }
+.card--locked .vp-card__accent { background: #ef4444; }
+.card--inactive .vp-card__accent { background: #94a3b8; }
 
-/* --- Khung ?nh Thumbnail & Fallback Icon --- */
+/* ─── Thumbnail ─── */
 .vp-card__thumb {
-    width: 64px;
-    height: 64px;
-    border-radius: 14px;
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
     overflow: hidden;
     background: #f8fafc;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid #edf2f7;
+    border: 1px solid #f1f5f9;
     flex-shrink: 0;
 }
 
@@ -210,10 +240,10 @@
     height: 100%;
     object-fit: cover;
     cursor: zoom-in;
-    transition: transform 0.2s ease;
+    transition: transform .2s ease;
 }
 .vp-card__img:hover {
-    transform: scale(1.1);
+    transform: scale(1.06);
 }
 
 .vp-card__icon-fallback {
@@ -222,57 +252,59 @@
     justify-content: center;
     width: 100%;
     height: 100%;
+    color: #94a3b8;
 }
-.card--active .vp-card__icon-fallback { color: #2563eb; background: #eff6ff; }
-.card--pending .vp-card__icon-fallback { color: #d97706; background: #fffbeb; }
-.card--inactive .vp-card__icon-fallback { color: #dc2626; background: #fef2f2; }
 
-/* --- N?i dung chi ti?t xe --- */
+.card--active .vp-card__icon-fallback { color: #16a34a; background: #f0fdf4; }
+.card--pending .vp-card__icon-fallback { color: #ca8a04; background: #fefce8; }
+.card--locked .vp-card__icon-fallback { color: #dc2626; background: #fef2f2; }
+.card--pending_renewal .vp-card__icon-fallback { color: #ea580c; background: #fff7ed; }
+.card--inactive .vp-card__icon-fallback { color: #64748b; background: #f8fafc; }
+
+/* ─── Card Body ─── */
 .vp-card__body { min-width: 0; }
+
 .vp-card__plate {
-    font-size: 1.25rem;
+    font-size: 1.0625rem;
     font-weight: 800;
     color: #0f172a;
-    letter-spacing: 0.8px;
-    margin: 0 0 0.6rem 0;
-    font-family: 'Courier New', monospace;
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    letter-spacing: 0.3px;
+    margin: 0 0 4px 0;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
 }
 
 .vp-card__meta {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     flex-wrap: wrap;
 }
 
 .vp-card__tag {
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
     background: #f1f5f9;
     color: #475569;
-    padding: 4px 10px;
-    border-radius: 99px;
+    padding: 2px 8px;
+    border-radius: 5px;
     font-weight: 600;
 }
-.text-brand { background: #e0f2fe !important; color: #0369a1 !important; }
+
+.text-brand { background: #eef2ff !important; color: #4338ca !important; }
 .text-capitalize { text-transform: capitalize; }
 
 .vp-card__date {
-    font-size: 0.8rem;
+    font-size: 0.6875rem;
     color: #94a3b8;
     display: inline-flex;
     align-items: center;
 }
 
-/* --- Khu v?c b�n ph?i (QR & Tr?ng th�i) --- */
+/* ─── Card Right Column ─── */
 .vp-card__right {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 0.6rem;
+    gap: 6px;
     justify-content: center;
 }
 
@@ -280,92 +312,103 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid #cbd5e1;
     padding: 3px;
-    border-radius: 10px;
-    background: white;
+    border-radius: 6px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
 }
 .vp-card__qr img {
-    width: 46px;
-    height: 46px;
+    width: 40px;
+    height: 40px;
     object-fit: contain;
 }
 
-/* ==========================================================================
-   6. H? TH?NG BADGES & BUTTONS (Nh?n & N�t b?m)
-   ========================================================================== */
+/* ─── Badges ─── */
 .vp-badge {
     display: inline-flex;
     align-items: center;
-    padding: 6px 14px;
-    border-radius: 999px;
-    font-size: 0.75rem;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.6875rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.02em;
 }
-.badge--active { background: #d1fae5; color: #065f46; }
-.badge--pending { background: #fef3c7; color: #92400e; }
+
+.badge--active { background: #dcfce7; color: #166534; }
+.badge--pending { background: #fef9c3; color: #854d0e; }
 .badge--warning { background: #ffedd5; color: #c2410c; }
 .badge--danger { background: #fee2e2; color: #991b1b; }
-.badge--inactive { background: #fee2e2; color: #991b1b; }
+.badge--inactive { background: #f1f5f9; color: #475569; }
 
+/* ─── Lot Tag ─── */
+.vp-lot-tag {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: #4338ca;
+    background: #eef2ff;
+    padding: 3px 8px;
+    border-radius: 5px;
+}
+
+/* ─── Buttons ─── */
 .vp-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    height: 44px;
-    padding: 0 18px;
-    border-radius: 12px;
-    font-size: 0.9rem;
+    height: 38px;
+    padding: 0 16px;
+    border-radius: 10px;
+    font-size: 0.8125rem;
     font-weight: 700;
     cursor: pointer;
     text-decoration: none;
-    transition: all .2s ease;
+    transition: all .15s ease;
     border: 1px solid transparent;
 }
 
 .vp-btn--primary {
-    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+    background: #4f46e5;
     color: #ffffff;
-    box-shadow: 0 4px 12px rgba(29, 78, 216, 0.2);
+    box-shadow: 0 1px 3px rgba(79, 70, 229, .2);
 }
 .vp-btn--primary:hover {
-    background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(29, 78, 216, 0.3);
+    background: #4338ca;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, .25);
 }
 
 .vp-btn--outline {
     background: #ffffff;
-    border-color: #cbd5e1;
+    border-color: #e2e8f0;
     color: #475569;
-    font-weight: 600;
 }
 .vp-btn--outline:hover {
     background: #f8fafc;
-    border-color: #94a3b8;
+    border-color: #cbd5e1;
 }
 
 .vp-btn--ghost {
     background: transparent;
     color: #64748b;
+    height: 32px;
+    padding: 0 10px;
+    font-size: 0.75rem;
+    border-radius: 6px;
 }
 .vp-btn--ghost:hover {
-    background: #f1f5f9;
+    background: #f8fafc;
 }
-.text-danger { color: #ef4444 !important; }
+
+.text-danger { color: #dc2626 !important; }
 .text-danger:hover { background: #fef2f2 !important; }
 
-/* ==========================================================================
-   7. C?U TR�C PANEL FORM ��NG K? (D�ng cho trang create.blade.php)
-   ========================================================================== */
+/* ─── Form Panel ─── */
 .vp-panel {
     background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 24px;
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+    border: 1px solid #e8ecf4;
+    border-radius: 16px;
     overflow: hidden;
 }
 
@@ -376,68 +419,70 @@
 .vp-field {
     display: flex;
     flex-direction: column;
-    gap: 0.45rem;
-    margin-bottom: 1.25rem;
+    gap: 6px;
 }
 
 .vp-label {
-    font-size: 0.88rem;
-    font-weight: 600;
-    color: #334155;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: #374151;
 }
 
 .vp-input {
     width: 100%;
-    height: 46px;
+    height: 42px;
     padding: 0 14px;
-    border-radius: 12px;
-    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
     background: #ffffff;
-    font-size: 0.95rem;
+    font-size: 0.875rem;
     color: #0f172a;
     outline: none;
     box-sizing: border-box;
-    transition: all .15s ease;
+    transition: border-color .15s ease, box-shadow .15s ease;
 }
+
 .vp-input:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, .08);
 }
+
 .vp-input--err { border-color: #dc2626 !important; }
 
 select.vp-input {
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 14px center;
-    background-size: 16px;
-    padding-right: 40px;
+    background-position: right 12px center;
+    background-size: 14px;
+    padding-right: 36px;
+    cursor: pointer;
 }
 
 .vp-panel__actions {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 0.75rem;
-    margin-top: 2rem;
+    gap: 10px;
+    margin-top: 1.5rem;
     padding-top: 1.25rem;
     border-top: 1px solid #f1f5f9;
 }
 
-/* --- Khung upload ?nh k�o th? c?a Form --- */
+/* ─── Upload ─── */
 .vp-upload {
-    border: 2px dashed #cbd5e1;
-    border-radius: 16px;
+    border: 2px dashed #e2e8f0;
+    border-radius: 12px;
     cursor: pointer;
     overflow: hidden;
-    background: #fbfdff;
-    transition: .2s ease;
+    background: #fafbfd;
+    transition: border-color .15s ease, background .15s ease;
 }
-.vp-upload:hover { border-color: #93c5fd; background: #eff6ff; }
+.vp-upload:hover { border-color: #a5b4fc; background: #f5f3ff; }
 .vp-upload__input { display: none; }
 
 .vp-upload__placeholder {
-    padding: 1.5rem 1.25rem;
+    padding: 1.75rem 1.5rem;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -445,94 +490,101 @@ select.vp-input {
     color: #64748b;
     text-align: center;
 }
-.vp-upload__placeholder p { font-size: 0.95rem; color: #334155; font-weight: 600; margin: 0; }
-.vp-upload__placeholder span { font-size: 0.83rem; }
+.vp-upload__placeholder p { font-size: 0.875rem; color: #374151; font-weight: 600; margin: 0; }
+.vp-upload__placeholder span { font-size: 0.75rem; color: #94a3b8; }
 
-.vp-upload__preview { position: relative; width: 100%; min-height: 160px; }
-.vp-upload__preview img { width: 100%; height: 100%; object-fit: cover; border-radius: 16px; }
+.vp-upload__preview { position: relative; width: 100%; min-height: 180px; }
+.vp-upload__preview img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
 
-/* ==========================================================================
-   8. LIGHTBOX MODAL (Xem ?nh ph�ng to gi?a m�n h?nh)
-   ========================================================================== */
+/* ─── Chevron ─── */
+.vp-chevron {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #64748b;
+}
+
+/* ─── Lightbox ─── */
 .vp-img-modal {
-    display: none; /* Ch? b?t flex qua JS */
+    display: none;
     position: fixed;
     z-index: 99999;
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(15, 23, 42, 0.85);
+    background-color: rgba(0, 0, 0, .82);
     backdrop-filter: blur(6px);
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: 24px;
     box-sizing: border-box;
 }
 
 .vp-img-modal__content {
-    max-width: 90%;
-    max-height: 85vh;
-    border-radius: 14px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    animation: vpZoomIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    max-width: 88%;
+    max-height: 84vh;
+    border-radius: 10px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, .3);
+    animation: vpZoomIn .2s ease;
 }
 
 .vp-img-modal__close {
     position: absolute;
     top: 20px;
-    right: 30px;
-    color: #f1f5f9;
-    font-size: 42px;
-    font-weight: 200;
+    right: 28px;
+    color: #ffffff;
+    font-size: 32px;
+    font-weight: 300;
     cursor: pointer;
-    transition: color 0.15s;
+    transition: opacity .15s;
     user-select: none;
+    opacity: .7;
 }
-.vp-img-modal__close:hover {
-    color: #ef4444;
-}
+.vp-img-modal__close:hover { opacity: 1; }
 
 @keyframes vpZoomIn {
-    from { transform: scale(0.94); opacity: 0; }
+    from { transform: scale(.95); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
 }
 
-/* ==========================================================================
-   9. RESPONSIVE DESIGN (T��ng th�ch thi?t b? di �?ng)
-   ========================================================================== */
-@media (max-width: 980px) {
-    .vp-list {
-        grid-template-columns: 1fr;
-    }
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
     .vp-stats {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
-@media (max-width: 576px) {
-    .vp__header {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 1rem;
-    }
-    .vp-btn {
-        width: 100%;
-    }
-    .vp-stats {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
     }
     .vp-card {
-        grid-template-columns: 54px 1fr;
-        gap: 1rem;
+        grid-template-columns: 44px 1fr;
+        gap: 12px;
+        padding: 14px 16px;
     }
     .vp-card__right {
-        grid-column: span 2;
+        grid-column: 1 / -1;
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
-        border-top: 1px dashed #e2e8f0;
-        padding-top: 0.75rem;
-        margin-top: 0.25rem;
+        border-top: 1px solid #f1f5f9;
+        padding-top: 10px;
+        margin-top: 4px;
+    }
+}
+
+@media (max-width: 480px) {
+    .vp__header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 1rem;
+    }
+    .vp__title {
+        font-size: 1.25rem;
+    }
+    .vp-stats {
+        grid-template-columns: 1fr 1fr;
+    }
+    .vp-btn {
+        width: 100%;
     }
 }

@@ -97,6 +97,37 @@
                               rows="3" placeholder="Ví dụ: Khách đến sửa điện, gặp chủ hộ tầng 5...">{{ old('note') }}</textarea>
                 </div>
 
+                {{-- Phương tiện khách --}}
+                <div style="border-top:1px solid #e2e8f0;padding-top:1.25rem;">
+                    <label class="vq-label" style="display:flex;align-items:center;gap:.5rem;cursor:pointer;">
+                        <input type="checkbox" id="has-vehicle-toggle" onchange="toggleVehicleFields()"
+                               {{ old('vehicle_plate') ? 'checked' : '' }}
+                               style="width:16px;height:16px;accent-color:#2563eb;">
+                        <span>Khách có mang phương tiện</span>
+                    </label>
+                    <p style="font-size:.78rem;color:#64748b;margin-top:.25rem;">Khai báo để bảo vệ cho phép xe khách vào bãi giữ.</p>
+                </div>
+
+                <div id="vehicle-fields" style="display:{{ old('vehicle_plate') ? 'block' : 'none' }};">
+                    <div class="vq-grid-2">
+                        <div>
+                            <label class="vq-label">Biển số xe</label>
+                            <input type="text" name="vehicle_plate" class="vq-input @error('vehicle_plate') vq-input--err @enderror"
+                                   value="{{ old('vehicle_plate') }}" placeholder="VD: 29A-12345"
+                                   style="text-transform:uppercase;">
+                        </div>
+                        <div>
+                            <label class="vq-label">Loại xe</label>
+                            <select name="vehicle_type" class="vq-input @error('vehicle_type') vq-input--err @enderror">
+                                <option value="">— Chọn loại xe —</option>
+                                <option value="motorbike" {{ old('vehicle_type') === 'motorbike' ? 'selected' : '' }}>Xe máy</option>
+                                <option value="electric_bike" {{ old('vehicle_type') === 'electric_bike' ? 'selected' : '' }}>Xe điện</option>
+                                <option value="car" {{ old('vehicle_type') === 'car' ? 'selected' : '' }}>Ô tô</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 {{-- ACTIONS --}}
                 <div class="vq-form-actions">
                     <a href="{{ route('resident.visitors.index') }}" class="vq-btn vq-btn--outline">Hủy bỏ</a>
@@ -118,6 +149,15 @@ function setExpiry(hours) {
     const pad = n => String(n).padStart(2, '0');
     const val = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
     document.querySelector('input[name="expired_at"]').value = val;
+}
+
+function toggleVehicleFields() {
+    const checked = document.getElementById('has-vehicle-toggle').checked;
+    document.getElementById('vehicle-fields').style.display = checked ? 'block' : 'none';
+    if (!checked) {
+        document.querySelector('input[name="vehicle_plate"]').value = '';
+        document.querySelector('select[name="vehicle_type"]').value = '';
+    }
 }
 
 document.getElementById('visitor-form').addEventListener('submit', function() {

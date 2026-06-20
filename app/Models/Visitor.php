@@ -24,6 +24,8 @@ class Visitor extends Model
         'check_out_by',
         'status',
         'note',
+        'vehicle_plate',
+        'vehicle_type',
     ];
 
     protected $casts = [
@@ -113,6 +115,25 @@ class Visitor extends Model
             'expired'     => 'orange',
             'cancelled'   => 'red',
             default       => 'gray',
+        };
+    }
+
+    // =========================================================================
+    // VEHICLE HELPERS
+    // =========================================================================
+
+    public function hasVehicle(): bool
+    {
+        return !empty($this->vehicle_plate);
+    }
+
+    public function vehicleTypeLabel(): string
+    {
+        return match ($this->vehicle_type) {
+            'car'           => 'Ô tô',
+            'motorbike'     => 'Xe máy',
+            'electric_bike' => 'Xe điện',
+            default         => 'Phương tiện',
         };
     }
 

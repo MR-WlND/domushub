@@ -206,12 +206,14 @@ function renderResult(data, token) {
                         <div class="qs-info-row"><span class="qs-info-row__label">Căn hộ</span><span class="qs-info-row__val">${v.apartment} — ${v.block}</span></div>
                         <div class="qs-info-row"><span class="qs-info-row__label">Cư dân tạo</span><span class="qs-info-row__val">${v.registered_by}</span></div>
                         <div class="qs-info-row"><span class="qs-info-row__label">Hạn sử dụng</span><span class="qs-info-row__val" style="color:#f59e0b;">${v.expired_at}</span></div>
+                        ${v.has_vehicle ? `<div class="qs-info-row"><span class="qs-info-row__label">Xe khách</span><span class="qs-info-row__val" style="font-weight:700;color:#2563eb;">🚗 ${v.vehicle_plate} (${v.vehicle_type})</span></div>` : ''}
                         ${v.note ? `<div class="qs-info-row"><span class="qs-info-row__label">Ghi chú</span><span class="qs-info-row__val">${v.note}</span></div>` : ''}
                         ${data.check_in_at ? `<div class="qs-info-row"><span class="qs-info-row__label">Giờ vào</span><span class="qs-info-row__val">${data.check_in_at}</span></div>` : ''}
                         <div class="qs-info-row"><span class="qs-info-row__label">Trạng thái</span><span class="qs-info-row__val"><span class="qs-badge qs-badge--${badgeColor(v.status)}">${v.status_label}</span></span></div>
                     </div>
                 </div>
             </div>
+            ${v.has_vehicle ? `<div class="qs-warn-box" style="background:#eff6ff;border-color:#bfdbfe;color:#1e40af;"><span>🚗</span><span>Khách có gửi xe <strong>${v.vehicle_plate}</strong> — cho phép xe vào bãi khách.</span></div>` : ''}
         `;
 
         if (action === 'checkin') {

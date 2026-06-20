@@ -168,8 +168,8 @@ class VehicleController extends Controller
                 mkdir($dir, 0775, true);
             }
 
-            // QR content = biển số viết hoa, không dấu cách
-            $content  = strtoupper(str_replace(' ', '', $vehicle->license_plate));
+            // QR content = biển số viết hoa, không dấu cách và gạch ngang
+            $content  = strtoupper(str_replace([' ', '-'], '', $vehicle->license_plate));
             $filename = $content . '.svg';
             $filePath = $dir . '/' . $filename;
 
@@ -186,7 +186,7 @@ class VehicleController extends Controller
         } catch (\Throwable $e) {
             Log::warning('Vehicle QR generation failed for ' . $vehicle->license_plate . ': ' . $e->getMessage());
             // Fallback: lưu content làm qr_code để scanner vẫn hoạt động
-            $content = strtoupper(str_replace(' ', '', $vehicle->license_plate));
+            $content = strtoupper(str_replace([' ', '-'], '', $vehicle->license_plate));
             $vehicle->update(['qr_code' => $content]);
         }
     }

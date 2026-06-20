@@ -153,13 +153,16 @@ class VisitorCheckinController extends Controller
             'id'             => $visitor->id,
             'guest_name'     => $visitor->guest_name,
             'guest_phone'    => $visitor->guest_phone,
-            'apartment'      => $apartment ? $apartment->unit_number : '—',
+            'apartment'      => $apartment ? $apartment->apartment_number : '—',
             'block'          => $block ? $block->name : '—',
             'registered_by'  => $visitor->registeredBy?->name,
             'expired_at'     => $visitor->expired_at->format('H:i d/m/Y'),
             'note'           => $visitor->note,
             'status'         => $visitor->status,
             'status_label'   => $visitor->statusLabel(),
+            'has_vehicle'    => $visitor->hasVehicle(),
+            'vehicle_plate'  => $visitor->vehicle_plate,
+            'vehicle_type'   => $visitor->hasVehicle() ? $visitor->vehicleTypeLabel() : null,
         ];
     }
 }
