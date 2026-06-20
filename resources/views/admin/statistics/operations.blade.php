@@ -6,6 +6,8 @@
 @section('content')
 <div class="stat-page">
 
+    @include('admin.statistics.partials.sub_nav')
+
     {{-- HEADER + BỘ LỌC NĂM --}}
     <div class="stat-header">
         <div class="stat-header__text">
@@ -14,7 +16,20 @@
         </div>
         <div class="stat-header__filter">
             <form method="GET" action="{{ route('admin.statistics.operations') }}" class="year-filter-form">
-                <label class="year-filter-label" for="yearSelect">Xem theo năm:</label>
+                <label class="year-filter-label" for="blockSelect">Tòa nhà:</label>
+                <div class="year-select-wrap">
+                    <select id="blockSelect" name="block_id" class="year-select" onchange="this.form.submit()">
+                        <option value="">Tất cả các Block</option>
+                        @foreach ($blocks as $bl)
+                            <option value="{{ $bl->id }}" {{ $selectedBlock == $bl->id ? 'selected' : '' }}>
+                                {{ $bl->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <svg class="year-select-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+
+                <label class="year-filter-label" for="yearSelect" style="margin-left: 12px;">Xem theo năm:</label>
                 <div class="year-select-wrap">
                     <select id="yearSelect" name="year" class="year-select" onchange="this.form.submit()">
                         @foreach ($availableYears as $yr)
@@ -26,7 +41,7 @@
                     <svg class="year-select-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                 </div>
             </form>
-            <a href="{{ route('admin.statistics.operations.export', ['year' => $selectedYear]) }}" class="btn-export">
+            <a href="{{ route('admin.statistics.operations.export', ['year' => $selectedYear, 'block_id' => $selectedBlock]) }}" class="btn-export">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 Xuất Excel
             </a>
@@ -189,6 +204,62 @@
                     <span style="font-weight: 600; color: #1e293b;">&lt; 24 giờ</span>
                 </div>
             </div>
+        </div>
+    </div>
+
+    {{-- BẢNG KPI KỸ THUẬT VIÊN --}}
+    <div class="table-card" style="margin-bottom: 24px;">
+        <div class="table-card__header">
+            <h3>🏆 Bảng xếp hạng hiệu quả công việc của Kỹ thuật viên — Năm {{ $selectedYear }}</h3>
+        </div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 30%;">Tên Kỹ thuật viên</th>
+                        <th style="width: 20%; text-align: center;">Số phản ánh đã xử lý</th>
+                        <th style="width: 25%; text-align: center;">Thời gian xử lý trung bình (SLA)</th>
+                        <th style="width: 25%;">Chỉ số CSAT trung bình</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($technicianPerformance as $tech)
+                        <tr>
+                            <td><strong>{{ $tech->name }}</strong></td>
+                            <td style="text-align: center;">
+                                <span style="background: #eff6ff; color: #1e40af; font-weight: 700; padding: 4px 10px; border-radius: 9999px; font-size: 13px;">
+                                    {{ $tech->resolved_count }}
+                                </span>
+                            </td>
+                            <td style="text-align: center; font-weight: 600; color: #475569;">
+                                {{ $tech->avg_resolution_time }}
+                            </td>
+                            <td>
+                                @if($tech->resolved_count > 0 && $tech->avg_rating > 0)
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div style="display: flex; gap: 2px;">
+                                            @for($i = 1; $i <= 5; $i++)
+                                                @if($i <= round($tech->avg_rating))
+                                                    <span style="color: #f59e0b; font-size: 16px;">★</span>
+                                                @else
+                                                    <span style="color: #cbd5e1; font-size: 16px;">★</span>
+                                                @endif
+                                            @endfor
+                                        </div>
+                                        <span style="font-weight: 700; color: #0f172a; font-size: 13px;">{{ $tech->avg_rating }} / 5.0</span>
+                                    </div>
+                                @else
+                                    <span style="color: #94a3b8; font-style: italic; font-size: 13px;">Chưa có đánh giá</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="empty-row">Không có dữ liệu kỹ thuật viên</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 

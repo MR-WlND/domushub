@@ -6,6 +6,8 @@
 @section('content')
 <div class="stat-page">
 
+    @include('admin.statistics.partials.sub_nav')
+
     {{-- HEADER + BỘ LỌC NĂM --}}
     <div class="stat-header">
         <div class="stat-header__text">
@@ -14,7 +16,20 @@
         </div>
         <div class="stat-header__filter">
             <form method="GET" action="{{ route('admin.statistics.finance') }}" class="year-filter-form">
-                <label class="year-filter-label" for="yearSelect">Xem theo năm:</label>
+                <label class="year-filter-label" for="blockSelect">Tòa nhà:</label>
+                <div class="year-select-wrap">
+                    <select id="blockSelect" name="block_id" class="year-select" onchange="this.form.submit()">
+                        <option value="">Tất cả các Block</option>
+                        @foreach ($blocks as $bl)
+                            <option value="{{ $bl->id }}" {{ $selectedBlock == $bl->id ? 'selected' : '' }}>
+                                {{ $bl->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <svg class="year-select-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+
+                <label class="year-filter-label" for="yearSelect" style="margin-left: 12px;">Năm:</label>
                 <div class="year-select-wrap">
                     <select id="yearSelect" name="year" class="year-select" onchange="this.form.submit()">
                         @foreach ($availableYears as $yr)
@@ -25,8 +40,20 @@
                     </select>
                     <svg class="year-select-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                 </div>
+
+                <label class="year-filter-label" for="monthSelect" style="margin-left: 12px;">Tháng:</label>
+                <div class="year-select-wrap">
+                    <select id="monthSelect" name="month" class="year-select" onchange="this.form.submit()">
+                        @for ($m = 1; $m <= 12; $m++)
+                            <option value="{{ $m }}" {{ $selectedMonth == $m ? 'selected' : '' }}>
+                                Tháng {{ str_pad($m, 2, '0', STR_PAD_LEFT) }}
+                            </option>
+                        @endfor
+                    </select>
+                    <svg class="year-select-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
             </form>
-            <a href="{{ route('admin.statistics.finance.export', ['year' => $selectedYear]) }}" class="btn-export">
+            <a href="{{ route('admin.statistics.finance.export', ['year' => $selectedYear, 'block_id' => $selectedBlock]) }}" class="btn-export">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 Xuất Excel
             </a>
@@ -128,27 +155,54 @@
             </div>
         </div>
 
-        {{-- Biểu đồ tròn đóng phí tháng gần nhất --}}
+        {{-- Biểu đồ tròn đóng phí --}}
         <div class="chart-card">
             <div class="chart-card__header">
                 <div>
                     <h3 class="chart-card__title">Tỷ lệ hoàn thành đóng phí</h3>
                     <p class="chart-card__sub">
-                        @if($latestMonth)
-                            Đóng phí Tháng {{ $latestMonth }}/{{ $selectedYear }}
-                        @else
-                            Chưa có dữ liệu hoá đơn năm {{ $selectedYear }}
-                        @endif
+                        Đóng phí Tháng {{ str_pad($selectedMonth, 2, '0', STR_PAD_LEFT) }}/{{ $selectedYear }}
                     </p>
                 </div>
                 <span class="chart-badge chart-badge--donut">Donut Chart</span>
             </div>
             <div class="chart-wrap chart-wrap--donut">
-                @if($latestMonth)
+                @if($paidAmount > 0 || $unpaidAmount > 0)
                     <canvas id="collectionRateDonutChart"></canvas>
                 @else
-                    <div class="empty-chart-text">Không có dữ liệu hóa đơn của năm này</div>
+                    <div class="empty-chart-text">Tháng này chưa phát sinh hoá đơn</div>
                 @endif
+            </div>
+        </div>
+    </div>
+
+    {{-- HÀNG BIỂU ĐỒ 2: XU HƯỚNG TIÊU THỤ ĐIỆN & NƯỚC --}}
+    <div class="charts-grid" style="margin-top: 12px; margin-bottom: 12px;">
+        {{-- Biểu đồ đường: Tiêu thụ Điện --}}
+        <div class="chart-card">
+            <div class="chart-card__header">
+                <div>
+                    <h3 class="chart-card__title">Xu hướng tiêu thụ Điện — Năm {{ $selectedYear }}</h3>
+                    <p class="chart-card__sub">Tổng sản lượng điện tiêu thụ toàn chung cư (kWh)</p>
+                </div>
+                <span class="chart-badge chart-badge--bar" style="background: #fef2f2; color: #dc2626;">Line Chart</span>
+            </div>
+            <div class="chart-wrap">
+                <canvas id="electricityConsumptionChart"></canvas>
+            </div>
+        </div>
+
+        {{-- Biểu đồ đường: Tiêu thụ Nước --}}
+        <div class="chart-card">
+            <div class="chart-card__header">
+                <div>
+                    <h3 class="chart-card__title">Xu hướng tiêu thụ Nước — Năm {{ $selectedYear }}</h3>
+                    <p class="chart-card__sub">Tổng sản lượng nước tiêu thụ toàn chung cư (m³)</p>
+                </div>
+                <span class="chart-badge" style="background: #e0f2fe; color: #0284c7;">Line Chart</span>
+            </div>
+            <div class="chart-wrap">
+                <canvas id="waterConsumptionChart"></canvas>
             </div>
         </div>
     </div>
@@ -325,6 +379,78 @@
             } else {
                 ctxDonut.parentElement.innerHTML = '<div class="empty-chart-text">Tháng này chưa phát sinh hoá đơn</div>';
             }
+        }
+
+        // 3. ELECTRICITY CONSUMPTION CHART
+        const ctxElec = document.getElementById('electricityConsumptionChart');
+        if (ctxElec) {
+            new Chart(ctxElec.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Sản lượng Điện (kWh)',
+                        data: @json($electricityConsumption),
+                        borderColor: '#ef4444', // Red
+                        backgroundColor: 'rgba(239, 68, 68, 0.05)',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            ...tooltipDefaults,
+                            callbacks: { label: ctx => ` ${ctx.parsed.y} kWh` }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#64748b' } },
+                        y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 11 }, color: '#64748b' } }
+                    }
+                }
+            });
+        }
+
+        // 4. WATER CONSUMPTION CHART
+        const ctxWater = document.getElementById('waterConsumptionChart');
+        if (ctxWater) {
+            new Chart(ctxWater.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Sản lượng Nước (m³)',
+                        data: @json($waterConsumption),
+                        borderColor: '#0ea5e9', // Blue/Cyan
+                        backgroundColor: 'rgba(14, 165, 233, 0.05)',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            ...tooltipDefaults,
+                            callbacks: { label: ctx => ` ${ctx.parsed.y} m³` }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#64748b' } },
+                        y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 11 }, color: '#64748b' } }
+                    }
+                }
+            });
         }
     });
 </script>
