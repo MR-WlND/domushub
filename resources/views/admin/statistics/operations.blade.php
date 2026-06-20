@@ -26,6 +26,10 @@
                     <svg class="year-select-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                 </div>
             </form>
+            <a href="{{ route('admin.statistics.operations.export', ['year' => $selectedYear]) }}" class="btn-export">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Xuất Excel
+            </a>
         </div>
     </div>
 
@@ -76,6 +80,15 @@
                 @endif
             </div>
         </div>
+        <div class="kpi-card kpi-card--blue">
+            <div class="kpi-icon" style="background: #e0f2fe; color: #0284c7;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="kpi-info">
+                <span class="kpi-label">Thời gian xử lý TB (SLA)</span>
+                <span class="kpi-value">{{ $formattedResolutionTime }}</span>
+            </div>
+        </div>
     </div>
 
     {{-- BIỂU ĐỒ --}}
@@ -113,6 +126,68 @@
                 @else
                     <div class="empty-chart-text">Chưa nhận được đánh giá nào trong năm {{ $selectedYear }}</div>
                 @endif
+            </div>
+        </div>
+    </div>
+
+    {{-- HÀNG BIỂU ĐỒ 2: MỨC ĐỘ ƯU TIÊN & SLA TARGETS --}}
+    <div class="charts-grid" style="margin-top: 24px; grid-template-columns: 1fr 1fr;">
+        {{-- Biểu đồ Donut: Mức độ ưu tiên phản ánh --}}
+        <div class="chart-card">
+            <div class="chart-card__header">
+                <div>
+                    <h3 class="chart-card__title">Cơ cấu mức độ ưu tiên phản ánh</h3>
+                    <p class="chart-card__sub">Tỷ trọng các phản ánh theo mức độ ưu tiên</p>
+                </div>
+                <span class="chart-badge chart-badge--donut">Donut Chart</span>
+            </div>
+            <div class="chart-wrap chart-wrap--donut">
+                @if($totalTickets > 0)
+                    <canvas id="priorityChart"></canvas>
+                @else
+                    <div class="empty-chart-text">Không có phản ánh trong năm {{ $selectedYear }}</div>
+                @endif
+            </div>
+        </div>
+
+        {{-- SLA response time summary --}}
+        <div class="chart-card">
+            <div class="chart-card__header">
+                <div>
+                    <h3 class="chart-card__title">Cam kết chất lượng xử lý (SLA)</h3>
+                    <p class="chart-card__sub">Mục tiêu thời gian khắc phục sự cố theo phân loại</p>
+                </div>
+                <span class="chart-badge chart-badge--bar" style="background: #ecfdf5; color: #059669;">SLA Target</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 14px; font-size: 14px; color: #475569; padding-top: 12px; justify-content: center; height: 100%;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px;">
+                    <span style="font-weight: 700; color: #ef4444; display: flex; align-items: center; gap: 6px;">
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444; display: inline-block;"></span>
+                        Khẩn cấp (Urgent)
+                    </span>
+                    <span style="font-weight: 600; color: #1e293b;">&lt; 2 giờ</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px;">
+                    <span style="font-weight: 700; color: #f97316; display: flex; align-items: center; gap: 6px;">
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background: #f97316; display: inline-block;"></span>
+                        Cao (High)
+                    </span>
+                    <span style="font-weight: 600; color: #1e293b;">&lt; 4 giờ</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px;">
+                    <span style="font-weight: 700; color: #3b82f6; display: flex; align-items: center; gap: 6px;">
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background: #3b82f6; display: inline-block;"></span>
+                        Trung bình (Medium)
+                    </span>
+                    <span style="font-weight: 600; color: #1e293b;">&lt; 12 giờ</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 4px;">
+                    <span style="font-weight: 700; color: #94a3b8; display: flex; align-items: center; gap: 6px;">
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; display: inline-block;"></span>
+                        Thấp (Low)
+                    </span>
+                    <span style="font-weight: 600; color: #1e293b;">&lt; 24 giờ</span>
+                </div>
             </div>
         </div>
     </div>
@@ -264,6 +339,44 @@
                             '#f59e0b', // 3 star (Amber)
                             '#84cc16', // 4 star (Light Green)
                             '#10b981'  // 5 star (Emerald Green)
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 }, padding: 14 } },
+                        tooltip: {
+                            ...tooltipDefaults,
+                            callbacks: {
+                                label: ctx => ` ${ctx.label}: ${ctx.parsed} phản ánh`
+                            }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+
+        // 3. PRIORITY RATING DONUT CHART (Donut Chart)
+        const ctxPriority = document.getElementById('priorityChart');
+        if (ctxPriority) {
+            const priorityData = @json(array_values($priorityData)); // [low, medium, high, urgent]
+            
+            new Chart(ctxPriority.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Thấp', 'Trung bình', 'Cao', 'Khẩn cấp'],
+                    datasets: [{
+                        data: priorityData,
+                        backgroundColor: [
+                            '#94a3b8', // Low (Slate/Gray)
+                            '#3b82f6', // Medium (Blue)
+                            '#f59e0b', // High (Amber)
+                            '#ef4444'  // Urgent (Red)
                         ],
                         borderWidth: 2,
                         borderColor: '#fff'

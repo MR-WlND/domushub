@@ -68,6 +68,10 @@ class HomeController extends Controller
             ->pluck('billing_year')
             ->toArray();
 
+        if (empty($availableYears)) {
+            $availableYears = [(int) date('Y')];
+        }
+
         // Năm được chọn (mặc định là năm hiện tại hoặc năm đầu tiên có dữ liệu)
         $selectedYear = $request->get('year', date('Y'));
         if (!in_array($selectedYear, $availableYears) && count($availableYears) > 0) {
@@ -118,6 +122,7 @@ class HomeController extends Controller
         $yearCollected = DB::table('payments')
             ->join('bills', 'payments.bill_id', '=', 'bills.id')
             ->whereNull('payments.deleted_at')
+            ->whereNull('bills.deleted_at')
             ->where('payments.status', 'success')
             ->where('bills.billing_year', $selectedYear)
             ->sum('payments.amount');
@@ -220,6 +225,124 @@ class HomeController extends Controller
     }
 
     /**
+     * Xuất báo cáo tài chính năm thành file Excel.
+     */
+    public function exportFinanceExcel(Request $request)
+    {
+        $availableYears = DB::table('bills')
+            ->whereNull('deleted_at')
+            ->where('status', '!=', 'cancelled')
+            ->selectRaw('DISTINCT billing_year')
+            ->orderBy('billing_year', 'desc')
+            ->pluck('billing_year')
+            ->toArray();
+
+        $selectedYear = $request->get('year', date('Y'));
+        if (!in_array($selectedYear, $availableYears) && count($availableYears) > 0) {
+            $selectedYear = $availableYears[0];
+        }
+
+        $monthlyRevenue = DB::table('bills')
+            ->select(
+                'billing_year',
+                'billing_month',
+                DB::raw('SUM(total_amount) as total_billed'),
+                DB::raw("SUM(CASE WHEN status = 'paid' THEN total_amount ELSE 0 END) as total_collected")
+            )
+            ->whereNull('deleted_at')
+            ->where('status', '!=', 'cancelled')
+            ->where('billing_year', $selectedYear)
+            ->groupBy('billing_year', 'billing_month')
+            ->orderBy('billing_month')
+            ->get();
+
+        $yearBilled = DB::table('bills')
+            ->whereNull('deleted_at')
+            ->where('status', '!=', 'cancelled')
+            ->where('billing_year', $selectedYear)
+            ->sum('total_amount');
+
+        $yearCollected = DB::table('payments')
+            ->join('bills', 'payments.bill_id', '=', 'bills.id')
+            ->whereNull('payments.deleted_at')
+            ->whereNull('bills.deleted_at')
+            ->where('payments.status', 'success')
+            ->where('bills.billing_year', $selectedYear)
+            ->sum('payments.amount');
+
+        $yearUnpaid = $yearBilled - $yearCollected;
+        $yearCollectionRate = $yearBilled > 0 ? ($yearCollected / $yearBilled) * 100 : 0;
+
+        try {
+            $filePath = \App\Helpers\SimpleXlsx::exportFinanceReport(
+                $selectedYear,
+                $monthlyRevenue,
+                $yearBilled,
+                $yearCollected,
+                $yearUnpaid,
+                $yearCollectionRate
+            );
+
+            return response()->download($filePath, "Bao-cao-tai-chinh-nam-{$selectedYear}.xlsx")->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Có lỗi xảy ra khi xuất file báo cáo: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Xuất báo cáo thống kê Vận hành & SLA thành file Excel.
+     */
+    public function exportOperationsExcel(Request $request)
+    {
+        $availableYears = DB::table('tickets')
+            ->whereNull('deleted_at')
+            ->selectRaw('DISTINCT YEAR(created_at) as ticket_year')
+            ->orderBy('ticket_year', 'desc')
+            ->pluck('ticket_year')
+            ->toArray();
+
+        if (empty($availableYears)) {
+            $availableYears = [(int) date('Y')];
+        }
+
+        $selectedYear = $request->get('year', date('Y'));
+        if (!in_array($selectedYear, $availableYears) && count($availableYears) > 0) {
+            $selectedYear = $availableYears[0];
+        }
+
+        // Truy vấn tất cả các phản ánh của năm được chọn
+        $tickets = Ticket::with(['sender', 'apartment.floor.block'])
+            ->whereYear('created_at', $selectedYear)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        try {
+            $filePath = \App\Helpers\SimpleXlsx::exportOperationsReport($selectedYear, $tickets);
+            return response()->download($filePath, "Bao-cao-van-hanh-nam-{$selectedYear}.xlsx")->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Có lỗi xảy ra khi xuất file báo cáo vận hành: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Xuất báo cáo thống kê Cư dân & Hạ tầng thành file Excel.
+     */
+    public function exportResidentsExcel()
+    {
+        // Truy vấn tất cả các căn hộ kèm quan hệ tòa/tầng và số cư dân hiện tại
+        $apartments = Apartment::with(['floor.block'])
+            ->withCount(['residents as resident_count' => fn($q) => $q->whereNull('deleted_at')])
+            ->get();
+
+        try {
+            $filePath = \App\Helpers\SimpleXlsx::exportResidentsReport($apartments);
+            return response()->download($filePath, "Bao-cao-cu-dan-va-ha-tang.xlsx")->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Có lỗi xảy ra khi xuất file báo cáo cư dân: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Màn hình thống kê Vận hành & SLA.
      */
     public function statisticsOperations(Request $request): View
@@ -296,10 +419,46 @@ class HomeController extends Controller
             ->limit(5)
             ->get();
 
+        // 4. Tính thời gian xử lý sự cố trung bình (SLA)
+        $avgResolutionSeconds = DB::table('tickets')
+            ->whereNull('deleted_at')
+            ->where('status', 'completed')
+            ->whereYear('created_at', $selectedYear)
+            ->selectRaw('AVG(TIMESTAMPDIFF(SECOND, created_at, updated_at)) as avg_time')
+            ->value('avg_time');
+
+        $formattedResolutionTime = 'N/A';
+        if ($avgResolutionSeconds) {
+            $hours = round($avgResolutionSeconds / 3600, 1);
+            if ($hours >= 24) {
+                $days = round($hours / 24, 1);
+                $formattedResolutionTime = $days . ' ngày';
+            } else {
+                $formattedResolutionTime = $hours . ' giờ';
+            }
+        }
+
+        // 5. Phân bố mức độ ưu tiên phản ánh
+        $priorityStats = DB::table('tickets')
+            ->whereNull('deleted_at')
+            ->whereYear('created_at', $selectedYear)
+            ->select('priority', DB::raw('count(*) as count'))
+            ->groupBy('priority')
+            ->pluck('count', 'priority')
+            ->toArray();
+
+        $priorityData = [
+            'low'    => $priorityStats['low'] ?? 0,
+            'medium' => $priorityStats['medium'] ?? 0,
+            'high'   => $priorityStats['high'] ?? 0,
+            'urgent' => $priorityStats['urgent'] ?? 0,
+        ];
+
         return view('admin.statistics.operations', compact(
             'availableYears', 'selectedYear',
             'totalTickets', 'pendingCount', 'assignedCount', 'inProgressCount', 'completedCount', 'cancelledCount',
-            'csatData', 'totalRated', 'averageRating', 'recentFeedbacks'
+            'csatData', 'totalRated', 'averageRating', 'recentFeedbacks',
+            'formattedResolutionTime', 'priorityData'
         ));
     }
 
@@ -333,9 +492,9 @@ class HomeController extends Controller
         // ── 4. PHÂN BỐ CĂN HỘ THEO TÒNG NHÀ ─────────────────────────
         $blockStats = Block::withCount([
             'apartments',
-            'apartments as occupied_count' => fn($q) => $q->where('status', 'occupied'),
-            'apartments as vacant_count'   => fn($q) => $q->where('status', 'vacant'),
-            'apartments as maintenance_count' => fn($q) => $q->where('status', 'maintenance'),
+            'apartments as occupied_count' => fn($q) => $q->where('apartments.status', 'occupied'),
+            'apartments as vacant_count'   => fn($q) => $q->where('apartments.status', 'vacant'),
+            'apartments as maintenance_count' => fn($q) => $q->where('apartments.status', 'maintenance'),
         ])->orderBy('name')->get();
 
         // ── 5. XU HƯỚNG CƯ DÂN ĐĂNG KÝ THEO THÁNG (12 tháng gần nhất) ─
