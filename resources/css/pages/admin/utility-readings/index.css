@@ -778,3 +778,101 @@ select.util-form-input {
     border-left: 4px solid #f59e0b !important;
 }
 
+/* ============================================================
+   PROOF IMAGE THUMBNAIL & HOVER PREVIEW
+   ============================================================ */
+.proof-thumbnail-container {
+    display: none;
+    vertical-align: middle;
+}
+
+.show-proof-thumbnails .proof-thumbnail-container {
+    display: inline-flex;
+}
+
+.show-proof-thumbnails .proof-photo-btn {
+    display: none !important;
+}
+
+.proof-photo-wrapper {
+    position: relative;
+    display: inline-block;
+    line-height: 0;
+}
+
+.proof-thumbnail {
+    width: 44px;
+    height: 44px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    cursor: pointer;
+    background-color: #f8fafc;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.proof-thumbnail:hover {
+    border-color: #0b57d0;
+    transform: scale(1.08);
+    box-shadow: 0 4px 12px rgba(11, 87, 208, 0.18);
+}
+
+/* Global Floating Proof Preview */
+#globalProofPreview {
+    position: fixed;
+    display: none;
+    z-index: 9999;
+    pointer-events: none;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 8px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.12);
+    width: 250px;
+    box-sizing: border-box;
+    opacity: 0;
+    transition: opacity 0.15s ease-out, transform 0.15s ease-out;
+    transform: scale(0.95);
+}
+
+#globalProofPreview.active {
+    display: block;
+    opacity: 1;
+    transform: scale(1);
+}
+
+.proof-hover-header {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+    text-align: left;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 4px;
+}
+
+#globalProofPreview img {
+    width: 100%;
+    height: auto;
+    max-height: 240px;
+    object-fit: contain;
+    border-radius: 8px;
+    display: block;
+    background: #f8fafc;
+}
+
+/* Badge Styles for Logs */
+.util-badge--recorded {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.util-badge--updated {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+

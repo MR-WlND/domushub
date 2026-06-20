@@ -7,6 +7,8 @@ use App\Models\Apartment;
 use App\Models\Block;
 use App\Models\Floor;
 use App\Models\UtilityMeter;
+use App\Models\UtilityMeterLog;
+
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,19 +18,6 @@ use Illuminate\View\View;
 
 class UtilityMeterController extends Controller
 {
-    public function __construct()
-    {
-        // Programmatically run migrations if reject_reason or images column is not present
-        if (!\Illuminate\Support\Facades\Schema::hasColumn('utility_meters', 'images') ||
-            !\Illuminate\Support\Facades\Schema::hasColumn('utility_meters', 'reject_reason')) {
-            try {
-                \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-            } catch (\Exception $e) {
-                // Ignore migration errors
-            }
-        }
-    }
-
     /**
      * Danh sách chỉ số điện nước + thống kê tổng quan
      */
@@ -1239,5 +1228,71 @@ class UtilityMeterController extends Controller
             DB::rollBack();
             return back()->with('error', 'Đã xảy ra lỗi hệ thống trong quá trình import: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Danh sách lịch sử ghi nhận & phê duyệt số điện nước
+     */
+    public function logs(Request $request): \Illuminate\View\View
+    {
+        $blockId = $request->query('block_id');
+        $floorId = $request->query('floor_id');
+        $type    = $request->query('type');
+        $action  = $request->query('action');
+        $month   = $request->query('month');
+        $year    = $request->query('year');
+        $search  = $request->query('search');
+
+        // Query logs
+        $query = UtilityMeterLog::with(['apartment.floor.block', 'user', 'utilityMeter']);
+
+        // Lọc theo block hoặc floor
+        if ($floorId) {
+            $query->whereHas('apartment', fn ($q) => $q->where('floor_id', $floorId));
+        } elseif ($blockId) {
+            $query->whereHas('apartment.floor', fn ($q) => $q->where('block_id', $blockId));
+        }
+
+        // Lọc theo loại
+        if ($type) {
+            $query->where('type', $type);
+        }
+
+        // Lọc theo hành động
+        if ($action) {
+            $query->where('action', $action);
+        }
+
+        // Lọc theo tháng / năm của kỳ ghi nhận
+        if ($month) {
+            $query->where('record_month', $month);
+        }
+        if ($year) {
+            $query->where('record_year', $year);
+        }
+
+        // Tìm kiếm theo số phòng hoặc tên người thực hiện
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('apartment', function ($q2) use ($search) {
+                    $q2->where('apartment_number', 'like', "%{$search}%");
+                })->orWhereHas('user', function ($q2) use ($search) {
+                    $q2->where('name', 'like', "%{$search}%");
+                });
+            });
+        }
+
+        // Sắp xếp mặc định log mới nhất lên trước
+        $logs = $query->orderByDesc('id')
+            ->paginate(20)
+            ->withQueryString();
+
+        // Lấy dữ liệu filter
+        $blocks = Block::orderBy('name')->get();
+        $floors = Floor::with('block')->orderBy('floor_number')->get();
+
+        return view('admin.utility-readings.logs', compact(
+            'logs', 'blocks', 'floors', 'blockId', 'floorId', 'type', 'action', 'month', 'year', 'search'
+        ));
     }
 }
