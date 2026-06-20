@@ -91,6 +91,12 @@
                             <span class="vq-detail-list__val">{{ $visitor->note }}</span>
                         </li>
                         @endif
+                        @if($visitor->hasVehicle())
+                        <li>
+                            <span class="vq-detail-list__label">🚗 Xe khách</span>
+                            <span class="vq-detail-list__val">{{ $visitor->vehicle_plate }} ({{ $visitor->vehicleTypeLabel() }})</span>
+                        </li>
+                        @endif
                     </ul>
                 </div>
 

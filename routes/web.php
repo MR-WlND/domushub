@@ -195,7 +195,20 @@ Route::middleware(['admin'])->group(function () {
 
 Route::middleware(['security'])->group(function () {
     Route::get('/security/dashboard', function () {
-        return view('security.dashboard.index');
+        $vehiclesInside = \App\Models\VehicleLog::where('status', 'inside')->count();
+        $visitorsInside = \App\Models\Visitor::where('status', 'checked_in')->count();
+        $todayCheckins = \App\Models\VehicleLog::whereDate('check_in_at', today())->count();
+        $todayCheckouts = \App\Models\VehicleLog::whereDate('check_out_at', today())->count();
+        $todayVisitors = \App\Models\Visitor::whereDate('check_in_at', today())->count();
+
+        $recentLogs = \App\Models\VehicleLog::with('vehicle')
+            ->latest()
+            ->take(8)
+            ->get();
+
+        return view('security.dashboard.index', compact(
+            'vehiclesInside', 'visitorsInside', 'todayCheckins', 'todayCheckouts', 'todayVisitors', 'recentLogs'
+        ));
     })->name('security.dashboard');
 
     // Quét QR xe vào
@@ -257,6 +270,8 @@ Route::middleware(['resident'])->group(function () {
         ->name('resident.vehicles.store');
     Route::delete('/resident/vehicles/{vehicle}', [App\Http\Controllers\Resident\VehicleController::class, 'destroy'])
         ->name('resident.vehicles.destroy');
+    Route::get('/resident/vehicles/{vehicle}/qr', [App\Http\Controllers\Resident\VehicleController::class, 'showQr'])
+        ->name('resident.vehicles.qr');
 
     // QUẢN LÝ KHÁCH PHÍA CƯ DÂN
     Route::get('/resident/visitors', [\App\Http\Controllers\Resident\VisitorController::class, 'index'])->name('resident.visitors.index');
