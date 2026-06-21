@@ -34,8 +34,8 @@
                 </svg>
                 <span>Trang tổng quan</span>
             </a>
-            <div class="dashboard-nav__group {{ request()->routeIs('admin.statistics.*') || request()->routeIs('admin.statistics') ? 'dashboard-nav__group--open' : '' }}">
-                <a href="{{ route('admin.statistics.finance') }}" class="dashboard-nav__item dashboard-nav__item--parent {{ request()->routeIs('admin.statistics.*') || request()->routeIs('admin.statistics') ? 'dashboard-nav__item--active' : '' }}" onclick="toggleSubmenu(event, this)">
+            <div class="dashboard-nav__group {{ request()->routeIs('admin.statistics.*') || request()->routeIs('admin.statistics') || request()->routeIs('admin.amenities.statistics') ? 'dashboard-nav__group--open' : '' }}">
+                <a href="{{ route('admin.statistics.finance') }}" class="dashboard-nav__item dashboard-nav__item--parent {{ request()->routeIs('admin.statistics.*') || request()->routeIs('admin.statistics') || request()->routeIs('admin.amenities.statistics') ? 'dashboard-nav__item--active' : '' }}" onclick="toggleSubmenu(event, this)">
                     <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="18" y1="20" x2="18" y2="10"></line>
                         <line x1="12" y1="20" x2="12" y2="4"></line>
@@ -53,6 +53,9 @@
                     </a>
                     <a href="{{ route('admin.statistics.residents') }}" class="dashboard-nav__subitem {{ request()->routeIs('admin.statistics.residents') ? 'dashboard-nav__subitem--active' : '' }}">
                         Cư dân &amp; Hạ tầng
+                    </a>
+                    <a href="{{ route('admin.amenities.statistics') }}" class="dashboard-nav__subitem {{ request()->routeIs('admin.amenities.statistics') ? 'dashboard-nav__subitem--active' : '' }}">
+                        Thống kê Tiện ích
                     </a>
                 </div>
             </div>
@@ -233,14 +236,6 @@
                     <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
                 <span>Lịch đặt tiện ích</span>
-            </a>
-            <a href="{{ route('admin.amenities.statistics') }}" class="dashboard-nav__item {{ request()->routeIs('admin.amenities.statistics') ? 'dashboard-nav__item--active' : '' }}">
-                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="20" x2="18" y2="10"></line>
-                    <line x1="12" y1="20" x2="12" y2="4"></line>
-                    <line x1="6" y1="20" x2="6" y2="14"></line>
-                </svg>
-                <span>Thống kê tiện ích</span>
             </a>
         </div>
         @endif
