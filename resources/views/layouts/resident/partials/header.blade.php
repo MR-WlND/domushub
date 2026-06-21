@@ -22,7 +22,7 @@
             </button>
             <div class="resident-header__nav-dropdown">
                 <a href="{{ route('resident.vehicles.index') }}" class="nav-dropdown-item {{ request()->routeIs('resident.vehicles.*') ? 'nav-dropdown-item--active' : '' }}">Phương tiện</a>
-                <a href="#" class="nav-dropdown-item">Tiện ích</a>
+                <a href="{{ route('resident.facilities.index') }}" class="nav-dropdown-item {{ request()->routeIs('resident.facilities.*') ? 'nav-dropdown-item--active' : '' }}">Tiện ích</a>
                 <a href="{{ route('resident.invoices.index') }}" class="nav-dropdown-item {{ request()->routeIs('resident.invoices.index') ? 'nav-dropdown-item--active' : '' }}">Thanh toán hóa đơn</a>
                 <a href="{{ route('resident.invoices.history') }}" class="nav-dropdown-item {{ request()->routeIs('resident.invoices.history') ? 'nav-dropdown-item--active' : '' }}">Hóa đơn đã thanh toán</a>
             </div>

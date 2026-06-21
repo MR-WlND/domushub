@@ -18,10 +18,12 @@ class Facility extends Model
         'slot_duration',
         'price_per_slot',
         'rules',
+        'images',
     ];
 
     protected $casts = [
         'price_per_slot' => 'decimal:0',
+        'images'         => 'array',
     ];
 
     /**

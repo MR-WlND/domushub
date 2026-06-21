@@ -7,6 +7,7 @@ use App\Models\Facility;
 use App\Models\FacilityBooking;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class FacilityController extends Controller
@@ -189,5 +190,92 @@ class FacilityController extends Controller
         $facilities = Facility::orderBy('name')->get();
 
         return view('admin.amenities.bookings', compact('bookings', 'facilities'));
+    }
+
+    /**
+     * Upload ảnh cho tiện ích
+     */
+    public function storeImage(Request $request, Facility $facility): RedirectResponse
+    {
+        $request->validate([
+            'images'   => 'required|array|max:5',
+            'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:3072',
+        ], [
+            'images.required'   => 'Vui lòng chọn ít nhất một ảnh.',
+            'images.*.image'    => 'File phải là ảnh.',
+            'images.*.max'      => 'Mỗi ảnh tối đa 3MB.',
+        ]);
+
+        $existing = $facility->images ?? [];
+
+        foreach ($request->file('images') as $file) {
+            $path = $file->store('facilities', 'public');
+            $existing[] = $path;
+        }
+
+        $facility->update(['images' => $existing]);
+
+        return back()->with('success', 'Đã tải lên ' . count($request->file('images')) . ' ảnh.');
+    }
+
+    /**
+     * Xóa ảnh theo index
+     */
+    public function destroyImage(Facility $facility, int $index): RedirectResponse
+    {
+        $images = $facility->images ?? [];
+
+        if (!isset($images[$index])) {
+            return back()->with('error', 'Ảnh không tồn tại.');
+        }
+
+        Storage::disk('public')->delete($images[$index]);
+        array_splice($images, $index, 1);
+        $facility->update(['images' => array_values($images)]);
+
+        return back()->with('success', 'Đã xóa ảnh.');
+    }
+
+    /**
+     * Thay đổi trạng thái nhanh
+     */
+    public function updateStatus(Request $request, Facility $facility): RedirectResponse
+    {
+        $request->validate([
+            'status' => 'required|in:available,maintenance,closed',
+        ]);
+
+        $facility->update(['status' => $request->status]);
+
+        return back()->with('success', 'Đã cập nhật trạng thái tiện ích.');
+    }
+
+    /**
+     * Báo cáo thống kê tiện ích
+     */
+    public function statistics(): View
+    {
+        $facilities = Facility::withCount([
+            'bookings',
+            'bookings as approved_count' => fn ($q) => $q->where('status', 'approved'),
+            'bookings as completed_count' => fn ($q) => $q->where('status', 'completed'),
+            'bookings as rejected_count'  => fn ($q) => $q->where('status', 'rejected'),
+            'pendingBookings',
+        ])->get();
+
+        // Tính doanh thu (approved + completed × price_per_slot)
+        foreach ($facilities as $f) {
+            $paid = ($f->approved_count + $f->completed_count);
+            $f->revenue = $paid * ($f->price_per_slot ?? 0);
+        }
+
+        $summary = [
+            'total_facilities' => $facilities->count(),
+            'total_bookings'   => $facilities->sum('bookings_count'),
+            'total_revenue'    => $facilities->sum('revenue'),
+            'pending_total'    => $facilities->sum('pending_bookings_count'),
+        ];
+
+        return view('admin.amenities.statistics', compact('facilities', 'summary'));
     }
 }
