@@ -182,6 +182,8 @@ Route::middleware(['admin'])->group(function () {
     Route::patch('/admin/amenities/{facility}/status', [AdminFacilityController::class, 'updateStatus'])->name('admin.amenities.status');
     Route::post('/admin/facility-bookings/{booking}/approve', [AdminFacilityController::class, 'approveBooking'])->name('admin.amenities.bookings.approve');
     Route::post('/admin/facility-bookings/{booking}/reject', [AdminFacilityController::class, 'rejectBooking'])->name('admin.amenities.bookings.reject');
+    Route::post('/admin/facility-bookings/{booking}/cancel', [AdminFacilityController::class, 'cancelBooking'])->name('admin.amenities.bookings.cancel');
+    Route::patch('/admin/facility-bookings/{booking}/status', [AdminFacilityController::class, 'updateBookingStatus'])->name('admin.amenities.bookings.status');
 
     // Tương tác & bảng tin
     Route::get('/admin/announcements', function () {
@@ -299,6 +301,17 @@ Route::middleware(['resident'])->group(function () {
     // TIỆN ÍCH CHUNG CƯ PHÍA CƯ DÂN
     Route::get('/resident/facilities', [ResidentFacilityController::class, 'index'])->name('resident.facilities.index');
     Route::get('/resident/facilities/{facility}', [ResidentFacilityController::class, 'show'])->name('resident.facilities.show');
+    Route::get('/resident/facilities/{facility}/book', [ResidentFacilityController::class, 'book'])->name('resident.facilities.book');
+    Route::post('/resident/facilities/{facility}/book', [ResidentFacilityController::class, 'storeBooking'])->name('resident.facilities.book.store');
+
+    // LỊCH ĐẶT TIỆN ÍCH PHÍA CƯ DÂN
+    Route::get('/resident/facility-bookings', [ResidentFacilityController::class, 'bookingHistory'])->name('resident.facility-bookings.index');
+    Route::post('/resident/facility-bookings/{booking}/cancel', [ResidentFacilityController::class, 'cancelBooking'])->name('resident.facility-bookings.cancel');
+    Route::get('/resident/facility-bookings/{booking}/qr', [ResidentFacilityController::class, 'showQr'])->name('resident.facility-bookings.qr');
+    Route::post('/resident/facility-bookings/{booking}/pay', [ResidentFacilityController::class, 'pay'])->name('resident.facility-bookings.pay');
+
+    // AJAX: Khung giờ còn trống (dùng trong form đặt lịch)
+    Route::post('/resident/api/available-slots', [\App\Http\Controllers\FacilityBookingController::class, 'getAvailableSlots'])->name('resident.api.available-slots');
 });
 
 Route::middleware(['admin'])->name('admin.')->group(function () {

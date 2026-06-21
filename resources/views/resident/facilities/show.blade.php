@@ -167,6 +167,24 @@
                         <span>Tiện ích <strong>tạm ngưng</strong></span>
                     @endif
                 </div>
+
+                {{-- Nút đặt lịch --}}
+                @if($facility->status === 'available')
+                <a href="{{ route('resident.facilities.book', $facility) }}" class="rfd-book-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
+                    Đặt lịch ngay
+                </a>
+                @else
+                <button class="rfd-book-btn rfd-book-btn--disabled" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                    Không thể đặt lịch
+                </button>
+                @endif
+
+                <a href="{{ route('resident.facility-bookings.index') }}" class="rfd-history-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3h18v18H3z" fill="none"/><polyline points="3 9 12 3 21 9"/><line x1="9" y1="21" x2="9" y2="9"/><line x1="15" y1="21" x2="15" y2="9"/></svg>
+                    Xem lịch đặt của tôi
+                </a>
             </div>
 
         </aside>
@@ -235,6 +253,14 @@
 .rfd-status-block--available { background: #f0fdf4; color: #15803d; }
 .rfd-status-block--maintenance { background: #fef9c3; color: #a16207; }
 .rfd-status-block--closed { background: #fef2f2; color: #b91c1c; }
+
+.rfd-book-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 13px; background: linear-gradient(135deg, #3b82f6, #6366f1); color: #fff; border: none; border-radius: 12px; font-size: 0.95rem; font-weight: 700; cursor: pointer; text-decoration: none; transition: all 0.2s; margin-top: 8px; box-shadow: 0 4px 14px rgba(59,130,246,0.3); }
+.rfd-book-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(59,130,246,0.4); color: #fff; }
+.rfd-book-btn--disabled { background: #f1f5f9; color: #94a3b8; box-shadow: none; cursor: not-allowed; }
+.rfd-book-btn--disabled:hover { transform: none; box-shadow: none; }
+
+.rfd-history-link { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.8rem; color: #64748b; text-decoration: none; margin-top: 10px; padding: 8px; border-radius: 8px; transition: all 0.15s; }
+.rfd-history-link:hover { color: #2563eb; background: #eff6ff; }
 
 @media (max-width: 768px) {
     .rfd-layout { grid-template-columns: 1fr; }

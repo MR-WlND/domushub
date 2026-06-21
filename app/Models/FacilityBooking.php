@@ -14,11 +14,17 @@ class FacilityBooking extends Model
         'booking_date',
         'start_time',
         'end_time',
+        'number_of_people',
         'status',
+        'qr_code',
+        'checked_in_at',
+        'payment_status',
+        'payment_method',
     ];
 
     protected $casts = [
-        'booking_date' => 'date',
+        'booking_date'   => 'date',
+        'checked_in_at'  => 'datetime',
     ];
 
     /**
@@ -38,6 +44,30 @@ class FacilityBooking extends Model
     }
 
     /**
+     * Tạo QR code unique cho booking
+     */
+    public function generateQrCode(): void
+    {
+        $qr = 'QR_' . $this->id . '_' . \Str::random(12) . '_' . time();
+        $this->update(['qr_code' => $qr]);
+    }
+
+    /**
+     * Check-in bằng QR → chuyển sang trạng thái 'used'
+     */
+    public function checkIn(): bool
+    {
+        if ($this->status !== 'approved') {
+            return false;
+        }
+        $this->update([
+            'status'        => 'used',
+            'checked_in_at' => now(),
+        ]);
+        return true;
+    }
+
+    /**
      * Label trạng thái tiếng Việt
      */
     public function getStatusLabelAttribute(): string
@@ -45,8 +75,9 @@ class FacilityBooking extends Model
         return match ($this->status) {
             'pending'   => 'Chờ duyệt',
             'approved'  => 'Đã duyệt',
-            'rejected'  => 'Từ chối',
+            'used'      => 'Đã sử dụng',
             'cancelled' => 'Đã hủy',
+            'rejected'  => 'Từ chối',
             'completed' => 'Hoàn thành',
             default     => $this->status,
         };
@@ -60,10 +91,35 @@ class FacilityBooking extends Model
         return match ($this->status) {
             'pending'   => 'warning',
             'approved'  => 'success',
-            'rejected'  => 'danger',
+            'used'      => 'info',
             'cancelled' => 'secondary',
-            'completed' => 'info',
+            'rejected'  => 'danger',
+            'completed' => 'primary',
             default     => 'secondary',
         };
+    }
+
+    /**
+     * Label trạng thái thanh toán
+     */
+    public function getPaymentLabelAttribute(): string
+    {
+        return $this->payment_status === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán';
+    }
+
+    /**
+     * Tính tiền dựa trên số slot, giá tiện ích và số người
+     */
+    public function getAmountAttribute(): int
+    {
+        if (!$this->facility || !$this->facility->price_per_slot) {
+            return 0;
+        }
+        $startTime = strtotime($this->start_time);
+        $endTime   = strtotime($this->end_time);
+        $minutes   = ($endTime - $startTime) / 60;
+        $slots     = ceil($minutes / ($this->facility->slot_duration ?: 60));
+        $people    = max(1, (int)($this->number_of_people ?? 1));
+        return intval($slots * $this->facility->price_per_slot * $people);
     }
 }

@@ -170,6 +170,56 @@ class FacilityController extends Controller
     }
 
     /**
+     * Hủy booking (admin)
+     */
+    public function cancelBooking(FacilityBooking $booking): RedirectResponse
+    {
+        if (in_array($booking->status, ['used', 'cancelled'])) {
+            return back()->with('error', 'Không thể hủy lịch ở trạng thái này.');
+        }
+
+        $booking->update(['status' => 'cancelled']);
+
+        return back()->with('success', 'Đã hủy lịch đặt thành công.');
+    }
+
+    /**
+     * Cập nhật trạng thái booking (admin linh hoạt)
+     */
+    public function updateBookingStatus(Request $request, FacilityBooking $booking): RedirectResponse
+    {
+        $request->validate([
+            'status' => 'required|in:pending,approved,used,cancelled,rejected',
+        ]);
+
+        $allowedTransitions = [
+            'pending'   => ['approved', 'rejected', 'cancelled'],
+            'approved'  => ['used', 'cancelled'],
+            'used'      => [],
+            'cancelled' => [],
+            'rejected'  => [],
+        ];
+
+        $currentStatus = $booking->status;
+        $newStatus     = $request->status;
+
+        if (!in_array($newStatus, $allowedTransitions[$currentStatus] ?? [])) {
+            return back()->with('error', 'Không thể chuyển từ "' . $booking->status_label . '" sang trạng thái này.');
+        }
+
+        $updateData = ['status' => $newStatus];
+
+        // Nếu chuyển sang 'used' thì ghi thời điểm check-in
+        if ($newStatus === 'used' && !$booking->checked_in_at) {
+            $updateData['checked_in_at'] = now();
+        }
+
+        $booking->update($updateData);
+
+        return back()->with('success', 'Cập nhật trạng thái thành công.');
+    }
+
+    /**
      * Danh sách tất cả booking (toàn hệ thống)
      */
     public function bookings(Request $request): View
@@ -186,10 +236,21 @@ class FacilityController extends Controller
             $query->where('facility_id', $request->facility_id);
         }
 
+        if ($request->filled('date')) {
+            $query->where('booking_date', $request->date);
+        }
+
         $bookings   = $query->paginate(20)->withQueryString();
         $facilities = Facility::orderBy('name')->get();
 
-        return view('admin.amenities.bookings', compact('bookings', 'facilities'));
+        $stats = [
+            'pending'   => FacilityBooking::where('status', 'pending')->count(),
+            'approved'  => FacilityBooking::where('status', 'approved')->count(),
+            'used'      => FacilityBooking::where('status', 'used')->count(),
+            'cancelled' => FacilityBooking::where('status', 'cancelled')->count(),
+        ];
+
+        return view('admin.amenities.bookings', compact('bookings', 'facilities', 'stats'));
     }
 
     /**
