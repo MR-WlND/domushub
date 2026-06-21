@@ -477,6 +477,38 @@
     </div>
 </div>
 
+{{-- ── Reject Reason Modal ─────────────────────────────── --}}
+<div class="util-modal-backdrop" id="rejectModal">
+    <div class="util-modal" style="max-width: 500px;">
+        <div class="util-modal-header">
+            <h3>
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:inline-block; vertical-align:middle; margin-right:6px; color:#dc2626;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Từ chối chỉ số điện nước
+            </h3>
+            <button class="util-modal-close" onclick="closeRejectModal()">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div class="util-modal-body" style="padding: 20px 24px;">
+            <div style="margin-bottom: 16px;">
+                <label for="rejectReasonInput" style="display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 8px;">Nhập lý do từ chối chỉ số này:</label>
+                <textarea id="rejectReasonInput" class="util-form-input" rows="3" style="height: auto; min-height: 90px; resize: vertical; padding: 12px;" placeholder="Ví dụ: Chỉ số nhập không chính xác hoặc ảnh mờ..."></textarea>
+                <div id="rejectReasonError" style="color: #dc2626; font-size: 12px; margin-top: 6px; display: none; font-weight: 500;">
+                    Vui lòng nhập lý do từ chối.
+                </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #f3f4f6; padding-top: 16px; margin-top: 20px;">
+                <button type="button" class="util-btn util-btn--outline util-btn--sm" onclick="closeRejectModal()">Hủy</button>
+                <button type="button" class="util-btn util-btn--primary util-btn--sm" style="background:#dc2626; border-color:#dc2626;" onclick="submitRejectForm()">Từ chối</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
 @keyframes spin {
     to { transform: rotate(360deg); }
@@ -828,15 +860,52 @@ function closeDetailModal() {
     document.getElementById('detailModal').classList.remove('active');
 }
 
+let currentRejectId = null;
+
 window.confirmAndReject = function(id) {
-    const reason = prompt("Nhập lý do từ chối chỉ số này:");
-    if (reason === null) return; // Hủy bỏ
-    if (reason.trim() === "") {
-        alert("Vui lòng cung cấp lý do từ chối.");
+    currentRejectId = id;
+    const modal = document.getElementById('rejectModal');
+    const input = document.getElementById('rejectReasonInput');
+    const error = document.getElementById('rejectReasonError');
+    
+    // Reset modal state
+    input.value = '';
+    error.style.display = 'none';
+    input.classList.remove('util-form-input--error');
+    
+    // Show modal
+    modal.classList.add('active');
+    
+    // Auto focus textarea
+    setTimeout(() => {
+        input.focus();
+    }, 100);
+}
+
+window.closeRejectModal = function() {
+    const modal = document.getElementById('rejectModal');
+    modal.classList.remove('active');
+    currentRejectId = null;
+}
+
+window.submitRejectForm = function() {
+    if (!currentRejectId) return;
+    
+    const input = document.getElementById('rejectReasonInput');
+    const error = document.getElementById('rejectReasonError');
+    const reason = input.value.trim();
+    
+    if (reason === "") {
+        error.style.display = 'block';
+        input.classList.add('util-form-input--error');
+        input.focus();
         return;
     }
-    document.getElementById('reject-reason-' + id).value = reason.trim();
-    document.getElementById('reject-form-' + id).submit();
+    
+    document.getElementById('reject-reason-' + currentRejectId).value = reason;
+    document.getElementById('reject-form-' + currentRejectId).submit();
+    
+    closeRejectModal();
 }
 </script>
 @endpush
