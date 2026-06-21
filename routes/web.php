@@ -6,9 +6,11 @@ use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\ResidentManageController;
 use App\Http\Controllers\Admin\ServicePriceController;
 use App\Http\Controllers\Admin\UtilityMeterController;
+use App\Http\Controllers\Admin\FacilityController as AdminFacilityController;
 use App\Http\Controllers\Resident\ProfileController;
 use App\Http\Controllers\Resident\InvoiceController as ResidentInvoiceController;
 use App\Http\Controllers\Resident\TicketController as ResidentTicketController;
+use App\Http\Controllers\Resident\FacilityController as ResidentFacilityController;
 
 use App\Http\Controllers\Admin\InvitationController as AdminInvitationController;
 
@@ -166,16 +168,20 @@ Route::middleware(['admin'])->group(function () {
     Route::delete('/admin/parking-lots/{parkingLot}', [App\Http\Controllers\Admin\ParkingLotController::class, 'destroy'])->name('admin.parking-lots.destroy');
 
     // Quản lý tiện ích chung cư (Facilities)
-    Route::get('/admin/amenities', [\App\Http\Controllers\Admin\FacilityController::class, 'index'])->name('admin.amenities.index');
-    Route::get('/admin/amenities/create', [\App\Http\Controllers\Admin\FacilityController::class, 'create'])->name('admin.amenities.create');
-    Route::post('/admin/amenities', [\App\Http\Controllers\Admin\FacilityController::class, 'store'])->name('admin.amenities.store');
-    Route::get('/admin/amenities/bookings', [\App\Http\Controllers\Admin\FacilityController::class, 'bookings'])->name('admin.amenities.bookings');
-    Route::get('/admin/amenities/{facility}', [\App\Http\Controllers\Admin\FacilityController::class, 'show'])->name('admin.amenities.show');
-    Route::get('/admin/amenities/{facility}/edit', [\App\Http\Controllers\Admin\FacilityController::class, 'edit'])->name('admin.amenities.edit');
-    Route::put('/admin/amenities/{facility}', [\App\Http\Controllers\Admin\FacilityController::class, 'update'])->name('admin.amenities.update');
-    Route::delete('/admin/amenities/{facility}', [\App\Http\Controllers\Admin\FacilityController::class, 'destroy'])->name('admin.amenities.destroy');
-    Route::post('/admin/facility-bookings/{booking}/approve', [\App\Http\Controllers\Admin\FacilityController::class, 'approveBooking'])->name('admin.amenities.bookings.approve');
-    Route::post('/admin/facility-bookings/{booking}/reject', [\App\Http\Controllers\Admin\FacilityController::class, 'rejectBooking'])->name('admin.amenities.bookings.reject');
+    Route::get('/admin/amenities', [AdminFacilityController::class, 'index'])->name('admin.amenities.index');
+    Route::get('/admin/amenities/create', [AdminFacilityController::class, 'create'])->name('admin.amenities.create');
+    Route::post('/admin/amenities', [AdminFacilityController::class, 'store'])->name('admin.amenities.store');
+    Route::get('/admin/amenities/statistics', [AdminFacilityController::class, 'statistics'])->name('admin.amenities.statistics');
+    Route::get('/admin/amenities/bookings', [AdminFacilityController::class, 'bookings'])->name('admin.amenities.bookings');
+    Route::get('/admin/amenities/{facility}', [AdminFacilityController::class, 'show'])->name('admin.amenities.show');
+    Route::get('/admin/amenities/{facility}/edit', [AdminFacilityController::class, 'edit'])->name('admin.amenities.edit');
+    Route::put('/admin/amenities/{facility}', [AdminFacilityController::class, 'update'])->name('admin.amenities.update');
+    Route::delete('/admin/amenities/{facility}', [AdminFacilityController::class, 'destroy'])->name('admin.amenities.destroy');
+    Route::post('/admin/amenities/{facility}/images', [AdminFacilityController::class, 'storeImage'])->name('admin.amenities.images.store');
+    Route::delete('/admin/amenities/{facility}/images/{index}', [AdminFacilityController::class, 'destroyImage'])->name('admin.amenities.images.destroy');
+    Route::patch('/admin/amenities/{facility}/status', [AdminFacilityController::class, 'updateStatus'])->name('admin.amenities.status');
+    Route::post('/admin/facility-bookings/{booking}/approve', [AdminFacilityController::class, 'approveBooking'])->name('admin.amenities.bookings.approve');
+    Route::post('/admin/facility-bookings/{booking}/reject', [AdminFacilityController::class, 'rejectBooking'])->name('admin.amenities.bookings.reject');
 
     // Tương tác & bảng tin
     Route::get('/admin/announcements', function () {
@@ -289,6 +295,10 @@ Route::middleware(['resident'])->group(function () {
     // THÔNG BÁO CƯ DÂN
     Route::get('/resident/notifications', [\App\Http\Controllers\Resident\NotificationController::class, 'index'])->name('resident.notifications.index');
     Route::post('/resident/notifications/mark-read/{id?}', [\App\Http\Controllers\Resident\NotificationController::class, 'markRead'])->name('resident.notifications.mark-read');
+
+    // TIỆN ÍCH CHUNG CƯ PHÍA CƯ DÂN
+    Route::get('/resident/facilities', [ResidentFacilityController::class, 'index'])->name('resident.facilities.index');
+    Route::get('/resident/facilities/{facility}', [ResidentFacilityController::class, 'show'])->name('resident.facilities.show');
 });
 
 Route::middleware(['admin'])->name('admin.')->group(function () {

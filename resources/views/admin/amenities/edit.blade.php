@@ -179,6 +179,44 @@
             <a href="{{ route('admin.amenities.index') }}" class="amf-btn amf-btn--ghost">Hủy bỏ</a>
         </div>
     </form>
+
+    {{-- ====== PHẦN 5: Quản lý hình ảnh ====== --}}
+    <div class="amf-card" style="margin-top: 18px;">
+        <div class="amf-section-label">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            Hình ảnh tiện ích
+        </div>
+
+        <form method="POST" action="{{ route('admin.amenities.images.store', $facility) }}" enctype="multipart/form-data">
+            @csrf
+            <div class="amf-field amf-field--wide">
+                <label for="images">Chọn thêm ảnh tiện ích (Tối đa 5 ảnh, mỗi ảnh &lt; 3MB)</label>
+                <div class="amf-image-upload-wrapper">
+                    <input type="file" id="images" name="images[]" multiple accept="image/*" class="amf-file-input">
+                    <button type="submit" class="amf-btn amf-btn--secondary">Tải ảnh lên</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="amf-image-gallery">
+            @if($facility->images && count($facility->images) > 0)
+                <div class="amf-gallery-grid">
+                    @foreach($facility->images as $index => $image)
+                        <div class="amf-gallery-item">
+                            <img src="{{ asset('storage/' . $image) }}" alt="Ảnh {{ $facility->name }}">
+                            <form method="POST" action="{{ route('admin.amenities.images.destroy', [$facility, $index]) }}" class="amf-delete-image-form" onsubmit="return confirm('Bạn có chắc chắn muốn xóa ảnh này?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="amf-btn-delete-img" title="Xóa ảnh">×</button>
+                            </form>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <p class="amf-no-image">Chưa có hình ảnh nào cho tiện ích này.</p>
+            @endif
+        </div>
+    </div>
 </div>
 
 <style>
@@ -240,6 +278,19 @@
 .amf-btn--primary:hover { background: #1d4ed8; }
 .amf-btn--ghost { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
 .amf-btn--ghost:hover { background: #f1f5f9; }
+.amf-btn--secondary { background: #10b981; color: #fff; }
+.amf-btn--secondary:hover { background: #059669; }
+
+.amf-image-upload-wrapper { display: flex; gap: 12px; align-items: center; margin-top: 6px; }
+.amf-file-input { flex: 1; padding: 8px 12px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.875rem; }
+.amf-image-gallery { margin-top: 10px; }
+.amf-gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; margin-top: 8px; }
+.amf-gallery-item { position: relative; border-radius: 10px; overflow: hidden; aspect-ratio: 4/3; border: 1.5px solid #e2e8f0; background: #f8fafc; display: flex; align-items: center; justify-content: center; }
+.amf-gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+.amf-delete-image-form { position: absolute; top: 6px; right: 6px; z-index: 10; margin: 0; padding: 0; }
+.amf-btn-delete-img { width: 22px; height: 22px; border-radius: 50%; background: rgba(239, 68, 68, 0.9); color: #fff; border: none; font-size: 14px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; transition: background 0.15s; padding: 0; }
+.amf-btn-delete-img:hover { background: rgba(220, 38, 38, 1); }
+.amf-no-image { font-size: 0.85rem; color: #64748b; margin: 8px 0 0; }
 
 @media (max-width: 600px) {
     .amf-grid { grid-template-columns: 1fr; }
