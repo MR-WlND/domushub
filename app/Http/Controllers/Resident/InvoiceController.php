@@ -296,7 +296,14 @@ class InvoiceController extends Controller
 
         DB::transaction(function () use ($invoices, $txnNo, $fullTxnCode, $paidAt) {
             foreach ($invoices as $invoice) {
-                $invoice->update(['status' => 'paid']);
+                // Cập nhật trạng thái và số tiền đã thanh toán
+                $invoice->update([
+                    'status'      => 'paid',
+                    'paid_amount' => $invoice->total_amount,
+                ]);
+
+                // Cập nhật trạng thái từng dòng chi tiết hóa đơn
+                $invoice->recalculateDetailsStatus();
 
                 Payment::create([
                     'bill_id'          => $invoice->id,

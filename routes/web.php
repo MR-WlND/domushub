@@ -165,9 +165,17 @@ Route::middleware(['admin'])->group(function () {
     Route::put('/admin/parking-lots/{parkingLot}', [App\Http\Controllers\Admin\ParkingLotController::class, 'update'])->name('admin.parking-lots.update');
     Route::delete('/admin/parking-lots/{parkingLot}', [App\Http\Controllers\Admin\ParkingLotController::class, 'destroy'])->name('admin.parking-lots.destroy');
 
-    Route::get('/admin/amenities', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.amenities.index');
+    // Quản lý tiện ích chung cư (Facilities)
+    Route::get('/admin/amenities', [\App\Http\Controllers\Admin\FacilityController::class, 'index'])->name('admin.amenities.index');
+    Route::get('/admin/amenities/create', [\App\Http\Controllers\Admin\FacilityController::class, 'create'])->name('admin.amenities.create');
+    Route::post('/admin/amenities', [\App\Http\Controllers\Admin\FacilityController::class, 'store'])->name('admin.amenities.store');
+    Route::get('/admin/amenities/bookings', [\App\Http\Controllers\Admin\FacilityController::class, 'bookings'])->name('admin.amenities.bookings');
+    Route::get('/admin/amenities/{facility}', [\App\Http\Controllers\Admin\FacilityController::class, 'show'])->name('admin.amenities.show');
+    Route::get('/admin/amenities/{facility}/edit', [\App\Http\Controllers\Admin\FacilityController::class, 'edit'])->name('admin.amenities.edit');
+    Route::put('/admin/amenities/{facility}', [\App\Http\Controllers\Admin\FacilityController::class, 'update'])->name('admin.amenities.update');
+    Route::delete('/admin/amenities/{facility}', [\App\Http\Controllers\Admin\FacilityController::class, 'destroy'])->name('admin.amenities.destroy');
+    Route::post('/admin/facility-bookings/{booking}/approve', [\App\Http\Controllers\Admin\FacilityController::class, 'approveBooking'])->name('admin.amenities.bookings.approve');
+    Route::post('/admin/facility-bookings/{booking}/reject', [\App\Http\Controllers\Admin\FacilityController::class, 'rejectBooking'])->name('admin.amenities.bookings.reject');
 
     // Tương tác & bảng tin
     Route::get('/admin/announcements', function () {
