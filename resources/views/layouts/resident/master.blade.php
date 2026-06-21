@@ -21,6 +21,7 @@
         @include('layouts.resident.partials.footer')
     </div>
 
+    @include('layouts.resident.partials.chatbot')
     @stack('scripts')
 </body>
 
