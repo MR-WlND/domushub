@@ -38,16 +38,24 @@ class FacilityController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name'        => 'required|string|max:100|unique:facilities,name',
-            'capacity'    => 'required|integer|min:1',
-            'description' => 'nullable|string|max:500',
-            'status'      => 'required|in:available,maintenance,closed',
+            'name'          => 'required|string|max:100|unique:facilities,name',
+            'capacity'      => 'required|integer|min:1',
+            'description'   => 'nullable|string|max:500',
+            'status'        => 'required|in:available,maintenance,closed',
+            'open_time'     => 'nullable|date_format:H:i',
+            'close_time'    => 'nullable|date_format:H:i|after:open_time',
+            'slot_duration' => 'required|integer|in:30,60,90,120',
+            'price_per_slot'=> 'required|numeric|min:0',
+            'rules'         => 'nullable|string|max:1000',
         ], [
-            'name.required'     => 'Vui lòng nhập tên tiện ích.',
-            'name.unique'       => 'Tên tiện ích đã tồn tại.',
-            'capacity.required' => 'Vui lòng nhập sức chứa.',
-            'capacity.min'      => 'Sức chứa phải ít nhất 1 người.',
-            'status.required'   => 'Vui lòng chọn trạng thái.',
+            'name.required'        => 'Vui lòng nhập tên tiện ích.',
+            'name.unique'          => 'Tên tiện ích đã tồn tại.',
+            'capacity.required'    => 'Vui lòng nhập sức chứa.',
+            'capacity.min'         => 'Sức chứa phải ít nhất 1 người.',
+            'status.required'      => 'Vui lòng chọn trạng thái.',
+            'close_time.after'     => 'Giờ đóng cửa phải sau giờ mở cửa.',
+            'slot_duration.in'     => 'Thời lượng slot không hợp lệ.',
+            'price_per_slot.min'   => 'Giá phải lớn hơn hoặc bằng 0.',
         ]);
 
         Facility::create($validated);
@@ -91,15 +99,23 @@ class FacilityController extends Controller
     public function update(Request $request, Facility $facility): RedirectResponse
     {
         $validated = $request->validate([
-            'name'        => 'required|string|max:100|unique:facilities,name,' . $facility->id,
-            'capacity'    => 'required|integer|min:1',
-            'description' => 'nullable|string|max:500',
-            'status'      => 'required|in:available,maintenance,closed',
+            'name'          => 'required|string|max:100|unique:facilities,name,' . $facility->id,
+            'capacity'      => 'required|integer|min:1',
+            'description'   => 'nullable|string|max:500',
+            'status'        => 'required|in:available,maintenance,closed',
+            'open_time'     => 'nullable|date_format:H:i',
+            'close_time'    => 'nullable|date_format:H:i|after:open_time',
+            'slot_duration' => 'required|integer|in:30,60,90,120',
+            'price_per_slot'=> 'required|numeric|min:0',
+            'rules'         => 'nullable|string|max:1000',
         ], [
-            'name.required'     => 'Vui lòng nhập tên tiện ích.',
-            'name.unique'       => 'Tên tiện ích đã tồn tại.',
-            'capacity.required' => 'Vui lòng nhập sức chứa.',
-            'status.required'   => 'Vui lòng chọn trạng thái.',
+            'name.required'        => 'Vui lòng nhập tên tiện ích.',
+            'name.unique'          => 'Tên tiện ích đã tồn tại.',
+            'capacity.required'    => 'Vui lòng nhập sức chứa.',
+            'status.required'      => 'Vui lòng chọn trạng thái.',
+            'close_time.after'     => 'Giờ đóng cửa phải sau giờ mở cửa.',
+            'slot_duration.in'     => 'Thời lượng slot không hợp lệ.',
+            'price_per_slot.min'   => 'Giá phải lớn hơn hoặc bằng 0.',
         ]);
 
         $facility->update($validated);
