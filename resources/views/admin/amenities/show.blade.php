@@ -39,6 +39,65 @@
         </a>
     </div>
 
+    {{-- Cấu hình tiện ích --}}
+    <div class="ams-config-grid">
+        <div class="ams-config-card">
+            <div class="ams-config-icon" style="background:#eff6ff;color:#2563eb">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div>
+                <p class="ams-config-label">Giờ hoạt động</p>
+                <p class="ams-config-value">{{ $facility->operating_hours }}</p>
+            </div>
+        </div>
+        <div class="ams-config-card">
+            <div class="ams-config-icon" style="background:#faf5ff;color:#7c3aed">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div>
+                <p class="ams-config-label">Thời lượng mỗi lần đặt</p>
+                @php $dur = $facility->slot_duration ?? 60; $durLabel = match((int)$dur){30=>'30 phút',60=>'1 tiếng',90=>'1.5 tiếng',120=>'2 tiếng',default=>$dur.' phút'}; @endphp
+                <p class="ams-config-value">{{ $durLabel }}</p>
+            </div>
+        </div>
+        <div class="ams-config-card">
+            <div class="ams-config-icon" style="background:#f0fdf4;color:#16a34a">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div>
+                <p class="ams-config-label">Giá</p>
+                <p class="ams-config-value">{{ $facility->price_label }}</p>
+            </div>
+        </div>
+        @if($facility->rules)
+        <div class="ams-config-card ams-config-card--wide">
+            <div class="ams-config-icon" style="background:#fff7ed;color:#ea580c">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <div style="flex:1">
+                <p class="ams-config-label">Nội quy sử dụng</p>
+                <p class="ams-config-value" style="white-space:pre-line;font-size:0.83rem;font-weight:400;color:#475569">{{ $facility->rules }}</p>
+            </div>
+        </div>
+        @endif
+        @if($facility->open_time && $facility->close_time)
+        <div class="ams-config-card ams-config-card--wide">
+            <div class="ams-config-icon" style="background:#f0f9ff;color:#0284c7">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div style="flex:1">
+                <p class="ams-config-label">Các khung giờ có thể đặt</p>
+                <div class="ams-slots-wrap">
+                    @foreach($facility->getTimeSlots() as $slot)
+                        <span class="ams-slot-chip">{{ $slot['label'] }}</span>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+        @endif
+    </div>
+
+
     {{-- Thống kê --}}
     <div class="ams-stats">
         <div class="ams-stat">
@@ -153,6 +212,18 @@
 .ams-desc { font-size: 0.875rem; color: #64748b; margin: 0 0 8px; }
 .ams-capacity { font-size: 0.82rem; color: #475569; display: flex; align-items: center; gap: 5px; margin: 0; }
 .ams-capacity strong { color: #0f172a; }
+
+/* Config grid */
+.ams-config-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+.ams-config-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; display: flex; align-items: flex-start; gap: 12px; }
+.ams-config-card--wide { grid-column: 1 / -1; }
+.ams-config-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ams-config-label { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin: 0 0 4px; }
+.ams-config-value { font-size: 0.9rem; font-weight: 700; color: #0f172a; margin: 0; }
+
+/* Slots */
+.ams-slots-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.ams-slot-chip { background: #eff6ff; color: #2563eb; font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 20px; border: 1px solid #bfdbfe; }
 
 .ams-status-badge { font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
 .ams-status--available   { background: #dcfce7; color: #15803d; }
