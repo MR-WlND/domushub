@@ -39,16 +39,7 @@
                 </div>
             </div>
             
-            <!-- Lịch sử hội thoại cũ (nếu có trong session) -->
-            @if(session()->has('chatbot_history'))
-                @foreach(session('chatbot_history') as $chat)
-                    <div class="chat-message {{ $chat['role'] === 'model' ? 'bot' : 'user' }}">
-                        <div class="chat-bubble">
-                            {!! nl2br(e($chat['parts'])) !!}
-                        </div>
-                    </div>
-                @endforeach
-            @endif
+
         </div>
 
         <!-- Typing Indicator (Đang gõ...) -->
@@ -61,7 +52,7 @@
         <!-- Suggestion Chips -->
         <div id="chatbot-suggestions" class="chatbot-suggestions">
             <button type="button" class="suggestion-chip" data-question="Hóa đơn chưa thanh toán của tôi">💰 Hóa đơn cần đóng</button>
-            <button type="button" class="suggestion-chip" data-question="Trạng thái các phản ánh sự cố tôi đã gửi">🔧 Trạng thái phản ánh</button>
+            <button type="button" class="suggestion-chip" data-question="Trạng thái sửa chữa sự cố của tôi">🔧 Trạng thái sửa chữa</button>
             <button type="button" class="suggestion-chip" data-question="Thông tin xe đăng ký và lốt đỗ của tôi">🚗 Xe & lốt đỗ</button>
             <button type="button" class="suggestion-chip" data-question="Thời gian làm việc của Ban quản lý tòa nhà">📞 Lịch làm việc BQL</button>
         </div>
@@ -474,10 +465,39 @@ document.addEventListener('DOMContentLoaded', function() {
     const messagesContainer = document.getElementById('chatbot-messages');
     const typingIndicator = document.getElementById('chatbot-typing');
 
-    // Kiểm tra trạng thái lưu trữ cửa sổ chat
+    // Kiểm tra trạng thái lưu trữ cửa sổ chat và tải lịch sử bằng AJAX
+    let isHistoryLoaded = false;
+
+    function loadChatHistory() {
+        if (isHistoryLoaded) return;
+        
+        fetch("{{ route('resident.chatbot.history') }}")
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.history.length > 0) {
+                    // Xóa các tin nhắn cũ để load lại mới từ DB (giữ lại tin nhắn chào mừng mặc định)
+                    const welcomeMsg = messagesContainer.firstElementChild;
+                    messagesContainer.innerHTML = '';
+                    if (welcomeMsg) {
+                        messagesContainer.appendChild(welcomeMsg);
+                    }
+                    
+                    data.history.forEach(chat => {
+                        appendMessage(chat.role === 'model' ? 'bot' : 'user', chat.message);
+                    });
+                    scrollToBottom();
+                }
+                isHistoryLoaded = true;
+            })
+            .catch(error => {
+                console.error('Error loading chat history:', error);
+            });
+    }
+
     const isChatOpen = sessionStorage.getItem('chatbot_open') === 'true';
     if (isChatOpen) {
         win.classList.remove('hidden');
+        loadChatHistory();
     }
 
     // Mở/Thu nhỏ cửa sổ chat
@@ -486,6 +506,7 @@ document.addEventListener('DOMContentLoaded', function() {
         sessionStorage.setItem('chatbot_open', !isHidden ? 'true' : 'false');
         if (!isHidden) {
             input.focus();
+            loadChatHistory();
             scrollToBottom();
         }
     });
@@ -648,7 +669,12 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify({ message: message })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (response.status === 429) {
+                return { success: false, isRateLimit: true, message: 'Bạn đang gửi tin nhắn quá nhanh. Vui lòng đợi 1 phút và thử lại.' };
+            }
+            return response.json();
+        })
         .then(data => {
             // Ẩn hiệu ứng gõ
             typingIndicator.classList.add('hidden');
@@ -656,7 +682,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 appendMessage('bot', data.reply);
             } else {
-                appendMessage('bot', '⚠️ Có lỗi xảy ra: ' + (data.message || 'Không rõ nguyên nhân.'));
+                if (data.isRateLimit) {
+                    appendMessage('bot', '⚠️ ' + data.message);
+                } else {
+                    appendMessage('bot', '⚠️ Có lỗi xảy ra: ' + (data.message || 'Không rõ nguyên nhân.'));
+                }
             }
             scrollToBottom();
         })
