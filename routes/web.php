@@ -284,7 +284,10 @@ Route::middleware(['resident'])->group(function () {
     Route::post('/resident/notifications/mark-read/{id?}', [\App\Http\Controllers\Resident\NotificationController::class, 'markRead'])->name('resident.notifications.mark-read');
 
     // CHATBOT AI CƯ DÂN
-    Route::post('/resident/chatbot/message', [\App\Http\Controllers\Resident\ChatbotController::class, 'sendMessage'])->name('resident.chatbot.message');
+    Route::get('/resident/chatbot/history', [\App\Http\Controllers\Resident\ChatbotController::class, 'getHistory'])->name('resident.chatbot.history');
+    Route::post('/resident/chatbot/message', [\App\Http\Controllers\Resident\ChatbotController::class, 'sendMessage'])
+        ->middleware('throttle:10,1')
+        ->name('resident.chatbot.message');
     Route::post('/resident/chatbot/clear', [\App\Http\Controllers\Resident\ChatbotController::class, 'clearHistory'])->name('resident.chatbot.clear');
 });
 
@@ -311,6 +314,8 @@ Route::get('/storage/{any}', function ($any) {
     }
     abort(404);
 })->where('any', '.*');
+
+
 
 
 
