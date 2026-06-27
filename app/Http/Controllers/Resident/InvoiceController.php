@@ -318,6 +318,9 @@ class InvoiceController extends Controller
             }
         });
 
+        // ─── Khôi phục xe pending_renewal → active nếu đây là hóa đơn phí gửi xe ───
+        $this->restoreVehiclesAfterParkingPayment($invoices);
+
         // Gửi thông báo cho quản trị viên/kế toán khi cư dân thanh toán thành công
         try {
             $admins = \App\Models\User::whereIn('role', ['staff', 'manager', 'admin'])->get();
@@ -348,6 +351,82 @@ class InvoiceController extends Controller
         } catch (\Exception $e) {
             // Tránh làm gián đoạn luồng thanh toán nếu xảy ra lỗi gửi thông báo
             logger()->error('Lỗi khi gửi thông báo thanh toán cho admin: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Khôi phục xe từ pending_renewal → active khi thanh toán hóa đơn phí gửi xe thành công.
+     * Đồng thời sinh QR code nếu xe chưa có.
+     */
+    private function restoreVehiclesAfterParkingPayment($invoices)
+    {
+        try {
+            // Lọc hóa đơn có chứa chi tiết phí gửi xe (service_price type = 'parking')
+            $parkingApartmentIds = [];
+
+            foreach ($invoices as $invoice) {
+                $hasParkingDetail = $invoice->details()
+                    ->whereHas('servicePrice', function ($q) {
+                        $q->where('type', 'parking');
+                    })
+                    ->exists();
+
+                if ($hasParkingDetail) {
+                    $parkingApartmentIds[] = $invoice->apartment_id;
+                }
+            }
+
+            if (empty($parkingApartmentIds)) {
+                return;
+            }
+
+            // Tìm xe pending_renewal thuộc các căn hộ đã thanh toán phí gửi xe
+            $vehicles = \App\Models\Vehicle::whereIn('apartment_id', $parkingApartmentIds)
+                ->where('status', 'pending_renewal')
+                ->withoutTrashed()
+                ->get();
+
+            foreach ($vehicles as $vehicle) {
+                $vehicle->update(['status' => 'active']);
+
+                // Sinh QR code nếu chưa có
+                if (empty($vehicle->qr_code)) {
+                    $this->generateVehicleQr($vehicle);
+                }
+            }
+        } catch (\Exception $e) {
+            logger()->error('Lỗi khôi phục xe sau thanh toán phí gửi xe: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Sinh QR image cho xe và lưu path vào cột qr_code.
+     * Content: biển số xe viết hoa, không dấu cách (dùng để bảo vệ quét).
+     */
+    private function generateVehicleQr(\App\Models\Vehicle $vehicle): void
+    {
+        try {
+            $dir = storage_path('app/public/qr/vehicles');
+            if (!is_dir($dir)) {
+                mkdir($dir, 0775, true);
+            }
+
+            $content  = strtoupper(str_replace([' ', '-'], '', $vehicle->license_plate));
+            $filename = $content . '.svg';
+            $filePath = $dir . '/' . $filename;
+
+            if (class_exists(\SimpleSoftwareIO\QrCode\Facades\QrCode::class)) {
+                \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')
+                    ->size(300)
+                    ->errorCorrection('H')
+                    ->generate($content, $filePath);
+            }
+
+            $vehicle->update(['qr_code' => 'qr/vehicles/' . $filename]);
+        } catch (\Throwable $e) {
+            // Fallback: lưu content biển số để scanner vẫn hoạt động
+            $content = strtoupper(str_replace([' ', '-'], '', $vehicle->license_plate));
+            $vehicle->update(['qr_code' => $content]);
         }
     }
 

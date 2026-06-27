@@ -1,0 +1,128 @@
+/* =========================================================================
+   QR Scanner UI — Security Portal (Light Professional Theme)
+   ========================================================================= */
+
+/* ---- Page Layout ---- */
+.qs-page { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+.qs-header { margin-bottom: 1.75rem; }
+.qs-eyebrow { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #0b57d0; margin: 0 0 .3rem; }
+.qs-title { font-size: 1.5rem; font-weight: 800; color: #0f172a; margin: 0; }
+
+/* ---- Main Layout ---- */
+.qs-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start; }
+@media (max-width: 900px) { .qs-layout { grid-template-columns: 1fr; } }
+
+/* ---- Scanner Panel ---- */
+.qs-panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,35,111,.04); }
+.qs-panel__header { padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: .75rem; background: #f8fafc; }
+.qs-panel__icon { width: 36px; height: 36px; border-radius: 10px; background: #eff6ff; display: flex; align-items: center; justify-content: center; color: #2563eb; }
+.qs-panel__title { font-size: .9rem; font-weight: 700; color: #1e293b; margin: 0; }
+.qs-panel__body { padding: 1.25rem; }
+
+/* ---- Camera box ---- */
+.qs-camera-box { position: relative; background: #0f172a; border-radius: 12px; overflow: hidden; aspect-ratio: 4/3; max-width: 100%; }
+.qs-camera-box #reader { width: 100%; height: 100%; }
+.qs-camera-box #reader video { width: 100% !important; height: 100% !important; object-fit: cover !important; }
+.qs-scanner-frame { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.qs-scanner-frame__inner { width: 55%; height: 65%; position: relative; }
+.qs-corner { position: absolute; width: 20px; height: 20px; border-color: #3b82f6; border-style: solid; }
+.qs-corner--tl { top: 0; left: 0; border-width: 3px 0 0 3px; border-radius: 4px 0 0 0; }
+.qs-corner--tr { top: 0; right: 0; border-width: 3px 3px 0 0; border-radius: 0 4px 0 0; }
+.qs-corner--bl { bottom: 0; left: 0; border-width: 0 0 3px 3px; border-radius: 0 0 0 4px; }
+.qs-corner--br { bottom: 0; right: 0; border-width: 0 3px 3px 0; border-radius: 0 0 4px 0; }
+.qs-scan-line { position: absolute; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, #3b82f6, transparent); animation: scanLine 2s ease-in-out infinite; }
+@keyframes scanLine { 0%,100% { top: 10%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 50% { top: 90%; } }
+
+/* Camera placeholder */
+.qs-cam-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .75rem; padding: 3rem 1.5rem; color: #94a3b8; text-align: center; height: 100%; }
+.qs-cam-placeholder svg { opacity: .5; color: #64748b; }
+
+/* ---- Buttons ---- */
+.qs-start-btn { width: 100%; margin-top: 1rem; padding: .8rem; background: #2563eb; color: #fff; border: none; border-radius: 10px; font-size: .9rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: .5rem; transition: all .2s; font-family: inherit; }
+.qs-start-btn:hover { background: #1d4ed8; box-shadow: 0 4px 12px rgba(37,99,235,.25); }
+.qs-start-btn:disabled { opacity: .5; cursor: not-allowed; }
+.qs-stop-btn { width: 100%; margin-top: .6rem; padding: .6rem; background: #fff; color: #64748b; border: 1px solid #e2e8f0; border-radius: 10px; font-size: .82rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: all .15s; }
+.qs-stop-btn:hover { color: #1e293b; border-color: #cbd5e1; background: #f8fafc; }
+
+/* Manual input */
+.qs-manual { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid #f1f5f9; }
+.qs-manual__label { font-size: .78rem; font-weight: 600; color: #64748b; margin: 0 0 .5rem; }
+.qs-manual__row { display: flex; gap: .5rem; }
+.qs-manual__input { flex: 1; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: .6rem .9rem; color: #1e293b; font-size: .85rem; font-family: inherit; transition: border-color .15s; }
+.qs-manual__input:focus { outline: none; border-color: #2563eb; background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
+.qs-manual__input::placeholder { color: #94a3b8; }
+.qs-manual__btn { padding: .6rem 1.1rem; background: #1e293b; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: .82rem; font-family: inherit; transition: background .15s; }
+.qs-manual__btn:hover { background: #0f172a; }
+
+/* ---- Result panel ---- */
+.qs-result { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; min-height: 420px; box-shadow: 0 2px 8px rgba(0,35,111,.04); }
+.qs-result__idle { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 3rem 1.5rem; color: #94a3b8; text-align: center; gap: .75rem; }
+.qs-result__idle-icon { width: 56px; height: 56px; background: #eff6ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.qs-result__idle-title { font-size: 1rem; font-weight: 700; color: #1e293b; margin: 0; }
+
+/* Status header */
+.qs-result__status-bar { padding: .875rem 1.25rem; display: flex; align-items: center; gap: .75rem; border-bottom: 1px solid #f1f5f9; }
+.qs-result__status-bar.is-success { background: #f0fdf4; border-bottom-color: #bbf7d0; }
+.qs-result__status-bar.is-error { background: #fef2f2; border-bottom-color: #fecaca; }
+.qs-result__status-bar.is-warning { background: #fffbeb; border-bottom-color: #fde68a; }
+.qs-status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.is-success .qs-status-dot { background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,.4); }
+.is-error .qs-status-dot { background: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,.4); }
+.is-warning .qs-status-dot { background: #f59e0b; box-shadow: 0 0 6px rgba(245,158,11,.4); }
+.qs-status-msg { font-size: .85rem; font-weight: 600; color: #1e293b; }
+
+/* Info cards inside result */
+.qs-result__body { padding: 1.25rem; flex: 1; display: flex; flex-direction: column; gap: 1rem; }
+.qs-info-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.1rem; display: flex; gap: 1rem; align-items: flex-start; }
+.qs-info-card__thumb { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; background: #eff6ff; flex-shrink: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.qs-info-card__thumb img { width: 100%; height: 100%; object-fit: cover; }
+.qs-info-card__content { flex: 1; min-width: 0; }
+.qs-info-card__name { font-size: 1.05rem; font-weight: 700; color: #0f172a; margin: 0 0 .2rem; }
+.qs-info-card__sub { font-size: .8rem; color: #64748b; margin: 0 0 .6rem; }
+.qs-info-rows { display: flex; flex-direction: column; gap: .3rem; }
+.qs-info-row { display: flex; gap: .5rem; font-size: .8rem; }
+.qs-info-row__label { color: #64748b; min-width: 85px; flex-shrink: 0; }
+.qs-info-row__val { color: #1e293b; font-weight: 600; }
+
+/* Badges */
+.qs-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 20px; font-size: .72rem; font-weight: 700; }
+.qs-badge--active { background: #dcfce7; color: #166534; }
+.qs-badge--pending { background: #eff6ff; color: #1d4ed8; }
+.qs-badge--danger { background: #fef2f2; color: #dc2626; }
+.qs-badge--warning { background: #fffbeb; color: #b45309; }
+.qs-badge--gray { background: #f1f5f9; color: #475569; }
+
+/* Warning box */
+.qs-warn-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: .8rem 1rem; font-size: .82rem; color: #92400e; display: flex; gap: .5rem; align-items: flex-start; }
+
+/* Action buttons */
+.qs-result__actions { padding: 1rem 1.25rem; border-top: 1px solid #f1f5f9; display: flex; gap: .6rem; flex-wrap: wrap; }
+.qs-action-btn { flex: 1; min-width: 110px; padding: .7rem 1rem; border: none; border-radius: 10px; font-size: .85rem; font-weight: 700; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: .4rem; transition: all .2s; }
+.qs-action-btn--confirm { background: #16a34a; color: #fff; }
+.qs-action-btn--confirm:hover { background: #15803d; box-shadow: 0 4px 12px rgba(22,163,74,.2); }
+.qs-action-btn--checkout { background: #f59e0b; color: #fff; }
+.qs-action-btn--checkout:hover { background: #d97706; box-shadow: 0 4px 12px rgba(245,158,11,.2); }
+.qs-action-btn--reset { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
+.qs-action-btn--reset:hover { background: #f1f5f9; color: #1e293b; border-color: #cbd5e1; }
+.qs-action-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Spinner */
+.qs-spin { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Toast */
+.qs-toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: .875rem 1.25rem; color: #1e293b; font-size: .85rem; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,.12); z-index: 9999; transform: translateY(60px); opacity: 0; transition: all .3s cubic-bezier(.34,1.56,.64,1); display: flex; align-items: center; gap: .6rem; }
+.qs-toast.is-visible { transform: translateY(0); opacity: 1; }
+.qs-toast--success { border-left: 4px solid #22c55e; }
+.qs-toast--error { border-left: 4px solid #ef4444; }
+
+/* Recent logs */
+.qs-log { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid #f1f5f9; }
+.qs-log__title { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #94a3b8; margin: 0 0 .6rem; }
+.qs-log-item { display: flex; align-items: center; gap: .6rem; padding: .45rem 0; border-bottom: 1px solid #f8fafc; }
+.qs-log-item:last-child { border-bottom: none; }
+.qs-log-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.qs-log-dot--in { background: #22c55e; }
+.qs-log-dot--out { background: #94a3b8; }
+.qs-log-plate { font-size: .82rem; font-weight: 600; color: #1e293b; }
+.qs-log-time { font-size: .75rem; color: #94a3b8; margin-left: auto; }
