@@ -1,0 +1,470 @@
+/* ============================================================
+   RESIDENTS PAGE - Danh sách cư dân
+   ============================================================ */
+
+/* ─── Page layout ─── */
+.residents-page {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ─── Page Header ─── */
+.residents-page__header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.residents-page__header h1 {
+    margin: 0;
+    color: #00236f;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.residents-page__subtitle {
+    margin: 6px 0 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+/* ─── Alert ─── */
+.residents-alert {
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.residents-alert--success {
+    background: #e6f4ea;
+    color: #137333;
+    border: 1px solid #b7dfc1;
+}
+
+.residents-alert--danger {
+    background: #fce8e6;
+    color: #ba1a1a;
+    border: 1px solid #f4b8b2;
+}
+
+/* ─── Stats Grid ─── */
+.residents-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.res-stat-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.res-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 35, 111, 0.06);
+}
+
+.res-stat-card__label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+}
+
+.res-stat-card__value {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+/* ─── Filter Card ─── */
+.residents-filter-card {
+    background: #f8f9ff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 18px;
+}
+
+.residents-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.residents-filter-card label {
+    display: block;
+    margin-bottom: 6px;
+    color: #475569;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.residents-filter-card select,
+.residents-filter-card input[type="text"] {
+    width: 100%;
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1px solid #d9e2f2;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.residents-filter-card select {
+    appearance: none;
+    padding-right: 40px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+}
+
+.residents-filter-card select:focus,
+.residents-filter-card input[type="text"]:focus {
+    border-color: #0b57d0;
+    box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.08);
+}
+
+/* ─── Table Card ─── */
+.residents-table-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.residents-table-wrap {
+    overflow-x: auto;
+}
+
+/* ─── Table ─── */
+.residents-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.residents-table thead {
+    background: #f1f5f9;
+}
+
+.residents-table thead th {
+    padding: 14px 18px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #64748b;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
+}
+
+.residents-table tbody tr {
+    border-bottom: 1px solid #f1f5f9;
+    transition: background-color 0.15s ease;
+}
+
+.residents-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.residents-table tbody tr:hover {
+    background-color: #f8faff;
+}
+
+.residents-table tbody td {
+    padding: 14px 18px;
+    vertical-align: middle;
+    color: #334155;
+}
+
+/* ─── User Cell ─── */
+.res-user-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.res-user-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #e0e7ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.res-user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.res-user-avatar span {
+    font-size: 14px;
+    font-weight: 700;
+    color: #3730a3;
+    text-transform: uppercase;
+}
+
+.res-user-name {
+    display: block;
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 14px;
+}
+
+.res-user-cccd {
+    display: block;
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 2px;
+}
+
+/* ─── Apartment Number ─── */
+.res-apt-number {
+    font-weight: 800;
+    color: #0b57d0;
+    font-size: 14px;
+}
+
+/* ─── Location Cell ─── */
+.res-location-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.res-location-block {
+    font-weight: 600;
+    color: #334155;
+    font-size: 14px;
+}
+
+.res-location-floor {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+/* ─── Relationship Badge ─── */
+.res-relationship {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.res-relationship--owner {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.res-relationship--spouse {
+    background: #fce7f3;
+    color: #9d174d;
+}
+
+.res-relationship--tenant {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+/* ─── Contact Cell ─── */
+.res-contact-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.res-contact-phone {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0b57d0;
+    text-decoration: none;
+}
+
+.res-contact-phone:hover {
+    text-decoration: underline;
+}
+
+.res-contact-email {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+/* ─── Status Badge ─── */
+.res-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.res-status::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.res-status--active {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.res-status--active::before {
+    background: #22c55e;
+    box-shadow: 0 0 5px #22c55e;
+}
+
+.res-status--inactive {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.res-status--inactive::before {
+    background: #f59e0b;
+}
+
+.res-status--banned {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.res-status--banned::before {
+    background: #ef4444;
+}
+
+/* ─── Date ─── */
+.res-date {
+    font-size: 13px;
+    color: #64748b;
+}
+
+/* ─── Empty State ─── */
+.residents-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #94a3b8;
+}
+
+.residents-empty p {
+    margin: 10px 0 0;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+/* ─── Pagination ─── */
+.residents-pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 8px;
+}
+
+.residents-pagination nav > div:first-child { display: none !important; }
+
+.residents-pagination nav > div:last-child {
+    display: flex !important;
+    justify-content: center;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.residents-pagination nav p { display: none !important; }
+
+.residents-pagination nav a,
+.residents-pagination nav span[aria-current="page"] span,
+.residents-pagination nav span[aria-disabled="true"] span,
+.residents-pagination nav span.relative.inline-flex {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    min-width: 38px;
+    height: 38px;
+    padding: 0 14px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    border: none !important;
+    background: transparent !important;
+    color: #00236f !important;
+}
+
+.residents-pagination nav a:hover {
+    background-color: #f0f4ff !important;
+}
+
+.residents-pagination nav span[aria-current="page"] span {
+    background-color: #00236f !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 6px rgba(0, 35, 111, 0.2) !important;
+}
+
+.residents-pagination nav span[aria-disabled="true"] span {
+    color: #cbd5e1 !important;
+    cursor: not-allowed;
+    background: transparent !important;
+}
+
+.residents-pagination nav svg {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 1024px) {
+    .residents-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .residents-filter-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 620px) {
+    .residents-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .residents-filter-grid {
+        grid-template-columns: 1fr;
+    }
+}
