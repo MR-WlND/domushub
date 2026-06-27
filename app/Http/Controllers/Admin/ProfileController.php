@@ -1,12 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Resident;
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Apartment;
-use App\Models\ApartmentMember;
 use App\Models\User;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -18,17 +16,11 @@ class ProfileController extends Controller
     public function index(): View
     {
         $user = Auth::user();
-        $ownerApartmentIds = $this->getOwnerApartmentIds($user);
 
-        $apartments = Apartment::with(['floor.block'])
-            ->whereIn('id', $ownerApartmentIds)
-            ->orderBy('apartment_number')
-            ->get();
-
-        return view('resident.profile.index', compact('user', 'apartments'));
+        return view('admin.profile.index', compact('user'));
     }
 
-    public function update(Request $request): JsonResponse
+    public function update(Request $request): RedirectResponse
     {
         /** @var User $user */
         $user = Auth::user();
@@ -45,6 +37,7 @@ class ProfileController extends Controller
             'phone.regex' => 'Số điện thoại chỉ được chứa số và dấu +.',
             'phone.unique' => 'Số điện thoại đã tồn tại trong hệ thống.',
             'email.required' => 'Vui lòng nhập email.',
+            'email.email' => 'Email không đúng định dạng.',
             'email.unique' => 'Email đã tồn tại trong hệ thống.',
             'cccd.regex' => 'Số CCCD chỉ được chứa số.',
             'avatar.image' => 'File phải là hình ảnh.',
@@ -53,6 +46,7 @@ class ProfileController extends Controller
 
         // Handle avatar upload
         if ($request->hasFile('avatar')) {
+            // Delete old avatar if exists
             if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
                 Storage::disk('public')->delete($user->avatar);
             }
@@ -61,15 +55,11 @@ class ProfileController extends Controller
 
         $user->update($validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Cập nhật thông tin cá nhân thành công.',
-            'avatar_url' => $user->avatar ? asset('storage/' . $user->avatar) : null,
-            'name' => $user->name,
-        ]);
+        return redirect()->route('admin.profile.index')
+            ->with('success', 'Cập nhật thông tin cá nhân thành công.');
     }
 
-    public function changePassword(Request $request): JsonResponse
+    public function changePassword(Request $request): RedirectResponse
     {
         /** @var User $user */
         $user = Auth::user();
@@ -85,26 +75,12 @@ class ProfileController extends Controller
         ]);
 
         if (!Hash::check($request->current_password, $user->password)) {
-            return response()->json([
-                'success' => false,
-                'errors' => ['current_password' => ['Mật khẩu hiện tại không đúng.']],
-            ], 422);
+            return back()->withErrors(['current_password' => 'Mật khẩu hiện tại không đúng.']);
         }
 
         $user->update(['password' => $request->password]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Đổi mật khẩu thành công.',
-        ]);
-    }
-
-    private function getOwnerApartmentIds(User $user): array
-    {
-        return $user->residents()
-            ->where('relationship', 'owner')
-            ->whereNull('deleted_at')
-            ->pluck('apartment_id')
-            ->toArray();
+        return redirect()->route('admin.profile.index')
+            ->with('success', 'Đổi mật khẩu thành công.');
     }
 }

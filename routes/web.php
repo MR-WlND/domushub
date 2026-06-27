@@ -207,6 +207,11 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/admin/invitations', [AdminInvitationController::class, 'index'])->name('admin.invitations.index');
     Route::post('/admin/invitations', [AdminInvitationController::class, 'store'])->name('admin.invitations.store');
     Route::delete('/admin/invitations/{id}', [AdminInvitationController::class, 'destroy'])->name('admin.invitations.destroy');
+
+    // Trang cá nhân quản trị viên
+    Route::get('/admin/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'index'])->name('admin.profile.index');
+    Route::put('/admin/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('admin.profile.update');
+    Route::put('/admin/profile/change-password', [\App\Http\Controllers\Admin\ProfileController::class, 'changePassword'])->name('admin.profile.change-password');
 });
 
 // DASHBOARD SECURITY ROUTES
@@ -258,6 +263,7 @@ Route::middleware(['resident'])->group(function () {
     // Profile
     Route::get('/resident/profile', [ProfileController::class, 'index'])->name('resident.profile.index');
     Route::put('/resident/profile', [ProfileController::class, 'update'])->name('resident.profile.update');
+    Route::put('/resident/profile/change-password', [ProfileController::class, 'changePassword'])->name('resident.profile.change-password');
 
     // Hoá đơn cư dân
     Route::get('/resident/invoices', [ResidentInvoiceController::class, 'index'])->name('resident.invoices.index');
