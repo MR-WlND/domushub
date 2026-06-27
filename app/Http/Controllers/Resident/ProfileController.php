@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -19,13 +20,63 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
         $ownerApartmentIds = $this->getOwnerApartmentIds($user);
+        $allApartmentIds = $user->residents()
+            ->whereNull('deleted_at')
+            ->pluck('apartment_id')
+            ->toArray();
 
-        $apartments = Apartment::with(['floor.block'])
-            ->whereIn('id', $ownerApartmentIds)
-            ->orderBy('apartment_number')
+        // Fallback: nếu không có record trong bảng residents, dùng apartment_id trên user
+        if (empty($allApartmentIds) && $user->apartment_id) {
+            $allApartmentIds = [$user->apartment_id];
+        }
+
+        // Lấy căn hộ: ưu tiên owner, fallback apartment_id trực tiếp
+        if (!empty($ownerApartmentIds)) {
+            $apartments = Apartment::with(['floor.block'])
+                ->whereIn('id', $ownerApartmentIds)
+                ->orderBy('apartment_number')
+                ->get();
+        } elseif ($user->apartment_id) {
+            $apartments = Apartment::with(['floor.block'])
+                ->where('id', $user->apartment_id)
+                ->get();
+        } else {
+            $apartments = collect();
+        }
+
+        // Thành viên trong căn hộ (cả registered + declared)
+        $registeredMembers = \App\Models\Resident::with(['user'])
+            ->whereIn('apartment_id', $allApartmentIds)
+            ->where('user_id', '!=', $user->id)
+            ->whereNull('deleted_at')
+            ->orderBy('created_at')
             ->get();
 
-        return view('resident.profile.index', compact('user', 'apartments'));
+        $declaredMembers = ApartmentMember::whereIn('apartment_id', $allApartmentIds)
+            ->orderBy('created_at')
+            ->get();
+
+        // Phương tiện
+        $vehicles = \App\Models\Vehicle::where('apartment_id', $user->apartment_id)
+            ->whereIn('status', ['active', 'pending', 'pending_renewal'])
+            ->withoutTrashed()
+            ->latest()
+            ->get();
+
+        // Số dư nợ hiện tại
+        $outstandingBalance = \App\Models\Invoice::where('apartment_id', $user->apartment_id)
+            ->whereIn('status', ['unpaid', 'partial', 'overdue'])
+            ->sum(\Illuminate\Support\Facades\DB::raw('total_amount - paid_amount'));
+
+        // Resident record của user hiện tại
+        $selfResident = \App\Models\Resident::where('user_id', $user->id)
+            ->whereNull('deleted_at')
+            ->first();
+
+        return view('resident.profile.index', compact(
+            'user', 'apartments', 'registeredMembers', 'declaredMembers',
+            'vehicles', 'outstandingBalance', 'selfResident'
+        ));
     }
 
     public function update(Request $request): JsonResponse

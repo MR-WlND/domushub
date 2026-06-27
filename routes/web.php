@@ -136,10 +136,8 @@ Route::middleware(['admin'])->group(function () {
     Route::post('/admin/payments/{payment}/refund', [InvoiceController::class, 'refundPayment'])->name('admin.payments.refund');
     Route::get('/admin/payments/{payment}/receipt', [InvoiceController::class, 'printReceipt'])->name('admin.payments.receipt');
 
-    // Dịch vụ cư dân
-    Route::get('/admin/residents', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.residents.index');
+    // Danh sách cư dân
+    Route::get('/admin/residents', [ResidentManageController::class, 'index'])->name('admin.residents.index');
 
     // Quản lý phản ánh & điều phối kỹ thuật (admin / manager)
     Route::get('/admin/tickets', [App\Http\Controllers\Admin\TicketController::class, 'index'])->name('admin.tickets.index');
