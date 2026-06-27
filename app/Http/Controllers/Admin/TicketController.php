@@ -76,6 +76,16 @@ class TicketController extends Controller
 
         $blocks = \App\Models\Block::orderBy('name')->get();
 
+        // ── AJAX: return partial HTML for ticket table only ──
+        if ($request->ajax() || $request->wantsJson()) {
+            $html = view('admin.tickets._ticket_table', compact('tickets', 'blocks'))->render();
+            return response()->json([
+                'success' => true,
+                'html'    => $html,
+                'stats'   => $stats,
+            ]);
+        }
+
         // ── Tab 2: Dispatch data (admin/manager only) ──
         $pendingTickets = collect();
         $activeTickets  = collect();
