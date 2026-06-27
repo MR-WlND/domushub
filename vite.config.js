@@ -36,6 +36,7 @@ export default defineConfig({
                 'resources/css/pages/admin/tickets/index.css',
                 'resources/css/pages/admin/tickets/technician.css',
                 'resources/css/pages/admin/statistics.css',
+                'resources/css/pages/admin/dashboard.css',
 
 
             ],

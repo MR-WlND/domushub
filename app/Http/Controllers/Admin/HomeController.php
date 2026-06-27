@@ -11,6 +11,8 @@ use App\Models\Floor;
 use App\Models\Apartment;
 use App\Models\Resident;
 use App\Models\Ticket;
+use App\Models\Vehicle;
+use App\Models\FacilityBooking;
 
 class HomeController extends Controller
 {
@@ -40,9 +42,29 @@ class HomeController extends Controller
         $maintenanceApartments = Apartment::where('status', 'maintenance')->count();
         $activeBlocks = $totalBlocks;
 
+        // Bổ sung các chỉ số vận hành để hiển thị trên dashboard xịn
+        $totalResidents = Resident::whereNull('deleted_at')->count();
+        $pendingTicketsCount = Ticket::where('status', 'pending')->count();
+        $pendingVehiclesCount = Vehicle::where('status', 'pending')->count();
+        $pendingBookingsCount = FacilityBooking::where('status', 'pending')->count();
+
+        // 5 phản ánh gần nhất
+        $recentTickets = Ticket::with('apartment')
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        // 5 lượt đặt tiện ích gần nhất
+        $recentBookings = FacilityBooking::with('facility', 'user')
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
         return view('admin.dashboard.index', compact(
             'totalBlocks', 'totalFloors', 'totalApartments', 'occupiedApartments',
-            'vacantApartments', 'maintenanceApartments', 'activeBlocks'
+            'vacantApartments', 'maintenanceApartments', 'activeBlocks',
+            'totalResidents', 'pendingTicketsCount', 'pendingVehiclesCount',
+            'pendingBookingsCount', 'recentTickets', 'recentBookings'
         ));
     }
 
