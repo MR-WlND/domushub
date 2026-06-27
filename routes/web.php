@@ -6,9 +6,11 @@ use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\ResidentManageController;
 use App\Http\Controllers\Admin\ServicePriceController;
 use App\Http\Controllers\Admin\UtilityMeterController;
+use App\Http\Controllers\Admin\FacilityController as AdminFacilityController;
 use App\Http\Controllers\Resident\ProfileController;
 use App\Http\Controllers\Resident\InvoiceController as ResidentInvoiceController;
 use App\Http\Controllers\Resident\TicketController as ResidentTicketController;
+use App\Http\Controllers\Resident\FacilityController as ResidentFacilityController;
 
 use App\Http\Controllers\Admin\InvitationController as AdminInvitationController;
 
@@ -53,6 +55,12 @@ Route::get('/vnpay/ipn', [\App\Http\Controllers\Resident\InvoiceController::clas
 Route::middleware(['admin'])->group(function () {
     Route::get('admin', [HomeController::class, 'index'])->name('admin.dashboard');
     Route::get('/admin/statistics', [HomeController::class, 'statistics'])->name('admin.statistics');
+    Route::get('/admin/statistics/finance', [HomeController::class, 'statisticsFinance'])->name('admin.statistics.finance');
+    Route::get('/admin/statistics/finance/export', [HomeController::class, 'exportFinanceExcel'])->name('admin.statistics.finance.export');
+    Route::get('/admin/statistics/operations', [HomeController::class, 'statisticsOperations'])->name('admin.statistics.operations');
+    Route::get('/admin/statistics/operations/export', [HomeController::class, 'exportOperationsExcel'])->name('admin.statistics.operations.export');
+    Route::get('/admin/statistics/residents', [HomeController::class, 'statisticsResidents'])->name('admin.statistics.residents');
+    Route::get('/admin/statistics/residents/export', [HomeController::class, 'exportResidentsExcel'])->name('admin.statistics.residents.export');
 
     // Block/Building routes (used in views)
     Route::get('/admin/blocks', [\App\Http\Controllers\Admin\BlockController::class, 'index'])->name('admin.blocks.index');
@@ -128,7 +136,6 @@ Route::middleware(['admin'])->group(function () {
     Route::post('/admin/payments/{payment}/refund', [InvoiceController::class, 'refundPayment'])->name('admin.payments.refund');
     Route::get('/admin/payments/{payment}/receipt', [InvoiceController::class, 'printReceipt'])->name('admin.payments.receipt');
 
-
     // Dịch vụ cư dân
     Route::get('/admin/residents', function () {
         return view('admin.dashboard.index');
@@ -160,11 +167,23 @@ Route::middleware(['admin'])->group(function () {
     Route::put('/admin/parking-lots/{parkingLot}', [App\Http\Controllers\Admin\ParkingLotController::class, 'update'])->name('admin.parking-lots.update');
     Route::delete('/admin/parking-lots/{parkingLot}', [App\Http\Controllers\Admin\ParkingLotController::class, 'destroy'])->name('admin.parking-lots.destroy');
 
-
-
-    Route::get('/admin/amenities', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.amenities.index');
+    // Quản lý tiện ích chung cư (Facilities)
+    Route::get('/admin/amenities', [AdminFacilityController::class, 'index'])->name('admin.amenities.index');
+    Route::get('/admin/amenities/create', [AdminFacilityController::class, 'create'])->name('admin.amenities.create');
+    Route::post('/admin/amenities', [AdminFacilityController::class, 'store'])->name('admin.amenities.store');
+    Route::get('/admin/amenities/statistics', [AdminFacilityController::class, 'statistics'])->name('admin.amenities.statistics');
+    Route::get('/admin/amenities/bookings', [AdminFacilityController::class, 'bookings'])->name('admin.amenities.bookings');
+    Route::get('/admin/amenities/{facility}', [AdminFacilityController::class, 'show'])->name('admin.amenities.show');
+    Route::get('/admin/amenities/{facility}/edit', [AdminFacilityController::class, 'edit'])->name('admin.amenities.edit');
+    Route::put('/admin/amenities/{facility}', [AdminFacilityController::class, 'update'])->name('admin.amenities.update');
+    Route::delete('/admin/amenities/{facility}', [AdminFacilityController::class, 'destroy'])->name('admin.amenities.destroy');
+    Route::post('/admin/amenities/{facility}/images', [AdminFacilityController::class, 'storeImage'])->name('admin.amenities.images.store');
+    Route::delete('/admin/amenities/{facility}/images/{index}', [AdminFacilityController::class, 'destroyImage'])->name('admin.amenities.images.destroy');
+    Route::patch('/admin/amenities/{facility}/status', [AdminFacilityController::class, 'updateStatus'])->name('admin.amenities.status');
+    Route::post('/admin/facility-bookings/{booking}/approve', [AdminFacilityController::class, 'approveBooking'])->name('admin.amenities.bookings.approve');
+    Route::post('/admin/facility-bookings/{booking}/reject', [AdminFacilityController::class, 'rejectBooking'])->name('admin.amenities.bookings.reject');
+    Route::post('/admin/facility-bookings/{booking}/cancel', [AdminFacilityController::class, 'cancelBooking'])->name('admin.amenities.bookings.cancel');
+    Route::patch('/admin/facility-bookings/{booking}/status', [AdminFacilityController::class, 'updateBookingStatus'])->name('admin.amenities.bookings.status');
 
     // Tương tác & bảng tin
     Route::get('/admin/announcements', function () {
@@ -190,9 +209,7 @@ Route::middleware(['admin'])->group(function () {
     Route::delete('/admin/invitations/{id}', [AdminInvitationController::class, 'destroy'])->name('admin.invitations.destroy');
 });
 
-
 // DASHBOARD SECURITY ROUTES
-
 Route::middleware(['security'])->group(function () {
     Route::get('/security/dashboard', function () {
         return view('security.dashboard.index');
@@ -211,11 +228,8 @@ Route::middleware(['security'])->group(function () {
     })->name('security.visitor-check.index');
 });
 
-
-//  DASHBOARD RESIDENT ROUTES
-
+// DASHBOARD RESIDENT ROUTES
 Route::middleware(['resident'])->group(function () {
-
     Route::get('/resident/dashboard', function () {
         return view('resident.home.index');
     })->name('resident.dashboard');
@@ -253,6 +267,7 @@ Route::middleware(['resident'])->group(function () {
         ->name('resident.vehicles.store');
     Route::delete('/resident/vehicles/{vehicle}', [App\Http\Controllers\Resident\VehicleController::class, 'destroy'])
         ->name('resident.vehicles.destroy');
+
     // PHẢN ÁNH SỰ CỐ PHÍA CƯ DÂN
     Route::get('/resident/tickets', [ResidentTicketController::class, 'index'])->name('resident.tickets.index');
     Route::get('/resident/tickets/create', [ResidentTicketController::class, 'create'])->name('resident.tickets.create');
@@ -282,6 +297,21 @@ Route::middleware(['resident'])->group(function () {
     // THÔNG BÁO CƯ DÂN
     Route::get('/resident/notifications', [\App\Http\Controllers\Resident\NotificationController::class, 'index'])->name('resident.notifications.index');
     Route::post('/resident/notifications/mark-read/{id?}', [\App\Http\Controllers\Resident\NotificationController::class, 'markRead'])->name('resident.notifications.mark-read');
+
+    // TIỆN ÍCH CHUNG CƯ PHÍA CƯ DÂN
+    Route::get('/resident/facilities', [ResidentFacilityController::class, 'index'])->name('resident.facilities.index');
+    Route::get('/resident/facilities/{facility}', [ResidentFacilityController::class, 'show'])->name('resident.facilities.show');
+    Route::get('/resident/facilities/{facility}/book', [ResidentFacilityController::class, 'book'])->name('resident.facilities.book');
+    Route::post('/resident/facilities/{facility}/book', [ResidentFacilityController::class, 'storeBooking'])->name('resident.facilities.book.store');
+
+    // LỊCH ĐẶT TIỆN ÍCH PHÍA CƯ DÂN
+    Route::get('/resident/facility-bookings', [ResidentFacilityController::class, 'bookingHistory'])->name('resident.facility-bookings.index');
+    Route::post('/resident/facility-bookings/{booking}/cancel', [ResidentFacilityController::class, 'cancelBooking'])->name('resident.facility-bookings.cancel');
+    Route::get('/resident/facility-bookings/{booking}/qr', [ResidentFacilityController::class, 'showQr'])->name('resident.facility-bookings.qr');
+    Route::post('/resident/facility-bookings/{booking}/pay', [ResidentFacilityController::class, 'pay'])->name('resident.facility-bookings.pay');
+
+    // AJAX: Khung giờ còn trống (dùng trong form đặt lịch)
+    Route::post('/resident/api/available-slots', [\App\Http\Controllers\FacilityBookingController::class, 'getAvailableSlots'])->name('resident.api.available-slots');
 });
 
 Route::middleware(['admin'])->name('admin.')->group(function () {
@@ -299,7 +329,7 @@ Route::middleware(['admin'])->name('admin.')->group(function () {
     Route::post('/admin/users/{id}/ban-commenting', [\App\Http\Controllers\Admin\PostController::class, 'banCommenting'])->name('users.ban-commenting');
 });
 
-// Fallback route to serve uploaded public storage files (useful if symlink is missing or fails on local Windows development)
+// Fallback route to serve uploaded public storage files
 Route::get('/storage/{any}', function ($any) {
     $path = storage_path('app/public/' . $any);
     if (file_exists($path)) {
@@ -307,13 +337,3 @@ Route::get('/storage/{any}', function ($any) {
     }
     abort(404);
 })->where('any', '.*');
-
-
-
-
-
-
-
-
-
-

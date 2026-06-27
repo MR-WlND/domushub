@@ -34,14 +34,31 @@
                 </svg>
                 <span>Trang tổng quan</span>
             </a>
-            <a href="{{ route('admin.statistics') }}" class="dashboard-nav__item {{ request()->routeIs('admin.statistics') ? 'dashboard-nav__item--active' : '' }}">
-                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="20" x2="18" y2="10"></line>
-                    <line x1="12" y1="20" x2="12" y2="4"></line>
-                    <line x1="6" y1="20" x2="6" y2="14"></line>
-                </svg>
-                <span>Báo cáo & Thống kê</span>
-            </a>
+            <div class="dashboard-nav__group {{ request()->routeIs('admin.statistics.*') || request()->routeIs('admin.statistics') || request()->routeIs('admin.amenities.statistics') ? 'dashboard-nav__group--open' : '' }}">
+                <a href="{{ route('admin.statistics.finance') }}" class="dashboard-nav__item dashboard-nav__item--parent {{ request()->routeIs('admin.statistics.*') || request()->routeIs('admin.statistics') || request()->routeIs('admin.amenities.statistics') ? 'dashboard-nav__item--active' : '' }}" onclick="toggleSubmenu(event, this)">
+                    <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    <span>Báo cáo & Thống kê</span>
+                    <svg class="dashboard-nav__chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </a>
+                <div class="dashboard-nav__submenu">
+                    <a href="{{ route('admin.statistics.finance') }}" class="dashboard-nav__subitem {{ request()->routeIs('admin.statistics.finance') ? 'dashboard-nav__subitem--active' : '' }}">
+                        Thống kê Tài chính
+                    </a>
+                    <a href="{{ route('admin.statistics.operations') }}" class="dashboard-nav__subitem {{ request()->routeIs('admin.statistics.operations') ? 'dashboard-nav__subitem--active' : '' }}">
+                        Thống kê Vận hành
+                    </a>
+                    <a href="{{ route('admin.statistics.residents') }}" class="dashboard-nav__subitem {{ request()->routeIs('admin.statistics.residents') ? 'dashboard-nav__subitem--active' : '' }}">
+                        Cư dân &amp; Hạ tầng
+                    </a>
+                    <a href="{{ route('admin.amenities.statistics') }}" class="dashboard-nav__subitem {{ request()->routeIs('admin.amenities.statistics') ? 'dashboard-nav__subitem--active' : '' }}">
+                        Thống kê Tiện ích
+                    </a>
+                </div>
+            </div>
         </div>
         @endif
 
@@ -189,14 +206,21 @@
                 <span>Quản lý lốt đỗ</span>
             </a>
 
-            <a href="{{ route('admin.amenities.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.amenities.*') ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ route('admin.amenities.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.amenities.index') || request()->routeIs('admin.amenities.create') || request()->routeIs('admin.amenities.edit') || request()->routeIs('admin.amenities.show') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span>Quản lý tiện ích</span>
+            </a>
+            <a href="{{ route('admin.amenities.bookings') }}" class="dashboard-nav__item {{ request()->routeIs('admin.amenities.bookings') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                     <line x1="16" y1="2" x2="16" y2="6"></line>
                     <line x1="8" y1="2" x2="8" y2="6"></line>
                     <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
-                <span>Đặt tiện ích</span>
+                <span>Lịch đặt tiện ích</span>
             </a>
         </div>
         @endif
@@ -265,4 +289,88 @@
             </form>
         </div>
     </div>
+
+    <style>
+        /* Submenu styling for Admin Sidebar - Synced with reference layout */
+        .dashboard-nav__group {
+            display: flex;
+            flex-direction: column;
+        }
+        .dashboard-nav__item--parent {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .dashboard-nav__chevron {
+            margin-left: auto;
+            color: #5f6368;
+            transition: transform 0.25s ease;
+            flex-shrink: 0;
+        }
+        .dashboard-nav__item--active .dashboard-nav__chevron {
+            color: #0b57d0;
+        }
+        .dashboard-nav__submenu {
+            display: none;
+            flex-direction: column;
+            background-color: #eff5ff !important; /* Màu nền xanh nhạt dính liền */
+            border-left: 2px solid #0b57d0 !important; /* Đường kẻ dọc màu xanh đậm bên trái */
+            margin-left: 24px;
+            margin-right: 12px;
+            margin-top: 4px;
+            margin-bottom: 4px;
+            border-radius: 4px;
+            padding: 4px !important;
+            box-shadow: none !important;
+            border-top: none !important;
+            border-right: none !important;
+            border-bottom: none !important;
+        }
+        .dashboard-nav__group--open .dashboard-nav__submenu {
+            display: flex;
+        }
+        .dashboard-nav__group--open .dashboard-nav__chevron {
+            transform: rotate(180deg);
+        }
+        .dashboard-nav__subitem {
+            display: flex !important;
+            align-items: center;
+            color: #3c4563 !important;
+            text-decoration: none !important;
+            padding: 8px 16px !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            transition: all 0.18s ease;
+            border-radius: 4px;
+            margin: 2px 0;
+            border-left: none !important;
+            background: transparent !important;
+        }
+        .dashboard-nav__subitem:hover {
+            background-color: rgba(11, 87, 208, 0.05) !important;
+            color: #0b57d0 !important;
+            padding-left: 16px !important;
+        }
+        .dashboard-nav__subitem--active {
+            background-color: #dce9ff !important;
+            color: #0b57d0 !important;
+            font-weight: 600 !important;
+            border-left: none !important;
+        }
+    </style>
+
+    <script>
+        function toggleSubmenu(event, element) {
+            const group = element.parentElement;
+            const isActive = element.classList.contains('dashboard-nav__item--active');
+            
+            if (isActive) {
+                // If clicked while active, toggle the open/close state instead of re-navigating
+                event.preventDefault();
+                group.classList.toggle('dashboard-nav__group--open');
+            }
+            // If not active, let the browser navigate to the default page and the server will render it open
+        }
+    </script>
 </aside>
+ 

@@ -23,16 +23,16 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         $this->call([
-            // ServicePriceSeeder::class,
-            // AdminSeeder::class,
-            // SecuritySeeder::class,
-            // TechnicianSeeder::class,
-            // BlockFloorApartmentSeeder::class,
-            // ResidentSeeder::class,
-            // ResidentAccountSeeder::class,
+            ServicePriceSeeder::class,
+            AdminSeeder::class,
+            SecuritySeeder::class,
+            TechnicianSeeder::class,
+            BlockFloorApartmentSeeder::class,
+            ResidentSeeder::class,
+            ResidentAccountSeeder::class,
             InvoiceSeeder::class,
-            // SystemSettingSeeder::class,
-            // SampleTicketSeeder::class,
+            SystemSettingSeeder::class,
+            SampleTicketSeeder::class,
         ]);
 
     }
