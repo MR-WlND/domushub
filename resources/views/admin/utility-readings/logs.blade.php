@@ -175,13 +175,13 @@
                             <span class="text-strong" style="font-size: 13px;">{{ $log->user->name }}</span>
                             <div style="font-size: 11px; color: #64748b; margin-top: 1px;">
                                 @if($log->user->role === 'admin')
-                                    🛡️ Admin
+                                    Admin
                                 @elseif($log->user->role === 'manager')
-                                    💼 Quản lý
+                                    Quản lý
                                 @elseif($log->user->role === 'staff')
-                                    🧮 Kế toán
+                                    Kế toán
                                 @elseif($log->user->role === 'technician')
-                                    🔧 Kỹ thuật viên
+                                    Kỹ thuật viên
                                 @endif
                             </div>
                         @else
