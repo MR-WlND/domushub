@@ -81,8 +81,6 @@
                         <th>Loại phí</th>
                         <th class="text-right">Số lượng</th>
                         <th class="text-right">Thành tiền</th>
-                        <th style="padding-left: 15px;">Trạng thái</th>
-                        <th class="text-right" style="padding-right: 15px;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -103,28 +101,10 @@
                                 {{ $detail->quantity }}
                             </td>
                             <td class="text-right val-subtotal">{{ number_format($detail->amount, 0, ',', '.') }} đ</td>
-                            <td style="padding-left: 15px;">
-                                @if($detail->status === 'paid')
-                                    <span class="pay-badge pay-badge--paid" style="font-size: 0.7rem; padding: 2px 6px;">Đã thanh toán</span>
-                                @else
-                                    <span class="pay-badge pay-badge--overdue" style="font-size: 0.7rem; padding: 2px 6px;">Chưa thanh toán</span>
-                                @endif
-                            </td>
-                            <td class="text-right" style="padding-right: 15px;">
-                                @if($detail->status !== 'paid')
-                                    <button type="button" class="btn-sm-danger" 
-                                            style="background:#ecfdf5; color:#059669; border-color:#a7f3d0; padding: 4px 8px; cursor: pointer;"
-                                            onclick="openDetailPaymentModal({{ $detail->id }}, '{{ addslashes($detail->servicePrice->name ?? 'Phí dịch vụ') }}', {{ $detail->amount }})">
-                                        Thu tiền
-                                    </button>
-                                @else
-                                    —
-                                @endif
-                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center text-muted">Không có thông tin chi tiết dịch vụ.</td>
+                            <td colspan="4" class="text-center text-muted">Không có thông tin chi tiết dịch vụ.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -264,16 +244,6 @@
                             @endif
                         </span>
                     </div>
-                    @if(!$pm->is_refunded)
-                    <div class="payment-info-item">
-                        <span class="info-label">Thao tác:</span>
-                        <span class="info-val">
-                            <a href="{{ route('admin.payments.receipt', $pm->id) }}" target="_blank" style="color: #0d9488; font-weight: 600; text-decoration: underline; display: inline-flex; align-items: center; gap: 4px;">
-                                🖨 In biên lai
-                            </a>
-                        </span>
-                    </div>
-                    @endif
                 </div>
             @empty
                 <div style="font-size: 0.85rem; color: #64748b; padding: 15px 0; text-align: center;">

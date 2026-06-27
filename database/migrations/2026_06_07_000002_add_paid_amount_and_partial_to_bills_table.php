@@ -17,12 +17,16 @@ return new class extends Migration
 
         // Thêm giá trị 'partial' vào enum status của bảng bills
         // MySQL cần ALTER COLUMN trực tiếp
-        DB::statement("ALTER TABLE bills MODIFY COLUMN status ENUM('unpaid','partial','paid','overdue','cancelled') DEFAULT 'unpaid'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE bills MODIFY COLUMN status ENUM('unpaid','partial','paid','overdue','cancelled') DEFAULT 'unpaid'");
+        }
     }
 
     public function down(): void
     {
-        DB::statement("ALTER TABLE bills MODIFY COLUMN status ENUM('unpaid','paid','overdue','cancelled') DEFAULT 'unpaid'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE bills MODIFY COLUMN status ENUM('unpaid','paid','overdue','cancelled') DEFAULT 'unpaid'");
+        }
 
         Schema::table('bills', function (Blueprint $table) {
             $table->dropForeign(['created_by']);

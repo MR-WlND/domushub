@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         // MySQL yêu cầu dùng ALTER TABLE MODIFY COLUMN để thay đổi enum
         DB::statement("
             ALTER TABLE vehicles
@@ -26,6 +30,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         // Rollback về enum cũ (chỉ 3 trạng thái)
         // Cảnh báo: dữ liệu nào đang là 'pending_renewal' hoặc 'locked' sẽ gây lỗi
         DB::statement("
