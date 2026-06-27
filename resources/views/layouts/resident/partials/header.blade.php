@@ -17,12 +17,15 @@
             Bảng tin
         </a>
         <div class="resident-header__dropdown-container" id="services-menu-container">
-            <button class="resident-header__link resident-header__dropdown-trigger {{ (request()->routeIs('resident.vehicles.*') || request()->routeIs('resident.invoices.*')) ? 'resident-header__link--active' : '' }}">
+            <button class="resident-header__link resident-header__dropdown-trigger {{ (request()->routeIs('resident.vehicles.*') || request()->routeIs('resident.invoices.*') || request()->routeIs('resident.visitors.*')) ? 'resident-header__link--active' : '' }}">
                 Dịch vụ <i class="fa-solid fa-chevron-down nav-dropdown-icon"></i>
             </button>
             <div class="resident-header__nav-dropdown">
                 <a href="{{ route('resident.vehicles.index') }}" class="nav-dropdown-item {{ request()->routeIs('resident.vehicles.*') ? 'nav-dropdown-item--active' : '' }}">Phương tiện</a>
+
+                <a href="{{ route('resident.visitors.index') }}" class="nav-dropdown-item {{ request()->routeIs('resident.visitors.*') ? 'nav-dropdown-item--active' : '' }}">Khách viếng thăm</a>
                 <a href="{{ route('resident.facilities.index') }}" class="nav-dropdown-item {{ request()->routeIs('resident.facilities.*') ? 'nav-dropdown-item--active' : '' }}">Tiện ích</a>
+
                 <a href="{{ route('resident.invoices.index') }}" class="nav-dropdown-item {{ request()->routeIs('resident.invoices.index') ? 'nav-dropdown-item--active' : '' }}">Thanh toán hóa đơn</a>
                 <a href="{{ route('resident.invoices.history') }}" class="nav-dropdown-item {{ request()->routeIs('resident.invoices.history') ? 'nav-dropdown-item--active' : '' }}">Hóa đơn đã thanh toán</a>
             </div>
