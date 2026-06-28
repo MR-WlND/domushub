@@ -17,7 +17,7 @@
         <p class="amf-subtitle">Điền thông tin và cấu hình để tạo tiện ích cho cư dân đặt lịch.</p>
     </div>
 
-    <form method="POST" action="{{ route('admin.amenities.store') }}">
+    <form method="POST" action="{{ route('admin.amenities.store') }}" enctype="multipart/form-data">
         @csrf
 
         {{-- Error summary --}}
@@ -163,6 +163,22 @@
             </div>
         </div>
 
+        {{-- ====== PHẦN 5: Hình ảnh tiện ích ====== --}}
+        <div class="amf-card">
+            <div class="amf-section-label">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                Hình ảnh tiện ích
+            </div>
+            <div class="amf-field amf-field--wide">
+                <label for="images">Chọn ảnh tiện ích (Tối đa 5 ảnh, mỗi ảnh &lt; 3MB)</label>
+                <div class="amf-image-upload-wrapper">
+                    <input type="file" id="images" name="images[]" multiple accept="image/*" class="amf-file-input">
+                </div>
+                @error('images')<span class="amf-error">{{ $message }}</span>@enderror
+                @error('images.*')<span class="amf-error">{{ $message }}</span>@enderror
+            </div>
+        </div>
+
         {{-- Actions --}}
         <div class="amf-actions">
             <button type="submit" class="amf-btn amf-btn--primary">
@@ -249,6 +265,9 @@
 .amf-btn--primary:hover { background: #1d4ed8; }
 .amf-btn--ghost { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
 .amf-btn--ghost:hover { background: #f1f5f9; }
+
+.amf-image-upload-wrapper { display: flex; gap: 12px; align-items: center; margin-top: 6px; }
+.amf-file-input { flex: 1; padding: 8px 12px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.875rem; }
 
 @media (max-width: 600px) {
     .amf-grid { grid-template-columns: 1fr; }

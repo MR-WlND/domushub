@@ -48,6 +48,8 @@ class FacilityController extends Controller
             'slot_duration' => 'required|integer|in:30,60,90,120',
             'price_per_slot'=> 'required|numeric|min:0',
             'rules'         => 'nullable|string|max:1000',
+            'images'        => 'nullable|array|max:5',
+            'images.*'      => 'image|mimes:jpeg,png,jpg,webp|max:3072',
         ], [
             'name.required'        => 'Vui lòng nhập tên tiện ích.',
             'name.unique'          => 'Tên tiện ích đã tồn tại.',
@@ -57,9 +59,23 @@ class FacilityController extends Controller
             'close_time.after'     => 'Giờ đóng cửa phải sau giờ mở cửa.',
             'slot_duration.in'     => 'Thời lượng slot không hợp lệ.',
             'price_per_slot.min'   => 'Giá phải lớn hơn hoặc bằng 0.',
+            'images.max'           => 'Tải tối đa 5 ảnh.',
+            'images.*.image'       => 'File phải là ảnh.',
+            'images.*.max'         => 'Mỗi ảnh tối đa 3MB.',
         ]);
 
-        Facility::create($validated);
+        $uploadedImages = [];
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                $path = $file->store('facilities', 'public');
+                $uploadedImages[] = $path;
+            }
+        }
+
+        $data = $validated;
+        $data['images'] = $uploadedImages;
+
+        Facility::create($data);
 
         return redirect()->route('admin.amenities.index')
             ->with('success', 'Đã thêm tiện ích "' . $validated['name'] . '" thành công.');
