@@ -9,8 +9,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('facilities', function (Blueprint $table) {
-            // Lưu nhiều ảnh dạng JSON array đường dẫn
-            $table->json('images')->nullable()->after('rules');
+            if (!Schema::hasColumn('facilities', 'images')) {
+                $table->json('images')->nullable()->after('rules');
+            }
         });
     }
 

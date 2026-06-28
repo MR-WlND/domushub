@@ -14,7 +14,7 @@
         </a>
         <a href="{{ route('resident.posts.index') }}"
             class="resident-header__link {{ request()->routeIs('resident.posts.*') ? 'resident-header__link--active' : '' }}">
-            Bảng tin
+            Bảng tin cư dân
         </a>
         <div class="resident-header__dropdown-container" id="services-menu-container">
             <button class="resident-header__link resident-header__dropdown-trigger {{ (request()->routeIs('resident.vehicles.*') || request()->routeIs('resident.invoices.*') || request()->routeIs('resident.visitors.*')) ? 'resident-header__link--active' : '' }}">

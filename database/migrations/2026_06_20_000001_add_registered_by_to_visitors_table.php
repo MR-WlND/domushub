@@ -10,19 +10,25 @@ return new class extends Migration
     {
         Schema::table('visitors', function (Blueprint $table) {
             // Cư dân đã tạo QR mời khách
-            $table->foreignId('registered_by')
-                ->nullable()
-                ->after('apartment_id')
-                ->constrained('users')
-                ->nullOnDelete();
+            if (!Schema::hasColumn('visitors', 'registered_by')) {
+                $table->foreignId('registered_by')
+                    ->nullable()
+                    ->after('apartment_id')
+                    ->constrained('users')
+                    ->nullOnDelete();
+            }
 
             // Trạng thái của lượt viếng thăm
-            $table->enum('status', ['pending', 'checked_in', 'checked_out', 'expired', 'cancelled'])
-                ->default('pending')
-                ->after('check_out_by');
+            if (!Schema::hasColumn('visitors', 'status')) {
+                $table->enum('status', ['pending', 'checked_in', 'checked_out', 'expired', 'cancelled'])
+                    ->default('pending')
+                    ->after('check_out_by');
+            }
 
             // Ghi chú thêm
-            $table->text('note')->nullable()->after('status');
+            if (!Schema::hasColumn('visitors', 'note')) {
+                $table->text('note')->nullable()->after('status');
+            }
         });
     }
 

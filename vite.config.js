@@ -37,8 +37,8 @@ export default defineConfig({
                 'resources/css/pages/admin/tickets/technician.css',
                 'resources/css/pages/admin/statistics.css',
                 'resources/css/pages/admin/dashboard.css',
-
-
+                'resources/css/pages/admin/announcements/index.css',
+                'resources/css/pages/resident/announcements/index.css',
             ],
             refresh: true,
             fonts: [
