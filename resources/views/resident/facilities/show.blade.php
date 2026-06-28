@@ -129,7 +129,7 @@
                         <p class="rfd-info-label">Thời lượng mỗi lần</p>
                         @php
                             $dur = $facility->slot_duration ?? 60;
-                            $durLabel = match((int)$dur){ 30=>'30 phút', 60=>'1 tiếng', 90=>'1.5 tiếng', 120=>'2 tiếng', default=>$dur.' phút'};
+                            $durLabel = match((int)$dur){ 0=>'Cả ngày', 30=>'30 phút', 60=>'1 tiếng', 90=>'1.5 tiếng', 120=>'2 tiếng', default=>$dur.' phút'};
                         @endphp
                         <p class="rfd-info-value">{{ $durLabel }}</p>
                     </div>

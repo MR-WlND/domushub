@@ -107,6 +107,7 @@
                     <label for="slot_duration">Thời lượng mỗi lần đặt <span class="amf-required">*</span></label>
                     <select id="slot_duration" name="slot_duration" required>
                         @php $dur = old('slot_duration', $facility->slot_duration ?? 60); @endphp
+                        <option value="0"   {{ $dur == 0   ? 'selected' : '' }}>Cả ngày (1 slot duy nhất)</option>
                         <option value="30"  {{ $dur == 30  ? 'selected' : '' }}>30 phút</option>
                         <option value="60"  {{ $dur == 60  ? 'selected' : '' }}>1 tiếng</option>
                         <option value="90"  {{ $dur == 90  ? 'selected' : '' }}>1.5 tiếng</option>
@@ -303,11 +304,17 @@
 function generateSlots() {
     const open     = document.getElementById('open_time').value;
     const close    = document.getElementById('close_time').value;
-    const duration = parseInt(document.getElementById('slot_duration').value) || 60;
+    const durationSelect = document.getElementById('slot_duration').value;
+    const duration = parseInt(durationSelect);
     const preview  = document.getElementById('slotsPreview');
 
     if (!open || !close) {
         preview.innerHTML = '<span class="amf-hint">Nhập giờ mở/đóng cửa để xem trước</span>';
+        return;
+    }
+
+    if (duration === 0) {
+        preview.innerHTML = `<span class="amf-slot-chip">${open} – ${close}</span><span class="amf-hint" style="margin-left:4px">Cả ngày (1 slot duy nhất)</span>`;
         return;
     }
 
@@ -335,7 +342,7 @@ function updatePricePreview() {
     const price    = parseInt(document.getElementById('price_per_slot').value) || 0;
     const duration = document.getElementById('slot_duration').value;
     const preview  = document.getElementById('pricePreview');
-    const labels   = { '30':'30 phút', '60':'1 tiếng', '90':'1.5 tiếng', '120':'2 tiếng' };
+    const labels   = { '0':'lượt', '30':'30 phút', '60':'1 tiếng', '90':'1.5 tiếng', '120':'2 tiếng' };
 
     if (price === 0) {
         preview.innerHTML = '<span class="amf-free-badge">🎉 Miễn phí</span>';

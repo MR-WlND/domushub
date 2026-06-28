@@ -74,6 +74,9 @@ class Facility extends Model
         if (!$this->price_per_slot || $this->price_per_slot == 0) {
             return 'Miễn phí';
         }
+        if ($this->slot_duration == 0) {
+            return number_format($this->price_per_slot) . 'đ / lượt';
+        }
         return number_format($this->price_per_slot) . 'đ / ' . $this->slot_duration . ' phút';
     }
 
@@ -87,10 +90,19 @@ class Facility extends Model
         }
 
         $slots    = [];
-        $duration = $this->slot_duration ?: 60;
         $current  = strtotime($this->open_time);
         $end      = strtotime($this->close_time);
 
+        if ($this->slot_duration == 0) {
+            $slots[] = [
+                'start' => date('H:i', $current),
+                'end'   => date('H:i', $end),
+                'label' => date('H:i', $current) . ' – ' . date('H:i', $end),
+            ];
+            return $slots;
+        }
+
+        $duration = $this->slot_duration;
         while ($current + ($duration * 60) <= $end) {
             $slotEnd = $current + ($duration * 60);
             $slots[] = [
