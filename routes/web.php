@@ -186,9 +186,8 @@ Route::middleware(['admin'])->group(function () {
     Route::patch('/admin/facility-bookings/{booking}/status', [AdminFacilityController::class, 'updateBookingStatus'])->name('admin.amenities.bookings.status');
 
     // Tương tác & bảng tin
-    Route::get('/admin/announcements', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.announcements.index');
+    Route::post('/admin/announcements/{id}/toggle-pin', [\App\Http\Controllers\Admin\AnnouncementController::class, 'togglePin'])->name('admin.announcements.toggle-pin');
+    Route::resource('/admin/announcements', \App\Http\Controllers\Admin\AnnouncementController::class)->names('admin.announcements');
 
     Route::get('/admin/activity-logs', function () {
         return view('admin.dashboard.index');
@@ -248,7 +247,30 @@ Route::middleware(['security'])->group(function () {
 // DASHBOARD RESIDENT ROUTES
 Route::middleware(['resident'])->group(function () {
     Route::get('/resident/dashboard', function () {
-        return view('resident.home.index');
+        $user = auth()->user();
+        $apartment = $user->apartment;
+        
+        $recentAnnouncements = \App\Models\Announcement::with('user')
+            ->published()
+            ->ordered()
+            ->take(5)
+            ->get();
+
+        $totalUnpaidAmount = 0;
+        $dueDate = null;
+        if ($apartment) {
+            $unpaidBills = \App\Models\Invoice::where('apartment_id', $apartment->id)
+                ->whereIn('status', ['unpaid', 'partial', 'overdue'])
+                ->get();
+            foreach ($unpaidBills as $bill) {
+                $totalUnpaidAmount += ($bill->total_amount - $bill->paid_amount);
+                if (!$dueDate || $bill->due_date->lt($dueDate)) {
+                    $dueDate = $bill->due_date;
+                }
+            }
+        }
+
+        return view('resident.home.index', compact('recentAnnouncements', 'totalUnpaidAmount', 'dueDate', 'apartment'));
     })->name('resident.dashboard');
 
     Route::get('/resident/contact', function () {
@@ -320,6 +342,9 @@ Route::middleware(['resident'])->group(function () {
     Route::post('/resident/posts/{id}/share-to-user', [\App\Http\Controllers\Resident\PostController::class, 'shareToUser'])->name('resident.posts.share-to-user');
     Route::post('/resident/comments/{id}/pin', [\App\Http\Controllers\Resident\PostController::class, 'togglePinComment'])->name('resident.comments.pin');
     Route::get('/resident/reactions/{likeable_type}/{likeable_id}', [\App\Http\Controllers\Resident\PostController::class, 'getReactions'])->name('resident.reactions');
+
+    // BẢNG TIN CHUNG CƯ PHÍA CƯ DÂN (CHỈ GIỮ LẠI TRANG CHI TIẾT)
+    Route::get('/resident/announcements/{id}', [\App\Http\Controllers\Resident\AnnouncementController::class, 'show'])->name('resident.announcements.show');
 
     // THÔNG BÁO CƯ DÂN
     Route::get('/resident/notifications', [\App\Http\Controllers\Resident\NotificationController::class, 'index'])->name('resident.notifications.index');
