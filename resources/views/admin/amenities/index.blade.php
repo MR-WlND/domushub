@@ -85,17 +85,7 @@
             {{-- Top: icon + badge trạng thái --}}
             <div class="am-card-top">
                 <div class="am-card-icon">
-                    @php
-                        $name = strtolower($facility->name);
-                    @endphp
-                    @if(str_contains($name, 'bơi') || str_contains($name, 'pool'))🏊
-                    @elseif(str_contains($name, 'gym') || str_contains($name, 'tập'))💪
-                    @elseif(str_contains($name, 'bbq') || str_contains($name, 'nướng'))🔥
-                    @elseif(str_contains($name, 'tennis'))🎾
-                    @elseif(str_contains($name, 'đọc') || str_contains($name, 'sách'))📚
-                    @elseif(str_contains($name, 'sinh hoạt') || str_contains($name, 'hội'))🏛️
-                    @else🏢
-                    @endif
+                    @include('partials.facility-placeholder', ['name' => $facility->name])
                 </div>
                 <span class="am-status-badge am-status--{{ $facility->status }}">
                     {{ $facility->status_label }}
@@ -185,7 +175,8 @@
 .am-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); transform: translateY(-2px); }
 
 .am-card-top { display: flex; justify-content: space-between; align-items: center; }
-.am-card-icon { font-size: 2rem; line-height: 1; }
+.am-card-icon { display: flex; align-items: center; justify-content: center; }
+.am-card-icon svg { width: 2.2rem; height: 2.2rem; color: #6366f1; stroke-width: 1.8; opacity: 0.85; }
 
 .am-status-badge { font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
 .am-status--available   { background: #dcfce7; color: #15803d; }

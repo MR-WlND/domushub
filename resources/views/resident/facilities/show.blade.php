@@ -38,14 +38,7 @@
                     @endif
                 @else
                 <div class="rfd-hero-placeholder">
-                    @php $name = strtolower($facility->name); @endphp
-                    @if(str_contains($name,'bơi')||str_contains($name,'pool')) 🏊
-                    @elseif(str_contains($name,'gym')||str_contains($name,'tập')) 💪
-                    @elseif(str_contains($name,'bbq')||str_contains($name,'nướng')) 🔥
-                    @elseif(str_contains($name,'tennis')) 🎾
-                    @elseif(str_contains($name,'đọc')||str_contains($name,'sách')) 📚
-                    @elseif(str_contains($name,'sinh hoạt')||str_contains($name,'hội')) 🏛️
-                    @else 🏢 @endif
+                    @include('partials.facility-placeholder', ['name' => $facility->name])
                 </div>
                 @endif
             </div>
@@ -203,7 +196,8 @@
 /* Hero */
 .rfd-hero { border-radius: 14px; overflow: hidden; margin-bottom: 20px; }
 .rfd-hero-img { width: 100%; height: 280px; object-fit: cover; display: block; }
-.rfd-hero-placeholder { height: 240px; background: linear-gradient(135deg, #e0f2fe, #ede9fe); display: flex; align-items: center; justify-content: center; font-size: 5rem; border-radius: 14px; }
+.rfd-hero-placeholder { height: 240px; background: linear-gradient(135deg, #e0f2fe, #ede9fe); display: flex; align-items: center; justify-content: center; border-radius: 14px; }
+.rfd-hero-placeholder svg { width: 5.5rem; height: 5.5rem; color: #6366f1; stroke-width: 1.5; opacity: 0.85; }
 
 .rfd-gallery-main img { width: 100%; height: 260px; object-fit: cover; border-radius: 10px; }
 .rfd-gallery-thumbs { display: flex; gap: 8px; margin-top: 8px; }
