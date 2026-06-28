@@ -131,10 +131,11 @@
                                             @if($post->user && $post->user->role === 'resident')
                                                 <div class="ban-controls" style="display: flex; gap: 0.5rem; margin-top: 0.4rem; flex-wrap: wrap;">
                                                     {{-- Form khóa/mở đăng bài --}}
-                                                    <form action="{{ route('admin.users.ban-posting', $post->user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
+                                                    <form action="{{ route('admin.users.ban-posting', $post->user->id) }}" method="POST" style="display: inline-flex; align-items: center; position: relative;">
                                                         @csrf
-                                                        <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" style="font-size: 0.725rem; padding: 3px 6px; border-radius: 4px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; color: var(--color-text-secondary); font-weight: 600;" title="Khóa quyền đăng bài viết">
-                                                            <option value="" disabled selected>🔏 Đăng bài: {{ $post->user->isBannedPosting() ? 'Bị khóa' : 'Mở' }}</option>
+                                                        <i class="fa-regular fa-pen-to-square" style="position: absolute; left: 6px; color: #64748b; pointer-events: none; font-size: 0.75rem;"></i>
+                                                        <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" style="font-size: 0.725rem; padding: 3px 6px 3px 20px; border-radius: 4px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; color: var(--color-text-secondary); font-weight: 600;" title="Khóa quyền đăng bài viết">
+                                                            <option value="" disabled selected>Đăng bài: {{ $post->user->isBannedPosting() ? 'Bị khóa' : 'Mở' }}</option>
                                                             @if($post->user->isBannedPosting())
                                                                 <option value="unban">Mở khóa đăng bài</option>
                                                             @else
@@ -148,10 +149,11 @@
                                                     </form>
 
                                                     {{-- Form khóa/mở bình luận --}}
-                                                    <form action="{{ route('admin.users.ban-commenting', $post->user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
+                                                    <form action="{{ route('admin.users.ban-commenting', $post->user->id) }}" method="POST" style="display: inline-flex; align-items: center; position: relative;">
                                                         @csrf
-                                                        <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" style="font-size: 0.725rem; padding: 3px 6px; border-radius: 4px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; color: var(--color-text-secondary); font-weight: 600;" title="Khóa quyền bình luận">
-                                                            <option value="" disabled selected>💬 Bình luận: {{ $post->user->isBannedCommenting() ? 'Bị khóa' : 'Mở' }}</option>
+                                                        <i class="fa-regular fa-comment" style="position: absolute; left: 6px; color: #64748b; pointer-events: none; font-size: 0.75rem;"></i>
+                                                        <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" style="font-size: 0.725rem; padding: 3px 6px 3px 20px; border-radius: 4px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; color: var(--color-text-secondary); font-weight: 600;" title="Khóa quyền bình luận">
+                                                            <option value="" disabled selected>Bình luận: {{ $post->user->isBannedCommenting() ? 'Bị khóa' : 'Mở' }}</option>
                                                             @if($post->user->isBannedCommenting())
                                                                 <option value="unban">Mở khóa bình luận</option>
                                                             @else
@@ -194,7 +196,7 @@
                                                 {{-- Nút Khôi phục bài viết --}}
                                                 <form action="{{ route('admin.posts.restore', $post->id) }}" method="POST" style="display: inline;">
                                                     @csrf
-                                                    <button type="submit" class="admin-action-btn admin-action-btn--toggle" style="color: #4f46e5; border-color: #c7d2fe;">
+                                                    <button type="submit" class="admin-action-btn admin-action-btn--toggle" style="color: #00236f; border-color: #b3c5eb;">
                                                         <i class="fa-solid fa-rotate-left"></i> Khôi phục bài viết
                                                     </button>
                                                 </form>
@@ -207,7 +209,7 @@
                                                             <i class="fa-solid fa-eye-slash"></i> Ẩn bài viết
                                                         </button>
                                                     @else
-                                                        <button type="submit" class="admin-action-btn admin-action-btn--toggle" style="color: #4f46e5; border-color: #c7d2fe;">
+                                                        <button type="submit" class="admin-action-btn admin-action-btn--toggle" style="color: #00236f; border-color: #b3c5eb;">
                                                             <i class="fa-solid fa-eye"></i> Hiện bài viết
                                                         </button>
                                                     @endif
@@ -344,6 +346,10 @@
                                 </button>
                             </form>
 
+                            {{-- Nút Xóa bình luận --}}
+                            <form action="{{ route('admin.comments.destroy', $comment->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bình luận này?')">
+                                @csrf
+                                @method('DELETE')
                                 <button type="submit" class="admin-action-btn admin-action-btn--delete" style="padding: 0.5rem 1rem;">
                                     <i class="fa-solid fa-trash-can"></i> Xóa bình luận
                                 </button>
@@ -351,10 +357,11 @@
 
                             @if($comment->user && $comment->user->role === 'resident')
                                 {{-- Form khóa/mở đăng bài --}}
-                                <form action="{{ route('admin.users.ban-posting', $comment->user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
+                                <form action="{{ route('admin.users.ban-posting', $comment->user->id) }}" method="POST" style="display: inline-flex; align-items: center; position: relative;">
                                     @csrf
-                                    <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" style="font-size: 0.825rem; padding: 0.5rem; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; height: 38px; color: var(--color-text-secondary); font-weight: 600;" title="Khóa quyền đăng bài viết">
-                                        <option value="" disabled selected>🔏 Đăng bài: {{ $comment->user->isBannedPosting() ? 'Bị khóa' : 'Mở' }}</option>
+                                    <i class="fa-regular fa-pen-to-square" style="position: absolute; left: 10px; color: #64748b; pointer-events: none; font-size: 0.875rem;"></i>
+                                    <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" style="font-size: 0.825rem; padding: 0.5rem 0.5rem 0.5rem 28px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; height: 38px; color: var(--color-text-secondary); font-weight: 600;" title="Khóa quyền đăng bài viết">
+                                        <option value="" disabled selected>Đăng bài: {{ $comment->user->isBannedPosting() ? 'Bị khóa' : 'Mở' }}</option>
                                         @if($comment->user->isBannedPosting())
                                             <option value="unban">Mở khóa đăng bài</option>
                                         @else
@@ -368,10 +375,11 @@
                                 </form>
 
                                 {{-- Form khóa/mở bình luận --}}
-                                <form action="{{ route('admin.users.ban-commenting', $comment->user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
+                                <form action="{{ route('admin.users.ban-commenting', $comment->user->id) }}" method="POST" style="display: inline-flex; align-items: center; position: relative;">
                                     @csrf
-                                    <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" style="font-size: 0.825rem; padding: 0.5rem; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; height: 38px; color: var(--color-text-secondary); font-weight: 600;" title="Khóa quyền bình luận">
-                                        <option value="" disabled selected>💬 Bình luận: {{ $comment->user->isBannedCommenting() ? 'Bị khóa' : 'Mở' }}</option>
+                                    <i class="fa-regular fa-comment" style="position: absolute; left: 10px; color: #64748b; pointer-events: none; font-size: 0.875rem;"></i>
+                                    <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" style="font-size: 0.825rem; padding: 0.5rem 0.5rem 0.5rem 28px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; height: 38px; color: var(--color-text-secondary); font-weight: 600;" title="Khóa quyền bình luận">
+                                        <option value="" disabled selected>Bình luận: {{ $comment->user->isBannedCommenting() ? 'Bị khóa' : 'Mở' }}</option>
                                         @if($comment->user->isBannedCommenting())
                                             <option value="unban">Mở khóa bình luận</option>
                                         @else
@@ -536,10 +544,11 @@
                                     <td>
                                         <div class="ban-controls" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                                             {{-- Form thay đổi hoặc mở khóa đăng bài --}}
-                                            <form action="{{ route('admin.users.ban-posting', $user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
+                                            <form action="{{ route('admin.users.ban-posting', $user->id) }}" method="POST" style="display: inline-flex; align-items: center; position: relative;">
                                                 @csrf
-                                                <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" style="font-size: 0.825rem; padding: 0.4rem 0.5rem; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; color: var(--color-text-secondary); font-weight: 600;" title="Quản lý quyền đăng bài">
-                                                    <option value="" disabled selected>🔏 Đăng bài: {{ $user->isBannedPosting() ? 'Bị khóa' : 'Mở' }}</option>
+                                                <i class="fa-regular fa-pen-to-square" style="position: absolute; left: 10px; color: #64748b; pointer-events: none; font-size: 0.875rem;"></i>
+                                                <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" style="font-size: 0.825rem; padding: 0.4rem 0.5rem 0.4rem 28px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; color: var(--color-text-secondary); font-weight: 600;" title="Quản lý quyền đăng bài">
+                                                    <option value="" disabled selected>Đăng bài: {{ $user->isBannedPosting() ? 'Bị khóa' : 'Mở' }}</option>
                                                     @if($user->isBannedPosting())
                                                         <option value="unban">Mở khóa đăng bài</option>
                                                         <option value="1">Gia hạn khóa 1 ngày</option>
@@ -558,10 +567,11 @@
                                             </form>
 
                                             {{-- Form thay đổi hoặc mở khóa bình luận --}}
-                                            <form action="{{ route('admin.users.ban-commenting', $user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
+                                            <form action="{{ route('admin.users.ban-commenting', $user->id) }}" method="POST" style="display: inline-flex; align-items: center; position: relative;">
                                                 @csrf
-                                                <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" style="font-size: 0.825rem; padding: 0.4rem 0.5rem; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; color: var(--color-text-secondary); font-weight: 600;" title="Quản lý quyền bình luận">
-                                                    <option value="" disabled selected>💬 Bình luận: {{ $user->isBannedCommenting() ? 'Bị khóa' : 'Mở' }}</option>
+                                                <i class="fa-regular fa-comment" style="position: absolute; left: 10px; color: #64748b; pointer-events: none; font-size: 0.875rem;"></i>
+                                                <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" style="font-size: 0.825rem; padding: 0.4rem 0.5rem 0.4rem 28px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; color: var(--color-text-secondary); font-weight: 600;" title="Quản lý quyền bình luận">
+                                                    <option value="" disabled selected>Bình luận: {{ $user->isBannedCommenting() ? 'Bị khóa' : 'Mở' }}</option>
                                                     @if($user->isBannedCommenting())
                                                         <option value="unban">Mở khóa bình luận</option>
                                                         <option value="1">Gia hạn khóa 1 ngày</option>
@@ -757,14 +767,17 @@
                             const banPostingForm = document.createElement('form');
                             banPostingForm.action = `/admin/users/${post.user.id}/ban-posting`;
                             banPostingForm.method = 'POST';
-                            banPostingForm.style.display = 'inline-block';
+                            banPostingForm.style.display = 'inline-flex';
+                            banPostingForm.style.alignItems = 'center';
+                            banPostingForm.style.position = 'relative';
                             
                             const isBannedPosting = data.is_banned_posting;
                             
                             banPostingForm.innerHTML = `
                                 <input type="hidden" name="_token" value="${document.querySelector('input[name="_token"]').value}">
-                                <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" style="font-size: 0.825rem; padding: 0 0.5rem; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; height: 36px; color: var(--color-text-secondary); font-weight: 600;" title="Khóa quyền đăng bài viết">
-                                    <option value="" disabled selected>🔏 Đăng bài: ${isBannedPosting ? 'Bị khóa' : 'Mở'}</option>
+                                <i class="fa-regular fa-pen-to-square" style="position: absolute; left: 10px; color: #64748b; pointer-events: none; font-size: 0.875rem;"></i>
+                                <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" style="font-size: 0.825rem; padding: 0 0.5rem 0 28px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; height: 36px; color: var(--color-text-secondary); font-weight: 600;" title="Khóa quyền đăng bài viết">
+                                    <option value="" disabled selected>Đăng bài: ${isBannedPosting ? 'Bị khóa' : 'Mở'}</option>
                                     ${isBannedPosting 
                                         ? '<option value="unban">Mở khóa đăng bài</option>' 
                                         : '<option value="1">Khóa đăng bài 1 ngày</option><option value="3">Khóa đăng bài 3 ngày</option><option value="7">Khóa đăng bài 7 ngày</option><option value="30">Khóa đăng bài 30 ngày</option><option value="permanent">Khóa đăng bài vĩnh viễn</option>'
@@ -777,14 +790,17 @@
                             const banCommentingForm = document.createElement('form');
                             banCommentingForm.action = `/admin/users/${post.user.id}/ban-commenting`;
                             banCommentingForm.method = 'POST';
-                            banCommentingForm.style.display = 'inline-block';
+                            banCommentingForm.style.display = 'inline-flex';
+                            banCommentingForm.style.alignItems = 'center';
+                            banCommentingForm.style.position = 'relative';
                             
                             const isBannedCommenting = data.is_banned_commenting;
                             
                             banCommentingForm.innerHTML = `
                                 <input type="hidden" name="_token" value="${document.querySelector('input[name="_token"]').value}">
-                                <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" style="font-size: 0.825rem; padding: 0 0.5rem; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; height: 36px; color: var(--color-text-secondary); font-weight: 600;" title="Khóa quyền bình luận">
-                                    <option value="" disabled selected>💬 Bình luận: ${isBannedCommenting ? 'Bị khóa' : 'Mở'}</option>
+                                <i class="fa-regular fa-comment" style="position: absolute; left: 10px; color: #64748b; pointer-events: none; font-size: 0.875rem;"></i>
+                                <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" style="font-size: 0.825rem; padding: 0 0.5rem 0 28px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; height: 36px; color: var(--color-text-secondary); font-weight: 600;" title="Khóa quyền bình luận">
+                                    <option value="" disabled selected>Bình luận: ${isBannedCommenting ? 'Bị khóa' : 'Mở'}</option>
                                     ${isBannedCommenting 
                                         ? '<option value="unban">Mở khóa bình luận</option>' 
                                         : '<option value="1">Khóa bình luận 1 ngày</option><option value="3">Khóa bình luận 3 ngày</option><option value="7">Khóa bình luận 7 ngày</option><option value="30">Khóa bình luận 30 ngày</option><option value="permanent">Khóa bình luận vĩnh viễn</option>'
@@ -823,7 +839,7 @@
                                 restoreForm.style.display = 'inline';
                                 restoreForm.innerHTML = `
                                     <input type="hidden" name="_token" value="${document.querySelector('input[name="_token"]').value}">
-                                    <button type="submit" class="admin-action-btn admin-action-btn--toggle" style="height:36px; padding: 0 1rem; border-radius:6px; color:#4f46e5; border-color:#c7d2fe; margin: 0;">
+                                    <button type="submit" class="admin-action-btn admin-action-btn--toggle" style="height:36px; padding: 0 1rem; border-radius:6px; color:#00236f; border-color:#b3c5eb; margin: 0;">
                                         <i class="fa-solid fa-rotate-left"></i> Khôi phục bài viết
                                     </button>
                                 `;
@@ -840,7 +856,7 @@
                                 
                                 const toggleBtnHtml = post.status === 'published' 
                                     ? `<button type="submit" class="admin-action-btn admin-action-btn--toggle" style="height:36px; padding: 0 1rem; border-radius:6px; margin: 0;"><i class="fa-solid fa-eye-slash"></i> Ẩn bài viết</button>`
-                                    : `<button type="submit" class="admin-action-btn admin-action-btn--toggle" style="height:36px; padding: 0 1rem; border-radius:6px; color:#4f46e5; border-color:#c7d2fe; margin: 0;"><i class="fa-solid fa-eye"></i> Hiện bài viết</button>`;
+                                    : `<button type="submit" class="admin-action-btn admin-action-btn--toggle" style="height:36px; padding: 0 1rem; border-radius:6px; color:#00236f; border-color:#b3c5eb; margin: 0;"><i class="fa-solid fa-eye"></i> Hiện bài viết</button>`;
                                     
                                 toggleForm.innerHTML = `
                                     <input type="hidden" name="_token" value="${document.querySelector('input[name="_token"]').value}">

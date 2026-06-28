@@ -14,7 +14,7 @@
 
 .posts-page__eyebrow {
     font-size: 0.875rem;
-    color: #4f46e5;
+    color: #00236f;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -90,7 +90,7 @@
 
 .posts-filter__field input:focus,
 .posts-filter__field select:focus {
-    border-color: #4f46e5;
+    border-color: #00236f;
 }
 
 .posts-filter__actions {
@@ -115,12 +115,12 @@
 }
 
 .posts-button--primary {
-    background-color: #4f46e5;
+    background-color: #00236f;
     color: #ffffff;
 }
 
 .posts-button--primary:hover {
-    background-color: #4338ca;
+    background-color: #001850;
 }
 
 .posts-button--secondary {
@@ -192,7 +192,7 @@
 }
 
 .post-title-link:hover {
-    color: #4f46e5;
+    color: #00236f;
 }
 
 .post-excerpt {
@@ -552,11 +552,11 @@
 }
 
 .posts-page__tab:hover {
-    color: #4f46e5;
+    color: #00236f;
 }
 
 .posts-page__tab--active {
-    color: #4f46e5;
+    color: #00236f;
     font-weight: 700;
 }
 
@@ -567,7 +567,7 @@
     left: 0;
     right: 0;
     height: 3px;
-    background-color: #4f46e5;
+    background-color: #00236f;
     border-radius: 3px 3px 0 0;
 }
 
@@ -615,13 +615,13 @@
 
 .comment-card__post-context .context-link {
     font-weight: 600;
-    color: #4f46e5;
+    color: #00236f;
     cursor: pointer;
     text-decoration: underline;
 }
 
 .comment-card__post-context .context-link:hover {
-    color: #312e81;
+    color: #001850;
 }
 
 .comment-card__post-context .context-author {
