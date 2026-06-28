@@ -115,10 +115,15 @@ class FacilityBooking extends Model
         if (!$this->facility || !$this->facility->price_per_slot) {
             return 0;
         }
-        $startTime = strtotime($this->start_time);
-        $endTime   = strtotime($this->end_time);
-        $minutes   = ($endTime - $startTime) / 60;
-        $slots     = ceil($minutes / ($this->facility->slot_duration ?: 60));
+        $duration = $this->facility->slot_duration;
+        if ($duration == 0) {
+            $slots = 1;
+        } else {
+            $startTime = strtotime($this->start_time);
+            $endTime   = strtotime($this->end_time);
+            $minutes   = ($endTime - $startTime) / 60;
+            $slots     = ceil($minutes / $duration);
+        }
         $people    = max(1, (int)($this->number_of_people ?? 1));
         return intval($slots * $this->facility->price_per_slot * $people);
     }

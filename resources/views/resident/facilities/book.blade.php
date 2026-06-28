@@ -104,7 +104,11 @@
                     @if($facility->price_per_slot && $facility->price_per_slot > 0)
                     <div class="rfb-price-preview" id="price-preview">
                         <div class="rfb-price-row">
+                            @if($facility->slot_duration == 0)
+                            <span>Giá mỗi lượt / người</span>
+                            @else
                             <span>Giá mỗi slot ({{ $facility->slot_duration }} phút) / người</span>
+                            @endif
                             <span>{{ number_format($facility->price_per_slot) }}đ</span>
                         </div>
                         <div class="rfb-price-row" id="price-row-people" style="display:none">
@@ -161,7 +165,11 @@
                     </div>
                     <div>
                         <p class="rfb-info-label">Thời lượng mỗi lần</p>
-                        <p class="rfb-info-value">{{ $facility->slot_duration }} phút</p>
+                        @php
+                            $dur = $facility->slot_duration ?? 60;
+                            $durLabel = match((int)$dur){ 0=>'Cả ngày', 30=>'30 phút', 60=>'1 tiếng', 90=>'1.5 tiếng', 120=>'2 tiếng', default=>$dur.' phút'};
+                        @endphp
+                        <p class="rfb-info-value">{{ $durLabel }}</p>
                     </div>
                 </div>
                 <div class="rfb-info-row">
@@ -395,12 +403,15 @@ function selectSlot(start, end, label, remainingCapacity, btn) {
 
 function updatePrice(start, end) {
     if (!pricePerSlot || pricePerSlot <= 0) return;
-    const s = start.split(':');
-    const e = end.split(':');
-    const startMin = parseInt(s[0]) * 60 + parseInt(s[1]);
-    const endMin   = parseInt(e[0]) * 60 + parseInt(e[1]);
-    const minutes  = endMin - startMin;
-    const slots    = Math.ceil(minutes / slotDuration);
+    let slots = 1;
+    if (slotDuration > 0) {
+        const s = start.split(':');
+        const e = end.split(':');
+        const startMin = parseInt(s[0]) * 60 + parseInt(s[1]);
+        const endMin   = parseInt(e[0]) * 60 + parseInt(e[1]);
+        const minutes  = endMin - startMin;
+        slots    = Math.ceil(minutes / slotDuration);
+    }
     const people   = Math.max(1, parseInt(document.getElementById('number_of_people')?.value || 1));
     const total    = slots * pricePerSlot * people;
 
@@ -409,7 +420,11 @@ function updatePrice(start, end) {
     const formulaSpan = document.getElementById('price-formula');
     if (formulaRow && formulaSpan) {
         formulaRow.style.display = 'flex';
-        formulaSpan.textContent = people + ' người × ' + slots + ' slot = ' + (people * slots) + ' đơn vị';
+        if (slotDuration === 0) {
+            formulaSpan.textContent = people + ' người × 1 lượt = ' + people + ' đơn vị';
+        } else {
+            formulaSpan.textContent = people + ' người × ' + slots + ' slot = ' + (people * slots) + ' đơn vị';
+        }
     }
 
     document.getElementById('total-price').textContent = total.toLocaleString('vi-VN') + 'đ';

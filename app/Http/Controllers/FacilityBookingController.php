@@ -349,10 +349,15 @@ class FacilityBookingController extends Controller
             return 0;
         }
 
-        $startTime = strtotime($booking->start_time);
-        $endTime   = strtotime($booking->end_time);
-        $minutes   = ($endTime - $startTime) / 60;
-        $slots     = ceil($minutes / ($booking->facility->slot_duration ?: 60));
+        $duration = $booking->facility->slot_duration;
+        if ($duration == 0) {
+            $slots = 1;
+        } else {
+            $startTime = strtotime($booking->start_time);
+            $endTime   = strtotime($booking->end_time);
+            $minutes   = ($endTime - $startTime) / 60;
+            $slots     = ceil($minutes / $duration);
+        }
         $people    = max(1, (int)($booking->number_of_people ?? 1));
 
         return intval($slots * $booking->facility->price_per_slot * $people);

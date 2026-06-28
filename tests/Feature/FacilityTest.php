@@ -303,4 +303,47 @@
          $response->assertSee('https://api.qrserver.com/v1/create-qr-code');
          $response->assertDontSee('Yêu cầu thanh toán');
      }
+
+     /**
+      * Test facility with all day duration (slot_duration = 0)
+      */
+     public function test_facility_with_all_day_duration(): void
+     {
+         $resident = User::factory()->create([
+             'role'  => 'resident',
+             'phone' => '0912345679',
+         ]);
+
+         $facility = Facility::create([
+             'name'           => 'Hồ bơi trung tâm',
+             'capacity'       => 50,
+             'description'    => 'Hồ bơi rộng lớn',
+             'status'         => 'available',
+             'open_time'      => '06:00',
+             'close_time'     => '20:00',
+             'slot_duration'  => 0,
+             'price_per_slot' => 20000,
+             'rules'          => 'No glass.',
+         ]);
+
+         // Assert that getTimeSlots returns exactly 1 slot covering the whole day
+         $slots = $facility->getTimeSlots();
+         $this->assertCount(1, $slots);
+         $this->assertEquals('06:00', $slots[0]['start']);
+         $this->assertEquals('20:00', $slots[0]['end']);
+
+         // Create booking
+         $booking = FacilityBooking::create([
+             'facility_id' => $facility->id,
+             'user_id' => $resident->id,
+             'booking_date' => now()->addDay()->toDateString(),
+             'start_time' => '06:00',
+             'end_time' => '20:00',
+             'number_of_people' => 2,
+             'status' => 'approved',
+         ]);
+
+         // Assert amount calculated is for 1 slot only (2 * 20000 * 1 = 40000)
+         $this->assertEquals(40000, $booking->fresh()->amount);
+     }
  }

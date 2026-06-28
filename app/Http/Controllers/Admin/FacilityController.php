@@ -45,7 +45,7 @@ class FacilityController extends Controller
             'status'        => 'required|in:available,maintenance,closed',
             'open_time'     => 'nullable|date_format:H:i',
             'close_time'    => 'nullable|date_format:H:i|after:open_time',
-            'slot_duration' => 'required|integer|in:30,60,90,120',
+            'slot_duration' => 'required|integer|in:0,30,60,90,120',
             'price_per_slot'=> 'required|numeric|min:0',
             'rules'         => 'nullable|string|max:1000',
             'images'        => 'nullable|array|max:5',
@@ -122,7 +122,7 @@ class FacilityController extends Controller
             'status'        => 'required|in:available,maintenance,closed',
             'open_time'     => 'nullable|date_format:H:i',
             'close_time'    => 'nullable|date_format:H:i|after:open_time',
-            'slot_duration' => 'required|integer|in:30,60,90,120',
+            'slot_duration' => 'required|integer|in:0,30,60,90,120',
             'price_per_slot'=> 'required|numeric|min:0',
             'rules'         => 'nullable|string|max:1000',
         ], [
