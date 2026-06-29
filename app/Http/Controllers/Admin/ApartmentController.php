@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-
+use App\Helpers\SystemLogger;
 use App\Models\Apartment;
 use App\Models\Block;
 use App\Models\Floor;
@@ -212,7 +212,9 @@ class ApartmentController extends Controller
         }
 
         $validated['area'] = 0;
-        Apartment::create($validated);
+        $apartment = Apartment::create($validated);
+
+        SystemLogger::log('system', 'Tạo căn hộ mới: ' . $apartment->apartment_number, $apartment);
 
         return redirect()
             ->route(
@@ -327,6 +329,8 @@ class ApartmentController extends Controller
         $validated['area'] = 0;
         $apartment->update($validated);
 
+        SystemLogger::log('system', 'Cập nhật căn hộ: ' . $apartment->apartment_number . ' (trạng thái: ' . $apartment->status . ')', $apartment);
+
         return redirect()
             ->route(
                 'admin.apartments.index',
@@ -360,7 +364,10 @@ class ApartmentController extends Controller
             return back()->with('error', 'Không thể xóa căn hộ đang có cư dân sinh sống. Vui lòng chuyển cư dân đi trước khi xóa.');
         }
 
+        $apartmentNumber = $apartment->apartment_number;
         $apartment->delete();
+
+        SystemLogger::log('system', 'Xóa căn hộ: ' . $apartmentNumber);
 
         return redirect()
             ->route(
@@ -574,6 +581,9 @@ class ApartmentController extends Controller
             });
 
             $msg = "Đã nhập dữ liệu thành công. Thêm mới {$successCount} căn hộ, cập nhật {$updatedCount} căn hộ.";
+
+            SystemLogger::log('system', "Nhập Excel căn hộ: thêm mới {$successCount}, cập nhật {$updatedCount}");
+
             return back()->with('success', $msg);
 
         } catch (\Exception $e) {

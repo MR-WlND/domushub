@@ -62,6 +62,19 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/admin/statistics/residents', [HomeController::class, 'statisticsResidents'])->name('admin.statistics.residents');
     Route::get('/admin/statistics/residents/export', [HomeController::class, 'exportResidentsExcel'])->name('admin.statistics.residents.export');
 
+    // Activity Logs – 7 tabs
+    Route::get('/admin/activity-logs/entry-exit',   [\App\Http\Controllers\Admin\ActivityLogController::class, 'entryExit'])->name('admin.activity-logs.entry-exit');
+    Route::get('/admin/activity-logs/parking',      [\App\Http\Controllers\Admin\ActivityLogController::class, 'parking'])->name('admin.activity-logs.parking');
+    Route::get('/admin/activity-logs/facility',     [\App\Http\Controllers\Admin\ActivityLogController::class, 'facilityBooking'])->name('admin.activity-logs.facility');
+    Route::get('/admin/activity-logs/system',       [\App\Http\Controllers\Admin\ActivityLogController::class, 'system'])->name('admin.activity-logs.system');
+    Route::get('/admin/activity-logs/finance',      [\App\Http\Controllers\Admin\ActivityLogController::class, 'finance'])->name('admin.activity-logs.finance');
+    Route::get('/admin/activity-logs/hardware',     [\App\Http\Controllers\Admin\ActivityLogController::class, 'hardware'])->name('admin.activity-logs.hardware');
+    Route::get('/admin/activity-logs/communication',[\App\Http\Controllers\Admin\ActivityLogController::class, 'communication'])->name('admin.activity-logs.communication');
+    Route::get('/admin/activity-logs/utility',      [\App\Http\Controllers\Admin\ActivityLogController::class, 'utility'])->name('admin.activity-logs.utility');
+    Route::get('/admin/activity-logs/export',       [\App\Http\Controllers\Admin\ActivityLogController::class, 'export'])->name('admin.activity-logs.export');
+    // Redirect /admin/activity-logs → first tab
+    Route::redirect('/admin/activity-logs', '/admin/activity-logs/entry-exit')->name('admin.activity-logs.index');
+
     // Block/Building routes (used in views)
     Route::get('/admin/blocks', [\App\Http\Controllers\Admin\BlockController::class, 'index'])->name('admin.blocks.index');
     Route::get('/admin/blocks/create', [\App\Http\Controllers\Admin\BlockController::class, 'create'])->name('admin.blocks.create');
@@ -106,7 +119,6 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/admin/utility-readings/get-old-value', [UtilityMeterController::class, 'getOldValue'])->name('admin.utility-readings.get-old-value');
     Route::get('/admin/utility-readings/import-template', [UtilityMeterController::class, 'downloadTemplate'])->name('admin.utility-readings.import-template');
     Route::post('/admin/utility-readings/import', [UtilityMeterController::class, 'import'])->name('admin.utility-readings.import');
-    Route::get('/admin/utility-readings/logs', [UtilityMeterController::class, 'logs'])->name('admin.utility-readings.logs');
     Route::get('/admin/utility-readings/{id}', [UtilityMeterController::class, 'show'])->name('admin.utility-readings.show');
     Route::get('/admin/utility-readings/{id}/edit', [UtilityMeterController::class, 'edit'])->name('admin.utility-readings.edit');
     Route::put('/admin/utility-readings/{id}', [UtilityMeterController::class, 'update'])->name('admin.utility-readings.update');
@@ -189,11 +201,6 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/admin/announcements', function () {
         return view('admin.dashboard.index');
     })->name('admin.announcements.index');
-
-    Route::get('/admin/activity-logs', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.activity-logs.index');
-
     // Quản lý tài khoản người dùng
     Route::get('/admin/users', [UserController::class, 'index'])->name('admin.users.index');
     Route::get('/admin/users/create', [UserController::class, 'create'])->name('admin.users.create');

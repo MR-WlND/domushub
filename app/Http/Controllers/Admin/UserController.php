@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-
+use App\Helpers\SystemLogger;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -114,6 +114,8 @@ class UserController extends Controller
             'status' => $validated['status'],
         ]);
 
+        SystemLogger::log('system', 'Tạo tài khoản: ' . $user->name . ' (' . $user->role . ')', $user);
+
         return redirect()
             ->route('admin.users.index')
             ->with('success', 'Tạo tài khoản ' . $user->name . ' thành công. Mật khẩu mặc định: ' . self::DEFAULT_PASSWORD);
@@ -151,6 +153,8 @@ class UserController extends Controller
             'status' => $validated['status'],
         ]);
 
+        SystemLogger::log('system', 'Cập nhật tài khoản: ' . $user->name . ' (vai trò: ' . $user->role . ', trạng thái: ' . $user->status . ')', $user);
+
         return redirect()->route('admin.users.index')->with('success', 'Cập nhật thông tin người dùng thành công!');
     }
 
@@ -172,6 +176,8 @@ class UserController extends Controller
             'status' => $request->status
         ]);
 
+        SystemLogger::log('system', 'Cập nhật vai trò/trạng thái: ' . $user->name . ' → vai trò: ' . $request->role . ', trạng thái: ' . $request->status, $user);
+
         return redirect()->back()->with('success', 'Cập nhật tài khoản thành công!');
     }
     public function resetPassword($id)
@@ -180,6 +186,8 @@ class UserController extends Controller
         $user->update([
             'password' => self::DEFAULT_PASSWORD,
         ]);
+
+        SystemLogger::log('system', 'Đặt lại mật khẩu cho tài khoản: ' . $user->name, $user);
 
         return redirect()
             ->back()

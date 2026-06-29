@@ -138,6 +138,19 @@
         {{-- CỘT TRÁI --}}
         <div class="db-col-left">
 
+            {{-- Biểu đồ Thống kê doanh thu --}}
+            <div class="chart-card">
+                <div class="chart-card__header">
+                    <div>
+                        <h3 class="chart-card__title">Biểu đồ doanh thu</h3>
+                        <p class="chart-card__sub">Doanh thu theo tháng trong năm nay</p>
+                    </div>
+                </div>
+                <div class="chart-card__body">
+                    <canvas id="revenueChart" height="100"></canvas>
+                </div>
+            </div>
+
             {{-- Bảng phản ánh gần nhất --}}
             <div class="chart-card">
                 <div class="chart-card__header">
@@ -363,5 +376,56 @@
 
 @push('styles')
     @vite(['resources/css/pages/admin/statistics.css', 'resources/css/pages/admin/dashboard.css'])
+@endpush
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    fetch('/api/statistics/revenue')
+        .then(response => response.json())
+        .then(res => {
+            if (res.success) {
+                const ctx = document.getElementById('revenueChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: res.labels,
+                        datasets: [{
+                            label: 'Doanh thu (VNĐ)',
+                            data: res.data,
+                            backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                            borderColor: 'rgb(59, 130, 246)',
+                            borderWidth: 1,
+                            borderRadius: 4,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value.toLocaleString('vi-VN') + ' đ';
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.raw.toLocaleString('vi-VN') + ' đ';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+});
+</script>
 @endpush
 @endsection
