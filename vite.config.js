@@ -38,6 +38,7 @@ export default defineConfig({
                 'resources/css/pages/admin/statistics.css',
                 'resources/css/pages/admin/dashboard.css',
                 'resources/css/pages/admin/activity-logs.css',
+                'resources/css/pages/admin/residents/index.css',
 
 
             ],
