@@ -16,7 +16,6 @@
         'staff' => 'Nhân viên',
         'technician' => 'Kỹ thuật',
         'security' => 'An ninh',
-        'resident' => 'Cư dân',
     ];
 
     $statusLabels = [
@@ -99,7 +98,7 @@
                                 <td>
                                     <div class="users-identity">
                                         @if ($user->avatar)
-                                            <img src="{{ $user->avatar }}" alt="{{ $user->name }}"
+                                            <img src="{{ asset('storage/' . $user->avatar) }}" alt="{{ $user->name }}"
                                                 class="users-avatar-img">
                                         @else
                                             <span
