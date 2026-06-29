@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Helpers\SystemLogger;
 use App\Models\Invoice;
 use App\Models\Apartment;
 use App\Models\InvoiceDetail;
@@ -235,6 +236,8 @@ class InvoiceController extends Controller
             'amount'           => $validated['amount'],
         ]);
 
+        SystemLogger::log('system', 'Tạo hóa đơn #' . $invoice->id . ' cho căn hộ ID ' . $validated['apartment_id'], $invoice);
+
         return redirect()->route('admin.invoices.index')
                          ->with('success', 'Hóa đơn đã được tạo thành công.');
     }
@@ -345,6 +348,8 @@ class InvoiceController extends Controller
             }
         }
 
+        SystemLogger::log('system', "Phát hành hóa đơn hàng loạt: tạo {$created} hóa đơn");
+
         return redirect()->route('admin.invoices.index')
             ->with('success', "Đã tạo {$created} hóa đơn" . ($skipped ? ", bỏ qua {$skipped} (đã tồn tại hoặc thiếu đơn giá)." : '.'));
     }
@@ -407,6 +412,8 @@ class InvoiceController extends Controller
             ? 'Hóa đơn đã được thanh toán đầy đủ.'
             : 'Ghi nhận thanh toán ' . number_format($validated['amount']) . 'đ thành công. Còn lại: ' . number_format($invoice->fresh()->remaining_amount) . 'đ.';
 
+        SystemLogger::log('system', 'Ghi nhận thanh toán hóa đơn #' . $invoice->id . ': ' . number_format($validated['amount']) . 'đ (' . $validated['payment_method'] . ')', $invoice);
+
         return back()->with('success', $message);
     }
 
@@ -453,6 +460,8 @@ class InvoiceController extends Controller
 
             $invoice->recalculateDetailsStatus();
         });
+
+        SystemLogger::log('system', 'Hủy thanh toán #' . $payment->id . ' trị giá ' . number_format($payment->amount) . 'đ của hóa đơn #' . $payment->invoice->id, $payment);
 
         return back()->with('success', 'Hủy thanh toán thành công. Trạng thái hóa đơn đã được cập nhật.');
     }

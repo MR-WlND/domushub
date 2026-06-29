@@ -72,17 +72,22 @@ class UtilityMeter extends Model
 
         static::created(function ($meter) {
             try {
-                \App\Models\UtilityMeterLog::create([
-                    'utility_meter_id' => $meter->id,
-                    'apartment_id'     => $meter->apartment_id,
-                    'user_id'          => \Illuminate\Support\Facades\Auth::id() ?? $meter->recorded_by,
-                    'type'             => $meter->type,
-                    'record_month'     => $meter->record_month,
-                    'record_year'      => $meter->record_year,
-                    'old_value'        => $meter->old_value,
-                    'new_value'        => $meter->new_value,
-                    'action'           => 'recorded',
-                ]);
+                \App\Helpers\SystemLogger::log(
+                    'utility',
+                    'Ghi nhận số kỳ mới: ' . number_format($meter->new_value),
+                    $meter,
+                    [
+                        'utility_meter_id' => $meter->id,
+                        'apartment_id'     => $meter->apartment_id,
+                        'user_id'          => \Illuminate\Support\Facades\Auth::id() ?? $meter->recorded_by,
+                        'type'             => $meter->type,
+                        'record_month'     => $meter->record_month,
+                        'record_year'      => $meter->record_year,
+                        'old_value'        => $meter->old_value,
+                        'new_value'        => $meter->new_value,
+                        'action'           => 'recorded',
+                    ]
+                );
             } catch (\Exception $e) {
                 // Ignore failure to prevent locking the app
             }
@@ -106,18 +111,28 @@ class UtilityMeter extends Model
 
                 // Log if any of the monitored fields changed
                 if ($meter->wasChanged(['old_value', 'new_value', 'status', 'reject_reason'])) {
-                    \App\Models\UtilityMeterLog::create([
-                        'utility_meter_id' => $meter->id,
-                        'apartment_id'     => $meter->apartment_id,
-                        'user_id'          => $userId,
-                        'type'             => $meter->type,
-                        'record_month'     => $meter->record_month,
-                        'record_year'      => $meter->record_year,
-                        'old_value'        => $meter->old_value,
-                        'new_value'        => $meter->new_value,
-                        'action'           => $action,
-                        'reject_reason'    => $rejectReason,
-                    ]);
+                    $desc = 'Cập nhật chỉ số điện nước';
+                    if ($action === 'approved') $desc = 'Đã duyệt & chốt số kỳ này';
+                    if ($action === 'rejected') $desc = 'Từ chối chốt số';
+                    
+                    \App\Helpers\SystemLogger::log(
+                        'utility',
+                        $desc,
+                        $meter,
+                        [
+                            'utility_meter_id' => $meter->id,
+                            'apartment_id'     => $meter->apartment_id,
+                            'user_id'          => $userId,
+                            'type'             => $meter->type,
+                            'record_month'     => $meter->record_month,
+                            'record_year'      => $meter->record_year,
+                            'old_value'        => $meter->old_value,
+                            'new_value'        => $meter->new_value,
+                            'original_new_value' => $meter->getOriginal('new_value'),
+                            'action'           => $action,
+                            'reject_reason'    => $rejectReason,
+                        ]
+                    );
                 }
             } catch (\Exception $e) {
                 // Ignore failure to prevent locking the app

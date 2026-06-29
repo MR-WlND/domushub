@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Helpers\SystemLogger;
 use App\Models\Block;
 use App\Models\Vehicle;
 use App\Models\ParkingLot;
@@ -76,6 +77,8 @@ class VehicleController extends Controller
         // Sinh QR code cho ô tô sau khi gán lốt
         $this->generateVehicleQr($vehicle);
 
+        SystemLogger::log('system', 'Gán lốt đỗ ' . $lot->lot_number . ' cho xe ' . $vehicle->license_plate, $vehicle);
+
         return back()->with('success', 'Đã gán lốt ' . $lot->lot_number . ' cho xe ' . $vehicle->license_plate);
     }
 
@@ -97,6 +100,8 @@ class VehicleController extends Controller
             $vehicle->update(['parking_lot_id' => null, 'status' => 'pending']);
         });
 
+        SystemLogger::log('system', 'Thu hồi lốt đỗ của xe ' . $vehicle->license_plate, $vehicle);
+
         return back()->with('success', 'Đã thu hồi lốt đỗ của xe ' . $vehicle->license_plate);
     }
 
@@ -115,9 +120,9 @@ class VehicleController extends Controller
         }
 
         $vehicle->update(['status' => 'active']);
-
-        // Sinh QR code sau khi duyệt
         $this->generateVehicleQr($vehicle);
+
+        SystemLogger::log('system', 'Duyệt phương tiện: ' . $vehicle->license_plate, $vehicle);
 
         return back()->with('success', 'Đã duyệt xe ' . $vehicle->license_plate . '. Phương tiện hiện đang hoạt động.');
     }
@@ -138,6 +143,8 @@ class VehicleController extends Controller
 
         $vehicle->update(['status' => 'locked']);
 
+        SystemLogger::log('system', 'Khóa phương tiện: ' . $vehicle->license_plate, $vehicle);
+
         return back()->with('success', 'Đã khóa xe ' . $vehicle->license_plate . '.');
     }
 
@@ -148,6 +155,8 @@ class VehicleController extends Controller
         }
 
         $vehicle->update(['status' => 'active']);
+
+        SystemLogger::log('system', 'Mở khóa phương tiện: ' . $vehicle->license_plate, $vehicle);
 
         return back()->with('success', 'Đã mở khóa xe ' . $vehicle->license_plate . '.');
     }
