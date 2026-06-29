@@ -64,7 +64,7 @@
 
             <div class="parking-mode-switch">
                 <label><input type="radio" name="creation_mode" value="single" checked onchange="toggleMode()"> Tạo đơn</label>
-                <label><input type="radio" name="creation_mode" value="bulk" onchange="toggleMode()"> Tạo hàng loạt</label>
+                <label><input type="radio" name="creation_mode" value="bulk" onchange="toggleMode()"> Tạo hàng loạt (Ô tô)</label>
             </div>
 
             <div class="parking-form-grid">
@@ -81,6 +81,10 @@
                     <label>Mã lốt</label>
                     <input type="text" name="lot_number" class="parking-form-control" placeholder="VD: B1-01, Zone A">
                 </div>
+                <div class="parking-form-group single-field">
+                    <label>Tầng/Khu vực</label>
+                    <input type="text" name="zone" class="parking-form-control" placeholder="VD: Hầm B1">
+                </div>
                 <div class="parking-form-group single-field" id="capacity-group" style="display: none;">
                     <label>Sức chứa</label>
                     <input type="number" name="capacity" class="parking-form-control" placeholder="VD: 200" min="1">
@@ -88,7 +92,11 @@
 
                 {{-- Bulk --}}
                 <div class="parking-form-group bulk-field" style="display: none;">
-                    <label>Tiền tố</label>
+                    <label>Tầng/Khu vực</label>
+                    <input type="text" name="bulk_zone" class="parking-form-control" placeholder="VD: Hầm B1">
+                </div>
+                <div class="parking-form-group bulk-field" style="display: none;">
+                    <label>Tiền tố mã lốt</label>
                     <input type="text" name="lot_prefix" class="parking-form-control" placeholder="VD: B1">
                 </div>
                 <div class="parking-form-group bulk-field" style="display: none;">
@@ -97,7 +105,7 @@
                 </div>
                 <div class="parking-form-group bulk-field" style="display: none;">
                     <label>Đến số</label>
-                    <input type="number" name="end_num" class="parking-form-control" placeholder="20" min="1">
+                    <input type="number" name="end_num" class="parking-form-control" placeholder="30" min="1">
                 </div>
 
                 <div class="parking-form-group" style="justify-content: flex-end;">
@@ -114,67 +122,81 @@
         <button class="parking-tab-btn" onclick="switchTab('moto-tab', this)">Khu vực Xe máy</button>
     </div>
 
-    {{-- TAB 1: Ô tô --}}
+    {{-- TAB 1: Ô tô (grouped by zone) --}}
     <div id="car-tab" class="parking-tab-content active">
-        <div class="parking-table-card">
-            <div class="parking-table-wrap">
-                <table class="parking-table">
-                    <thead>
-                        <tr>
-                            <th>Số lốt</th>
-                            <th>Trạng thái</th>
-                            <th>Biển số</th>
-                            <th>Căn hộ</th>
-                            <th>Chủ xe</th>
-                            <th class="text-right">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($carLots as $lot)
-                            <tr>
-                                <td><span class="pk-lot-code">{{ $lot->lot_number }}</span></td>
-                                <td>
-                                    @if($lot->isAvailable())
-                                        <span class="pk-status pk-status--available">Trống</span>
-                                    @else
-                                        <span class="pk-status pk-status--occupied">Đang dùng</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if($lot->vehicle)
-                                        <span class="pk-plate">{{ $lot->vehicle->license_plate }}</span>
-                                    @else
-                                        <span class="pk-empty-cell">—</span>
-                                    @endif
-                                </td>
-                                <td>{{ $lot->apartment->apartment_number ?? '—' }}</td>
-                                <td>{{ $lot->apartment?->residents?->first()?->user?->name ?? '—' }}</td>
-                                <td class="text-right">
-                                    <div class="pk-table-actions">
-                                        @if($lot->isAvailable())
-                                            <a href="{{ route('admin.vehicles.index', ['status' => 'pending', 'vehicle_type' => 'car']) }}" class="pk-table-btn pk-table-btn--primary">Gán xe</a>
-                                        @elseif($lot->vehicle)
-                                            <form action="{{ route('admin.vehicles.releaseLot', $lot->vehicle) }}" method="POST" style="display:inline;" onsubmit="return confirm('Thu hồi lốt {{ $lot->lot_number }}?')">
-                                                @csrf
-                                                <button type="submit" class="pk-table-btn pk-table-btn--warning">Thu hồi</button>
-                                            </form>
-                                        @endif
-                                        <form action="{{ route('admin.parking-lots.destroy', $lot) }}" method="POST" style="display:inline;" onsubmit="return confirm('Xóa lốt {{ $lot->lot_number }}?')">
-                                            @csrf @method('DELETE')
-                                            <button type="submit" class="pk-table-btn pk-table-btn--danger" {{ $lot->isOccupied() ? 'disabled' : '' }}>Xóa</button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="pk-table-empty">Chưa có lốt đỗ ô tô nào.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+        @php
+            $carByZone = $carLots->groupBy(fn($lot) => $lot->zone ?? 'Chưa phân tầng');
+        @endphp
+
+        @if($carLots->isEmpty())
+            <div class="parking-table-card">
+                <div class="pk-table-empty" style="padding:40px;text-align:center;color:#94a3b8;">Chưa có lốt đỗ ô tô nào.</div>
             </div>
-        </div>
+        @else
+            @foreach($carByZone as $zoneName => $zoneLots)
+            <div class="parking-zone-group">
+                <div class="parking-zone-header">
+                    <span class="parking-zone-name">{{ $zoneName }}</span>
+                    <span class="parking-zone-count">{{ $zoneLots->count() }} lốt — {{ $zoneLots->where('status', 'available')->count() }} trống</span>
+                </div>
+                <div class="parking-table-card">
+                    <div class="parking-table-wrap">
+                        <table class="parking-table">
+                            <thead>
+                                <tr>
+                                    <th>Số lốt</th>
+                                    <th>Trạng thái</th>
+                                    <th>Biển số</th>
+                                    <th>Căn hộ</th>
+                                    <th>Chủ xe</th>
+                                    <th class="text-right">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($zoneLots as $lot)
+                                <tr>
+                                    <td><span class="pk-lot-code">{{ $lot->lot_number }}</span></td>
+                                    <td>
+                                        @if($lot->isAvailable())
+                                            <span class="pk-status pk-status--available">Trống</span>
+                                        @else
+                                            <span class="pk-status pk-status--occupied">Đang dùng</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($lot->vehicle)
+                                            <span class="pk-plate">{{ $lot->vehicle->license_plate }}</span>
+                                        @else
+                                            <span class="pk-empty-cell">—</span>
+                                        @endif
+                                    </td>
+                                    <td>{{ $lot->apartment->apartment_number ?? '—' }}</td>
+                                    <td>{{ $lot->apartment?->residents?->first()?->user?->name ?? '—' }}</td>
+                                    <td class="text-right">
+                                        <div class="pk-table-actions">
+                                            @if($lot->isAvailable())
+                                                <a href="{{ route('admin.vehicles.index', ['status' => 'pending', 'vehicle_type' => 'car']) }}" class="pk-table-btn pk-table-btn--primary">Gán xe</a>
+                                            @elseif($lot->vehicle)
+                                                <form action="{{ route('admin.vehicles.releaseLot', $lot->vehicle) }}" method="POST" style="display:inline;" onsubmit="return confirm('Thu hồi lốt {{ $lot->lot_number }}?')">
+                                                    @csrf
+                                                    <button type="submit" class="pk-table-btn pk-table-btn--warning">Thu hồi</button>
+                                                </form>
+                                            @endif
+                                            <form action="{{ route('admin.parking-lots.destroy', $lot) }}" method="POST" style="display:inline;" onsubmit="return confirm('Xóa lốt {{ $lot->lot_number }}?')">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="pk-table-btn pk-table-btn--danger" {{ $lot->isOccupied() ? 'disabled' : '' }}>Xóa</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        @endif
     </div>
 
     {{-- TAB 2: Xe máy --}}
@@ -214,7 +236,7 @@
                                 </td>
                                 <td class="text-right">
                                     <div class="pk-table-actions">
-                                        <a href="{{ route('admin.vehicles.index', ['vehicle_type' => 'motorbike']) }}" class="pk-table-btn pk-table-btn--outline">Xem xe</a>
+                                        <a href="{{ route('admin.vehicles.index', ['vehicle_type' => 'motorbike,electric_bike']) }}" class="pk-table-btn pk-table-btn--outline">Xem xe</a>
                                         <form action="{{ route('admin.parking-lots.destroy', $lot) }}" method="POST" style="display:inline;" onsubmit="return confirm('Xóa khu vực {{ $lot->lot_number }}?')">
                                             @csrf @method('DELETE')
                                             <button type="submit" class="pk-table-btn pk-table-btn--danger">Xóa</button>
@@ -252,11 +274,13 @@ function toggleMode() {
         singleFields.forEach(f => f.style.display = 'none');
         bulkFields.forEach(f => f.style.display = 'flex');
         typeSelect.value = 'car';
-        typeSelect.disabled = true;
+        typeSelect.style.pointerEvents = 'none';
+        typeSelect.style.opacity = '0.6';
     } else {
         singleFields.forEach(f => f.style.display = 'flex');
         bulkFields.forEach(f => f.style.display = 'none');
-        typeSelect.disabled = false;
+        typeSelect.style.pointerEvents = '';
+        typeSelect.style.opacity = '';
         toggleCapacityInput();
     }
 }

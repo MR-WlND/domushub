@@ -31,9 +31,10 @@ class VehicleController extends Controller
             });
         }
 
-        // Filter: Loại xe
+        // Filter: Loại xe (hỗ trợ nhiều loại: "motorbike,electric_bike")
         if ($request->filled('vehicle_type')) {
-            $query->where('vehicle_type', $request->vehicle_type);
+            $types = explode(',', $request->vehicle_type);
+            $query->whereIn('vehicle_type', $types);
         }
 
         // Filter: Trạng thái

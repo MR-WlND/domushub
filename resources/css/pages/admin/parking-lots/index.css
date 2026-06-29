@@ -497,3 +497,31 @@ select.parking-form-control {
         overflow-x: auto;
     }
 }
+
+/* ─── Zone Group ─── */
+.parking-zone-group {
+    margin-bottom: 24px;
+}
+
+.parking-zone-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 18px;
+    background: #f0f4ff;
+    border: 1px solid #dbeafe;
+    border-radius: 10px 10px 0 0;
+    border-bottom: none;
+}
+
+.parking-zone-name {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1e40af;
+}
+
+.parking-zone-count {
+    font-size: 0.78rem;
+    color: #64748b;
+    font-weight: 500;
+}
