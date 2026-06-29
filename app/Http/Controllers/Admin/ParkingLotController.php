@@ -30,15 +30,23 @@ class ParkingLotController extends Controller
         $request->validate([
             'creation_mode' => 'required|in:single,bulk',
             'lot_type'      => 'required|in:motorbike,car',
-            
-            // Validate single
+
+            // Single
             'lot_number'    => 'required_if:creation_mode,single|nullable|string|max:50|unique:parking_lots,lot_number',
+            'zone'          => 'nullable|string|max:50',
             'capacity'      => 'required_if:lot_type,motorbike|nullable|integer|min:1',
-            
-            // Validate bulk (chỉ dùng cho ô tô)
+
+            // Bulk (chỉ ô tô)
+            'bulk_zone'     => 'required_if:creation_mode,bulk|nullable|string|max:50',
             'lot_prefix'    => 'required_if:creation_mode,bulk|nullable|string|max:10',
             'start_num'     => 'required_if:creation_mode,bulk|nullable|integer|min:1',
             'end_num'       => 'required_if:creation_mode,bulk|nullable|integer|min:1|gte:start_num',
+        ], [
+            'bulk_zone.required_if'  => 'Vui lòng nhập tên tầng/khu vực.',
+            'lot_prefix.required_if' => 'Vui lòng nhập tiền tố mã lốt.',
+            'start_num.required_if'  => 'Vui lòng nhập số bắt đầu.',
+            'end_num.required_if'    => 'Vui lòng nhập số kết thúc.',
+            'end_num.gte'            => 'Số kết thúc phải lớn hơn hoặc bằng số bắt đầu.',
         ]);
 
         if ($request->creation_mode === 'single') {
@@ -46,42 +54,59 @@ class ParkingLotController extends Controller
 
             ParkingLot::create([
                 'lot_number' => strtoupper($request->lot_number),
+                'zone'       => $request->zone ?: null,
                 'lot_type'   => $request->lot_type,
                 'status'     => 'available',
                 'capacity'   => $capacity,
             ]);
 
             return back()->with('success', 'Đã thêm lốt/khu vực đỗ xe mới.');
-        } else {
-            // Bulk create for Cars
-            if ($request->lot_type !== 'car') {
-                return back()->withErrors(['creation_mode' => 'Tạo hàng loạt chỉ áp dụng cho lốt Ô tô.']);
-            }
-
-            $prefix = strtoupper($request->lot_prefix);
-            $start = $request->start_num;
-            $end = $request->end_num;
-
-            DB::transaction(function () use ($prefix, $start, $end) {
-                for ($i = $start; $i <= $end; $i++) {
-                    // Ví dụ: B1-01, B1-02... B1-10
-                    $numStr = str_pad($i, 2, '0', STR_PAD_LEFT);
-                    $lotNumber = "{$prefix}-{$numStr}";
-                    
-                    // Nếu đã tồn tại thì bỏ qua để không lỗi
-                    if (!ParkingLot::where('lot_number', $lotNumber)->exists()) {
-                        ParkingLot::create([
-                            'lot_number' => $lotNumber,
-                            'lot_type'   => 'car',
-                            'status'     => 'available',
-                            'capacity'   => 1,
-                        ]);
-                    }
-                }
-            });
-
-            return back()->with('success', "Đã tạo hàng loạt các lốt ô tô từ {$prefix}-" . str_pad($start, 2, '0', STR_PAD_LEFT) . " đến {$prefix}-" . str_pad($end, 2, '0', STR_PAD_LEFT));
         }
+
+        // ── Bulk: chỉ ô tô ──
+        if ($request->lot_type !== 'car') {
+            return back()->withErrors(['creation_mode' => 'Tạo hàng loạt chỉ áp dụng cho lốt Ô tô.']);
+        }
+
+        $zone   = trim($request->bulk_zone);
+        $prefix = strtoupper(trim($request->lot_prefix));
+        $start  = (int) $request->start_num;
+        $end    = (int) $request->end_num;
+
+        if (($end - $start + 1) > 200) {
+            return back()->withErrors(['end_num' => 'Tối đa tạo 200 lốt mỗi lần.']);
+        }
+
+        $created = 0;
+        $skipped = 0;
+
+        DB::transaction(function () use ($zone, $prefix, $start, $end, &$created, &$skipped) {
+            for ($i = $start; $i <= $end; $i++) {
+                $numStr    = str_pad($i, 2, '0', STR_PAD_LEFT);
+                $lotNumber = "{$prefix}-{$numStr}";
+
+                if (ParkingLot::where('lot_number', $lotNumber)->exists()) {
+                    $skipped++;
+                    continue;
+                }
+
+                ParkingLot::create([
+                    'lot_number' => $lotNumber,
+                    'zone'       => $zone,
+                    'lot_type'   => 'car',
+                    'status'     => 'available',
+                    'capacity'   => 1,
+                ]);
+                $created++;
+            }
+        });
+
+        $msg = "Đã tạo {$created} lốt ô tô tại \"{$zone}\" ({$prefix}-" . str_pad($start, 2, '0', STR_PAD_LEFT) . " → {$prefix}-" . str_pad($end, 2, '0', STR_PAD_LEFT) . ")";
+        if ($skipped > 0) {
+            $msg .= ". Bỏ qua {$skipped} lốt đã tồn tại.";
+        }
+
+        return back()->with('success', $msg);
     }
 
     public function update(Request $request, ParkingLot $parkingLot)
