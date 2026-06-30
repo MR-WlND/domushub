@@ -9,7 +9,7 @@ Route::middleware(['web', 'resident'])->prefix('facility-bookings')->name('api.f
     Route::post('/', [FacilityBookingController::class, 'bookSlot'])->name('book');
     Route::get('/', [FacilityBookingController::class, 'getHistory'])->name('history');
     Route::patch('/{id}/cancel', [FacilityBookingController::class, 'cancelBooking'])->name('cancel');
-    Route::post('/{id}/pay', [FacilityBookingController::class, 'payBooking'])->name('pay');
+    // Route /{id}/pay đã được loại bỏ – thanh toán tiện ích giờ dùng hệ thống hóa đơn
     Route::post('/check-in', [FacilityBookingController::class, 'checkIn'])->name('check-in');
 });
 

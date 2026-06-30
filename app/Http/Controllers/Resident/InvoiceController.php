@@ -321,6 +321,17 @@ class InvoiceController extends Controller
         // ─── Khôi phục xe pending_renewal → active nếu đây là hóa đơn phí gửi xe ───
         $this->restoreVehiclesAfterParkingPayment($invoices);
 
+        // ─── Cập nhật trạng thái thanh toán cho lịch đặt tiện ích liên kết ───
+        foreach ($invoices as $invoice) {
+            $booking = $invoice->facilityBooking;
+            if ($booking && $booking->payment_status !== 'paid') {
+                $booking->update([
+                    'payment_status' => 'paid',
+                    'payment_method' => 'vnpay',
+                ]);
+            }
+        }
+
         // Gửi thông báo cho quản trị viên/kế toán khi cư dân thanh toán thành công
         try {
             $admins = \App\Models\User::whereIn('role', ['staff', 'manager', 'admin'])->get();

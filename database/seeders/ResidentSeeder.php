@@ -14,8 +14,7 @@ class ResidentSeeder extends Seeder
         // Lấy chính xác thời gian tại thời điểm chạy lệnh (VD: 2026-05-22 15:42:57)
         $now = Carbon::now();
 
-        // Lệnh DB::table('tên_bảng')->insert() dùng để chèn một mảng dữ liệu vào CSDL
-        DB::table('users')->insert([
+        $users = [
             [
                 'name' => 'Cư Dân A',
                 'email' => 'resident.a@example.com',
@@ -41,6 +40,12 @@ class ResidentSeeder extends Seeder
                 'created_at' => $now,
                 'updated_at' => $now,
             ]
-        ]);
+        ];
+
+        foreach ($users as $user) {
+            if (!DB::table('users')->where('email', $user['email'])->exists()) {
+                DB::table('users')->insert($user);
+            }
+        }
     }
 }

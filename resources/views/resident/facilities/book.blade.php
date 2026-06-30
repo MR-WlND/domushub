@@ -54,16 +54,9 @@
                             <span class="rfb-step-num">1</span>
                             Chọn ngày sử dụng
                         </div>
-                        <input
-                            type="date"
-                            name="booking_date"
-                            id="booking_date"
-                            class="rfb-input"
-                            value="{{ old('booking_date') }}"
-                            min="{{ date('Y-m-d') }}"
-                            required
-                            onchange="loadSlots(this.value)"
-                        >
+                        <input type="date" name="booking_date" id="booking_date" class="rfb-input"
+                            value="{{ old('booking_date') }}" min="{{ date('Y-m-d') }}"
+                            required onchange="loadSlots(this.value)">
                     </div>
 
                     {{-- Bước 2: Chọn khung giờ --}}
@@ -76,10 +69,11 @@
                             <p class="rfb-slots-hint">← Vui lòng chọn ngày trước</p>
                         </div>
                         <input type="hidden" name="start_time" id="start_time" value="{{ old('start_time') }}" required>
-                        <input type="hidden" name="end_time" id="end_time" value="{{ old('end_time') }}" required>
+                        <input type="hidden" name="end_time"   id="end_time"   value="{{ old('end_time') }}"   required>
                         <div id="selected-slot-display" class="rfb-selected-slot" style="display:none">
                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                             Đã chọn: <strong id="slot-label-display"></strong>
+                            <span id="slot-count-badge" class="rfb-slot-count"></span>
                         </div>
                     </div>
 
@@ -96,7 +90,7 @@
                                 value="{{ old('number_of_people', 1) }}"
                                 min="1" max="{{ $facility->capacity }}" required>
                             <button type="button" class="rfb-people-btn" onclick="changePeople(1)">+</button>
-                            <span class="rfb-people-max">tối đa {{ $facility->capacity }} người</span>
+                            <span class="rfb-people-max" id="people-max-hint">tối đa {{ $facility->capacity }} người</span>
                         </div>
                     </div>
 
@@ -109,10 +103,14 @@
                             @else
                             <span>Giá mỗi slot ({{ $facility->slot_duration }} phút) / người</span>
                             @endif
-                            <span>{{ number_format($facility->price_per_slot) }}đ</span>
+                            <span class="rfb-price-unit">{{ number_format($facility->price_per_slot) }}đ</span>
+                        </div>
+                        <div class="rfb-price-row" id="price-row-slots" style="display:none">
+                            <span id="price-formula-label">Số slot đã chọn</span>
+                            <span id="price-slots-val">—</span>
                         </div>
                         <div class="rfb-price-row" id="price-row-people" style="display:none">
-                            <span>Số người × số slot</span>
+                            <span>Số người</span>
                             <span id="price-formula">—</span>
                         </div>
                         <div class="rfb-price-row rfb-price-total">
@@ -132,7 +130,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                         Xác nhận đặt lịch
                     </button>
-                    <p class="rfb-note">Lịch đặt sẽ chờ ban quản lý duyệt trước khi có hiệu lực.</p>
+                    <p class="rfb-note">Lịch đặt được duyệt tự động. QR check-in sẽ có ngay sau khi đặt thành công.</p>
                 </form>
             </div>
         </div>
@@ -164,7 +162,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     </div>
                     <div>
-                        <p class="rfb-info-label">Thời lượng mỗi lần</p>
+                        <p class="rfb-info-label">Thời lượng mỗi slot</p>
                         @php
                             $dur = $facility->slot_duration ?? 60;
                             $durLabel = match((int)$dur){ 0=>'Cả ngày', 30=>'30 phút', 60=>'1 tiếng', 90=>'1.5 tiếng', 120=>'2 tiếng', default=>$dur.' phút'};
@@ -192,7 +190,6 @@
                 @endif
             </div>
 
-            {{-- Trạng thái --}}
             <div class="rfb-available-notice">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                 <span>Tiện ích đang <strong>mở cửa</strong></span>
@@ -212,24 +209,21 @@
 
 .rfb-layout { display: grid; grid-template-columns: 1fr 300px; gap: 24px; align-items: start; }
 
-/* Form card */
 .rfb-form-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 18px; padding: 32px; box-shadow: 0 2px 20px rgba(0,0,0,0.06); }
-
 .rfb-form-header { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid #f1f5f9; }
 .rfb-form-header-icon { width: 50px; height: 50px; background: linear-gradient(135deg, #3b82f6, #6366f1); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; }
 .rfb-form-title { font-size: 1.25rem; font-weight: 800; color: #0f172a; margin: 0 0 2px; }
 .rfb-form-subtitle { font-size: 0.85rem; color: #64748b; margin: 0; }
 
-/* Alert */
 .rfb-alert { display: flex; align-items: flex-start; gap: 10px; padding: 12px 16px; border-radius: 10px; font-size: 0.875rem; margin-bottom: 20px; }
 .rfb-alert--error { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
 .rfb-alert ul { margin: 0; padding-left: 16px; }
 .rfb-alert li { margin-bottom: 2px; }
 
-/* Steps */
 .rfb-step { margin-bottom: 28px; }
-.rfb-step-label { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; font-weight: 700; color: #0f172a; margin-bottom: 12px; }
+.rfb-step-label { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; font-weight: 700; color: #0f172a; margin-bottom: 12px; flex-wrap: wrap; }
 .rfb-step-num { width: 26px; height: 26px; background: linear-gradient(135deg, #3b82f6, #6366f1); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; flex-shrink: 0; }
+.rfb-multi-hint { font-size: 0.72rem; font-weight: 500; color: #7c3aed; background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 20px; padding: 3px 12px; }
 
 .rfb-input { width: 100%; padding: 11px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 0.9rem; color: #0f172a; outline: none; transition: border-color 0.15s, box-shadow 0.15s; box-sizing: border-box; }
 .rfb-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
@@ -238,15 +232,35 @@
 .rfb-slots-wrap { min-height: 60px; }
 .rfb-slots-hint { font-size: 0.82rem; color: #94a3b8; font-style: italic; }
 .rfb-slots-grid { display: flex; flex-wrap: wrap; gap: 10px; }
-.rfb-slot-btn { padding: 9px 18px; border: 2px solid #e2e8f0; border-radius: 10px; background: #f8fafc; cursor: pointer; font-size: 0.82rem; font-weight: 600; color: #475569; transition: all 0.15s; font-family: monospace; }
-.rfb-slot-btn:hover { border-color: #3b82f6; color: #2563eb; background: #eff6ff; }
-.rfb-slot-btn.active { border-color: #3b82f6; background: #3b82f6; color: #fff; transform: scale(1.03); }
+
+.rfb-slot-btn {
+    padding: 9px 18px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    background: #f8fafc;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #475569;
+    transition: all 0.12s;
+    font-family: monospace;
+    user-select: none;
+}
+.rfb-slot-btn:hover:not(.booked) { border-color: #3b82f6; color: #2563eb; background: #eff6ff; }
+.rfb-slot-btn.selected { border-color: #2563eb; background: #3b82f6; color: #fff; box-shadow: 0 2px 8px rgba(59,130,246,0.35); }
+.rfb-slot-btn.range { border-color: #93c5fd; background: #dbeafe; color: #1d4ed8; }
 .rfb-slot-btn.booked { border-color: #f1f5f9; background: #f8fafc; color: #cbd5e1; cursor: not-allowed; text-decoration: line-through; }
+
 .rfb-slots-loading { font-size: 0.82rem; color: #64748b; display: flex; align-items: center; gap: 6px; }
 .rfb-slots-loading::before { content: ''; width: 14px; height: 14px; border: 2px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.rfb-selected-slot { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding: 10px 14px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; font-size: 0.85rem; color: #2563eb; font-weight: 500; }
+.rfb-legend { display: flex; gap: 16px; margin-top: 12px; font-size: 0.75rem; color: #64748b; flex-wrap: wrap; }
+.rfb-legend-item { display: flex; align-items: center; gap: 5px; }
+.rfb-legend-dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+.rfb-selected-slot { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding: 10px 14px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; font-size: 0.85rem; color: #2563eb; font-weight: 500; flex-wrap: wrap; }
+.rfb-slot-count { background: #2563eb; color: #fff; font-size: 0.7rem; font-weight: 700; padding: 2px 9px; border-radius: 20px; }
 
 /* People */
 .rfb-people-wrap { display: flex; align-items: center; gap: 12px; }
@@ -257,20 +271,20 @@
 .rfb-people-max { font-size: 0.78rem; color: #94a3b8; }
 
 /* Price preview */
-.rfb-price-preview { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 18px; margin-bottom: 24px; }
+.rfb-price-preview { background: linear-gradient(135deg, #f0f9ff 0%, #f8fafc 100%); border: 1px solid #bae6fd; border-radius: 14px; padding: 18px 20px; margin-bottom: 24px; }
 .rfb-price-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.875rem; color: #64748b; margin-bottom: 8px; }
 .rfb-price-row:last-child { margin-bottom: 0; }
-.rfb-price-total { font-size: 1rem; font-weight: 700; color: #0f172a; padding-top: 10px; border-top: 1px solid #e2e8f0; margin-top: 4px; }
+.rfb-price-unit { font-weight: 700; color: #374151; }
+.rfb-price-total { font-size: 1.05rem; font-weight: 800; color: #0f172a; padding-top: 12px; border-top: 1.5px dashed #bae6fd; margin-top: 6px; }
+.rfb-price-total span:last-child { color: #2563eb; font-size: 1.15rem; }
 
 .rfb-free-notice { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; font-size: 0.875rem; color: #15803d; margin-bottom: 24px; }
 
-/* Submit */
 .rfb-submit { width: 100%; padding: 14px; background: linear-gradient(135deg, #3b82f6, #6366f1); color: #fff; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; box-shadow: 0 4px 14px rgba(59,130,246,0.35); }
 .rfb-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(59,130,246,0.45); }
 .rfb-submit:active { transform: translateY(0); }
 .rfb-note { font-size: 0.75rem; color: #94a3b8; text-align: center; margin-top: 10px; }
 
-/* Sidebar */
 .rfb-sidebar { position: sticky; top: 20px; display: flex; flex-direction: column; gap: 14px; }
 .rfb-info-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
 .rfb-info-title { font-size: 0.9rem; font-weight: 700; color: #0f172a; margin: 0 0 4px; }
@@ -296,135 +310,208 @@
 <script>
 const pricePerSlot = {{ $facility->price_per_slot ?? 0 }};
 const slotDuration = {{ $facility->slot_duration ?? 60 }};
-const availableSlotsUrl = '{{ route("resident.facilities.index") }}';
-const facilityId = {{ $facility->id }};
+const facilityId   = {{ $facility->id }};
+const maxCapacity  = {{ $facility->capacity }};
 
-let selectedStart = '';
-let selectedEnd = '';
+// ─── Multi-slot selection state ─────────────────────
+let allSlotsData    = [];   // [{start,end,label,available,remainingCapacity}]
+let selectedIndices = [];   // sorted indices of selected slots
+let selectionAnchor = -1;   // index of first clicked slot
 
+// ─── Load slots from API ─────────────────────────────
 async function loadSlots(date) {
     if (!date) return;
-
+    resetSelection();
     const container = document.getElementById('slots-container');
     container.innerHTML = '<div class="rfb-slots-loading">Đang tải khung giờ...</div>';
 
     try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
         const res = await fetch('/resident/api/available-slots', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Authorization': 'Bearer ' + (document.querySelector('meta[name="api-token"]')?.getAttribute('content') || ''),
+                'X-CSRF-TOKEN': csrfToken,
             },
             body: JSON.stringify({ facility_id: facilityId, booking_date: date }),
         });
-
         const json = await res.json();
-
-        if (json.success && json.available_slots.length > 0) {
-            const allSlots = @json($slots);
-            renderSlots(allSlots, json.available_slots);
-        } else {
-            container.innerHTML = '<p style="color:#94a3b8;font-size:0.85rem">Không còn khung giờ trống cho ngày này.</p>';
-        }
+        buildSlotsData(json.success ? json.available_slots : []);
     } catch (e) {
-        // Fallback: show all slots without availability check
-        const allSlots = @json($slots);
-        renderSlotsFallback(allSlots);
+        console.error("Lỗi khi tải slots:", e);
+        buildSlotsData([]);
     }
+    renderSlots();
 }
 
-function renderSlots(allSlots, availableSlots) {
+function buildSlotsData(serverAvailable) {
+    const rawSlots = @json($slots);
+    allSlotsData = rawSlots.map(slot => {
+        const matched = serverAvailable.find(s => s.start === slot.start);
+        return {
+            start:             slot.start,
+            end:               slot.end,
+            label:             slot.label,
+            available:         !!matched,
+            remainingCapacity: matched ? (matched.remaining_capacity ?? maxCapacity) : 0,
+        };
+    });
+}
+
+function renderSlots() {
     const container = document.getElementById('slots-container');
 
-    if (allSlots.length === 0) {
-        container.innerHTML = '<p style="color:#94a3b8;font-size:0.85rem">Tiện ích chưa cài đặt khung giờ.</p>';
+    if (allSlotsData.length === 0) {
+        container.innerHTML = '<p style="color:#94a3b8;font-size:0.85rem">Tiện ích chưa cài đặt khung giờ hoặc không còn khung giờ trống cho ngày này.</p>';
         return;
     }
 
-    let html = '<div class="rfb-slots-grid">';
-    allSlots.forEach(slot => {
-        const matched = availableSlots.find(s => s.start === slot.start);
-        if (matched) {
-            const rem = matched.remaining_capacity !== undefined ? matched.remaining_capacity : {{ $facility->capacity }};
-            const remText = matched.remaining_capacity !== undefined ? ` (Còn ${matched.remaining_capacity} chỗ)` : '';
-            html += `<button type="button" class="rfb-slot-btn" onclick="selectSlot('${slot.start}','${slot.end}','${slot.label}', ${rem}, this)">${slot.label}${remText}</button>`;
+    let html = '<div class="rfb-slots-grid" id="slots-grid">';
+    allSlotsData.forEach((slot, idx) => {
+        if (slot.available) {
+            const remText = slot.remainingCapacity < maxCapacity
+                ? ` <span style="font-size:0.68rem;opacity:0.75">(còn ${slot.remainingCapacity})</span>` : '';
+            html += `<button type="button" class="rfb-slot-btn" data-idx="${idx}"
+                onclick="handleSlotClick(${idx}, this)">${slot.label}${remText}</button>`;
         } else {
-            html += `<button type="button" class="rfb-slot-btn booked" disabled>${slot.label}</button>`;
+            html += `<button type="button" class="rfb-slot-btn booked" disabled title="Đã đặt đầy">${slot.label}</button>`;
         }
     });
     html += '</div>';
-    html += '<div style="display:flex;gap:16px;margin-top:12px;font-size:0.75rem;color:#64748b"><span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:3px;background:#eff6ff;border:1.5px solid #3b82f6;display:inline-block"></span>Còn trống</span><span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:3px;background:#f8fafc;border:1.5px solid #e2e8f0;display:inline-block"></span>Đã đặt</span></div>';
+
+    html += `<div class="rfb-legend">
+        <div class="rfb-legend-item">
+            <span class="rfb-legend-dot" style="background:#3b82f6;border:1.5px solid #2563eb"></span>Đầu/cuối đã chọn
+        </div>
+        <div class="rfb-legend-item">
+            <span class="rfb-legend-dot" style="background:#dbeafe;border:1.5px solid #93c5fd"></span>Trong khoảng
+        </div>
+        <div class="rfb-legend-item">
+            <span class="rfb-legend-dot" style="background:#f8fafc;border:1.5px solid #e2e8f0;text-decoration:line-through"></span>Đã đặt
+        </div>
+    </div>`;
+
     container.innerHTML = html;
 }
 
-function renderSlotsFallback(allSlots) {
-    const container = document.getElementById('slots-container');
-    if (allSlots.length === 0) {
-        container.innerHTML = '<p style="color:#94a3b8;font-size:0.85rem">Tiện ích chưa cài đặt khung giờ.</p>';
+// ─── Click handler: range selection ─────────────────
+function handleSlotClick(idx) {
+    // First click or reset anchor
+    if (selectionAnchor === -1) {
+        selectionAnchor = idx;
+        selectedIndices = [idx];
+    } else if (idx === selectionAnchor && selectedIndices.length === 1) {
+        // Toggle off
+        resetSelection();
+        updateFormAndPrice();
+        return;
+    } else {
+        // Build range from anchor to idx
+        const from = Math.min(selectionAnchor, idx);
+        const to   = Math.max(selectionAnchor, idx);
+
+        // Block if any booked slot in range
+        let blocked = false;
+        for (let i = from; i <= to; i++) {
+            if (!allSlotsData[i]?.available) { blocked = true; break; }
+        }
+
+        if (blocked) {
+            // Start fresh from this idx
+            selectionAnchor = idx;
+            selectedIndices = [idx];
+        } else {
+            selectedIndices = [];
+            for (let i = from; i <= to; i++) selectedIndices.push(i);
+            // Keep anchor at earliest
+            selectionAnchor = from;
+        }
+    }
+
+    highlightSlots();
+    updateFormAndPrice();
+}
+
+function highlightSlots() {
+    document.querySelectorAll('.rfb-slot-btn:not(.booked)').forEach(btn => {
+        const i = parseInt(btn.dataset.idx);
+        btn.classList.remove('selected', 'range');
+        if (selectedIndices.includes(i)) {
+            const isEndpoint = (i === Math.min(...selectedIndices) || i === Math.max(...selectedIndices));
+            btn.classList.add(isEndpoint ? 'selected' : 'range');
+        }
+    });
+}
+
+function resetSelection() {
+    selectionAnchor = -1;
+    selectedIndices = [];
+    document.querySelectorAll('.rfb-slot-btn').forEach(b => b.classList.remove('selected', 'range'));
+    document.getElementById('start_time').value = '';
+    document.getElementById('end_time').value   = '';
+    document.getElementById('selected-slot-display').style.display = 'none';
+}
+
+function updateFormAndPrice() {
+    if (selectedIndices.length === 0) {
+        document.getElementById('start_time').value = '';
+        document.getElementById('end_time').value   = '';
+        document.getElementById('selected-slot-display').style.display = 'none';
+        const tp = document.getElementById('total-price');
+        if (tp) tp.textContent = 'Chọn giờ và số người';
         return;
     }
-    let html = '<div class="rfb-slots-grid">';
-    allSlots.forEach(slot => {
-        html += `<button type="button" class="rfb-slot-btn" onclick="selectSlot('${slot.start}','${slot.end}','${slot.label}', {{ $facility->capacity }}, this)">${slot.label}</button>`;
-    });
-    html += '</div>';
-    container.innerHTML = html;
-}
 
-function selectSlot(start, end, label, remainingCapacity, btn) {
-    document.querySelectorAll('.rfb-slot-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    selectedStart = start;
-    selectedEnd = end;
-    document.getElementById('start_time').value = start;
-    document.getElementById('end_time').value = end;
+    const sorted   = [...selectedIndices].sort((a, b) => a - b);
+    const first    = allSlotsData[sorted[0]];
+    const last     = allSlotsData[sorted[sorted.length - 1]];
+    const numSlots = sorted.length;
 
+    document.getElementById('start_time').value = first.start;
+    document.getElementById('end_time').value   = last.end;
+
+    // Display label
     const display = document.getElementById('selected-slot-display');
     display.style.display = 'flex';
-    document.getElementById('slot-label-display').textContent = label;
+    document.getElementById('slot-label-display').textContent = numSlots === 1
+        ? first.label
+        : `${first.start} – ${last.end}`;
 
-    // Cập nhật số người tối đa cho input số người
-    const input = document.getElementById('number_of_people');
-    if (input) {
-        input.setAttribute('max', remainingCapacity);
-        if (parseInt(input.value) > remainingCapacity) {
-            input.value = remainingCapacity;
-        }
-        // Cập nhật text giới hạn
-        const hint = document.querySelector('.rfb-people-max');
-        if (hint) {
-            hint.textContent = `tối đa ${remainingCapacity} người (khung giờ này)`;
-        }
+    const badge = document.getElementById('slot-count-badge');
+    if (badge) badge.textContent = numSlots === 1 ? '1 slot' : `${numSlots} slots`;
+
+    // Capacity = min across selected slots
+    const minCap = Math.min(...sorted.map(i => allSlotsData[i].remainingCapacity));
+    const peopleInput = document.getElementById('number_of_people');
+    if (peopleInput) {
+        peopleInput.setAttribute('max', minCap);
+        if (parseInt(peopleInput.value) > minCap) peopleInput.value = minCap;
+        document.getElementById('people-max-hint').textContent = `tối đa ${minCap} người (khung giờ này)`;
     }
 
-    updatePrice(start, end);
+    updatePrice(numSlots);
 }
 
-function updatePrice(start, end) {
+function updatePrice(numSlots) {
     if (!pricePerSlot || pricePerSlot <= 0) return;
-    let slots = 1;
-    if (slotDuration > 0) {
-        const s = start.split(':');
-        const e = end.split(':');
-        const startMin = parseInt(s[0]) * 60 + parseInt(s[1]);
-        const endMin   = parseInt(e[0]) * 60 + parseInt(e[1]);
-        const minutes  = endMin - startMin;
-        slots    = Math.ceil(minutes / slotDuration);
-    }
-    const people   = Math.max(1, parseInt(document.getElementById('number_of_people')?.value || 1));
-    const total    = slots * pricePerSlot * people;
 
-    // Hiển thị công thức
-    const formulaRow = document.getElementById('price-row-people');
-    const formulaSpan = document.getElementById('price-formula');
-    if (formulaRow && formulaSpan) {
-        formulaRow.style.display = 'flex';
-        if (slotDuration === 0) {
-            formulaSpan.textContent = people + ' người × 1 lượt = ' + people + ' đơn vị';
-        } else {
-            formulaSpan.textContent = people + ' người × ' + slots + ' slot = ' + (people * slots) + ' đơn vị';
-        }
+    const people = Math.max(1, parseInt(document.getElementById('number_of_people')?.value || 1));
+    const total  = numSlots * pricePerSlot * people;
+
+    // Show slot breakdown row
+    const rowSlots = document.getElementById('price-row-slots');
+    const valSlots = document.getElementById('price-slots-val');
+    if (rowSlots && valSlots) {
+        rowSlots.style.display = 'flex';
+        valSlots.textContent = numSlots + ' slot × ' + Number(pricePerSlot).toLocaleString('vi-VN') + 'đ = ' + (numSlots * pricePerSlot).toLocaleString('vi-VN') + 'đ';
+    }
+
+    // Show people multiplier row
+    const rowPeople = document.getElementById('price-row-people');
+    const fmla      = document.getElementById('price-formula');
+    if (rowPeople && fmla) {
+        rowPeople.style.display = 'flex';
+        fmla.textContent = people + ' người';
     }
 
     document.getElementById('total-price').textContent = total.toLocaleString('vi-VN') + 'đ';
@@ -432,30 +519,21 @@ function updatePrice(start, end) {
 
 function changePeople(delta) {
     const input = document.getElementById('number_of_people');
-    const max = parseInt(input.getAttribute('max'));
+    const max   = parseInt(input.getAttribute('max')) || maxCapacity;
     let val = parseInt(input.value) + delta;
     if (val < 1) val = 1;
     if (val > max) val = max;
     input.value = val;
-    // Cập nhật lại giá khi đổi số người
-    if (selectedStart && selectedEnd) {
-        updatePrice(selectedStart, selectedEnd);
-    }
+    if (selectedIndices.length > 0) updatePrice(selectedIndices.length);
 }
 
-// Lắng nghe thay đổi trực tiếp vào ô số người
 document.getElementById('number_of_people')?.addEventListener('input', function() {
-    if (selectedStart && selectedEnd) {
-        updatePrice(selectedStart, selectedEnd);
-    }
+    if (selectedIndices.length > 0) updatePrice(selectedIndices.length);
 });
 
-// Pre-load slots if date already selected (old input)
 document.addEventListener('DOMContentLoaded', () => {
     const dateInput = document.getElementById('booking_date');
-    if (dateInput.value) {
-        loadSlots(dateInput.value);
-    }
+    if (dateInput && dateInput.value) loadSlots(dateInput.value);
 });
 </script>
 @endsection

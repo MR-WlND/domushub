@@ -20,12 +20,21 @@ class FacilityBooking extends Model
         'checked_in_at',
         'payment_status',
         'payment_method',
+        'bill_id',
     ];
 
     protected $casts = [
         'booking_date'   => 'date',
         'checked_in_at'  => 'datetime',
     ];
+
+    /**
+     * Hóa đơn liên kết với lịch đặt (nếu có phí)
+     */
+    public function bill()
+    {
+        return $this->belongsTo(\App\Models\Invoice::class, 'bill_id');
+    }
 
     /**
      * Tiện ích được đặt
