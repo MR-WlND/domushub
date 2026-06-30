@@ -64,7 +64,9 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->route('admin.dashboard');
+        \App\Helpers\SystemLogger::log('Đăng nhập', 'Hệ thống');
+
+        return redirect()->route($this->adminHomeRouteFor($user->role));
     }
 
     public function loginSecurity(Request $request): RedirectResponse
@@ -91,6 +93,8 @@ class AuthController extends Controller
         }
 
         $request->session()->regenerate();
+
+        \App\Helpers\SystemLogger::log('Đăng nhập', 'Hệ thống');
 
         return redirect()->route('security.dashboard');
     }
@@ -119,6 +123,8 @@ class AuthController extends Controller
         }
 
         $request->session()->regenerate();
+
+        \App\Helpers\SystemLogger::log('Đăng nhập', 'Hệ thống');
 
         return redirect()->route('resident.dashboard');
     }
@@ -290,6 +296,10 @@ class AuthController extends Controller
     {
         $role = Auth::user() ? Auth::user()->role : null;
 
+        if (Auth::check()) {
+            \App\Helpers\SystemLogger::log('Đăng xuất', 'Hệ thống');
+        }
+
         Auth::logout();
 
         $request->session()->invalidate();
@@ -305,5 +315,14 @@ class AuthController extends Controller
         }
 
         return redirect()->route('resident.login');
+    }
+
+    private function adminHomeRouteFor(string $role): string
+    {
+        return match ($role) {
+            'staff' => 'admin.utility-readings.index',
+            'technician' => 'admin.tickets.my-tasks',
+            default => 'admin.dashboard',
+        };
     }
 }

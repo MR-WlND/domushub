@@ -184,7 +184,7 @@
                         match(auth()->user()->role ?? 'admin') {
                             'admin' => 'SUPER ADMINISTRATOR',
                             'manager' => 'QUẢN LÝ',
-                            'staff' => 'NHÂN VIÊN',
+                            'staff' => 'NHÂN VIÊN KẾ TOÁN',
                             'technician' => 'KỸ THUẬT VIÊN',
                             default => strtoupper(auth()->user()->role ?? 'ADMIN'),
                         }
