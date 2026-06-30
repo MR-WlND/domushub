@@ -214,7 +214,7 @@ class ApartmentController extends Controller
         $validated['area'] = 0;
         $apartment = Apartment::create($validated);
 
-        SystemLogger::log('system', 'Tạo căn hộ mới: ' . $apartment->apartment_number, $apartment);
+
 
         return redirect()
             ->route(
@@ -329,7 +329,7 @@ class ApartmentController extends Controller
         $validated['area'] = 0;
         $apartment->update($validated);
 
-        SystemLogger::log('system', 'Cập nhật căn hộ: ' . $apartment->apartment_number . ' (trạng thái: ' . $apartment->status . ')', $apartment);
+
 
         return redirect()
             ->route(
@@ -367,7 +367,7 @@ class ApartmentController extends Controller
         $apartmentNumber = $apartment->apartment_number;
         $apartment->delete();
 
-        SystemLogger::log('system', 'Xóa căn hộ: ' . $apartmentNumber);
+
 
         return redirect()
             ->route(
@@ -582,7 +582,7 @@ class ApartmentController extends Controller
 
             $msg = "Đã nhập dữ liệu thành công. Thêm mới {$successCount} căn hộ, cập nhật {$updatedCount} căn hộ.";
 
-            SystemLogger::log('system', "Nhập Excel căn hộ: thêm mới {$successCount}, cập nhật {$updatedCount}");
+
 
             return back()->with('success', $msg);
 

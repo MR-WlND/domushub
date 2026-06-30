@@ -29,9 +29,9 @@ class HomeController extends Controller
             return redirect()->route('admin.utility-readings.index');
         }
 
-        // Technician → redirect tới trang Điện nước
+        // Technician -> redirect to assigned technical tasks.
         if ($user->role === 'technician') {
-            return redirect()->route('admin.utility-readings.index');
+            return redirect()->route('admin.tickets.my-tasks');
         }
 
         $totalBlocks = Block::count();

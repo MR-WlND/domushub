@@ -236,7 +236,7 @@ class InvoiceController extends Controller
             'amount'           => $validated['amount'],
         ]);
 
-        SystemLogger::log('system', 'Tạo hóa đơn #' . $invoice->id . ' cho căn hộ ID ' . $validated['apartment_id'], $invoice);
+
 
         return redirect()->route('admin.invoices.index')
                          ->with('success', 'Hóa đơn đã được tạo thành công.');
@@ -348,7 +348,7 @@ class InvoiceController extends Controller
             }
         }
 
-        SystemLogger::log('system', "Phát hành hóa đơn hàng loạt: tạo {$created} hóa đơn");
+
 
         return redirect()->route('admin.invoices.index')
             ->with('success', "Đã tạo {$created} hóa đơn" . ($skipped ? ", bỏ qua {$skipped} (đã tồn tại hoặc thiếu đơn giá)." : '.'));
@@ -367,6 +367,7 @@ class InvoiceController extends Controller
             'note'           => 'nullable|string|max:500',
             'proof_image'    => 'nullable|image|max:4096', // Max 4MB
             'payer_name'     => 'nullable|string|max:255',
+            'transaction_code' => 'nullable|string|max:100',
         ]);
 
         $paymentMethodMap = [
@@ -389,6 +390,7 @@ class InvoiceController extends Controller
                 'note'           => $validated['note'] ?? null,
                 'proof_image'    => $proofPath,
                 'payer_name'     => $validated['payer_name'] ?? null,
+                'transaction_code'=> $validated['transaction_code'] ?? null,
                 'recorded_by'    => auth()->id(),
                 'status'         => 'success',
                 'paid_at'        => now(),
@@ -424,7 +426,7 @@ class InvoiceController extends Controller
             ? 'Hóa đơn đã được thanh toán đầy đủ.'
             : 'Ghi nhận thanh toán ' . number_format($validated['amount']) . 'đ thành công. Còn lại: ' . number_format($invoice->fresh()->remaining_amount) . 'đ.';
 
-        SystemLogger::log('system', 'Ghi nhận thanh toán hóa đơn #' . $invoice->id . ': ' . number_format($validated['amount']) . 'đ (' . $validated['payment_method'] . ')', $invoice);
+
 
         return back()->with('success', $message);
     }
@@ -503,6 +505,7 @@ class InvoiceController extends Controller
             'note'           => 'nullable|string|max:500',
             'proof_image'    => 'nullable|image|max:4096', // Max 4MB
             'payer_name'     => 'nullable|string|max:255',
+            'transaction_code' => 'nullable|string|max:100',
         ]);
 
         $paymentMethodMap = [
@@ -541,6 +544,7 @@ class InvoiceController extends Controller
                 'note'           => $validated['note'] ?? ('Thanh toán riêng lẻ: ' . ($detail->servicePrice->name ?? 'Phí dịch vụ')),
                 'proof_image'    => $proofPath,
                 'payer_name'     => $validated['payer_name'] ?? null,
+                'transaction_code'=> $validated['transaction_code'] ?? null,
                 'recorded_by'    => auth()->id(),
                 'status'         => 'success',
                 'paid_at'        => now(),

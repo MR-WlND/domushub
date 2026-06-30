@@ -196,9 +196,9 @@
                         <span class="info-val">{{ $pm->recorder->name }}</span>
                     </div>
                     @endif
-                    @if($pm->payment_method === 'vnpay')
+                    @if($pm->payment_method === 'vnpay' || $pm->payment_method === 'bank_transfer' || $vnpTxnNo !== '—')
                     <div class="payment-info-item">
-                        <span class="info-label">Mã giao dịch đối soát (VNPay):</span>
+                        <span class="info-label">Mã giao dịch đối soát:</span>
                         <span class="info-val code-val">{{ $vnpTxnNo ?: '—' }}</span>
                     </div>
                     @endif
@@ -310,6 +310,21 @@
                             placeholder="Tên người thanh toán..."
                             value="{{ old('payer_name', $invoice->apartment->owner_name ?? '') }}">
                         @error('payer_name')
+                        <span class="form-error">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    {{-- ID giao dịch --}}
+                    <div class="form-group">
+                        <label class="form-label" for="transaction_code">ID giao dịch ngân hàng <span style="font-weight:400;text-transform:none;color:#757682;">(nếu chuyển khoản)</span></label>
+                        <input
+                            type="text"
+                            name="transaction_code"
+                            id="transaction_code"
+                            class="form-input"
+                            placeholder="Mã giao dịch đối soát..."
+                            value="{{ old('transaction_code') }}">
+                        @error('transaction_code')
                         <span class="form-error">{{ $message }}</span>
                         @enderror
                     </div>
@@ -797,6 +812,11 @@
                         <option value="cash">💵 Tiền mặt</option>
                         <option value="other">💳 Khác</option>
                     </select>
+                </div>
+
+                <div class="form-field">
+                    <label for="modal_detail_transaction_code">ID giao dịch ngân hàng <span style="font-weight:400;text-transform:none;color:#757682;">(nếu chuyển khoản)</span></label>
+                    <input type="text" name="transaction_code" id="modal_detail_transaction_code" class="form-input" style="width:100%" placeholder="Mã giao dịch đối soát...">
                 </div>
 
                 <div class="form-field">

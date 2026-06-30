@@ -75,7 +75,6 @@ class UtilityMeter extends Model
                 \App\Helpers\SystemLogger::log(
                     'utility',
                     'Ghi nhận số kỳ mới: ' . number_format($meter->new_value),
-                    $meter,
                     [
                         'utility_meter_id' => $meter->id,
                         'apartment_id'     => $meter->apartment_id,
@@ -118,7 +117,6 @@ class UtilityMeter extends Model
                     \App\Helpers\SystemLogger::log(
                         'utility',
                         $desc,
-                        $meter,
                         [
                             'utility_meter_id' => $meter->id,
                             'apartment_id'     => $meter->apartment_id,

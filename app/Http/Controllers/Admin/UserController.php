@@ -48,7 +48,7 @@ class UserController extends Controller
             'roleLabels' => [
                 'admin' => 'Quản trị viên',
                 'manager' => 'Quản lý',
-                'staff' => 'Nhân viên',
+                'staff' => 'Nhân viên kế toán',
                 'technician' => 'Kỹ thuật',
                 'security' => 'An ninh',
             ],
@@ -69,7 +69,7 @@ class UserController extends Controller
             'roleLabels' => [
                 'admin' => 'Quản trị viên',
                 'manager' => 'Quản lý',
-                'staff' => 'Nhân viên',
+                'staff' => 'Nhân viên kế toán',
                 'technician' => 'Kỹ thuật',
                 'security' => 'An ninh',
             ],
@@ -112,7 +112,7 @@ class UserController extends Controller
             'status' => $validated['status'],
         ]);
 
-        SystemLogger::log('system', 'Tạo tài khoản: ' . $user->name . ' (' . $user->role . ')', $user);
+        SystemLogger::log('Gán quyền nhân viên mới', 'Nhân viên: ' . $user->name . ' (' . $user->role . ')');
 
         return redirect()
             ->route('admin.users.index')
@@ -151,7 +151,7 @@ class UserController extends Controller
             'status' => $validated['status'],
         ]);
 
-        SystemLogger::log('system', 'Cập nhật tài khoản: ' . $user->name . ' (vai trò: ' . $user->role . ', trạng thái: ' . $user->status . ')', $user);
+        SystemLogger::log('Sửa thông tin nhân viên', 'Nhân viên: ' . $user->name);
 
         return redirect()->route('admin.users.index')->with('success', 'Cập nhật thông tin người dùng thành công!');
     }
@@ -174,7 +174,7 @@ class UserController extends Controller
             'status' => $request->status
         ]);
 
-        SystemLogger::log('system', 'Cập nhật vai trò/trạng thái: ' . $user->name . ' → vai trò: ' . $request->role . ', trạng thái: ' . $request->status, $user);
+        SystemLogger::log('Thay đổi phân quyền', 'Nhân viên: ' . $user->name . ' (' . $request->role . ')');
 
         return redirect()->back()->with('success', 'Cập nhật tài khoản thành công!');
     }
@@ -185,7 +185,7 @@ class UserController extends Controller
             'password' => self::DEFAULT_PASSWORD,
         ]);
 
-        SystemLogger::log('system', 'Đặt lại mật khẩu cho tài khoản: ' . $user->name, $user);
+        SystemLogger::log('Sửa thông tin nhân viên (Reset Password)', 'Nhân viên: ' . $user->name);
 
         return redirect()
             ->back()
