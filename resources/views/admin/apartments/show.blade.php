@@ -124,7 +124,7 @@
                         <div class="detail-item">
                             <span class="item-label">Số cư dân</span>
                             <span class="item-value">
-                                <span class="count-pill">{{ $apartment->residents->count() }} cư dân</span>
+                                <span class="count-pill">{{ $apartment->residents->count() + ($declaredMembers->count() ?? 0) }} cư dân</span>
                             </span>
                         </div>
                     </div>
