@@ -33,10 +33,10 @@
             <div class="qr-payment-required" style="text-align:center; padding: 24px 16px; background: #fffbeb; border: 1.5px dashed #fde68a; border-radius: 12px; margin-bottom: 24px;">
                 <div style="font-size: 2.2rem; margin-bottom: 8px;">💳</div>
                 <h3 style="font-size: 1.05rem; font-weight: 700; color: #92400e; margin: 0 0 6px;">Yêu cầu thanh toán</h3>
-                <p style="font-size: 0.82rem; color: #78350f; line-height: 1.5; margin: 0 0 16px;">Vui lòng hoàn tất thanh toán phí sử dụng bằng <strong>Chuyển khoản ngân hàng</strong> hoặc <strong>VNPay</strong> để hiển thị mã QR check-in.</p>
-                <a href="{{ route('resident.facility-bookings.index', ['pay_booking_id' => $booking->id]) }}" class="qr-btn qr-btn--print" style="justify-content: center; box-shadow: none;">
+                <p style="font-size: 0.82rem; color: #78350f; line-height: 1.5; margin: 0 0 16px;">Vui lòng hoàn tất thanh toán phí sử dụng qua trang <strong>Hóa đơn</strong> để hiển thị mã QR check-in.</p>
+                <a href="{{ route('resident.invoices.index') }}" class="qr-btn qr-btn--print" style="justify-content: center; box-shadow: none;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                    Thanh toán ngay
+                    Đến trang Hóa đơn
                 </a>
             </div>
             @else

@@ -408,6 +408,18 @@ class InvoiceController extends Controller
             $invoice->recalculateDetailsStatus();
         });
 
+        // Sync trạng thái thanh toán cho lịch đặt tiện ích liên kết (nếu có)
+        $freshInvoice = $invoice->fresh();
+        if ($freshInvoice->status === 'paid') {
+            $facilityBooking = $freshInvoice->facilityBooking;
+            if ($facilityBooking && $facilityBooking->payment_status !== 'paid') {
+                $facilityBooking->update([
+                    'payment_status' => 'paid',
+                    'payment_method' => $paymentMethodMap[$validated['payment_method']] ?? 'cash',
+                ]);
+            }
+        }
+
         $message = (float)($invoice->fresh()->paid_amount) >= (float)$invoice->total_amount
             ? 'Hóa đơn đã được thanh toán đầy đủ.'
             : 'Ghi nhận thanh toán ' . number_format($validated['amount']) . 'đ thành công. Còn lại: ' . number_format($invoice->fresh()->remaining_amount) . 'đ.';
@@ -460,6 +472,15 @@ class InvoiceController extends Controller
 
             $invoice->recalculateDetailsStatus();
         });
+
+        // Sync trạng thái booking tiện ích nếu hóa đơn bị hoàn tiền
+        $freshInvoice = $payment->invoice->fresh();
+        if ($freshInvoice->status !== 'paid') {
+            $facilityBooking = $freshInvoice->facilityBooking;
+            if ($facilityBooking && $facilityBooking->payment_status === 'paid') {
+                $facilityBooking->update(['payment_status' => 'unpaid']);
+            }
+        }
 
         SystemLogger::log('system', 'Hủy thanh toán #' . $payment->id . ' trị giá ' . number_format($payment->amount) . 'đ của hóa đơn #' . $payment->invoice->id, $payment);
 

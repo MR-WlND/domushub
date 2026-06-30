@@ -370,7 +370,7 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/facility-bookings', [ResidentFacilityController::class, 'bookingHistory'])->name('resident.facility-bookings.index');
     Route::post('/resident/facility-bookings/{booking}/cancel', [ResidentFacilityController::class, 'cancelBooking'])->name('resident.facility-bookings.cancel');
     Route::get('/resident/facility-bookings/{booking}/qr', [ResidentFacilityController::class, 'showQr'])->name('resident.facility-bookings.qr');
-    Route::post('/resident/facility-bookings/{booking}/pay', [ResidentFacilityController::class, 'pay'])->name('resident.facility-bookings.pay');
+    // Route thanh toán trực tiếp đã được chuyển sang hệ thống hóa đơn (resident.invoices)
 
     // AJAX: Khung giờ còn trống (dùng trong form đặt lịch)
     Route::post('/resident/api/available-slots', [\App\Http\Controllers\FacilityBookingController::class, 'getAvailableSlots'])->name('resident.api.available-slots');

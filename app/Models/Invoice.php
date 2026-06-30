@@ -43,6 +43,14 @@ class Invoice extends Model
         return $this->hasMany(Payment::class, 'bill_id');
     }
 
+    /**
+     * Lịch đặt tiện ích liên kết với hóa đơn này (nếu có)
+     */
+    public function facilityBooking()
+    {
+        return $this->hasOne(\App\Models\FacilityBooking::class, 'bill_id');
+    }
+
     // ─── RELATIONSHIP ALIASES & DUMMIES ───
 
     public function items()

@@ -13,7 +13,7 @@ class TechnicianSeeder extends Seeder
     {
         $now = Carbon::now();
 
-        DB::table('users')->insert([
+        $users = [
             [
                 'name' => 'Nguyen Van Ky Thuat',
                 'email' => 'ktv@demo.com',
@@ -36,6 +36,12 @@ class TechnicianSeeder extends Seeder
                 'created_at' => $now,
                 'updated_at' => $now,
             ]
-        ]);
+        ];
+
+        foreach ($users as $user) {
+            if (!DB::table('users')->where('email', $user['email'])->exists()) {
+                DB::table('users')->insert($user);
+            }
+        }
     }
 }
