@@ -24,7 +24,14 @@ class SampleTicketSeeder extends Seeder
         }
 
         // Lấy handler (nhân viên kỹ thuật hoặc staff)
-        $handler = User::whereIn('role', ['staff', 'manager', 'admin'])->first();
+        $handler = User::where('role', 'technician')
+            ->where('status', 'active')
+            ->first();
+
+        if (! $handler) {
+            $this->command->warn('Khong co ky thuat vien active. Hay chay TechnicianSeeder truoc.');
+            return;
+        }
 
         $resident1 = $residents->get(0);
         $resident2 = $residents->get(1) ?? $resident1;

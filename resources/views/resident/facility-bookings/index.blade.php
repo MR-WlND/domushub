@@ -150,10 +150,10 @@
                     @endif
 
                     @if($booking->amount > 0 && !$hasPaidQrAccess)
-                    <button onclick="openPayModal({{ $booking->id }})" class="rfh-action rfh-action--pay">
+                    <a href="{{ route('resident.invoices.index') }}" class="rfh-action rfh-action--pay">
                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                        Thanh toán
-                    </button>
+                        Thanh toán hóa đơn
+                    </a>
                     @endif
                 @endif
 
@@ -179,45 +179,6 @@
     @endif
     @endif
 
-</div>
-
-{{-- Pay Modal --}}
-<div id="payModal" class="rfh-modal" style="display:none">
-    <div class="rfh-modal-backdrop" onclick="closePayModal()"></div>
-    <div class="rfh-modal-content">
-        <div class="rfh-modal-header">
-            <h3>Chọn phương thức thanh toán</h3>
-            <button onclick="closePayModal()" class="rfh-modal-close">✕</button>
-        </div>
-        <form id="payForm" method="POST">
-            @csrf
-            <div class="rfh-pay-methods">
-                <label class="rfh-pay-method">
-                    <input type="radio" name="payment_method" value="bank_transfer" required>
-                    <div class="rfh-pay-method-content">
-                        <span class="rfh-pay-icon">🏦</span>
-                        <span>Chuyển khoản ngân hàng</span>
-                    </div>
-                </label>
-                <label class="rfh-pay-method">
-                    <input type="radio" name="payment_method" value="cash">
-                    <div class="rfh-pay-method-content">
-                        <span class="rfh-pay-icon">💵</span>
-                        <span>Tiền mặt tại văn phòng</span>
-                    </div>
-                </label>
-
-                <label class="rfh-pay-method">
-                    <input type="radio" name="payment_method" value="vnpay">
-                    <div class="rfh-pay-method-content">
-                        <span class="rfh-pay-icon">💳</span>
-                        <span>VNPay</span>
-                    </div>
-                </label>
-            </div>
-            <button type="submit" class="rfh-modal-submit">Xác nhận thanh toán</button>
-        </form>
-    </div>
 </div>
 
 <style>
@@ -311,42 +272,6 @@
 
 /* Pagination */
 .rfh-pagination { padding: 20px 0 0; }
-
-/* Modal */
-.rfh-modal { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; }
-.rfh-modal-backdrop { position: absolute; inset: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(3px); }
-.rfh-modal-content { position: relative; background: #fff; border-radius: 18px; padding: 28px; width: 100%; max-width: 420px; margin: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
-.rfh-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.rfh-modal-header h3 { font-size: 1.1rem; font-weight: 700; color: #0f172a; margin: 0; }
-.rfh-modal-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b; padding: 4px; }
-
-.rfh-pay-methods { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-.rfh-pay-method { display: block; cursor: pointer; }
-.rfh-pay-method input { display: none; }
-.rfh-pay-method-content { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1.5px solid #e2e8f0; border-radius: 10px; transition: all 0.15s; font-size: 0.9rem; font-weight: 500; color: #374151; }
-.rfh-pay-method input:checked + .rfh-pay-method-content { border-color: #3b82f6; background: #eff6ff; color: #2563eb; }
-.rfh-pay-method-content:hover { border-color: #93c5fd; background: #f8fbff; }
-.rfh-pay-icon { font-size: 1.4rem; }
-
-.rfh-modal-submit { width: 100%; padding: 13px; background: linear-gradient(135deg, #3b82f6, #6366f1); color: #fff; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-.rfh-modal-submit:hover { opacity: 0.9; transform: translateY(-1px); }
 </style>
 
-<script>
-function openPayModal(bookingId) {
-    document.getElementById('payForm').action = '/resident/facility-bookings/' + bookingId + '/pay';
-    document.getElementById('payModal').style.display = 'flex';
-}
-function closePayModal() {
-    document.getElementById('payModal').style.display = 'none';
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const payBookingId = urlParams.get('pay_booking_id');
-    if (payBookingId) {
-        openPayModal(payBookingId);
-    }
-});
-</script>
 @endsection
