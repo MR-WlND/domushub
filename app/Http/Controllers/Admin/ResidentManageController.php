@@ -25,8 +25,9 @@ class ResidentManageController extends Controller
         ]);
 
         $query = User::where('role', 'resident')
+            ->whereHas('residents', fn($q) => $q->where('relationship', 'owner'))
             ->with(['apartment.floor.block'])
-            ->orderBy('created_at', 'desc');
+            ->orderBy('apartment_id', 'asc');
 
         if ($request->filled('block_id')) {
             $query->whereHas('apartment.floor', fn($q) => $q->where('block_id', $request->block_id));
@@ -51,8 +52,9 @@ class ResidentManageController extends Controller
 
         $blocks = Block::orderBy('name')->get();
 
-        // Stats
-        $baseQuery = User::where('role', 'resident');
+        // Stats (chỉ đếm chủ hộ)
+        $baseQuery = User::where('role', 'resident')
+            ->whereHas('residents', fn($q) => $q->where('relationship', 'owner'));
         $stats = [
             'total'    => (clone $baseQuery)->count(),
             'active'   => (clone $baseQuery)->where('status', 'active')->count(),
