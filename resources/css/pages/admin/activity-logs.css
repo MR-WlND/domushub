@@ -101,7 +101,7 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: #3b82f6;
+    background: #00236f;
     color: #fff;
     border: none;
     padding: 8px 18px;
@@ -112,7 +112,7 @@
     transition: background 0.15s;
     height: 38px;
 }
-.al-btn-filter:hover { background: #2563eb; }
+.al-btn-filter:hover { background: #001850; }
 
 .al-btn-reset {
     display: inline-flex;
@@ -162,7 +162,11 @@
 .al-btn-detail:hover { border-color: #3b82f6; color: #3b82f6; background: #eff6ff; }
 
 /* Pagination wrapper */
-.al-pagination { padding: 16px 0 4px; }
+.al-pagination {
+    padding: 16px 0 4px;
+    display: flex;
+    justify-content: center;
+}
 
 /* JSON Modal */
 .al-modal {
