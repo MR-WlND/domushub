@@ -13,7 +13,7 @@
     $roleLabels = [
         'admin' => 'Quản trị viên',
         'manager' => 'Quản lý',
-        'staff' => 'Nhân viên',
+        'staff' => 'Nhân viên kế toán',
         'technician' => 'Kỹ thuật',
         'security' => 'An ninh',
     ];

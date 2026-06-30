@@ -62,18 +62,18 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/admin/statistics/residents', [HomeController::class, 'statisticsResidents'])->name('admin.statistics.residents');
     Route::get('/admin/statistics/residents/export', [HomeController::class, 'exportResidentsExcel'])->name('admin.statistics.residents.export');
 
-    // Activity Logs – 7 tabs
-    Route::get('/admin/activity-logs/entry-exit',   [\App\Http\Controllers\Admin\ActivityLogController::class, 'entryExit'])->name('admin.activity-logs.entry-exit');
-    Route::get('/admin/activity-logs/parking',      [\App\Http\Controllers\Admin\ActivityLogController::class, 'parking'])->name('admin.activity-logs.parking');
-    Route::get('/admin/activity-logs/facility',     [\App\Http\Controllers\Admin\ActivityLogController::class, 'facilityBooking'])->name('admin.activity-logs.facility');
-    Route::get('/admin/activity-logs/system',       [\App\Http\Controllers\Admin\ActivityLogController::class, 'system'])->name('admin.activity-logs.system');
-    Route::get('/admin/activity-logs/finance',      [\App\Http\Controllers\Admin\ActivityLogController::class, 'finance'])->name('admin.activity-logs.finance');
-    Route::get('/admin/activity-logs/hardware',     [\App\Http\Controllers\Admin\ActivityLogController::class, 'hardware'])->name('admin.activity-logs.hardware');
-    Route::get('/admin/activity-logs/communication',[\App\Http\Controllers\Admin\ActivityLogController::class, 'communication'])->name('admin.activity-logs.communication');
-    Route::get('/admin/activity-logs/utility',      [\App\Http\Controllers\Admin\ActivityLogController::class, 'utility'])->name('admin.activity-logs.utility');
-    Route::get('/admin/activity-logs/export',       [\App\Http\Controllers\Admin\ActivityLogController::class, 'export'])->name('admin.activity-logs.export');
-    // Redirect /admin/activity-logs → first tab
-    Route::redirect('/admin/activity-logs', '/admin/activity-logs/entry-exit')->name('admin.activity-logs.index');
+    // System & Security Logs
+    Route::get('/admin/system-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('admin.system-logs.index');
+    Route::get('/admin/system-logs/{id}', [\App\Http\Controllers\Admin\ActivityLogController::class, 'show'])->name('admin.system-logs.show');
+
+    // Notification History
+    Route::get('/admin/notification-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'notificationLogs'])->name('admin.notification-logs.index');
+
+    // Finance History
+    Route::get('/admin/finance-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'financeLogs'])->name('admin.finance-logs.index');
+
+    // Utility Meter History (Lịch sử ghi số điện nước)
+    Route::get('/admin/utility-logs', [\App\Http\Controllers\Admin\UtilityLogController::class, 'index'])->name('admin.utility-logs.index');
 
     // Block/Building routes (used in views)
     Route::get('/admin/blocks', [\App\Http\Controllers\Admin\BlockController::class, 'index'])->name('admin.blocks.index');
@@ -170,6 +170,10 @@ Route::middleware(['admin'])->group(function () {
     Route::post('/admin/vehicles/{vehicle}/approve',     [App\Http\Controllers\Admin\VehicleController::class, 'approve'])->name('admin.vehicles.approve');
     Route::post('/admin/vehicles/{vehicle}/lock',        [App\Http\Controllers\Admin\VehicleController::class, 'lock'])->name('admin.vehicles.lock');
     Route::post('/admin/vehicles/{vehicle}/unlock',      [App\Http\Controllers\Admin\VehicleController::class, 'unlock'])->name('admin.vehicles.unlock');
+    
+    // LỊCH SỬ RA VÀO (Admin)
+    Route::get('/admin/vehicle-logs', [App\Http\Controllers\Admin\VehicleLogController::class, 'index'])->name('admin.vehicle-logs.index');
+    Route::get('/admin/visitor-logs', [App\Http\Controllers\Admin\VisitorLogController::class, 'index'])->name('admin.visitor-logs.index');
 
     // QUẢN LÝ LỐT ĐỖ XE
     Route::get('/admin/parking-lots', [App\Http\Controllers\Admin\ParkingLotController::class, 'index'])->name('admin.parking-lots.index');
@@ -251,6 +255,10 @@ Route::middleware(['security'])->group(function () {
     Route::post('/security/visitor-check/scan', [\App\Http\Controllers\Security\VisitorCheckinController::class, 'scan'])->name('security.visitor-check.scan');
     Route::post('/security/visitor-check/checkin', [\App\Http\Controllers\Security\VisitorCheckinController::class, 'checkin'])->name('security.visitor-check.checkin');
     Route::post('/security/visitor-check/checkout', [\App\Http\Controllers\Security\VisitorCheckinController::class, 'checkout'])->name('security.visitor-check.checkout');
+
+    // Xem lịch sử xe và khách cho bảo vệ
+    Route::get('/security/vehicle-logs', [\App\Http\Controllers\Admin\VehicleLogController::class, 'index'])->name('security.vehicle-logs.index');
+    Route::get('/security/visitor-logs', [\App\Http\Controllers\Admin\VisitorLogController::class, 'index'])->name('security.visitor-logs.index');
 });
 
 // DASHBOARD RESIDENT ROUTES
@@ -370,7 +378,7 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/facility-bookings', [ResidentFacilityController::class, 'bookingHistory'])->name('resident.facility-bookings.index');
     Route::post('/resident/facility-bookings/{booking}/cancel', [ResidentFacilityController::class, 'cancelBooking'])->name('resident.facility-bookings.cancel');
     Route::get('/resident/facility-bookings/{booking}/qr', [ResidentFacilityController::class, 'showQr'])->name('resident.facility-bookings.qr');
-    Route::post('/resident/facility-bookings/{booking}/pay', [ResidentFacilityController::class, 'pay'])->name('resident.facility-bookings.pay');
+    // Route thanh toán trực tiếp đã được chuyển sang hệ thống hóa đơn (resident.invoices)
 
     // AJAX: Khung giờ còn trống (dùng trong form đặt lịch)
     Route::post('/resident/api/available-slots', [\App\Http\Controllers\FacilityBookingController::class, 'getAvailableSlots'])->name('resident.api.available-slots');

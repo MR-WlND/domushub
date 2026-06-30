@@ -236,7 +236,7 @@ class InvoiceController extends Controller
             'amount'           => $validated['amount'],
         ]);
 
-        SystemLogger::log('system', 'Tạo hóa đơn #' . $invoice->id . ' cho căn hộ ID ' . $validated['apartment_id'], $invoice);
+
 
         return redirect()->route('admin.invoices.index')
                          ->with('success', 'Hóa đơn đã được tạo thành công.');
@@ -348,7 +348,7 @@ class InvoiceController extends Controller
             }
         }
 
-        SystemLogger::log('system', "Phát hành hóa đơn hàng loạt: tạo {$created} hóa đơn");
+
 
         return redirect()->route('admin.invoices.index')
             ->with('success', "Đã tạo {$created} hóa đơn" . ($skipped ? ", bỏ qua {$skipped} (đã tồn tại hoặc thiếu đơn giá)." : '.'));
@@ -367,6 +367,7 @@ class InvoiceController extends Controller
             'note'           => 'nullable|string|max:500',
             'proof_image'    => 'nullable|image|max:4096', // Max 4MB
             'payer_name'     => 'nullable|string|max:255',
+            'transaction_code' => 'nullable|string|max:100',
         ]);
 
         $paymentMethodMap = [
@@ -389,6 +390,7 @@ class InvoiceController extends Controller
                 'note'           => $validated['note'] ?? null,
                 'proof_image'    => $proofPath,
                 'payer_name'     => $validated['payer_name'] ?? null,
+                'transaction_code'=> $validated['transaction_code'] ?? null,
                 'recorded_by'    => auth()->id(),
                 'status'         => 'success',
                 'paid_at'        => now(),
@@ -408,11 +410,23 @@ class InvoiceController extends Controller
             $invoice->recalculateDetailsStatus();
         });
 
+        // Sync trạng thái thanh toán cho lịch đặt tiện ích liên kết (nếu có)
+        $freshInvoice = $invoice->fresh();
+        if ($freshInvoice->status === 'paid') {
+            $facilityBooking = $freshInvoice->facilityBooking;
+            if ($facilityBooking && $facilityBooking->payment_status !== 'paid') {
+                $facilityBooking->update([
+                    'payment_status' => 'paid',
+                    'payment_method' => $paymentMethodMap[$validated['payment_method']] ?? 'cash',
+                ]);
+            }
+        }
+
         $message = (float)($invoice->fresh()->paid_amount) >= (float)$invoice->total_amount
             ? 'Hóa đơn đã được thanh toán đầy đủ.'
             : 'Ghi nhận thanh toán ' . number_format($validated['amount']) . 'đ thành công. Còn lại: ' . number_format($invoice->fresh()->remaining_amount) . 'đ.';
 
-        SystemLogger::log('system', 'Ghi nhận thanh toán hóa đơn #' . $invoice->id . ': ' . number_format($validated['amount']) . 'đ (' . $validated['payment_method'] . ')', $invoice);
+
 
         return back()->with('success', $message);
     }
@@ -461,6 +475,15 @@ class InvoiceController extends Controller
             $invoice->recalculateDetailsStatus();
         });
 
+        // Sync trạng thái booking tiện ích nếu hóa đơn bị hoàn tiền
+        $freshInvoice = $payment->invoice->fresh();
+        if ($freshInvoice->status !== 'paid') {
+            $facilityBooking = $freshInvoice->facilityBooking;
+            if ($facilityBooking && $facilityBooking->payment_status === 'paid') {
+                $facilityBooking->update(['payment_status' => 'unpaid']);
+            }
+        }
+
         SystemLogger::log('system', 'Hủy thanh toán #' . $payment->id . ' trị giá ' . number_format($payment->amount) . 'đ của hóa đơn #' . $payment->invoice->id, $payment);
 
         return back()->with('success', 'Hủy thanh toán thành công. Trạng thái hóa đơn đã được cập nhật.');
@@ -482,6 +505,7 @@ class InvoiceController extends Controller
             'note'           => 'nullable|string|max:500',
             'proof_image'    => 'nullable|image|max:4096', // Max 4MB
             'payer_name'     => 'nullable|string|max:255',
+            'transaction_code' => 'nullable|string|max:100',
         ]);
 
         $paymentMethodMap = [
@@ -520,6 +544,7 @@ class InvoiceController extends Controller
                 'note'           => $validated['note'] ?? ('Thanh toán riêng lẻ: ' . ($detail->servicePrice->name ?? 'Phí dịch vụ')),
                 'proof_image'    => $proofPath,
                 'payer_name'     => $validated['payer_name'] ?? null,
+                'transaction_code'=> $validated['transaction_code'] ?? null,
                 'recorded_by'    => auth()->id(),
                 'status'         => 'success',
                 'paid_at'        => now(),
