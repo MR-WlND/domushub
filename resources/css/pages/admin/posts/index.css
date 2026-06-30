@@ -14,7 +14,7 @@
 
 .posts-page__eyebrow {
     font-size: 0.875rem;
-    color: #4f46e5;
+    color: #00236f;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -90,7 +90,7 @@
 
 .posts-filter__field input:focus,
 .posts-filter__field select:focus {
-    border-color: #4f46e5;
+    border-color: #00236f;
 }
 
 .posts-filter__actions {
@@ -115,12 +115,12 @@
 }
 
 .posts-button--primary {
-    background-color: #4f46e5;
+    background-color: #00236f;
     color: #ffffff;
 }
 
 .posts-button--primary:hover {
-    background-color: #4338ca;
+    background-color: #001850;
 }
 
 .posts-button--secondary {
@@ -192,7 +192,7 @@
 }
 
 .post-title-link:hover {
-    color: #4f46e5;
+    color: #00236f;
 }
 
 .post-excerpt {
@@ -308,6 +308,15 @@
 
 .admin-action-btn--toggle:hover {
     background-color: #f1f5f9;
+}
+
+.admin-action-btn--blue {
+    color: #00236f;
+    border: 1px solid #b3c7f7;
+}
+
+.admin-action-btn--blue:hover {
+    background-color: #f0f4ff;
 }
 
 .admin-action-btn--delete {
@@ -552,11 +561,11 @@
 }
 
 .posts-page__tab:hover {
-    color: #4f46e5;
+    color: #00236f;
 }
 
 .posts-page__tab--active {
-    color: #4f46e5;
+    color: #00236f;
     font-weight: 700;
 }
 
@@ -567,7 +576,7 @@
     left: 0;
     right: 0;
     height: 3px;
-    background-color: #4f46e5;
+    background-color: #00236f;
     border-radius: 3px 3px 0 0;
 }
 
@@ -615,7 +624,7 @@
 
 .comment-card__post-context .context-link {
     font-weight: 600;
-    color: #4f46e5;
+    color: #00236f;
     cursor: pointer;
     text-decoration: underline;
 }
@@ -787,4 +796,68 @@
     border-top: 1px solid #f1f5f9;
     padding-top: 0.75rem;
 }
+
+/* Custom Select with Outline Icon */
+.ban-select-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.ban-select-wrapper i {
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b; /* Sleek outline grey */
+    font-size: 0.8rem;
+    pointer-events: none;
+}
+
+.ban-select {
+    font-size: 0.725rem;
+    padding: 3px 18px 3px 22px !important;
+    border-radius: 4px;
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    cursor: pointer;
+    color: #475569;
+    font-weight: 600;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.ban-select:hover {
+    border-color: #94a3b8;
+}
+
+.ban-select:focus {
+    border-color: #00236f;
+    box-shadow: 0 0 0 2px rgba(0, 35, 111, 0.1);
+}
+
+/* Medium size for Comments tab, Banned Users tab, and Admin Detail Modal */
+.ban-select-wrapper--md i {
+    left: 10px;
+    font-size: 0.9rem;
+}
+
+.ban-select--md {
+    font-size: 0.825rem;
+    padding: 0.4rem 20px 0.4rem 28px !important;
+    border-radius: 6px;
+    height: 36px;
+}
+
+/* Specific heights and paddings */
+.comment-card__actions .ban-select--md {
+    height: 38px;
+    padding: 0.5rem 20px 0.5rem 28px !important;
+}
+
+#adm-modal-actions .ban-select--md {
+    height: 36px;
+    padding: 0 20px 0 28px !important;
+}
+
 

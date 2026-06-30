@@ -61,8 +61,8 @@
                 <label class="al-filter-label">Loại</label>
                 <select name="type" class="al-filter-input">
                     <option value="">Tất cả</option>
-                    <option value="electricity" {{ request('type') == 'electricity' ? 'selected' : '' }}>⚡ Điện</option>
-                    <option value="water" {{ request('type') == 'water' ? 'selected' : '' }}>💧 Nước</option>
+                    <option value="electricity" {{ request('type') == 'electricity' ? 'selected' : '' }}>Điện</option>
+                    <option value="water" {{ request('type') == 'water' ? 'selected' : '' }}>Nước</option>
                 </select>
             </div>
 
@@ -112,6 +112,12 @@
 
     {{-- ===================== DATA TABLE ===================== --}}
     <div class="table-card">
+        <div style="padding: 10px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: flex-end; align-items: center; background: #f8fafc; gap: 8px;">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #475569; cursor: pointer; user-select: none; margin: 0;">
+                <input type="checkbox" id="toggleProofImages" style="width: 16px; height: 16px; accent-color: #00236f; cursor: pointer;">
+                Hiện ảnh công tơ thu nhỏ
+            </label>
+        </div>
         <div class="table-wrap">
             <table class="data-table">
                 <thead>
@@ -144,9 +150,9 @@
                         </td>
                         <td>
                             @if($log->type === 'electricity')
-                                <span class="db-badge" style="background:#fef3c7; color:#b45309; font-size:11px;">⚡ Điện</span>
+                                <span class="db-badge" style="background:#fef3c7; color:#b45309; font-size:11px;">Điện</span>
                             @else
-                                <span class="db-badge" style="background:#dbeafe; color:#1d4ed8; font-size:11px;">💧 Nước</span>
+                                <span class="db-badge" style="background:#dbeafe; color:#1d4ed8; font-size:11px;">Nước</span>
                             @endif
                         </td>
                         <td style="color:#64748b; font-size:13px;">{{ number_format($log->old_value) }}</td>
@@ -180,9 +186,14 @@
                                 }
                             @endphp
                             @if(count($imgs) > 0)
-                                <a href="{{ $imgs[0] }}" target="_blank" style="color:#0b57d0; font-size:12px; text-decoration:underline;" title="Xem {{ count($imgs) }} ảnh minh chứng">
+                                <span class="proof-photo-btn" data-img="{{ $imgs[0] }}" style="cursor:pointer; color:#0b57d0; display:inline-flex; align-items:center; vertical-align:middle;" title="Xem minh chứng công tơ">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                                </a>
+                                </span>
+                                <div class="proof-thumbnail-container">
+                                    <div class="proof-photo-wrapper">
+                                        <img src="{{ $imgs[0] }}" class="proof-thumbnail" data-img="{{ $imgs[0] }}" data-info="Phòng {{ $log->apartment->apartment_number ?? 'N/A' }} - {{ $log->type === 'electricity' ? 'Điện' : 'Nước' }}" alt="Proof">
+                                    </div>
+                                </div>
                             @else
                                 <span style="color:#cbd5e1; font-size:12px;">—</span>
                             @endif
@@ -197,10 +208,38 @@
 
         {{-- PAGINATION --}}
         <div class="al-pagination">
-            {{ $logs->links('pagination::bootstrap-5') }}
+            {{ $logs->links('admin.users.pagination') }}
         </div>
     </div>
 
+</div>
+
+{{-- ── Proof Modal ────────────────────────────────────── --}}
+<div class="util-modal-backdrop" id="proofModal">
+    <div class="util-modal" style="max-width: 540px;">
+        <div class="util-modal-header">
+            <h3>
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:inline-block; vertical-align:middle; margin-right:6px; color:#0b57d0;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                </svg>
+                Ảnh chụp công tơ minh chứng
+            </h3>
+            <button class="util-modal-close" onclick="closeProofModal()">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div class="util-modal-body" style="text-align: center; padding: 20px;">
+            <img id="proofModalImg" src="" alt="Ảnh minh chứng" style="max-width: 100%; max-height: 60vh; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+        </div>
+    </div>
+</div>
+
+{{-- ── Global Proof Preview tooltip ─────────────────── --}}
+<div id="globalProofPreview">
+    <div class="proof-hover-header"></div>
+    <img src="" alt="Xem trước">
 </div>
 
 @push('styles')
@@ -216,6 +255,288 @@
         .al-filter-form {
             flex-wrap: wrap;
         }
+
+        /* ---- PROOF IMAGE THUMBNAIL & HOVER PREVIEW ---- */
+        .proof-thumbnail-container {
+            display: none;
+            vertical-align: middle;
+        }
+
+        .show-proof-thumbnails .proof-thumbnail-container {
+            display: inline-flex;
+        }
+
+        .show-proof-thumbnails .proof-photo-btn {
+            display: none !important;
+        }
+
+        .proof-photo-wrapper {
+            position: relative;
+            display: inline-block;
+            line-height: 0;
+        }
+
+        .proof-thumbnail {
+            width: 44px;
+            height: 44px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            cursor: pointer;
+            background-color: #f8fafc;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .proof-thumbnail:hover {
+            border-color: #0b57d0;
+            transform: scale(1.08);
+            box-shadow: 0 4px 12px rgba(11, 87, 208, 0.18);
+        }
+
+        /* Global Floating Proof Preview */
+        #globalProofPreview {
+            position: fixed;
+            display: none;
+            z-index: 9999;
+            pointer-events: none;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 8px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.12);
+            width: 250px;
+            box-sizing: border-box;
+            opacity: 0;
+            transition: opacity 0.15s ease-out, transform 0.15s ease-out;
+            transform: scale(0.95);
+        }
+
+        #globalProofPreview.active {
+            display: block;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .proof-hover-header {
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            line-height: 1.2;
+            text-align: left;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 4px;
+        }
+
+        #globalProofPreview img {
+            width: 100%;
+            height: auto;
+            max-height: 240px;
+            object-fit: contain;
+            border-radius: 8px;
+            display: block;
+            background: #f8fafc;
+        }
+
+        /* Modal Styles */
+        .util-modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+
+        .util-modal-backdrop.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .util-modal {
+            background: #ffffff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 580px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            transform: scale(0.95);
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: hidden;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .util-modal-backdrop.active .util-modal {
+            transform: scale(1);
+        }
+
+        .util-modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+        }
+
+        .util-modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+            color: #00236f;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .util-modal-close {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: #94a3b8;
+            padding: 4px;
+            border-radius: 6px;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .util-modal-close:hover {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .util-modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
     </style>
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Proof image popup modal
+    window.closeProofModal = function() {
+        document.getElementById('proofModal').classList.remove('active');
+    }
+
+    const previewEl = document.getElementById('globalProofPreview');
+    const previewImg = previewEl ? previewEl.querySelector('img') : null;
+    const previewHeader = previewEl ? previewEl.querySelector('.proof-hover-header') : null;
+
+    function positionPreview(target, preview) {
+        const rect = target.getBoundingClientRect();
+        const previewWidth = 250; // width of preview element
+        const previewHeight = 280; // approximate max height including padding & header
+
+        let left = rect.left + (rect.width / 2) - (previewWidth / 2);
+        let top = rect.top - previewHeight - 10;
+
+        // Check window boundaries
+        if (left < 10) left = 10;
+        if (left + previewWidth > window.innerWidth - 10) {
+            left = window.innerWidth - previewWidth - 10;
+        }
+        if (top < 10) {
+            // Show below target if it goes off top of screen
+            top = rect.bottom + 10;
+        }
+
+        preview.style.left = left + 'px';
+        preview.style.top = top + 'px';
+    }
+
+    document.querySelectorAll('.proof-photo-btn, .proof-thumbnail').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const imgUrl = this.dataset.img;
+            if (imgUrl) {
+                document.getElementById('proofModalImg').src = imgUrl;
+                document.getElementById('proofModal').classList.add('active');
+            }
+        });
+
+        // Add hover preview to thumbnails
+        if (btn.classList.contains('proof-thumbnail') && previewEl && previewImg && previewHeader) {
+            btn.addEventListener('mouseenter', function(e) {
+                const imgUrl = this.dataset.img;
+                const info = this.dataset.info || 'Minh chứng công tơ';
+                previewImg.src = imgUrl;
+                previewHeader.textContent = info;
+                
+                positionPreview(this, previewEl);
+                previewEl.classList.add('active');
+            });
+
+            btn.addEventListener('mousemove', function(e) {
+                positionPreview(this, previewEl);
+            });
+
+            btn.addEventListener('mouseleave', function() {
+                previewEl.classList.remove('active');
+            });
+        }
+    });
+
+    // Toggle showing proof thumbnails
+    const toggleProofImages = document.getElementById('toggleProofImages');
+    const tableWrap = document.querySelector('.table-wrap');
+
+    if (toggleProofImages && tableWrap) {
+        // Load state from localStorage, default to true for convenience
+        const showImagesState = localStorage.getItem('domushub_show_proof_images_logs');
+        if (showImagesState === 'false') {
+            toggleProofImages.checked = false;
+            tableWrap.classList.remove('show-proof-thumbnails');
+        } else {
+            toggleProofImages.checked = true;
+            tableWrap.classList.add('show-proof-thumbnails');
+        }
+
+        toggleProofImages.addEventListener('change', function() {
+            if (this.checked) {
+                tableWrap.classList.add('show-proof-thumbnails');
+                localStorage.setItem('domushub_show_proof_images_logs', 'true');
+            } else {
+                tableWrap.classList.remove('show-proof-thumbnails');
+                localStorage.setItem('domushub_show_proof_images_logs', 'false');
+            }
+        });
+    }
+
+    // Close modals when clicking on the backdrop
+    document.querySelectorAll('.util-modal-backdrop').forEach(backdrop => {
+        backdrop.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+            }
+        });
+    });
+
+    // Close modals with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.util-modal-backdrop.active').forEach(modal => {
+                modal.classList.remove('active');
+            });
+        }
+    });
+});
+</script>
 @endpush
 @endsection

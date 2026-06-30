@@ -114,7 +114,7 @@
 
         {{-- PAGINATION --}}
         <div class="al-pagination">
-            {{ $logs->links('pagination::bootstrap-5') }}
+            {{ $logs->links('admin.users.pagination') }}
         </div>
     </div>
 
