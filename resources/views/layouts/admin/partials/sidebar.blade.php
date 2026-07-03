@@ -99,7 +99,7 @@
         {{-- ============================================================== --}}
         {{-- ĐIỆN NƯỚC & HOÁ ĐƠN - Admin & Staff --}}
         {{-- ============================================================== --}}
-        @if(in_array($role, ['admin', 'staff']))
+        @if(in_array($role, ['admin', 'manager', 'staff', 'technician']))
         <div class="nav-section">
             <span class="nav-section__label">ĐIỆN NƯỚC & HOÁ ĐƠN</span>
             <a href="{{ route('admin.utility-readings.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.utility-readings.*') ? 'dashboard-nav__item--active' : '' }}">
