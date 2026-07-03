@@ -588,6 +588,12 @@ document.addEventListener('DOMContentLoaded', function() {
     0%, 100% { opacity: 1; }
     50% { opacity: .5; }
 }
+
+/* Style overrides to prevent layout overflow */
+.dashboard-main,
+.dashboard-content {
+    min-width: 0 !important;
+}
 </style>
 @endpush
 @endsection
