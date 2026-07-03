@@ -235,9 +235,13 @@ class ApartmentController extends Controller
      */
     public function show(Apartment $apartment): View
     {
-        $apartment->load(['floor.block', 'residents']);
+        $apartment->load(['floor.block', 'residents.user']);
 
-        return view('admin.apartments.show', compact('apartment'));
+        $declaredMembers = \App\Models\ApartmentMember::where('apartment_id', $apartment->id)
+            ->orderBy('created_at')
+            ->get();
+
+        return view('admin.apartments.show', compact('apartment', 'declaredMembers'));
     }
 
     /**
