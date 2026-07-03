@@ -400,6 +400,7 @@
     padding: 40px;
     background-color: #ffffff;
     flex-grow: 1;
+    min-width: 0;
 }
 
 .dashboard-grid {

@@ -175,7 +175,7 @@
                     <th>Ngày ghi</th>
                     <th style="text-align:center">Trạng thái</th>
                     <th style="text-align:center">Ảnh</th>
-                    <th>Thao tác</th>
+                    <th style="white-space: nowrap;">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
@@ -268,7 +268,7 @@
                     </td>
 
                     {{-- Thao tác --}}
-                    <td>
+                    <td style="white-space: nowrap;">
                         <div class="util-actions">
                             @if(auth()->user()->role !== 'technician')
                                 <button type="button" class="util-btn-view" onclick="openDetailModal({{ $reading->id }})" title="Xem chi tiết">
@@ -280,15 +280,20 @@
                                 @if($reading->status === 'pending')
                                 <form action="{{ route('admin.utility-readings.approve', $reading->id) }}" method="POST" style="margin:0;">
                                     @csrf
-                                    <button type="submit" class="util-btn util-btn--primary util-btn--xs" style="padding: 4px 8px; font-size:11px; height:auto; background:#15803d; border-color:#15803d; line-height:1;" title="Phê duyệt">
-                                        Duyệt
+                                    <button type="submit" class="util-btn-approve" title="Phê duyệt">
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
                                     </button>
                                 </form>
                                 <form action="{{ route('admin.utility-readings.reject', $reading->id) }}" method="POST" style="margin:0;" id="reject-form-{{ $reading->id }}">
                                     @csrf
                                     <input type="hidden" name="reject_reason" id="reject-reason-{{ $reading->id }}">
-                                    <button type="button" class="util-btn util-btn--danger util-btn--xs" style="padding: 4px 8px; font-size:11px; height:auto; background:#dc2626; border-color:#dc2626; color:white; line-height:1;" title="Từ chối" onclick="confirmAndReject({{ $reading->id }})">
-                                        Từ chối
+                                    <button type="button" class="util-btn-reject" title="Từ chối" onclick="confirmAndReject({{ $reading->id }})">
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                            <line x1="18" y1="6" x2="6" y2="18"/>
+                                            <line x1="6" y1="6" x2="18" y2="18"/>
+                                        </svg>
                                     </button>
                                 </form>
                                 @endif
@@ -514,6 +519,23 @@
 @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: .5; }
+}
+
+/* Style overrides to prevent layout overflow and button clipping */
+.dashboard-main,
+.dashboard-content {
+    min-width: 0 !important;
+}
+.util-actions {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    gap: 4px !important;
+    align-items: center !important;
+}
+.util-actions form {
+    display: inline-flex !important;
+    margin: 0 !important;
 }
 </style>
 
