@@ -22,7 +22,6 @@ class AdminMiddleware
         if (
             $user->role === 'technician'
             && $request->routeIs(
-                'admin.utility-readings.*',
                 'admin.invoices.*',
                 'admin.service-prices.*',
                 'admin.statistics.finance',

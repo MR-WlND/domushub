@@ -51,6 +51,7 @@
     {{-- ===================== BỘ LỌC ===================== --}}
     <div class="chart-card" style="margin-top: 20px;">
         <form method="GET" action="{{ request()->url() }}" class="al-filter-form" style="flex-wrap:wrap;">
+            <input type="hidden" name="tab" value="{{ $tab }}">
             <div class="al-filter-group">
                 <label class="al-filter-label">Số căn hộ</label>
                 <input type="text" name="search" value="{{ request('search') }}"
@@ -66,6 +67,7 @@
                 </select>
             </div>
 
+            @if($tab !== 'rejected')
             <div class="al-filter-group">
                 <label class="al-filter-label">Trạng thái</label>
                 <select name="status" class="al-filter-input">
@@ -75,6 +77,7 @@
                     <option value="rejected"  {{ request('status') == 'rejected'  ? 'selected' : '' }}>❌ Bị từ chối</option>
                 </select>
             </div>
+            @endif
 
             <div class="al-filter-group">
                 <label class="al-filter-label">Tháng</label>
@@ -104,10 +107,22 @@
                     Lọc
                 </button>
                 @if(request()->anyFilled(['search', 'type', 'status', 'month', 'year', 'date_from', 'date_to']))
-                <a href="{{ request()->url() }}" class="al-btn-reset">Xóa lọc</a>
+                <a href="{{ route('admin.utility-logs.index', ['tab' => $tab]) }}" class="al-btn-reset">Xóa lọc</a>
                 @endif
             </div>
         </form>
+    </div>
+
+    {{-- ===================== TABS ===================== --}}
+    <div style="display: flex; gap: 4px; margin-top: 24px; border-bottom: 2px solid #e2e8f0; padding-bottom: 0;">
+        <a href="{{ route('admin.utility-logs.index', array_merge(request()->except('page'), ['tab' => 'all'])) }}" 
+           style="text-decoration: none; padding: 10px 20px; font-weight: 700; font-size: 14px; border-radius: 8px 8px 0 0; border: 1px solid transparent; margin-bottom: -2px; transition: all 0.2s; {{ $tab === 'all' ? 'background: #ffffff; border-color: #e2e8f0 #e2e8f0 #ffffff; border-bottom-color: #ffffff; color: #00236f; position: relative; z-index: 1;' : 'color: #64748b; background: transparent;' }}">
+            Tất cả lịch sử ({{ number_format($stats['total']) }})
+        </a>
+        <a href="{{ route('admin.utility-logs.index', array_merge(request()->except('page'), ['tab' => 'rejected'])) }}" 
+           style="text-decoration: none; padding: 10px 20px; font-weight: 700; font-size: 14px; border-radius: 8px 8px 0 0; border: 1px solid transparent; margin-bottom: -2px; transition: all 0.2s; {{ $tab === 'rejected' ? 'background: #ffffff; border-color: #e2e8f0 #e2e8f0 #ffffff; border-bottom-color: #ffffff; color: #dc2626; position: relative; z-index: 1;' : 'color: #64748b; background: transparent;' }}">
+            Lý do từ chối ({{ number_format($stats['rejected']) }})
+        </a>
     </div>
 
     {{-- ===================== DATA TABLE ===================== --}}
@@ -126,12 +141,19 @@
                         <th>Căn hộ</th>
                         <th>Tòa / Tầng</th>
                         <th>Loại</th>
-                        <th>Chỉ số cũ</th>
-                        <th>Chỉ số mới</th>
-                        <th>Tiêu thụ</th>
-                        <th>Người ghi</th>
-                        <th>Ngày ghi</th>
-                        <th style="text-align:center">Trạng thái</th>
+                        @if($tab === 'rejected')
+                            <th>Người ghi</th>
+                            <th>Người từ chối</th>
+                            <th>Ngày từ chối</th>
+                            <th>Lý do từ chối</th>
+                        @else
+                            <th>Chỉ số cũ</th>
+                            <th>Chỉ số mới</th>
+                            <th>Tiêu thụ</th>
+                            <th>Người ghi</th>
+                            <th>Ngày ghi</th>
+                            <th style="text-align:center">Trạng thái</th>
+                        @endif
                         <th style="text-align:center">Ảnh</th>
                     </tr>
                 </thead>
@@ -155,28 +177,45 @@
                                 <span class="db-badge" style="background:#dbeafe; color:#1d4ed8; font-size:11px;">Nước</span>
                             @endif
                         </td>
-                        <td style="color:#64748b; font-size:13px;">{{ number_format($log->old_value) }}</td>
-                        <td style="font-weight:700; color:#0b1c30;">{{ number_format($log->new_value) }}</td>
-                        <td>
-                            <strong style="color:#059669;">{{ number_format($log->usage_amount) }}</strong>
-                            <small style="color:#94a3b8;">{{ $log->type === 'electricity' ? 'kWh' : 'm³' }}</small>
-                        </td>
-                        <td style="font-size:12px; color:#475569;">{{ $log->recorder->name ?? '—' }}</td>
-                        <td style="font-size:11px; color:#64748b; white-space:nowrap;">
-                            <div>{{ $log->created_at->format('d/m/Y') }}</div>
-                            <div>{{ $log->created_at->format('H:i') }}</div>
-                        </td>
-                        <td style="text-align:center;">
-                            @if($log->status === 'approved')
-                                <span class="db-badge" style="background:#dcfce7; color:#15803d; font-size:11px;">Đã duyệt</span>
-                            @elseif($log->status === 'rejected')
-                                <span class="db-badge" style="background:#fee2e2; color:#dc2626; font-size:11px;" title="{{ $log->reject_reason }}">
-                                    Từ chối
-                                </span>
-                            @else
-                                <span class="db-badge" style="background:#fef3c7; color:#b45309; font-size:11px;">Chờ duyệt</span>
-                            @endif
-                        </td>
+                        @if($tab === 'rejected')
+                            <td style="font-size:12px; color:#475569;">{{ $log->recorder->name ?? '—' }}</td>
+                            <td style="font-size:12px; color:#64748b; font-weight: 500;">
+                                {{ $log->rejecter->name ?? 'Kế toán viên' }}
+                            </td>
+                            <td style="font-size:11px; color:#94a3b8; font-weight: 400; white-space:nowrap;">
+                                <div>{{ $log->updated_at ? $log->updated_at->format('d/m/Y') : '' }}</div>
+                                <div>{{ $log->updated_at ? $log->updated_at->format('H:i') : '' }}</div>
+                            </td>
+                            <td>
+                                <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; background-color: #fff5f5; border: 1px solid #feb2b2; color: #e53e3e; font-weight: 700; font-size: 11px;">
+                                    <i class="fas fa-exclamation-triangle animate-pulse" style="font-size: 10px;"></i>
+                                    <span>{{ $log->reject_reason ?? 'Không rõ lý do' }}</span>
+                                </div>
+                            </td>
+                        @else
+                            <td style="color:#64748b; font-size:13px;">{{ number_format($log->old_value) }}</td>
+                            <td style="font-weight:700; color:#0b1c30;">{{ number_format($log->new_value) }}</td>
+                            <td>
+                                <strong style="color:#059669;">{{ number_format($log->usage_amount) }}</strong>
+                                <small style="color:#94a3b8;">{{ $log->type === 'electricity' ? 'kWh' : 'm³' }}</small>
+                            </td>
+                            <td style="font-size:12px; color:#475569;">{{ $log->recorder->name ?? '—' }}</td>
+                            <td style="font-size:11px; color:#64748b; white-space:nowrap;">
+                                <div>{{ $log->created_at->format('d/m/Y') }}</div>
+                                <div>{{ $log->created_at->format('H:i') }}</div>
+                            </td>
+                            <td style="text-align:center;">
+                                @if($log->status === 'approved')
+                                    <span class="db-badge" style="background:#dcfce7; color:#15803d; font-size:11px;">Đã duyệt</span>
+                                @elseif($log->status === 'rejected')
+                                    <span class="db-badge" style="background:#fee2e2; color:#dc2626; font-size:11px;" title="{{ $log->reject_reason }}">
+                                        Từ chối
+                                    </span>
+                                @else
+                                    <span class="db-badge" style="background:#fef3c7; color:#b45309; font-size:11px;">Chờ duyệt</span>
+                                @endif
+                            </td>
+                        @endif
                         <td style="text-align:center;">
                             @php
                                 $imgs = [];
@@ -200,7 +239,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="11" class="empty-row">Chưa có dữ liệu ghi số điện nước nào.</td></tr>
+                    <tr><td colspan="{{ $tab === 'rejected' ? 10 : 11 }}" class="empty-row">Chưa có dữ liệu ghi số điện nước nào.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -538,5 +577,17 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+@endpush
+
+@push('styles')
+<style>
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .5; }
+}
+</style>
 @endpush
 @endsection

@@ -14,7 +14,7 @@
         <h1>Chốt số Điện Nước</h1>
         <p>Quản lý chỉ số điện nước theo tháng – Tháng {{ $month }}/{{ $year }}</p>
     </div>
-    @if(auth()->user()->role !== 'staff')
+    @if(in_array(auth()->user()->role, ['technician', 'admin']))
     <div class="util-header-actions">
         <a href="{{ route('admin.utility-readings.batch') }}" class="util-btn util-btn--secondary">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -164,17 +164,17 @@
                         <input type="checkbox" id="selectAllReadings" style="width:15px;height:15px;accent-color:#00236f;cursor:pointer;">
                     </th>
                     @endif
-                    <th>STT</th>
-                    <th>Phòng</th>
+                    <th>Kỳ ghi</th>
+                    <th>Căn hộ</th>
                     <th>Tòa / Tầng</th>
                     <th>Loại</th>
-
+                    <th>Chỉ số cũ</th>
                     <th>Chỉ số mới</th>
-                    @if(auth()->user()->role !== 'technician')
                     <th>Tiêu thụ</th>
-                    @endif
-                    <th>Trạng thái</th>
                     <th>Người ghi</th>
+                    <th>Ngày ghi</th>
+                    <th style="text-align:center">Trạng thái</th>
+                    <th style="text-align:center">Ảnh</th>
                     <th>Thao tác</th>
                 </tr>
             </thead>
@@ -188,12 +188,22 @@
                         @endif
                     </td>
                     @endif
-                    <td class="text-muted">{{ $readings->firstItem() + $index }}</td>
+                    
+                    {{-- Kỳ ghi --}}
+                    <td style="white-space:nowrap; font-weight:600; color:#00236f;">
+                        T{{ $reading->record_month }}/{{ $reading->record_year }}
+                    </td>
+
+                    {{-- Căn hộ --}}
                     <td><span class="text-strong">{{ $reading->apartment->apartment_number ?? 'N/A' }}</span></td>
+
+                    {{-- Tòa / Tầng --}}
                     <td class="text-muted">
                         {{ $reading->apartment->floor->block->name ?? '—' }}
                         / {{ $reading->apartment->floor->name ?? 'Tầng ' . ($reading->apartment->floor->floor_number ?? '') }}
                     </td>
+
+                    {{-- Loại --}}
                     <td>
                         @if ($reading->type === 'electricity')
                             <span class="util-badge util-badge--electricity">Điện</span>
@@ -202,30 +212,29 @@
                         @endif
                     </td>
 
-                    <td class="text-strong">
-                        <div style="display: inline-flex; align-items: center; gap: 8px;">
-                            <span>{{ number_format($reading->new_value) }}</span>
-                            @if($reading->image_proof)
-                            <span class="proof-photo-btn" data-img="{{ asset('storage/' . $reading->image_proof) }}" style="cursor:pointer; color:#0b57d0; display:inline-flex; align-items:center; vertical-align:middle;" title="Xem minh chứng công tơ">
-                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                                </svg>
-                            </span>
-                            <div class="proof-thumbnail-container">
-                                <div class="proof-photo-wrapper">
-                                    <img src="{{ asset('storage/' . $reading->image_proof) }}" class="proof-thumbnail" data-img="{{ asset('storage/' . $reading->image_proof) }}" data-info="Phòng {{ $reading->apartment->apartment_number ?? 'N/A' }} - {{ $reading->type === 'electricity' ? 'Điện' : 'Nước' }}" alt="Proof">
-                                </div>
-                            </div>
-                            @endif
-                        </div>
-                    </td>
-                    @if(auth()->user()->role !== 'technician')
+                    {{-- Chỉ số cũ --}}
+                    <td style="color:#64748b; font-size:13px;">{{ number_format($reading->old_value) }}</td>
+
+                    {{-- Chỉ số mới --}}
+                    <td style="font-weight:700; color:#0b1c30;">{{ number_format($reading->new_value) }}</td>
+
+                    {{-- Tiêu thụ --}}
                     <td>
-                        <strong style="color: #00236f;">{{ number_format($reading->usage_amount) }}</strong>
+                        <strong style="color: #059669;">{{ number_format($reading->usage_amount) }}</strong>
                         <small style="color: #94a3b8;">{{ $reading->type === 'electricity' ? 'kWh' : 'm³' }}</small>
                     </td>
-                    @endif
-                    <td>
+
+                    {{-- Người ghi --}}
+                    <td class="text-muted">{{ $reading->recorder->name ?? '—' }}</td>
+
+                    {{-- Ngày ghi --}}
+                    <td style="font-size:11px; color:#64748b; white-space:nowrap;">
+                        <div>{{ $reading->created_at->format('d/m/Y') }}</div>
+                        <div>{{ $reading->created_at->format('H:i') }}</div>
+                    </td>
+
+                    {{-- Trạng thái --}}
+                    <td style="text-align:center;">
                         @if($reading->status === 'approved')
                             <span class="util-badge util-badge--success" style="background:#e6f4ea; color:#137333; font-size:11px;">Đã chốt</span>
                         @elseif($reading->status === 'rejected')
@@ -234,7 +243,31 @@
                             <span class="util-badge util-badge--warning" style="background:#fef7e0; color:#b06000; font-size:11px;">Chờ chốt</span>
                         @endif
                     </td>
-                    <td class="text-muted">{{ $reading->recorder->name ?? '—' }}</td>
+
+                    {{-- Ảnh --}}
+                    <td style="text-align:center;">
+                        @php
+                            $imgs = [];
+                            if ($reading->image_proof) $imgs[] = asset('storage/' . $reading->image_proof);
+                            if ($reading->images) {
+                                foreach ($reading->images as $img) $imgs[] = asset('storage/' . $img);
+                            }
+                        @endphp
+                        @if(count($imgs) > 0)
+                            <span class="proof-photo-btn" data-img="{{ $imgs[0] }}" style="cursor:pointer; color:#0b57d0; display:inline-flex; align-items:center; vertical-align:middle;" title="Xem minh chứng công tơ">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                            </span>
+                            <div class="proof-thumbnail-container">
+                                <div class="proof-photo-wrapper">
+                                    <img src="{{ $imgs[0] }}" class="proof-thumbnail" data-img="{{ $imgs[0] }}" data-info="Phòng {{ $reading->apartment->apartment_number ?? 'N/A' }} - {{ $reading->type === 'electricity' ? 'Điện' : 'Nước' }}" alt="Proof">
+                                </div>
+                            </div>
+                        @else
+                            <span style="color:#cbd5e1; font-size:12px;">—</span>
+                        @endif
+                    </td>
+
+                    {{-- Thao tác --}}
                     <td>
                         <div class="util-actions">
                             @if(auth()->user()->role !== 'technician')
@@ -259,6 +292,7 @@
                                     </button>
                                 </form>
                                 @endif
+                                @if(auth()->user()->role === 'admin')
                                 <a href="{{ route('admin.utility-readings.edit', $reading->id) }}"
                                     class="util-btn-edit" title="Sửa">
                                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -280,6 +314,7 @@
                                         </svg>
                                     </button>
                                 </form>
+                                @endif
                             @else
                                 <button type="button" class="util-btn-view" onclick="openDetailModal({{ $reading->id }})" title="Xem chi tiết">
                                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -338,7 +373,7 @@
         <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>
     </svg>
     <p>Chưa có chỉ số nào được ghi cho tháng {{ $month }}/{{ $year }}.</p>
-    @if(auth()->user()->role !== 'staff')
+    @if(in_array(auth()->user()->role, ['technician', 'admin']))
     <div class="util-empty-actions">
         <a href="{{ route('admin.utility-readings.batch') }}" class="util-btn util-btn--secondary">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right: 6px;">
@@ -427,10 +462,10 @@
                         <div style="font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase;">Lượng tiêu thụ thực tế</div>
                         <div style="font-size: 18px; font-weight: 800; color: #00236f; margin-top: 4px;" id="detUsage"></div>
                     </div>
-                    <div id="detRejectInfo" style="grid-column: span 2; background: #fef2f2; border: 1px solid #fecaca; padding: 12px; border-radius: 8px; display: none;">
-                        <div style="font-size: 11px; font-weight: 600; color: #b91c1c; text-transform: uppercase;">Lý do từ chối</div>
-                        <div style="font-size: 14px; font-weight: 600; color: #991b1b; margin-top: 4px;" id="detRejectReason"></div>
-                        <div style="font-size: 12px; color: #b91c1c; margin-top: 4px;">Người từ chối: <span id="detRejecter" style="font-weight: 700;"></span> | Ngày từ chối: <span id="detRejectTime" style="font-weight: 700;"></span></div>
+                    <div id="detRejectInfo" style="grid-column: span 2; display: none;">
+                        <div id="detRejectTableContainer" style="overflow-x: auto;">
+                            <!-- Table will be dynamically injected here -->
+                        </div>
                     </div>
                     <div style="grid-column: span 2;">
                         <div style="font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase;">Người ghi nhận</div>
@@ -472,6 +507,13 @@
 <style>
 @keyframes spin {
     to { transform: rotate(360deg); }
+}
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .5; }
 }
 </style>
 
@@ -749,15 +791,69 @@ function openDetailModal(id) {
 
             // Reject reason details
             const rejectInfoEl = document.getElementById('detRejectInfo');
-            const rejectReasonEl = document.getElementById('detRejectReason');
-            const rejecterEl = document.getElementById('detRejecter');
-            const rejectTimeEl = document.getElementById('detRejectTime');
-            if (reading.status === 'rejected') {
-                rejectReasonEl.textContent = reading.reject_reason || 'Không rõ lý do';
-                rejecterEl.textContent = reading.rejecter_name || 'Kế toán viên';
-                if (rejectTimeEl) {
-                    rejectTimeEl.textContent = reading.updated_at || '';
-                }
+            const rejectTableContainer = document.getElementById('detRejectTableContainer');
+            const rejections = data.rejections || [];
+            
+            if (rejections.length > 0) {
+                let html = `
+                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); overflow: hidden; margin-top: 8px;">
+                        <div style="background: #ffffff; border-bottom: 1px solid #f1f5f9; padding: 12px 16px; display: flex; align-items: center;">
+                            <div style="background: #fee2e2; color: #ef4444; border-radius: 6px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 13px;">
+                                <i class="fas fa-exclamation-circle"></i>
+                            </div>
+                            <span style="font-size: 13px; font-weight: 700; color: #1e293b;">Lý do từ chối</span>
+                        </div>
+                        <div style="overflow-x: auto;">
+                            <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left; vertical-align: middle;">
+                                <thead>
+                                    <tr style="background: #f8fafc; color: #64748b; border-bottom: 1px solid #e2e8f0; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; font-weight: 700;">
+                                        <th style="padding: 8px 12px; width: 30%;">Thời gian</th>
+                                        <th style="padding: 8px 12px; width: 30%;">Người từ chối</th>
+                                        <th style="padding: 8px 12px; width: 40%;">Lý do</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="color: #334155;">
+                `;
+                rejections.forEach(rej => {
+                    html += `
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 10px 12px; color: #94a3b8; font-weight: 400; white-space: nowrap;">${rej.rejected_at}</td>
+                            <td style="padding: 10px 12px; font-weight: 500; color: #64748b;">${rej.rejecter_name}</td>
+                            <td style="padding: 10px 12px;">
+                                <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; background-color: #fff5f5; border: 1px solid #feb2b2; color: #e53e3e; font-weight: 700; font-size: 11px;">
+                                    <i class="fas fa-exclamation-triangle animate-pulse" style="font-size: 10px;"></i>
+                                    <span>${rej.reason}</span>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+                html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                rejectTableContainer.innerHTML = html;
+                rejectInfoEl.style.display = 'block';
+            } else if (reading.status === 'rejected') {
+                rejectTableContainer.innerHTML = `
+                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); overflow: hidden; margin-top: 8px;">
+                        <div style="background: #ffffff; border-bottom: 1px solid #f1f5f9; padding: 12px 16px; display: flex; align-items: center;">
+                            <div style="background: #fee2e2; color: #ef4444; border-radius: 6px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 13px;">
+                                <i class="fas fa-exclamation-circle"></i>
+                            </div>
+                            <span style="font-size: 13px; font-weight: 700; color: #1e293b;">Lý do từ chối</span>
+                        </div>
+                        <div style="padding: 16px; font-size:13px; color:#334155;">
+                            <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;">Thời gian: ${reading.updated_at || ''}</div>
+                            <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">Người từ chối: <strong style="color: #0f172a;">${reading.rejecter_name || 'Kế toán viên'}</strong></div>
+                            <span style="display: inline-block; background: #fee2e2; color: #b91c1c; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">
+                                ${reading.reject_reason || 'Không rõ lý do'}
+                            </span>
+                        </div>
+                    </div>
+                `;
                 rejectInfoEl.style.display = 'block';
             } else {
                 rejectInfoEl.style.display = 'none';
