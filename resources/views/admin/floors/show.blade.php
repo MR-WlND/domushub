@@ -87,31 +87,9 @@
                         </span>
                     </div>
 
-                    {{-- Tiến độ khai báo phòng --}}
-                    <div class="detail-row" style="flex-direction: column; align-items: flex-start; gap: 8px;">
-                        <div style="display: flex; justify-content: space-between; width: 100%;">
-                            <span class="detail-label">Căn hộ đã khai báo</span>
-                            <span class="detail-value" style="font-weight: 700;">{{ $floor->apartments->count() }} /
-                                {{ $floor->expected_apartments ?? '?' }} căn</span>
-                        </div>
-                        @if (($floor->expected_apartments ?? 0) > 0)
-                            @php
-                                $progress = min(
-                                    100,
-                                    round(($floor->apartments->count() / $floor->expected_apartments) * 100),
-                                );
-                            @endphp
-                            <div class="progress-bar-container"
-                                style="width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-top: 4px;">
-                                <div class="progress-bar-fill"
-                                    style="width: {{ $progress }}%; height: 100%; background: linear-gradient(90deg, #3b82f6, #1d4ed8); border-radius: 4px;">
-                                </div>
-                            </div>
-                            <div
-                                style="font-size: 12px; color: #64748b; font-weight: 600; text-align: right; width: 100%; margin-top: 2px;">
-                                Đã hoàn thành {{ $progress }}% kế hoạch khai báo phòng
-                            </div>
-                        @endif
+                    <div class="detail-row">
+                        <span class="detail-label">Căn hộ đã khai báo</span>
+                        <span class="detail-value" style="font-weight: 700;">{{ $floor->apartments->count() }} căn</span>
                     </div>
 
                     <div class="detail-row" style="flex-direction: column; align-items: flex-start; gap: 8px;">
@@ -170,48 +148,65 @@
                 </a>
             </div>
 
-            <div class="card-body">
+            <div class="card-body" style="padding: 0; overflow: hidden;">
                 @if ($floor->apartments->count() > 0)
-                    <div class="apartment-grid-map">
-                        @foreach ($floor->apartments as $apartment)
-                            <div class="apartment-map-card apartment-map-card--{{ $apartment->status }}">
-                                <div class="map-card-header">
-                                    <span class="map-card-number">{{ $apartment->apartment_number }}</span>
-                                    <span class="map-card-badge map-card-badge--{{ $apartment->status }}">
+                    <table class="premium-table">
+                        <thead>
+                            <tr>
+                                <th style="padding-left: 24px; width: 30%;">Số hiệu căn</th>
+                                <th style="width: 25%;">Số cư dân</th>
+                                <th style="width: 20%;">Trạng thái</th>
+                                <th style="text-align: right; padding-right: 24px; width: 25%;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($floor->apartments as $apartment)
+                                <tr>
+                                    <td style="padding-left: 24px; padding-top: 14px; padding-bottom: 14px;">
+                                        <a href="{{ route('admin.apartments.show', $apartment->id) }}" style="font-weight: 700; color: #0b57d0; text-decoration: none; font-size: 16px;">
+                                            Căn {{ $apartment->apartment_number }}
+                                        </a>
+                                        <div style="font-size: 12px; color: #64748b; margin-top: 4px; font-weight: 500;">
+                                            Diện tích: {{ number_format($apartment->area, 2) }} m²
+                                        </div>
+                                    </td>
+                                    <td style="font-weight: 600; color: #334155;">
+                                        {{ $apartment->residents_count + $apartment->declared_members_count }} người
+                                    </td>
+                                    <td>
                                         @if ($apartment->status == 'occupied')
-                                            Đang ở
+                                            <span class="badge badge-success">Đang ở</span>
                                         @elseif($apartment->status == 'vacant')
-                                            Trống
+                                            <span class="badge badge-warning">Còn trống</span>
                                         @else
-                                            Bảo trì
+                                            <span class="badge badge-danger">Bảo trì</span>
                                         @endif
-                                    </span>
-                                </div>
-
-                                <div class="map-card-body">
-                                    <div class="map-card-info">
-                                        <span class="info-label">Diện tích</span>
-                                        <span class="info-value">{{ $apartment->area }} m²</span>
-                                    </div>
-                                    <div class="map-card-info">
-                                        <span class="info-label">Cư dân</span>
-                                        <span class="info-value">{{ $apartment->residents_count }} người</span>
-                                    </div>
-                                </div>
-
-                                <div class="map-card-footer">
-                                    <a href="{{ route('admin.apartments.show', $apartment->id) }}"
-                                        class="map-card-btn map-card-btn--view">
-                                        Chi tiết
-                                    </a>
-                                    <a href="{{ route('admin.apartments.edit', $apartment->id) }}"
-                                        class="map-card-btn map-card-btn--edit">
-                                        Sửa
-                                    </a>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
+                                    </td>
+                                    <td style="text-align: right; padding-right: 24px;">
+                                        <div style="display: inline-flex; gap: 8px; align-items: center;">
+                                            <a href="{{ route('admin.apartments.show', $apartment->id) }}" class="btn btn-light btn-sm"
+                                                style="background: #eff6ff; color: #2563eb; border: none; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; padding: 0 12px; font-size: 12px; text-decoration: none;">
+                                                Chi tiết
+                                            </a>
+                                            <a href="{{ route('admin.apartments.edit', $apartment->id) }}" class="btn btn-light btn-sm"
+                                                style="background: #f1f5f9; color: #475569; border: none; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; padding: 0 12px; font-size: 12px; text-decoration: none;">
+                                                Sửa
+                                            </a>
+                                            <form action="{{ route('admin.apartments.destroy', $apartment->id) }}" method="POST"
+                                                onsubmit="return confirm('Bạn có chắc chắn muốn xóa căn hộ này?')" style="display: inline-flex;">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-light btn-sm"
+                                                    style="background: #fee2e2; color: #b91c1c; border: none; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; padding: 0 12px; font-size: 12px; cursor: pointer;">
+                                                    Xóa
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 @else
                     <div class="empty-state"
                         style="padding: 50px; text-align: center; color: #64748b; font-size: 15px; font-weight: 500;">

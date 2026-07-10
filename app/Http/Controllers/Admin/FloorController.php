@@ -165,7 +165,9 @@ class FloorController extends Controller
      */
     public function show(Floor $floor): View
     {
-        $floor->load(['block', 'apartments']);
+        $floor->load(['block', 'apartments' => function ($query) {
+            $query->withCount(['residents', 'declaredMembers']);
+        }]);
 
         $stats = [
             'total'       => $floor->apartments->count(),

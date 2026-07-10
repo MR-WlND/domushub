@@ -236,3 +236,31 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ─── Premium Table Styles ─── */
+.premium-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.premium-table th {
+    padding: 16px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #475569;
+    background: #f8fafc;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.premium-table td {
+    padding: 16px 20px;
+    font-size: 15px;
+    color: #334155;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+
+.premium-table tr:hover td {
+    background-color: #f8fafc;
+}

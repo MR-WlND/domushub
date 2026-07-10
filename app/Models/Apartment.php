@@ -77,6 +77,14 @@ class Apartment extends Model
     }
 
     /**
+     * Nhân khẩu khai báo thuộc căn hộ này
+     */
+    public function declaredMembers(): HasMany
+    {
+        return $this->hasMany(ApartmentMember::class);
+    }
+
+    /**
      * Xe đăng ký thuộc căn hộ này
      */
     public function vehicles(): HasMany

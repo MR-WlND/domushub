@@ -29,6 +29,9 @@
                     <tr>
                         <td>
                             <div class="res-user-cell">
+                                @if($apt)
+                                    <a href="{{ route('admin.apartments.show', $apt->id) }}" style="text-decoration: none; display: flex; align-items: center; gap: 12px; width: 100%;">
+                                @endif
                                 <div class="res-user-avatar">
                                     @if($user->avatar)
                                         <img src="{{ asset('storage/' . $user->avatar) }}" alt="{{ $user->name }}">
@@ -37,15 +40,24 @@
                                     @endif
                                 </div>
                                 <div>
-                                    <span class="res-user-name">{{ $user->name }}</span>
+                                    <span class="res-user-name" style="transition: color 0.2s ease;">{{ $user->name }}</span>
                                     @if($user->cccd)
                                         <span class="res-user-cccd">CCCD: {{ $user->cccd }}</span>
                                     @endif
                                 </div>
+                                @if($apt)
+                                    </a>
+                                @endif
                             </div>
                         </td>
                         <td>
-                            <span class="res-apt-number">{{ $apt->apartment_number ?? 'N/A' }}</span>
+                            @if($apt)
+                                <a href="{{ route('admin.apartments.show', $apt->id) }}" style="text-decoration: none;">
+                                    <span class="res-apt-number" style="border-bottom: 1px dashed rgba(11, 87, 208, 0.6); padding-bottom: 2px; transition: all 0.2s ease;">{{ $apt->apartment_number }}</span>
+                                </a>
+                            @else
+                                <span class="res-apt-number">N/A</span>
+                            @endif
                         </td>
                         <td>
                             <div class="res-location-cell">
@@ -90,3 +102,13 @@
         <div class="residents-pagination">{{ $residents->links() }}</div>
     @endif
 @endif
+
+<style>
+.res-user-cell a:hover .res-user-name {
+    color: #0b57d0 !important;
+}
+.res-user-cell a:hover .res-user-avatar {
+    box-shadow: 0 0 0 2px #0b57d0;
+    transition: all 0.2s ease;
+}
+</style>
