@@ -127,15 +127,8 @@
                 <span>Hoá đơn</span>
             </a>
             @endif
-            @if($role === 'admin')
-            <a href="{{ route('admin.utility-logs.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.utility-logs.*') ? 'dashboard-nav__item--active' : '' }}">
-                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6z"></path>
-                    <path d="M14 3v5h5M16 13H8M16 17H8M10 9H8"></path>
-                </svg>
-                <span>Lịch sử ghi điện nước</span>
-            </a>
-            @endif
+
+
         </div>
         @endif
 
@@ -204,14 +197,7 @@
                 </svg>
                 <span>Quản lý lốt đỗ</span>
             </a>
-            
-            <a href="{{ route('admin.vehicle-logs.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.vehicle-logs.*') ? 'dashboard-nav__item--active' : '' }}">
-                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6z"></path>
-                    <path d="M14 3v5h5M16 13H8M16 17H8M10 9H8"></path>
-                </svg>
-                <span>Lịch sử xe ra vào</span>
-            </a>
+
             
             <a href="{{ route('admin.visitor-logs.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.visitor-logs.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -290,14 +276,7 @@
                 </svg>
                 <span>Phân quyền</span>
             </a>
-            <a href="{{ route('admin.system-logs.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.system-logs.*') ? 'dashboard-nav__item--active' : '' }}">
-                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="23 4 23 10 17 10"></polyline>
-                    <polyline points="1 20 1 14 7 14"></polyline>
-                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                </svg>
-                <span>Lịch sử Quản trị hệ thống</span>
-            </a>
+
             <a href="{{ route('admin.notification-logs.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.notification-logs.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
