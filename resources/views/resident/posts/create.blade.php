@@ -8,7 +8,7 @@
 <div class="rh" style="max-width:680px;">
 
     <div style="margin-bottom:24px;">
-        <a href="{{ route('resident.posts.index') }}" style="font-size:0.82rem;color:#2563eb;text-decoration:none;font-weight:600;">← Quay lại bảng tin</a>
+        <a href="{{ route('resident.dashboard') }}" style="font-size:0.82rem;color:#2563eb;text-decoration:none;font-weight:600;">← Quay lại bảng tin</a>
         <h1 style="margin:8px 0 0;font-size:1.4rem;font-weight:800;color:#0f172a;">Đăng bài viết mới</h1>
     </div>
 
@@ -59,7 +59,7 @@
 
             {{-- Actions --}}
             <div style="display:flex;align-items:center;justify-content:flex-end;gap:12px;padding-top:16px;border-top:1px solid #f1f5f9;">
-                <a href="{{ route('resident.posts.index') }}" style="padding:10px 20px;font-size:0.85rem;font-weight:600;color:#475569;text-decoration:none;">Hủy</a>
+                <a href="{{ route('resident.dashboard') }}" style="padding:10px 20px;font-size:0.85rem;font-weight:600;color:#475569;text-decoration:none;">Hủy</a>
                 <button type="submit" style="padding:10px 24px;background:#00236F;color:#fff;border:none;border-radius:10px;font-size:0.88rem;font-weight:700;cursor:pointer;">Đăng bài</button>
             </div>
         </form>
