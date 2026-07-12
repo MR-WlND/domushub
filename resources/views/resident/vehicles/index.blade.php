@@ -93,7 +93,8 @@
                         <div class="rv-qr-panel__row"><span>Phương tiện:</span><span id="rv-qr-brand">{{ $qrV->brand ?? 'N/A' }}</span></div>
                         <div class="rv-qr-panel__row"><span>Biển số:</span><span id="rv-qr-plate">{{ $qrV->license_plate }}</span></div>
                     </div>
-                    <a id="rv-qr-link" href="{{ route('resident.vehicles.qr', $qrV) }}" class="rv-qr-panel__btn">Tải mã QR</a>
+                    <a id="rv-qr-link" href="{{ route('resident.vehicles.qr.download', $qrV) }}" class="rv-qr-panel__btn">Tải mã QR</a>
+                    <a id="rv-qr-detail-link" href="{{ route('resident.vehicles.qr', $qrV) }}" class="rv-qr-panel__btn" style="margin-top:10px; background:transparent; color:#00236F; border:1px solid #00236F;">Xem chi tiết</a>
                 </div>
                 @else
                 <div class="rv-qr-panel"><p class="rv-qr-panel__desc" style="padding:40px 0;">Chưa có mã QR. Xe cần được BQL duyệt.</p></div>
@@ -110,7 +111,7 @@ document.querySelectorAll('.rv-item').forEach((item, index) => {
         document.querySelectorAll('.rv-item').forEach(i => i.classList.remove('rv-item--selected'));
         this.classList.add('rv-item--selected');
 
-        const vehicles = {!! $vehicles->map(fn($v) => ['brand' => $v->brand ?? 'N/A', 'plate' => $v->license_plate, 'qr' => $v->qr_code ? asset('storage/' . $v->qr_code) : null, 'qr_url' => $v->qr_code ? route('resident.vehicles.qr', $v->id) : '#'])->values()->toJson() !!};
+        const vehicles = {!! $vehicles->map(fn($v) => ['brand' => $v->brand ?? 'N/A', 'plate' => $v->license_plate, 'qr' => $v->qr_code ? asset('storage/' . $v->qr_code) : null, 'qr_url' => $v->qr_code ? route('resident.vehicles.qr.download', $v->id) : '#', 'detail_url' => $v->qr_code ? route('resident.vehicles.qr', $v->id) : '#'])->values()->toJson() !!};
         const v = vehicles[index];
         const img = document.getElementById('rv-qr-img');
         if (img && v.qr) {
@@ -118,6 +119,7 @@ document.querySelectorAll('.rv-item').forEach((item, index) => {
             document.getElementById('rv-qr-brand').textContent = v.brand;
             document.getElementById('rv-qr-plate').textContent = v.plate;
             document.getElementById('rv-qr-link').href = v.qr_url;
+            document.getElementById('rv-qr-detail-link').href = v.detail_url;
         }
     });
 });

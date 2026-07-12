@@ -352,6 +352,9 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/vehicles/{vehicle}/qr', [App\Http\Controllers\Resident\VehicleController::class, 'showQr'])
         ->name('resident.vehicles.qr');
 
+    Route::get('/resident/vehicles/{vehicle}/qr/download', [App\Http\Controllers\Resident\VehicleController::class, 'downloadQr'])
+        ->name('resident.vehicles.qr.download');
+
     // QUẢN LÝ KHÁCH PHÍA CƯ DÂN
     Route::get('/resident/visitors', [\App\Http\Controllers\Resident\VisitorController::class, 'index'])->name('resident.visitors.index');
     Route::get('/resident/visitors/create', [\App\Http\Controllers\Resident\VisitorController::class, 'create'])->name('resident.visitors.create');
