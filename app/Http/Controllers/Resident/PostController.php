@@ -80,23 +80,23 @@ class PostController extends Controller
             $request->merge(['price' => $cleanPrice]);
         }
 
-        // 2. Validate dữ liệu đầu vào (hỗ trợ images dạng mảng)
+        // 2. Validate dữ liệu đầu vào (hỗ trợ images/video dạng mảng)
         $request->validate([
             'title' => 'nullable|string|max:200',
             'content' => 'required|string',
             'price' => 'nullable|numeric|min:0|max:999999999',
-            'images' => 'nullable|array|max:5', // Tối đa 5 ảnh
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048', // Mỗi ảnh tối đa 2MB
+            'media' => 'nullable|array|max:5', // Tối đa 5 file ảnh/video
+            'media.*' => 'file|mimes:jpeg,png,jpg,gif,webp,mp4,mov,avi,webm|max:20480', // Mỗi file tối đa 20MB
         ], [
             'title.max' => 'Tiêu đề không được vượt quá 200 ký tự.',
             'content.required' => 'Vui lòng nhập nội dung bài đăng.',
             'price.numeric' => 'Giá bán phải là định dạng số.',
             'price.min' => 'Giá bán không được nhỏ hơn 0đ.',
-            'images.array' => 'Hình ảnh đính kèm phải ở dạng danh sách.',
-            'images.max' => 'Bạn chỉ được đính kèm tối đa 5 hình ảnh cho mỗi bài viết.',
-            'images.*.image' => 'File tải lên phải là hình ảnh.',
-            'images.*.mimes' => 'Hình ảnh phải có định dạng: jpeg, png, jpg, gif, webp.',
-            'images.*.max' => 'Dung lượng mỗi hình ảnh không được vượt quá 2MB.',
+            'media.array' => 'File đính kèm phải ở dạng danh sách.',
+            'media.max' => 'Bạn chỉ được đính kèm tối đa 5 file cho mỗi bài viết.',
+            'media.*.file' => 'File tải lên không hợp lệ.',
+            'media.*.mimes' => 'File phải có định dạng: jpeg, png, jpg, gif, webp, mp4, mov, avi, webm.',
+            'media.*.max' => 'Dung lượng mỗi file không được vượt quá 20MB.',
         ]);
 
         $data = $request->only(['title', 'content', 'price']);
@@ -112,12 +112,16 @@ class PostController extends Controller
 
         $post = Post::create($data);
 
-        // Xử lý upload danh sách ảnh nếu có
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $file) {
-                $path = $file->store('posts', 'public');
+        // Xử lý upload danh sách ảnh/video nếu có
+        if ($request->hasFile('media')) {
+            foreach ($request->file('media') as $file) {
+                $mime = $file->getMimeType();
+                $isVideo = str_starts_with($mime, 'video/');
+                $folder = $isVideo ? 'posts/videos' : 'posts';
+                $path = $file->store($folder, 'public');
                 $post->images()->create([
-                    'image_path' => $path
+                    'image_path' => $path,
+                    'type' => $isVideo ? 'video' : 'image',
                 ]);
             }
         }
