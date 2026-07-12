@@ -142,9 +142,12 @@ Route::middleware(['admin'])->group(function () {
     Route::post('/admin/invoices/batch', [InvoiceController::class, 'batchStore'])->name('admin.invoices.batch.store');
 
     Route::post('/admin/invoices/generate', [InvoiceController::class, 'generate'])->name('admin.invoices.generate');
+    Route::get('/admin/invoices/apartment/{apartment}', [InvoiceController::class, 'apartmentInvoices'])->name('admin.invoices.apartment');
     Route::get('/admin/invoices/{invoice}', [InvoiceController::class, 'show'])->name('admin.invoices.show');
     Route::match(['post', 'patch'], '/admin/invoices/{invoice}/mark-paid', [InvoiceController::class, 'markAsPaid'])->name('admin.invoices.mark-paid');
-    Route::post('/admin/invoices/details/{detail}/mark-paid', [InvoiceController::class, 'markDetailAsPaid'])->name('admin.invoices.details.mark-paid');
+    Route::post('/admin/invoices/{invoice}/cancel', [InvoiceController::class, 'cancelInvoice'])->name('admin.invoices.cancel');
+    Route::post('/admin/invoices/{invoice}/resend-notification', [InvoiceController::class, 'resendNotification'])->name('admin.invoices.resend-notification');
+    Route::get('/admin/invoices/{invoice}/print', [InvoiceController::class, 'printInvoice'])->name('admin.invoices.print');
     Route::post('/admin/payments/{payment}/refund', [InvoiceController::class, 'refundPayment'])->name('admin.payments.refund');
     Route::get('/admin/payments/{payment}/receipt', [InvoiceController::class, 'printReceipt'])->name('admin.payments.receipt');
 
@@ -305,6 +308,7 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/invoices/vnpay-return', [ResidentInvoiceController::class, 'vnpayReturn'])->name('resident.invoices.vnpay-return');
     Route::get('/resident/invoices/{id}', [ResidentInvoiceController::class, 'show'])->name('resident.invoices.show');
     Route::post('/resident/invoices/pay', [ResidentInvoiceController::class, 'pay'])->name('resident.invoices.pay');
+    Route::post('/resident/invoices/pay-details', [ResidentInvoiceController::class, 'payDetails'])->name('resident.invoices.pay-details');
     Route::get('/resident/payments/{payment}/receipt', [ResidentInvoiceController::class, 'printReceipt'])->name('resident.payments.receipt');
 
     // Quản lý thành viên gia đình & nhân khẩu & mã mời
