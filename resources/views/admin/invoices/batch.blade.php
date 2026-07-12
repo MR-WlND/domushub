@@ -40,6 +40,7 @@
                         <div class="batch-field">
                             <label>Tháng phát hành <span class="batch-req">*</span></label>
                             <input type="month" name="billing_month"
+                                   id="billing_month"
                                    value="{{ old('billing_month', now()->format('Y-m')) }}" required>
                         </div>
                         <div class="batch-field">
@@ -53,10 +54,10 @@
                 {{-- Chọn loại phí --}}
                 <div class="batch-section">
                     <h3 class="batch-section-title">Chọn loại phí phát hành</h3>
-                    <p class="batch-hint">Chọn ít nhất một loại. Hệ thống sẽ áp dụng đơn giá đang <strong>Đang dùng</strong> cho từng loại.</p>
+                    <p class="batch-hint">Chọn các phí cần tạo hóa đơn. Hệ thống sẽ áp dụng đơn giá đang <strong>Hoạt động</strong>.</p>
 
                     @php
-                        $typeKeys   = ['electricity','water','management_fee','parking','internet','service'];
+                        $typeKeys   = ['electricity','water','management_fee','motorbike','car','internet','service'];
                         $activeTypes = $activePrices->keyBy('type');
                     @endphp
 
@@ -65,9 +66,11 @@
                         @php $price = $activeTypes->get($type); @endphp
                         <label class="batch-price-item {{ $price ? '' : 'batch-price-item--disabled' }}">
                             <input type="checkbox" name="types[]" value="{{ $type }}"
+                                   data-price="{{ $price ? $price->unit_price : 0 }}"
                                    {{ old('types') && in_array($type, old('types')) ? 'checked' : '' }}
                                    {{ !$price ? 'disabled' : '' }}
-                                   class="batch-check">
+                                   class="batch-check"
+                                   onchange="updateEstimatedCost()">
                             <div class="batch-price-info">
                                 <div>
                                     <div class="batch-price-name">{{ $price ? $price->name : \App\Models\Invoice::typeLabel($type) }}</div>
@@ -89,32 +92,50 @@
 
                 {{-- Tùy chọn nâng cao --}}
                 <div class="batch-section">
-                    <h3 class="batch-section-title">Tùy chọn</h3>
+                    <h3 class="batch-section-title">Tùy chọn áp dụng</h3>
                     <div class="batch-options">
                         <label class="batch-option">
-                            <input type="checkbox" name="skip_existing" value="1" checked>
+                            <input type="checkbox" name="skip_existing" value="1" checked onchange="updateEstimatedCost()">
                             <span>Bỏ qua nếu đã có hóa đơn cùng tháng + loại phí</span>
                         </label>
                         <label class="batch-option">
-                            <input type="checkbox" name="only_occupied" value="1" checked>
+                            <input type="checkbox" name="only_occupied" id="only_occupied" value="1" checked onchange="updateApartmentCount()">
                             <span>Chỉ căn hộ đang có người ở (occupied)</span>
                         </label>
                     </div>
                 </div>
             </div>
 
-            {{-- Preview danh sách căn hộ --}}
+            {{-- Preview danh sách căn hộ và Ước tính --}}
             <div class="batch-preview">
                 <div class="batch-section">
-                    <h3 class="batch-section-title">Căn hộ sẽ được áp dụng</h3>
+                    <h3 class="batch-section-title">Ước tính kết quả phát hành</h3>
+                    <div class="batch-est-grid">
+                        <div class="batch-est-card">
+                            <span class="batch-est-label">Căn hộ áp dụng</span>
+                            <span class="batch-est-val" id="est_apts_count">0</span>
+                        </div>
+                        <div class="batch-est-card">
+                            <span class="batch-est-label">Kỳ phát hành</span>
+                            <span class="batch-est-val" id="est_period">Tháng --/----</span>
+                        </div>
+                        <div class="batch-est-card batch-est-card--primary">
+                            <span class="batch-est-label">Dự kiến doanh thu / căn hộ</span>
+                            <span class="batch-est-val" id="est_revenue_per_apt">0đ</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="batch-section">
+                    <h3 class="batch-section-title">Danh sách căn hộ mục tiêu</h3>
                     <div class="batch-apt-scroll">
-                        <table class="batch-apt-table">
+                        <table class="batch-apt-table" id="aptTable">
                             <thead>
                                 <tr><th>Căn hộ</th><th>Tòa</th><th>Tầng</th><th>Trạng thái</th></tr>
                             </thead>
                             <tbody>
                                 @forelse($apartments as $apt)
-                                <tr>
+                                <tr data-status="{{ $apt->status }}">
                                     <td class="batch-apt-num">{{ $apt->apartment_number }}</td>
                                     <td>{{ optional(optional($apt->floor)->block)->name ?? '—' }}</td>
                                     <td>Tầng {{ optional($apt->floor)->floor_number ?? '—' }}</td>
@@ -134,9 +155,9 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="batch-apt-summary">
-                        Tổng: <strong>{{ $apartments->count() }}</strong> căn hộ —
-                        Đang ở: <strong>{{ $apartments->where('status','occupied')->count() }}</strong>
+                    <div class="batch-apt-summary" id="aptSummaryText">
+                        Tổng: <strong>{{ $totalCount }}</strong> căn hộ —
+                        Đang ở: <strong>{{ $occupiedCount }}</strong>
                     </div>
                 </div>
             </div>
@@ -145,7 +166,7 @@
         {{-- Submit --}}
         <div class="batch-submit-bar">
             <div class="batch-submit-info">
-                Thao tác này sẽ tạo hóa đơn hàng loạt. Kiểm tra kỹ trước khi xác nhận.
+                ⚠️ Vui lòng xem kỹ thông số và ước tính hóa đơn trước khi tiến hành xuất hàng loạt.
             </div>
             <button type="submit" class="batch-btn batch-btn--primary"
                     onclick="return confirm('Xác nhận xuất hóa đơn hàng loạt?')">
@@ -179,7 +200,7 @@
 .batch-field { display: flex; flex-direction: column; gap: 5px; }
 .batch-field label { font-size: 0.78rem; font-weight: 600; color: #64748b; }
 .batch-field input, .batch-field select {
-    padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px;
+    padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px;
     font-size: 0.875rem; background: #f8fafc; outline: none;
 }
 .batch-field input:focus { border-color: #3b82f6; background: #fff; }
@@ -191,7 +212,7 @@
     padding: 12px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px;
     cursor: pointer; transition: border-color .15s, background .15s;
 }
-.batch-price-item:has(.batch-check:checked) { border-color: #3b82f6; background: #eff6ff; }
+.batch-price-item:has(.batch-check:checked) { border-color: #2563eb; background: #f0f9ff; }
 .batch-price-item:hover:not(.batch-price-item--disabled) { border-color: #93c5fd; }
 .batch-price-item--disabled { opacity: 0.45; cursor: not-allowed; }
 .batch-check { width: 16px; height: 16px; cursor: pointer; accent-color: #2563eb; }
@@ -205,7 +226,15 @@
 .batch-option { display: flex; align-items: center; gap: 10px; font-size: 0.875rem; color: #334155; cursor: pointer; }
 .batch-option input { width: 16px; height: 16px; accent-color: #2563eb; }
 
-.batch-apt-scroll { max-height: 340px; overflow-y: auto; border-radius: 8px; border: 1px solid #e2e8f0; }
+/* Est block */
+.batch-est-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.batch-est-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #f8fafc; }
+.batch-est-card--primary { border-color: #bae6fd; background: #f0f9ff; }
+.batch-est-card--primary .batch-est-val { color: #0369a1; }
+.batch-est-label { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; color: #64748b; font-weight: 600; margin-bottom: 4px; }
+.batch-est-val { display: block; font-size: 1.1rem; font-weight: 800; color: #0f172a; }
+
+.batch-apt-scroll { max-height: 250px; overflow-y: auto; border-radius: 8px; border: 1px solid #e2e8f0; }
 .batch-apt-table { width: 100%; border-collapse: collapse; }
 .batch-apt-table th {
     position: sticky; top: 0; background: #f8fafc;
@@ -241,4 +270,59 @@
 
 .batch-error { font-size: 0.75rem; color: #dc2626; display: block; margin-top: 6px; }
 </style>
+
+<script>
+function updateApartmentCount() {
+    const onlyOccupied = document.getElementById('only_occupied').checked;
+    const table = document.getElementById('aptTable');
+    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    
+    let activeApts = 0;
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        if (row.classList.contains('batch-empty')) continue;
+        
+        const status = row.getAttribute('data-status');
+        if (onlyOccupied) {
+            if (status === 'occupied') {
+                row.style.display = '';
+                activeApts++;
+            } else {
+                row.style.display = 'none';
+            }
+        } else {
+            row.style.display = '';
+            activeApts++;
+        }
+    }
+    
+    document.getElementById('est_apts_count').innerText = activeApts;
+    updateEstimatedCost();
+}
+
+function updateEstimatedCost() {
+    const checkboxes = document.querySelectorAll('.batch-check:checked');
+    let totalPerApt = 0;
+    checkboxes.forEach(cb => {
+        totalPerApt += parseFloat(cb.getAttribute('data-price')) || 0;
+    });
+
+    document.getElementById('est_revenue_per_apt').innerText = 
+        totalPerApt.toLocaleString('vi-VN') + 'đ';
+        
+    const dateInput = document.getElementById('billing_month').value;
+    if (dateInput) {
+        const parts = dateInput.split('-');
+        document.getElementById('est_period').innerText = `Tháng ${parts[1]}/${parts[0]}`;
+    }
+}
+
+// Lắng nghe thay đổi kỳ phát hành để cập nhật UI
+document.getElementById('billing_month').addEventListener('input', updateEstimatedCost);
+
+// Chạy lần đầu
+document.addEventListener('DOMContentLoaded', () => {
+    updateApartmentCount();
+});
+</script>
 @endsection
