@@ -588,3 +588,39 @@ select.vp-input {
         width: 100%;
     }
 }
+
+/* ─── Confirm Modal ─── */
+.vp-confirm-modal {
+    display: none; position: fixed; inset: 0; z-index: 9999;
+    align-items: center; justify-content: center;
+}
+.vp-confirm-modal__backdrop {
+    position: absolute; inset: 0; background: rgba(15,23,42,0.5); backdrop-filter: blur(4px);
+}
+.vp-confirm-modal__box {
+    position: relative; background: #fff; border-radius: 16px;
+    padding: 32px; max-width: 420px; width: 90%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    animation: vpModalIn 0.2s ease;
+}
+@keyframes vpModalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+.vp-confirm-modal__title { margin: 0 0 8px; font-size: 1.1rem; font-weight: 700; color: #0f172a; }
+.vp-confirm-modal__desc { margin: 0 0 24px; font-size: 0.88rem; color: #64748b; line-height: 1.5; }
+.vp-confirm-modal__actions { display: flex; gap: 12px; justify-content: flex-end; }
+.vp-btn--danger {
+    background: #dc2626; color: #fff; border: none; padding: 10px 20px;
+    border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer;
+    transition: all 0.2s;
+}
+.vp-btn--danger:hover { background: #b91c1c; }
+
+/* ─── Stat hover ─── */
+.vp-stat { transition: transform 0.2s, box-shadow 0.2s; }
+.vp-stat:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.06); }
+
+/* ─── Card hover polish ─── */
+.vp-card { transition: box-shadow 0.2s, border-color 0.2s; }
+.vp-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); border-color: #cbd5e1; }
+
+/* ─── Cancel button safety spacing ─── */
+.vp-cancel-btn { margin-top: 8px; }

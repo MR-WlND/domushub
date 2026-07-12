@@ -27,7 +27,7 @@ class PostController extends Controller
     public function index(Request $request)
     {
         $query = Post::with(['user.apartment', 'comments.user.apartment', 'images'])
-            ->withCount('likes')
+            ->withCount(['likes', 'comments'])
             ->with(['likedByCurrentUser'])
             ->where('status', 'published')
             ->whereDoesntHave('reports', function($q) {
@@ -242,7 +242,11 @@ class PostController extends Controller
         ]);
 
         // Phát sự kiện real-time cho bình luận mới
-        broadcast(new \App\Events\CommentCreated($comment));
+        try {
+            broadcast(new \App\Events\CommentCreated($comment));
+        } catch (\Exception $e) {
+            \Log::warning('Broadcast CommentCreated failed: ' . $e->getMessage());
+        }
 
         // Quét cư dân được tag nhắc tên bằng kí tự phân tách zero-width space (\x{200B})
         $mentionedUserIds = [];
@@ -276,29 +280,32 @@ class PostController extends Controller
 
         $mentionedUserIds = array_unique($mentionedUserIds);
 
-        // Gửi thông báo nhắc tên cho những cư dân được tag (tránh tự tag bản thân)
-        foreach ($mentionedUserIds as $uId) {
-            if ($uId !== Auth::id()) {
-                $userToNotify = User::find($uId);
-                if ($userToNotify) {
-                    $userToNotify->notify(new \App\Notifications\CommentMentionNotification($comment));
+        // Gửi thông báo nhắc tên và tương tác (không block response nếu lỗi)
+        try {
+            foreach ($mentionedUserIds as $uId) {
+                if ($uId !== Auth::id()) {
+                    $userToNotify = User::find($uId);
+                    if ($userToNotify) {
+                        $userToNotify->notify(new \App\Notifications\CommentMentionNotification($comment));
+                    }
                 }
             }
-        }
 
-        // Gửi thông báo tương tác thông thường, loại trừ những người đã nhận thông báo nhắc tên
-        if ($comment->parent_id) {
-            $parentComment = Comment::find($comment->parent_id);
-            if ($parentComment && $parentComment->user_id !== Auth::id() && !in_array($parentComment->user_id, $mentionedUserIds)) {
-                $parentComment->user->notify(new \App\Notifications\CommentRepliedNotification($comment));
+            if ($comment->parent_id) {
+                $parentComment = Comment::find($comment->parent_id);
+                if ($parentComment && $parentComment->user_id !== Auth::id() && !in_array($parentComment->user_id, $mentionedUserIds)) {
+                    $parentComment->user->notify(new \App\Notifications\CommentRepliedNotification($comment));
+                }
+                if ($post->user_id !== Auth::id() && (!$parentComment || $post->user_id !== $parentComment->user_id) && !in_array($post->user_id, $mentionedUserIds)) {
+                    $post->user->notify(new \App\Notifications\PostCommentedNotification($comment));
+                }
+            } else {
+                if ($post->user_id !== Auth::id() && !in_array($post->user_id, $mentionedUserIds)) {
+                    $post->user->notify(new \App\Notifications\PostCommentedNotification($comment));
+                }
             }
-            if ($post->user_id !== Auth::id() && (!$parentComment || $post->user_id !== $parentComment->user_id) && !in_array($post->user_id, $mentionedUserIds)) {
-                $post->user->notify(new \App\Notifications\PostCommentedNotification($comment));
-            }
-        } else {
-            if ($post->user_id !== Auth::id() && !in_array($post->user_id, $mentionedUserIds)) {
-                $post->user->notify(new \App\Notifications\PostCommentedNotification($comment));
-            }
+        } catch (\Exception $e) {
+            \Log::warning('Notification dispatch failed: ' . $e->getMessage());
         }
 
         if ($request->ajax() || $request->wantsJson()) {
@@ -518,7 +525,11 @@ class PostController extends Controller
             'price' => $request->price,
         ]);
 
-        broadcast(new PostUpdated($post))->toOthers();
+        try {
+            broadcast(new PostUpdated($post))->toOthers();
+        } catch (\Exception $e) {
+            \Log::warning('Broadcast PostUpdated failed: ' . $e->getMessage());
+        }
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
@@ -560,7 +571,11 @@ class PostController extends Controller
             'content' => $request->content,
         ]);
 
-        broadcast(new CommentUpdated($comment))->toOthers();
+        try {
+            broadcast(new CommentUpdated($comment))->toOthers();
+        } catch (\Exception $e) {
+            \Log::warning('Broadcast CommentUpdated failed: ' . $e->getMessage());
+        }
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
@@ -685,7 +700,11 @@ class PostController extends Controller
 
         $postId = $type === 'post' ? $likeable->id : $likeable->post_id;
 
-        broadcast(new LikeToggled($type, $likeableId, $likesCount, $postId, $activeReactionType, $reactionsSummary))->toOthers();
+        try {
+            broadcast(new LikeToggled($type, $likeableId, $likesCount, $postId, $activeReactionType, $reactionsSummary))->toOthers();
+        } catch (\Exception $e) {
+            \Log::warning('Broadcast LikeToggled failed: ' . $e->getMessage());
+        }
 
         return response()->json([
             'success' => true,
@@ -840,7 +859,11 @@ class PostController extends Controller
         $comment->update(['is_pinned' => $isPinned]);
 
         // Phát sự kiện cập nhật bình luận real-time
-        broadcast(new \App\Events\CommentUpdated($comment))->toOthers();
+        try {
+            broadcast(new \App\Events\CommentUpdated($comment))->toOthers();
+        } catch (\Exception $e) {
+            \Log::warning('Broadcast CommentUpdated (pin) failed: ' . $e->getMessage());
+        }
 
         return response()->json([
             'success' => true,
