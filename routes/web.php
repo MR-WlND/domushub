@@ -121,6 +121,8 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/admin/tickets/{id}', [App\Http\Controllers\Admin\TicketController::class, 'show'])->name('admin.tickets.show');
     Route::post('/admin/tickets/{id}/assign', [App\Http\Controllers\Admin\TicketController::class, 'assign'])->name('admin.tickets.assign');
     Route::post('/admin/tickets/{id}/update-progress', [App\Http\Controllers\Admin\TicketController::class, 'updateProgress'])->name('admin.tickets.update-progress');
+    Route::post('/admin/tickets/{id}/costs', [App\Http\Controllers\Admin\TicketController::class, 'addCost'])->name('admin.tickets.add-cost');
+    Route::delete('/admin/tickets/{id}/costs/{costId}', [App\Http\Controllers\Admin\TicketController::class, 'deleteCost'])->name('admin.tickets.delete-cost');
 
     // QUẢN LÝ PHƯƠNG TIỆN PHÍA ADMIN
     Route::get('/admin/vehicles', [App\Http\Controllers\Admin\VehicleController::class, 'index'])->name('admin.vehicles.index');

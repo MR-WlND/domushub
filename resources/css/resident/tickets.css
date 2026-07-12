@@ -178,7 +178,23 @@
 .card--assigned .tk-card__accent    { background: linear-gradient(180deg, #8b5cf6, #7c3aed); }
 .card--in_progress .tk-card__accent { background: linear-gradient(180deg, #3b82f6, #2563eb); }
 .card--completed .tk-card__accent   { background: linear-gradient(180deg, #22c55e, #16a34a); }
-.card--cancelled .tk-card__accent   { background: linear-gradient(180deg, #94a3b8, #64748b); }
+.card--cancelled .tk-card__accent   { background: linear-gradient(180deg, #cbd5e1, #94a3b8); }
+
+/* Card đã hủy: mờ nhẹ, border phân biệt */
+.card--cancelled {
+    opacity: 0.82;
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+.card--cancelled:hover {
+    opacity: 1;
+}
+.card--cancelled .tk-card__title {
+    color: #64748b;
+}
+.card--cancelled .tk-card__desc {
+    color: #94a3b8;
+}
 
 .tk-card__body {
     flex: 1;
@@ -193,6 +209,14 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
+}
+
+.tk-card__badges {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .tk-card__id {
@@ -252,7 +276,14 @@
 .badge--assigned    { background: #ede9fe; color: #5b21b6; }
 .badge--in_progress { background: #dbeafe; color: #1e40af; }
 .badge--completed   { background: #dcfce7; color: #166534; }
-.badge--cancelled   { background: #f1f5f9; color: #475569; }
+.badge--cancelled   {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1.5px solid #cbd5e1;
+    text-decoration: line-through;
+    text-decoration-color: #94a3b8;
+    letter-spacing: 0.04em;
+}
 
 .badge--low    { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
 .badge--medium { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
@@ -267,11 +298,10 @@
 .tk-card__right {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
-    gap: 8px;
     padding: 1.1rem 1.25rem;
-    min-width: 140px;
+    border-left: 1px solid #f1f5f9;
 }
 
 /* --- Buttons --- */
@@ -977,3 +1007,64 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ── Ticket Cost (Resident Side) ── */
+.tk-cost-list-resident {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.tk-cost-row {
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.tk-cost-row:last-child {
+    border-bottom: none;
+}
+
+.tk-cost-row__info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.tk-cost-row__desc {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1e293b;
+    flex: 1;
+}
+
+.tk-cost-row__amount {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #dc2626;
+    white-space: nowrap;
+}
+
+.tk-cost-row__note {
+    font-size: 0.78rem;
+    color: #64748b;
+    margin: 2px 0 0;
+    font-style: italic;
+}
+
+.tk-cost-row--total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-top: 4px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1e293b;
+    border-bottom: none;
+}
+

@@ -77,19 +77,20 @@ class TicketController extends Controller
             'description' => ['required', 'string', 'max:2000'],
             'priority'    => ['required', 'in:low,medium,high,urgent'],
             'images'      => ['nullable', 'array', 'max:5'],
-            'images.*'    => ['image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'images.*'    => ['file', 'mimes:jpg,jpeg,png,webp,mp4,mov,avi,webm', 'max:20480'],
         ], [
             'title.required'       => 'Vui lòng nhập tiêu đề phản ánh.',
             'title.max'            => 'Tiêu đề không được quá 200 ký tự.',
             'description.required' => 'Vui lòng mô tả chi tiết sự cố.',
             'description.max'      => 'Mô tả không được quá 2000 ký tự.',
             'priority.required'    => 'Vui lòng chọn mức độ ưu tiên.',
-            'images.max'           => 'Tối đa 5 ảnh đính kèm.',
-            'images.*.image'       => 'File tải lên phải là hình ảnh.',
-            'images.*.max'         => 'Dung lượng mỗi ảnh tối đa 2MB.',
+            'images.max'           => 'Tối đa 5 file đính kèm.',
+            'images.*.file'        => 'File tải lên không hợp lệ.',
+            'images.*.mimes'       => 'Định dạng hỗ trợ: JPG, PNG, WEBP, MP4, MOV, AVI, WEBM.',
+            'images.*.max'         => 'Dung lượng mỗi file tối đa 20MB.',
         ]);
 
-        // Xử lý nhiều ảnh
+        // Xử lý nhiều ảnh/video
         $imagePaths = [];
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
@@ -126,7 +127,7 @@ class TicketController extends Controller
     {
         $user = Auth::user();
 
-        $ticket = Ticket::with(['sender', 'handler', 'progress.updatedBy', 'apartment.floor.block'])
+        $ticket = Ticket::with(['sender', 'handler', 'progress.updatedBy', 'apartment.floor.block', 'costs.createdBy'])
             ->where('apartment_id', $user->apartment_id)
             ->findOrFail($id);
 

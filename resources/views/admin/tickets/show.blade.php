@@ -47,9 +47,16 @@
             <div class="tk-show-card">
                 <div class="tk-show-card__header">
                     <span class="tk-show-card__title">Nội dung phản ánh</span>
-                    <div style="display: flex; gap: 8px;">
-                        <span class="tk-status tk-status--{{ $ticket->status }}">{{ $ticket->statusLabel() }}</span>
+                    <div style="display: flex; gap: 8px; align-items: center;">
                         <span class="tk-priority tk-priority--{{ $ticket->priority }}">{{ $ticket->priorityLabel() }}</span>
+                        <span class="tk-status tk-status--{{ $ticket->status }}">{{ $ticket->statusLabel() }}</span>
+                        @if($ticket->rating)
+                            <div class="tk-rating-stars" style="display: inline-flex; align-items: center; gap: 2px; margin-left: 4px;">
+                                @for($i = 1; $i <= 5; $i++)
+                                    <span class="{{ $i <= $ticket->rating ? 'filled' : 'empty' }}">★</span>
+                                @endfor
+                            </div>
+                        @endif
                     </div>
                 </div>
                 <div class="tk-show-card__body">
@@ -78,7 +85,49 @@
                         </p>
                     </div>
 
-                    @if($ticket->image)
+                    @if($ticket->images && count($ticket->images) > 0)
+                        @php
+                            $videoExts = ['mp4', 'mov', 'avi', 'webm'];
+                            $imageFiles = [];
+                            $videoFiles = [];
+                            foreach ($ticket->images as $file) {
+                                $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                                if (in_array($ext, $videoExts)) {
+                                    $videoFiles[] = $file;
+                                } else {
+                                    $imageFiles[] = $file;
+                                }
+                            }
+                        @endphp
+                        <div style="margin-top: 1rem;">
+                            <p style="font-size: 0.78rem; color: #94a3b8; font-weight: 600; margin-bottom: 6px;">ĐÍNH KÈM ({{ count($ticket->images) }} file)</p>
+
+                            @if(count($imageFiles) > 0)
+                                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin-bottom: 8px;">
+                                    @foreach($imageFiles as $img)
+                                        <img src="{{ asset('storage/' . $img) }}"
+                                             alt="Ảnh phản ánh"
+                                             style="width: 100%; height: 140px; border-radius: 10px; object-fit: cover; border: 1px solid #e2e8f0; cursor: pointer;"
+                                             onclick="openAdminImgModal(this.src)">
+                                    @endforeach
+                                </div>
+                            @endif
+
+                            @if(count($videoFiles) > 0)
+                                <div style="display: flex; flex-direction: column; gap: 8px;">
+                                    @foreach($videoFiles as $vid)
+                                        <video controls
+                                               src="{{ asset('storage/' . $vid) }}"
+                                               style="width: 100%; max-height: 280px; border-radius: 10px; border: 1px solid #e2e8f0; background: #0f172a;"
+                                               preload="metadata"
+                                               playsinline>
+                                            Trình duyệt không hỗ trợ video.
+                                        </video>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                    @elseif($ticket->image)
                         <div style="margin-top: 1rem;">
                             <p style="font-size: 0.78rem; color: #94a3b8; font-weight: 600; margin-bottom: 6px;">ẢNH ĐÍNH KÈM</p>
                             <img src="{{ asset('storage/' . $ticket->image) }}"
@@ -91,26 +140,9 @@
                     {{-- Rating Display --}}
                     @if($ticket->rating)
                         <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f1f5f9;">
-                            <p style="font-size: 0.78rem; color: #94a3b8; font-weight: 700; margin-bottom: 10px; letter-spacing: 0.08em;">⭐ ĐÁNH GIÁ CỦA CƯ DÂN</p>
-                            <div style="background: linear-gradient(135deg,#fffbeb,#fef3c7); border: 1.5px solid #fde68a; border-radius: 14px; padding: 1rem 1.25rem;">
-                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                                    <div style="display:flex;gap:3px;">
-                                        @for($i = 1; $i <= 5; $i++)
-                                            <span style="font-size: 1.5rem; color: {{ $i <= $ticket->rating ? '#f59e0b' : '#d1d5db' }};">★</span>
-                                        @endfor
-                                    </div>
-                                    <div>
-                                        <div style="font-size: 1.5rem; font-weight: 900; color: #f59e0b; line-height:1;">{{ $ticket->rating }}/5</div>
-                                        <div style="font-size: 0.78rem; color: #92400e; font-weight: 600;">
-                                            {{ ['','Rất tệ','Chưa hài lòng','Bình thường','Hài lòng','Xuất sắc'][$ticket->rating] }}
-                                        </div>
-                                    </div>
-                                </div>
-                                @if($ticket->feedback_comment)
-                                    <div style="font-size: 0.88rem; color: #78350f; line-height: 1.6; background: rgba(255,255,255,0.6); border-radius: 8px; padding: 8px 12px; border-left: 3px solid #f59e0b; font-style: italic;">
-                                        "{{ $ticket->feedback_comment }}"
-                                    </div>
-                                @endif
+                            <p style="font-size: 0.78rem; color: #94a3b8; font-weight: 600; margin-bottom: 6px;">ĐÁNH GIÁ CỦA CƯ DÂN</p>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="font-weight: 800; color: #f59e0b;">{{ $ticket->rating }}/5</span>
                             </div>
                         </div>
                     @elseif($ticket->status === 'completed')
@@ -202,41 +234,75 @@
                 </div>
             @endif
 
-            {{-- Update Progress Form --}}
-            @if(in_array($ticket->status, ['assigned', 'in_progress']))
+            {{-- Chi phí phát sinh --}}
+            @if(in_array(auth()->user()->role, ['admin', 'manager']))
                 <div class="tk-show-card">
                     <div class="tk-show-card__header">
-                        <span class="tk-show-card__title">Cập nhật tiến trình</span>
+                        <span class="tk-show-card__title">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                            Chi phí phát sinh
+                        </span>
                     </div>
                     <div class="tk-show-card__body">
-                        <form method="POST"
-                              action="{{ route('admin.tickets.update-progress', $ticket->id) }}"
-                              enctype="multipart/form-data">
+
+                        {{-- Danh sách chi phí --}}
+                        @if($ticket->costs->count() > 0)
+                            <div class="tk-cost-list">
+                                @foreach($ticket->costs as $cost)
+                                    <div class="tk-cost-item">
+                                        <div class="tk-cost-item__info">
+                                            <span class="tk-cost-item__desc">{{ $cost->description }}</span>
+                                            <span class="tk-cost-item__amount">{{ number_format($cost->amount, 0, ',', '.') }}đ</span>
+                                        </div>
+                                        @if($cost->note)
+                                            <p class="tk-cost-item__note">{{ $cost->note }}</p>
+                                        @endif
+                                        <div class="tk-cost-item__meta">
+                                            <span>{{ $cost->createdBy->name ?? 'N/A' }} · {{ $cost->created_at->format('d/m/Y H:i') }}</span>
+                                            <form method="POST" action="{{ route('admin.tickets.delete-cost', [$ticket->id, $cost->id]) }}" onsubmit="return confirm('Xóa chi phí này?')" style="display: inline;">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="tk-cost-item__delete" title="Xóa">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                @endforeach
+
+                                <div class="tk-cost-total">
+                                    <span>Tổng chi phí</span>
+                                    <strong>{{ number_format($ticket->costs->sum('amount'), 0, ',', '.') }}đ</strong>
+                                </div>
+                            </div>
+                        @else
+                            <p style="color: #94a3b8; font-size: 0.85rem; text-align: center; padding: 0.5rem 0;">Chưa có chi phí phát sinh.</p>
+                        @endif
+
+                        {{-- Form thêm chi phí --}}
+                        <form method="POST" action="{{ route('admin.tickets.add-cost', $ticket->id) }}" class="tk-cost-form">
                             @csrf
-                            <div class="tk-form-group">
-                                <label>Trạng thái mới</label>
-                                <select name="status" required>
-                                    <option value="" disabled selected>-- Chọn --</option>
-                                    <option value="in_progress">Đang xử lý</option>
-                                    <option value="completed">Hoàn thành</option>
-                                </select>
+                            <div class="tk-cost-form__group">
+                                <label>Mô tả <span style="color: #ef4444;">*</span></label>
+                                <input type="text" name="description" placeholder="VD: Thay cửa kính tầng 3" required value="{{ old('description') }}">
                             </div>
-                            <div class="tk-form-group">
+                            <div class="tk-cost-form__group">
+                                <label>Số tiền (VNĐ) <span style="color: #ef4444;">*</span></label>
+                                <input type="number" name="amount" placeholder="VD: 500000" min="1000" step="1000" required value="{{ old('amount') }}">
+                            </div>
+                            <div class="tk-cost-form__group">
                                 <label>Ghi chú</label>
-                                <textarea name="comment" placeholder="Mô tả công việc đã thực hiện..."></textarea>
+                                <textarea name="note" rows="2" placeholder="Ghi chú thêm (tùy chọn)">{{ old('note') }}</textarea>
                             </div>
-                            <div class="tk-form-group">
-                                <label>Ảnh chứng minh (tùy chọn)</label>
-                                <input type="file" name="image_proof" accept="image/*">
-                            </div>
-                            <button type="submit" class="tk-form-submit tk-form-submit--primary" style="width: 100%; justify-content: center;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                                Cập nhật
+                            <button type="submit" class="tk-form-submit tk-form-submit--warning" style="width: 100%; justify-content: center;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+                                Thêm chi phí
                             </button>
                         </form>
                     </div>
                 </div>
             @endif
+
 
             {{-- Quick Info --}}
             <div class="tk-show-card">

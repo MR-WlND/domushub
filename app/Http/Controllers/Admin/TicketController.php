@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Ticket;
+use App\Models\TicketCost;
 use App\Models\TicketProgress;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -99,7 +100,7 @@ class TicketController extends Controller
      */
     public function show($id)
     {
-        $ticket = Ticket::with(['apartment.floor.block', 'sender', 'handler', 'progress.updatedBy'])
+        $ticket = Ticket::with(['apartment.floor.block', 'sender', 'handler', 'progress.updatedBy', 'costs.createdBy'])
             ->findOrFail($id);
 
         $technicians = User::where('role', 'technician')
@@ -111,8 +112,52 @@ class TicketController extends Controller
     }
 
     /**
-     * Phân công technician xử lý
+     * Thêm chi phí phát sinh cho phản ánh
      */
+    public function addCost(Request $request, $id)
+    {
+        $ticket = Ticket::findOrFail($id);
+
+        if (!in_array(Auth::user()->role, ['admin', 'manager'], true)) {
+            abort(403, 'Bạn không có quyền thêm chi phí.');
+        }
+
+        $validated = $request->validate([
+            'description' => ['required', 'string', 'max:255'],
+            'amount'      => ['required', 'numeric', 'min:1000'],
+            'note'        => ['nullable', 'string', 'max:1000'],
+        ], [
+            'description.required' => 'Vui lòng nhập mô tả chi phí.',
+            'amount.required'      => 'Vui lòng nhập số tiền.',
+            'amount.min'           => 'Số tiền tối thiểu là 1,000đ.',
+        ]);
+
+        TicketCost::create([
+            'ticket_id'   => $ticket->id,
+            'description' => $validated['description'],
+            'amount'      => $validated['amount'],
+            'note'        => $validated['note'] ?? null,
+            'created_by'  => Auth::id(),
+        ]);
+
+        return back()->with('success', 'Đã thêm chi phí phát sinh thành công.');
+    }
+
+    /**
+     * Xóa chi phí phát sinh
+     */
+    public function deleteCost($id, $costId)
+    {
+        if (!in_array(Auth::user()->role, ['admin', 'manager'], true)) {
+            abort(403, 'Bạn không có quyền xóa chi phí.');
+        }
+
+        $cost = TicketCost::where('ticket_id', $id)->findOrFail($costId);
+        $cost->delete();
+
+        return back()->with('success', 'Đã xóa chi phí phát sinh.');
+    }
+
     public function assign(Request $request, $id)
     {
         $ticket = Ticket::findOrFail($id);

@@ -48,6 +48,11 @@ class Ticket extends Model
         return $this->hasMany(TicketProgress::class)->orderBy('created_at', 'asc');
     }
 
+    public function costs()
+    {
+        return $this->hasMany(TicketCost::class)->orderBy('created_at', 'asc');
+    }
+
     // ── Label Helpers ───────────────────────────────────────────
 
     public function statusLabel(): string

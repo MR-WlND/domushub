@@ -457,9 +457,12 @@
 
 /* --- Star Rating Display --- */
 .tk-rating-stars {
-    display: flex;
+    display: inline-flex;
+    align-items: center;
     gap: 2px;
-    font-size: 1.2rem;
+    font-size: 0.85rem;
+    line-height: 1;
+    vertical-align: middle;
 }
 
 .tk-rating-stars .filled { color: #f59e0b; }
@@ -678,53 +681,141 @@
     .tk-panel { width: 100vw; }
 }
 
-/* --- Overdue row highlight --- */
-.tk-row--overdue td { background: #fff7f7; }
-.tk-row--overdue:hover td { background: #fee2e2 !important; }
-.tk-row--overdue .tk-title-cell__title { color: #b91c1c; }
-
-/* SLA badge */
-.tk-overdue-badge {
-    display: inline-block;
-    margin-top: 3px;
-    font-size: .7rem;
-    font-weight: 700;
-    color: #b91c1c;
-    background: #fee2e2;
-    border-radius: 4px;
-    padding: 1px 6px;
-    letter-spacing: .02em;
-}
-
-/* --- Overdue warning in panel --- */
-.tk-panel__overdue {
+/* ── Ticket Cost (Chi phí phát sinh) ── */
+.tk-cost-list {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 20px;
-    background: #fef2f2;
-    border-bottom: 1px solid #fecaca;
-    color: #b91c1c;
-    font-size: .85rem;
-    font-weight: 600;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 1rem;
 }
 
-/* --- Toast --- */
-.tk-toast {
-    position: fixed;
-    bottom: 28px;
-    right: 28px;
-    padding: 13px 20px;
-    border-radius: 12px;
-    font-size: .88rem;
-    font-weight: 600;
-    box-shadow: 0 8px 24px rgba(0,0,0,.15);
-    z-index: 9999;
-    transform: translateY(16px);
-    opacity: 0;
-    transition: all .25s cubic-bezier(.4,0,.2,1);
-    max-width: 360px;
+.tk-cost-item {
+    background: #fefce8;
+    border: 1px solid #fde68a;
+    border-radius: 10px;
+    padding: 10px 12px;
 }
-.tk-toast--show { transform: translateY(0); opacity: 1; }
-.tk-toast--success { background: #f0fdf4; color: #166534; border: 1px solid #86efac; }
-.tk-toast--error   { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+
+.tk-cost-item__info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.tk-cost-item__desc {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1e293b;
+    flex: 1;
+}
+
+.tk-cost-item__amount {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #dc2626;
+    white-space: nowrap;
+}
+
+.tk-cost-item__note {
+    font-size: 0.78rem;
+    color: #64748b;
+    margin: 4px 0 0;
+    font-style: italic;
+}
+
+.tk-cost-item__meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
+    font-size: 0.73rem;
+    color: #94a3b8;
+}
+
+.tk-cost-item__delete {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 2px;
+    transition: color 0.2s;
+}
+
+.tk-cost-item__delete:hover {
+    color: #dc2626;
+}
+
+.tk-cost-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    color: #1e293b;
+}
+
+.tk-cost-total strong {
+    font-weight: 800;
+    color: #dc2626;
+    font-size: 1rem;
+}
+
+.tk-cost-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 1rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+.tk-cost-form__group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tk-cost-form__group label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #334155;
+}
+
+.tk-cost-form__group input,
+.tk-cost-form__group textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: #0f172a;
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.tk-cost-form__group input:focus,
+.tk-cost-form__group textarea:focus {
+    outline: none;
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.12);
+}
+
+.tk-cost-form__group textarea {
+    resize: vertical;
+    min-height: 48px;
+}
+
+.tk-form-submit--warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25);
+}
+
+.tk-form-submit--warning:hover {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35);
+    transform: translateY(-1px);
+}

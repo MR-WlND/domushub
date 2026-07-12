@@ -83,9 +83,17 @@
             <div class="tk-info-card">
                 <h3 class="tk-info-card__title">Nội dung phản ánh</h3>
 
-                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 1rem;">
-                    <span class="tk-badge badge--{{ $ticket->status }}">{{ $ticket->statusLabel() }}</span>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 1rem;">
                     <span class="tk-badge badge--{{ $ticket->priority }}">{{ $ticket->priorityLabel() }}</span>
+                    <span class="tk-badge badge--{{ $ticket->status }}">{{ $ticket->statusLabel() }}</span>
+                    @if($ticket->rating)
+                        <div style="display: inline-flex; align-items: center; gap: 3px; margin-left: 4px;">
+                            @for($i = 1; $i <= 5; $i++)
+                                <span class="tk-star {{ $i <= $ticket->rating ? 'tk-star--filled' : 'tk-star--empty' }}" style="font-size: 1.1rem; line-height: 1;">★</span>
+                            @endfor
+                            <span style="font-weight: 800; color: #f59e0b; font-size: 0.85rem; margin-left: 4px;">{{ $ticket->rating }}/5</span>
+                        </div>
+                    @endif
                 </div>
 
                 <p style="font-size: 0.95rem; color: #334155; line-height: 1.7; margin: 0;">
@@ -93,18 +101,48 @@
                 </p>
 
                 @if($ticket->images && count($ticket->images) > 0)
+                    @php
+                        $videoExts = ['mp4', 'mov', 'avi', 'webm'];
+                        $imageFiles = [];
+                        $videoFiles = [];
+                        foreach ($ticket->images as $file) {
+                            $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                            if (in_array($ext, $videoExts)) {
+                                $videoFiles[] = $file;
+                            } else {
+                                $imageFiles[] = $file;
+                            }
+                        }
+                    @endphp
                     <div style="margin-top: 1.25rem;">
-                        <p style="font-size: 0.82rem; color: #94a3b8; font-weight: 600; margin-bottom: 8px;">ẢNH ĐÍNH KÈM ({{ count($ticket->images) }} ảnh)</p>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">
-                            @foreach($ticket->images as $img)
-                                <img src="{{ asset('storage/' . $img) }}"
-                                     alt="Ảnh phản ánh"
-                                     style="width: 100%; height: 150px; border-radius: 10px; object-fit: cover; cursor: pointer; border: 1px solid #e2e8f0; transition: transform 0.2s;"
-                                     onmouseover="this.style.transform='scale(1.03)'"
-                                     onmouseout="this.style.transform='scale(1)'"
-                                     onclick="openImgModal(this.src)">
-                            @endforeach
-                        </div>
+                        <p style="font-size: 0.82rem; color: #94a3b8; font-weight: 600; margin-bottom: 8px;">ĐÍNH KÈM ({{ count($ticket->images) }} file)</p>
+
+                        @if(count($imageFiles) > 0)
+                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 10px;">
+                                @foreach($imageFiles as $img)
+                                    <img src="{{ asset('storage/' . $img) }}"
+                                         alt="Ảnh phản ánh"
+                                         style="width: 100%; height: 150px; border-radius: 10px; object-fit: cover; cursor: pointer; border: 1px solid #e2e8f0; transition: transform 0.2s;"
+                                         onmouseover="this.style.transform='scale(1.03)'"
+                                         onmouseout="this.style.transform='scale(1)'"
+                                         onclick="openImgModal(this.src)">
+                                @endforeach
+                            </div>
+                        @endif
+
+                        @if(count($videoFiles) > 0)
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                @foreach($videoFiles as $vid)
+                                    <video controls
+                                           src="{{ asset('storage/' . $vid) }}"
+                                           style="width: 100%; max-height: 350px; border-radius: 10px; border: 1px solid #e2e8f0; background: #0f172a;"
+                                           preload="metadata"
+                                           playsinline>
+                                        Trình duyệt không hỗ trợ video.
+                                    </video>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
                 @endif
             </div>
@@ -198,29 +236,12 @@
             @endif
 
             {{-- DISPLAY EXISTING FEEDBACK --}}
-            @if($ticket->rating)
+            @if($ticket->rating && $ticket->feedback_comment)
                 <div class="tk-info-card">
-                    <h3 class="tk-info-card__title">⭐ Đánh giá của bạn</h3>
-                    <div class="tk-feedback-display">
-                        <div class="tk-feedback-display__score">
-                            <div class="tk-rating-display">
-                                @for($i = 1; $i <= 5; $i++)
-                                    <span class="tk-star {{ $i <= $ticket->rating ? 'tk-star--filled' : 'tk-star--empty' }}">★</span>
-                                @endfor
-                            </div>
-                            <div>
-                                <div class="tk-feedback-display__number">{{ $ticket->rating }}/5</div>
-                                <div class="tk-feedback-display__label">
-                                    {{ ['','Rất tệ','Chưa hài lòng','Bình thường','Hài lòng','Xuất sắc'][$ticket->rating] }}
-                                </div>
-                            </div>
-                        </div>
-                        @if($ticket->feedback_comment)
-                            <div class="tk-feedback-display__comment">
-                                "{{ $ticket->feedback_comment }}"
-                            </div>
-                        @endif
-                    </div>
+                    <h3 class="tk-info-card__title">Nhận xét của bạn</h3>
+                    <p style="font-size: 0.9rem; color: #475569; line-height: 1.6; margin: 0; font-style: italic;">
+                        "{{ $ticket->feedback_comment }}"
+                    </p>
                 </div>
             @endif
 
@@ -265,6 +286,33 @@
                     </div>
                 @endif
             </div>
+
+            {{-- CHI PHÍ PHÁT SINH --}}
+            @if($ticket->costs->count() > 0)
+                <div class="tk-info-card">
+                    <h3 class="tk-info-card__title">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        Chi phí phát sinh
+                    </h3>
+                    <div class="tk-cost-list-resident">
+                        @foreach($ticket->costs as $cost)
+                            <div class="tk-cost-row">
+                                <div class="tk-cost-row__info">
+                                    <span class="tk-cost-row__desc">{{ $cost->description }}</span>
+                                    <span class="tk-cost-row__amount">{{ number_format($cost->amount, 0, ',', '.') }}đ</span>
+                                </div>
+                                @if($cost->note)
+                                    <p class="tk-cost-row__note">{{ $cost->note }}</p>
+                                @endif
+                            </div>
+                        @endforeach
+                        <div class="tk-cost-row tk-cost-row--total">
+                            <span>Tổng chi phí</span>
+                            <strong style="color: #dc2626;">{{ number_format($ticket->costs->sum('amount'), 0, ',', '.') }}đ</strong>
+                        </div>
+                    </div>
+                </div>
+            @endif
 
             {{-- CANCEL BUTTON - Chỉ người gửi phản ánh mới thấy --}}
             @if($ticket->canCancelBy(auth()->id()))

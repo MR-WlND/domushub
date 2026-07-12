@@ -118,7 +118,17 @@
                     <div class="tk-card__body">
                         <div class="tk-card__header">
                             <span class="tk-card__id">#{{ $ticket->id }}</span>
-                            <span class="tk-badge badge--{{ $ticket->priority }}">{{ $ticket->priorityLabel() }}</span>
+                            <div class="tk-card__badges">
+                                <span class="tk-badge badge--{{ $ticket->priority }}">{{ $ticket->priorityLabel() }}</span>
+                                <span class="tk-badge badge--{{ $ticket->status }}">{{ $ticket->statusLabel() }}</span>
+                                @if($ticket->rating)
+                                    <div class="tk-rating-display" style="margin-left: 2px;">
+                                        @for($i = 1; $i <= 5; $i++)
+                                            <span class="tk-star {{ $i <= $ticket->rating ? 'tk-star--filled' : 'tk-star--empty' }}" style="font-size: 0.95rem;">★</span>
+                                        @endfor
+                                    </div>
+                                @endif
+                            </div>
                         </div>
                         <h3 class="tk-card__title">{{ $ticket->title }}</h3>
                         <p class="tk-card__desc">{{ $ticket->description }}</p>
@@ -134,19 +144,6 @@
                                 </span>
                             @endif
                         </div>
-                    </div>
-
-                    <div class="tk-card__right">
-                        <span class="tk-badge badge--{{ $ticket->status }}">{{ $ticket->statusLabel() }}</span>
-                        @if($ticket->rating)
-                            <span class="tk-rating-badge">
-                                ★ {{ $ticket->rating }}/5
-                            </span>
-                        @elseif($ticket->status === 'completed' && !$ticket->rating)
-                            <span class="tk-rating-pending">
-                                ✍ Cần đánh giá
-                            </span>
-                        @endif
                     </div>
                 </a>
             @endforeach
