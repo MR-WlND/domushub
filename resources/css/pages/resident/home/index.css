@@ -168,7 +168,7 @@
 }
 
 .rh-fb-card__actions {
-    display: grid; grid-template-columns: repeat(2, 1fr); text-align: center;
+    display: grid; grid-template-columns: repeat(3, 1fr); text-align: center;
 }
 .rh-fb-card__action {
     display: flex; align-items: center; justify-content: center; gap: 6px;

@@ -266,7 +266,7 @@ Route::middleware(['security'])->group(function () {
 
 // DASHBOARD RESIDENT ROUTES
 Route::middleware(['resident'])->group(function () {
-    Route::get('/resident/dashboard', function () {
+    Route::get('/resident/dashboard', function (\Illuminate\Http\Request $request) {
         $user = auth()->user();
         $apartment = $user->apartment;
         $apartmentId = $user->apartment_id;
@@ -286,30 +286,28 @@ Route::middleware(['resident'])->group(function () {
             }
         }
 
-        // Thông báo từ ban quản lý (announcements - có ảnh)
+        // Thông báo từ ban quản lý
         $announcements = \App\Models\Announcement::where('status', 'published')
             ->orderByDesc('pinned')
             ->latest()
             ->limit(5)
             ->get();
 
-        // Notifications (cho phần danh sách bên dưới)
-        $notifications = $user->notifications()->take(4)->get();
-
-        // Tiện ích
-        $facilities = \App\Models\Facility::where('status', 'active')->limit(3)->get();
-
-        // Bài viết cư dân mới nhất
-        $recentPosts = \App\Models\Post::with(['user', 'images', 'comments', 'likedByCurrentUser'])
-            ->withCount('likes')
+        // Bài viết cư dân (full feed với filter + pagination)
+        $postQuery = \App\Models\Post::with(['user', 'images', 'comments', 'likedByCurrentUser'])
+            ->withCount(['likes', 'comments'])
             ->where('status', 'published')
-            ->latest()
-            ->limit(4)
-            ->get();
+            ->orderBy('created_at', 'desc');
+
+        if ($request->get('type') === 'mine') {
+            $postQuery->where('user_id', $user->id);
+        }
+
+        $posts = $postQuery->paginate(10)->withQueryString();
 
         return view('resident.home.index', compact(
             'user', 'apartment', 'totalUnpaidAmount', 'dueDate',
-            'announcements', 'notifications', 'facilities', 'recentPosts'
+            'announcements', 'posts'
         ));
     })->name('resident.dashboard');
 
@@ -371,7 +369,9 @@ Route::middleware(['resident'])->group(function () {
     Route::post('/resident/tickets/{id}/feedback', [ResidentTicketController::class, 'feedback'])->name('resident.tickets.feedback');
 
     // BẢNG TIN & BÌNH LUẬN PHÍA CƯ DÂN
-    Route::get('/resident/posts', [\App\Http\Controllers\Resident\PostController::class, 'index'])->name('resident.posts.index');
+    Route::get('/resident/posts', function () {
+        return redirect()->route('resident.dashboard');
+    })->name('resident.posts.index');
     Route::get('/resident/posts/create', function() { return view('resident.posts.create'); })->name('resident.posts.create');
     Route::post('/resident/posts', [\App\Http\Controllers\Resident\PostController::class, 'store'])->name('resident.posts.store');
     Route::get('/resident/posts/{id}', [\App\Http\Controllers\Resident\PostController::class, 'show'])->name('resident.posts.show');

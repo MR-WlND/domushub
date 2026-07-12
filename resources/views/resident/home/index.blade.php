@@ -1,4 +1,4 @@
-﻿@extends('layouts.resident.master')
+@extends('layouts.resident.master')
 
 @section('title', 'Trang chủ - DomusHub')
 
@@ -89,7 +89,7 @@
             </div>
             <div><span class="rh-shortcut__label">Đăng ký khách</span><span class="rh-shortcut__desc">Cấp mã QR ra vào</span></div>
         </a>
-        <a href="{{ route('resident.posts.index') }}" class="rh-shortcut" aria-label="Bảng tin">
+        <a href="{{ route('resident.posts.create') }}" class="rh-shortcut" aria-label="Bảng tin">
             <div class="rh-shortcut__icon rh-shortcut__icon--post" aria-hidden="true">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             </div>
@@ -101,13 +101,21 @@
     <div class="rh-section">
         <h3 class="rh-section__title">Bài viết từ cư dân</h3>
         <div class="rh-section__actions">
-            <a href="{{ route('resident.posts.index') }}" class="rh-section__link">Xem tất cả</a>
-            <a href="{{ route('resident.posts.index') }}" class="rh-section__btn" aria-label="Đăng bài viết mới">+ Đăng bài</a>
+            <a href="{{ route('resident.posts.create') }}" class="rh-section__btn" aria-label="Đăng bài viết mới">+ Đăng bài</a>
         </div>
     </div>
 
+    @if(session('success'))
+        <div style="padding:12px 18px;background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;border-radius:10px;font-size:0.85rem;font-weight:600;margin-bottom:16px;">{{ session('success') }}</div>
+    @endif
+
+    <div style="display:flex;gap:16px;margin-bottom:16px;border-bottom:1px solid #f1f5f9;padding-bottom:12px;">
+        <a href="{{ route('resident.dashboard') }}" style="font-size:0.85rem;font-weight:{{ !request()->filled('type') ? '700' : '500' }};color:{{ !request()->filled('type') ? '#0f172a' : '#64748b' }};text-decoration:none;">Tất cả</a>
+        <a href="{{ route('resident.dashboard', ['type' => 'mine']) }}" style="font-size:0.85rem;font-weight:{{ request('type')==='mine' ? '700' : '500' }};color:{{ request('type')==='mine' ? '#0f172a' : '#64748b' }};text-decoration:none;">Của tôi</a>
+    </div>
+
     <div class="rh-fb-feed">
-            @forelse($recentPosts as $post)
+            @forelse($posts as $post)
             <div class="rh-fb-card">
                 {{-- Header: avatar + name + time --}}
                 <div class="rh-fb-card__header">
@@ -134,24 +142,41 @@
                 </div>
                 @endif
 
-                {{-- Image(s) --}}
+                {{-- Media --}}
                 @if($post->images->isNotEmpty())
+                @php $imgCount = $post->images->count(); @endphp
+                @if($imgCount === 1 && ($post->images[0]->type ?? 'image') === 'video')
+                <div class="rh-fb-card__media" style="margin-top:12px;">
+                    <video src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-single" controls preload="metadata" style="max-height:500px;width:100%;object-fit:cover;display:block;"></video>
+                </div>
+                @else
                 <a href="{{ route('resident.posts.show', $post->id) }}" class="rh-fb-card__media">
-                    @php $imgCount = $post->images->count(); @endphp
                     @if($imgCount === 1)
                         <img src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-single" alt="" loading="lazy">
                     @elseif($imgCount === 2)
                         <div class="rh-fb-card__img-grid rh-fb-card__img-grid--2">
                             @foreach($post->images->take(2) as $img)
-                                <img src="{{ asset('storage/' . $img->image_path) }}" alt="" loading="lazy">
+                                @if(($img->type ?? 'image') === 'video')
+                                    <video src="{{ asset('storage/' . $img->image_path) }}" controls preload="metadata" style="width:100%;height:300px;object-fit:cover;"></video>
+                                @else
+                                    <img src="{{ asset('storage/' . $img->image_path) }}" alt="" loading="lazy">
+                                @endif
                             @endforeach
                         </div>
                     @else
                         <div class="rh-fb-card__img-grid rh-fb-card__img-grid--3plus">
-                            <img src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-main" alt="" loading="lazy">
+                            @if(($post->images[0]->type ?? 'image') === 'video')
+                                <video src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-main" controls preload="metadata" style="height:320px;width:100%;object-fit:cover;"></video>
+                            @else
+                                <img src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-main" alt="" loading="lazy">
+                            @endif
                             <div class="rh-fb-card__img-side">
                                 @foreach($post->images->slice(1, 2) as $img)
-                                    <img src="{{ asset('storage/' . $img->image_path) }}" alt="" loading="lazy">
+                                    @if(($img->type ?? 'image') === 'video')
+                                        <video src="{{ asset('storage/' . $img->image_path) }}" controls preload="metadata" style="width:100%;height:159px;object-fit:cover;"></video>
+                                    @else
+                                        <img src="{{ asset('storage/' . $img->image_path) }}" alt="" loading="lazy">
+                                    @endif
                                 @endforeach
                                 @if($imgCount > 3)
                                     <div class="rh-fb-card__img-overlay">+{{ $imgCount - 3 }}</div>
@@ -161,11 +186,12 @@
                     @endif
                 </a>
                 @endif
+                @endif
 
                 {{-- Stats row --}}
                 <div class="rh-fb-card__stats">
                     <span>{{ $post->likes_count ?? 0 }} lượt thích</span>
-                    <span>{{ $post->comments->count() }} bình luận</span>
+                    <span>{{ $post->comments_count ?? 0 }} bình luận</span>
                 </div>
 
                 {{-- Action bar --}}
@@ -178,15 +204,22 @@
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                         Bình luận
                     </a>
-
+                    <button type="button" class="rh-fb-card__action rh-fb-share-btn" data-url="{{ route('resident.posts.show', $post->id) }}">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                        Chia sẻ
+                    </button>
                 </div>
             </div>
             @empty
             <div class="rh-empty">
                 <p class="rh-empty__text">Chưa có bài viết nào</p>
-                <a href="{{ route('resident.posts.index') }}" class="rh-empty__btn">Đăng bài đầu tiên</a>
+                <a href="{{ route('resident.posts.create') }}" class="rh-empty__btn">Đăng bài đầu tiên</a>
             </div>
             @endforelse
+
+        @if($posts->hasPages())
+        <div style="margin-top:20px;">{{ $posts->links() }}</div>
+        @endif
     </div>
 
 </div>
@@ -232,6 +265,17 @@ document.querySelectorAll('.rh-fb-like-btn').forEach(btn => {
                 this.classList.remove('rh-fb-like-btn--active');
             }
         } catch(e) { console.error(e); }
+    });
+});
+// Share - Copy link
+document.querySelectorAll('.rh-fb-share-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const url = this.dataset.url;
+        navigator.clipboard.writeText(url).then(() => {
+            const orig = this.innerHTML;
+            this.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Đã sao chép';
+            setTimeout(() => { this.innerHTML = orig; }, 2000);
+        });
     });
 });
 </script>

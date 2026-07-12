@@ -460,24 +460,40 @@
             </div>
         @endif
 
-        {{-- Ảnh đính kèm (FB-style grid) --}}
+        {{-- Media đính kèm (FB-style grid) --}}
         @if($post->images->isNotEmpty())
             @php $imgCount = $post->images->count(); @endphp
             <div class="rh-fb-card__media" style="margin-top: 12px; cursor: pointer;">
                 @if($imgCount === 1)
-                    <img src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-single" alt="" loading="lazy" onclick="openLightbox('{{ asset('storage/' . $post->images[0]->image_path) }}')">
+                    @if(($post->images[0]->type ?? 'image') === 'video')
+                        <video src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-single" controls preload="metadata" style="max-height:500px;width:100%;border-radius:0;"></video>
+                    @else
+                        <img src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-single" alt="" loading="lazy" onclick="openLightbox('{{ asset('storage/' . $post->images[0]->image_path) }}')">
+                    @endif
                 @elseif($imgCount === 2)
                     <div class="rh-fb-card__img-grid rh-fb-card__img-grid--2">
                         @foreach($post->images->take(2) as $img)
-                            <img src="{{ asset('storage/' . $img->image_path) }}" alt="" loading="lazy" onclick="openLightbox('{{ asset('storage/' . $img->image_path) }}')">
+                            @if(($img->type ?? 'image') === 'video')
+                                <video src="{{ asset('storage/' . $img->image_path) }}" controls preload="metadata" style="width:100%;height:300px;object-fit:cover;"></video>
+                            @else
+                                <img src="{{ asset('storage/' . $img->image_path) }}" alt="" loading="lazy" onclick="openLightbox('{{ asset('storage/' . $img->image_path) }}')">
+                            @endif
                         @endforeach
                     </div>
                 @else
                     <div class="rh-fb-card__img-grid rh-fb-card__img-grid--3plus">
-                        <img src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-main" alt="" loading="lazy" onclick="openLightbox('{{ asset('storage/' . $post->images[0]->image_path) }}')">
+                        @if(($post->images[0]->type ?? 'image') === 'video')
+                            <video src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-main" controls preload="metadata" style="height:320px;width:100%;object-fit:cover;"></video>
+                        @else
+                            <img src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-main" alt="" loading="lazy" onclick="openLightbox('{{ asset('storage/' . $post->images[0]->image_path) }}')">
+                        @endif
                         <div class="rh-fb-card__img-side">
                             @foreach($post->images->slice(1, 2) as $img)
-                                <img src="{{ asset('storage/' . $img->image_path) }}" alt="" loading="lazy" onclick="openLightbox('{{ asset('storage/' . $img->image_path) }}')">
+                                @if(($img->type ?? 'image') === 'video')
+                                    <video src="{{ asset('storage/' . $img->image_path) }}" controls preload="metadata" style="width:100%;height:159px;object-fit:cover;"></video>
+                                @else
+                                    <img src="{{ asset('storage/' . $img->image_path) }}" alt="" loading="lazy" onclick="openLightbox('{{ asset('storage/' . $img->image_path) }}')">
+                                @endif
                             @endforeach
                             @if($imgCount > 3)
                                 <div class="rh-fb-card__img-overlay">+{{ $imgCount - 3 }}</div>
@@ -513,8 +529,8 @@
                 @endphp
 
                 <button type="button" class="rh-fb-card__action pc-like-btn {{ $activeReaction ? 'rh-fb-like-btn--active' : '' }}" onclick="toggleLike(event, {{ $post->id }}, 'post')" style="width:100%;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
-                    <span class="reaction-icon-span"></span>
+                    <svg class="like-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+                    <span class="reaction-icon-span">{{ $activeReaction ? match($activeReaction) { 'love' => '❤️', 'haha' => '😆', 'wow' => '😮', 'sad' => '😢', 'angry' => '😡', default => '' } : '' }}</span>
                     <span class="reaction-text-span">{{ $activeReaction ? match($activeReaction) { 'love' => 'Yêu thích', 'haha' => 'Haha', 'wow' => 'Wow', 'sad' => 'Buồn', 'angry' => 'Phẫn nộ', default => 'Thích' } : 'Thích' }}</span>
                 </button>
             </div>
@@ -523,6 +539,12 @@
             <button type="button" class="rh-fb-card__action" onclick="document.getElementById('comment-content').focus()">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                 Bình luận
+            </button>
+
+            {{-- Chia sẻ --}}
+            <button type="button" class="rh-fb-card__action rh-fb-share-btn" data-url="{{ route('resident.posts.show', $post->id) }}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                Chia sẻ
             </button>
         </div>
 
@@ -984,6 +1006,18 @@
 </script>
 
 <script>
+    // === Share - Copy link ===
+    document.querySelectorAll('.rh-fb-share-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const url = this.dataset.url;
+            navigator.clipboard.writeText(url).then(() => {
+                const orig = this.innerHTML;
+                this.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Đã sao chép';
+                setTimeout(() => { this.innerHTML = orig; }, 2000);
+            });
+        });
+    });
+
     // === Lightbox ===
     function openLightbox(src) { const lb = document.getElementById('pcLightbox'); lb.style.display = "flex"; document.getElementById('pcLightboxTarget').src = src; }
     function closeLightbox() { document.getElementById('pcLightbox').style.display = "none"; }

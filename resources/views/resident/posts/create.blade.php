@@ -47,14 +47,14 @@
                 <textarea name="content" rows="5" required placeholder="Bạn đang muốn chia sẻ điều gì với cư dân hôm nay..." style="width:100%;border:1px solid #e2e8f0;border-radius:10px;padding:14px;font-size:0.9rem;color:#0f172a;outline:none;resize:vertical;font-family:inherit;box-sizing:border-box;">{{ old('content') }}</textarea>
             </div>
 
-            {{-- Image upload --}}
+            {{-- Media upload --}}
             <div style="margin-bottom:20px;">
                 <label style="display:flex;align-items:center;gap:8px;padding:14px 18px;border:2px dashed #e2e8f0;border-radius:10px;cursor:pointer;transition:border-color 0.2s;" onmouseover="this.style.borderColor='#2563eb'" onmouseout="this.style.borderColor='#e2e8f0'">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                    <span style="font-size:0.85rem;font-weight:600;color:#334155;">Đính kèm ảnh (có thể chọn nhiều)</span>
-                    <input type="file" name="images[]" multiple accept="image/*" style="display:none;" onchange="previewImgs(this)">
+                    <span style="font-size:0.85rem;font-weight:600;color:#334155;">Đính kèm ảnh/video (có thể chọn nhiều)</span>
+                    <input type="file" name="media[]" multiple accept="image/*,video/*" style="display:none;" onchange="previewMedia(this)">
                 </label>
-                <div id="img-previews" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;"></div>
+                <div id="media-previews" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;"></div>
             </div>
 
             {{-- Actions --}}
@@ -67,19 +67,26 @@
 </div>
 
 <script>
-function previewImgs(input) {
-    const container = document.getElementById('img-previews');
+function previewMedia(input) {
+    const container = document.getElementById('media-previews');
     container.innerHTML = '';
     if (!input.files) return;
     Array.from(input.files).forEach(file => {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.style.cssText = 'width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #e2e8f0;';
-            container.appendChild(img);
-        };
-        reader.readAsDataURL(file);
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.cssText = 'width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #e2e8f0;';
+                container.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        } else if (file.type.startsWith('video/')) {
+            const wrap = document.createElement('div');
+            wrap.style.cssText = 'width:64px;height:64px;border-radius:8px;border:1px solid #e2e8f0;background:#0f172a;display:flex;align-items:center;justify-content:center;position:relative;';
+            wrap.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg><span style="position:absolute;bottom:2px;right:4px;font-size:0.6rem;color:#fff;background:rgba(0,0,0,0.6);padding:1px 4px;border-radius:3px;">Video</span>';
+            container.appendChild(wrap);
+        }
     });
 }
 </script>
