@@ -266,13 +266,9 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/dashboard', function () {
         $user = auth()->user();
         $apartment = $user->apartment;
-        
-        $recentAnnouncements = \App\Models\Announcement::with('user')
-            ->published()
-            ->ordered()
-            ->take(5)
-            ->get();
+        $apartmentId = $user->apartment_id;
 
+        // Số dư nợ
         $totalUnpaidAmount = 0;
         $dueDate = null;
         if ($apartment) {
@@ -287,7 +283,31 @@ Route::middleware(['resident'])->group(function () {
             }
         }
 
-        return view('resident.home.index', compact('recentAnnouncements', 'totalUnpaidAmount', 'dueDate', 'apartment'));
+        // Thông báo từ ban quản lý (announcements - có ảnh)
+        $announcements = \App\Models\Announcement::where('status', 'published')
+            ->orderByDesc('pinned')
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        // Notifications (cho phần danh sách bên dưới)
+        $notifications = $user->notifications()->take(4)->get();
+
+        // Tiện ích
+        $facilities = \App\Models\Facility::where('status', 'active')->limit(3)->get();
+
+        // Bài viết cư dân mới nhất
+        $recentPosts = \App\Models\Post::with(['user', 'images', 'comments', 'likedByCurrentUser'])
+            ->withCount('likes')
+            ->where('status', 'published')
+            ->latest()
+            ->limit(4)
+            ->get();
+
+        return view('resident.home.index', compact(
+            'user', 'apartment', 'totalUnpaidAmount', 'dueDate',
+            'announcements', 'notifications', 'facilities', 'recentPosts'
+        ));
     })->name('resident.dashboard');
 
     Route::get('/resident/contact', function () {
@@ -345,6 +365,7 @@ Route::middleware(['resident'])->group(function () {
 
     // BẢNG TIN & BÌNH LUẬN PHÍA CƯ DÂN
     Route::get('/resident/posts', [\App\Http\Controllers\Resident\PostController::class, 'index'])->name('resident.posts.index');
+    Route::get('/resident/posts/create', function() { return view('resident.posts.create'); })->name('resident.posts.create');
     Route::post('/resident/posts', [\App\Http\Controllers\Resident\PostController::class, 'store'])->name('resident.posts.store');
     Route::get('/resident/posts/{id}', [\App\Http\Controllers\Resident\PostController::class, 'show'])->name('resident.posts.show');
     Route::put('/resident/posts/{id}', [\App\Http\Controllers\Resident\PostController::class, 'update'])->name('resident.posts.update');
