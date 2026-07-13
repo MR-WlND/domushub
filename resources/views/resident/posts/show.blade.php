@@ -416,7 +416,7 @@
 <div class="rh-fb-feed" style="max-width: 100%;">
 
     {{-- NÚT QUAY LẠI --}}
-    <a href="{{ route('resident.posts.index') }}" style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 600; color: #2563eb; text-decoration: none; margin-bottom: 0.5rem;">
+    <a href="{{ route('resident.dashboard') }}" style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 600; color: #2563eb; text-decoration: none; margin-bottom: 0.5rem;">
         <i class="fa-solid fa-arrow-left"></i> Quay lại bảng tin
     </a>
 
@@ -1531,7 +1531,7 @@
             btn.setAttribute('disabled','disabled'); btn.innerText = 'Đang gửi...';
             fetch(`/resident/posts/${postId}/report`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value, 'X-Requested-With': 'XMLHttpRequest' }, body: JSON.stringify({ reason }) })
             .then(r => { if (!r.ok) return r.json().then(e => { throw e; }); return r.json(); })
-            .then(data => { closeReportModal(); showToast(data.message || 'Báo cáo thành công!'); setTimeout(() => window.location.href = "{{ route('resident.posts.index') }}", 1500); })
+            .then(data => { closeReportModal(); showToast(data.message || 'Báo cáo thành công!'); setTimeout(() => window.location.href = "{{ route('resident.dashboard') }}", 1500); })
             .catch(err => showToast(err.message || 'Lỗi báo cáo.', 'error'))
             .finally(() => { btn.removeAttribute('disabled'); btn.innerText = 'Gửi báo cáo'; });
         });
