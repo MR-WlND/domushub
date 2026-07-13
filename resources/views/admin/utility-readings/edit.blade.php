@@ -197,7 +197,7 @@
         @endphp
         @if (!empty($existingImages))
         <div style="margin-bottom:20px;">
-            <label class="util-form-label">📷 Ảnh minh chứng hiện tại</label>
+            <label class="util-form-label" style="display: flex; align-items: center; gap: 8px;"><i class="fa-regular fa-image" style="font-size: 15px; color: #475569;"></i><span>Ảnh minh chứng hiện tại</span></label>
             <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;">
                 @foreach ($existingImages as $idx => $img)
                 <div style="position:relative;width:120px;height:120px;border-radius:10px;overflow:hidden;border:2px solid #e2e8f0;box-shadow:0 2px 8px rgba(0,0,0,.06);">
@@ -223,21 +223,27 @@
         {{-- ── Upload thêm ảnh mới ── --}}
         @if (count($existingImages) < 5)
         <div style="margin-bottom:20px;">
-            <label class="util-form-label">
-                ➕ Thêm ảnh minh chứng
-                <span style="font-weight:400;color:#64748b;font-size:12px;">(Tối đa 5 ảnh tổng cộng)</span>
+            <label class="util-form-label" style="display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-camera" style="font-size: 16px; color: #475569;"></i>
+                <span>
+                    Thêm ảnh minh chứng
+                    <span style="font-weight:400;color:#64748b;font-size:12px;">(Tối đa 5 ảnh tổng cộng)</span>
+                </span>
             </label>
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin:10px 0;">
                 <button type="button" onclick="openCameraModal()"
-                    style="display:inline-flex;align-items:center;gap:7px;padding:8px 16px;background:linear-gradient(135deg,#0b57d0,#1a73e8);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;">
-                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
-                    </svg>
+                    style="display:inline-flex;align-items:center;gap:8px;padding:9px 18px;background:#00236f;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(0,35,111,0.15);transition:all 0.2s;"
+                    onmouseover="this.style.background='#001850'"
+                    onmouseout="this.style.background='#00236f'">
+                    <i class="fa-solid fa-camera" style="font-size: 14px;"></i>
                     Chụp ảnh
                 </button>
                 <button type="button" onclick="document.getElementById('edit_gal').click()"
-                    style="display:inline-flex;align-items:center;gap:7px;padding:8px 16px;background:#fff;color:#1e293b;border:1.5px solid #cbd5e1;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;">
-                    📁 Chọn ảnh
+                    style="display:inline-flex;align-items:center;gap:8px;padding:9px 18px;background:#fff;color:#334155;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;"
+                    onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#94a3b8';"
+                    onmouseout="this.style.background='#fff'; this.style.borderColor='#cbd5e1';">
+                    <i class="fa-regular fa-image" style="font-size: 14px;"></i>
+                    Chọn ảnh
                 </button>
             </div>
             <input type="file" id="edit_gal" accept="image/*" multiple style="display:none;">
@@ -288,8 +294,11 @@
 </div>
 <div id="cameraModal"
      style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:94vw;max-width:540px;background:#fff;border-radius:20px;box-shadow:0 24px 60px rgba(0,0,0,.3);z-index:10000;overflow:hidden;">
-    <div style="background:linear-gradient(135deg,#0b57d0,#1a73e8);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;">
-        <div style="color:#fff;font-weight:700;font-size:1rem;">📸 Chụp ảnh công tơ</div>
+    <div style="background:#00236f;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;">
+        <div style="color:#fff;font-weight:700;font-size:1rem;display:flex;align-items:center;gap:8px;">
+            <i class="fa-solid fa-camera" style="font-size: 15px;"></i>
+            Chụp ảnh công tơ
+        </div>
         <button type="button" onclick="closeCameraModal()"
             style="background:rgba(255,255,255,.2);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
     </div>
@@ -299,8 +308,8 @@
         <label style="font-size:12px;font-weight:600;color:#475569;">Camera:</label>
         <select id="cameraSelect" onchange="switchCamera()"
             style="flex:1;padding:5px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;background:#fff;">
-            <option value="environment">📷 Camera sau (chính)</option>
-            <option value="user">🤳 Camera trước (selfie)</option>
+            <option value="environment">Camera sau (chính)</option>
+            <option value="user">Camera trước (selfie)</option>
         </select>
     </div>
 
@@ -314,19 +323,18 @@
         </div>
         {{-- Loading text --}}
         <div id="cameraLoading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;background:rgba(0,0,0,0.5);">
-            🔄 Đang khởi động camera...
+            Đang khởi động camera...
         </div>
     </div>
 
     {{-- Nút chụp --}}
     <div style="padding:16px;display:flex;gap:10px;justify-content:center;background:#f8fafc;">
         <button type="button" onclick="capturePhoto()"
-            style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:linear-gradient(135deg,#0b57d0,#1a73e8);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(11,87,208,.35);transition:transform .1s;"
-            onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''">
-            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                <circle cx="12" cy="13" r="4"/>
-            </svg>
+            style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:#00236f;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(0,35,111,0.25);transition:transform 0.1s;"
+            onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''"
+            onmouseover="this.style.background='#001850'"
+            onmouseout="this.style.background='#00236f'">
+            <i class="fa-solid fa-camera" style="font-size: 16px;"></i>
             Chụp ảnh
         </button>
         <button type="button" onclick="closeCameraModal()"
@@ -547,13 +555,13 @@ async function startCamera(facing) {
             };
         }
     } catch (err) {
-        let msg = '❌ Không thể mở camera.';
+        let msg = 'Không thể mở camera.';
         if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-            msg = '🔒 Trình duyệt đã chặn quyền camera.\n\nHãy cho phép quyền camera trong thanh địa chỉ và thử lại.';
+            msg = 'Trình duyệt đã chặn quyền camera.\n\nHãy cho phép quyền camera trong thanh địa chỉ và thử lại.';
         } else if (err.name === 'NotFoundError') {
-            msg = '📷 Không tìm thấy camera. Kiểm tra kết nối webcam.';
+            msg = 'Không tìm thấy camera. Kiểm tra kết nối webcam.';
         } else if (err.name === 'NotReadableError') {
-            msg = '⚠️ Camera đang được dùng bởi ứng dụng khác. Đóng ứng dụng đó và thử lại.';
+            msg = 'Camera đang được dùng bởi ứng dụng khác. Đóng ứng dụng đó và thử lại.';
         } else if (err.name === 'OverconstrainedError') {
             // Thử lại không ràng buộc facingMode
             try {
@@ -564,7 +572,7 @@ async function startCamera(facing) {
                 }
                 return;
             } catch (e2) {
-                msg = '❌ Không thể mở camera: ' + e2.message;
+                msg = 'Không thể mở camera: ' + e2.message;
             }
         }
         if (loading) loading.innerHTML = `<div style="text-align:center;padding:20px;color:#fff;">${msg}<br><br><button onclick="closeCameraModal()" style="padding:8px 16px;background:#fff;color:#1e293b;border:none;border-radius:8px;cursor:pointer;font-weight:600;">Đóng</button></div>`;

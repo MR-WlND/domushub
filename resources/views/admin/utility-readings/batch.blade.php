@@ -363,17 +363,20 @@
                                     {{-- Nút chụp camera (WebRTC) --}}
                                     <button type="button"
                                         onclick="openCameraModalBatch({{ $i }})"
-                                        style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;background:linear-gradient(135deg,#0b57d0,#1a73e8);color:#fff;border:none;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;">
-                                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
-                                        </svg>
-                                        📸 Chụp
+                                        style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:#00236f;color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.2s;"
+                                        onmouseover="this.style.background='#001850'"
+                                        onmouseout="this.style.background='#00236f'">
+                                        <i class="fa-solid fa-camera" style="font-size: 12px;"></i>
+                                        Chụp
                                     </button>
                                     {{-- Nút thư viện --}}
                                     <button type="button"
                                         onclick="document.getElementById('gal_{{ $i }}').click()"
-                                        style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;background:#f8fafc;color:#334155;border:1px solid #cbd5e1;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;">
-                                        📁 Chọn ảnh
+                                        style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:#fff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.2s;"
+                                        onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#94a3b8';"
+                                        onmouseout="this.style.background='#fff'; this.style.borderColor='#cbd5e1';">
+                                        <i class="fa-regular fa-image" style="font-size: 12px;"></i>
+                                        Chọn ảnh
                                     </button>
                                     {{-- Gallery input (multiple, không capture) --}}
                                     <input type="file" id="gal_{{ $i }}"
@@ -737,15 +740,18 @@ function createBatchCameraModal() {
     modal.id = 'batchCameraModal';
     modal.style.cssText = 'display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:94vw;max-width:520px;background:#fff;border-radius:20px;box-shadow:0 24px 60px rgba(0,0,0,.3);z-index:10000;overflow:hidden;';
     modal.innerHTML = `
-        <div style="background:linear-gradient(135deg,#0b57d0,#1a73e8);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;">
-            <div style="color:#fff;font-weight:700;font-size:0.95rem;">📸 Chụp ảnh công tơ</div>
+        <div style="background:#00236f;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;">
+            <div style="color:#fff;font-weight:700;font-size:0.95rem;display:flex;align-items:center;gap:6px;">
+                <i class="fa-solid fa-camera" style="font-size: 14px;"></i>
+                Chụp ảnh công tơ
+            </div>
             <button type="button" onclick="closeBatchCameraModal()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:1.1rem;cursor:pointer;">✕</button>
         </div>
         <div style="padding:8px 14px;background:#f8fafc;display:flex;align-items:center;gap:8px;border-bottom:1px solid #e2e8f0;">
             <label style="font-size:12px;font-weight:600;color:#475569;">Camera:</label>
             <select id="batchCameraSelect" onchange="switchBatchCamera()" style="flex:1;padding:4px 8px;border:1px solid #cbd5e1;border-radius:7px;font-size:12px;">
-                <option value="environment">📷 Camera sau</option>
-                <option value="user">🤳 Camera trước</option>
+                <option value="environment">Camera sau</option>
+                <option value="user">Camera trước</option>
             </select>
         </div>
         <div style="background:#000;position:relative;aspect-ratio:4/3;max-height:320px;overflow:hidden;">
@@ -753,11 +759,11 @@ function createBatchCameraModal() {
             <div style="position:absolute;inset:0;pointer-events:none;">
                 <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:70%;height:70%;border:2px dashed rgba(255,255,255,0.5);border-radius:8px;"></div>
             </div>
-            <div id="batchCameraLoading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;background:rgba(0,0,0,0.5);">🔄 Đang khởi động camera...</div>
+            <div id="batchCameraLoading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;background:rgba(0,0,0,0.5);">Đang khởi động camera...</div>
         </div>
         <div style="padding:14px;display:flex;gap:10px;justify-content:center;background:#f8fafc;">
-            <button type="button" onclick="captureBatchPhoto()" style="display:inline-flex;align-items:center;gap:7px;padding:11px 24px;background:linear-gradient(135deg,#0b57d0,#1a73e8);color:#fff;border:none;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(11,87,208,.35);">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <button type="button" onclick="captureBatchPhoto()" style="display:inline-flex;align-items:center;gap:8px;padding:11px 24px;background:#00236f;color:#fff;border:none;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(0,35,111,0.25);">
+                <i class="fa-solid fa-camera" style="font-size: 15px;"></i>
                 Chụp
             </button>
             <button type="button" onclick="closeBatchCameraModal()" style="padding:11px 18px;background:#f1f5f9;color:#475569;border:none;border-radius:11px;font-size:13px;font-weight:600;cursor:pointer;">Hủy</button>
@@ -777,7 +783,7 @@ async function startBatchCamera(facing) {
     }
 
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        loading.textContent = '❌ Trình duyệt không hỗ trợ camera.';
+        loading.textContent = 'Trình duyệt không hỗ trợ camera.';
         return;
     }
 
@@ -788,17 +794,17 @@ async function startBatchCamera(facing) {
         video.srcObject = batchCameraStream;
         video.onloadedmetadata = () => { loading.style.display = 'none'; };
     } catch (err) {
-        let msg = '❌ Không thể mở camera.';
-        if (err.name === 'NotAllowedError')  msg = '🔒 Quyền camera bị chặn. Cho phép trong thanh địa chỉ và thử lại.';
-        if (err.name === 'NotFoundError')    msg = '📷 Không tìm thấy camera. Kiểm tra webcam.';
-        if (err.name === 'NotReadableError') msg = '⚠️ Camera đang dùng bởi ứng dụng khác.';
+        let msg = 'Không thể mở camera.';
+        if (err.name === 'NotAllowedError')  msg = 'Quyền camera bị chặn. Cho phép trong thanh địa chỉ và thử lại.';
+        if (err.name === 'NotFoundError')    msg = 'Không tìm thấy camera. Kiểm tra webcam.';
+        if (err.name === 'NotReadableError') msg = 'Camera đang dùng bởi ứng dụng khác.';
         if (err.name === 'OverconstrainedError') {
             try {
                 batchCameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
                 video.srcObject = batchCameraStream;
                 video.onloadedmetadata = () => { loading.style.display = 'none'; };
                 return;
-            } catch(e2) { msg = '❌ ' + e2.message; }
+            } catch(e2) { msg = e2.message; }
         }
         loading.innerHTML = `<div style="text-align:center;padding:16px;color:#fff;">${msg}<br><br><button onclick="closeBatchCameraModal()" style="padding:7px 14px;background:#fff;color:#1e293b;border:none;border-radius:7px;cursor:pointer;font-weight:600;">Đóng</button></div>`;
     }

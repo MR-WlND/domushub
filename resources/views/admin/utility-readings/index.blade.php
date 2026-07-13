@@ -897,7 +897,7 @@ function openDetailModal(id) {
             if (imgsUrls.length > 0) {
                 const label = document.createElement('div');
                 label.style.cssText = 'font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;margin-bottom:10px;';
-                label.textContent = `📷 Ảnh công tơ minh chứng (${imgsUrls.length} ảnh)`;
+                label.textContent = `Ảnh công tơ minh chứng (${imgsUrls.length} ảnh)`;
                 imgContainer.appendChild(label);
 
                 const galleryWrap = document.createElement('div');

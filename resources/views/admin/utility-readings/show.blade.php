@@ -242,7 +242,7 @@
 
     @if(!empty($proofImages))
     <div class="proof-section">
-        <div class="detail-label">📷 Ảnh công tơ minh chứng ({{ count($proofImages) }} ảnh)</div>
+        <div class="detail-label" style="display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-camera" style="font-size: 15px; color: #64748b;"></i><span>Ảnh công tơ minh chứng ({{ count($proofImages) }} ảnh)</span></div>
         <div style="display:flex; flex-wrap:wrap; gap:12px; margin-top:14px;">
             @foreach($proofImages as $idx => $imgPath)
             <div style="position:relative; width:160px; height:160px; border-radius:12px; overflow:hidden; border:2px solid #e2e8f0; box-shadow:0 3px 12px rgba(0,0,0,.07); cursor:pointer; transition:transform .15s, box-shadow .15s;"

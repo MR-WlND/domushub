@@ -2,6 +2,12 @@
 @section('title', 'Đăng bài viết – DomusHub')
 @push('styles')
     @vite(['resources/css/pages/resident/home/index.css'])
+    <style>
+        .ck-editor__editable_inline {
+            min-height: 180px;
+            color: #0f172a;
+        }
+    </style>
 @endpush
 
 @section('content')
@@ -37,14 +43,10 @@
                 </div>
             </div>
 
-            {{-- Title --}}
-            <div style="margin-bottom:16px;">
-                <input type="text" name="title" value="{{ old('title') }}" placeholder="Tiêu đề bài viết (không bắt buộc)" style="width:100%;border:none;border-bottom:1px solid #f1f5f9;padding:10px 0;font-size:1rem;font-weight:700;color:#0f172a;outline:none;box-sizing:border-box;">
-            </div>
 
             {{-- Content --}}
             <div style="margin-bottom:20px;">
-                <textarea name="content" rows="5" required placeholder="Bạn đang muốn chia sẻ điều gì với cư dân hôm nay..." style="width:100%;border:1px solid #e2e8f0;border-radius:10px;padding:14px;font-size:0.9rem;color:#0f172a;outline:none;resize:vertical;font-family:inherit;box-sizing:border-box;">{{ old('content') }}</textarea>
+                <textarea name="content" id="editor-post-content" rows="5" placeholder="Bạn đang muốn chia sẻ điều gì với cư dân hôm nay..." style="width:100%;border:1px solid #e2e8f0;border-radius:10px;padding:14px;font-size:0.9rem;color:#0f172a;outline:none;resize:vertical;font-family:inherit;box-sizing:border-box;">{{ old('content') }}</textarea>
             </div>
 
             {{-- Media upload --}}
@@ -65,7 +67,18 @@
         </form>
     </div>
 </div>
-
+<script src="https://cdn.ckeditor.com/ckeditor5/36.0.1/classic/ckeditor.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const createTA = document.getElementById('editor-post-content');
+    if (createTA) {
+        ClassicEditor.create(createTA, {
+            toolbar: ['bold', 'italic', 'underline', 'bulletedList', 'numberedList', 'undo', 'redo'],
+            placeholder: 'Bạn đang muốn chia sẻ điều gì với cư dân hôm nay...'
+        }).catch(err => console.error(err));
+    }
+});
+</script>
 <script>
 function previewMedia(input) {
     const container = document.getElementById('media-previews');
