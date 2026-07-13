@@ -165,7 +165,7 @@ function isVideoFile(file) {
 
 function previewTicketImages(input) {
     const files = input.files;
-    if (!files) return;
+    if (!files || files.length === 0) return;
 
     // Duyệt và thêm các file mới vào DataTransfer (giới hạn tối đa 5)
     for (let i = 0; i < files.length; i++) {
@@ -175,10 +175,10 @@ function previewTicketImages(input) {
         }
         ticketFilesTransfer.items.add(files[i]);
     }
-    
+
     // Cập nhật lại danh sách file cho input để form submit gửi đi đầy đủ
     input.files = ticketFilesTransfer.files;
-    
+
     // Render giao diện preview
     renderTicketPreviews();
 }
@@ -187,15 +187,18 @@ function renderTicketPreviews() {
     const previewContainer = document.getElementById('upload-preview');
     const placeholder = document.getElementById('upload-placeholder');
 
-    if (files.length > 5) {
-        alert('Chỉ được chọn tối đa 5 ảnh.');
-        input.value = '';
+    // Xóa preview cũ trước khi render lại
+    previewContainer.innerHTML = '';
+
+    if (ticketFilesTransfer.files.length === 0) {
+        placeholder.style.display = 'flex';
+        previewContainer.style.display = 'none';
         return;
     }
-    
+
     placeholder.style.display = 'none';
     previewContainer.style.display = 'grid';
-    
+
     Array.from(ticketFilesTransfer.files).forEach((file, index) => {
         const div = document.createElement('div');
         div.className = 'tk-upload__preview-item';
@@ -205,7 +208,7 @@ function renderTicketPreviews() {
             const url = URL.createObjectURL(file);
             div.innerHTML = `
                 <div style="position: relative; width: 100%; height: 120px; background: #0f172a; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                    <video src="${url}" style="width: 100%; height: 100%; object-fit: cover;" muted preload="metadata"></video>
+                    <video src="${url}#t=0.5" style="width: 100%; height: 100%; object-fit: cover;" muted playsinline preload="auto"></video>
                     <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none;">
                         <div style="background: rgba(124, 58, 237, 0.85); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#fff" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>
@@ -218,6 +221,12 @@ function renderTicketPreviews() {
                 </button>
             `;
             previewContainer.appendChild(div);
+
+            // Đảm bảo video hiển thị thumbnail
+            const videoEl = div.querySelector('video');
+            videoEl.addEventListener('loadeddata', function() {
+                this.currentTime = 0.5;
+            });
         } else {
             // Image preview
             const reader = new FileReader();
@@ -234,7 +243,7 @@ function renderTicketPreviews() {
             reader.readAsDataURL(file);
         }
     });
-    
+
     // Nút thêm file mới
     if (ticketFilesTransfer.files.length < 5) {
         const changeBtn = document.createElement('div');
@@ -245,15 +254,35 @@ function renderTicketPreviews() {
         `;
         changeBtn.onclick = function(e) {
             e.stopPropagation();
-            removeTicketPreviews();
             document.getElementById('ticket-images').click();
         };
         previewContainer.appendChild(changeBtn);
     }
 }
 
+function removeTicketImage(event, index) {
+    event.stopPropagation();
+    event.preventDefault();
+
+    // Tạo DataTransfer mới, bỏ file tại index
+    const newTransfer = new DataTransfer();
+    Array.from(ticketFilesTransfer.files).forEach((file, i) => {
+        if (i !== index) {
+            newTransfer.items.add(file);
+        }
+    });
+    ticketFilesTransfer = newTransfer;
+
+    // Cập nhật lại input file
+    document.getElementById('ticket-images').files = ticketFilesTransfer.files;
+
+    // Render lại preview
+    renderTicketPreviews();
+}
+
 function removeTicketPreviews() {
-    document.getElementById('ticket-images').value = "";
+    ticketFilesTransfer = new DataTransfer();
+    document.getElementById('ticket-images').files = ticketFilesTransfer.files;
     document.getElementById('upload-preview').style.display = 'none';
     document.getElementById('upload-preview').innerHTML = '';
     document.getElementById('upload-placeholder').style.display = 'flex';

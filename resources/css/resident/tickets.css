@@ -574,6 +574,34 @@
     background: #f8fafc;
 }
 
+.tk-upload__preview-item-remove {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(15, 23, 42, 0.65);
+    color: #fff;
+    font-size: 0.7rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s, background 0.2s;
+    z-index: 2;
+}
+
+.tk-upload__preview-item:hover .tk-upload__preview-item-remove {
+    opacity: 1;
+}
+
+.tk-upload__preview-item-remove:hover {
+    background: #dc2626;
+}
+
 .tk-upload__change-btn {
     display: flex;
     flex-direction: column;
