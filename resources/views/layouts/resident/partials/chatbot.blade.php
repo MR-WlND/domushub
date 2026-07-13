@@ -125,8 +125,8 @@
 
 /* Chat Bubble Button */
 .chatbot-bubble {
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     background: linear-gradient(135deg, #00236f 0%, #1e3a8a 100%);
     color: #ffffff;
@@ -151,6 +151,12 @@
     transform: scale(0.95);
 }
 
+.chatbot-bubble--hidden {
+    opacity: 0 !important;
+    transform: scale(0.7) !important;
+    pointer-events: none !important;
+}
+
 .chatbot-badge {
     position: absolute;
     top: -2px;
@@ -168,8 +174,8 @@
 
 /* Chat Window */
 .chatbot-window {
-    width: 380px;
-    height: 520px;
+    width: 340px;
+    height: 480px;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -179,7 +185,7 @@
     display: flex;
     flex-direction: column;
     position: absolute;
-    bottom: 75px;
+    bottom: 5px;
     right: 0;
     overflow: hidden;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -497,23 +503,34 @@ document.addEventListener('DOMContentLoaded', function() {
     const isChatOpen = sessionStorage.getItem('chatbot_open') === 'true';
     if (isChatOpen) {
         win.classList.remove('hidden');
+        bubble.classList.add('chatbot-bubble--hidden');
         loadChatHistory();
     }
 
     // Mở/Thu nhỏ cửa sổ chat
     bubble.addEventListener('click', function() {
-        const isHidden = win.classList.toggle('hidden');
-        sessionStorage.setItem('chatbot_open', !isHidden ? 'true' : 'false');
-        if (!isHidden) {
+        // Bubble mờ dần rồi biến mất, sau đó hiện khung chat
+        bubble.classList.add('chatbot-bubble--hidden');
+        setTimeout(function() {
+            win.classList.remove('hidden');
+            sessionStorage.setItem('chatbot_open', 'true');
             input.focus();
             loadChatHistory();
             scrollToBottom();
-        }
+        }, 250);
     });
 
-    closeBtn.addEventListener('click', function() {
+    function closeChatWindow() {
         win.classList.add('hidden');
         sessionStorage.setItem('chatbot_open', 'false');
+        // Bubble hiện lại sau khi cửa sổ đóng
+        setTimeout(function() {
+            bubble.classList.remove('chatbot-bubble--hidden');
+        }, 200);
+    }
+
+    closeBtn.addEventListener('click', function() {
+        closeChatWindow();
     });
 
     // Cuộn xuống cuối khung chat
