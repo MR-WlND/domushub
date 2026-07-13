@@ -159,59 +159,86 @@
             <div class="card-header"
                 style="border-bottom: 1px solid #f1f5f9; padding-bottom: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                 <div>
-                    <h2>Sơ đồ căn hộ & Trạng thái lấp đầy</h2>
-                    <p style="font-size: 13px; color: #64748b; margin-top: 4px; font-weight: 500;">
-                        Trực quan hóa mặt bằng phòng trên tầng theo mã màu
-                    </p>
+                    <h2>Danh sách căn hộ</h2>
                 </div>
-                <a href="{{ route('admin.apartments.create', ['floor_id' => $floor->id]) }}" class="btn btn-primary"
-                    style="height: 40px; padding: 0 16px; border-radius: 10px; font-size: 13px;">
+                <a href="{{ route('admin.apartments.create', ['floor_id' => $floor->id]) }}" class="btn btn-primary">
                     + Thêm căn hộ mới
                 </a>
             </div>
 
-            <div class="card-body">
+            <div class="card-body" style="padding: 0; overflow-x: auto; border-radius: 8px;">
                 @if ($floor->apartments->count() > 0)
-                    <div class="apartment-grid-map">
-                        @foreach ($floor->apartments as $apartment)
-                            <div class="apartment-map-card apartment-map-card--{{ $apartment->status }}">
-                                <div class="map-card-header">
-                                    <span class="map-card-number">{{ $apartment->apartment_number }}</span>
-                                    <span class="map-card-badge map-card-badge--{{ $apartment->status }}">
-                                        @if ($apartment->status == 'occupied')
-                                            Đang ở
-                                        @elseif($apartment->status == 'vacant')
-                                            Trống
-                                        @else
-                                            Bảo trì
-                                        @endif
-                                    </span>
-                                </div>
+                    <table class="premium-table">
+                        <thead>
+                            <tr>
+                                <th>Tên căn hộ</th>
+                                <th>Loại căn hộ</th>
+                                <th>Diện tích</th>
+                                <th>Tên chủ hộ</th>
+                                <th>Số điện thoại</th>
+                                <th>Trạng thái</th>
+                                <th style="text-align: right;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($floor->apartments as $apartment)
+                                @php
+                                    $area = $apartment->area;
+                                    if ($area >= 100) {
+                                        $type = '3BR Deluxe';
+                                    } elseif ($area >= 70) {
+                                        $type = '2BR Classic';
+                                    } elseif ($area >= 50) {
+                                        $type = '1BR Standard';
+                                    } else {
+                                        $type = 'Studio Plus';
+                                    }
 
-                                <div class="map-card-body">
-                                    <div class="map-card-info">
-                                        <span class="info-label">Diện tích</span>
-                                        <span class="info-value">{{ $apartment->area }} m²</span>
-                                    </div>
-                                    <div class="map-card-info">
-                                        <span class="info-label">Cư dân</span>
-                                        <span class="info-value">{{ $apartment->residents_count }} người</span>
-                                    </div>
-                                </div>
-
-                                <div class="map-card-footer">
-                                    <a href="{{ route('admin.apartments.show', $apartment->id) }}"
-                                        class="map-card-btn map-card-btn--view">
-                                        Chi tiết
-                                    </a>
-                                    <a href="{{ route('admin.apartments.edit', $apartment->id) }}"
-                                        class="map-card-btn map-card-btn--edit">
-                                        Sửa
-                                    </a>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
+                                    $owner = $apartment->residents()->where('relationship', 'owner')->first() ?? $apartment->residents()->first();
+                                    $ownerName = $owner ? ($owner->user->name ?? '-') : '-';
+                                    $ownerPhone = $owner ? ($owner->user->phone ?? '-') : '-';
+                                @endphp
+                                <tr>
+                                    <td style="font-weight: 700; color: #082b7a;">
+                                        <a href="{{ route('admin.apartments.show', $apartment->id) }}" style="text-decoration: none; color: inherit;">
+                                            {{ $apartment->apartment_number }}
+                                        </a>
+                                    </td>
+                                    <td>{{ $type }}</td>
+                                    <td>{{ number_format($apartment->area, 0, ',', '.') }} m²</td>
+                                    <td>{{ $ownerName }}</td>
+                                    <td>{{ $ownerPhone }}</td>
+                                    <td>
+                                        <span class="badge-status badge-status--{{ $apartment->status }}">
+                                            @if ($apartment->status == 'occupied')
+                                                Đang ở
+                                            @elseif($apartment->status == 'vacant')
+                                                Trống
+                                            @else
+                                                Bảo trì
+                                            @endif
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons" style="justify-content: flex-end;">
+                                            <a href="{{ route('admin.apartments.show', $apartment->id) }}" class="btn-action btn-action--view" title="Chi tiết">
+                                                <i class="fa-regular fa-eye"></i>
+                                            </a>
+                                            <a href="{{ route('admin.apartments.edit', $apartment->id) }}" class="btn-action btn-action--edit" title="Sửa">
+                                                <i class="fa-regular fa-pen-to-square"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" style="text-align: center; padding: 40px; color: #64748b; font-weight: 500;">
+                                        Chưa có căn hộ nào được khai báo ở tầng này.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 @else
                     <div class="empty-state"
                         style="padding: 50px; text-align: center; color: #64748b; font-size: 15px; font-weight: 500;">

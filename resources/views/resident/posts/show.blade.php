@@ -444,7 +444,7 @@
 
         {{-- Title --}}
         @if($post->title)
-            <div style="padding: 8px 16px 0; font-weight: 700; font-size: 1.1rem; color: #050505;" class="pc-detail__title">{{ $post->title }}</div>
+            <div style="padding: 8px 16px 0; font-weight: 700; font-size: 1.1rem; color: #050505; display: none;" class="pc-detail__title">{{ $post->title }}</div>
         @endif
 
         {{-- Content --}}
@@ -900,10 +900,7 @@
             @method('PUT')
             <div class="rep-modal__body">
                 <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    <div>
-                        <label class="rep-modal__label">Tiêu đề bài viết</label>
-                        <input type="text" name="title" id="edit-post-title" class="pc-composer__title-input" placeholder="Nhập tiêu đề...">
-                    </div>
+                    <input type="hidden" name="title" id="edit-post-title">
                     <div>
                         <label class="rep-modal__label">Nội dung bài viết</label>
                         <textarea name="content" id="edit-post-content" class="pc-composer__body-input" rows="5" placeholder="Bạn đang muốn chia sẻ điều gì..."></textarea>

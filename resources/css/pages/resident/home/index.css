@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    RESIDENT HOME DASHBOARD â€” Professional Design System
    Base spacing: 8px (8, 16, 24, 32, 40, 48)
    ============================================================ */
@@ -65,10 +65,10 @@
 .rh-section__link:hover { text-decoration: underline; }
 .rh-section__btn {
     display: inline-flex; align-items: center; gap: 6px;
-    padding: 8px 16px; background: #2563eb; color: #fff;
+    padding: 8px 16px; background: #00236f; color: #fff;
     border-radius: 10px; font-size: 0.8rem; font-weight: 700; text-decoration: none; transition: all 0.2s;
 }
-.rh-section__btn:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,0.25); }
+.rh-section__btn:hover { background: #001850; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,35,111,0.2); }
 
 /* â”€â”€â”€ Shortcuts â”€â”€â”€ */
 .rh-shortcuts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
@@ -96,10 +96,10 @@
 .rh-empty__text { margin: 0; font-size: 0.9rem; color: #64748b; font-weight: 500; }
 .rh-empty__btn {
     display: inline-flex; align-items: center; gap: 6px; margin-top: 16px;
-    padding: 10px 20px; background: #2563eb; color: #fff;
+    padding: 10px 20px; background: #00236f; color: #fff;
     border-radius: 8px; font-size: 0.82rem; font-weight: 700; text-decoration: none; transition: all 0.2s;
 }
-.rh-empty__btn:hover { background: #1d4ed8; }
+.rh-empty__btn:hover { background: #001850; }
 
 /* â”€â”€â”€ Responsive â”€â”€â”€ */
 @media (max-width: 1024px) {
