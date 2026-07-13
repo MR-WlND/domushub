@@ -414,6 +414,13 @@ Route::middleware(['resident'])->group(function () {
 
     // AJAX: Khung giờ còn trống (dùng trong form đặt lịch)
     Route::post('/resident/api/available-slots', [\App\Http\Controllers\FacilityBookingController::class, 'getAvailableSlots'])->name('resident.api.available-slots');
+
+    // CHATBOT AI CƯ DÂN
+    Route::get('/resident/chatbot/history', [\App\Http\Controllers\Resident\ChatbotController::class, 'getHistory'])->name('resident.chatbot.history');
+    Route::post('/resident/chatbot/message', [\App\Http\Controllers\Resident\ChatbotController::class, 'sendMessage'])
+        ->middleware('throttle:10,1')
+        ->name('resident.chatbot.message');
+    Route::post('/resident/chatbot/clear', [\App\Http\Controllers\Resident\ChatbotController::class, 'clearHistory'])->name('resident.chatbot.clear');
 });
 
 Route::middleware(['admin'])->name('admin.')->group(function () {
