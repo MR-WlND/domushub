@@ -1,4 +1,4 @@
-.resident-section {
+﻿.resident-section {
     display: flex;
     flex-direction: column;
     gap: 24px;
@@ -41,7 +41,7 @@
     min-height: 44px;
     padding: 0 14px;
     border: 1px solid #cbd5e1;
-    border-radius: 10px;
+    border-radius: 8px;
     background: #ffffff;
     color: #0f172a;
     font-size: 14px;
@@ -66,3 +66,4 @@
     display: flex;
     justify-content: flex-end;
 }
+

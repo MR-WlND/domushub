@@ -8,6 +8,10 @@
             class="resident-header__link {{ request()->routeIs('resident.dashboard') ? 'resident-header__link--active' : '' }}">
             Home
         </a>
+        <a href="{{ route('resident.posts.index') }}"
+            class="resident-header__link {{ request()->routeIs('resident.posts.index') ? 'resident-header__link--active' : '' }}">
+            Bản tin của tôi
+        </a>
         <a href="{{ route('resident.members.index') }}"
             class="resident-header__link {{ request()->routeIs('resident.members.*') ? 'resident-header__link--active' : '' }}">
             Thành viên

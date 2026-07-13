@@ -1,8 +1,8 @@
-/* ==========================================================================
-   MODULE QUẢN LÝ PHẢN ÁNH - UNIFIED (Navy palette: #00236f / #0b57d0)
+﻿/* ==========================================================================
+   MODULE QUáº¢N LĂ PHáº¢N ĂNH - UNIFIED (Navy palette: #00236f / #0b57d0)
    ========================================================================== */
 
-/* ── Animations ── */
+/* â”€â”€ Animations â”€â”€ */
 @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(12px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -16,7 +16,7 @@
     50%      { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
 }
 
-/* ── Page Layout ── */
+/* â”€â”€ Page Layout â”€â”€ */
 .tickets-page {
     display: flex;
     flex-direction: column;
@@ -43,7 +43,7 @@
     margin: 6px 0 0;
 }
 
-/* ── Alerts ── */
+/* â”€â”€ Alerts â”€â”€ */
 .tickets-alert {
     padding: 14px 18px;
     border-radius: 10px;
@@ -57,13 +57,13 @@
 .tickets-alert--success { background: #f0fdf4; color: #166534; border: 1px solid #86efac; }
 .tickets-alert--danger  { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
 
-/* ── Tabs Navigation ── */
+/* â”€â”€ Tabs Navigation â”€â”€ */
 .tk-tabs {
     display: flex;
     gap: 0;
     border-bottom: 2px solid #e8edf5;
     background: #ffffff;
-    border-radius: 12px 12px 0 0;
+    border-radius: 8px;
     padding: 0 4px;
     overflow-x: auto;
 }
@@ -94,7 +94,7 @@
     font-size: 0.7rem;
     font-weight: 700;
     padding: 2px 8px;
-    border-radius: 10px;
+    border-radius: 8px;
     background: #e8edf5;
     color: #475569;
 }
@@ -105,7 +105,7 @@
 .tk-tab-content { display: none; animation: fadeInUp 0.3s ease-out; }
 .tk-tab-content--active { display: block; }
 
-/* ── Stats Grid ── */
+/* â”€â”€ Stats Grid â”€â”€ */
 .tickets-stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -113,7 +113,7 @@
 }
 .tk-stat-card {
     background: #ffffff;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 1rem 1.25rem;
     border: 1px solid #e8edf5;
     display: flex;
@@ -145,10 +145,10 @@
     letter-spacing: -0.02em;
 }
 
-/* ── Filter Card ── */
+/* â”€â”€ Filter Card â”€â”€ */
 .tickets-filter-card {
     background: #ffffff;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 1.25rem 1.5rem;
     border: 1px solid #e8edf5;
     box-shadow: 0 1px 3px rgba(0, 35, 111, 0.03);
@@ -187,7 +187,7 @@
     box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.08);
 }
 
-/* ── Block Group ── */
+/* â”€â”€ Block Group â”€â”€ */
 .tickets-block-group {
     display: flex;
     flex-direction: column;
@@ -215,13 +215,13 @@
     background: #dbeafe;
     color: #1e40af;
     padding: 3px 12px;
-    border-radius: 20px;
+    border-radius: 10px;
 }
 
-/* ── Table ── */
+/* â”€â”€ Table â”€â”€ */
 .tickets-table-card {
     background: #ffffff;
-    border-radius: 12px;
+    border-radius: 10px;
     border: 1px solid #e8edf5;
     overflow: hidden;
     box-shadow: 0 1px 3px rgba(0, 35, 111, 0.03);
@@ -249,13 +249,13 @@
 .tickets-table tbody tr:hover { background: #f0f7ff; }
 .tickets-table tbody tr:last-child td { border-bottom: none; }
 
-/* ── Status & Priority Badges ── */
+/* â”€â”€ Status & Priority Badges â”€â”€ */
 .tk-status {
     display: inline-flex;
     align-items: center;
     gap: 5px;
     padding: 5px 12px;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 0.73rem;
     font-weight: 700;
     white-space: nowrap;
@@ -268,7 +268,7 @@
 
 .tk-priority {
     display: inline-flex; align-items: center; gap: 4px;
-    padding: 4px 10px; border-radius: 6px;
+    padding: 4px 10px; border-radius: 10px;
     font-size: 0.7rem; font-weight: 700; white-space: nowrap;
 }
 .tk-priority--low    { background: #f0fdf4; color: #15803d; }
@@ -276,9 +276,9 @@
 .tk-priority--high   { background: #fff1f2; color: #e11d48; }
 .tk-priority--urgent { background: #fef2f2; color: #991b1b; animation: pulseGlow 2s infinite; }
 
-/* ── Priority Dot ── */
+/* â”€â”€ Priority Dot â”€â”€ */
 .tk-priority-dot {
-    width: 10px; height: 10px; border-radius: 50%;
+    width: 10px; height: 10px; border-radius: 10px;
     display: inline-block; flex-shrink: 0;
 }
 .tk-priority-dot--urgent { background: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,.15); animation: pulseGlow 1.5s infinite; }
@@ -286,7 +286,7 @@
 .tk-priority-dot--medium { background: #eab308; box-shadow: 0 0 0 3px rgba(234,179,8,.12); }
 .tk-priority-dot--low    { background: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,.12); }
 
-/* ── Title Cell ── */
+/* â”€â”€ Title Cell â”€â”€ */
 .tk-title-cell { max-width: 300px; }
 .tk-title-cell__title {
     font-weight: 700; color: #0f172a; display: block;
@@ -298,23 +298,23 @@
     display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
-/* ── Clickable Row ── */
+/* â”€â”€ Clickable Row â”€â”€ */
 .tk-row { cursor: pointer; transition: all 0.15s; }
 .tk-row:hover .tk-title-cell__title { color: #0b57d0; }
 .tk-unassigned { color: #94a3b8; font-size: 0.82rem; font-style: italic; }
 .tk-time { white-space: nowrap; font-size: 0.82rem; color: #64748b; }
 
-/* ── Overdue Row ── */
+/* â”€â”€ Overdue Row â”€â”€ */
 .tk-row--overdue td { background: #fff8f8; }
 .tk-row--overdue:hover td { background: #fee2e2 !important; }
 .tk-row--overdue .tk-title-cell__title { color: #b91c1c; }
 .tk-overdue-badge {
     display: inline-block; margin-top: 4px;
     font-size: 0.68rem; font-weight: 700; color: #b91c1c;
-    background: #fee2e2; border-radius: 4px; padding: 2px 7px;
+    background: #fee2e2; border-radius: 8px; padding: 2px 7px;
 }
 
-/* ── Slide Panel ── */
+/* â”€â”€ Slide Panel â”€â”€ */
 .tk-panel-overlay {
     display: none; position: fixed; inset: 0;
     background: rgba(0, 35, 111, 0.2); z-index: 1000;
@@ -346,7 +346,7 @@
     font-size: 1.05rem; font-weight: 800; color: #00236f; margin: 0; line-height: 1.35;
 }
 .tk-panel__close {
-    background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px;
+    background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px;
     width: 34px; height: 34px; font-size: 1.2rem; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     color: #64748b; flex-shrink: 0; transition: all 0.15s;
@@ -354,7 +354,7 @@
 .tk-panel__close:hover { background: #e2e8f0; color: #0f172a; }
 .tk-panel__detail-btn {
     font-size: 0.78rem; font-weight: 600; color: #0b57d0;
-    text-decoration: none; padding: 7px 12px; border-radius: 7px;
+    text-decoration: none; padding: 7px 12px; border-radius: 8px;
     background: #eff6ff; white-space: nowrap; border: 1px solid #dbeafe;
     transition: all 0.15s;
 }
@@ -397,13 +397,13 @@
     font-size: 0.85rem; font-weight: 600;
 }
 
-/* ── Dispatch Section ── */
+/* â”€â”€ Dispatch Section â”€â”€ */
 .dispatch-grid {
     display: grid; grid-template-columns: 340px 1fr;
     gap: 1.5rem; align-items: start;
 }
 .tech-section {
-    background: #fff; border-radius: 12px; padding: 1.25rem;
+    background: #fff; border-radius: 10px; padding: 1.25rem;
     border: 1px solid #e8edf5; box-shadow: 0 1px 3px rgba(0,35,111,.03);
 }
 .tech-section-title {
@@ -421,7 +421,7 @@
 .tech-card__header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
 .tech-card__name { font-weight: 700; font-size: 0.92rem; color: #0f172a; }
 .tech-card__phone { font-size: 0.78rem; color: #64748b; display: flex; align-items: center; gap: 4px; margin-top: 3px; }
-.tech-badge { padding: 3px 10px; border-radius: 12px; font-size: 0.68rem; font-weight: 700; }
+.tech-badge { padding: 3px 10px; border-radius: 8px; font-size: 0.68rem; font-weight: 700; }
 .tech-badge--free { background: #dcfce7; color: #166534; }
 .tech-badge--busy { background: #dbeafe; color: #1e40af; }
 .tech-card__jobs { border-top: 1px solid #e8edf5; padding-top: 0.5rem; margin-top: 0.5rem; }
@@ -434,9 +434,9 @@
 .tech-job-item a { color: #0b57d0; text-decoration: none; font-weight: 600; }
 .tech-job-item a:hover { text-decoration: underline; }
 
-/* ── Dispatch Ticket Card ── */
+/* â”€â”€ Dispatch Ticket Card â”€â”€ */
 .dispatch-ticket-card {
-    background: #fff; border-radius: 12px; padding: 1.25rem;
+    background: #fff; border-radius: 10px; padding: 1.25rem;
     border: 1px solid #e8edf5; margin-bottom: 1rem;
     display: grid; grid-template-columns: 1fr auto; gap: 1.25rem; align-items: center;
     transition: all 0.2s; animation: fadeInUp 0.35s ease-out both;
@@ -468,7 +468,7 @@
 .dispatch-btn--secondary { background: #334155; box-shadow: 0 3px 10px rgba(51,65,85,.15); }
 .dispatch-btn--secondary:hover { background: #1e293b; }
 
-/* ── Report Section ── */
+/* â”€â”€ Report Section â”€â”€ */
 .rpt-section { display: flex; flex-direction: column; gap: 12px; }
 .rpt-section__header {
     display: flex; align-items: center; gap: 8px; padding: 12px 18px;
@@ -478,12 +478,12 @@
 }
 .rpt-section__count {
     margin-left: auto; font-size: 0.72rem; font-weight: 700;
-    padding: 3px 12px; border-radius: 20px; background: #dbeafe; color: #1e40af;
+    padding: 3px 12px; border-radius: 10px; background: #dbeafe; color: #1e40af;
 }
 
-/* ── Report Card ── */
+/* â”€â”€ Report Card â”€â”€ */
 .rpt-card {
-    background: #fff; border-radius: 12px; border: 1px solid #e8edf5;
+    background: #fff; border-radius: 10px; border: 1px solid #e8edf5;
     box-shadow: 0 1px 4px rgba(0,35,111,.04); display: grid;
     grid-template-columns: 1fr 180px; gap: 0; overflow: hidden;
     transition: all 0.2s; animation: fadeInUp 0.35s ease-out both;
@@ -495,23 +495,23 @@
 .rpt-card__head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .rpt-card__id {
     font-family: monospace; font-size: 0.82rem; font-weight: 800;
-    color: #0b57d0; background: #eff6ff; padding: 2px 8px; border-radius: 6px;
+    color: #0b57d0; background: #eff6ff; padding: 2px 8px; border-radius: 10px;
 }
 .rpt-card__title { font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 0; }
 .rpt-card__meta { display: flex; gap: 10px; flex-wrap: wrap; font-size: 0.78rem; color: #64748b; }
-.rpt-card__report { background: #f8fafc; border-radius: 9px; padding: 11px 13px; border: 1px solid #e8edf5; }
+.rpt-card__report { background: #f8fafc; border-radius: 10px; padding: 11px 13px; border: 1px solid #e8edf5; }
 .rpt-card__report-label { font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 5px; }
 .rpt-card__report-text { font-size: 0.85rem; color: #334155; line-height: 1.6; margin: 0; }
 
 .rpt-card__images { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .rpt-card__image-group { display: flex; flex-direction: column; gap: 4px; }
 .rpt-card__image-label { font-size: 0.68rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin: 0; }
-.rpt-card__thumb { width: 100%; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #e8edf5; cursor: zoom-in; transition: opacity .15s; }
+.rpt-card__thumb { width: 100%; height: 80px; object-fit: cover; border-radius: 10px; border: 1px solid #e8edf5; cursor: zoom-in; transition: opacity .15s; }
 .rpt-card__thumb:hover { opacity: 0.85; }
 
-/* ── Report Table ── */
+/* â”€â”€ Report Table â”€â”€ */
 .rpt-table-wrap {
-    background: #fff; border-radius: 12px; overflow: hidden;
+    background: #fff; border-radius: 8px; overflow: hidden;
     border: 1px solid #e8edf5; overflow-x: auto;
 }
 .rpt-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
@@ -525,11 +525,11 @@
 .rpt-table__empty { text-align: center; color: #94a3b8; padding: 32px !important; }
 .rpt-empty {
     display: flex; flex-direction: column; align-items: center; gap: 8px;
-    padding: 36px 20px; background: #fff; border-radius: 12px;
+    padding: 36px 20px; background: #fff; border-radius: 10px;
     border: 1px solid #e8edf5; color: #94a3b8; font-size: 0.88rem;
 }
 
-/* ── Buttons (Report + General) ── */
+/* â”€â”€ Buttons (Report + General) â”€â”€ */
 .rpt-btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 6px;
     padding: 9px 18px; border-radius: 8px; font-size: 0.82rem; font-weight: 700;
@@ -546,12 +546,12 @@
 .rpt-btn--ghost:hover { background: #e8edf5; }
 .rpt-btn--sm { padding: 6px 12px; font-size: 0.75rem; }
 
-/* ── Report Badges ── */
-.rpt-badge { font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 5px; }
+/* â”€â”€ Report Badges â”€â”€ */
+.rpt-badge { font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 8px; }
 .rpt-badge--urgent { background: #fee2e2; color: #991b1b; }
 .rpt-badge--high { background: #ffedd5; color: #c2410c; }
 
-/* ── Modals ── */
+/* â”€â”€ Modals â”€â”€ */
 .rpt-modal-overlay {
     display: none; position: fixed; inset: 0;
     background: rgba(0, 35, 111, 0.3); z-index: 1000;
@@ -559,12 +559,12 @@
 }
 .rpt-modal-overlay--visible { display: flex; }
 .rpt-modal {
-    background: #fff; border-radius: 16px; padding: 28px;
+    background: #fff; border-radius: 10px; padding: 28px;
     width: 460px; max-width: calc(100vw - 32px);
     box-shadow: 0 20px 60px rgba(0,35,111,.15);
     display: flex; flex-direction: column; gap: 14px;
 }
-.rpt-modal__icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+.rpt-modal__icon { width: 52px; height: 52px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
 .rpt-modal__icon--green { background: #f0fdf4; }
 .rpt-modal__icon--red { background: #fef2f2; }
 .rpt-modal__title { font-size: 1.1rem; font-weight: 800; color: #00236f; text-align: center; margin: 0; }
@@ -572,48 +572,48 @@
 .rpt-modal__field { display: flex; flex-direction: column; gap: 6px; }
 .rpt-modal__label { font-size: 0.85rem; font-weight: 700; color: #334155; }
 .rpt-modal__textarea {
-    padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px;
+    padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px;
     font-size: 0.875rem; font-family: inherit; resize: vertical; outline: none; transition: all 0.2s;
 }
 .rpt-modal__textarea:focus { border-color: #0b57d0; box-shadow: 0 0 0 3px rgba(11,87,208,.08); }
 .rpt-modal__error { font-size: 0.8rem; color: #dc2626; font-weight: 600; margin: 0; }
 .rpt-modal__actions { display: flex; gap: 10px; justify-content: flex-end; padding-top: 8px; border-top: 1px solid #f1f5f9; }
 
-/* ── Lightbox ── */
+/* â”€â”€ Lightbox â”€â”€ */
 .rpt-lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.88); z-index: 2000; align-items: center; justify-content: center; }
 .rpt-lightbox--visible { display: flex; }
 .rpt-lightbox__inner { display: flex; flex-direction: column; max-width: 90vw; max-height: 90vh; }
 .rpt-lightbox__header { display: flex; justify-content: space-between; align-items: center; padding: 8px 4px 10px; color: #e2e8f0; font-size: 0.9rem; font-weight: 600; }
-.rpt-lightbox__close { background: rgba(255,255,255,.15); border: none; color: #fff; width: 32px; height: 32px; border-radius: 8px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.rpt-lightbox__close { background: rgba(255,255,255,.15); border: none; color: #fff; width: 32px; height: 32px; border-radius: 10px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .rpt-lightbox__close:hover { background: rgba(255,255,255,.25); }
 .rpt-lightbox img { max-width: 90vw; max-height: 80vh; border-radius: 10px; object-fit: contain; }
 
-/* ── Show Page ── */
+/* â”€â”€ Show Page â”€â”€ */
 .tickets-show { display: grid; grid-template-columns: 1fr 360px; gap: 1.5rem; align-items: start; }
 .tickets-show__main { display: flex; flex-direction: column; gap: 1.5rem; }
 .tickets-show__sidebar { display: flex; flex-direction: column; gap: 1.5rem; }
-.tk-show-card { background: #fff; border-radius: 12px; border: 1px solid #e8edf5; overflow: hidden; box-shadow: 0 1px 3px rgba(0,35,111,.03); }
+.tk-show-card { background: #fff; border-radius: 10px; border: 1px solid #e8edf5; overflow: hidden; box-shadow: 0 1px 3px rgba(0,35,111,.03); }
 .tk-show-card__header { padding: 1.25rem 1.5rem; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; background: #fafbfe; }
 .tk-show-card__title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: #00236f; font-weight: 700; }
 .tk-show-card__body { padding: 1.25rem 1.5rem; }
 
-/* ── Info Grid (Show) ── */
+/* â”€â”€ Info Grid (Show) â”€â”€ */
 .tk-info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
 .tk-info-item { display: flex; flex-direction: column; gap: 4px; }
 .tk-info-item__label { font-size: 0.7rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
 .tk-info-item__value { font-size: 0.9rem; color: #0f172a; font-weight: 600; }
 
-/* ── Timeline ── */
+/* â”€â”€ Timeline â”€â”€ */
 .tk-admin-timeline { position: relative; padding-left: 30px; }
 .tk-admin-timeline::before {
     content: ''; position: absolute; left: 10px; top: 4px; bottom: 4px;
-    width: 2px; background: linear-gradient(to bottom, #0b57d0, #e2e8f0); border-radius: 2px;
+    width: 2px; background: linear-gradient(to bottom, #0b57d0, #e2e8f0); border-radius: 10px;
 }
 .tk-admin-timeline__item { position: relative; padding-bottom: 1.5rem; }
 .tk-admin-timeline__item:last-child { padding-bottom: 0; }
 .tk-admin-timeline__dot {
     position: absolute; left: -24px; top: 4px; width: 14px; height: 14px;
-    border-radius: 50%; border: 3px solid #fff;
+    border-radius: 10px; border: 3px solid #fff;
 }
 .tk-admin-timeline__dot--pending     { background: #f59e0b; box-shadow: 0 0 0 2px #fef3c7; }
 .tk-admin-timeline__dot--assigned    { background: #6366f1; box-shadow: 0 0 0 2px #e0e7ff; }
@@ -630,35 +630,35 @@
 .tk-admin-timeline__status { font-size: 0.8rem; font-weight: 700; }
 .tk-admin-timeline__comment { font-size: 0.85rem; color: #475569; margin-top: 5px; line-height: 1.5; }
 .tk-admin-timeline__meta { display: flex; gap: 14px; margin-top: 8px; font-size: 0.74rem; color: #94a3b8; font-weight: 500; }
-.tk-admin-timeline__proof img { max-height: 160px; border-radius: 8px; margin-top: 10px; object-fit: cover; border: 1px solid #e2e8f0; cursor: pointer; transition: transform 0.2s; }
+.tk-admin-timeline__proof img { max-height: 160px; border-radius: 10px; margin-top: 10px; object-fit: cover; border: 1px solid #e2e8f0; cursor: pointer; transition: transform 0.2s; }
 .tk-admin-timeline__proof img:hover { transform: scale(1.02); }
 
-/* ── Forms ── */
+/* â”€â”€ Forms â”€â”€ */
 .tk-form-group { margin-bottom: 1rem; }
 .tk-form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: #334155; margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.03em; }
 .tk-form-group select,
 .tk-form-group textarea,
 .tk-form-group input[type="file"] {
     width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0;
-    border-radius: 8px; font-size: 0.875rem; font-family: inherit;
+    border-radius: 10px; font-size: 0.875rem; font-family: inherit;
     background: #f8fafc; transition: all 0.2s; outline: none;
 }
 .tk-form-group select:focus, .tk-form-group textarea:focus { border-color: #0b57d0; background: #fff; box-shadow: 0 0 0 3px rgba(11,87,208,.08); }
 .tk-form-group textarea { resize: vertical; min-height: 80px; }
 .tk-form-submit {
     display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px;
-    border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 700;
+    border: none; border-radius: 10px; font-size: 0.875rem; font-weight: 700;
     cursor: pointer; transition: all 0.2s;
 }
 .tk-form-submit--primary { background: #00236f; color: #fff; box-shadow: 0 4px 14px rgba(0,35,111,.2); }
 .tk-form-submit--primary:hover { background: #001850; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,35,111,.3); }
 
-/* ── Rating Stars ── */
+/* â”€â”€ Rating Stars â”€â”€ */
 .tk-rating-stars { display: flex; gap: 2px; font-size: 1.25rem; }
 .tk-rating-stars .filled { color: #f59e0b; }
 .tk-rating-stars .empty  { color: #d1d5db; }
 
-/* ── Toast ── */
+/* â”€â”€ Toast â”€â”€ */
 .tk-toast {
     position: fixed; bottom: 28px; right: 28px;
     padding: 14px 22px; border-radius: 10px; font-size: 0.88rem; font-weight: 600;
@@ -670,10 +670,10 @@
 .tk-toast--success { background: #f0fdf4; color: #166534; border: 1px solid #86efac; }
 .tk-toast--error   { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
 
-/* ── Pagination ── */
+/* â”€â”€ Pagination â”€â”€ */
 .tickets-pagination { display: flex; justify-content: center; padding: 1.5rem 0; }
 
-/* ── Responsive ── */
+/* â”€â”€ Responsive â”€â”€ */
 @media (max-width: 1200px) {
     .dispatch-grid { grid-template-columns: 1fr; }
 }
@@ -701,3 +701,4 @@
     .tk-tabs, .tickets-filter-card, .rpt-card__right, .dispatch-form { display: none !important; }
     .rpt-card { grid-template-columns: 1fr; break-inside: avoid; }
 }
+

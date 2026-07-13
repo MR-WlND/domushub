@@ -299,10 +299,6 @@ Route::middleware(['resident'])->group(function () {
             ->where('status', 'published')
             ->orderBy('created_at', 'desc');
 
-        if ($request->get('type') === 'mine') {
-            $postQuery->where('user_id', $user->id);
-        }
-
         $posts = $postQuery->paginate(10)->withQueryString();
 
         return view('resident.home.index', compact(
@@ -369,8 +365,16 @@ Route::middleware(['resident'])->group(function () {
     Route::post('/resident/tickets/{id}/feedback', [ResidentTicketController::class, 'feedback'])->name('resident.tickets.feedback');
 
     // BẢNG TIN & BÌNH LUẬN PHÍA CƯ DÂN
-    Route::get('/resident/posts', function () {
-        return redirect()->route('resident.dashboard');
+    Route::get('/resident/posts', function (\Illuminate\Http\Request $request) {
+        $user = auth()->user();
+        $posts = \App\Models\Post::with(['user', 'images', 'comments', 'likedByCurrentUser'])
+            ->withCount(['likes', 'comments'])
+            ->where('status', 'published')
+            ->where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+            
+        return view('resident.posts.index', compact('posts', 'user'));
     })->name('resident.posts.index');
     Route::get('/resident/posts/create', function() { return view('resident.posts.create'); })->name('resident.posts.create');
     Route::post('/resident/posts', [\App\Http\Controllers\Resident\PostController::class, 'store'])->name('resident.posts.store');

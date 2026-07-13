@@ -1,10 +1,10 @@
-@import "./shared.css";
+﻿@import "./shared.css";
 
 /* ============================================================
    INFRASTRUCTURE DASHBOARD (blocks/index)
    ============================================================ */
 
-/* ─── Top Stats ─── */
+/* â”€â”€â”€ Top Stats â”€â”€â”€ */
 .blocks-top-stats {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -47,7 +47,7 @@
     line-height: 1.2;
 }
 
-/* ─── Main Layout Grid ─── */
+/* â”€â”€â”€ Main Layout Grid â”€â”€â”€ */
 .infra-layout {
     display: grid;
     grid-template-columns: 2fr 1fr;
@@ -60,11 +60,11 @@
     }
 }
 
-/* ─── Featured Block Card ─── */
+/* â”€â”€â”€ Featured Block Card â”€â”€â”€ */
 .infra-featured-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 4px 12px rgba(0, 35, 111, 0.04);
 }
@@ -95,7 +95,7 @@
     height: 52px;
     background: #0b57d0;
     color: #ffffff;
-    border-radius: 12px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -128,7 +128,7 @@
 .infra-status {
     display: inline-block;
     padding: 6px 14px;
-    border-radius: 20px;
+    border-radius: 10px;
     font-size: 12px;
     font-weight: 700;
 }
@@ -289,7 +289,7 @@
     content: '';
     width: 8px;
     height: 8px;
-    border-radius: 50%;
+    border-radius: 8px;
     display: inline-block;
 }
 
@@ -311,7 +311,7 @@
     justify-content: center;
     width: 32px;
     height: 32px;
-    border-radius: 6px;
+    border-radius: 8px;
     border: none;
     background: transparent;
     cursor: pointer;
@@ -342,7 +342,7 @@
     color: #0b57d0;
 }
 
-/* ─── Right Sidebar ─── */
+/* â”€â”€â”€ Right Sidebar â”€â”€â”€ */
 .infra-sidebar {
     display: flex;
     flex-direction: column;
@@ -353,7 +353,7 @@
 .infra-block-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 20px;
     display: flex;
     flex-direction: column;
@@ -414,7 +414,7 @@
     font-size: 11px;
     font-weight: 700;
     padding: 4px 10px;
-    border-radius: 20px;
+    border-radius: 10px;
     text-align: center;
 }
 
@@ -462,7 +462,7 @@
     text-align: center;
     padding: 10px 0;
     border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    border-radius: 10px;
     background: #ffffff;
     color: #334155;
     font-size: 13px;
@@ -478,7 +478,7 @@
 
 /* Map Card Mock */
 .infra-map-card {
-    border-radius: 12px;
+    border-radius: 10px;
     height: 120px;
     background: #94a3b8; /* fallback */
     background-image: linear-gradient(rgba(0,35,111,0.1), rgba(0,35,111,0.6)), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" opacity="0.1"><rect width="100" height="100" fill="%23fff"/><path d="M0 0l100 100M100 0L0 100" stroke="%23cbd5e1" stroke-width="2"/></svg>');
@@ -502,7 +502,7 @@
     gap: 8px;
 }
 
-/* ─── Extra Buttons & Modal Styles ─── */
+/* â”€â”€â”€ Extra Buttons & Modal Styles â”€â”€â”€ */
 .blocks-button--secondary {
     background: #f1f5f9;
     color: #334155;
@@ -541,7 +541,7 @@
 
 .util-modal {
     background: #ffffff;
-    border-radius: 16px;
+    border-radius: 10px;
     width: 100%;
     max-width: 580px;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
@@ -580,7 +580,7 @@
     cursor: pointer;
     color: #94a3b8;
     padding: 4px;
-    border-radius: 6px;
+    border-radius: 10px;
     transition: all 0.15s;
     display: flex;
     align-items: center;
@@ -599,7 +599,7 @@
 /* Upload zone */
 .util-drag-zone {
     border: 2px dashed #cbd5e1;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 32px 20px;
     text-align: center;
     background: #f8fafc;
@@ -648,7 +648,7 @@
 .util-file-preview {
     margin-top: 16px;
     background: #f1f5f9;
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 10px 14px;
     display: none;
     align-items: center;
@@ -677,7 +677,7 @@
     margin-bottom: 20px;
     border: 1px solid #bfdbfe;
     background: #eff6ff;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 16px 20px;
 }
 
@@ -736,3 +736,4 @@
 .util-template-btn:hover {
     background: #1e40af;
 }
+
