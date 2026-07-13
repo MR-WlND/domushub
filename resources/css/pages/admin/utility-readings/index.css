@@ -1,5 +1,5 @@
-/* ============================================================
-   UTILITY READINGS – Chốt số Điện Nước
+﻿/* ============================================================
+   UTILITY READINGS â€“ Chá»‘t sá»‘ Äiá»‡n NÆ°á»›c
    ============================================================ */
 
 /* ---- Stat Cards ---- */
@@ -12,7 +12,7 @@
 
 .util-stat-card {
     background: #ffffff;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 20px 24px;
     border: 1px solid #e2e8f0;
     box-shadow: 0 2px 8px rgba(0, 35, 111, 0.03);
@@ -52,7 +52,7 @@
     align-items: center;
     gap: 4px;
     padding: 4px 12px;
-    border-radius: 999px;
+    border-radius: 8px;
     font-size: 12px;
     font-weight: 600;
     white-space: nowrap;
@@ -87,7 +87,7 @@
 .util-filter-panel {
     background: #f8faff;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 20px 24px;
     margin-bottom: 24px;
 }
@@ -138,7 +138,7 @@
 .util-table-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 10px;
     overflow: hidden;
 }
 
@@ -215,7 +215,7 @@
     justify-content: center;
     width: 28px;
     height: 28px;
-    border-radius: 6px;
+    border-radius: 8px;
     border: 1px solid #e2e8f0;
     background: #ffffff;
     cursor: pointer;
@@ -299,7 +299,7 @@
     align-items: center;
     gap: 6px;
     padding: 10px 20px;
-    border-radius: 10px;
+    border-radius: 8px;
     font-size: 14px;
     font-weight: 600;
     text-decoration: none;
@@ -353,7 +353,7 @@
     padding: 60px 20px;
     background: #f8faff;
     border: 2px dashed #e2e8f0;
-    border-radius: 12px;
+    border-radius: 10px;
     color: #64748b;
 }
 
@@ -426,7 +426,7 @@
 /* ---- Form Card (Create/Edit) ---- */
 .util-form-card {
     background: #ffffff;
-    border-radius: 16px;
+    border-radius: 10px;
     padding: 32px;
     box-shadow: 0 4px 16px rgba(0, 35, 111, 0.04);
     border: 1px solid #e2e8f0;
@@ -492,7 +492,7 @@
     height: 46px;
     padding: 10px 16px;
     border: 1px solid #cbd5e1;
-    border-radius: 10px;
+    border-radius: 8px;
     font-size: 14px;
     color: #1e293b;
     background: #ffffff;
@@ -582,7 +582,7 @@ select.util-form-input {
 
 .util-modal {
     background: #ffffff;
-    border-radius: 16px;
+    border-radius: 10px;
     width: 100%;
     max-width: 580px;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
@@ -624,7 +624,7 @@ select.util-form-input {
     cursor: pointer;
     color: #94a3b8;
     padding: 4px;
-    border-radius: 6px;
+    border-radius: 10px;
     transition: all 0.15s;
     display: flex;
     align-items: center;
@@ -645,7 +645,7 @@ select.util-form-input {
 /* Upload zone */
 .util-drag-zone {
     border: 2px dashed #cbd5e1;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 32px 20px;
     text-align: center;
     background: #f8fafc;
@@ -694,7 +694,7 @@ select.util-form-input {
 .util-file-preview {
     margin-top: 16px;
     background: #f1f5f9;
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 10px 14px;
     display: none;
     align-items: center;
@@ -723,7 +723,7 @@ select.util-form-input {
     margin-bottom: 20px;
     border: 1px solid #bfdbfe;
     background: #eff6ff;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 16px 20px;
 }
 
@@ -821,7 +821,7 @@ select.util-form-input {
     width: 44px;
     height: 44px;
     object-fit: cover;
-    border-radius: 8px;
+    border-radius: 10px;
     border: 1px solid #cbd5e1;
     cursor: pointer;
     background-color: #f8fafc;
@@ -842,7 +842,7 @@ select.util-form-input {
     pointer-events: none;
     background: #ffffff;
     border: 1px solid #cbd5e1;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 8px;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.12);
     width: 250px;
@@ -876,7 +876,7 @@ select.util-form-input {
     height: auto;
     max-height: 240px;
     object-fit: contain;
-    border-radius: 8px;
+    border-radius: 10px;
     display: block;
     background: #f8fafc;
 }
@@ -891,5 +891,6 @@ select.util-form-input {
     background: #fef3c7;
     color: #b45309;
 }
+
 
 

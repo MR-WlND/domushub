@@ -30,7 +30,7 @@
 .profile-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 16px;
+    border-radius: 10px;
     box-shadow: 0 4px 20px rgba(0, 35, 111, 0.04);
     margin-bottom: 24px;
     overflow: hidden;
@@ -187,7 +187,7 @@
     height: 44px;
     padding: 10px 16px;
     border: 1px solid #cbd5e1;
-    border-radius: 10px;
+    border-radius: 8px;
     font-size: 0.9rem;
     color: #1e293b;
     background: #fff;
@@ -277,7 +277,7 @@
     color: #ffffff;
     background: linear-gradient(135deg, #0b57d0, #1d4ed8);
     border: none;
-    border-radius: 10px;
+    border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -298,7 +298,7 @@
     color: #475569;
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 10px;
+    border-radius: 8px;
     cursor: pointer;
     text-decoration: none;
     transition: all 0.15s;
@@ -339,3 +339,4 @@
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 20px;
 }
+

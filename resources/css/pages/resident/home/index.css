@@ -1,33 +1,33 @@
-/* ============================================================
-   RESIDENT HOME DASHBOARD — Professional Design System
+﻿/* ============================================================
+   RESIDENT HOME DASHBOARD â€” Professional Design System
    Base spacing: 8px (8, 16, 24, 32, 40, 48)
    ============================================================ */
 
-/* ─── Layout ─── */
-.rh { max-width: 980px; margin: 0 auto; padding: 40px 24px 64px; display: flex; flex-direction: column; gap: 32px; }
+/* â”€â”€â”€ Layout â”€â”€â”€ */
+.rh { max-width: 980px; margin: 0 auto; padding: 0px 24px 64px; display: flex; flex-direction: column; gap: 32px; }
 
-/* ─── Welcome ─── */
-.rh-welcome h1 { margin: 0; font-size: 1.75rem; font-weight: 800; color: #0f172a; }
+/* â”€â”€â”€ Welcome â”€â”€â”€ */
+.rh-welcome h1 { margin: 0; font-size: 2rem; font-weight: 800; color: #0f172a; }
 .rh-welcome p { margin: 8px 0 0; color: #64748b; font-size: 0.92rem; }
 
-/* ─── Hero Grid ─── */
+/* â”€â”€â”€ Hero Grid â”€â”€â”€ */
 .rh-hero { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
 /* Debt Card */
 .rh-debt-card {
     background: linear-gradient(135deg, #1e3a5f, #2563eb);
-    border-radius: 14px; padding: 32px; color: #fff;
+    border-radius: 10px; padding: 25px 30px; color: #fff;
     display: flex; flex-direction: column; justify-content: space-between;
-    height: 260px; box-shadow: 0 8px 32px rgba(30,58,95,0.2);
+    height: 220px; box-shadow: 0 8px 32px rgba(30,58,95,0.2);
 }
 .rh-debt__label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.8; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-.rh-debt__amount { font-size: 2.6rem; font-weight: 800; margin: 16px 0 8px; line-height: 1; }
+.rh-debt__amount { font-size: 2.2rem; font-weight: 700; margin: 15px 0 8px; line-height: 1; }
 .rh-debt__amount small { font-size: 1rem; font-weight: 600; opacity: 0.7; }
 .rh-debt__due { font-size: 0.8rem; opacity: 0.65; }
 .rh-debt__btn {
     display: inline-flex; align-items: center; gap: 8px; margin-top: 24px;
     padding: 12px 24px; background: #4ade80; color: #064e3b; border: none;
-    border-radius: 10px; font-size: 0.88rem; font-weight: 700;
+    border-radius: 8px; font-size: 0.88rem; font-weight: 700;
     cursor: pointer; text-decoration: none; transition: all 0.2s; width: fit-content;
 }
 .rh-debt__btn:hover { background: #22c55e; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(34,197,94,0.35); }
@@ -35,8 +35,8 @@
 
 /* Announce Card */
 .rh-announce-card {
-    background: #fff; border: 1px solid #e2e8f0; border-radius: 14px;
-    overflow: hidden; display: flex; flex-direction: column; height: 260px;
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+    overflow: hidden; display: flex; flex-direction: column; height: 220px;
     box-shadow: 0 2px 12px rgba(0,0,0,0.04);
 }
 .rh-announce-slider { width: 100%; flex: 1; overflow: hidden; position: relative; }
@@ -47,17 +47,17 @@
 .rh-announce__badge {
     position: absolute; top: 12px; left: 14px;
     padding: 4px 12px; background: #dc2626; color: #fff;
-    font-size: 0.65rem; font-weight: 800; border-radius: 4px; text-transform: uppercase;
+    font-size: 0.65rem; font-weight: 800; border-radius: 8px; text-transform: uppercase;
 }
 .rh-announce__body { padding: 16px 20px; }
 .rh-announce__title { margin: 0; font-size: 0.92rem; font-weight: 700; color: #0f172a; }
 .rh-announce__time { margin: 4px 0 0; font-size: 0.75rem; color: #94a3b8; }
 .rh-announce-dots { display: flex; justify-content: center; gap: 8px; padding: 10px 0; }
-.rh-dot { width: 8px; height: 8px; border-radius: 50%; background: #cbd5e1; cursor: pointer; transition: all 0.2s; }
+.rh-dot { width: 8px; height: 8px; border-radius: 10px; background: #cbd5e1; cursor: pointer; transition: all 0.2s; }
 .rh-dot:hover { background: #94a3b8; }
 .rh-dot--active { background: #2563eb; transform: scale(1.25); }
 
-/* ─── Section Title ─── */
+/* â”€â”€â”€ Section Title â”€â”€â”€ */
 .rh-section { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .rh-section__title { margin: 0; font-size: 1.1rem; font-weight: 700; color: #0f172a; }
 .rh-section__actions { display: flex; align-items: center; gap: 16px; }
@@ -66,21 +66,21 @@
 .rh-section__btn {
     display: inline-flex; align-items: center; gap: 6px;
     padding: 8px 16px; background: #2563eb; color: #fff;
-    border-radius: 8px; font-size: 0.8rem; font-weight: 700; text-decoration: none; transition: all 0.2s;
+    border-radius: 10px; font-size: 0.8rem; font-weight: 700; text-decoration: none; transition: all 0.2s;
 }
 .rh-section__btn:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,0.25); }
 
-/* ─── Shortcuts ─── */
+/* â”€â”€â”€ Shortcuts â”€â”€â”€ */
 .rh-shortcuts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
 .rh-shortcut {
     display: flex; align-items: center; gap: 16px;
-    padding: 20px; background: #fff; border: 1px solid #e2e8f0;
-    border-radius: 14px; text-decoration: none;
+    padding: 13px; background: #fff; border: 1px solid #e2e8f0;
+    border-radius: 10px; text-decoration: none;
     transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
 .rh-shortcut:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.07); border-color: #bfdbfe; }
 .rh-shortcut:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
-.rh-shortcut__icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.rh-shortcut__icon { width: 44px; height: 44px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .rh-shortcut__icon--pay { background: #dbeafe; color: #2563eb; }
 .rh-shortcut__icon--report { background: #fee2e2; color: #dc2626; }
 .rh-shortcut__icon--visitor { background: #dcfce7; color: #16a34a; }
@@ -88,10 +88,10 @@
 .rh-shortcut__label { display: block; font-weight: 700; color: #0f172a; font-size: 0.88rem; }
 .rh-shortcut__desc { display: block; font-size: 0.72rem; color: #64748b; margin-top: 2px; }
 
-/* ─── Empty State ─── */
+/* â”€â”€â”€ Empty State â”€â”€â”€ */
 .rh-empty {
     grid-column: 1 / -1; padding: 48px 24px; text-align: center;
-    background: #fff; border: 1px solid #e2e8f0; border-radius: 14px;
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
 }
 .rh-empty__text { margin: 0; font-size: 0.9rem; color: #64748b; font-weight: 500; }
 .rh-empty__btn {
@@ -101,7 +101,7 @@
 }
 .rh-empty__btn:hover { background: #1d4ed8; }
 
-/* ─── Responsive ─── */
+/* â”€â”€â”€ Responsive â”€â”€â”€ */
 @media (max-width: 1024px) {
     .rh-shortcuts { grid-template-columns: repeat(2, 1fr); }
 }
@@ -125,14 +125,14 @@
 /* Announce empty */
 .rh-announce__empty { flex: 1; display: flex; align-items: center; justify-content: center; background: #f8fafc; color: #94a3b8; font-size: 0.875rem; }
 
-/* ─── Facebook-style Feed ─── */
+/* â”€â”€â”€ Facebook-style Feed â”€â”€â”€ */
 .rh-fb-feed { display: flex; flex-direction: column; gap: 16px; max-width: 980px; }
 
 .rh-fb-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; }
 
-.rh-fb-card__header { display: flex; align-items: center; gap: 10px; padding: 14px 16px 0; }
+.rh-fb-card__header { display: flex; align-items: center; gap: 10px; padding: 10px 16px 0; }
 .rh-fb-card__avatar {
-    width: 40px; height: 40px; border-radius: 50%; overflow: hidden;
+    width: 40px; height: 40px; border-radius: 10px; overflow: hidden;
     background: #e0e7ff; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 .rh-fb-card__avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -189,3 +189,4 @@
     .rh-fb-card__img-side img { height: 119px; }
     .rh-fb-card__img-overlay { height: 119px; }
 }
+

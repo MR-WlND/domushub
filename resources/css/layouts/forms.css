@@ -1,4 +1,4 @@
-/* --------------------------------------------------------------------------
+﻿/* --------------------------------------------------------------------------
    DOMUSHUB - PREMIUM FORM STYLES
    Used across all Create and Edit pages (Blocks, Floors, Apartments, etc.)
    -------------------------------------------------------------------------- */
@@ -33,7 +33,7 @@
 /* Premium Form Card Wrapper */
 .form-card-custom {
     background: #ffffff;
-    border-radius: 16px;
+    border-radius: 10px;
     padding: 32px;
     box-shadow: 0 10px 25px rgba(0, 35, 111, 0.04);
     border: 1px solid #e2e8f0;
@@ -51,7 +51,7 @@
     font-weight: 700;
     letter-spacing: 0.5px;
     padding: 6px 12px;
-    border-radius: 6px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -88,7 +88,7 @@
     color: white;
     width: 22px;
     height: 22px;
-    border-radius: 50%;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -165,7 +165,7 @@
     height: 46px;
     padding: 10px 16px 10px 44px;
     border: 1px solid #cbd5e1;
-    border-radius: 10px;
+    border-radius: 8px;
     font-size: 14px;
     color: #1e293b;
     background-color: #ffffff;
@@ -198,7 +198,7 @@ select.form-input-custom {
     resize: vertical;
     line-height: 1.5;
     border: 1px solid #cbd5e1;
-    border-radius: 10px;
+    border-radius: 8px;
     font-size: 14px;
     outline: none;
     width: 100%;
@@ -237,3 +237,4 @@ select.form-input-custom {
     padding-top: 24px;
     border-top: 1px solid #f1f5f9;
 }
+

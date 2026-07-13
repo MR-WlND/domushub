@@ -1,4 +1,4 @@
-/* ====== Admin Announcements Style ====== */
+﻿/* ====== Admin Announcements Style ====== */
 .announcements-page {
     display: flex;
     flex-direction: column;
@@ -38,7 +38,7 @@
 .announcements-stat-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 20px;
     display: flex;
     align-items: center;
@@ -48,7 +48,7 @@
 .announcements-stat-icon {
     width: 46px;
     height: 46px;
-    border-radius: 10px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -78,7 +78,7 @@
 .announcements-filter {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 16px 20px;
     display: flex;
     flex-wrap: wrap;
@@ -123,7 +123,7 @@
 .announcements-table-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 10px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.02);
     overflow: hidden;
 }
@@ -164,7 +164,7 @@
 .announcement-banner-thumb {
     width: 50px;
     height: 38px;
-    border-radius: 6px;
+    border-radius: 10px;
     object-fit: cover;
     background: #f1f5f9;
     border: 1px solid #e2e8f0;
@@ -190,7 +190,7 @@
     align-items: center;
     gap: 6px;
     padding: 4px 10px;
-    border-radius: 9999px;
+    border-radius: 8px;
     font-size: 12px;
     font-weight: 600;
     text-transform: capitalize;
@@ -206,7 +206,7 @@
     align-items: center;
     gap: 6px;
     padding: 4px 10px;
-    border-radius: 9999px;
+    border-radius: 8px;
     font-size: 12px;
     font-weight: 500;
 }
@@ -216,7 +216,7 @@
 .status-dot {
     width: 6px;
     height: 6px;
-    border-radius: 50%;
+    border-radius: 10px;
     background: currentColor;
 }
 
@@ -227,7 +227,7 @@
     cursor: pointer;
     font-size: 16px;
     padding: 6px;
-    border-radius: 6px;
+    border-radius: 8px;
     transition: background 0.2s, transform 0.2s;
     outline: none;
     display: inline-flex;
@@ -257,7 +257,7 @@
     justify-content: center;
     width: 32px;
     height: 32px;
-    border-radius: 6px;
+    border-radius: 8px;
     border: 1px solid #e2e8f0;
     background: #ffffff;
     color: #475569;
@@ -289,7 +289,7 @@
     gap: 6px;
     min-height: 40px;
     padding: 0 18px;
-    border-radius: 10px;
+    border-radius: 8px;
     border: 1px solid #d9e2f2;
     background: #ffffff;
     color: #3c4563;
@@ -341,7 +341,7 @@
 .announcement-form-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 24px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.02);
 }
@@ -364,7 +364,7 @@
 .form-control {
     padding: 10px 14px;
     border: 1px solid #cbd5e1;
-    border-radius: 8px;
+    border-radius: 10px;
     font-size: 14px;
     color: #0f172a;
     outline: none;
@@ -390,7 +390,7 @@
 /* Image Upload Widget */
 .image-upload-wrapper {
     border: 2px dashed #cbd5e1;
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 20px;
     text-align: center;
     position: relative;
@@ -403,7 +403,7 @@
 .image-upload-preview {
     max-width: 100%;
     max-height: 200px;
-    border-radius: 6px;
+    border-radius: 10px;
     margin-top: 10px;
     display: block;
     margin-left: auto;
@@ -425,7 +425,7 @@
 /* Alerts */
 .announcements-alert {
     padding: 12px 18px;
-    border-radius: 8px;
+    border-radius: 10px;
     font-size: 14px;
     font-weight: 500;
 }
@@ -440,3 +440,4 @@
         grid-template-columns: 1fr;
     }
 }
+
