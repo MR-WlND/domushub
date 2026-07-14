@@ -541,10 +541,11 @@ class HomeController extends Controller
         // Tháng được chọn
         $selectedMonth = (int) $request->get('month', date('m'));
 
-        // 1. Số lượng phản ánh theo status lọc theo năm
+        // 1. Số lượng phản ánh theo status lọc theo năm + tháng
         $ticketStatsQuery = DB::table('tickets')
             ->whereNull('tickets.deleted_at')
-            ->whereYear('tickets.created_at', $selectedYear);
+            ->whereYear('tickets.created_at', $selectedYear)
+            ->whereMonth('tickets.created_at', $selectedMonth);
         if ($selectedBlock) {
             $ticketStatsQuery->join('apartments', 'tickets.apartment_id', '=', 'apartments.id')
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
@@ -567,6 +568,7 @@ class HomeController extends Controller
             ->whereNull('tickets.deleted_at')
             ->where('tickets.status', 'completed')
             ->whereYear('tickets.created_at', $selectedYear)
+            ->whereMonth('tickets.created_at', $selectedMonth)
             ->whereNotNull('tickets.rating');
         if ($selectedBlock) {
             $csatStatsQuery->join('apartments', 'tickets.apartment_id', '=', 'apartments.id')
@@ -600,6 +602,7 @@ class HomeController extends Controller
         $recentFeedbacksQuery = Ticket::with(['sender', 'apartment'])
             ->where('tickets.status', 'completed')
             ->whereYear('tickets.created_at', $selectedYear)
+            ->whereMonth('tickets.created_at', $selectedMonth)
             ->whereNotNull('tickets.rating');
         if ($selectedBlock) {
             $recentFeedbacksQuery->join('apartments', 'tickets.apartment_id', '=', 'apartments.id')
@@ -620,7 +623,8 @@ class HomeController extends Controller
         $avgSlaQuery = DB::table('tickets')
             ->whereNull('tickets.deleted_at')
             ->where('tickets.status', 'completed')
-            ->whereYear('tickets.created_at', $selectedYear);
+            ->whereYear('tickets.created_at', $selectedYear)
+            ->whereMonth('tickets.created_at', $selectedMonth);
         if ($selectedBlock) {
             $avgSlaQuery->join('apartments', 'tickets.apartment_id', '=', 'apartments.id')
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
@@ -642,7 +646,8 @@ class HomeController extends Controller
         // 5. Phân bố mức độ ưu tiên phản ánh
         $priorityStatsQuery = DB::table('tickets')
             ->whereNull('tickets.deleted_at')
-            ->whereYear('tickets.created_at', $selectedYear);
+            ->whereYear('tickets.created_at', $selectedYear)
+            ->whereMonth('tickets.created_at', $selectedMonth);
         if ($selectedBlock) {
             $priorityStatsQuery->join('apartments', 'tickets.apartment_id', '=', 'apartments.id')
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
@@ -663,11 +668,12 @@ class HomeController extends Controller
         // 6. Thống kê hiệu quả công việc của từng kỹ thuật viên (KPI) - Tương thích SQLite/MySQL
         if ($selectedBlock) {
             $technicianPerformanceQuery = DB::table('users')
-                ->leftJoin('tickets', function ($join) use ($selectedYear, $selectedBlock) {
+                ->leftJoin('tickets', function ($join) use ($selectedYear, $selectedMonth, $selectedBlock) {
                     $join->on('users.id', '=', 'tickets.handler_id')
                         ->whereNull('tickets.deleted_at')
                         ->where('tickets.status', '=', 'completed')
                         ->whereYear('tickets.created_at', $selectedYear)
+                        ->whereMonth('tickets.created_at', $selectedMonth)
                         ->whereIn('tickets.apartment_id', function ($query) use ($selectedBlock) {
                             $query->select('id')
                                 ->from('apartments')
@@ -681,11 +687,12 @@ class HomeController extends Controller
                 ->where('users.role', 'technician');
         } else {
             $technicianPerformanceQuery = DB::table('users')
-                ->leftJoin('tickets', function ($join) use ($selectedYear) {
+                ->leftJoin('tickets', function ($join) use ($selectedYear, $selectedMonth) {
                     $join->on('users.id', '=', 'tickets.handler_id')
                         ->whereNull('tickets.deleted_at')
                         ->where('tickets.status', '=', 'completed')
-                        ->whereYear('tickets.created_at', $selectedYear);
+                        ->whereYear('tickets.created_at', $selectedYear)
+                        ->whereMonth('tickets.created_at', $selectedMonth);
                 })
                 ->where('users.role', 'technician');
         }
@@ -858,15 +865,15 @@ class HomeController extends Controller
         }
         $blockStats = $blockStatsQuery->orderBy('name')->get();
 
-        // ── 5. XU HƯỚNG CƯ DÂN ĐĂNG KÝ THEO THÁNG (12 tháng gần nhất) ─
+        // ── 5. XU HƯỚNG CƯ DÂN ĐĂNG KÝ THEO THÁNG (12 tháng của năm được chọn) ─
         $driver = DB::getDriverName();
-        $dateFormatSelect = $driver === 'sqlite'
-            ? "strftime('%Y-%m', created_at)"
-            : "DATE_FORMAT(created_at, '%Y-%m')";
+        $monthSelect = $driver === 'sqlite'
+            ? "CAST(strftime('%m', created_at) AS INTEGER)"
+            : "MONTH(created_at)";
 
         $residentTrendQuery = DB::table('residents')
             ->whereNull('deleted_at')
-            ->where('created_at', '>=', now()->subMonths(11)->startOfMonth());
+            ->whereYear('created_at', $selectedYear);
         if ($selectedBlock) {
             $residentTrendQuery->whereIn('apartment_id', function($q) use ($selectedBlock) {
                 $q->select('id')->from('apartments')->whereIn('floor_id', function($q2) use ($selectedBlock) {
@@ -874,20 +881,18 @@ class HomeController extends Controller
                 });
             });
         }
-        $residentTrend = $residentTrendQuery->selectRaw("$dateFormatSelect as month, COUNT(*) as count")
-            ->groupBy('month')
-            ->orderBy('month')
-            ->pluck('count', 'month')
+        $residentTrend = $residentTrendQuery->selectRaw("$monthSelect as month_num, COUNT(*) as count")
+            ->groupBy('month_num')
+            ->orderBy('month_num')
+            ->pluck('count', 'month_num')
             ->toArray();
 
-        // Tạo mảng đủ 12 tháng (kể cả tháng = 0)
+        // Tạo mảng đủ 12 tháng của năm được chọn
         $trendLabels = [];
         $trendValues = [];
-        for ($i = 11; $i >= 0; $i--) {
-            $key = now()->subMonths($i)->format('Y-m');
-            $label = now()->subMonths($i)->format('T' . now()->subMonths($i)->month . '/' . now()->subMonths($i)->year);
-            $trendLabels[] = 'T' . now()->subMonths($i)->month . '/' . now()->subMonths($i)->format('y');
-            $trendValues[] = $residentTrend[$key] ?? 0;
+        for ($m = 1; $m <= 12; $m++) {
+            $trendLabels[] = 'T' . $m . '/' . substr($selectedYear, -2);
+            $trendValues[] = $residentTrend[$m] ?? 0;
         }
 
         // ── 6. TOP CĂN HỘ ĐÔNG NGƯỜI NHẤT ────────────────────────────
@@ -895,7 +900,9 @@ class HomeController extends Controller
             ->join('apartments', 'residents.apartment_id', '=', 'apartments.id')
             ->join('floors', 'apartments.floor_id', '=', 'floors.id')
             ->join('blocks', 'floors.block_id', '=', 'blocks.id')
-            ->whereNull('residents.deleted_at');
+            ->whereNull('residents.deleted_at')
+            ->whereYear('residents.created_at', $selectedYear)
+            ->whereMonth('residents.created_at', $selectedMonth);
         if ($selectedBlock) {
             $topApartmentsQuery->where('blocks.id', $selectedBlock);
         }
