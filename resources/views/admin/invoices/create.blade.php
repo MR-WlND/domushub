@@ -62,8 +62,8 @@
                         onblur="this.style.borderColor='var(--border)'"
                         onchange="autoTitle(this.value)">
                     <option value="">-- Chọn loại --</option>
-                    <option value="electricity" {{ old('type')=='electricity'?'selected':'' }}>⚡ Tiền điện</option>
-                    <option value="water"       {{ old('type')=='water'?'selected':'' }}>💧 Tiền nước</option>
+                    <option value="electricity" {{ old('type')=='electricity'?'selected':'' }}>Tiền điện</option>
+                    <option value="water"       {{ old('type')=='water'?'selected':'' }}>Tiền nước</option>
                     <option value="management_fee" {{ old('type')=='management_fee'?'selected':'' }}>🏢 Phí quản lý</option>
                     <option value="parking"     {{ old('type')=='parking'?'selected':'' }}>🚗 Phí gửi xe</option>
                     <option value="other"       {{ old('type')=='other'?'selected':'' }}>📦 Phí khác</option>

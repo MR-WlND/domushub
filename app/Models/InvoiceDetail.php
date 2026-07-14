@@ -16,6 +16,8 @@ class InvoiceDetail extends Model
         'quantity',
         'amount',
         'status',
+        'note',
+        'payment_id',
     ];
 
     public function invoice()
@@ -26,5 +28,10 @@ class InvoiceDetail extends Model
     public function servicePrice()
     {
         return $this->belongsTo(ServicePrice::class, 'service_price_id');
+    }
+
+    public function payment()
+    {
+        return $this->belongsTo(Payment::class, 'payment_id');
     }
 }

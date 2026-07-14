@@ -33,6 +33,14 @@
                 <h1>Phân quyền người dùng</h1>
             </div>
             <div class="users-page__actions">
+                <a href="{{ route('admin.system-logs.index') }}" class="users-button users-button--secondary" style="background:#fff; color:#475569; border:1px solid #cbd5e1; display:inline-flex; align-items:center; gap:6px;">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <polyline points="1 20 1 14 7 14"></polyline>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                    Lịch sử hệ thống
+                </a>
                 <a href="{{ route('admin.users.create') }}" class="users-button users-button--primary">Thêm nhân sự</a>
             </div>
         </div>

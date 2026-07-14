@@ -129,13 +129,48 @@
 
 <article class="detail-card">
     @if($reading->status === 'rejected')
-    <div class="no-print" style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; color: #b91c1c;">
-        <div style="font-weight: 700; font-size: 14px; margin-bottom: 4px;">❌ Chỉ số này đã bị từ chối</div>
-        <div style="font-size: 13px; color: #991b1b;">
-            <strong>Lý do từ chối:</strong> <em>{{ $reading->reject_reason }}</em>
-        </div>
-        <div style="font-size: 11px; margin-top: 6px; color: #b91c1c; opacity: 0.9;">
-            Người từ chối: <strong>{{ $reading->rejecter->name ?? 'Kế toán viên' }}</strong> | Ngày từ chối: <strong>{{ $reading->updated_at->format('d/m/Y H:i') }}</strong>
+    <div class="no-print" style="margin-bottom: 24px;">
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); overflow: hidden;">
+            <div style="background: #ffffff; border-bottom: 1px solid #f1f5f9; padding: 16px 20px; display: flex; align-items: center;">
+                <div style="background: #fee2e2; color: #ef4444; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-size: 14px;">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <span style="font-size: 14px; font-weight: 700; color: #1e293b;">Lý do từ chối</span>
+            </div>
+            @if($rejections && $rejections->isNotEmpty())
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; vertical-align: middle;">
+                        <thead>
+                            <tr style="background: #f8fafc; color: #64748b; border-bottom: 1px solid #e2e8f0; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; font-weight: 700;">
+                                <th style="padding: 10px 16px; width: 25%;">Thời gian</th>
+                                <th style="padding: 10px 16px; width: 25%;">Người từ chối</th>
+                                <th style="padding: 10px 16px; width: 50%;">Lý do cụ thể</th>
+                            </tr>
+                        </thead>
+                        <tbody style="color: #334155;">
+                            @foreach($rejections as $rej)
+                            <tr style="border-bottom: 1px solid #f1f5f9;">
+                                <td style="padding: 12px 16px; color: #94a3b8; font-weight: 400; white-space: nowrap; vertical-align: top;">{{ $rej['rejected_at'] }}</td>
+                                <td style="padding: 12px 16px; font-weight: 500; color: #64748b; vertical-align: top;">{{ $rej['rejecter_name'] }}</td>
+                                <td style="padding: 12px 16px; vertical-align: top;">
+                                    <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; background-color: #fff5f5; border: 1px solid #feb2b2; color: #e53e3e; font-weight: 700; font-size: 12px;">
+                                        <i class="fas fa-exclamation-triangle animate-pulse" style="font-size: 11px;"></i>
+                                        <span>{{ $rej['reason'] }}</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <div style="padding: 16px 20px; font-size: 13px; color: #991b1b;">
+                    <strong>Lý do từ chối:</strong> <em>{{ $reading->reject_reason }}</em>
+                    <div style="font-size: 11px; margin-top: 6px; color: #b91c1c; opacity: 0.9;">
+                        Người từ chối: <strong>{{ $reading->rejecter->name ?? 'Kế toán viên' }}</strong> | Ngày từ chối: <strong>{{ $reading->updated_at->format('d/m/Y H:i') }}</strong>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
     @endif
@@ -207,7 +242,7 @@
 
     @if(!empty($proofImages))
     <div class="proof-section">
-        <div class="detail-label">📷 Ảnh công tơ minh chứng ({{ count($proofImages) }} ảnh)</div>
+        <div class="detail-label" style="display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-camera" style="font-size: 15px; color: #64748b;"></i><span>Ảnh công tơ minh chứng ({{ count($proofImages) }} ảnh)</span></div>
         <div style="display:flex; flex-wrap:wrap; gap:12px; margin-top:14px;">
             @foreach($proofImages as $idx => $imgPath)
             <div style="position:relative; width:160px; height:160px; border-radius:12px; overflow:hidden; border:2px solid #e2e8f0; box-shadow:0 3px 12px rgba(0,0,0,.07); cursor:pointer; transition:transform .15s, box-shadow .15s;"
@@ -235,6 +270,42 @@
     @else
     <div class="proof-section" style="text-align: center; color: #94a3b8; padding: 20px 0;">
         Chưa có hình ảnh chụp công tơ minh chứng.
+    </div>
+    @if($reading->status !== 'rejected' && $rejections && $rejections->isNotEmpty())
+    <div class="proof-section no-print" style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); overflow: hidden;">
+            <div style="background: #ffffff; border-bottom: 1px solid #f1f5f9; padding: 16px 20px; display: flex; align-items: center;">
+                <div style="background: #fee2e2; color: #ef4444; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-size: 14px;">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <span style="font-size: 14px; font-weight: 700; color: #1e293b;">📋 Lý do các lần bị từ chối trước đó</span>
+            </div>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; vertical-align: middle;">
+                    <thead>
+                        <tr style="background: #f8fafc; color: #64748b; border-bottom: 1px solid #e2e8f0; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; font-weight: 700;">
+                            <th style="padding: 10px 16px; width: 25%;">Thời gian</th>
+                            <th style="padding: 10px 16px; width: 25%;">Người từ chối</th>
+                            <th style="padding: 10px 16px; width: 50%;">Lý do cụ thể</th>
+                        </tr>
+                    </thead>
+                    <tbody style="color: #334155;">
+                        @foreach($rejections as $rej)
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 12px 16px; color: #94a3b8; font-weight: 400; white-space: nowrap; vertical-align: top;">{{ $rej['rejected_at'] }}</td>
+                            <td style="padding: 12px 16px; font-weight: 500; color: #64748b; vertical-align: top;">{{ $rej['rejecter_name'] }}</td>
+                            <td style="padding: 12px 16px; vertical-align: top;">
+                                <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; background-color: #fff5f5; border: 1px solid #feb2b2; color: #e53e3e; font-weight: 700; font-size: 12px;">
+                                    <i class="fas fa-exclamation-triangle animate-pulse" style="font-size: 11px;"></i>
+                                    <span>{{ $rej['reason'] }}</span>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
     @endif
 </article>
@@ -273,4 +344,16 @@ document.getElementById('lightbox').addEventListener('click', function(e) {
     if (e.target === this) closeLightbox();
 });
 </script>
+@endpush
+
+@push('styles')
+<style>
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .5; }
+}
+</style>
 @endpush
