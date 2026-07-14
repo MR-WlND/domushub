@@ -29,7 +29,7 @@
                     <svg class="year-select-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                 </div>
 
-                <label class="year-filter-label" for="yearSelect" style="margin-left: 12px;">Xem theo năm:</label>
+                <label class="year-filter-label" for="yearSelect" style="margin-left: 12px;">Năm:</label>
                 <div class="year-select-wrap">
                     <select id="yearSelect" name="year" class="year-select" onchange="this.form.submit()">
                         @foreach ($availableYears as $yr)
@@ -37,6 +37,18 @@
                                 Năm {{ $yr }}
                             </option>
                         @endforeach
+                    </select>
+                    <svg class="year-select-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+
+                <label class="year-filter-label" for="monthSelect" style="margin-left: 12px;">Tháng:</label>
+                <div class="year-select-wrap">
+                    <select id="monthSelect" name="month" class="year-select" onchange="this.form.submit()">
+                        @for ($m = 1; $m <= 12; $m++)
+                            <option value="{{ $m }}" {{ $selectedMonth == $m ? 'selected' : '' }}>
+                                Tháng {{ str_pad($m, 2, '0', STR_PAD_LEFT) }}
+                            </option>
+                        @endfor
                     </select>
                     <svg class="year-select-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                 </div>

@@ -538,6 +538,9 @@ class HomeController extends Controller
             $selectedYear = $availableYears[0];
         }
 
+        // Tháng được chọn
+        $selectedMonth = (int) $request->get('month', date('m'));
+
         // 1. Số lượng phản ánh theo status lọc theo năm
         $ticketStatsQuery = DB::table('tickets')
             ->whereNull('tickets.deleted_at')
@@ -727,7 +730,7 @@ class HomeController extends Controller
 
         return view('admin.statistics.operations', compact(
             'blocks', 'selectedBlock',
-            'availableYears', 'selectedYear',
+            'availableYears', 'selectedYear', 'selectedMonth',
             'totalTickets', 'pendingCount', 'assignedCount', 'inProgressCount', 'completedCount', 'cancelledCount',
             'csatData', 'totalRated', 'averageRating', 'recentFeedbacks',
             'formattedResolutionTime', 'priorityData', 'technicianPerformance'
@@ -742,6 +745,34 @@ class HomeController extends Controller
         // Lấy danh sách tòa nhà/block
         $blocks = Block::orderBy('name')->get();
         $selectedBlock = $request->get('block_id');
+
+        // Lấy danh sách các năm có cư dân đăng ký
+        $availableYearsQuery = DB::table('residents')
+            ->whereNull('deleted_at');
+        if ($selectedBlock) {
+            $availableYearsQuery->whereIn('apartment_id', function($q) use ($selectedBlock) {
+                $q->select('id')->from('apartments')->whereIn('floor_id', function($q2) use ($selectedBlock) {
+                    $q2->select('id')->from('floors')->where('block_id', $selectedBlock);
+                });
+            });
+        }
+        $availableYears = $availableYearsQuery->selectRaw('DISTINCT YEAR(created_at) as res_year')
+            ->orderBy('res_year', 'desc')
+            ->pluck('res_year')
+            ->toArray();
+
+        if (empty($availableYears)) {
+            $availableYears = [(int) date('Y')];
+        }
+
+        // Năm được chọn
+        $selectedYear = $request->get('year', date('Y'));
+        if (!in_array($selectedYear, $availableYears) && count($availableYears) > 0) {
+            $selectedYear = $availableYears[0];
+        }
+
+        // Tháng được chọn
+        $selectedMonth = (int) $request->get('month', date('m'));
 
         // ── 1. TỔNG QUAN HẠ TẦNG ──────────────────────────────────────
         $totalBlocks = Block::count();
@@ -899,6 +930,7 @@ class HomeController extends Controller
 
         return view('admin.statistics.residents', compact(
             'blocks', 'selectedBlock',
+            'availableYears', 'selectedYear', 'selectedMonth',
             'totalBlocks', 'totalFloors', 'totalApartments',
             'occupied', 'vacant', 'maintenance', 'occupancyRate',
             'totalResidents', 'ownerCount', 'tenantCount', 'familyCount',
