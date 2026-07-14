@@ -100,7 +100,7 @@ class TicketController extends Controller
      */
     public function show($id)
     {
-        $ticket = Ticket::with(['apartment.floor.block', 'sender', 'handler', 'progress.updatedBy', 'costs.createdBy'])
+        $ticket = Ticket::with(['apartment.floor.block', 'sender', 'handler', 'progress.updatedBy', 'costs.createdBy', 'costs.responsibleUser'])
             ->findOrFail($id);
 
         $technicians = User::where('role', 'technician')
@@ -108,7 +108,13 @@ class TicketController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('admin.tickets.show', compact('ticket', 'technicians'));
+        // Danh sách cư dân để chọn "người chịu trách nhiệm" cho chi phí đền bù
+        $residents = User::where('role', 'resident')
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.tickets.show', compact('ticket', 'technicians', 'residents'));
     }
 
     /**
@@ -123,24 +129,31 @@ class TicketController extends Controller
         }
 
         $validated = $request->validate([
-            'description' => ['required', 'string', 'max:255'],
-            'amount'      => ['required', 'numeric', 'min:1000'],
-            'note'        => ['nullable', 'string', 'max:1000'],
+            'cost_type'            => ['required', 'in:repair,compensation'],
+            'description'          => ['required', 'string', 'max:255'],
+            'amount'               => ['required', 'numeric', 'min:1000'],
+            'note'                 => ['nullable', 'string', 'max:1000'],
+            'responsible_user_id'  => ['nullable', 'required_if:cost_type,compensation', 'exists:users,id'],
         ], [
-            'description.required' => 'Vui lòng nhập mô tả chi phí.',
-            'amount.required'      => 'Vui lòng nhập số tiền.',
-            'amount.min'           => 'Số tiền tối thiểu là 1,000đ.',
+            'cost_type.required'             => 'Vui lòng chọn loại chi phí.',
+            'description.required'           => 'Vui lòng nhập mô tả chi phí.',
+            'amount.required'                => 'Vui lòng nhập số tiền.',
+            'amount.min'                     => 'Số tiền tối thiểu là 1,000đ.',
+            'responsible_user_id.required_if' => 'Vui lòng chọn người chịu trách nhiệm đền bù.',
         ]);
 
         TicketCost::create([
-            'ticket_id'   => $ticket->id,
-            'description' => $validated['description'],
-            'amount'      => $validated['amount'],
-            'note'        => $validated['note'] ?? null,
-            'created_by'  => Auth::id(),
+            'ticket_id'            => $ticket->id,
+            'cost_type'            => $validated['cost_type'],
+            'description'          => $validated['description'],
+            'amount'               => $validated['amount'],
+            'note'                 => $validated['note'] ?? null,
+            'responsible_user_id'  => $validated['cost_type'] === 'compensation' ? $validated['responsible_user_id'] : null,
+            'created_by'           => Auth::id(),
         ]);
 
-        return back()->with('success', 'Đã thêm chi phí phát sinh thành công.');
+        $typeLabel = $validated['cost_type'] === 'repair' ? 'sửa chữa' : 'đền bù';
+        return back()->with('success', "Đã thêm chi phí {$typeLabel} thành công.");
     }
 
     /**

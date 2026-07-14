@@ -251,9 +251,25 @@
                                 @foreach($ticket->costs as $cost)
                                     <div class="tk-cost-item">
                                         <div class="tk-cost-item__info">
-                                            <span class="tk-cost-item__desc">{{ $cost->description }}</span>
+                                            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                                @if($cost->cost_type === 'compensation')
+                                                    <span style="display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; background: #fef2f2; color: #dc2626; border-radius: 20px; font-size: 0.72rem; font-weight: 700; border: 1px solid #fecaca;">
+                                                        ⚠️ Đền bù
+                                                    </span>
+                                                @else
+                                                    <span style="display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; background: #eff6ff; color: #2563eb; border-radius: 20px; font-size: 0.72rem; font-weight: 700; border: 1px solid #bfdbfe;">
+                                                        🔧 Sửa chữa
+                                                    </span>
+                                                @endif
+                                                <span class="tk-cost-item__desc">{{ $cost->description }}</span>
+                                            </div>
                                             <span class="tk-cost-item__amount">{{ number_format($cost->amount, 0, ',', '.') }}đ</span>
                                         </div>
+                                        @if($cost->cost_type === 'compensation' && $cost->responsibleUser)
+                                            <p style="font-size: 0.78rem; color: #dc2626; margin: 4px 0 2px; font-weight: 600;">
+                                                👤 Người chịu trách nhiệm: {{ $cost->responsibleUser->name }}
+                                            </p>
+                                        @endif
                                         @if($cost->note)
                                             <p class="tk-cost-item__note">{{ $cost->note }}</p>
                                         @endif
@@ -270,9 +286,28 @@
                                     </div>
                                 @endforeach
 
-                                <div class="tk-cost-total">
-                                    <span>Tổng chi phí</span>
-                                    <strong>{{ number_format($ticket->costs->sum('amount'), 0, ',', '.') }}đ</strong>
+                                {{-- Tổng chi phí tách theo loại --}}
+                                @php
+                                    $totalRepair = $ticket->costs->where('cost_type', 'repair')->sum('amount');
+                                    $totalCompensation = $ticket->costs->where('cost_type', 'compensation')->sum('amount');
+                                @endphp
+                                <div class="tk-cost-total" style="flex-direction: column; gap: 6px;">
+                                    @if($totalRepair > 0)
+                                        <div style="display: flex; justify-content: space-between; width: 100%;">
+                                            <span style="color: #2563eb;">🔧 Tổng sửa chữa</span>
+                                            <strong style="color: #2563eb;">{{ number_format($totalRepair, 0, ',', '.') }}đ</strong>
+                                        </div>
+                                    @endif
+                                    @if($totalCompensation > 0)
+                                        <div style="display: flex; justify-content: space-between; width: 100%;">
+                                            <span style="color: #dc2626;">⚠️ Tổng đền bù</span>
+                                            <strong style="color: #dc2626;">{{ number_format($totalCompensation, 0, ',', '.') }}đ</strong>
+                                        </div>
+                                    @endif
+                                    <div style="display: flex; justify-content: space-between; width: 100%; border-top: 1px solid #e2e8f0; padding-top: 6px; margin-top: 2px;">
+                                        <span>Tổng cộng</span>
+                                        <strong>{{ number_format($ticket->costs->sum('amount'), 0, ',', '.') }}đ</strong>
+                                    </div>
                                 </div>
                             </div>
                         @else
@@ -282,6 +317,24 @@
                         {{-- Form thêm chi phí --}}
                         <form method="POST" action="{{ route('admin.tickets.add-cost', $ticket->id) }}" class="tk-cost-form">
                             @csrf
+                            <div class="tk-cost-form__group">
+                                <label>Loại chi phí <span style="color: #ef4444;">*</span></label>
+                                <select name="cost_type" id="costTypeSelect" required onchange="toggleResponsibleUser()">
+                                    <option value="repair" {{ old('cost_type') === 'compensation' ? '' : 'selected' }}>🔧 Chi phí sửa chữa</option>
+                                    <option value="compensation" {{ old('cost_type') === 'compensation' ? 'selected' : '' }}>⚠️ Chi phí đền bù</option>
+                                </select>
+                            </div>
+                            <div class="tk-cost-form__group" id="responsibleUserGroup" style="display: {{ old('cost_type') === 'compensation' ? 'block' : 'none' }};">
+                                <label>Người chịu trách nhiệm <span style="color: #ef4444;">*</span></label>
+                                <select name="responsible_user_id" id="responsibleUserSelect">
+                                    <option value="" disabled selected>-- Chọn cư dân --</option>
+                                    @foreach($residents as $resident)
+                                        <option value="{{ $resident->id }}" {{ old('responsible_user_id') == $resident->id ? 'selected' : '' }}>
+                                            {{ $resident->name }} ({{ $resident->email }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
                             <div class="tk-cost-form__group">
                                 <label>Mô tả <span style="color: #ef4444;">*</span></label>
                                 <input type="text" name="description" placeholder="VD: Thay cửa kính tầng 3" required value="{{ old('description') }}">
@@ -361,6 +414,19 @@ function openAdminImgModal(src) {
 }
 function closeAdminImgModal() {
     document.getElementById('adminImgModal').style.display = 'none';
+}
+function toggleResponsibleUser() {
+    const costType = document.getElementById('costTypeSelect').value;
+    const group = document.getElementById('responsibleUserGroup');
+    const select = document.getElementById('responsibleUserSelect');
+    if (costType === 'compensation') {
+        group.style.display = 'block';
+        select.setAttribute('required', 'required');
+    } else {
+        group.style.display = 'none';
+        select.removeAttribute('required');
+        select.value = '';
+    }
 }
 </script>
 
