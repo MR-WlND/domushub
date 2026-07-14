@@ -1,9 +1,9 @@
-/* ============================================================
-   RESIDENT VEHICLES — Unified Design System
+﻿/* ============================================================
+   RESIDENT VEHICLES â€” Unified Design System
    Prefix: vp- (Vehicle Page)
    ============================================================ */
 
-/* ─── Layout ─── */
+/* â”€â”€â”€ Layout â”€â”€â”€ */
 .vp {
     max-width: 1080px;
     margin: 0 auto;
@@ -13,7 +13,7 @@
     padding: 0 1rem;
 }
 
-/* ─── Header ─── */
+/* â”€â”€â”€ Header â”€â”€â”€ */
 .vp__header {
     display: flex;
     align-items: center;
@@ -22,7 +22,7 @@
     padding: 1.25rem 1.5rem;
     background: #ffffff;
     border: 1px solid #e8ecf4;
-    border-radius: 16px;
+    border-radius: 10px;
     box-shadow: 0 1px 3px rgba(15, 23, 42, .04);
 }
 
@@ -43,13 +43,13 @@
     line-height: 1.2;
 }
 
-/* ─── Alert ─── */
+/* â”€â”€â”€ Alert â”€â”€â”€ */
 .vp-alert {
     display: flex;
     align-items: flex-start;
     gap: 10px;
     padding: 14px 18px;
-    border-radius: 12px;
+    border-radius: 10px;
     font-size: 0.875rem;
     font-weight: 600;
     animation: vpFadeIn .25s ease;
@@ -72,11 +72,11 @@
     border: 1px solid #fecaca;
 }
 
-/* ─── Empty State ─── */
+/* â”€â”€â”€ Empty State â”€â”€â”€ */
 .vp-empty {
     background: #ffffff;
     border: 1px solid #e8ecf4;
-    border-radius: 16px;
+    border-radius: 10px;
     padding: 3.5rem 2rem;
     text-align: center;
     display: flex;
@@ -97,7 +97,7 @@
 
 .vp-empty__circle {
     position: absolute;
-    border-radius: 50%;
+    border-radius: 10px;
 }
 .vp-empty__circle--outer { width: 90px; height: 90px; background: #eef2ff; }
 .vp-empty__circle--inner { width: 62px; height: 62px; background: #e0e7ff; }
@@ -123,7 +123,7 @@
     margin: 0;
 }
 
-/* ─── Stats ─── */
+/* â”€â”€â”€ Stats â”€â”€â”€ */
 .vp-stats {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -133,7 +133,7 @@
 .vp-stat {
     background: #ffffff;
     border: 1px solid #e8ecf4;
-    border-radius: 14px;
+    border-radius: 10px;
     padding: 14px 16px;
     display: flex;
     align-items: center;
@@ -148,7 +148,7 @@
 .vp-stat__icon {
     width: 38px;
     height: 38px;
-    border-radius: 10px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -181,7 +181,7 @@
 .color-active { color: #15803d !important; }
 .color-inactive { color: #b91c1c !important; }
 
-/* ─── Vehicle Cards List ─── */
+/* â”€â”€â”€ Vehicle Cards List â”€â”€â”€ */
 .vp-list {
     display: flex;
     flex-direction: column;
@@ -190,7 +190,7 @@
 
 .vp-card {
     background: #ffffff;
-    border-radius: 14px;
+    border-radius: 10px;
     padding: 16px 20px;
     display: grid;
     grid-template-columns: 52px 1fr auto;
@@ -221,7 +221,7 @@
 .card--locked .vp-card__accent { background: #ef4444; }
 .card--inactive .vp-card__accent { background: #94a3b8; }
 
-/* ─── Thumbnail ─── */
+/* â”€â”€â”€ Thumbnail â”€â”€â”€ */
 .vp-card__thumb {
     width: 52px;
     height: 52px;
@@ -261,7 +261,7 @@
 .card--pending_renewal .vp-card__icon-fallback { color: #ea580c; background: #fff7ed; }
 .card--inactive .vp-card__icon-fallback { color: #64748b; background: #f8fafc; }
 
-/* ─── Card Body ─── */
+/* â”€â”€â”€ Card Body â”€â”€â”€ */
 .vp-card__body { min-width: 0; }
 
 .vp-card__plate {
@@ -285,7 +285,7 @@
     background: #f1f5f9;
     color: #475569;
     padding: 2px 8px;
-    border-radius: 5px;
+    border-radius: 10px;
     font-weight: 600;
 }
 
@@ -299,7 +299,7 @@
     align-items: center;
 }
 
-/* ─── Card Right Column ─── */
+/* â”€â”€â”€ Card Right Column â”€â”€â”€ */
 .vp-card__right {
     display: flex;
     flex-direction: column;
@@ -313,7 +313,7 @@
     align-items: center;
     justify-content: center;
     padding: 3px;
-    border-radius: 6px;
+    border-radius: 10px;
     background: #ffffff;
     border: 1px solid #e2e8f0;
 }
@@ -323,13 +323,13 @@
     object-fit: contain;
 }
 
-/* ─── Badges ─── */
+/* â”€â”€â”€ Badges â”€â”€â”€ */
 .vp-badge {
     display: inline-flex;
     align-items: center;
     gap: 4px;
     padding: 4px 10px;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 0.6875rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -342,17 +342,17 @@
 .badge--danger { background: #fee2e2; color: #991b1b; }
 .badge--inactive { background: #f1f5f9; color: #475569; }
 
-/* ─── Lot Tag ─── */
+/* â”€â”€â”€ Lot Tag â”€â”€â”€ */
 .vp-lot-tag {
     font-size: 0.6875rem;
     font-weight: 700;
     color: #4338ca;
     background: #eef2ff;
     padding: 3px 8px;
-    border-radius: 5px;
+    border-radius: 8px;
 }
 
-/* ─── Buttons ─── */
+/* â”€â”€â”€ Buttons â”€â”€â”€ */
 .vp-btn {
     display: inline-flex;
     align-items: center;
@@ -360,7 +360,7 @@
     gap: 6px;
     height: 38px;
     padding: 0 16px;
-    border-radius: 10px;
+    border-radius: 8px;
     font-size: 0.8125rem;
     font-weight: 700;
     cursor: pointer;
@@ -395,7 +395,7 @@
     height: 32px;
     padding: 0 10px;
     font-size: 0.75rem;
-    border-radius: 6px;
+    border-radius: 8px;
 }
 .vp-btn--ghost:hover {
     background: #f8fafc;
@@ -404,11 +404,11 @@
 .text-danger { color: #dc2626 !important; }
 .text-danger:hover { background: #fef2f2 !important; }
 
-/* ─── Form Panel ─── */
+/* â”€â”€â”€ Form Panel â”€â”€â”€ */
 .vp-panel {
     background: #ffffff;
     border: 1px solid #e8ecf4;
-    border-radius: 16px;
+    border-radius: 10px;
     overflow: hidden;
 }
 
@@ -432,7 +432,7 @@
     width: 100%;
     height: 42px;
     padding: 0 14px;
-    border-radius: 10px;
+    border-radius: 8px;
     border: 1px solid #e2e8f0;
     background: #ffffff;
     font-size: 0.875rem;
@@ -469,10 +469,10 @@ select.vp-input {
     border-top: 1px solid #f1f5f9;
 }
 
-/* ─── Upload ─── */
+/* â”€â”€â”€ Upload â”€â”€â”€ */
 .vp-upload {
     border: 2px dashed #e2e8f0;
-    border-radius: 12px;
+    border-radius: 10px;
     cursor: pointer;
     overflow: hidden;
     background: #fafbfd;
@@ -494,9 +494,9 @@ select.vp-input {
 .vp-upload__placeholder span { font-size: 0.75rem; color: #94a3b8; }
 
 .vp-upload__preview { position: relative; width: 100%; min-height: 180px; }
-.vp-upload__preview img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
+.vp-upload__preview img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
 
-/* ─── Chevron ─── */
+/* â”€â”€â”€ Chevron â”€â”€â”€ */
 .vp-chevron {
     position: absolute;
     right: 12px;
@@ -506,7 +506,7 @@ select.vp-input {
     color: #64748b;
 }
 
-/* ─── Lightbox ─── */
+/* â”€â”€â”€ Lightbox â”€â”€â”€ */
 .vp-img-modal {
     display: none;
     position: fixed;
@@ -550,7 +550,7 @@ select.vp-input {
     to { transform: scale(1); opacity: 1; }
 }
 
-/* ─── Responsive ─── */
+/* â”€â”€â”€ Responsive â”€â”€â”€ */
 @media (max-width: 768px) {
     .vp-stats {
         grid-template-columns: repeat(2, 1fr);
@@ -588,3 +588,40 @@ select.vp-input {
         width: 100%;
     }
 }
+
+/* â”€â”€â”€ Confirm Modal â”€â”€â”€ */
+.vp-confirm-modal {
+    display: none; position: fixed; inset: 0; z-index: 9999;
+    align-items: center; justify-content: center;
+}
+.vp-confirm-modal__backdrop {
+    position: absolute; inset: 0; background: rgba(15,23,42,0.5); backdrop-filter: blur(4px);
+}
+.vp-confirm-modal__box {
+    position: relative; background: #fff; border-radius: 10px;
+    padding: 32px; max-width: 420px; width: 90%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    animation: vpModalIn 0.2s ease;
+}
+@keyframes vpModalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+.vp-confirm-modal__title { margin: 0 0 8px; font-size: 1.1rem; font-weight: 700; color: #0f172a; }
+.vp-confirm-modal__desc { margin: 0 0 24px; font-size: 0.88rem; color: #64748b; line-height: 1.5; }
+.vp-confirm-modal__actions { display: flex; gap: 12px; justify-content: flex-end; }
+.vp-btn--danger {
+    background: #dc2626; color: #fff; border: none; padding: 10px 20px;
+    border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer;
+    transition: all 0.2s;
+}
+.vp-btn--danger:hover { background: #b91c1c; }
+
+/* â”€â”€â”€ Stat hover â”€â”€â”€ */
+.vp-stat { transition: transform 0.2s, box-shadow 0.2s; }
+.vp-stat:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.06); }
+
+/* â”€â”€â”€ Card hover polish â”€â”€â”€ */
+.vp-card { transition: box-shadow 0.2s, border-color 0.2s; }
+.vp-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); border-color: #cbd5e1; }
+
+/* â”€â”€â”€ Cancel button safety spacing â”€â”€â”€ */
+.vp-cancel-btn { margin-top: 8px; }
+

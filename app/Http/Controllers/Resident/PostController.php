@@ -26,14 +26,30 @@ class PostController extends Controller
      */
     public function index(Request $request)
     {
+        // Tự động chạy migrate nếu bảng post_hides chưa được tạo
+        if (!\Illuminate\Support\Facades\Schema::hasTable('post_hides')) {
+            try {
+                \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+            } catch (\Exception $e) {
+                \Log::error('Migration check/run failed in PostController: ' . $e->getMessage());
+            }
+        }
+
         $query = Post::with(['user.apartment', 'comments.user.apartment', 'images'])
-            ->withCount('likes')
+            ->withCount(['likes', 'comments'])
             ->with(['likedByCurrentUser'])
             ->where('status', 'published')
             ->whereDoesntHave('reports', function($q) {
                 $q->where('user_id', Auth::id());
-            })
-            ->orderBy('created_at', 'desc');
+            });
+
+        if (\Illuminate\Support\Facades\Schema::hasTable('post_hides')) {
+            $query->whereDoesntHave('hides', function($q) {
+                $q->where('user_id', Auth::id());
+            });
+        }
+
+        $query->orderBy('created_at', 'desc');
  
         // Lọc bài viết theo loại (Ví dụ: Tìm kiếm từ khóa)
         if ($request->filled('search')) {
@@ -80,23 +96,23 @@ class PostController extends Controller
             $request->merge(['price' => $cleanPrice]);
         }
 
-        // 2. Validate dữ liệu đầu vào (hỗ trợ images dạng mảng)
+        // 2. Validate dữ liệu đầu vào (hỗ trợ images/video dạng mảng)
         $request->validate([
             'title' => 'nullable|string|max:200',
             'content' => 'required|string',
             'price' => 'nullable|numeric|min:0|max:999999999',
-            'images' => 'nullable|array|max:5', // Tối đa 5 ảnh
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048', // Mỗi ảnh tối đa 2MB
+            'media' => 'nullable|array|max:5', // Tối đa 5 file ảnh/video
+            'media.*' => 'file|mimes:jpeg,png,jpg,gif,webp,mp4,mov,avi,webm|max:20480', // Mỗi file tối đa 20MB
         ], [
             'title.max' => 'Tiêu đề không được vượt quá 200 ký tự.',
             'content.required' => 'Vui lòng nhập nội dung bài đăng.',
             'price.numeric' => 'Giá bán phải là định dạng số.',
             'price.min' => 'Giá bán không được nhỏ hơn 0đ.',
-            'images.array' => 'Hình ảnh đính kèm phải ở dạng danh sách.',
-            'images.max' => 'Bạn chỉ được đính kèm tối đa 5 hình ảnh cho mỗi bài viết.',
-            'images.*.image' => 'File tải lên phải là hình ảnh.',
-            'images.*.mimes' => 'Hình ảnh phải có định dạng: jpeg, png, jpg, gif, webp.',
-            'images.*.max' => 'Dung lượng mỗi hình ảnh không được vượt quá 2MB.',
+            'media.array' => 'File đính kèm phải ở dạng danh sách.',
+            'media.max' => 'Bạn chỉ được đính kèm tối đa 5 file cho mỗi bài viết.',
+            'media.*.file' => 'File tải lên không hợp lệ.',
+            'media.*.mimes' => 'File phải có định dạng: jpeg, png, jpg, gif, webp, mp4, mov, avi, webm.',
+            'media.*.max' => 'Dung lượng mỗi file không được vượt quá 20MB.',
         ]);
 
         $data = $request->only(['title', 'content', 'price']);
@@ -112,12 +128,16 @@ class PostController extends Controller
 
         $post = Post::create($data);
 
-        // Xử lý upload danh sách ảnh nếu có
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $file) {
-                $path = $file->store('posts', 'public');
+        // Xử lý upload danh sách ảnh/video nếu có
+        if ($request->hasFile('media')) {
+            foreach ($request->file('media') as $file) {
+                $mime = $file->getMimeType();
+                $isVideo = str_starts_with($mime, 'video/');
+                $folder = $isVideo ? 'posts/videos' : 'posts';
+                $path = $file->store($folder, 'public');
                 $post->images()->create([
-                    'image_path' => $path
+                    'image_path' => $path,
+                    'type' => $isVideo ? 'video' : 'image',
                 ]);
             }
         }
@@ -138,10 +158,14 @@ class PostController extends Controller
             ->with(['likedByCurrentUser'])
             ->findOrFail($id);
 
-        // Chặn xem nếu cư dân này đã báo cáo bài viết này
+        // Chặn xem nếu cư dân này đã báo cáo hoặc ẩn bài viết này
         $hasReported = $post->reports()->where('user_id', Auth::id())->exists();
-        if ($hasReported) {
-            abort(403, 'Bạn đã báo cáo bài viết này và không thể xem lại nội dung.');
+        $hasHidden = false;
+        if (\Illuminate\Support\Facades\Schema::hasTable('post_hides')) {
+            $hasHidden = $post->hides()->where('user_id', Auth::id())->exists();
+        }
+        if ($hasReported || $hasHidden) {
+            abort(403, 'Bạn đã báo cáo hoặc ẩn bài viết này và không thể xem lại nội dung.');
         }
 
         // Đếm tổng số bình luận cha hợp lệ (parent_id = null)
@@ -242,7 +266,11 @@ class PostController extends Controller
         ]);
 
         // Phát sự kiện real-time cho bình luận mới
-        broadcast(new \App\Events\CommentCreated($comment));
+        try {
+            broadcast(new \App\Events\CommentCreated($comment));
+        } catch (\Exception $e) {
+            \Log::warning('Broadcast CommentCreated failed: ' . $e->getMessage());
+        }
 
         // Quét cư dân được tag nhắc tên bằng kí tự phân tách zero-width space (\x{200B})
         $mentionedUserIds = [];
@@ -276,29 +304,32 @@ class PostController extends Controller
 
         $mentionedUserIds = array_unique($mentionedUserIds);
 
-        // Gửi thông báo nhắc tên cho những cư dân được tag (tránh tự tag bản thân)
-        foreach ($mentionedUserIds as $uId) {
-            if ($uId !== Auth::id()) {
-                $userToNotify = User::find($uId);
-                if ($userToNotify) {
-                    $userToNotify->notify(new \App\Notifications\CommentMentionNotification($comment));
+        // Gửi thông báo nhắc tên và tương tác (không block response nếu lỗi)
+        try {
+            foreach ($mentionedUserIds as $uId) {
+                if ($uId !== Auth::id()) {
+                    $userToNotify = User::find($uId);
+                    if ($userToNotify) {
+                        $userToNotify->notify(new \App\Notifications\CommentMentionNotification($comment));
+                    }
                 }
             }
-        }
 
-        // Gửi thông báo tương tác thông thường, loại trừ những người đã nhận thông báo nhắc tên
-        if ($comment->parent_id) {
-            $parentComment = Comment::find($comment->parent_id);
-            if ($parentComment && $parentComment->user_id !== Auth::id() && !in_array($parentComment->user_id, $mentionedUserIds)) {
-                $parentComment->user->notify(new \App\Notifications\CommentRepliedNotification($comment));
+            if ($comment->parent_id) {
+                $parentComment = Comment::find($comment->parent_id);
+                if ($parentComment && $parentComment->user_id !== Auth::id() && !in_array($parentComment->user_id, $mentionedUserIds)) {
+                    $parentComment->user->notify(new \App\Notifications\CommentRepliedNotification($comment));
+                }
+                if ($post->user_id !== Auth::id() && (!$parentComment || $post->user_id !== $parentComment->user_id) && !in_array($post->user_id, $mentionedUserIds)) {
+                    $post->user->notify(new \App\Notifications\PostCommentedNotification($comment));
+                }
+            } else {
+                if ($post->user_id !== Auth::id() && !in_array($post->user_id, $mentionedUserIds)) {
+                    $post->user->notify(new \App\Notifications\PostCommentedNotification($comment));
+                }
             }
-            if ($post->user_id !== Auth::id() && (!$parentComment || $post->user_id !== $parentComment->user_id) && !in_array($post->user_id, $mentionedUserIds)) {
-                $post->user->notify(new \App\Notifications\PostCommentedNotification($comment));
-            }
-        } else {
-            if ($post->user_id !== Auth::id() && !in_array($post->user_id, $mentionedUserIds)) {
-                $post->user->notify(new \App\Notifications\PostCommentedNotification($comment));
-            }
+        } catch (\Exception $e) {
+            \Log::warning('Notification dispatch failed: ' . $e->getMessage());
         }
 
         if ($request->ajax() || $request->wantsJson()) {
@@ -518,7 +549,11 @@ class PostController extends Controller
             'price' => $request->price,
         ]);
 
-        broadcast(new PostUpdated($post))->toOthers();
+        try {
+            broadcast(new PostUpdated($post))->toOthers();
+        } catch (\Exception $e) {
+            \Log::warning('Broadcast PostUpdated failed: ' . $e->getMessage());
+        }
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
@@ -560,7 +595,11 @@ class PostController extends Controller
             'content' => $request->content,
         ]);
 
-        broadcast(new CommentUpdated($comment))->toOthers();
+        try {
+            broadcast(new CommentUpdated($comment))->toOthers();
+        } catch (\Exception $e) {
+            \Log::warning('Broadcast CommentUpdated failed: ' . $e->getMessage());
+        }
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
@@ -685,7 +724,11 @@ class PostController extends Controller
 
         $postId = $type === 'post' ? $likeable->id : $likeable->post_id;
 
-        broadcast(new LikeToggled($type, $likeableId, $likesCount, $postId, $activeReactionType, $reactionsSummary))->toOthers();
+        try {
+            broadcast(new LikeToggled($type, $likeableId, $likesCount, $postId, $activeReactionType, $reactionsSummary))->toOthers();
+        } catch (\Exception $e) {
+            \Log::warning('Broadcast LikeToggled failed: ' . $e->getMessage());
+        }
 
         return response()->json([
             'success' => true,
@@ -840,7 +883,11 @@ class PostController extends Controller
         $comment->update(['is_pinned' => $isPinned]);
 
         // Phát sự kiện cập nhật bình luận real-time
-        broadcast(new \App\Events\CommentUpdated($comment))->toOthers();
+        try {
+            broadcast(new \App\Events\CommentUpdated($comment))->toOthers();
+        } catch (\Exception $e) {
+            \Log::warning('Broadcast CommentUpdated (pin) failed: ' . $e->getMessage());
+        }
 
         return response()->json([
             'success' => true,
@@ -918,6 +965,28 @@ class PostController extends Controller
             'success' => true,
             'message' => 'Đã chia sẻ bài viết thành công đến cư dân ' . $targetUser->name . '!'
         ]);
+    }
+
+    /**
+     * Ẩn bài đăng khỏi bảng tin của cư dân hiện tại
+     */
+    public function hide(Request $request, $id)
+    {
+        $post = Post::findOrFail($id);
+
+        \App\Models\PostHide::firstOrCreate([
+            'post_id' => $post->id,
+            'user_id' => Auth::id(),
+        ]);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã ẩn bài viết thành công khỏi bảng tin của bạn.'
+            ]);
+        }
+
+        return redirect()->route('resident.posts.index')->with('success', 'Đã ẩn bài viết thành công!');
     }
 }
 

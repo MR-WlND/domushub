@@ -26,19 +26,37 @@
     <div class="rf-tabs">
         <a href="{{ route('resident.facilities.index') }}"
             class="rf-tab {{ !request('status') ? 'rf-tab--active' : '' }}">
+            <svg class="rf-tab-icon rf-icon-all" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="18" x="3" y="3" rx="2" />
+                <path d="M3 9h18" />
+                <path d="M3 15h18" />
+                <path d="M9 3v18" />
+                <path d="M15 3v18" />
+            </svg>
             Tất cả ({{ $facilities->count() }})
         </a>
         <a href="{{ route('resident.facilities.index', ['status' => 'available']) }}"
             class="rf-tab {{ request('status') === 'available' ? 'rf-tab--active' : '' }}">
-            🟢 Đang mở ({{ $facilities->where('status','available')->count() }})
+            <svg class="rf-tab-icon rf-icon-available" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+            Đang mở ({{ $facilities->where('status','available')->count() }})
         </a>
         <a href="{{ route('resident.facilities.index', ['status' => 'maintenance']) }}"
             class="rf-tab {{ request('status') === 'maintenance' ? 'rf-tab--active' : '' }}">
-            🔧 Bảo trì ({{ $facilities->where('status','maintenance')->count() }})
+            <svg class="rf-tab-icon rf-icon-maintenance" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+            </svg>
+            Bảo trì ({{ $facilities->where('status','maintenance')->count() }})
         </a>
         <a href="{{ route('resident.facilities.index', ['status' => 'closed']) }}"
             class="rf-tab {{ request('status') === 'closed' ? 'rf-tab--active' : '' }}">
-            🚫 Tạm ngưng ({{ $facilities->where('status','closed')->count() }})
+            <svg class="rf-tab-icon rf-icon-closed" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+            </svg>
+            Tạm ngưng ({{ $facilities->where('status','closed')->count() }})
         </a>
     </div>
 
@@ -135,9 +153,10 @@
 
 /* Tabs */
 .rf-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; border-bottom: 2px solid #f1f5f9; padding-bottom: 0; }
-.rf-tab { padding: 8px 16px; border-radius: 8px 8px 0 0; font-size: 0.83rem; font-weight: 600; color: #64748b; text-decoration: none; transition: all 0.15s; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+.rf-tab { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 8px 8px 0 0; font-size: 0.83rem; font-weight: 600; color: #64748b; text-decoration: none; transition: all 0.15s; border-bottom: 2px solid transparent; margin-bottom: -2px; }
 .rf-tab:hover { color: #2563eb; background: #f8fafc; }
 .rf-tab--active { color: #2563eb; border-bottom-color: #2563eb; background: #eff6ff; }
+.rf-tab-icon { width: 16px; height: 16px; flex-shrink: 0; }
 
 /* Grid */
 .rf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }

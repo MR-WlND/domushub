@@ -1,6 +1,6 @@
-/* ==========================================================================
-   TRANG PHẢN ÁNH CƯ DÂN (Resident Tickets)
-   Kế thừa pattern .vp từ vehicles-index.css
+﻿/* ==========================================================================
+   TRANG PHáº¢N ĂNH CÆ¯ DĂ‚N (Resident Tickets)
+   Káº¿ thá»«a pattern .vp tá»« vehicles-index.css
    ========================================================================== */
 
 /* --- Layout chung --- */
@@ -21,7 +21,7 @@
     padding: 1.25rem 1.5rem;
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 22px;
+    border-radius: 10px;
     box-shadow: 0 12px 34px rgba(15, 23, 42, .05);
 }
 
@@ -47,7 +47,7 @@
     align-items: center;
     gap: 12px;
     padding: 14px 18px;
-    border-radius: 18px;
+    border-radius: 10px;
     font-size: 0.95rem;
     font-weight: 600;
     box-shadow: inset 0 0 0 1px rgba(15, 23, 42, .08);
@@ -68,7 +68,7 @@
     gap: 14px;
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 18px;
+    border-radius: 10px;
     padding: 1.1rem 1.25rem;
     box-shadow: 0 6px 18px rgba(15, 23, 42, .04);
     transition: transform 0.2s, box-shadow 0.2s;
@@ -82,7 +82,7 @@
 .tk-stat__icon {
     width: 42px;
     height: 42px;
-    border-radius: 12px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -117,13 +117,13 @@
     gap: 6px;
     background: #f8fafc;
     border: 1px solid #e2e8f0;
-    border-radius: 16px;
+    border-radius: 8px;
     padding: 6px;
 }
 
 .tk-tab {
     padding: 10px 20px;
-    border-radius: 12px;
+    border-radius: 8px;
     font-size: 0.88rem;
     font-weight: 600;
     color: #64748b;
@@ -155,7 +155,7 @@
     align-items: stretch;
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 18px;
+    border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 4px 14px rgba(15, 23, 42, .04);
     transition: transform 0.2s, box-shadow 0.2s;
@@ -240,7 +240,7 @@
     align-items: center;
     gap: 4px;
     padding: 4px 12px;
-    border-radius: 20px;
+    border-radius: 8px;
     font-size: 0.76rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -280,7 +280,7 @@
     align-items: center;
     gap: 8px;
     padding: 10px 22px;
-    border-radius: 14px;
+    border-radius: 8px;
     font-size: 0.9rem;
     font-weight: 700;
     border: none;
@@ -335,7 +335,7 @@
 .tk-empty {
     background: linear-gradient(180deg, #ffffff 0%, #faf5ff 100%);
     border: 1px solid #e9d5ff;
-    border-radius: 26px;
+    border-radius: 10px;
     padding: 4rem 2rem;
     text-align: center;
     display: flex;
@@ -357,7 +357,7 @@
 
 .tk-empty__circle {
     position: absolute;
-    border-radius: 50%;
+    border-radius: 10px;
 }
 .tk-empty__circle--outer { width: 110px; height: 110px; background: rgba(124, 58, 237, .12); }
 .tk-empty__circle--inner { width: 76px; height: 76px; background: #f5f3ff; }
@@ -380,7 +380,7 @@
 .tk-panel {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 22px;
+    border-radius: 10px;
     box-shadow: 0 12px 34px rgba(15, 23, 42, .05);
     max-width: 750px;
     margin: 0 auto;
@@ -405,7 +405,7 @@
     width: 100%;
     padding: 12px 16px;
     border: 1.5px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 8px;
     font-size: 0.95rem;
     color: #0f172a;
     background: #ffffff;
@@ -451,7 +451,7 @@
 /* --- Upload Area --- */
 .tk-upload {
     border: 2px dashed #cbd5e1;
-    border-radius: 16px;
+    border-radius: 10px;
     padding: 2rem;
     text-align: center;
     cursor: pointer;
@@ -501,7 +501,7 @@
 
 .tk-upload__preview img {
     max-height: 250px;
-    border-radius: 12px;
+    border-radius: 10px;
     object-fit: cover;
     width: 100%;
 }
@@ -516,7 +516,7 @@
 
 .tk-upload__preview-item {
     position: relative;
-    border-radius: 12px;
+    border-radius: 8px;
     overflow: hidden;
     border: 2px solid #e2e8f0;
     transition: border-color 0.2s, transform 0.2s;
@@ -551,7 +551,7 @@
     justify-content: center;
     gap: 6px;
     border: 2px dashed #7c3aed;
-    border-radius: 12px;
+    border-radius: 8px;
     color: #7c3aed;
     font-size: 0.8rem;
     font-weight: 600;
@@ -588,7 +588,7 @@
 .tk-info-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 18px;
+    border-radius: 10px;
     padding: 1.5rem;
     box-shadow: 0 4px 14px rgba(15, 23, 42, .04);
 }
@@ -653,7 +653,7 @@
     top: 4px;
     width: 14px;
     height: 14px;
-    border-radius: 50%;
+    border-radius: 10px;
     border: 3px solid #ffffff;
     box-shadow: 0 0 0 2px #e2e8f0;
 }
@@ -667,7 +667,7 @@
 .tk-timeline__content {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 12px 16px;
 }
 
@@ -700,7 +700,7 @@
 
 .tk-timeline__proof img {
     max-height: 180px;
-    border-radius: 8px;
+    border-radius: 10px;
     object-fit: cover;
     cursor: pointer;
 }
@@ -798,3 +798,4 @@
         grid-template-columns: 1fr;
     }
 }
+

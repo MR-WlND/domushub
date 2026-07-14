@@ -212,4 +212,34 @@ class VehicleController extends Controller
 
         return view('resident.vehicles.qr', compact('vehicle'));
     }
+
+    /**
+     * Tải mã QR về dưới dạng file ảnh
+     */
+    public function downloadQr(Vehicle $vehicle)
+    {
+        $user = Auth::user();
+
+        if ($vehicle->apartment_id != $user->apartment_id) {
+            abort(403);
+        }
+
+        if (!in_array($vehicle->status, ['active', 'pending_renewal'])) {
+            return back()->withErrors(['vehicle' => 'Xe chưa được cấp mã QR.']);
+        }
+
+        if (empty($vehicle->qr_code)) {
+            return back()->withErrors(['vehicle' => 'Xe chưa có mã QR.']);
+        }
+
+        $path = storage_path('app/public/' . $vehicle->qr_code);
+
+        if (!file_exists($path)) {
+            return back()->withErrors(['vehicle' => 'File QR không tồn tại.']);
+        }
+
+        $filename = 'QR_' . $vehicle->license_plate . '.' . pathinfo($path, PATHINFO_EXTENSION);
+
+        return response()->download($path, $filename);
+    }
 }

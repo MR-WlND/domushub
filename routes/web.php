@@ -142,9 +142,12 @@ Route::middleware(['admin'])->group(function () {
     Route::post('/admin/invoices/batch', [InvoiceController::class, 'batchStore'])->name('admin.invoices.batch.store');
 
     Route::post('/admin/invoices/generate', [InvoiceController::class, 'generate'])->name('admin.invoices.generate');
+    Route::get('/admin/invoices/apartment/{apartment}', [InvoiceController::class, 'apartmentInvoices'])->name('admin.invoices.apartment');
     Route::get('/admin/invoices/{invoice}', [InvoiceController::class, 'show'])->name('admin.invoices.show');
     Route::match(['post', 'patch'], '/admin/invoices/{invoice}/mark-paid', [InvoiceController::class, 'markAsPaid'])->name('admin.invoices.mark-paid');
-    Route::post('/admin/invoices/details/{detail}/mark-paid', [InvoiceController::class, 'markDetailAsPaid'])->name('admin.invoices.details.mark-paid');
+    Route::post('/admin/invoices/{invoice}/cancel', [InvoiceController::class, 'cancelInvoice'])->name('admin.invoices.cancel');
+    Route::post('/admin/invoices/{invoice}/resend-notification', [InvoiceController::class, 'resendNotification'])->name('admin.invoices.resend-notification');
+    Route::get('/admin/invoices/{invoice}/print', [InvoiceController::class, 'printInvoice'])->name('admin.invoices.print');
     Route::post('/admin/payments/{payment}/refund', [InvoiceController::class, 'refundPayment'])->name('admin.payments.refund');
     Route::get('/admin/payments/{payment}/receipt', [InvoiceController::class, 'printReceipt'])->name('admin.payments.receipt');
 
@@ -269,16 +272,12 @@ Route::middleware(['security'])->group(function () {
 
 // DASHBOARD RESIDENT ROUTES
 Route::middleware(['resident'])->group(function () {
-    Route::get('/resident/dashboard', function () {
+    Route::get('/resident/dashboard', function (\Illuminate\Http\Request $request) {
         $user = auth()->user();
         $apartment = $user->apartment;
-        
-        $recentAnnouncements = \App\Models\Announcement::with('user')
-            ->published()
-            ->ordered()
-            ->take(5)
-            ->get();
+        $apartmentId = $user->apartment_id;
 
+        // Số dư nợ
         $totalUnpaidAmount = 0;
         $dueDate = null;
         if ($apartment) {
@@ -293,7 +292,44 @@ Route::middleware(['resident'])->group(function () {
             }
         }
 
-        return view('resident.home.index', compact('recentAnnouncements', 'totalUnpaidAmount', 'dueDate', 'apartment'));
+        // Thông báo từ ban quản lý
+        $announcements = \App\Models\Announcement::where('status', 'published')
+            ->orderByDesc('pinned')
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        // Tự động chạy migrate nếu bảng post_hides chưa được tạo
+        if (!\Illuminate\Support\Facades\Schema::hasTable('post_hides')) {
+            try {
+                \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+            } catch (\Exception $e) {
+                \Log::error('Migration check/run failed in web.php: ' . $e->getMessage());
+            }
+        }
+
+        // Bài viết cư dân (full feed với filter + pagination)
+        $postQuery = \App\Models\Post::with(['user', 'images', 'comments', 'likedByCurrentUser'])
+            ->withCount(['likes', 'comments'])
+            ->where('status', 'published')
+            ->whereDoesntHave('reports', function($q) {
+                $q->where('user_id', auth()->id());
+            });
+
+        if (\Illuminate\Support\Facades\Schema::hasTable('post_hides')) {
+            $postQuery->whereDoesntHave('hides', function($q) {
+                $q->where('user_id', auth()->id());
+            });
+        }
+
+        $postQuery->orderBy('created_at', 'desc');
+
+        $posts = $postQuery->paginate(10)->withQueryString();
+
+        return view('resident.home.index', compact(
+            'user', 'apartment', 'totalUnpaidAmount', 'dueDate',
+            'announcements', 'posts'
+        ));
     })->name('resident.dashboard');
 
     Route::get('/resident/contact', function () {
@@ -311,6 +347,7 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/invoices/vnpay-return', [ResidentInvoiceController::class, 'vnpayReturn'])->name('resident.invoices.vnpay-return');
     Route::get('/resident/invoices/{id}', [ResidentInvoiceController::class, 'show'])->name('resident.invoices.show');
     Route::post('/resident/invoices/pay', [ResidentInvoiceController::class, 'pay'])->name('resident.invoices.pay');
+    Route::post('/resident/invoices/pay-details', [ResidentInvoiceController::class, 'payDetails'])->name('resident.invoices.pay-details');
     Route::get('/resident/payments/{payment}/receipt', [ResidentInvoiceController::class, 'printReceipt'])->name('resident.payments.receipt');
 
     // Quản lý thành viên gia đình & nhân khẩu & mã mời
@@ -334,6 +371,19 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/vehicles/{vehicle}/qr', [App\Http\Controllers\Resident\VehicleController::class, 'showQr'])
         ->name('resident.vehicles.qr');
 
+<<<<<<< HEAD
+=======
+    Route::get('/resident/vehicles/{vehicle}/qr/download', [App\Http\Controllers\Resident\VehicleController::class, 'downloadQr'])
+        ->name('resident.vehicles.qr.download');
+
+    // QUẢN LÝ KHÁCH PHÍA CƯ DÂN
+    Route::get('/resident/visitors', [\App\Http\Controllers\Resident\VisitorController::class, 'index'])->name('resident.visitors.index');
+    Route::get('/resident/visitors/create', [\App\Http\Controllers\Resident\VisitorController::class, 'create'])->name('resident.visitors.create');
+    Route::post('/resident/visitors', [\App\Http\Controllers\Resident\VisitorController::class, 'store'])->name('resident.visitors.store');
+    Route::get('/resident/visitors/{id}', [\App\Http\Controllers\Resident\VisitorController::class, 'show'])->name('resident.visitors.show');
+    Route::delete('/resident/visitors/{id}', [\App\Http\Controllers\Resident\VisitorController::class, 'destroy'])->name('resident.visitors.destroy');
+
+>>>>>>> 32f624f7b17b7f74ca27dddcc401cf151fdcba93
     // PHẢN ÁNH SỰ CỐ PHÍA CƯ DÂN
     Route::get('/resident/tickets', [ResidentTicketController::class, 'index'])->name('resident.tickets.index');
     Route::get('/resident/tickets/create', [ResidentTicketController::class, 'create'])->name('resident.tickets.create');
@@ -343,7 +393,18 @@ Route::middleware(['resident'])->group(function () {
     Route::post('/resident/tickets/{id}/feedback', [ResidentTicketController::class, 'feedback'])->name('resident.tickets.feedback');
 
     // BẢNG TIN & BÌNH LUẬN PHÍA CƯ DÂN
-    Route::get('/resident/posts', [\App\Http\Controllers\Resident\PostController::class, 'index'])->name('resident.posts.index');
+    Route::get('/resident/posts', function (\Illuminate\Http\Request $request) {
+        $user = auth()->user();
+        $posts = \App\Models\Post::with(['user', 'images', 'comments', 'likedByCurrentUser'])
+            ->withCount(['likes', 'comments'])
+            ->where('status', 'published')
+            ->where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+            
+        return view('resident.posts.index', compact('posts', 'user'));
+    })->name('resident.posts.index');
+    Route::get('/resident/posts/create', function() { return view('resident.posts.create'); })->name('resident.posts.create');
     Route::post('/resident/posts', [\App\Http\Controllers\Resident\PostController::class, 'store'])->name('resident.posts.store');
     Route::get('/resident/posts/{id}', [\App\Http\Controllers\Resident\PostController::class, 'show'])->name('resident.posts.show');
     Route::put('/resident/posts/{id}', [\App\Http\Controllers\Resident\PostController::class, 'update'])->name('resident.posts.update');
@@ -352,6 +413,7 @@ Route::middleware(['resident'])->group(function () {
     Route::put('/resident/comments/{id}', [\App\Http\Controllers\Resident\PostController::class, 'updateComment'])->name('resident.comments.update');
     Route::delete('/resident/comments/{id}', [\App\Http\Controllers\Resident\PostController::class, 'destroyComment'])->name('resident.comments.destroy');
     Route::post('/resident/posts/{id}/report', [\App\Http\Controllers\Resident\PostController::class, 'report'])->name('resident.posts.report');
+    Route::post('/resident/posts/{id}/hide', [\App\Http\Controllers\Resident\PostController::class, 'hide'])->name('resident.posts.hide');
     Route::post('/resident/comments/{id}/report', [\App\Http\Controllers\Resident\PostController::class, 'reportComment'])->name('resident.comments.report');
     Route::post('/resident/like', [\App\Http\Controllers\Resident\PostController::class, 'toggleLike'])->name('resident.posts.like');
     Route::get('/resident/posts/{id}/comments', [\App\Http\Controllers\Resident\PostController::class, 'loadComments'])->name('resident.posts.comments.load');
@@ -381,6 +443,13 @@ Route::middleware(['resident'])->group(function () {
 
     // AJAX: Khung giờ còn trống (dùng trong form đặt lịch)
     Route::post('/resident/api/available-slots', [\App\Http\Controllers\FacilityBookingController::class, 'getAvailableSlots'])->name('resident.api.available-slots');
+
+    // CHATBOT AI CƯ DÂN
+    Route::get('/resident/chatbot/history', [\App\Http\Controllers\Resident\ChatbotController::class, 'getHistory'])->name('resident.chatbot.history');
+    Route::post('/resident/chatbot/message', [\App\Http\Controllers\Resident\ChatbotController::class, 'sendMessage'])
+        ->middleware('throttle:10,1')
+        ->name('resident.chatbot.message');
+    Route::post('/resident/chatbot/clear', [\App\Http\Controllers\Resident\ChatbotController::class, 'clearHistory'])->name('resident.chatbot.clear');
 });
 
 Route::middleware(['admin'])->name('admin.')->group(function () {

@@ -11,10 +11,16 @@ class UtilityLogController extends Controller
 {
     public function index(Request $request)
     {
+        $tab = $request->get('tab', 'all');
+
         $query = UtilityMeter::with(['apartment.floor.block', 'recorder', 'rejecter'])
             ->orderByDesc('record_year')
             ->orderByDesc('record_month')
             ->orderByDesc('created_at');
+
+        if ($tab === 'rejected') {
+            $query->where('status', 'rejected');
+        }
 
         // Tìm kiếm theo số căn hộ
         if ($request->filled('search')) {
@@ -62,6 +68,6 @@ class UtilityLogController extends Controller
             'rejected'  => UtilityMeter::where('status', 'rejected')->count(),
         ];
 
-        return view('admin.utility-logs.index', compact('logs', 'stats'));
+        return view('admin.utility-logs.index', compact('logs', 'stats', 'tab'));
     }
 }

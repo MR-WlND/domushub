@@ -1,4 +1,4 @@
-.resident-members-page {
+﻿.resident-members-page {
     display: flex;
     flex-direction: column;
     gap: 24px;
@@ -45,7 +45,7 @@
 .stats-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 16px;
+    border-radius: 10px;
     padding: 20px;
     display: flex;
     align-items: center;
@@ -62,7 +62,7 @@
 .stats-card__icon {
     width: 50px;
     height: 50px;
-    border-radius: 12px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -106,7 +106,7 @@
 /* Alert styles */
 .alert {
     padding: 16px;
-    border-radius: 12px;
+    border-radius: 10px;
     display: flex;
     align-items: flex-start;
     gap: 12px;
@@ -196,7 +196,7 @@
     font-size: 0.75rem;
     font-weight: 700;
     padding: 2px 6px;
-    border-radius: 20px;
+    border-radius: 8px;
 }
 
 .tab-badge--emerald {
@@ -226,7 +226,7 @@
 .card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 16px;
+    border-radius: 10px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.01), 0 4px 6px -1px rgba(0, 0, 0, 0.02);
     overflow: hidden;
 }
@@ -381,7 +381,7 @@ select.form-input {
     height: 32px;
     padding: 0 10px;
     font-size: 0.8rem;
-    border-radius: 6px;
+    border-radius: 8px;
 }
 
 .w-100 {
@@ -437,7 +437,7 @@ select.form-input {
     font-size: 0.75rem;
     font-weight: 600;
     padding: 3px 8px;
-    border-radius: 6px;
+    border-radius: 8px;
 }
 
 .badge--self {
@@ -472,7 +472,7 @@ select.form-input {
 }
 
 .badge-status {
-    border-radius: 20px;
+    border-radius: 8px;
     padding: 2px 8px;
     font-size: 0.75rem;
 }
@@ -531,7 +531,7 @@ select.form-input {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: 8px;
     font-size: 0.8rem;
     font-weight: 600;
     color: #475569;
@@ -550,7 +550,7 @@ select.form-input {
     background: #f1f5f9;
     color: #0f172a;
     padding: 3px 8px;
-    border-radius: 6px;
+    border-radius: 10px;
     border: 1px solid #cbd5e1;
     letter-spacing: 0.05em;
 }
@@ -561,7 +561,7 @@ select.form-input {
     color: #94a3b8;
     cursor: pointer;
     padding: 4px;
-    border-radius: 4px;
+    border-radius: 8px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -621,7 +621,7 @@ select.form-input {
 }
 
 /* ================================================================
-   ROLE OPTION CARDS (radio dạng card chọn vai trò)
+   ROLE OPTION CARDS (radio dáº¡ng card chá»n vai trĂ²)
    ================================================================ */
 .role-options {
     display: flex;
@@ -643,7 +643,7 @@ select.form-input {
 }
 
 .role-option input[type="radio"] {
-    display: none; /* Ẩn radio thật, dùng style card */
+    display: none; /* áº¨n radio tháº­t, dĂ¹ng style card */
 }
 
 .role-option:hover {
@@ -740,7 +740,7 @@ select.form-input {
 
 .invite-modal {
     background: #ffffff;
-    border-radius: 20px;
+    border-radius: 10px;
     padding: 40px 36px;
     max-width: 440px;
     width: 90%;
@@ -768,7 +768,7 @@ select.form-input {
     width: 64px;
     height: 64px;
     background: linear-gradient(135deg, #10b981, #059669);
-    border-radius: 50%;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -797,7 +797,7 @@ select.form-input {
     justify-content: space-between;
     background: #f8fafc;
     border: 1.5px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 16px 20px;
     gap: 12px;
 }
@@ -820,7 +820,7 @@ select.form-input {
     background: #2563eb;
     color: #ffffff;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
@@ -938,3 +938,4 @@ select.form-input {
     color: #ef4444;
     font-weight: 500;
 }
+

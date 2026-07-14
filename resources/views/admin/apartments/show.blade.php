@@ -124,7 +124,7 @@
                         <div class="detail-item">
                             <span class="item-label">Số cư dân</span>
                             <span class="item-value">
-                                <span class="count-pill">{{ $apartment->residents->count() }} cư dân</span>
+                                <span class="count-pill">{{ $apartment->residents->count() + ($declaredMembers->count() ?? 0) }} cư dân</span>
                             </span>
                         </div>
                     </div>
@@ -171,28 +171,35 @@
                                 </thead>
                                 <tbody>
                                     @foreach ($apartment->residents as $resident)
+                                        @php
+                                            $user = $resident->user;
+                                            $residentName = $user->name ?? 'Chưa có tên';
+                                            $residentEmail = $user->email ?? '—';
+                                            $residentPhone = $user->phone ?? '—';
+                                            $residentStatus = $user->status ?? 'active';
+                                        @endphp
                                         <tr>
                                             <td>
                                                 <div class="resident-profile">
                                                     <div class="avatar-circle">
-                                                        {{ strtoupper(substr($resident->name, 0, 1)) }}
+                                                        {{ mb_strtoupper(mb_substr($residentName, 0, 1)) }}
                                                     </div>
                                                     <div class="resident-name-info">
-                                                        <div class="name">{{ $resident->name }}</div>
+                                                        <div class="name">{{ $residentName }}</div>
                                                         <div class="sub">Thành viên căn hộ</div>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="contact-info">
-                                                    <div class="email" title="{{ $resident->email }}">
+                                                    <div class="email" title="{{ $residentEmail }}">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="14"
                                                             height="14" fill="none" viewBox="0 0 24 24"
                                                             stroke="currentColor" stroke-width="2">
                                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                                 d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                                         </svg>
-                                                        {{ $resident->email }}
+                                                        {{ $residentEmail }}
                                                     </div>
                                                     <div class="phone">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="14"
@@ -201,7 +208,7 @@
                                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                                 d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                                         </svg>
-                                                        {{ $resident->phone ?? '-' }}
+                                                        {{ $residentPhone }}
                                                     </div>
                                                 </div>
                                             </td>
@@ -215,7 +222,7 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                @if (($resident->status ?? 'active') == 'active')
+                                                @if ($residentStatus == 'active')
                                                     <span class="status-indicator-badge active">
                                                         <span class="indicator-dot"></span>
                                                         Đang hoạt động
@@ -251,6 +258,62 @@
                         </div>
                     @endif
                 </div>
+
+                {{-- Nhân khẩu khai báo --}}
+                @if(isset($declaredMembers) && $declaredMembers->count() > 0)
+                <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #f1f5f9;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                        <h4 style="margin:0;font-size:0.9rem;font-weight:700;color:#475569;">Nhân khẩu khai báo</h4>
+                        <span class="count-pill">{{ $declaredMembers->count() }} người</span>
+                    </div>
+                    <div class="table-container">
+                        <table class="premium-table">
+                            <thead>
+                                <tr>
+                                    <th>Họ & Tên</th>
+                                    <th>Năm sinh</th>
+                                    <th>Quan hệ</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($declaredMembers as $member)
+                                <tr>
+                                    <td>
+                                        <div class="resident-profile">
+                                            <div class="avatar-circle" style="background:#f59e0b;">
+                                                {{ strtoupper(substr($member->name ?? '?', 0, 1)) }}
+                                            </div>
+                                            <div class="resident-name-info">
+                                                <div class="name">{{ $member->name }}</div>
+                                                <div class="sub">Nhân khẩu khai báo</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ $member->birth_year ?? '—' }}</td>
+                                    <td>
+                                        @switch($member->relationship)
+                                            @case('spouse') <span class="badge-relationship owner">Vợ/Chồng</span> @break
+                                            @case('child') <span class="badge-relationship family">Con</span> @break
+                                            @case('parent') <span class="badge-relationship family">Cha/Mẹ</span> @break
+                                            @case('sibling') <span class="badge-relationship family">Anh/Chị/Em</span> @break
+                                            @default <span class="badge-relationship family">{{ $member->relationship ?? 'Khác' }}</span>
+                                        @endswitch
+                                    </td>
+                                    <td>
+                                        @if($member->status === 'verified')
+                                            <span class="status-indicator-badge active"><span class="indicator-dot"></span>Đã xác minh</span>
+                                        @else
+                                            <span class="status-indicator-badge inactive"><span class="indicator-dot"></span>Chờ xác minh</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                @endif
             </article>
         </div>
     </div>
