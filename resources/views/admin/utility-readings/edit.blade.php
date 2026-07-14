@@ -287,6 +287,30 @@
     <input type="hidden" name="index" id="delete-image-index" value="">
 </form>
 
+{{-- Modal Xác nhận Xóa ảnh --}}
+<div id="confirmDeleteModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:10000; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+    <div style="background:#fff; padding:24px; border-radius:12px; max-width:400px; width:90%; box-shadow:0 10px 25px rgba(0,0,0,0.15); position:relative; text-align:center; box-sizing:border-box; animation: confirmModalFadeIn 0.3s ease-out;">
+        <div style="font-size:2.5rem; color:#dc2626; margin-bottom:12px;">
+            <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:inline-block; vertical-align:middle; color:#dc2626;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+        </div>
+        <h3 style="margin:0 0 10px; font-size:1.15rem; font-weight:700; color:#00236f;">Xóa ảnh này?</h3>
+        <p style="margin:0 0 20px; font-size:0.88rem; color:#64748b; line-height:1.4;">Bạn có chắc chắn muốn xóa ảnh minh chứng này khỏi hệ thống không?</p>
+        <div style="display:flex; justify-content:center; gap:12px;">
+            <button type="button" class="util-btn util-btn--outline" style="padding: 10px 20px; font-weight:600; cursor:pointer;" onclick="closeDeleteModal()">Hủy bỏ</button>
+            <button type="button" class="util-btn" id="confirm-delete-btn" style="background:#dc2626; color:#fff; padding: 10px 20px; border:none; border-radius:6px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;">Xóa ảnh</button>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes confirmModalFadeIn {
+    from { opacity:0; transform:translateY(-10px); }
+    to { opacity:1; transform:translateY(0); }
+}
+</style>
+
 {{-- ── Camera Modal (WebRTC) ── --}}
 <div id="cameraModalOverlay"
      style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;"
@@ -485,6 +509,20 @@ function handleLbKey(e) {
     if (e.key === 'ArrowLeft') prevImg();
     if (e.key === 'ArrowRight') nextImg();
 }
+let pendingDeleteImageIdx = null;
+
+function deleteExistingImage(idx) {
+    pendingDeleteImageIdx = idx;
+    const modal = document.getElementById('confirmDeleteModal');
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeDeleteModal() {
+    const modal = document.getElementById('confirmDeleteModal');
+    if (modal) modal.style.display = 'none';
+    pendingDeleteImageIdx = null;
+}
+
 // Click backdrop to close
 document.addEventListener('DOMContentLoaded', function() {
     const lb = document.getElementById('lightbox');
@@ -493,18 +531,29 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.target === this) closeLightbox();
         });
     }
-});
 
-function deleteExistingImage(idx) {
-    if (confirm('Xóa ảnh này?')) {
-        const form = document.getElementById('delete-image-form');
-        const input = document.getElementById('delete-image-index');
-        if (form && input) {
-            input.value = idx;
-            form.submit();
-        }
+    const cdm = document.getElementById('confirmDeleteModal');
+    if (cdm) {
+        cdm.addEventListener('click', function(e) {
+            if (e.target === this) closeDeleteModal();
+        });
     }
-}
+
+    const confirmBtn = document.getElementById('confirm-delete-btn');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', function() {
+            if (pendingDeleteImageIdx === null) return;
+            const idx = pendingDeleteImageIdx;
+            closeDeleteModal();
+            const form = document.getElementById('delete-image-form');
+            const input = document.getElementById('delete-image-index');
+            if (form && input) {
+                input.value = idx;
+                form.submit();
+            }
+        });
+    }
+});
 
 // ── Camera Modal WebRTC ───────────────────────────────────────────────────
 let cameraStream = null;

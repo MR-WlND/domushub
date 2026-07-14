@@ -26,14 +26,30 @@ class PostController extends Controller
      */
     public function index(Request $request)
     {
+        // Tự động chạy migrate nếu bảng post_hides chưa được tạo
+        if (!\Illuminate\Support\Facades\Schema::hasTable('post_hides')) {
+            try {
+                \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+            } catch (\Exception $e) {
+                \Log::error('Migration check/run failed in PostController: ' . $e->getMessage());
+            }
+        }
+
         $query = Post::with(['user.apartment', 'comments.user.apartment', 'images'])
             ->withCount(['likes', 'comments'])
             ->with(['likedByCurrentUser'])
             ->where('status', 'published')
             ->whereDoesntHave('reports', function($q) {
                 $q->where('user_id', Auth::id());
-            })
-            ->orderBy('created_at', 'desc');
+            });
+
+        if (\Illuminate\Support\Facades\Schema::hasTable('post_hides')) {
+            $query->whereDoesntHave('hides', function($q) {
+                $q->where('user_id', Auth::id());
+            });
+        }
+
+        $query->orderBy('created_at', 'desc');
  
         // Lọc bài viết theo loại (Ví dụ: Tìm kiếm từ khóa)
         if ($request->filled('search')) {
@@ -142,10 +158,14 @@ class PostController extends Controller
             ->with(['likedByCurrentUser'])
             ->findOrFail($id);
 
-        // Chặn xem nếu cư dân này đã báo cáo bài viết này
+        // Chặn xem nếu cư dân này đã báo cáo hoặc ẩn bài viết này
         $hasReported = $post->reports()->where('user_id', Auth::id())->exists();
-        if ($hasReported) {
-            abort(403, 'Bạn đã báo cáo bài viết này và không thể xem lại nội dung.');
+        $hasHidden = false;
+        if (\Illuminate\Support\Facades\Schema::hasTable('post_hides')) {
+            $hasHidden = $post->hides()->where('user_id', Auth::id())->exists();
+        }
+        if ($hasReported || $hasHidden) {
+            abort(403, 'Bạn đã báo cáo hoặc ẩn bài viết này và không thể xem lại nội dung.');
         }
 
         // Đếm tổng số bình luận cha hợp lệ (parent_id = null)
@@ -945,6 +965,28 @@ class PostController extends Controller
             'success' => true,
             'message' => 'Đã chia sẻ bài viết thành công đến cư dân ' . $targetUser->name . '!'
         ]);
+    }
+
+    /**
+     * Ẩn bài đăng khỏi bảng tin của cư dân hiện tại
+     */
+    public function hide(Request $request, $id)
+    {
+        $post = Post::findOrFail($id);
+
+        \App\Models\PostHide::firstOrCreate([
+            'post_id' => $post->id,
+            'user_id' => Auth::id(),
+        ]);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã ẩn bài viết thành công khỏi bảng tin của bạn.'
+            ]);
+        }
+
+        return redirect()->route('resident.posts.index')->with('success', 'Đã ẩn bài viết thành công!');
     }
 }
 

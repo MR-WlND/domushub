@@ -111,7 +111,7 @@
 
     <div class="rh-fb-feed">
             @forelse($posts as $post)
-            <div class="rh-fb-card">
+            <div class="rh-fb-card" id="post-card-{{ $post->id }}">
                 {{-- Header: avatar + name + time --}}
                 <div class="rh-fb-card__header">
                     <div class="rh-fb-card__avatar">
@@ -124,6 +124,32 @@
                     <div>
                         <span class="rh-fb-card__name">{{ $post->user->name ?? 'Cư dân' }}</span>
                         <span class="rh-fb-card__time">{{ $post->created_at->diffForHumans() }}</span>
+                    </div>
+
+                    {{-- Nút ... tùy chọn --}}
+                    <div class="rh-fb-card__menu">
+                        <button type="button" class="rh-fb-card__menu-btn" onclick="togglePostMenu(event, {{ $post->id }})" aria-label="Tùy chọn">
+                            <i class="fa-solid fa-ellipsis"></i>
+                        </button>
+                        <div class="rh-fb-card__dropdown" id="post-menu-{{ $post->id }}">
+                            @if($post->user_id === auth()->id() || auth()->user()->isAdminPortalUser())
+                                <form action="{{ route('resident.posts.destroy', $post->id) }}" method="POST" onsubmit="return confirm('Xóa bài đăng này?')" style="margin: 0;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="rh-fb-card__dropdown-item rh-fb-card__dropdown-item--danger">
+                                        <i class="fa-regular fa-trash-can"></i> Xóa bài viết
+                                    </button>
+                                </form>
+                            @endif
+                            @if($post->user_id !== auth()->id())
+                                <button type="button" class="rh-fb-card__dropdown-item" onclick="openReportModal(event, {{ $post->id }})">
+                                    <i class="fa-regular fa-flag"></i> Báo cáo bài viết
+                                </button>
+                                <button type="button" class="rh-fb-card__dropdown-item" onclick="hidePost(event, {{ $post->id }})">
+                                    <i class="fa-regular fa-eye-slash"></i> Ẩn bài viết
+                                </button>
+                            @endif
+                        </div>
                     </div>
                 </div>
 
@@ -272,6 +298,279 @@ document.querySelectorAll('.rh-fb-share-btn').forEach(btn => {
             setTimeout(() => { this.innerHTML = orig; }, 2000);
         });
     });
+});
+</script>
+
+{{-- Modal Báo cáo Bài viết --}}
+<div id="reportPostModal" class="rep-modal" onclick="handleOutsideModalClick(event)" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="rep-modal__content" style="background: #fff; padding: 24px; border-radius: 12px; max-width: 450px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.15); position: relative; animation: postDropdownFadeIn 0.3s ease-out; box-sizing: border-box;">
+        <div class="rep-modal__header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 class="rep-modal__title" style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #00236f; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-triangle-exclamation" style="color: #dc2626;"></i> Báo cáo bài viết
+            </h3>
+            <button type="button" class="rep-modal__close" onclick="closeReportModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">&times;</button>
+        </div>
+        <form id="report-post-form">
+            @csrf
+            <input type="hidden" name="post_id" id="report-target-post-id" value="">
+            <div class="rep-modal__body" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+                <span class="rep-modal__label" style="font-size: 0.85rem; font-weight: 600; color: #334155; margin-bottom: 6px;">Tại sao bạn muốn báo cáo bài viết này?</span>
+                <label class="rep-option" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #334155; cursor: pointer;"><input type="radio" name="reason_preset" value="Spam, quảng cáo rác" onclick="toggleCustomReason(false)"><span class="rep-option__text">Spam, quảng cáo rác</span></label>
+                <label class="rep-option" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #334155; cursor: pointer;"><input type="radio" name="reason_preset" value="Từ ngữ thô tục, công kích" onclick="toggleCustomReason(false)"><span class="rep-option__text">Từ ngữ thô tục, công kích</span></label>
+                <label class="rep-option" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #334155; cursor: pointer;"><input type="radio" name="reason_preset" value="Lừa đảo, giả mạo" onclick="toggleCustomReason(false)"><span class="rep-option__text">Lừa đảo, giả mạo thông tin</span></label>
+                <label class="rep-option" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #334155; cursor: pointer;"><input type="radio" name="reason_preset" value="Nội dung phản cảm, thù địch" onclick="toggleCustomReason(false)"><span class="rep-option__text">Nội dung phản cảm, thù địch</span></label>
+                <label class="rep-option" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #334155; cursor: pointer;"><input type="radio" name="reason_preset" value="other" onclick="toggleCustomReason(true)"><span class="rep-option__text">Lý do khác...</span></label>
+                <div class="rep-modal__custom-reason" id="custom-reason-container" style="display: none; margin-top: 8px;">
+                    <textarea name="reason_custom" id="report-reason-custom" class="rep-modal__textarea" placeholder="Nhập lý do cụ thể..." style="width: 100%; padding: 10px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; outline: none; font-family: inherit; resize: vertical; box-sizing: border-box;" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="rep-modal__footer" style="display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid #f1f5f9; padding-top: 14px;">
+                <button type="button" class="rh-section__btn" style="background: #64748b;" onclick="closeReportModal()">Hủy bỏ</button>
+                <button type="submit" class="rh-section__btn" id="submit-report-btn" disabled style="background: #dc2626;">Gửi báo cáo</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- Modal Xác nhận Ẩn Bài viết --}}
+<div id="confirmHideModal" class="rep-modal" onclick="handleHideOutsideClick(event)" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="rep-modal__content" style="background: #fff; padding: 24px; border-radius: 12px; max-width: 400px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.15); position: relative; animation: postDropdownFadeIn 0.3s ease-out; box-sizing: border-box; text-align: center;">
+        <div style="font-size: 2.5rem; color: #eab308; margin-bottom: 12px;">
+            <i class="fa-solid fa-circle-question"></i>
+        </div>
+        <h3 style="margin: 0 0 10px; font-size: 1.15rem; font-weight: 700; color: #00236f;">Ẩn bài viết này?</h3>
+        <p style="margin: 0 0 20px; font-size: 0.88rem; color: #64748b; line-height: 1.4;">Bài viết này sẽ không còn hiển thị trên bảng tin của bạn nữa. Bạn vẫn muốn tiếp tục ẩn chứ?</p>
+        <div style="display: flex; justify-content: center; gap: 12px;">
+            <button type="button" class="rh-section__btn" style="background: #64748b; padding: 10px 20px;" onclick="closeHideModal()">Hủy bỏ</button>
+            <button type="button" class="rh-section__btn" id="confirm-hide-btn" style="background: #2563eb; padding: 10px 20px;">Đồng ý ẩn</button>
+        </div>
+    </div>
+</div>
+
+{{-- Toast Container --}}
+<div id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 10001; display: flex; flex-direction: column; gap: 0.5rem; max-width: 350px;"></div>
+
+<script>
+let pendingHidePostId = null;
+
+// Dropdown control
+function togglePostMenu(event, postId) {
+    event.stopPropagation();
+    // Close all other dropdowns
+    document.querySelectorAll('.rh-fb-card__dropdown').forEach(dropdown => {
+        if (dropdown.id !== 'post-menu-' + postId) {
+            dropdown.style.display = 'none';
+        }
+    });
+    const dropdown = document.getElementById('post-menu-' + postId);
+    if (dropdown.style.display === 'block') {
+        dropdown.style.display = 'none';
+    } else {
+        dropdown.style.display = 'block';
+    }
+}
+
+// Close dropdowns on document click
+document.addEventListener('click', function() {
+    document.querySelectorAll('.rh-fb-card__dropdown').forEach(dropdown => {
+        dropdown.style.display = 'none';
+    });
+});
+
+// Toast notification helper
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.style.cssText = `padding:0.75rem 1.25rem;border-radius:10px;box-shadow:0 8px 16px rgba(0,0,0,0.1);color:white;font-size:0.875rem;font-weight:600;display:flex;align-items:center;gap:0.65rem;opacity:0;transform:translateY(20px);transition:all 0.3s cubic-bezier(0.4,0,0.2,1);background-color:${type === 'success' ? '#10b981' : '#ef4444'};`;
+    const icon = type === 'success' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-triangle-exclamation"></i>';
+    toast.innerHTML = `${icon} <span>${message}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => { toast.style.opacity = '1'; toast.style.transform = 'translateY(0)'; }, 10);
+    setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(20px)'; setTimeout(() => toast.remove(), 300); }, 3500);
+}
+
+// Hide post function
+function hidePost(event, postId) {
+    event.preventDefault();
+    pendingHidePostId = postId;
+    const modal = document.getElementById('confirmHideModal');
+    modal.style.display = 'flex';
+}
+
+function closeHideModal() {
+    const modal = document.getElementById('confirmHideModal');
+    modal.style.display = 'none';
+    pendingHidePostId = null;
+}
+
+function handleHideOutsideClick(e) {
+    if (e.target === document.getElementById('confirmHideModal')) {
+        closeHideModal();
+    }
+}
+
+// Bind confirmation button
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmBtn = document.getElementById('confirm-hide-btn');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', async function() {
+            if (!pendingHidePostId) return;
+            const postId = pendingHidePostId;
+            closeHideModal();
+            try {
+                const res = await fetch(`/resident/posts/${postId}/hide`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message || 'Đã ẩn bài viết thành công!');
+                    // Fade out and remove post card from DOM
+                    const card = document.getElementById('post-card-' + postId);
+                    if (card) {
+                        card.style.transition = 'all 0.5s ease';
+                        card.style.opacity = '0';
+                        card.style.transform = 'scale(0.9)';
+                        setTimeout(() => {
+                            card.remove();
+                            // If no posts left, show empty state
+                            const feed = document.querySelector('.rh-fb-feed');
+                            if (feed && feed.querySelectorAll('.rh-fb-card').length === 0) {
+                                feed.innerHTML = `<div class="rh-empty"><p class="rh-empty__text">Chưa có bài viết nào</p><a href="{{ route('resident.posts.create') }}" class="rh-empty__btn">Đăng bài đầu tiên</a></div>`;
+                            }
+                        }, 500);
+                    }
+                } else {
+                    showToast(data.message || 'Có lỗi xảy ra, vui lòng thử lại.', 'error');
+                }
+            } catch(e) {
+                console.error(e);
+                showToast('Không thể kết nối máy chủ.', 'error');
+            }
+        });
+    }
+});
+
+// Report Modal functions
+function openReportModal(event, postId) {
+    event.preventDefault();
+    document.getElementById('report-target-post-id').value = postId;
+    document.getElementById('report-post-form').reset();
+    document.getElementById('custom-reason-container').style.display = 'none';
+    document.getElementById('submit-report-btn').setAttribute('disabled', 'disabled');
+    
+    const modal = document.getElementById('reportPostModal');
+    modal.style.display = 'flex';
+}
+
+function closeReportModal() {
+    const modal = document.getElementById('reportPostModal');
+    modal.style.display = 'none';
+}
+
+function handleOutsideModalClick(e) {
+    if (e.target === document.getElementById('reportPostModal')) {
+        closeReportModal();
+    }
+}
+
+function toggleCustomReason(show) {
+    const customContainer = document.getElementById('custom-reason-container');
+    const textarea = document.getElementById('report-reason-custom');
+    if (show) {
+        customContainer.style.display = 'block';
+        textarea.setAttribute('required', 'required');
+    } else {
+        customContainer.style.display = 'none';
+        textarea.removeAttribute('required');
+    }
+    checkReportFormStatus();
+}
+
+function checkReportFormStatus() {
+    const submitBtn = document.getElementById('submit-report-btn');
+    const presets = document.querySelectorAll('input[name="reason_preset"]:checked');
+    if (presets.length === 0) {
+        submitBtn.setAttribute('disabled', 'disabled');
+        return;
+    }
+    const val = presets[0].value;
+    if (val === 'other') {
+        const text = document.getElementById('report-reason-custom').value.trim();
+        if (text.length > 0) {
+            submitBtn.removeAttribute('disabled');
+        } else {
+            submitBtn.setAttribute('disabled', 'disabled');
+        }
+    } else {
+        submitBtn.removeAttribute('disabled');
+    }
+}
+
+// Attach listener to custom reason textarea
+document.addEventListener('DOMContentLoaded', function() {
+    const customTextarea = document.getElementById('report-reason-custom');
+    if (customTextarea) {
+        customTextarea.addEventListener('input', checkReportFormStatus);
+    }
+    
+    // Handle report form submit
+    const reportForm = document.getElementById('report-post-form');
+    if (reportForm) {
+        reportForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const postId = document.getElementById('report-target-post-id').value;
+            const presets = document.querySelectorAll('input[name="reason_preset"]:checked');
+            if (presets.length === 0) return;
+            
+            let reason = presets[0].value;
+            if (reason === 'other') {
+                reason = document.getElementById('report-reason-custom').value.trim();
+            }
+            
+            try {
+                const res = await fetch(`/resident/posts/${postId}/report`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ reason: reason })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    closeReportModal();
+                    showToast(data.message || 'Báo cáo bài viết thành công.');
+                    
+                    // Fade out and remove reported post from feed
+                    const card = document.getElementById('post-card-' + postId);
+                    if (card) {
+                        card.style.transition = 'all 0.5s ease';
+                        card.style.opacity = '0';
+                        card.style.transform = 'scale(0.9)';
+                        setTimeout(() => {
+                            card.remove();
+                            // If no posts left, show empty state
+                            const feed = document.querySelector('.rh-fb-feed');
+                            if (feed && feed.querySelectorAll('.rh-fb-card').length === 0) {
+                                feed.innerHTML = `<div class="rh-empty"><p class="rh-empty__text">Chưa có bài viết nào</p><a href="{{ route('resident.posts.create') }}" class="rh-empty__btn">Đăng bài đầu tiên</a></div>`;
+                            }
+                        }, 500);
+                    }
+                } else {
+                    showToast(data.message || 'Không thể gửi báo cáo.', 'error');
+                }
+            } catch(err) {
+                console.error(err);
+                showToast('Có lỗi xảy ra khi kết nối máy chủ.', 'error');
+            }
+        });
+    }
 });
 </script>
 @endpush
