@@ -1,4 +1,4 @@
-﻿/* ==========================================================================
+/* ==========================================================================
    TRANG NHIá»†M Vá»¤ Ká»¸ THUáº¬T VIĂN
    ========================================================================== */
 
@@ -31,13 +31,13 @@
     width: 52px;
     height: 52px;
     border-radius: 10px;
-    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+    background: linear-gradient(135deg, #00236f, #1d4ed8);
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
     flex-shrink: 0;
-    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);
+    box-shadow: 0 4px 14px rgba(0, 35, 111, 0.3);
 }
 
 .ktv-header__title {
@@ -106,7 +106,7 @@
 .ktv-stat--new   .ktv-stat__icon { background: #fff7ed; color: #ea580c; }
 .ktv-stat--active .ktv-stat__icon { background: #eff6ff; color: #2563eb; }
 .ktv-stat--done  .ktv-stat__icon { background: #f0fdf4; color: #16a34a; }
-.ktv-stat--total .ktv-stat__icon { background: #f5f3ff; color: #7c3aed; }
+.ktv-stat--total .ktv-stat__icon { background: #eff6ff; color: #00236f; }
 
 .ktv-stat__num {
     font-size: 1.6rem;
@@ -118,7 +118,7 @@
 .ktv-stat--new   .ktv-stat__num { color: #ea580c; }
 .ktv-stat--active .ktv-stat__num { color: #2563eb; }
 .ktv-stat--done  .ktv-stat__num { color: #16a34a; }
-.ktv-stat--total .ktv-stat__num { color: #7c3aed; }
+.ktv-stat--total .ktv-stat__num { color: #00236f; }
 
 .ktv-stat__lbl {
     font-size: 0.8rem;
@@ -371,11 +371,11 @@
 .ktv-btn--ghost:hover { background: #e2e8f0; color: #0f172a; }
 
 .ktv-btn--primary {
-    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    background: linear-gradient(135deg, #00236f, #1d4ed8);
     color: #fff;
-    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);
+    box-shadow: 0 4px 14px rgba(0, 35, 111, 0.3);
 }
-.ktv-btn--primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4); }
+.ktv-btn--primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0, 35, 111, 0.4); }
 
 .ktv-btn--sm {
     padding: 6px 12px;
@@ -448,7 +448,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: #7c3aed;
+    color: #00236f;
     margin: 0 0 4px;
 }
 
@@ -532,8 +532,8 @@
 .ktv-modal__field select:focus,
 .ktv-modal__field textarea:focus {
     outline: none;
-    border-color: #7c3aed;
-    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+    border-color: #00236f;
+    box-shadow: 0 0 0 3px rgba(0, 35, 111, 0.12);
 }
 
 .ktv-modal__field textarea {
@@ -550,7 +550,7 @@
     transition: all 0.2s;
     background: #fafafa;
 }
-.ktv-modal__upload:hover { border-color: #7c3aed; background: #f5f3ff; }
+.ktv-modal__upload:hover { border-color: #00236f; background: #eff6ff; }
 
 #uploadPlaceholder {
     display: flex;
@@ -653,3 +653,177 @@
     }
 }
 
+/* ── Filters ── */
+.ktv-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 1rem 1.25rem;
+    background: #f8fafc;
+    padding: 1.25rem;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.ktv-filters__group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ktv-filters__label {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #475569;
+    margin: 0;
+    line-height: 1.2;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+.ktv-filters__select {
+    height: 35px;
+    padding: 0 12px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 400;
+    color: #1e293b;
+    background-color: #fff;
+    outline: none;
+    transition: all 0.2s;
+    min-width: 140px;
+    cursor: pointer;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.ktv-filters__select:focus {
+    border-color: #00236f;
+    box-shadow: 0 0 0 3px rgba(0, 35, 111, 0.12);
+}
+
+/* ── Search Input Styles ── */
+.ktv-filters__search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.ktv-filters__input {
+    height: 35px;
+    padding: 0 32px 0 12px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 400;
+    color: #1e293b;
+    background-color: #fff;
+    outline: none;
+    transition: all 0.2s;
+    width: 180px;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.ktv-filters__input:focus {
+    border-color: #00236f;
+    box-shadow: 0 0 0 3px rgba(0, 35, 111, 0.12);
+}
+
+.ktv-filters__search-icon-inside {
+    position: absolute;
+    right: 12px;
+    color: #94a3b8;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ── Form Actions ── */
+.ktv-filters__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ktv-filters__btn-submit {
+    height: 35px;
+    padding: 0 16px;
+    background-color: #00236f;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: inherit;
+}
+
+.ktv-filters__btn-submit:hover {
+    background-color: #001850;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 35, 111, 0.2);
+}
+
+.ktv-filters__btn-reset {
+    height: 35px;
+    padding: 0 16px;
+    background-color: #fff;
+    color: #475569;
+    border: 1.5px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.ktv-filters__btn-reset:hover {
+    background-color: #f8fafc;
+    color: #0f172a;
+    border-color: #cbd5e1;
+}
+
+@media (max-width: 1200px) {
+    .ktv-filters {
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .ktv-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .ktv-filters__group {
+        width: 100%;
+    }
+    .ktv-filters__select,
+    .ktv-filters__search-wrapper,
+    .ktv-filters__input {
+        width: 100%;
+        min-width: unset;
+    }
+    .ktv-filters__actions {
+        width: 100%;
+        justify-content: flex-end;
+        margin-top: 0.5rem;
+    }
+    .ktv-filters__btn-submit,
+    .ktv-filters__btn-reset {
+        flex: 1;
+        justify-content: center;
+    }
+}

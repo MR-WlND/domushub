@@ -517,6 +517,36 @@
     </div>
 </div>
 
+{{-- ── Reject Reason Modal ────────────────────────────────── --}}
+<div class="util-modal-backdrop" id="rejectReasonModal">
+    <div class="util-modal" style="max-width: 450px;">
+        <div class="util-modal-header" style="border-bottom: 1px solid #f1f5f9; padding: 16px 20px;">
+            <h3 style="display:flex; align-items:center; gap:8px; margin:0; font-size:1.1rem; font-weight:700; color:#b91c1c;">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:#dc2626; display:inline-block; vertical-align:middle;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Từ chối chỉ số điện nước
+            </h3>
+            <button class="util-modal-close" type="button" onclick="closeRejectReasonModal()">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <form id="rejectReasonForm" onsubmit="submitRejectForm(event)">
+            <div class="util-modal-body" style="padding: 20px;">
+                <label for="modal-reject-reason" style="display:block; font-size:13px; font-weight:600; color:#334155; margin-bottom:8px;">Nhập lý do từ chối chỉ số này:</label>
+                <textarea id="modal-reject-reason" placeholder="Vui lòng nhập lý do cụ thể..." required style="width:100%; min-height:90px; padding:10px; border:1.5px solid #cbd5e1; border-radius:8px; font-size:13px; font-family:inherit; outline:none; resize:vertical; box-sizing:border-box; transition:border-color 0.2s;"></textarea>
+                <div id="modal-reject-error" style="display:none; color:#ef4444; font-size:12px; font-weight:600; margin-top:6px;">Vui lòng cung cấp lý do từ chối.</div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:10px; padding:12px 20px 20px; border-top:1px solid #f1f5f9;">
+                <button type="button" class="util-btn util-btn--outline" onclick="closeRejectReasonModal()" style="padding: 8px 16px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; background: none; cursor: pointer; color:#475569; display:inline-flex; align-items:center; justify-content:center;">Hủy bỏ</button>
+                <button type="submit" class="util-btn util-btn--primary" style="padding: 8px 16px; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; background: #dc2626; color: #fff; cursor: pointer; display:inline-flex; align-items:center; justify-content:center;">Từ chối</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <style>
 @keyframes spin {
     to { transform: rotate(360deg); }
@@ -946,15 +976,37 @@ function closeDetailModal() {
     document.getElementById('detailModal').classList.remove('active');
 }
 
+let pendingRejectReadingId = null;
+
 window.confirmAndReject = function(id) {
-    const reason = prompt("Nhập lý do từ chối chỉ số này:");
-    if (reason === null) return; // Hủy bỏ
-    if (reason.trim() === "") {
-        alert("Vui lòng cung cấp lý do từ chối.");
+    pendingRejectReadingId = id;
+    const modal = document.getElementById('rejectReasonModal');
+    const textarea = document.getElementById('modal-reject-reason');
+    textarea.value = '';
+    document.getElementById('modal-reject-error').style.display = 'none';
+    modal.classList.add('active');
+    setTimeout(() => textarea.focus(), 100);
+}
+
+window.closeRejectReasonModal = function() {
+    const modal = document.getElementById('rejectReasonModal');
+    modal.classList.remove('active');
+    pendingRejectReadingId = null;
+}
+
+window.submitRejectForm = function(event) {
+    event.preventDefault();
+    if (!pendingRejectReadingId) return;
+    const id = pendingRejectReadingId;
+    const reason = document.getElementById('modal-reject-reason').value.trim();
+    if (reason === "") {
+        document.getElementById('modal-reject-error').style.display = 'block';
         return;
     }
-    document.getElementById('reject-reason-' + id).value = reason.trim();
+    
+    document.getElementById('reject-reason-' + id).value = reason;
     document.getElementById('reject-form-' + id).submit();
+    closeRejectReasonModal();
 }
 </script>
 @endpush

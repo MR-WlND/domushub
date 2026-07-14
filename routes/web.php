@@ -293,11 +293,30 @@ Route::middleware(['resident'])->group(function () {
             ->limit(5)
             ->get();
 
+        // Tự động chạy migrate nếu bảng post_hides chưa được tạo
+        if (!\Illuminate\Support\Facades\Schema::hasTable('post_hides')) {
+            try {
+                \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+            } catch (\Exception $e) {
+                \Log::error('Migration check/run failed in web.php: ' . $e->getMessage());
+            }
+        }
+
         // Bài viết cư dân (full feed với filter + pagination)
         $postQuery = \App\Models\Post::with(['user', 'images', 'comments', 'likedByCurrentUser'])
             ->withCount(['likes', 'comments'])
             ->where('status', 'published')
-            ->orderBy('created_at', 'desc');
+            ->whereDoesntHave('reports', function($q) {
+                $q->where('user_id', auth()->id());
+            });
+
+        if (\Illuminate\Support\Facades\Schema::hasTable('post_hides')) {
+            $postQuery->whereDoesntHave('hides', function($q) {
+                $q->where('user_id', auth()->id());
+            });
+        }
+
+        $postQuery->orderBy('created_at', 'desc');
 
         $posts = $postQuery->paginate(10)->withQueryString();
 
@@ -385,6 +404,7 @@ Route::middleware(['resident'])->group(function () {
     Route::put('/resident/comments/{id}', [\App\Http\Controllers\Resident\PostController::class, 'updateComment'])->name('resident.comments.update');
     Route::delete('/resident/comments/{id}', [\App\Http\Controllers\Resident\PostController::class, 'destroyComment'])->name('resident.comments.destroy');
     Route::post('/resident/posts/{id}/report', [\App\Http\Controllers\Resident\PostController::class, 'report'])->name('resident.posts.report');
+    Route::post('/resident/posts/{id}/hide', [\App\Http\Controllers\Resident\PostController::class, 'hide'])->name('resident.posts.hide');
     Route::post('/resident/comments/{id}/report', [\App\Http\Controllers\Resident\PostController::class, 'reportComment'])->name('resident.comments.report');
     Route::post('/resident/like', [\App\Http\Controllers\Resident\PostController::class, 'toggleLike'])->name('resident.posts.like');
     Route::get('/resident/posts/{id}/comments', [\App\Http\Controllers\Resident\PostController::class, 'loadComments'])->name('resident.posts.comments.load');
