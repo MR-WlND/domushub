@@ -9,6 +9,8 @@ use App\Models\TicketProgress;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\AccusationNotification;
 
 class TicketController extends Controller
 {
@@ -164,7 +166,23 @@ class TicketController extends Controller
             'updated_by'    => Auth::id(),
         ]);
 
-        return back()->with('success', 'Đã gửi thông báo tố cáo đến ' . $accusedUser->name . '.');
+        // Gửi email thông báo cho người bị tố cáo
+        $emailSent = false;
+        if ($accusedUser->email) {
+            try {
+                Mail::to($accusedUser->email)->send(new AccusationNotification($ticket, $accusedUser));
+                $emailSent = true;
+            } catch (\Exception $e) {
+                // Không block flow nếu gửi email thất bại
+                \Log::error('Gửi email tố cáo thất bại: ' . $e->getMessage());
+            }
+        }
+
+        $msg = 'Đã gửi thông báo tố cáo đến ' . $accusedUser->name;
+        if ($emailSent) {
+            $msg .= ' (email đã gửi đến ' . $accusedUser->email . ')';
+        }
+        return back()->with('success', $msg . '.');
     }
 
     /**
