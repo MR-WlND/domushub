@@ -64,19 +64,31 @@
                     @forelse($logs as $log)
                     <tr>
                         <td>
-                            <strong style="color: #0b1c30; font-family: monospace;">{{ $log->vehicle->license_plate ?? '—' }}</strong>
+                            <strong style="color: #0b1c30; font-family: monospace;">
+                                {{ $log->vehicle->license_plate ?? $log->guest_plate ?? '—' }}
+                            </strong>
+                            @if($log->is_guest)
+                                <span style="display:inline-block;margin-left:6px;padding:1px 6px;font-size:10px;background:#fef3c7;color:#92400e;border-radius:4px;font-weight:600;">Khách</span>
+                            @endif
                         </td>
                         <td>
                             <span style="font-size: 13px; color: #475569;">
-                                @if($log->vehicle)
-                                    {{ $log->vehicle->type === 'car' ? 'Ô tô' : ($log->vehicle->type === 'motorbike' ? 'Xe máy' : 'Xe điện') }}
+                                @if($log->is_guest)
+                                    {{ match($log->guest_vehicle_type) { 'car' => 'Ô tô', 'motorbike' => 'Xe máy', 'electric_bike' => 'Xe điện', default => '—' } }}
+                                @elseif($log->vehicle)
+                                    {{ $log->vehicle->typeLabel() }}
                                 @else
                                     —
                                 @endif
                             </span>
                         </td>
                         <td>
-                            @if($log->vehicle && $log->vehicle->apartment)
+                            @if($log->is_guest)
+                                <div style="font-weight: 500; color: #92400e;">Khách vãng lai</div>
+                                @if($log->guest_name)
+                                    <div style="font-size: 11px; color: #64748b;">{{ $log->guest_name }}</div>
+                                @endif
+                            @elseif($log->vehicle && $log->vehicle->apartment)
                                 <div style="font-weight: 500; color: #00236f;">{{ $log->vehicle->apartment->apartment_number }}</div>
                                 <div style="font-size: 11px; color: #64748b;">
                                     Tầng {{ $log->vehicle->apartment->floor->floor_number ?? '' }} - Block {{ $log->vehicle->apartment->floor->block->name ?? '' }}
