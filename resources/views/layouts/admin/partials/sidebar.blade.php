@@ -210,16 +210,6 @@
             </a>
             @endif
 
-            {{-- Mã mời cư dân: admin & manager đều quản lý được --}}
-            <a href="{{ route('admin.invitations.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.invitations.*') ? 'dashboard-nav__item--active' : '' }}">
-                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="8" x2="12" y2="16"></line>
-                    <line x1="8" y1="12" x2="16" y2="12"></line>
-                </svg>
-                <span>Mã mời đăng ký</span>
-            </a>
-
 
             <a href="{{ route('admin.amenities.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.amenities.index') || request()->routeIs('admin.amenities.create') || request()->routeIs('admin.amenities.edit') || request()->routeIs('admin.amenities.show') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
