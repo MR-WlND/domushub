@@ -1,15 +1,15 @@
-/* ============================================================
-   RESIDENTS PAGE - Danh sách cư dân
+﻿/* ============================================================
+   RESIDENTS PAGE - Danh sĂ¡ch cÆ° dĂ¢n
    ============================================================ */
 
-/* ─── Page layout ─── */
+/* â”€â”€â”€ Page layout â”€â”€â”€ */
 .residents-page {
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
-/* ─── Page Header ─── */
+/* â”€â”€â”€ Page Header â”€â”€â”€ */
 .residents-page__header {
     display: flex;
     align-items: flex-end;
@@ -32,9 +32,9 @@
     font-size: 14px;
 }
 
-/* ─── Alert ─── */
+/* â”€â”€â”€ Alert â”€â”€â”€ */
 .residents-alert {
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 12px 14px;
     font-size: 14px;
     font-weight: 600;
@@ -52,7 +52,7 @@
     border: 1px solid #f4b8b2;
 }
 
-/* ─── Stats Grid ─── */
+/* â”€â”€â”€ Stats Grid â”€â”€â”€ */
 .residents-stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -62,7 +62,7 @@
 .res-stat-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 14px;
+    border-radius: 10px;
     padding: 20px;
     display: flex;
     flex-direction: column;
@@ -89,11 +89,11 @@
     line-height: 1;
 }
 
-/* ─── Filter Card ─── */
+/* â”€â”€â”€ Filter Card â”€â”€â”€ */
 .residents-filter-card {
     background: #f8f9ff;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 18px;
 }
 
@@ -140,11 +140,11 @@
     box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.08);
 }
 
-/* ─── Table Card ─── */
+/* â”€â”€â”€ Table Card â”€â”€â”€ */
 .residents-table-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 14px;
+    border-radius: 10px;
     overflow: hidden;
 }
 
@@ -152,7 +152,7 @@
     overflow-x: auto;
 }
 
-/* ─── Table ─── */
+/* â”€â”€â”€ Table â”€â”€â”€ */
 .residents-table {
     width: 100%;
     border-collapse: collapse;
@@ -194,7 +194,7 @@
     color: #334155;
 }
 
-/* ─── User Cell ─── */
+/* â”€â”€â”€ User Cell â”€â”€â”€ */
 .res-user-cell {
     display: flex;
     align-items: center;
@@ -204,7 +204,7 @@
 .res-user-avatar {
     width: 38px;
     height: 38px;
-    border-radius: 50%;
+    border-radius: 10px;
     background: #e0e7ff;
     display: flex;
     align-items: center;
@@ -240,14 +240,14 @@
     margin-top: 2px;
 }
 
-/* ─── Apartment Number ─── */
+/* â”€â”€â”€ Apartment Number â”€â”€â”€ */
 .res-apt-number {
     font-weight: 800;
     color: #0b57d0;
     font-size: 14px;
 }
 
-/* ─── Location Cell ─── */
+/* â”€â”€â”€ Location Cell â”€â”€â”€ */
 .res-location-cell {
     display: flex;
     flex-direction: column;
@@ -265,12 +265,12 @@
     color: #94a3b8;
 }
 
-/* ─── Relationship Badge ─── */
+/* â”€â”€â”€ Relationship Badge â”€â”€â”€ */
 .res-relationship {
     display: inline-flex;
     align-items: center;
     padding: 4px 10px;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 12px;
     font-weight: 600;
     white-space: nowrap;
@@ -293,7 +293,7 @@
     color: #92400e;
 }
 
-/* ─── Contact Cell ─── */
+/* â”€â”€â”€ Contact Cell â”€â”€â”€ */
 .res-contact-cell {
     display: flex;
     flex-direction: column;
@@ -316,13 +316,13 @@
     color: #94a3b8;
 }
 
-/* ─── Status Badge ─── */
+/* â”€â”€â”€ Status Badge â”€â”€â”€ */
 .res-status {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     padding: 5px 12px;
-    border-radius: 9999px;
+    border-radius: 8px;
     font-size: 12px;
     font-weight: 700;
     white-space: nowrap;
@@ -332,7 +332,7 @@
     content: '';
     width: 7px;
     height: 7px;
-    border-radius: 50%;
+    border-radius: 10px;
     display: inline-block;
 }
 
@@ -364,13 +364,13 @@
     background: #ef4444;
 }
 
-/* ─── Date ─── */
+/* â”€â”€â”€ Date â”€â”€â”€ */
 .res-date {
     font-size: 13px;
     color: #64748b;
 }
 
-/* ─── Empty State ─── */
+/* â”€â”€â”€ Empty State â”€â”€â”€ */
 .residents-empty {
     text-align: center;
     padding: 60px 20px;
@@ -383,7 +383,7 @@
     font-weight: 500;
 }
 
-/* ─── Pagination ─── */
+/* â”€â”€â”€ Pagination â”€â”€â”€ */
 .residents-pagination {
     display: flex;
     justify-content: center;
@@ -448,7 +448,7 @@
     vertical-align: middle;
 }
 
-/* ─── Responsive ─── */
+/* â”€â”€â”€ Responsive â”€â”€â”€ */
 @media (max-width: 1024px) {
     .residents-stats-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -468,3 +468,4 @@
         grid-template-columns: 1fr;
     }
 }
+

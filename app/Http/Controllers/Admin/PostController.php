@@ -124,7 +124,7 @@ class PostController extends Controller
 
         $post->save();
 
-        SystemLogger::log('communication', $message . ' (bài viết: ' . $post->title . ')', $post);
+
 
         return redirect()->back()->with('success', $message);
     }
@@ -176,7 +176,7 @@ class PostController extends Controller
         // Chỉ soft-delete bài viết để ẩn ở phía cư dân, giữ lại hình ảnh và lịch sử báo cáo cho Admin
         $post->delete();
 
-        SystemLogger::log('communication', 'Admin xóa bài viết: ' . $post->title, $post);
+
 
         return redirect()->back()->with('success', 'Đã xóa bài viết khỏi phía cư dân thành công và lưu lại lịch sử.');
     }
@@ -248,7 +248,7 @@ class PostController extends Controller
 
         $user->save();
 
-        SystemLogger::log('system', $message, $user);
+
 
         return redirect()->back()->with('success', $message);
     }
@@ -293,7 +293,7 @@ class PostController extends Controller
 
         $user->save();
 
-        SystemLogger::log('system', $message, $user);
+
 
         return redirect()->back()->with('success', $message);
     }

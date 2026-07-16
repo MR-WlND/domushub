@@ -42,6 +42,8 @@ class ServicePriceController extends Controller
 
         ServicePrice::create($validated);
 
+        \App\Helpers\SystemLogger::log('Cấu hình lại hệ thống (Thêm mức phí mới)', 'Mức phí: ' . $validated['name']);
+
         return redirect()->route('admin.service-prices.index')
             ->with('success', 'Đã thêm đơn giá dịch vụ thành công.');
     }
@@ -63,6 +65,8 @@ class ServicePriceController extends Controller
 
         $servicePrice->update($validated);
 
+        \App\Helpers\SystemLogger::log('Cấu hình lại hệ thống (Cập nhật mức phí)', 'Mức phí: ' . $servicePrice->name);
+
         return redirect()->route('admin.service-prices.index')
             ->with('success', 'Đã cập nhật đơn giá thành công.');
     }
@@ -80,7 +84,10 @@ class ServicePriceController extends Controller
                 ->with('error', 'Không thể xoá đơn giá đang được sử dụng trong hoá đơn.');
         }
 
+        $name = $servicePrice->name;
         $servicePrice->delete();
+
+        \App\Helpers\SystemLogger::log('Cấu hình lại hệ thống (Xóa mức phí)', 'Mức phí: ' . $name);
 
         return redirect()->route('admin.service-prices.index')
             ->with('success', 'Đã xoá đơn giá thành công.');

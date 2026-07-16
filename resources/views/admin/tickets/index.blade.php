@@ -153,6 +153,43 @@
             </div>
         </div>
 
+        {{-- Dispatch Filters --}}
+        <div class="tickets-filter-card mb-6">
+            <form action="{{ route('admin.tickets.index') }}" method="GET" id="dispatch-filter-form">
+                <input type="hidden" name="tab" value="dispatch">
+                <div class="tickets-filter-grid">
+                    <div>
+                        <label>Tìm kiếm</label>
+                        <input type="text" name="dispatch_search" id="dispatch-filter-search" value="{{ request('dispatch_search') }}" placeholder="Tiêu đề, căn hộ...">
+                    </div>
+                    <div>
+                        <label>Tòa nhà</label>
+                        <select name="dispatch_block_id" id="dispatch-filter-block">
+                            <option value="">Tất cả tòa</option>
+                            @foreach($blocks as $block)
+                                <option value="{{ $block->id }}" {{ request('dispatch_block_id') == $block->id ? 'selected' : '' }}>{{ $block->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label>Ưu tiên</label>
+                        <select name="dispatch_priority" id="dispatch-filter-priority">
+                            <option value="">Tất cả</option>
+                            <option value="urgent" {{ request('dispatch_priority')==='urgent'?'selected':'' }}>Khẩn cấp</option>
+                            <option value="high" {{ request('dispatch_priority')==='high'?'selected':'' }}>Cao</option>
+                            <option value="medium" {{ request('dispatch_priority')==='medium'?'selected':'' }}>Trung bình</option>
+                            <option value="low" {{ request('dispatch_priority')==='low'?'selected':'' }}>Thấp</option>
+                        </select>
+                    </div>
+                </div>
+                @if(request()->filled('dispatch_block_id') || request()->filled('dispatch_priority') || request()->filled('dispatch_search'))
+                    <div class="mt-2.5">
+                        <a href="{{ route('admin.tickets.index', ['tab' => 'dispatch']) }}" class="text-xs text-red-600 no-underline font-semibold">× Xóa bộ lọc</a>
+                    </div>
+                @endif
+            </form>
+        </div>
+
         <div class="dispatch-grid">
             {{-- Technicians sidebar --}}
             <div class="tech-section">
@@ -251,6 +288,42 @@
                 <span class="tk-stat-card__label">Yêu cầu làm lại</span>
                 <span class="tk-stat-card__value text-red-600">{{ $reportStats['rework'] }}</span>
             </div>
+        </div>
+
+        {{-- Report Filters --}}
+        <div class="tickets-filter-card mb-6">
+            <form action="{{ route('admin.tickets.index') }}" method="GET" id="report-filter-form">
+                <input type="hidden" name="tab" value="report">
+                <div class="tickets-filter-grid">
+                    <div>
+                        <label>Tìm kiếm</label>
+                        <input type="text" name="report_search" id="report-filter-search" value="{{ request('report_search') }}" placeholder="Tiêu đề, căn hộ...">
+                    </div>
+                    <div>
+                        <label>Tòa nhà</label>
+                        <select name="report_block_id" id="report-filter-block">
+                            <option value="">Tất cả tòa</option>
+                            @foreach($blocks as $block)
+                                <option value="{{ $block->id }}" {{ request('report_block_id') == $block->id ? 'selected' : '' }}>{{ $block->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label>Kỹ thuật viên</label>
+                        <select name="report_technician_id" id="report-filter-technician">
+                            <option value="">Tất cả KTV</option>
+                            @foreach($technicians as $tech)
+                                <option value="{{ $tech->id }}" {{ request('report_technician_id') == $tech->id ? 'selected' : '' }}>{{ $tech->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                @if(request()->filled('report_block_id') || request()->filled('report_technician_id') || request()->filled('report_search'))
+                    <div class="mt-2.5">
+                        <a href="{{ route('admin.tickets.index', ['tab' => 'report']) }}" class="text-xs text-red-600 no-underline font-semibold">× Xóa bộ lọc</a>
+                    </div>
+                @endif
+            </form>
         </div>
 
         {{-- Pending Review Cards --}}
@@ -604,6 +677,54 @@ document.querySelectorAll('.tk-tab-btn').forEach(btn => {
         document.getElementById('tab-' + btn.dataset.tab).classList.add('tk-tab-content--active');
     });
 });
+
+// Restore active tab from URL parameter on load
+const urlParams = new URLSearchParams(window.location.search);
+const activeTab = urlParams.get('tab');
+if (activeTab) {
+    const tabBtn = document.querySelector(`.tk-tab-btn[data-tab="${activeTab}"]`);
+    if (tabBtn) {
+        tabBtn.click();
+    }
+}
+
+// Auto-submit Dispatch filters on change
+const dispatchForm = document.getElementById('dispatch-filter-form');
+if (dispatchForm) {
+    const dBlock = document.getElementById('dispatch-filter-block');
+    const dPriority = document.getElementById('dispatch-filter-priority');
+    const dSearch = document.getElementById('dispatch-filter-search');
+
+    if (dBlock) dBlock.addEventListener('change', () => dispatchForm.submit());
+    if (dPriority) dPriority.addEventListener('change', () => dispatchForm.submit());
+    
+    let dispatchSearchTimeout = null;
+    if (dSearch) {
+        dSearch.addEventListener('input', () => {
+            clearTimeout(dispatchSearchTimeout);
+            dispatchSearchTimeout = setTimeout(() => dispatchForm.submit(), 600);
+        });
+    }
+}
+
+// Auto-submit Report filters on change
+const reportForm = document.getElementById('report-filter-form');
+if (reportForm) {
+    const rBlock = document.getElementById('report-filter-block');
+    const rTech = document.getElementById('report-filter-technician');
+    const rSearch = document.getElementById('report-filter-search');
+
+    if (rBlock) rBlock.addEventListener('change', () => reportForm.submit());
+    if (rTech) rTech.addEventListener('change', () => reportForm.submit());
+    
+    let reportSearchTimeout = null;
+    if (rSearch) {
+        rSearch.addEventListener('input', () => {
+            clearTimeout(reportSearchTimeout);
+            reportSearchTimeout = setTimeout(() => reportForm.submit(), 600);
+        });
+    }
+}
 
 // ── Slide Panel ───────────────────────────────────────────────────────
 function bindRowClicks() {

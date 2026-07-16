@@ -1,153 +1,127 @@
 @extends('layouts.resident.master')
-
 @section('title', 'Đăng ký xe – DomusHub')
-
 @push('styles')
-    @vite(['resources/css/resident/vehicles-index.css'])
+    @vite(['resources/css/resident/vehicles.css'])
 @endpush
 
 @section('content')
-<div class="vp">
-
-    {{-- Header --}}
-    <div class="vp__header">
+<div class="rv">
+    <div class="rv-header">
         <div>
-            <p class="vp__eyebrow">Quản lý cư dân</p>
-            <h1 class="vp__title">Đăng ký xe mới</h1>
+            <div class="rv__breadcrumb"><a href="{{ route('resident.vehicles.index') }}">Phương tiện</a> › <strong>Đăng ký mới</strong></div>
+            <h1 class="rv__title">Đăng ký Phương tiện mới</h1>
         </div>
-
-        <a href="{{ route('resident.vehicles.index') }}" class="vp-btn vp-btn--outline">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-            Quay lại
-        </a>
     </div>
 
-    {{-- Form --}}
-    <div class="vp-panel" style="max-width: 680px; margin: 0 auto; width: 100%;">
-        <div class="vp-panel__body" style="padding: 2rem;">
+    @if($errors->any())
+    <div class="rv-alert rv-alert--error">
+        @foreach($errors->all() as $error)<div>• {{ $error }}</div>@endforeach
+    </div>
+    @endif
 
-            {{-- Validation Errors --}}
-            @if($errors->any())
-                <div class="vp-alert vp-alert--error" style="margin-bottom: 1.5rem;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                    <div>
-                        <strong style="display:block; margin-bottom:4px;">Vui lòng kiểm tra lại thông tin:</strong>
-                        @foreach($errors->all() as $error)
-                            <span style="display:block; font-size:0.8125rem; font-weight:500;">• {{ $error }}</span>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
-
-            {{-- Info Notice --}}
-            <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:14px 18px; margin-bottom:24px; border-radius:12px; font-size:0.8125rem; color:#475569; line-height:1.6;">
-                <strong style="color:#1e293b;">Lưu ý:</strong>
-                <ul style="margin:6px 0 0 18px; padding:0;">
-                    <li>Mỗi căn hộ tối đa <strong>3 xe máy / xe điện</strong>.</li>
-                    <li><strong>Ô tô</strong> cần Ban quản lý duyệt và cấp lốt đỗ.</li>
-                </ul>
-            </div>
-
-            <form method="POST"
-                  action="{{ route('resident.vehicles.store') }}"
-                  enctype="multipart/form-data"
-                  style="display:flex; flex-direction:column; gap:1.25rem;">
+    <div class="rv-create">
+        {{-- Form --}}
+        <div class="rv-form-card">
+            <form method="POST" action="{{ route('resident.vehicles.store') }}" enctype="multipart/form-data" class="rv-form">
                 @csrf
-
-                {{-- Row: Biển số & Loại xe --}}
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem;">
-                    <div class="vp-field">
-                        <label class="vp-label">Biển số xe <span style="color:#dc2626;">*</span></label>
-                        <input type="text"
-                               name="license_plate"
-                               class="vp-input @error('license_plate') vp-input--err @enderror"
-                               value="{{ old('license_plate') }}"
-                               placeholder="VD: 29A-123.45"
-                               style="text-transform:uppercase;"
-                               required>
-                    </div>
-
-                    <div class="vp-field">
-                        <label class="vp-label">Loại phương tiện <span style="color:#dc2626;">*</span></label>
-                        <select name="vehicle_type"
-                                class="vp-input @error('vehicle_type') vp-input--err @enderror"
-                                required>
-                            <option value="" disabled {{ old('vehicle_type') ? '' : 'selected' }}>-- Chọn loại xe --</option>
-                            <option value="motorbike" {{ old('vehicle_type') === 'motorbike' ? 'selected' : '' }}>Xe máy</option>
-                            <option value="electric_bike" {{ old('vehicle_type') === 'electric_bike' ? 'selected' : '' }}>Xe điện</option>
-                            <option value="car" {{ old('vehicle_type') === 'car' ? 'selected' : '' }}>Ô tô</option>
+                <div class="rv-row">
+                    <div class="rv-field">
+                        <label>Loại phương tiện <span>*</span></label>
+                        <select name="vehicle_type" class="rv-input" required>
+                            <option value="" disabled {{ old('vehicle_type') ? '' : 'selected' }}>-- Chọn --</option>
+                            <option value="car" {{ old('vehicle_type')==='car'?'selected':'' }}>Ô tô</option>
+                            <option value="motorbike" {{ old('vehicle_type')==='motorbike'?'selected':'' }}>Xe máy</option>
+                            <option value="electric_bike" {{ old('vehicle_type')==='electric_bike'?'selected':'' }}>Xe đạp / Xe điện</option>
                         </select>
                     </div>
-                </div>
-
-                {{-- Hãng xe --}}
-                <div class="vp-field">
-                    <label class="vp-label">Hãng xe / Nhãn hiệu</label>
-                    <input type="text"
-                           name="brand"
-                           class="vp-input @error('brand') vp-input--err @enderror"
-                           value="{{ old('brand') }}"
-                           placeholder="VD: Honda SH, VinFast VF3, Yamaha Exciter...">
-                </div>
-
-                {{-- Image Upload --}}
-                <div class="vp-field">
-                    <label class="vp-label">Ảnh phương tiện</label>
-                    <div class="vp-upload" id="upload-box" onclick="document.getElementById('vehicle-image').click()">
-                        <input type="file"
-                               name="image"
-                               id="vehicle-image"
-                               class="vp-upload__input"
-                               accept="image/*"
-                               onchange="previewVehicleImage(this)">
-
-                        <div id="upload-placeholder" class="vp-upload__placeholder">
-                            <div style="background:#f1f5f9; color:#64748b; padding:12px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                            </div>
-                            <p>Bấm để tải ảnh xe lên</p>
-                            <span>JPG, PNG, WEBP — tối đa 2MB</span>
-                        </div>
-
-                        <div id="upload-preview" class="vp-upload__preview" style="display:none;">
-                            <img id="preview-img" src="" alt="Preview">
-                            <div style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,.6); color:#fff; padding:5px 12px; border-radius:6px; font-size:0.75rem; font-weight:600; cursor:pointer;" onclick="event.stopPropagation(); removePreview();">
-                                Đổi ảnh
-                            </div>
-                        </div>
+                    <div class="rv-field">
+                        <label>Biển số xe <span>*</span></label>
+                        <input type="text" name="license_plate" class="rv-input" value="{{ old('license_plate') }}" placeholder="VD: 30A-123.45" style="text-transform:uppercase;" required>
                     </div>
                 </div>
 
-                {{-- Actions --}}
-                <div class="vp-panel__actions" style="margin-top:0.5rem;">
-                    <a href="{{ route('resident.vehicles.index') }}" class="vp-btn vp-btn--outline">Hủy</a>
-                    <button type="submit" class="vp-btn vp-btn--primary">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                        Gửi đăng ký
-                    </button>
+                <div class="rv-row">
+                    <div class="rv-field">
+                        <label>Thương hiệu & Model</label>
+                        <input type="text" name="brand" class="rv-input" value="{{ old('brand') }}" placeholder="VD: Toyota Camry 2023">
+                    </div>
+                    <div class="rv-field">
+                        <label>Chủ sở hữu</label>
+                        <input type="text" class="rv-input" value="{{ auth()->user()->name }}" disabled style="background:#f8fafc;">
+                    </div>
+                </div>
+
+                <div class="rv-field">
+                    <label>Ảnh phương tiện</label>
+                    <div class="rv-upload" onclick="document.getElementById('rv-img1').click()" style="width:100%;">
+                        <input type="file" name="image" id="rv-img1" accept="image/*" onchange="rvPreview(this,'rv-ph1','rv-pv1')">
+                        <div id="rv-ph1" class="rv-upload__ph">
+                            <div class="rv-upload__icon">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            </div>
+                            <p class="rv-upload__text">Kéo thả hoặc bấm để tải lên</p>
+                            <p class="rv-upload__hint">Định dạng JPG, PNG (Tối đa 2MB)</p>
+                        </div>
+                        <div id="rv-pv1" class="rv-upload__preview"><img src="" alt=""></div>
+                    </div>
+                </div>
+
+                <div class="rv-actions">
+                    <a href="{{ route('resident.vehicles.index') }}" class="rv-btn rv-btn--outline">Hủy bỏ</a>
+                    <button type="submit" class="rv-btn rv-btn--primary">Gửi yêu cầu đăng ký</button>
                 </div>
             </form>
+        </div>
+
+        {{-- Sidebar --}}
+        <div class="rv-sidebar">
+            <div class="rv-info-card">
+                <h4 class="rv-info-card__title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Quy định & Chính sách
+                </h4>
+                <ul class="rv-info-card__list">
+                    <li>Mỗi căn hộ được đăng ký tối đa 01 ô tô và 03 xe máy.</li>
+                    <li>Phương tiện phải chính chủ hoặc có giấy ủy quyền sử dụng hợp lệ.</li>
+                    <li>Phí trông giữ được tính theo tháng và tự động cộng vào hóa đơn dịch vụ.</li>
+                    <li>Vui lòng tuân thủ biển báo và hướng dẫn của nhân viên điều phối bãi xe.</li>
+                </ul>
+                <p class="rv-info-card__note">* Phí sẽ được cộng trực tiếp vào thông báo phí hàng tháng sau khi yêu cầu được duyệt.</p>
+            </div>
+
+            <div class="rv-steps-card">
+                <h4 class="rv-steps-card__title">Quy trình duyệt</h4>
+                <div class="rv-steps">
+                    <div class="rv-step">
+                        <div class="rv-step__num rv-step__num--active">1</div>
+                        <div><span class="rv-step__label">Gửi yêu cầu</span><span class="rv-step__desc">Cư dân hoàn tất và gửi form.</span></div>
+                    </div>
+                    <div class="rv-step">
+                        <div class="rv-step__num rv-step__num--inactive">2</div>
+                        <div><span class="rv-step__label">Kiểm tra hồ sơ</span><span class="rv-step__desc">Ban quản lý (BQL) xem xét giấy tờ (24-48h).</span></div>
+                    </div>
+                    <div class="rv-step">
+                        <div class="rv-step__num rv-step__num--inactive">3</div>
+                        <div><span class="rv-step__label">Cấp thẻ/QR</span><span class="rv-step__desc">Sau khi duyệt, cư dân nhận mã QR.</span></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-function previewVehicleImage(input) {
-    const file = input.files[0];
-    if (file) {
+function rvPreview(input, phId, pvId) {
+    if (input.files && input.files[0]) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            document.getElementById('preview-img').src = e.target.result;
-            document.getElementById('upload-placeholder').style.display = 'none';
-            document.getElementById('upload-preview').style.display = 'block';
-        }
-        reader.readAsDataURL(file);
+            document.getElementById(phId).style.display = 'none';
+            const pv = document.getElementById(pvId);
+            pv.style.display = 'block';
+            pv.querySelector('img').src = e.target.result;
+        };
+        reader.readAsDataURL(input.files[0]);
     }
-}
-function removePreview() {
-    document.getElementById('vehicle-image').value = '';
-    document.getElementById('upload-preview').style.display = 'none';
-    document.getElementById('upload-placeholder').style.display = 'flex';
 }
 </script>
 @endsection

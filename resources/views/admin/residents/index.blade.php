@@ -59,12 +59,14 @@
                     </select>
                 </div>
                 <div>
-                    <label>Trạng thái</label>
-                    <select name="status" id="filter-status">
-                        <option value="">Tất cả</option>
-                        <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Hoạt động</option>
-                        <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>Ngừng hoạt động</option>
-                        <option value="banned" {{ request('status') === 'banned' ? 'selected' : '' }}>Bị khóa</option>
+                    <label>Tầng</label>
+                    <select name="floor_id" id="filter-floor">
+                        <option value="">Tất cả tầng</option>
+                        @foreach($floors as $floor)
+                            <option value="{{ $floor->id }}" data-block="{{ $floor->block_id }}" {{ request('floor_id') == $floor->id ? 'selected' : '' }}>
+                                {{ $floor->display_name }} ({{ $floor->block->name ?? '—' }})
+                            </option>
+                        @endforeach
                     </select>
                 </div>
                 <div>
@@ -92,11 +94,11 @@ let filterTimeout = null;
 function getFilterParams() {
     const params = new URLSearchParams();
     const blockId = document.getElementById('filter-block').value;
-    const status = document.getElementById('filter-status').value;
+    const floorId = document.getElementById('filter-floor').value;
     const search = document.getElementById('filter-search').value.trim();
 
     if (blockId) params.set('block_id', blockId);
-    if (status) params.set('status', status);
+    if (floorId) params.set('floor_id', floorId);
     if (search) params.set('search', search);
 
     return params;
@@ -104,7 +106,7 @@ function getFilterParams() {
 
 function hasActiveFilters() {
     return document.getElementById('filter-block').value ||
-           document.getElementById('filter-status').value ||
+           document.getElementById('filter-floor').value ||
            document.getElementById('filter-search').value.trim();
 }
 
@@ -147,9 +149,41 @@ async function fetchResidents() {
     window.history.replaceState({}, '', newUrl);
 }
 
+function filterFloorOptions() {
+    const blockId = document.getElementById('filter-block').value;
+    const floorSelect = document.getElementById('filter-floor');
+    const floorOptions = floorSelect.querySelectorAll('option');
+    
+    let selectedFloorOption = floorSelect.options[floorSelect.selectedIndex];
+    let selectedFloorBlockId = selectedFloorOption ? selectedFloorOption.getAttribute('data-block') : null;
+    
+    if (blockId && selectedFloorBlockId && selectedFloorBlockId !== blockId) {
+        floorSelect.value = "";
+    }
+    
+    floorOptions.forEach(option => {
+        const optionBlockId = option.getAttribute('data-block');
+        if (!optionBlockId) {
+            // "Tất cả tầng" option
+            option.style.display = '';
+            return;
+        }
+        if (!blockId || optionBlockId === blockId) {
+            option.style.display = '';
+            option.disabled = false;
+        } else {
+            option.style.display = 'none';
+            option.disabled = true;
+        }
+    });
+}
+
 // Select filters: immediate
-document.getElementById('filter-block').addEventListener('change', fetchResidents);
-document.getElementById('filter-status').addEventListener('change', fetchResidents);
+document.getElementById('filter-block').addEventListener('change', function() {
+    filterFloorOptions();
+    fetchResidents();
+});
+document.getElementById('filter-floor').addEventListener('change', fetchResidents);
 
 // Search: debounce
 document.getElementById('filter-search').addEventListener('input', function() {
@@ -161,8 +195,9 @@ document.getElementById('filter-search').addEventListener('input', function() {
 document.getElementById('clear-filter-btn').addEventListener('click', function(e) {
     e.preventDefault();
     document.getElementById('filter-block').value = '';
-    document.getElementById('filter-status').value = '';
+    document.getElementById('filter-floor').value = '';
     document.getElementById('filter-search').value = '';
+    filterFloorOptions();
     fetchResidents();
 });
 
@@ -200,6 +235,7 @@ document.getElementById('resident-table-container').addEventListener('click', as
     window.history.replaceState({}, '', link.href);
 });
 
+filterFloorOptions();
 toggleClearButton();
 </script>
 @endsection

@@ -143,7 +143,8 @@
                             {{-- Chủ hộ --}}
                             <td>
                                 @php
-                                    $owner = $apartment->residents->first();
+                                    $owner = $apartment->residents->firstWhere('relationship', 'owner')
+                                        ?? $apartment->residents->first();
                                 @endphp
                                 @if($owner && $owner->user)
                                     <div class="apt-owner-cell">
