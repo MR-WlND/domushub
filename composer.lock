@@ -978,7 +978,6 @@
         },
         {
             "name": "guzzlehttp/guzzle",
-<<<<<<< HEAD
             "version": "7.13.1",
             "source": {
                 "type": "git",
@@ -989,18 +988,6 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/guzzle/guzzle/zipball/55901a76dfd2006a0cc012b9e3c5b487f796478d",
                 "reference": "55901a76dfd2006a0cc012b9e3c5b487f796478d",
-=======
-            "version": "7.10.5",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/guzzle/guzzle.git",
-                "reference": "7c8d84b39e680315f687e8662a9d6fb0865c5148"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/7c8d84b39e680315f687e8662a9d6fb0865c5148",
-                "reference": "7c8d84b39e680315f687e8662a9d6fb0865c5148",
->>>>>>> 32f624f7b17b7f74ca27dddcc401cf151fdcba93
                 "shasum": ""
             },
             "require": {
@@ -1018,11 +1005,7 @@
                 "bamarni/composer-bin-plugin": "^1.8.2",
                 "ext-curl": "*",
                 "guzzle/client-integration-tests": "3.0.2",
-<<<<<<< HEAD
                 "guzzlehttp/test-server": "^0.6",
-=======
-                "guzzlehttp/test-server": "^0.4",
->>>>>>> 32f624f7b17b7f74ca27dddcc401cf151fdcba93
                 "php-http/message-factory": "^1.1",
                 "phpunit/phpunit": "^8.5.52 || ^9.6.34",
                 "psr/log": "^1.1 || ^2.0 || ^3.0"
@@ -1102,11 +1085,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/guzzle/issues",
-<<<<<<< HEAD
                 "source": "https://github.com/guzzle/guzzle/tree/7.13.1"
-=======
-                "source": "https://github.com/guzzle/guzzle/tree/7.10.5"
->>>>>>> 32f624f7b17b7f74ca27dddcc401cf151fdcba93
             },
             "funding": [
                 {
@@ -1122,11 +1101,7 @@
                     "type": "tidelift"
                 }
             ],
-<<<<<<< HEAD
             "time": "2026-06-29T20:14:18+00:00"
-=======
-            "time": "2026-05-27T11:53:46+00:00"
->>>>>>> 32f624f7b17b7f74ca27dddcc401cf151fdcba93
         },
         {
             "name": "guzzlehttp/promises",
