@@ -6,12 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Visitor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
 class VisitorController extends Controller
 {
     /**
-     * Danh sách QR khách đã đăng ký
+     * Danh sách khách ghé thăm căn hộ
      */
     public function index()
     {
@@ -36,136 +35,40 @@ class VisitorController extends Controller
     }
 
     /**
-     * Form tạo QR mời khách
+     * Cư dân đồng ý cho khách vào
      */
-    public function create()
-    {
-        $user = Auth::user();
-
-        if (empty($user->apartment_id)) {
-            return redirect()->route('resident.visitors.index')
-                ->withErrors(['apartment' => 'Tài khoản chưa được gắn căn hộ.']);
-        }
-
-        return view('resident.visitors.create');
-    }
-
-    /**
-     * Lưu khách + sinh QR image
-     */
-    public function store(Request $request)
-    {
-        $user = Auth::user();
-
-        if (empty($user->apartment_id)) {
-            return back()->withErrors(['apartment' => 'Tài khoản chưa được gắn căn hộ.']);
-        }
-
-        $validated = $request->validate([
-            'guest_name'    => ['required', 'string', 'max:100'],
-            'guest_phone'   => ['nullable', 'string', 'max:20', 'regex:/^[0-9\+\-\s]+$/'],
-            'expired_at'    => ['required', 'date', 'after:now'],
-            'note'          => ['nullable', 'string', 'max:500'],
-            'vehicle_plate' => ['nullable', 'string', 'max:20', 'regex:/^[A-Za-z0-9\-\.\s]+$/'],
-            'vehicle_type'  => ['nullable', 'required_with:vehicle_plate', 'in:motorbike,electric_bike,car'],
-        ], [
-            'guest_name.required'  => 'Vui lòng nhập tên khách.',
-            'guest_name.max'       => 'Tên khách không quá 100 ký tự.',
-            'guest_phone.regex'    => 'Số điện thoại không hợp lệ.',
-            'expired_at.required'  => 'Vui lòng chọn thời gian hợp lệ.',
-            'expired_at.after'     => 'Thời gian hợp lệ phải ở tương lai.',
-            'vehicle_plate.regex'  => 'Biển số xe không hợp lệ.',
-            'vehicle_type.required_with' => 'Vui lòng chọn loại xe khi nhập biển số.',
-            'vehicle_type.in'      => 'Loại xe không hợp lệ.',
-        ]);
-
-        $token = Visitor::generateToken();
-
-        // Tạo bản ghi trước
-        $visitor = Visitor::create([
-            'apartment_id'  => $user->apartment_id,
-            'registered_by' => $user->id,
-            'guest_name'    => $validated['guest_name'],
-            'guest_phone'   => $validated['guest_phone'] ?? null,
-            'qr_token'      => $token,
-            'expired_at'    => $validated['expired_at'],
-            'note'          => $validated['note'] ?? null,
-            'vehicle_plate' => !empty($validated['vehicle_plate']) ? strtoupper($validated['vehicle_plate']) : null,
-            'vehicle_type'  => $validated['vehicle_type'] ?? null,
-            'status'        => 'pending',
-        ]);
-
-        // Sinh QR image
-        $this->generateQrImage($visitor);
-
-        return redirect()->route('resident.visitors.show', $visitor->id)
-            ->with('success', 'Đã tạo QR mời khách thành công. Chia sẻ QR cho khách để vào tòa nhà.');
-    }
-
-    /**
-     * Hiển thị chi tiết + QR lớn để chia sẻ
-     */
-    public function show($id)
+    public function approve($id)
     {
         $user    = Auth::user();
         $visitor = Visitor::where('id', $id)
             ->where('apartment_id', $user->apartment_id)
+            ->where('status', 'pending')
+            ->where('walk_in', true)
             ->firstOrFail();
 
-        // Auto-expire
-        if ($visitor->status === 'pending' && $visitor->expired_at->isPast()) {
-            $visitor->update(['status' => 'expired']);
-            $visitor->refresh();
-        }
+        $visitor->update([
+            'status'                => 'checked_in',
+            'check_in_at'           => now(),
+            'confirmed_by_resident' => $user->id,
+        ]);
 
-        return view('resident.visitors.show', compact('visitor'));
+        return response()->json(['success' => true, 'message' => 'Đã đồng ý cho khách vào.']);
     }
 
     /**
-     * Hủy QR khách
+     * Cư dân từ chối khách
      */
-    public function destroy($id)
+    public function reject($id)
     {
         $user    = Auth::user();
         $visitor = Visitor::where('id', $id)
             ->where('apartment_id', $user->apartment_id)
+            ->where('status', 'pending')
+            ->where('walk_in', true)
             ->firstOrFail();
-
-        if ($visitor->isCheckedIn()) {
-            return back()->withErrors(['visitor' => 'Không thể hủy QR khi khách đang ở trong tòa nhà.']);
-        }
 
         $visitor->update(['status' => 'cancelled']);
 
-        return redirect()->route('resident.visitors.index')
-            ->with('success', 'Đã hủy QR mời khách.');
-    }
-
-    // =========================================================================
-    // PRIVATE HELPERS
-    // =========================================================================
-
-    private function generateQrImage(Visitor $visitor): void
-    {
-        try {
-            if (!class_exists(\SimpleSoftwareIO\QrCode\Facades\QrCode::class)) {
-                return;
-            }
-
-            $dir = storage_path('app/public/qr/visitors');
-            if (!is_dir($dir)) {
-                mkdir($dir, 0775, true);
-            }
-
-            $filePath = $dir . '/' . $visitor->qr_token . '.svg';
-
-            \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')
-                ->size(300)
-                ->errorCorrection('H')
-                ->generate($visitor->qr_token, $filePath);
-        } catch (\Throwable $e) {
-            // Silent fail — QR sẽ được hiển thị qua JS fallback
-            \Log::warning('QR generation failed: ' . $e->getMessage());
-        }
+        return response()->json(['success' => true, 'message' => 'Đã từ chối khách.']);
     }
 }
