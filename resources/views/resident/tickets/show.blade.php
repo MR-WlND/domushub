@@ -46,6 +46,72 @@
         </div>
     @endif
 
+    {{-- BANNER: Bạn bị tố cáo trong vụ việc này --}}
+    @if(isset($isAccused) && $isAccused)
+        @if(!$ticket->hasAccusedResponse())
+            {{-- Chưa phản hồi --}}
+            <div style="background: linear-gradient(135deg, #fef2f2, #fff1f2); border: 1.5px solid #fca5a5; border-radius: 16px; padding: 20px; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <strong style="color: #dc2626; font-size: 1.05rem;">Bạn đã bị tố cáo trong vụ việc này</strong>
+                </div>
+                <p style="color: #991b1b; font-size: 0.88rem; margin: 0 0 16px 0; line-height: 1.6;">
+                    Vui lòng xem nội dung tố cáo và bằng chứng bên dưới, sau đó phản hồi bằng cách chọn <strong>"Tôi xác nhận"</strong> hoặc <strong>"Tôi phản đối"</strong>.
+                </p>
+
+                <form method="POST" action="{{ route('resident.tickets.respond-accusation', $ticket->id) }}"
+                      style="display: flex; flex-direction: column; gap: 12px;">
+                    @csrf
+
+                    <div>
+                        <label style="font-weight: 600; font-size: 0.85rem; color: #374151; margin-bottom: 4px; display: block;">Lý do (không bắt buộc)</label>
+                        <textarea name="accused_response_comment"
+                                  style="width: 100%; padding: 10px 14px; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 0.88rem; resize: vertical; min-height: 60px; box-sizing: border-box;"
+                                  placeholder="Giải thích lý do xác nhận hoặc phản đối...">{{ old('accused_response_comment') }}</textarea>
+                    </div>
+
+                    <div style="display: flex; gap: 10px;">
+                        <button type="submit" name="accused_response" value="confirmed"
+                                style="flex: 1; padding: 12px; border: none; border-radius: 10px; background: #16a34a; color: #fff; font-weight: 700; font-size: 0.88rem; cursor: pointer;"
+                                onclick="return confirm('Bạn xác nhận sự việc trong tố cáo là đúng?')">
+                            Tôi xác nhận
+                        </button>
+                        <button type="submit" name="accused_response" value="denied"
+                                style="flex: 1; padding: 12px; border: none; border-radius: 10px; background: #dc2626; color: #fff; font-weight: 700; font-size: 0.88rem; cursor: pointer;"
+                                onclick="return confirm('Bạn phản đối tố cáo này?')">
+                            Tôi phản đối
+                        </button>
+                    </div>
+                </form>
+            </div>
+        @else
+            {{-- Đã phản hồi --}}
+            <div style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-radius:16px;margin-bottom:1rem;
+                @if($ticket->accused_response === 'confirmed')
+                    background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #86efac;
+                @else
+                    background:linear-gradient(135deg,#fef2f2,#fecaca);border:1.5px solid #fca5a5;
+                @endif
+            ">
+                <div>
+                    <div style="font-weight:700;font-size:0.95rem;
+                        @if($ticket->accused_response === 'confirmed') color:#166534; @else color:#991b1b; @endif
+                    ">
+                        Bạn đã {{ $ticket->accused_response === 'confirmed' ? 'xác nhận' : 'phản đối' }} tố cáo này
+                    </div>
+                    @if($ticket->accused_response_comment)
+                        <div style="font-size:0.82rem;color:#475569;margin-top:4px;font-style:italic;">
+                            "{{ $ticket->accused_response_comment }}"
+                        </div>
+                    @endif
+                    <div style="font-size:0.75rem;color:#94a3b8;margin-top:4px;">
+                        {{ $ticket->accused_responded_at?->format('d/m/Y H:i') }}
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endif
+
     {{-- BANNER: Phản ánh đã được xử lý xong - yêu cầu đánh giá --}}
     @if($ticket->canFeedback())
         <div class="tk-completion-banner" id="completionBanner">

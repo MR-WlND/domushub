@@ -123,6 +123,7 @@ Route::middleware(['admin'])->group(function () {
     Route::post('/admin/tickets/{id}/update-progress', [App\Http\Controllers\Admin\TicketController::class, 'updateProgress'])->name('admin.tickets.update-progress');
     Route::post('/admin/tickets/{id}/costs', [App\Http\Controllers\Admin\TicketController::class, 'addCost'])->name('admin.tickets.add-cost');
     Route::delete('/admin/tickets/{id}/costs/{costId}', [App\Http\Controllers\Admin\TicketController::class, 'deleteCost'])->name('admin.tickets.delete-cost');
+    Route::post('/admin/tickets/{id}/assign-accused', [App\Http\Controllers\Admin\TicketController::class, 'assignAccused'])->name('admin.tickets.assign-accused');
 
     // QUẢN LÝ PHƯƠNG TIỆN PHÍA ADMIN
     Route::get('/admin/vehicles', [App\Http\Controllers\Admin\VehicleController::class, 'index'])->name('admin.vehicles.index');
@@ -221,6 +222,7 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/tickets/{id}', [ResidentTicketController::class, 'show'])->name('resident.tickets.show');
     Route::post('/resident/tickets/{id}/cancel', [ResidentTicketController::class, 'cancel'])->name('resident.tickets.cancel');
     Route::post('/resident/tickets/{id}/feedback', [ResidentTicketController::class, 'feedback'])->name('resident.tickets.feedback');
+    Route::post('/resident/tickets/{id}/respond-accusation', [ResidentTicketController::class, 'respondAccusation'])->name('resident.tickets.respond-accusation');
 });
 
 Route::middleware(['admin'])->name('admin.')->group(function () {

@@ -251,6 +251,105 @@
                 </div>
             @endif
 
+            {{-- Người bị tố cáo (chỉ hiện cho ticket loại report) --}}
+            @if($ticket->ticket_type === 'report')
+                <div class="tk-show-card" style="border: 1px solid #fecaca;">
+                    <div class="tk-show-card__header" style="background: #fef2f2;">
+                        <span class="tk-show-card__title" style="color: #dc2626;">Người bị tố cáo</span>
+                    </div>
+                    <div class="tk-show-card__body">
+                        @if($ticket->accused_user_id)
+                            {{-- Đã chọn người bị tố cáo --}}
+                            <div style="padding: 10px 14px; background: #f8fafc; border-radius: 8px; margin-bottom: 12px;">
+                                <div style="font-weight: 700; color: #0f172a; font-size: 0.95rem;">
+                                    {{ $ticket->accusedUser->name ?? 'N/A' }}
+                                </div>
+                                @if($ticket->accusedUser && $ticket->accusedUser->apartment)
+                                    <div style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">
+                                        Căn hộ {{ $ticket->accusedUser->apartment->apartment_number ?? '' }}
+                                    </div>
+                                @endif
+                            </div>
+
+                            {{-- Trạng thái phản hồi --}}
+                            <div style="padding: 10px 14px; border-radius: 8px;
+                                @if($ticket->accused_response === 'confirmed')
+                                    background: #f0fdf4; border: 1px solid #86efac;
+                                @elseif($ticket->accused_response === 'denied')
+                                    background: #fef2f2; border: 1px solid #fecaca;
+                                @else
+                                    background: #fffbeb; border: 1px solid #fde68a;
+                                @endif
+                            ">
+                                <div style="font-weight: 600; font-size: 0.82rem;
+                                    @if($ticket->accused_response === 'confirmed') color: #166534;
+                                    @elseif($ticket->accused_response === 'denied') color: #991b1b;
+                                    @else color: #92400e;
+                                    @endif
+                                ">
+                                    Phản hồi: {{ $ticket->accusedResponseLabel() }}
+                                </div>
+                                @if($ticket->accused_response_comment)
+                                    <div style="font-size: 0.82rem; color: #475569; margin-top: 6px; font-style: italic;">
+                                        "{{ $ticket->accused_response_comment }}"
+                                    </div>
+                                @endif
+                                @if($ticket->accused_responded_at)
+                                    <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 4px;">
+                                        {{ $ticket->accused_responded_at->format('d/m/Y H:i') }}
+                                    </div>
+                                @endif
+                            </div>
+
+                            {{-- Cho phép đổi người bị tố cáo --}}
+                            @if(!$ticket->hasAccusedResponse())
+                                <form method="POST" action="{{ route('admin.tickets.assign-accused', $ticket->id) }}" style="margin-top: 12px;">
+                                    @csrf
+                                    <div class="tk-form-group">
+                                        <label style="font-size: 0.78rem; color: #94a3b8;">Đổi người bị tố cáo</label>
+                                        <select name="accused_user_id" required>
+                                            <option value="" disabled selected>-- Chọn cư dân --</option>
+                                            @foreach($residents as $res)
+                                                <option value="{{ $res->id }}" {{ $ticket->accused_user_id == $res->id ? 'selected' : '' }}>
+                                                    {{ $res->name }} {{ $res->apartment ? '- ' . $res->apartment->apartment_number : '' }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="tk-form-submit" style="width: 100%; justify-content: center; background: #dc2626; color: #fff; font-size: 0.82rem;">
+                                        Đổi người bị tố cáo
+                                    </button>
+                                </form>
+                            @endif
+                        @else
+                            {{-- Chưa chọn người bị tố cáo --}}
+                            @if($ticket->reported_person)
+                                <div style="padding: 8px 12px; background: #fffbeb; border-radius: 6px; margin-bottom: 12px; font-size: 0.82rem; color: #92400e;">
+                                    Cư dân ghi: <strong>{{ $ticket->reported_person }}</strong>
+                                </div>
+                            @endif
+                            <form method="POST" action="{{ route('admin.tickets.assign-accused', $ticket->id) }}">
+                                @csrf
+                                <div class="tk-form-group">
+                                    <label>Chọn cư dân bị tố cáo</label>
+                                    <select name="accused_user_id" required>
+                                        <option value="" disabled selected>-- Chọn cư dân --</option>
+                                        @foreach($residents as $res)
+                                            <option value="{{ $res->id }}">
+                                                {{ $res->name }} {{ $res->apartment ? '- ' . $res->apartment->apartment_number : '' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <button type="submit" class="tk-form-submit tk-form-submit--primary" style="width: 100%; justify-content: center; background: #dc2626;">
+                                    Gửi thông báo tố cáo
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
             {{-- Chi phí phát sinh --}}
             @if(in_array(auth()->user()->role, ['admin', 'manager']))
                 <div class="tk-show-card">

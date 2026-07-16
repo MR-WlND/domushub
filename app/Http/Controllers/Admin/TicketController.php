@@ -107,7 +107,7 @@ class TicketController extends Controller
      */
     public function show($id)
     {
-        $ticket = Ticket::with(['apartment.floor.block', 'sender', 'handler', 'progress.updatedBy', 'costs.createdBy', 'costs.responsibleUser'])
+        $ticket = Ticket::with(['apartment.floor.block', 'sender', 'handler', 'progress.updatedBy', 'costs.createdBy', 'costs.responsibleUser', 'accusedUser'])
             ->findOrFail($id);
 
         $technicians = User::where('role', 'technician')
@@ -122,6 +122,49 @@ class TicketController extends Controller
             ->get();
 
         return view('admin.tickets.show', compact('ticket', 'technicians', 'residents'));
+    }
+
+    /**
+     * Admin chọn người bị tố cáo và gửi thông báo
+     */
+    public function assignAccused(Request $request, $id)
+    {
+        $ticket = Ticket::findOrFail($id);
+
+        if ($ticket->ticket_type !== 'report') {
+            return back()->withErrors(['Chỉ ticket loại tố cáo mới có thể chọn người bị tố cáo.']);
+        }
+
+        $validated = $request->validate([
+            'accused_user_id' => ['required', 'exists:users,id'],
+        ], [
+            'accused_user_id.required' => 'Vui lòng chọn cư dân bị tố cáo.',
+            'accused_user_id.exists'   => 'Cư dân không tồn tại.',
+        ]);
+
+        // Không cho phép tố cáo chính mình
+        if ($validated['accused_user_id'] == $ticket->sender_id) {
+            return back()->withErrors(['Không thể chọn chính người gửi tố cáo làm người bị tố cáo.']);
+        }
+
+        $accusedUser = User::findOrFail($validated['accused_user_id']);
+
+        $ticket->update([
+            'accused_user_id' => $accusedUser->id,
+            'accused_response' => null,
+            'accused_response_comment' => null,
+            'accused_responded_at' => null,
+        ]);
+
+        // Thêm tiến trình
+        TicketProgress::create([
+            'ticket_id'     => $ticket->id,
+            'status'        => $ticket->status,
+            'comment'       => 'Đã gửi thông báo tố cáo đến cư dân: ' . $accusedUser->name,
+            'updated_by'    => Auth::id(),
+        ]);
+
+        return back()->with('success', 'Đã gửi thông báo tố cáo đến ' . $accusedUser->name . '.');
     }
 
     /**

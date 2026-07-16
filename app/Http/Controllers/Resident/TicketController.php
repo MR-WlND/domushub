@@ -37,7 +37,13 @@ class TicketController extends Controller
             'completed'   => Ticket::where('apartment_id', $user->apartment_id)->where('status', 'completed')->count(),
         ];
 
-        return view('resident.tickets.index', compact('tickets', 'stats'));
+        // Tố cáo liên quan đến tôi (ticket mình bị tố cáo)
+        $accusations = Ticket::with(['sender', 'apartment.floor.block'])
+            ->where('accused_user_id', $user->id)
+            ->latest()
+            ->get();
+
+        return view('resident.tickets.index', compact('tickets', 'stats', 'accusations'));
     }
 
     /**
@@ -154,10 +160,17 @@ class TicketController extends Controller
         $user = Auth::user();
 
         $ticket = Ticket::with(['sender', 'handler', 'progress.updatedBy', 'apartment.floor.block', 'costs.createdBy'])
-            ->where('apartment_id', $user->apartment_id)
+            ->where(function ($q) use ($user) {
+                // Cho phép xem nếu là cư dân cùng căn hộ HOẶC là người bị tố cáo
+                $q->where('apartment_id', $user->apartment_id)
+                  ->orWhere('accused_user_id', $user->id);
+            })
             ->findOrFail($id);
 
-        return view('resident.tickets.show', compact('ticket'));
+        // Check xem user hiện tại có phải người bị tố cáo không
+        $isAccused = $ticket->accused_user_id === $user->id;
+
+        return view('resident.tickets.show', compact('ticket', 'isAccused'));
     }
 
     /**
@@ -216,5 +229,51 @@ class TicketController extends Controller
         ]);
 
         return back()->with('success', 'Cảm ơn bạn đã đánh giá! Phản hồi của bạn giúp chúng tôi cải thiện dịch vụ.');
+    }
+
+    /**
+     * Người bị tố cáo phản hồi (xác nhận / phản đối)
+     */
+    public function respondAccusation(Request $request, $id)
+    {
+        $user = Auth::user();
+
+        $ticket = Ticket::where('accused_user_id', $user->id)
+            ->where('ticket_type', 'report')
+            ->findOrFail($id);
+
+        // Đã phản hồi rồi thì không cho phản hồi lại
+        if ($ticket->hasAccusedResponse()) {
+            return back()->withErrors(['Bạn đã phản hồi tố cáo này rồi.']);
+        }
+
+        $validated = $request->validate([
+            'accused_response'         => ['required', 'in:confirmed,denied'],
+            'accused_response_comment' => ['nullable', 'string', 'max:1000'],
+        ], [
+            'accused_response.required' => 'Vui lòng chọn xác nhận hoặc phản đối.',
+        ]);
+
+        $ticket->update([
+            'accused_response'         => $validated['accused_response'],
+            'accused_response_comment' => $validated['accused_response_comment'] ?? null,
+            'accused_responded_at'     => now(),
+        ]);
+
+        // Thêm tiến trình
+        $label = $validated['accused_response'] === 'confirmed' ? 'XÁC NHẬN' : 'PHẢN ĐỐI';
+        TicketProgress::create([
+            'ticket_id'  => $ticket->id,
+            'status'     => $ticket->status,
+            'comment'    => 'Người bị tố cáo (' . $user->name . ') đã phản hồi: ' . $label
+                         . ($validated['accused_response_comment'] ? ' — "' . $validated['accused_response_comment'] . '"' : ''),
+            'updated_by' => $user->id,
+        ]);
+
+        $msg = $validated['accused_response'] === 'confirmed'
+            ? 'Bạn đã xác nhận tố cáo. Ban quản lý sẽ xử lý tiếp.'
+            : 'Bạn đã phản đối tố cáo. Ban quản lý sẽ xem xét lại.';
+
+        return back()->with('success', $msg);
     }
 }
