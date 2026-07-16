@@ -104,7 +104,6 @@ class TicketController extends Controller
             'description.required'       => 'Vui lòng mô tả chi tiết sự cố.',
             'description.max'            => 'Mô tả không được quá 2000 ký tự.',
             'priority.required'          => 'Vui lòng chọn mức độ ưu tiên.',
-            'reported_person.required'   => 'Vui lòng nhập tên người bị tố cáo.',
             'images.required'            => 'Tố cáo bắt buộc phải đính kèm ảnh/video làm bằng chứng.',
             'images.min'                 => 'Tố cáo bắt buộc phải đính kèm ít nhất 1 ảnh/video.',
             'images.max'                 => 'Tối đa 5 file đính kèm.',
@@ -168,7 +167,7 @@ class TicketController extends Controller
             ->findOrFail($id);
 
         // Check xem user hiện tại có phải người bị tố cáo không
-        $isAccused = $ticket->accused_user_id === $user->id;
+        $isAccused = (int) $ticket->accused_user_id === (int) $user->id;
 
         return view('resident.tickets.show', compact('ticket', 'isAccused'));
     }

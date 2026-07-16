@@ -109,7 +109,7 @@ class TicketController extends Controller
      */
     public function show($id)
     {
-        $ticket = Ticket::with(['apartment.floor.block', 'sender', 'handler', 'progress.updatedBy', 'costs.createdBy', 'costs.responsibleUser', 'accusedUser'])
+        $ticket = Ticket::with(['apartment.floor.block', 'sender', 'handler', 'progress.updatedBy', 'costs.createdBy', 'costs.responsibleUser', 'accusedUser.apartment'])
             ->findOrFail($id);
 
         $technicians = User::where('role', 'technician')
@@ -118,7 +118,8 @@ class TicketController extends Controller
             ->get();
 
         // Danh sách cư dân để chọn "người chịu trách nhiệm" cho chi phí đền bù
-        $residents = User::where('role', 'resident')
+        $residents = User::with('apartment')
+            ->where('role', 'resident')
             ->where('status', 'active')
             ->orderBy('name')
             ->get();

@@ -219,7 +219,7 @@
                                 <td class="tk-time" title="{{ $ticket->created_at->format('d/m/Y H:i') }}">
                                     {{ $ticket->created_at->diffForHumans() }}
                                     @if($overdue)
-                                        <div class="tk-overdue-badge">⚠ Trễ SLA</div>
+                                        <div class="tk-overdue-badge">Trễ SLA</div>
                                     @endif
                                 </td>
                             </tr>

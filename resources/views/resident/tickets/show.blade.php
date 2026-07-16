@@ -119,7 +119,7 @@
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             </div>
             <div class="tk-completion-banner__text">
-                <div class="tk-completion-banner__title">✅ Phản ánh đã được xử lý thành công!</div>
+                <div class="tk-completion-banner__title">Phản ánh đã được xử lý thành công!</div>
                 <div class="tk-completion-banner__sub">Hãy dành 1 phút đánh giá chất lượng phục vụ để giúp chúng tôi cải thiện dịch vụ.</div>
             </div>
             <a href="#feedbackSection" class="tk-btn" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;box-shadow:0 4px 14px rgba(245,158,11,.3);flex-shrink:0;" onclick="scrollToFeedback()">
@@ -131,7 +131,7 @@
         <div style="display:flex;align-items:center;gap:12px;padding:14px 20px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #86efac;border-radius:16px;">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             <div>
-                <div style="font-weight:700;color:#166534;font-size:0.95rem;">✅ Phản ánh đã hoàn thành &amp; đã được đánh giá</div>
+                <div style="font-weight:700;color:#166534;font-size:0.95rem;">Phản ánh đã hoàn thành &amp; đã được đánh giá</div>
                 <div style="font-size:0.82rem;color:#15803d;margin-top:2px;">
                     Bạn đã đánh giá {{ $ticket->rating }}/5 sao — {{ ['','Rất tệ','Chưa hài lòng','Bình thường','Hài lòng','Xuất sắc'][$ticket->rating] }}
                 </div>
@@ -278,7 +278,7 @@
                                     @endfor
                                 </div>
                                 <div class="tk-rating-hint" id="ratingHint">
-                                    {{ old('rating') ? ['','😞 Rất tệ','😐 Chưa hài lòng','🙂 Bình thường','😊 Hài lòng','🤩 Xuất sắc!'][old('rating')] : 'Nhấn vào sao để đánh giá...' }}
+                                    {{ old('rating') ? ['','Rất tệ','Chưa hài lòng','Bình thường','Hài lòng','Xuất sắc!'][old('rating')] : 'Nhấn vào sao để đánh giá...' }}
                                 </div>
                             </div>
 
@@ -380,17 +380,19 @@
                 </div>
             @endif
 
-            {{-- CANCEL BUTTON - Chỉ người gửi phản ánh mới thấy --}}
-            @if($ticket->canCancelBy(auth()->id()))
-                <form method="POST"
-                      action="{{ route('resident.tickets.cancel', $ticket->id) }}"
-                      onsubmit="return confirm('Bạn có chắc chắn muốn hủy phản ánh này? Thao tác không thể hoàn tác.')">
-                    @csrf
-                    <button type="submit" class="tk-btn tk-btn--danger" style="width: 100%; justify-content: center;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></svg>
-                        Hủy phản ánh
-                    </button>
-                </form>
+            {{-- CANCEL BUTTON - Chỉ người gửi phản ánh mới thấy, không hiện cho người bị tố cáo --}}
+            @if(!isset($isAccused) || !$isAccused)
+                @if($ticket->canCancelBy(auth()->id()))
+                    <form method="POST"
+                          action="{{ route('resident.tickets.cancel', $ticket->id) }}"
+                          onsubmit="return confirm('Bạn có chắc chắn muốn hủy phản ánh này? Thao tác không thể hoàn tác.')">
+                        @csrf
+                        <button type="submit" class="tk-btn tk-btn--danger" style="width: 100%; justify-content: center;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></svg>
+                            Hủy phản ánh
+                        </button>
+                    </form>
+                @endif
             @endif
 
         </div>
@@ -416,7 +418,7 @@ function closeImgModal() {
 
 // Rating hint text
 (function() {
-    const hints = ['', '😞 Rất tệ', '😐 Chưa hài lòng', '🙂 Bình thường', '😊 Hài lòng', '🤩 Xuất sắc!'];
+    const hints = ['', 'Rất tệ', 'Chưa hài lòng', 'Bình thường', 'Hài lòng', 'Xuất sắc!'];
     const hintEl = document.getElementById('ratingHint');
     if (!hintEl) return;
 
