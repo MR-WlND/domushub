@@ -189,6 +189,7 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/admin/amenities/create', [AdminFacilityController::class, 'create'])->name('admin.amenities.create');
     Route::post('/admin/amenities', [AdminFacilityController::class, 'store'])->name('admin.amenities.store');
     Route::get('/admin/amenities/statistics', [AdminFacilityController::class, 'statistics'])->name('admin.amenities.statistics');
+    Route::get('/admin/amenities/statistics/export', [AdminFacilityController::class, 'exportExcel'])->name('admin.amenities.statistics.export');
     Route::get('/admin/amenities/bookings', [AdminFacilityController::class, 'bookings'])->name('admin.amenities.bookings');
     Route::get('/admin/amenities/{facility}', [AdminFacilityController::class, 'show'])->name('admin.amenities.show');
     Route::get('/admin/amenities/{facility}/edit', [AdminFacilityController::class, 'edit'])->name('admin.amenities.edit');
