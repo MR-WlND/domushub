@@ -92,8 +92,8 @@
                         <label class="invitations-form__label">
                             Số lượt dùng tối đa <span>*</span>
                         </label>
-                        <input type="number" name="max_uses" class="invitations-form__input" min="1"
-                            value="{{ old('max_uses', 1) }}" required>
+                        <input type="hidden" name="max_uses" value="1">
+                        <input type="text" class="invitations-form__input" value="1" disabled>
                         @error('max_uses')
                             <small class="invitations-form__hint invitations-form__hint--error">{{ $message }}</small>
                         @else
@@ -105,16 +105,8 @@
                         <label class="invitations-form__label">
                             Mối quan hệ với cư dân <span>*</span>
                         </label>
-                        <select name="intended_relationship" class="invitations-form__input" required>
-                            <option value="">-- Chọn quan hệ --</option>
-                            <option value="owner" {{ old('intended_relationship') == 'owner' ? 'selected' : '' }}>Chủ hộ
-                            </option>
-                            <option value="tenant" {{ old('intended_relationship') == 'tenant' ? 'selected' : '' }}>Người
-                                thuê</option>
-                            <option value="family_member"
-                                {{ old('intended_relationship') == 'family_member' ? 'selected' : '' }}>Thành viên gia đình
-                            </option>
-                        </select>
+                        <input type="hidden" name="intended_relationship" value="owner">
+                        <input type="text" class="invitations-form__input" value="Chủ hộ" disabled>
                         @error('intended_relationship')
                             <small class="invitations-form__hint invitations-form__hint--error">{{ $message }}</small>
                         @else
