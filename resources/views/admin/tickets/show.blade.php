@@ -86,10 +86,12 @@
                             <span class="tk-info-item__label">Ngày gửi</span>
                             <span class="tk-info-item__value">{{ $ticket->created_at->format('d/m/Y H:i') }}</span>
                         </div>
-                        @if($ticket->ticket_type === 'report' && $ticket->reported_person)
+                        @if($ticket->ticket_type === 'report')
                             <div class="tk-info-item" style="grid-column: 1 / -1;">
                                 <span class="tk-info-item__label" style="color: #dc2626;">Người bị tố cáo</span>
-                                <span class="tk-info-item__value" style="color: #dc2626; font-weight: 700;">{{ $ticket->reported_person }}</span>
+                                <span class="tk-info-item__value" style="color: #dc2626; font-weight: 700;">
+                                    {{ $ticket->reported_person ?: 'Chưa xác định — cần điều tra' }}
+                                </span>
                             </div>
                         @endif
                     </div>

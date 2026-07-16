@@ -55,9 +55,9 @@
                 <strong>Lưu ý khi tố cáo:</strong>
                 <ul style="margin: 8px 0 0 20px; padding: 0;">
                     <li><strong>Bắt buộc đính kèm ảnh/video</strong> làm bằng chứng.</li>
-                    <li>Nhập đầy đủ tên người bị tố cáo.</li>
+                    <li>Nhập tên người bị tố cáo nếu biết (không bắt buộc).</li>
+                    <li>Nếu không biết ai gây ra, Ban quản lý sẽ điều tra qua camera.</li>
                     <li>Người gây ra sẽ phải chịu <strong>chi phí đền bù</strong> nếu xác minh đúng.</li>
-                    <li>Tố cáo sai sự thật có thể bị xử lý ngược.</li>
                 </ul>
             </div>
 
@@ -88,17 +88,17 @@
                     </div>
                 </div>
 
-                {{-- NGƯỜI BỊ TỐ CÁO (chỉ hiện khi chọn Tố cáo) --}}
+                {{-- NGƯỜI BỊ TỐ CÁO (chỉ hiện khi chọn Tố cáo, không bắt buộc) --}}
                 <div id="reportedPersonGroup" style="display: {{ old('ticket_type') === 'report' ? 'block' : 'none' }};">
                     <label class="tk-label">
-                        Tên người bị tố cáo <span style="color: #ef4444;">*</span>
+                        Tên người bị tố cáo <span style="color: #94a3b8; font-weight: 400; font-size: 0.8rem;">(nếu biết)</span>
                     </label>
                     <input type="text"
                            name="reported_person"
                            id="reportedPersonInput"
                            class="tk-input @error('reported_person') tk-input--err @enderror"
                            value="{{ old('reported_person') }}"
-                           placeholder="Nhập họ tên người gây ra sự cố / vi phạm">
+                           placeholder="Nhập họ tên người gây ra (bỏ trống nếu không biết)">
                 </div>
 
                 {{-- TIÊU ĐỀ --}}
@@ -341,14 +341,12 @@ function toggleTicketType() {
 
     if (type === 'report') {
         reportGroup.style.display = 'block';
-        reportInput.setAttribute('required', 'required');
         infoComplaint.style.display = 'none';
         infoReport.style.display = 'block';
         submitText.textContent = 'Gửi tố cáo';
         submitBtn.style.background = '#dc2626';
     } else {
         reportGroup.style.display = 'none';
-        reportInput.removeAttribute('required');
         reportInput.value = '';
         infoComplaint.style.display = 'block';
         infoReport.style.display = 'none';

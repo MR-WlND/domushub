@@ -83,9 +83,9 @@ class TicketController extends Controller
             'images.*'        => ['file', 'mimes:jpg,jpeg,png,webp,mp4,mov,avi,webm', 'max:20480'],
         ];
 
-        // Nếu là tố cáo → bắt buộc nhập người bị tố cáo + đính kèm bằng chứng
+        // Nếu là tố cáo → bắt buộc đính kèm bằng chứng, tên người không bắt buộc
         if ($ticketType === 'report') {
-            $rules['reported_person'] = ['required', 'string', 'max:255'];
+            $rules['reported_person'] = ['nullable', 'string', 'max:255'];
             $rules['images'] = ['required', 'array', 'min:1', 'max:5'];
         } else {
             $rules['reported_person'] = ['nullable', 'string', 'max:255'];
