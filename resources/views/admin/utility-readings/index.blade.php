@@ -920,7 +920,7 @@ function openDetailModal(id) {
             const hasRejection = rejections.some(rej => rej.action === 'rejected');
             
             if (reading.status === 'approved') {
-                if (hasRejection) {
+                if (rejections.length > 0) {
                     let html = `
                         <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); overflow: hidden; margin-top: 8px;">
                             <div style="background: #ffffff; border-bottom: 1px solid #f1f5f9; padding: 12px 16px; display: flex; align-items: center;">

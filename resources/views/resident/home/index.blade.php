@@ -1,4 +1,4 @@
-﻿@extends('layouts.resident.master')
+@extends('layouts.resident.master')
 
 @section('title', 'Trang chủ - DomusHub')
 
@@ -38,7 +38,7 @@
             @if($announcements->isNotEmpty())
                 <div class="rh-announce-slider" id="announceSlider">
                     @foreach($announcements as $i => $ann)
-                    <div class="rh-announce-slide" role="group" aria-label="Thông báo {{ $i + 1 }}">
+                    <a href="{{ route('resident.announcements.show', $ann->id) }}" class="rh-announce-slide" role="group" aria-label="Thông báo {{ $i + 1 }}" style="text-decoration: none; color: inherit;">
                         <div class="rh-announce__visual">
                             @if($ann->image_path)
                                 <img src="{{ asset('storage/' . $ann->image_path) }}" class="rh-announce__img" alt="{{ $ann->title }}" loading="lazy">
@@ -53,7 +53,7 @@
                             <h4 class="rh-announce__title">{{ Str::limit($ann->title, 50) }}</h4>
                             <p class="rh-announce__time">{{ $ann->created_at->diffForHumans() }}</p>
                         </div>
-                    </div>
+                    </a>
                     @endforeach
                 </div>
                 @if($announcements->count() > 1)
