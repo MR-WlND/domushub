@@ -20,7 +20,7 @@
             <div class="al-filter-group">
                 <label class="al-filter-label">Từ khóa</label>
                 <input type="text" name="search" value="{{ request('search') }}"
-                       class="al-filter-input" placeholder="Tên khách, SĐT, biển số, số căn hộ...">
+                       class="al-filter-input" placeholder="Tên khách, SĐT, số căn hộ...">
             </div>
 
             <div class="al-filter-group">
@@ -53,7 +53,6 @@
                     <tr>
                         <th>Khách đến</th>
                         <th>Căn hộ</th>
-                        <th>Phương tiện</th>
                         <th>Thời gian vào</th>
                         <th>Thời gian ra</th>
                         <th>Bảo vệ xử lý</th>
@@ -78,14 +77,6 @@
                             @endif
                         </td>
                         <td>
-                            @if($log->hasVehicle())
-                                <div style="color: #0b1c30; font-family: monospace;">{{ $log->vehicle_plate }}</div>
-                                <div style="font-size: 11px; color: #64748b;">{{ $log->vehicleTypeLabel() }}</div>
-                            @else
-                                <span style="font-size: 12px; color: #94a3b8;">Không đi xe</span>
-                            @endif
-                        </td>
-                        <td>
                             <div style="font-size: 13px; color: #0b1c30;">{{ $log->check_in_at ? $log->check_in_at->format('H:i:s') : '—' }}</div>
                             <div style="font-size: 11px; color: #64748b;">{{ $log->check_in_at ? $log->check_in_at->format('d/m/Y') : '—' }}</div>
                         </td>
@@ -106,7 +97,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="7" class="empty-row">Chưa có dữ liệu khách ghé thăm.</td></tr>
+                    <tr><td colspan="6" class="empty-row">Chưa có dữ liệu khách ghé thăm.</td></tr>
                     @endforelse
                 </tbody>
             </table>
