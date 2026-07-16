@@ -440,6 +440,34 @@
                 <span class="rh-fb-card__name">{{ $post->user->name }}</span>
                 <span class="rh-fb-card__time">{{ $post->created_at->diffForHumans() }} · {{ $post->user->apartment ? 'Cư dân' : 'Ban Quản Trị' }}</span>
             </div>
+
+            {{-- Nút ... tùy chọn --}}
+            <div class="rh-fb-card__menu">
+                <button type="button" class="rh-fb-card__menu-btn" onclick="togglePostMenu(event, {{ $post->id }})" aria-label="Tùy chọn">
+                    <i class="fa-solid fa-ellipsis"></i>
+                </button>
+                <div class="rh-fb-card__dropdown" id="post-menu-{{ $post->id }}">
+                    @if($post->user_id === auth()->id())
+                        <button type="button" class="rh-fb-card__dropdown-item" onclick="openEditPostModal({{ $post->id }}, '{{ addslashes($post->title) }}', '{{ addslashes($post->content) }}', '{{ $post->price }}')">
+                            <i class="fa-regular fa-pen-to-square"></i> Sửa bài viết
+                        </button>
+                    @endif
+                    @if($post->user_id === auth()->id() || auth()->user()->isAdminPortalUser())
+                        <form action="{{ route('resident.posts.destroy', $post->id) }}" method="POST" onsubmit="return confirm('Xóa bài đăng này?')" style="margin: 0;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="rh-fb-card__dropdown-item rh-fb-card__dropdown-item--danger">
+                                <i class="fa-regular fa-trash-can"></i> Xóa bài viết
+                            </button>
+                        </form>
+                    @endif
+                    @if($post->user_id !== auth()->id())
+                        <button type="button" class="rh-fb-card__dropdown-item" onclick="openReportModal({{ $post->id }})">
+                            <i class="fa-regular fa-flag"></i> Báo cáo bài viết
+                        </button>
+                    @endif
+                </div>
+            </div>
         </div>
 
         {{-- Title --}}
@@ -548,28 +576,7 @@
             </button>
         </div>
 
-        {{-- Owner actions (sửa, xóa, báo cáo) --}}
-        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; padding: 8px 16px 12px; align-items: center;">
-            @if($post->user_id === auth()->id())
-                <button type="button" onclick="openEditPostModal({{ $post->id }}, '{{ addslashes($post->title) }}', '{{ addslashes($post->content) }}', '{{ $post->price }}')" style="color: #2563eb; background: transparent; border: none; cursor: pointer; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.3rem; font-family: inherit;">
-                    <i class="fa-regular fa-pen-to-square"></i> Sửa
-                </button>
-            @endif
 
-            @if($post->user_id === auth()->id() || auth()->user()->isAdminPortalUser())
-                <form action="{{ route('resident.posts.destroy', $post->id) }}" method="POST" onsubmit="return confirm('Xóa bài đăng này?')" style="margin: 0;">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" style="color: #dc2626; background: transparent; border: none; cursor: pointer; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.3rem; font-family: inherit;">
-                        <i class="fa-regular fa-trash-can"></i> Xóa
-                    </button>
-                </form>
-            @elseif($post->user_id !== auth()->id())
-                <button type="button" onclick="openReportModal({{ $post->id }})" style="color: #dc2626; background: transparent; border: none; cursor: pointer; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.3rem; font-family: inherit;">
-                    <i class="fa-regular fa-flag"></i> Báo cáo
-                </button>
-            @endif
-        </div>
     </div>
 
     {{-- KHU VỰC BÌNH LUẬN KIỂU FACEBOOK --}}
@@ -1504,6 +1511,24 @@
             preview.style.display = 'none';
         });
     }
+
+    // Dropdown control
+    function togglePostMenu(event, postId) {
+        event.stopPropagation();
+        document.querySelectorAll('.rh-fb-card__dropdown').forEach(dropdown => {
+            if (dropdown.id !== 'post-menu-' + postId) {
+                dropdown.style.display = 'none';
+            }
+        });
+        const dropdown = document.getElementById('post-menu-' + postId);
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    }
+
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.rh-fb-card__dropdown').forEach(dropdown => {
+            dropdown.style.display = 'none';
+        });
+    });
 
     // === DOMContentLoaded ===
     document.addEventListener("DOMContentLoaded", function() {

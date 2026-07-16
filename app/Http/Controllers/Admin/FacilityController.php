@@ -330,14 +330,76 @@ class FacilityController extends Controller
     /**
      * Báo cáo thống kê tiện ích
      */
-    public function statistics(): View
+    public function statistics(Request $request): View
     {
+        // Lấy danh sách tòa nhà/block
+        $blocks = \App\Models\Block::orderBy('name')->get();
+        $selectedBlock = $request->get('block_id');
+
+        // Lấy danh sách các năm từ facility_bookings để hiện trong bộ lọc
+        $driver = \Illuminate\Support\Facades\DB::getDriverName();
+        $yearExpression = $driver === 'sqlite' ? "strftime('%Y', booking_date)" : "YEAR(booking_date)";
+        
+        $availableYears = \App\Models\FacilityBooking::selectRaw("DISTINCT $yearExpression as year")
+            ->orderBy('year', 'desc')
+            ->pluck('year')
+            ->map(fn($y) => (int)$y)
+            ->filter()
+            ->toArray();
+            
+        if (empty($availableYears)) {
+            $availableYears = [(int) date('Y')];
+        }
+
+        $selectedYear = $request->get('year', date('Y'));
+        if (!in_array($selectedYear, $availableYears) && count($availableYears) > 0) {
+            $selectedYear = $availableYears[0];
+        }
+
+        $selectedMonth = $request->get('month');
+
+        // Callback filter function for bookings query
+        $applyFilters = function ($query) use ($selectedBlock, $selectedYear, $selectedMonth, $driver) {
+            if ($selectedBlock) {
+                $query->whereHas('user.apartment.floor', function ($q) use ($selectedBlock) {
+                    $q->where('block_id', $selectedBlock);
+                });
+            }
+            if ($selectedYear) {
+                if ($driver === 'sqlite') {
+                    $query->whereRaw("strftime('%Y', booking_date) = ?", [$selectedYear]);
+                } else {
+                    $query->whereYear('booking_date', $selectedYear);
+                }
+            }
+            if ($selectedMonth) {
+                if ($driver === 'sqlite') {
+                    $query->whereRaw("cast(strftime('%m', booking_date) as integer) = ?", [(int)$selectedMonth]);
+                } else {
+                    $query->whereMonth('booking_date', $selectedMonth);
+                }
+            }
+        };
+
         $facilities = Facility::withCount([
-            'bookings',
-            'bookings as approved_count' => fn ($q) => $q->where('status', 'approved'),
-            'bookings as completed_count' => fn ($q) => $q->where('status', 'completed'),
-            'bookings as rejected_count'  => fn ($q) => $q->where('status', 'rejected'),
-            'pendingBookings',
+            'bookings' => function ($q) use ($applyFilters) {
+                $applyFilters($q);
+            },
+            'bookings as approved_count' => function ($q) use ($applyFilters) {
+                $q->where('status', 'approved');
+                $applyFilters($q);
+            },
+            'bookings as completed_count' => function ($q) use ($applyFilters) {
+                $q->where('status', 'completed');
+                $applyFilters($q);
+            },
+            'bookings as rejected_count' => function ($q) use ($applyFilters) {
+                $q->where('status', 'rejected');
+                $applyFilters($q);
+            },
+            'pendingBookings as pending_bookings_count' => function ($q) use ($applyFilters) {
+                $applyFilters($q);
+            },
         ])->get();
 
         // Tính doanh thu (approved + completed × price_per_slot)
@@ -353,6 +415,96 @@ class FacilityController extends Controller
             'pending_total'    => $facilities->sum('pending_bookings_count'),
         ];
 
-        return view('admin.amenities.statistics', compact('facilities', 'summary'));
+        return view('admin.amenities.statistics', compact(
+            'facilities', 'summary', 'blocks', 'selectedBlock',
+            'availableYears', 'selectedYear', 'selectedMonth'
+        ));
+    }
+
+    /**
+     * Xuất báo cáo thống kê Tiện ích thành file Excel.
+     */
+    public function exportExcel(Request $request)
+    {
+        $selectedBlock = $request->get('block_id');
+
+        $driver = \Illuminate\Support\Facades\DB::getDriverName();
+        $yearExpression = $driver === 'sqlite' ? "strftime('%Y', booking_date)" : "YEAR(booking_date)";
+        
+        $availableYears = \App\Models\FacilityBooking::selectRaw("DISTINCT $yearExpression as year")
+            ->orderBy('year', 'desc')
+            ->pluck('year')
+            ->map(fn($y) => (int)$y)
+            ->filter()
+            ->toArray();
+            
+        if (empty($availableYears)) {
+            $availableYears = [(int) date('Y')];
+        }
+
+        $selectedYear = $request->get('year', date('Y'));
+        if (!in_array($selectedYear, $availableYears) && count($availableYears) > 0) {
+            $selectedYear = $availableYears[0];
+        }
+
+        $selectedMonth = $request->get('month');
+
+        // Callback filter function for bookings query
+        $applyFilters = function ($query) use ($selectedBlock, $selectedYear, $selectedMonth, $driver) {
+            if ($selectedBlock) {
+                $query->whereHas('user.apartment.floor', function ($q) use ($selectedBlock) {
+                    $q->where('block_id', $selectedBlock);
+                });
+            }
+            if ($selectedYear) {
+                if ($driver === 'sqlite') {
+                    $query->whereRaw("strftime('%Y', booking_date) = ?", [$selectedYear]);
+                } else {
+                    $query->whereYear('booking_date', $selectedYear);
+                }
+            }
+            if ($selectedMonth) {
+                if ($driver === 'sqlite') {
+                    $query->whereRaw("cast(strftime('%m', booking_date) as integer) = ?", [(int)$selectedMonth]);
+                } else {
+                    $query->whereMonth('booking_date', $selectedMonth);
+                }
+            }
+        };
+
+        $facilities = Facility::withCount([
+            'bookings' => function ($q) use ($applyFilters) {
+                $applyFilters($q);
+            },
+            'bookings as approved_count' => function ($q) use ($applyFilters) {
+                $q->where('status', 'approved');
+                $applyFilters($q);
+            },
+            'bookings as completed_count' => function ($q) use ($applyFilters) {
+                $q->where('status', 'completed');
+                $applyFilters($q);
+            },
+            'bookings as rejected_count' => function ($q) use ($applyFilters) {
+                $q->where('status', 'rejected');
+                $applyFilters($q);
+            },
+            'pendingBookings as pending_bookings_count' => function ($q) use ($applyFilters) {
+                $applyFilters($q);
+            },
+        ])->get();
+
+        // Tính doanh thu (approved + completed × price_per_slot)
+        foreach ($facilities as $f) {
+            $paid = ($f->approved_count + $f->completed_count);
+            $f->revenue = $paid * ($f->price_per_slot ?? 0);
+        }
+
+        try {
+            $filePath = \App\Helpers\SimpleXlsx::exportAmenitiesReport($selectedYear, $selectedMonth, $facilities);
+            $filename = "Bao-cao-thong-ke-tien-ich-nam-{$selectedYear}" . ($selectedMonth ? "-thang-{$selectedMonth}" : "") . ".xlsx";
+            return response()->download($filePath, $filename)->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Có lỗi xảy ra khi xuất file báo cáo tiện ích: ' . $e->getMessage());
+        }
     }
 }
