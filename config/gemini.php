@@ -36,4 +36,15 @@ return [
     */
 
     'request_timeout' => env('GEMINI_REQUEST_TIMEOUT', 30),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Gemini Verify SSL
+    |--------------------------------------------------------------------------
+    |
+    | By default, SSL certificate verification is enabled for requests to the
+    | Gemini API. You can disable it (e.g. for local development on Windows)
+    | by setting GEMINI_VERIFY_SSL to false in your .env file.
+    */
+    'verify_ssl' => env('GEMINI_VERIFY_SSL', true),
 ];
