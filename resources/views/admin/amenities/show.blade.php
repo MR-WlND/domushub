@@ -61,6 +61,15 @@
             </div>
         </div>
         <div class="ams-config-card">
+            <div class="ams-config-icon" style="background:#eff6ff;color:#2563eb">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div>
+                <p class="ams-config-label">Kiểu đặt chỗ</p>
+                <p class="ams-config-value">{{ $facility->booking_type_label }}</p>
+            </div>
+        </div>
+        <div class="ams-config-card">
             <div class="ams-config-icon" style="background:#f0fdf4;color:#16a34a">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
             </div>

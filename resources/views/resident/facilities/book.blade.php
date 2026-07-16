@@ -59,7 +59,8 @@
                             required onchange="loadSlots(this.value)">
                     </div>
 
-                    {{-- Bước 2: Chọn khung giờ --}}
+                    {{-- Bước 2: Chọn khung giờ (chỉ hiện khi đặt theo giờ) --}}
+                    @if(($facility->booking_type ?? 'slot') === 'slot')
                     <div class="rfb-step">
                         <div class="rfb-step-label">
                             <span class="rfb-step-num">2</span>
@@ -68,19 +69,24 @@
                         <div id="slots-container" class="rfb-slots-wrap">
                             <p class="rfb-slots-hint">← Vui lòng chọn ngày trước</p>
                         </div>
-                        <input type="hidden" name="start_time" id="start_time" value="{{ old('start_time') }}" required>
-                        <input type="hidden" name="end_time"   id="end_time"   value="{{ old('end_time') }}"   required>
+                        <input type="hidden" name="start_time" id="start_time" value="{{ old('start_time') }}">
+                        <input type="hidden" name="end_time"   id="end_time"   value="{{ old('end_time') }}">
                         <div id="selected-slot-display" class="rfb-selected-slot" style="display:none">
                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                             Đã chọn: <strong id="slot-label-display"></strong>
                             <span id="slot-count-badge" class="rfb-slot-count"></span>
                         </div>
                     </div>
+                    @else
+                    {{-- Đặt theo người: tự điền giờ mở/đóng cửa --}}
+                    <input type="hidden" name="start_time" id="start_time" value="{{ $facility->open_time ? substr($facility->open_time, 0, 5) : '00:00' }}">
+                    <input type="hidden" name="end_time"   id="end_time"   value="{{ $facility->close_time ? substr($facility->close_time, 0, 5) : '23:59' }}">
+                    @endif
 
-                    {{-- Bước 3: Số người --}}
+                    {{-- Bước {{ ($facility->booking_type ?? 'slot') === 'person' ? '2' : '3' }}: Số người --}}
                     <div class="rfb-step">
                         <div class="rfb-step-label">
-                            <span class="rfb-step-num">3</span>
+                            <span class="rfb-step-num">{{ ($facility->booking_type ?? 'slot') === 'person' ? '2' : '3' }}</span>
                             Số người sử dụng
                         </div>
                         <div class="rfb-people-wrap">
@@ -95,15 +101,25 @@
                     </div>
 
                     {{-- Tổng tiền preview --}}
-                    @if($facility->price_per_slot && $facility->price_per_slot > 0)
+                    @php
+                        $bookingType   = $facility->booking_type ?? 'slot';
+                        $hasFee        = $bookingType === 'person'
+                            ? ($facility->price_per_person && $facility->price_per_person > 0)
+                            : ($facility->price_per_slot   && $facility->price_per_slot   > 0);
+                    @endphp
+                    @if($hasFee)
                     <div class="rfb-price-preview" id="price-preview">
                         <div class="rfb-price-row">
-                            @if($facility->slot_duration == 0)
-                            <span>Giá mỗi lượt / người</span>
+                            @if($bookingType === 'person')
+                                <span>Giá mỗi người (vé / lượt)</span>
+                                <span class="rfb-price-unit">{{ number_format($facility->price_per_person) }}đ</span>
+                            @elseif($facility->slot_duration == 0)
+                                <span>Giá mỗi lượt (cả ngày)</span>
+                                <span class="rfb-price-unit">{{ number_format($facility->price_per_slot) }}đ</span>
                             @else
-                            <span>Giá mỗi slot ({{ $facility->slot_duration }} phút) / người</span>
+                                <span>Giá mỗi slot ({{ $facility->slot_duration }} phút)</span>
+                                <span class="rfb-price-unit">{{ number_format($facility->price_per_slot) }}đ</span>
                             @endif
-                            <span class="rfb-price-unit">{{ number_format($facility->price_per_slot) }}đ</span>
                         </div>
                         <div class="rfb-price-row" id="price-row-slots" style="display:none">
                             <span id="price-formula-label">Số slot đã chọn</span>
@@ -126,11 +142,18 @@
                     @endif
 
                     {{-- Submit --}}
-                    <button type="submit" class="rfb-submit" id="submitBtn">
+                    <button type="button" class="rfb-submit" id="submitBtn" onclick="validateAndSubmit()">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                         Xác nhận đặt lịch
                     </button>
-                    <p class="rfb-note">Lịch đặt được duyệt tự động. QR check-in sẽ có ngay sau khi đặt thành công.</p>
+                    <div id="submit-error" style="display:none;margin-top:10px;padding:10px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;font-size:0.85rem;color:#b91c1c;"></div>
+                    @if($hasFee)
+                    <p class="rfb-note rfb-note--fee">
+                        💳 Sau khi đặt lịch, bạn sẽ được chuyển đến <strong>trang thanh toán hóa đơn</strong> để hoàn tất.
+                    </p>
+                    @else
+                    <p class="rfb-note">Lịch đặt được duyệt tự động. Bạn có thể xem lịch đặt trong mục <strong>Lịch đặt của tôi</strong>.</p>
+                    @endif
                 </form>
             </div>
         </div>
@@ -176,7 +199,12 @@
                     </div>
                     <div>
                         <p class="rfb-info-label">Giá sử dụng</p>
-                        <p class="rfb-info-value {{ (!$facility->price_per_slot || $facility->price_per_slot == 0) ? 'rfb-free' : 'rfb-paid' }}">
+                        @php
+                            $isPaid = ($facility->booking_type ?? 'slot') === 'person'
+                                ? ($facility->price_per_person && $facility->price_per_person > 0)
+                                : ($facility->price_per_slot   && $facility->price_per_slot   > 0);
+                        @endphp
+                        <p class="rfb-info-value {{ !$isPaid ? 'rfb-free' : 'rfb-paid' }}">
                             {{ $facility->price_label }}
                         </p>
                     </div>
@@ -284,6 +312,7 @@
 .rfb-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(59,130,246,0.45); }
 .rfb-submit:active { transform: translateY(0); }
 .rfb-note { font-size: 0.75rem; color: #94a3b8; text-align: center; margin-top: 10px; }
+.rfb-note--fee { color: #0369a1; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 8px 12px; font-size: 0.82rem; }
 
 .rfb-sidebar { position: sticky; top: 20px; display: flex; flex-direction: column; gap: 14px; }
 .rfb-info-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
@@ -308,10 +337,12 @@
 </style>
 
 <script>
-const pricePerSlot = {{ $facility->price_per_slot ?? 0 }};
-const slotDuration = {{ $facility->slot_duration ?? 60 }};
-const facilityId   = {{ $facility->id }};
-const maxCapacity  = {{ $facility->capacity }};
+const pricePerSlot   = {{ (($facility->booking_type ?? 'slot') === 'slot') ? ($facility->price_per_slot ?? 0) : 0 }};
+const pricePerPerson = {{ (($facility->booking_type ?? 'slot') === 'person') ? ($facility->price_per_person ?? 0) : 0 }};
+const bookingType    = '{{ $facility->booking_type ?? 'slot' }}';
+const slotDuration   = {{ $facility->slot_duration ?? 60 }};
+const facilityId     = {{ $facility->id }};
+const maxCapacity    = {{ $facility->capacity }};
 
 // ─── Multi-slot selection state ─────────────────────
 let allSlotsData    = [];   // [{start,end,label,available,remainingCapacity}]
@@ -493,28 +524,41 @@ function updateFormAndPrice() {
 }
 
 function updatePrice(numSlots) {
-    if (!pricePerSlot || pricePerSlot <= 0) return;
-
     const people = Math.max(1, parseInt(document.getElementById('number_of_people')?.value || 1));
-    const total  = numSlots * pricePerSlot * people;
 
-    // Show slot breakdown row
-    const rowSlots = document.getElementById('price-row-slots');
-    const valSlots = document.getElementById('price-slots-val');
-    if (rowSlots && valSlots) {
-        rowSlots.style.display = 'flex';
-        valSlots.textContent = numSlots + ' slot × ' + Number(pricePerSlot).toLocaleString('vi-VN') + 'đ = ' + (numSlots * pricePerSlot).toLocaleString('vi-VN') + 'đ';
+    if (bookingType === 'person') {
+        // Đặt theo người: giá/người × số người
+        if (!pricePerPerson || pricePerPerson <= 0) return;
+        const total = pricePerPerson * people;
+
+        const rowSlots = document.getElementById('price-row-slots');
+        if (rowSlots) rowSlots.style.display = 'none';
+
+        const rowPeople = document.getElementById('price-row-people');
+        const fmla      = document.getElementById('price-formula');
+        if (rowPeople && fmla) {
+            rowPeople.style.display = 'flex';
+            fmla.textContent = people + ' người × ' + Number(pricePerPerson).toLocaleString('vi-VN') + 'đ';
+        }
+
+        document.getElementById('total-price').textContent = total.toLocaleString('vi-VN') + 'đ';
+    } else {
+        // Đặt theo tiếng (slot): giá/slot × số slot
+        if (!pricePerSlot || pricePerSlot <= 0) return;
+        const total = numSlots * pricePerSlot;
+
+        const rowSlots = document.getElementById('price-row-slots');
+        const valSlots = document.getElementById('price-slots-val');
+        if (rowSlots && valSlots) {
+            rowSlots.style.display = 'flex';
+            valSlots.textContent = numSlots + ' slot × ' + Number(pricePerSlot).toLocaleString('vi-VN') + 'đ = ' + (numSlots * pricePerSlot).toLocaleString('vi-VN') + 'đ';
+        }
+
+        const rowPeople = document.getElementById('price-row-people');
+        if (rowPeople) rowPeople.style.display = 'none';
+
+        document.getElementById('total-price').textContent = total.toLocaleString('vi-VN') + 'đ';
     }
-
-    // Show people multiplier row
-    const rowPeople = document.getElementById('price-row-people');
-    const fmla      = document.getElementById('price-formula');
-    if (rowPeople && fmla) {
-        rowPeople.style.display = 'flex';
-        fmla.textContent = people + ' người';
-    }
-
-    document.getElementById('total-price').textContent = total.toLocaleString('vi-VN') + 'đ';
 }
 
 function changePeople(delta) {
@@ -524,16 +568,50 @@ function changePeople(delta) {
     if (val < 1) val = 1;
     if (val > max) val = max;
     input.value = val;
-    if (selectedIndices.length > 0) updatePrice(selectedIndices.length);
+    // Khi đặt theo người: cập nhật ngay khi đổi số người
+    if (bookingType === 'person' || selectedIndices.length > 0) updatePrice(selectedIndices.length);
 }
 
 document.getElementById('number_of_people')?.addEventListener('input', function() {
-    if (selectedIndices.length > 0) updatePrice(selectedIndices.length);
+    if (bookingType === 'person' || selectedIndices.length > 0) updatePrice(selectedIndices.length);
 });
+
+function validateAndSubmit() {
+    const errBox  = document.getElementById('submit-error');
+    const dateVal = document.getElementById('booking_date').value;
+
+    errBox.style.display = 'none';
+    errBox.textContent   = '';
+
+    if (!dateVal) {
+        errBox.textContent   = '⚠️ Vui lòng chọn ngày sử dụng.';
+        errBox.style.display = 'block';
+        document.getElementById('booking_date').focus();
+        errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+    }
+
+    // Chỉ kiểm tra khung giờ khi đặt theo slot (không phải theo người)
+    if (bookingType !== 'person') {
+        const startVal = document.getElementById('start_time').value;
+        const endVal   = document.getElementById('end_time').value;
+        if (!startVal || !endVal) {
+            errBox.textContent   = '⚠️ Vui lòng chọn khung giờ trước khi đặt lịch.';
+            errBox.style.display = 'block';
+            document.getElementById('slots-container').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+    }
+
+    // Tất cả hợp lệ → submit
+    document.getElementById('bookingForm').submit();
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     const dateInput = document.getElementById('booking_date');
     if (dateInput && dateInput.value) loadSlots(dateInput.value);
+    // Nếu đặt theo người: hiển thị giá ngay khi load
+    if (bookingType === 'person') updatePrice(0);
 });
 </script>
 @endsection

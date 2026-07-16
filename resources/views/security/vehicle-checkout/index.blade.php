@@ -149,7 +149,7 @@ function stopCamera() {
 }
 
 function manualScan() {
-    const val = document.getElementById('manual-input').value.trim().toUpperCase().replace(/\s/g,'');
+    const val = document.getElementById('manual-input').value.trim().toUpperCase();
     if (!val) { showToast('Vui lòng nhập biển số xe', 'error'); return; }
     doScan(val);
 }
@@ -184,9 +184,14 @@ function renderResult(data, token) {
 
     if (data.success) {
         bar.className = 'qs-result__status-bar is-success';
-        msg.textContent = '✓ Xe hợp lệ — Có thể check-out';
+        msg.textContent = data.is_guest
+            ? '✓ Xe khách vãng lai — Có thể check-out'
+            : '✓ Xe hợp lệ — Có thể check-out';
 
         const v = data.vehicle;
+        const isGuest = data.is_guest || false;
+        const logId = data.log_id || '';
+
         body.innerHTML = `
             <div class="qs-info-card">
                 <div class="qs-info-card__thumb">
@@ -194,10 +199,12 @@ function renderResult(data, token) {
                 </div>
                 <div class="qs-info-card__content">
                     <h3 class="qs-info-card__name">${v.license_plate}</h3>
-                    <p class="qs-info-card__sub">${v.vehicle_type} ${v.brand ? '· ' + v.brand : ''}</p>
+                    <p class="qs-info-card__sub">${v.vehicle_type} ${v.brand ? '· ' + v.brand : ''}${isGuest ? ' · <span style="color:#92400e;font-weight:600;">Khách vãng lai</span>' : ''}</p>
                     <div class="qs-info-rows">
-                        <div class="qs-info-row"><span class="qs-info-row__label">Căn hộ</span><span class="qs-info-row__val">${v.apartment} — ${v.block}</span></div>
-                        <div class="qs-info-row"><span class="qs-info-row__label">Lốt đỗ</span><span class="qs-info-row__val">${v.parking_lot || 'Không có'}</span></div>
+                        ${isGuest && v.guest_name ? `<div class="qs-info-row"><span class="qs-info-row__label">Tên khách</span><span class="qs-info-row__val">${v.guest_name}</span></div>` : ''}
+                        ${isGuest && v.guest_phone ? `<div class="qs-info-row"><span class="qs-info-row__label">SĐT</span><span class="qs-info-row__val">${v.guest_phone}</span></div>` : ''}
+                        ${!isGuest ? `<div class="qs-info-row"><span class="qs-info-row__label">Căn hộ</span><span class="qs-info-row__val">${v.apartment} — ${v.block}</span></div>` : ''}
+                        ${!isGuest ? `<div class="qs-info-row"><span class="qs-info-row__label">Lốt đỗ</span><span class="qs-info-row__val">${v.parking_lot || 'Không có'}</span></div>` : ''}
                         <div class="qs-info-row"><span class="qs-info-row__label">Thời gian vào</span><span class="qs-info-row__val">${data.check_in_at}</span></div>
                         <div class="qs-info-row"><span class="qs-info-row__label">Thời gian đỗ</span><span class="qs-info-row__val" style="color:#f59e0b;font-weight:700;">${data.duration}</span></div>
                     </div>
@@ -206,7 +213,7 @@ function renderResult(data, token) {
         `;
 
         actions.innerHTML = `
-            <button class="qs-action-btn qs-action-btn--checkout" onclick="doCheckout('${token}')">
+            <button class="qs-action-btn qs-action-btn--checkout" onclick="doCheckout('${token}', ${logId})">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                 Xác nhận Xe Ra
             </button>
@@ -250,14 +257,17 @@ function renderError(msg) {
     lastScannedToken = null;
 }
 
-function doCheckout(token) {
+function doCheckout(token, logId) {
     const btn = document.querySelector('.qs-action-btn--checkout');
     if (btn) { btn.disabled = true; btn.innerHTML = '<div class="qs-spin"></div> Đang ghi nhận...'; }
+
+    const payload = { qr_token: token };
+    if (logId) payload.log_id = logId;
 
     fetch('{{ route("security.vehicle-checkout.confirm") }}', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
-        body: JSON.stringify({ qr_token: token })
+        body: JSON.stringify(payload)
     })
     .then(r => r.json())
     .then(data => {

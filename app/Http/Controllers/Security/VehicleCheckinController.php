@@ -123,6 +123,54 @@ class VehicleCheckinController extends Controller
         ]);
     }
 
+    /**
+     * Đăng ký xe khách vãng lai vào bãi (không cần QR)
+     */
+    public function guestCheckin(Request $request)
+    {
+        $request->validate([
+            'guest_plate'        => ['required', 'string', 'max:20'],
+            'guest_vehicle_type' => ['required', 'in:car,motorbike,electric_bike'],
+            'guest_name'         => ['nullable', 'string', 'max:100'],
+            'guest_phone'        => ['nullable', 'string', 'max:20'],
+            'guest_note'         => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $plate = strtoupper(trim($request->guest_plate));
+        $cleanPlate = str_replace([' ', '-'], '', $plate);
+
+        // Kiểm tra xe vãng lai này có đang ở trong không
+        $existingLog = VehicleLog::where('is_guest', true)
+            ->whereRaw("REPLACE(REPLACE(guest_plate, ' ', ''), '-', '') = ?", [$cleanPlate])
+            ->where('status', 'inside')
+            ->first();
+
+        if ($existingLog) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Xe biển số ' . $request->guest_plate . ' đang ở trong bãi (vào lúc ' . $existingLog->check_in_at->format('H:i d/m/Y') . ').',
+            ], 409);
+        }
+
+        VehicleLog::create([
+            'vehicle_id'         => null,
+            'checked_in_by'      => Auth::id(),
+            'check_in_at'        => now(),
+            'status'             => 'inside',
+            'is_guest'           => true,
+            'guest_plate'        => $plate,
+            'guest_vehicle_type' => $request->guest_vehicle_type,
+            'guest_name'         => $request->guest_name,
+            'guest_phone'        => $request->guest_phone,
+            'guest_note'         => $request->guest_note,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã ghi nhận xe khách vãng lai (' . $request->guest_plate . ') vào lúc ' . now()->format('H:i d/m/Y') . '.',
+        ]);
+    }
+
     // =========================================================================
     // PRIVATE
     // =========================================================================

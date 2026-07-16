@@ -248,6 +248,7 @@ Route::middleware(['security'])->group(function () {
     Route::get('/security/vehicle-checkin', [\App\Http\Controllers\Security\VehicleCheckinController::class, 'index'])->name('security.vehicle-checkin.index');
     Route::post('/security/vehicle-checkin/scan', [\App\Http\Controllers\Security\VehicleCheckinController::class, 'scan'])->name('security.vehicle-checkin.scan');
     Route::post('/security/vehicle-checkin/confirm', [\App\Http\Controllers\Security\VehicleCheckinController::class, 'checkin'])->name('security.vehicle-checkin.confirm');
+    Route::post('/security/vehicle-checkin/guest', [\App\Http\Controllers\Security\VehicleCheckinController::class, 'guestCheckin'])->name('security.vehicle-checkin.guest');
 
     // Quét QR xe ra
     Route::get('/security/vehicle-checkout', [\App\Http\Controllers\Security\VehicleCheckoutController::class, 'index'])->name('security.vehicle-checkout.index');

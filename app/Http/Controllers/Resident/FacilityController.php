@@ -66,39 +66,60 @@ class FacilityController extends Controller
             return back()->with('error', 'Tiện ích này hiện đã đóng cửa, không thể đặt lịch.');
         }
 
-        $validated = $request->validate([
-            'booking_date'     => 'required|date|after_or_equal:today',
-            'start_time'       => 'required|date_format:H:i',
-            'end_time'         => 'required|date_format:H:i|after:start_time',
-            'number_of_people' => 'required|integer|min:1|max:' . $facility->capacity,
-        ], [
-            'booking_date.required'       => 'Vui lòng chọn ngày.',
-            'booking_date.after_or_equal' => 'Ngày đặt phải từ hôm nay trở đi.',
-            'start_time.required'         => 'Vui lòng chọn khung giờ.',
-            'end_time.required'           => 'Thời gian kết thúc không hợp lệ.',
-            'end_time.after'              => 'Giờ kết thúc phải sau giờ bắt đầu.',
-            'number_of_people.required'   => 'Vui lòng nhập số người.',
-            'number_of_people.max'        => 'Vượt quá sức chứa tối đa (' . $facility->capacity . ' người).',
-        ]);
+        $isPersonType = ($facility->booking_type ?? 'slot') === 'person';
+
+        // Validate: đặt theo người chỉ cần ngày + số người (không cần giờ)
+        if ($isPersonType) {
+            $validated = $request->validate([
+                'booking_date'     => 'required|date|after_or_equal:today',
+                'number_of_people' => 'required|integer|min:1|max:' . $facility->capacity,
+            ], [
+                'booking_date.required'       => 'Vui lòng chọn ngày.',
+                'booking_date.after_or_equal' => 'Ngày đặt phải từ hôm nay trở đi.',
+                'number_of_people.required'   => 'Vui lòng nhập số người.',
+                'number_of_people.max'        => 'Vượt quá sức chứa tối đa (' . $facility->capacity . ' người).',
+            ]);
+            // Tự điền giờ từ tiện ích
+            $validated['start_time'] = $facility->open_time  ? substr($facility->open_time,  0, 5) : '00:00';
+            $validated['end_time']   = $facility->close_time ? substr($facility->close_time, 0, 5) : '23:59';
+        } else {
+            $validated = $request->validate([
+                'booking_date'     => 'required|date|after_or_equal:today',
+                'start_time'       => 'required|date_format:H:i',
+                'end_time'         => 'required|date_format:H:i|after:start_time',
+                'number_of_people' => 'required|integer|min:1|max:' . $facility->capacity,
+            ], [
+                'booking_date.required'       => 'Vui lòng chọn ngày.',
+                'booking_date.after_or_equal' => 'Ngày đặt phải từ hôm nay trở đi.',
+                'start_time.required'         => 'Vui lòng chọn khung giờ.',
+                'end_time.required'           => 'Thời gian kết thúc không hợp lệ.',
+                'end_time.after'              => 'Giờ kết thúc phải sau giờ bắt đầu.',
+                'number_of_people.required'   => 'Vui lòng nhập số người.',
+                'number_of_people.max'        => 'Vượt quá sức chứa tối đa (' . $facility->capacity . ' người).',
+            ]);
+        }
 
         $user = Auth::user();
 
-        // Kiểm tra cư dân chưa có lịch trùng khung giờ (chính họ)
+        // Kiểm tra cư dân chưa có lịch trùng ngày (chỉ cần theo ngày với loại person)
         $ownConflict = FacilityBooking::where('user_id', $user->id)
             ->where('facility_id', $facility->id)
             ->whereDate('booking_date', $validated['booking_date'])
             ->whereIn('status', ['approved', 'used'])
-            ->where(function ($q) use ($validated) {
+            ->when(!$isPersonType, function ($q) use ($validated) {
                 $q->where('start_time', '<', $validated['end_time'])
                   ->where('end_time', '>', $validated['start_time']);
             })
             ->exists();
 
         if ($ownConflict) {
-            return back()->withInput()->with('error', 'Bạn đã có lịch đặt tiện ích này trong khung giờ này rồi.');
+            $msg = $isPersonType
+                ? 'Bạn đã có lịch đặt tiện ích này trong ngày này rồi.'
+                : 'Bạn đã có lịch đặt tiện ích này trong khung giờ này rồi.';
+            return back()->withInput()->with('error', $msg);
         }
 
-        // 1. Lấy danh sách booking đã duyệt hoặc sử dụng trong ngày
+        // Lấy danh sách booking đã duyệt hoặc sử dụng trong ngày
         $bookedSlots = FacilityBooking::where('facility_id', $facility->id)
             ->whereDate('booking_date', $validated['booking_date'])
             ->whereIn('status', ['approved', 'used'])
@@ -112,53 +133,61 @@ class FacilityController extends Controller
             })
             ->toArray();
 
-        // 2. Lấy tất cả slots của tiện ích
-        $allSlots = $facility->getTimeSlots();
-
-        if ($facility->slot_duration > 0 && !empty($allSlots)) {
-            $requestedStart = substr($validated['start_time'], 0, 5);
-            $requestedEnd = substr($validated['end_time'], 0, 5);
-            $overlapSlotsCount = 0;
-
-            foreach ($allSlots as $slot) {
-                if ($slot['start'] < $requestedEnd && $slot['end'] > $requestedStart) {
-                    $overlapSlotsCount++;
-
-                    // Tính tổng số người đã đặt cho riêng slot này
-                    $slotBookedPeople = 0;
-                    foreach ($bookedSlots as $booking) {
-                        if ($booking['start_time'] < $slot['end'] && $booking['end_time'] > $slot['start']) {
-                            $slotBookedPeople += $booking['number_of_people'];
-                        }
-                    }
-
-                    $remaining = $facility->capacity - $slotBookedPeople;
-                    if ($remaining <= 0) {
-                        return back()->withInput()->with('error', 'Khung giờ ' . $slot['label'] . ' đã đạt sức chứa tối đa (' . $facility->capacity . ' người). Vui lòng chọn khung giờ khác.');
-                    }
-                    if ($validated['number_of_people'] > $remaining) {
-                        return back()->withInput()->with('error', 'Khung giờ ' . $slot['label'] . ' chỉ còn chỗ cho ' . $remaining . ' người nữa.');
-                    }
-                }
-            }
-
-            if ($overlapSlotsCount === 0) {
-                return back()->withInput()->with('error', 'Khung giờ chọn không khớp với bất kỳ slot hoạt động nào.');
-            }
-        } else {
-            // Trường hợp slot_duration = 0 (cả ngày hoặc không chia slot)
-            $bookedPeople = 0;
-            foreach ($bookedSlots as $booking) {
-                if ($booking['start_time'] < $validated['end_time'] && $booking['end_time'] > $validated['start_time']) {
-                    $bookedPeople += $booking['number_of_people'];
-                }
-            }
+        if ($isPersonType) {
+            // Đặt theo người: chỉ kiểm tra tổng sức chứa trong ngày
+            $bookedPeople = array_sum(array_column($bookedSlots, 'number_of_people'));
             $remaining = $facility->capacity - $bookedPeople;
             if ($remaining <= 0) {
-                return back()->withInput()->with('error', 'Tiện ích đã đạt sức chứa tối đa trong khung giờ này.');
+                return back()->withInput()->with('error', 'Tiện ích đã đạt sức chứa tối đa trong ngày này.');
             }
             if ($validated['number_of_people'] > $remaining) {
-                return back()->withInput()->with('error', 'Tiện ích chỉ còn chỗ cho ' . $remaining . ' người nữa.');
+                return back()->withInput()->with('error', 'Tiện ích chỉ còn chỗ cho ' . $remaining . ' người nữa trong ngày này.');
+            }
+        } else {
+            // Đặt theo giờ: kiểm tra overlap từng slot
+            $allSlots = $facility->getTimeSlots();
+
+            if ($facility->slot_duration > 0 && !empty($allSlots)) {
+                $requestedStart    = substr($validated['start_time'], 0, 5);
+                $requestedEnd      = substr($validated['end_time'], 0, 5);
+                $overlapSlotsCount = 0;
+
+                foreach ($allSlots as $slot) {
+                    if ($slot['start'] < $requestedEnd && $slot['end'] > $requestedStart) {
+                        $overlapSlotsCount++;
+                        $slotBookedPeople = 0;
+                        foreach ($bookedSlots as $booking) {
+                            if ($booking['start_time'] < $slot['end'] && $booking['end_time'] > $slot['start']) {
+                                $slotBookedPeople += $booking['number_of_people'];
+                            }
+                        }
+                        $remaining = $facility->capacity - $slotBookedPeople;
+                        if ($remaining <= 0) {
+                            return back()->withInput()->with('error', 'Khung giờ ' . $slot['label'] . ' đã đạt sức chứa tối đa (' . $facility->capacity . ' người). Vui lòng chọn khung giờ khác.');
+                        }
+                        if ($validated['number_of_people'] > $remaining) {
+                            return back()->withInput()->with('error', 'Khung giờ ' . $slot['label'] . ' chỉ còn chỗ cho ' . $remaining . ' người nữa.');
+                        }
+                    }
+                }
+                if ($overlapSlotsCount === 0) {
+                    return back()->withInput()->with('error', 'Khung giờ chọn không khớp với bất kỳ slot hoạt động nào.');
+                }
+            } else {
+                // slot_duration = 0 (cả ngày)
+                $bookedPeople = 0;
+                foreach ($bookedSlots as $booking) {
+                    if ($booking['start_time'] < $validated['end_time'] && $booking['end_time'] > $validated['start_time']) {
+                        $bookedPeople += $booking['number_of_people'];
+                    }
+                }
+                $remaining = $facility->capacity - $bookedPeople;
+                if ($remaining <= 0) {
+                    return back()->withInput()->with('error', 'Tiện ích đã đạt sức chứa tối đa trong khung giờ này.');
+                }
+                if ($validated['number_of_people'] > $remaining) {
+                    return back()->withInput()->with('error', 'Tiện ích chỉ còn chỗ cho ' . $remaining . ' người nữa.');
+                }
             }
         }
 
@@ -177,17 +206,18 @@ class FacilityController extends Controller
         // Tạo QR code ngay lập tức
         $booking->generateQrCode();
 
-        // Nếu có phí sử dụng, tạo hóa đơn và chuyển sang trang thanh toán hóa đơn
+        // Nếu có phí sử dụng, tạo hóa đơn và chuyển thẳng đến trang thanh toán hóa đơn
         if ($booking->amount > 0) {
-            $invoice = $this->createInvoiceForBooking($booking, $facility, $user);
-            if ($invoice) {
-                return redirect()->route('resident.invoices.index')
-                    ->with('success', '🎉 Đặt lịch thành công! Vui lòng thanh toán hóa đơn phí sử dụng tiện ích để nhận mã QR check-in.');
-            }
+            $this->createInvoiceForBooking($booking, $facility, $user);
+            // Luôn chuyển sang trang hóa đơn khi tiện ích có phí,
+            // dù tạo hóa đơn thành công hay thất bại (có thể do chưa liên kết căn hộ)
+            return redirect()->route('resident.invoices.index')
+                ->with('success', '🎉 Đặt lịch thành công! Vui lòng thanh toán hóa đơn phí sử dụng tiện ích để hoàn tất.');
         }
 
-        return redirect()->route('resident.facility-bookings.qr', $booking)
-            ->with('success', '🎉 Đặt lịch thành công! Mã QR check-in đã sẵn sàng.');
+        // Tiện ích miễn phí → chuyển sang trang Lịch đặt của tôi
+        return redirect()->route('resident.facility-bookings.index')
+            ->with('success', '🎉 Đặt lịch thành công!');
     }
 
     /**
@@ -214,10 +244,19 @@ class FacilityController extends Controller
             $servicePrice = ServicePrice::where('status', 'active')->first();
 
             $amount = $booking->amount;
-            $title  = 'Phí sử dụng tiện ích: ' . $facility->name
-                . ' (' . \Carbon\Carbon::parse($booking->booking_date)->format('d/m/Y')
-                . ', ' . substr($booking->start_time, 0, 5) . '–' . substr($booking->end_time, 0, 5) . ')';
 
+            // Tiêu đề hóa đơn theo kiểu đặt
+            $bookingType = $facility->booking_type ?? 'slot';
+            if ($bookingType === 'person') {
+                $title = 'Phí sử dụng tiện ích: ' . $facility->name
+                    . ' — ' . $booking->number_of_people . ' người'
+                    . ' (' . \Carbon\Carbon::parse($booking->booking_date)->format('d/m/Y')
+                    . ', ' . substr($booking->start_time, 0, 5) . '–' . substr($booking->end_time, 0, 5) . ')';
+            } else {
+                $title = 'Phí sử dụng tiện ích: ' . $facility->name
+                    . ' (' . \Carbon\Carbon::parse($booking->booking_date)->format('d/m/Y')
+                    . ', ' . substr($booking->start_time, 0, 5) . '–' . substr($booking->end_time, 0, 5) . ')';
+            }
             $invoice = DB::transaction(function () use ($booking, $apartmentId, $amount, $title, $servicePrice) {
                 $inv = Invoice::create([
                     'apartment_id'  => $apartmentId,

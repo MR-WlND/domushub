@@ -119,11 +119,6 @@
                         <span class="rfh-unpaid-badge">Chưa TT</span>
                         @endif
                     </div>
-                    @else
-                    <div class="rfh-detail rfh-detail--free">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                        Miễn phí
-                    </div>
                     @endif
                 </div>
 
@@ -138,18 +133,7 @@
             {{-- Actions --}}
             <div class="rfh-item-actions">
                 @if($booking->status === 'approved')
-                    @php
-                        $hasPaidQrAccess = $booking->amount == 0 || ($booking->payment_status === 'paid' && in_array($booking->payment_method, ['bank_transfer', 'vnpay']));
-                    @endphp
-
-                    @if($booking->qr_code && $hasPaidQrAccess)
-                    <a href="{{ route('resident.facility-bookings.qr', $booking) }}" class="rfh-action rfh-action--qr">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-                        Xem QR
-                    </a>
-                    @endif
-
-                    @if($booking->amount > 0 && !$hasPaidQrAccess)
+                    @if($booking->amount > 0 && $booking->payment_status !== 'paid')
                     <a href="{{ route('resident.invoices.index') }}" class="rfh-action rfh-action--pay">
                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
                         Thanh toán hóa đơn

@@ -93,6 +93,53 @@
 
     </div>
 
+    {{-- ===== ĐĂNG KÝ XE KHÁCH VÃNG LAI ===== --}}
+    <div class="qs-panel" style="margin-top:24px;">
+        <div class="qs-panel__header">
+            <div class="qs-panel__icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h2m10 0h2M2 9l2-6h16l2 6M2 9h20v8a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9z"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+            </div>
+            <h2 class="qs-panel__title">Đăng ký xe khách vãng lai</h2>
+        </div>
+        <div class="qs-panel__body">
+            <form id="guest-vehicle-form" onsubmit="submitGuestVehicle(event)" style="display:flex;flex-direction:column;gap:14px;">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div>
+                        <label style="font-size:.8rem;font-weight:600;color:#334155;margin-bottom:4px;display:block;">Biển số xe <span style="color:#ef4444;">*</span></label>
+                        <input type="text" id="guest-plate" required placeholder="VD: 29A-12345" style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:.875rem;outline:none;transition:border .2s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+                    </div>
+                    <div>
+                        <label style="font-size:.8rem;font-weight:600;color:#334155;margin-bottom:4px;display:block;">Loại xe <span style="color:#ef4444;">*</span></label>
+                        <select id="guest-vehicle-type" required style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:.875rem;outline:none;background:#fff;transition:border .2s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+                            <option value="motorbike">Xe máy</option>
+                            <option value="electric_bike">Xe điện</option>
+                            <option value="car">Ô tô</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div>
+                        <label style="font-size:.8rem;font-weight:600;color:#334155;margin-bottom:4px;display:block;">Tên khách</label>
+                        <input type="text" id="guest-name" placeholder="Họ tên khách (tuỳ chọn)" style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:.875rem;outline:none;transition:border .2s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+                    </div>
+                    <div>
+                        <label style="font-size:.8rem;font-weight:600;color:#334155;margin-bottom:4px;display:block;">SĐT khách</label>
+                        <input type="text" id="guest-phone" placeholder="Số điện thoại (tuỳ chọn)" style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:.875rem;outline:none;transition:border .2s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+                    </div>
+                </div>
+                <div>
+                    <label style="font-size:.8rem;font-weight:600;color:#334155;margin-bottom:4px;display:block;">Ghi chú</label>
+                    <input type="text" id="guest-note" placeholder="VD: Khách đến giao hàng, thăm phòng 302..." style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:.875rem;outline:none;transition:border .2s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+                </div>
+                <button type="submit" id="guest-submit-btn" style="padding:12px 20px;background:#6366f1;color:#fff;border:none;border-radius:8px;font-size:.875rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .2s;" onmouseover="this.style.background='#4f46e5'" onmouseout="this.style.background='#6366f1'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Ghi nhận xe vào
+                </button>
+            </form>
+            <div id="guest-result" style="margin-top:12px;display:none;"></div>
+        </div>
+    </div>
+
 </div>
 
 {{-- Toast --}}
@@ -307,6 +354,56 @@ function showToast(msg, type) {
     document.getElementById('toast-text').textContent = msg;
     t.classList.add('is-visible');
     setTimeout(() => t.classList.remove('is-visible'), 3500);
+}
+
+// ---- Guest Vehicle Registration ----
+function submitGuestVehicle(e) {
+    e.preventDefault();
+    const btn = document.getElementById('guest-submit-btn');
+    const resultDiv = document.getElementById('guest-result');
+    const plate = document.getElementById('guest-plate').value.trim();
+    const vehicleType = document.getElementById('guest-vehicle-type').value;
+    const guestName = document.getElementById('guest-name').value.trim();
+    const guestPhone = document.getElementById('guest-phone').value.trim();
+    const guestNote = document.getElementById('guest-note').value.trim();
+
+    if (!plate) { showToast('Vui lòng nhập biển số xe', 'error'); return; }
+
+    btn.disabled = true;
+    btn.innerHTML = '<div class="qs-spin"></div> Đang ghi nhận...';
+
+    fetch('{{ route("security.vehicle-checkin.guest") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
+        body: JSON.stringify({
+            guest_plate: plate,
+            guest_vehicle_type: vehicleType,
+            guest_name: guestName || null,
+            guest_phone: guestPhone || null,
+            guest_note: guestNote || null
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `<div style="padding:12px 16px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;color:#065f46;font-size:.85rem;font-weight:500;">${data.message}</div>`;
+            document.getElementById('guest-vehicle-form').reset();
+            addLog(plate, 'in');
+        } else {
+            showToast(data.message || 'Có lỗi xảy ra', 'error');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `<div style="padding:12px 16px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;color:#991b1b;font-size:.85rem;font-weight:500;">${data.message}</div>`;
+        }
+    })
+    .catch(() => {
+        showToast('Lỗi kết nối mạng', 'error');
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Ghi nhận xe vào';
+    });
 }
 </script>
 @endsection
