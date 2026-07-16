@@ -94,6 +94,7 @@
                         </label>
                         <input type="hidden" name="max_uses" value="1">
                         <input type="text" class="invitations-form__input" value="1" disabled>
+
                         @error('max_uses')
                             <small class="invitations-form__hint invitations-form__hint--error">{{ $message }}</small>
                         @else
@@ -105,8 +106,10 @@
                         <label class="invitations-form__label">
                             Mối quan hệ với cư dân <span>*</span>
                         </label>
+
                         <input type="hidden" name="intended_relationship" value="owner">
                         <input type="text" class="invitations-form__input" value="Chủ hộ" disabled>
+
                         @error('intended_relationship')
                             <small class="invitations-form__hint invitations-form__hint--error">{{ $message }}</small>
                         @else
