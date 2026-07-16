@@ -15,11 +15,17 @@ class VehicleLogController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->whereHas('vehicle', function($q) use ($search) {
-                $q->where('license_plate', 'like', "%{$search}%")
-                  ->orWhereHas('apartment', function($aq) use ($search) {
-                      $aq->where('apartment_number', 'like', "%{$search}%");
-                  });
+            $query->where(function($q) use ($search) {
+                // Tìm xe cư dân
+                $q->whereHas('vehicle', function($vq) use ($search) {
+                    $vq->where('license_plate', 'like', "%{$search}%")
+                       ->orWhereHas('apartment', function($aq) use ($search) {
+                           $aq->where('apartment_number', 'like', "%{$search}%");
+                       });
+                })
+                // Tìm xe vãng lai
+                ->orWhere('guest_plate', 'like', "%{$search}%")
+                ->orWhere('guest_name', 'like', "%{$search}%");
             });
         }
 

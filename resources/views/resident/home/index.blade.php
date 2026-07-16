@@ -1,4 +1,4 @@
-@extends('layouts.resident.master')
+﻿@extends('layouts.resident.master')
 
 @section('title', 'Trang chủ - DomusHub')
 
@@ -83,11 +83,11 @@
             </div>
             <div><span class="rh-shortcut__label">Báo hỏng</span><span class="rh-shortcut__desc">Gửi yêu cầu kỹ thuật</span></div>
         </a>
-        <a href="{{ route('resident.visitors.create') }}" class="rh-shortcut" aria-label="Đăng ký khách">
+        <a href="{{ route('resident.vehicles.index') }}" class="rh-shortcut" aria-label="Phương tiện">
             <div class="rh-shortcut__icon rh-shortcut__icon--visitor" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17h2m10 0h2M2 9l2-6h16l2 6M2 9h20v8a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9z"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
             </div>
-            <div><span class="rh-shortcut__label">Đăng ký khách</span><span class="rh-shortcut__desc">Cấp mã QR ra vào</span></div>
+            <div><span class="rh-shortcut__label">Phương tiện</span><span class="rh-shortcut__desc">Quản lý xe của bạn</span></div>
         </a>
         <a href="{{ route('resident.posts.create') }}" class="rh-shortcut" aria-label="Bảng tin">
             <div class="rh-shortcut__icon rh-shortcut__icon--post" aria-hidden="true">
