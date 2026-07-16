@@ -20,10 +20,11 @@ class TicketController extends Controller
         $user = Auth::user();
 
         $request->validate([
-            'status'   => 'nullable|in:pending,assigned,in_progress,completed,cancelled',
-            'priority' => 'nullable|in:low,medium,high,urgent',
-            'block_id' => 'nullable|integer|exists:blocks,id',
-            'search'   => 'nullable|string|max:200',
+            'status'      => 'nullable|in:pending,assigned,in_progress,completed,cancelled',
+            'priority'    => 'nullable|in:low,medium,high,urgent',
+            'ticket_type' => 'nullable|in:complaint,report',
+            'block_id'    => 'nullable|integer|exists:blocks,id',
+            'search'      => 'nullable|string|max:200',
         ]);
 
         $priorityOrder = ['urgent' => 0, 'high' => 1, 'medium' => 2, 'low' => 3];
@@ -54,6 +55,11 @@ class TicketController extends Controller
         // Lọc theo mức độ ưu tiên
         if ($request->filled('priority')) {
             $query->where('priority', $request->priority);
+        }
+
+        // Lọc theo loại phản ánh
+        if ($request->filled('ticket_type')) {
+            $query->where('ticket_type', $request->ticket_type);
         }
 
         // Tìm kiếm

@@ -91,8 +91,16 @@
                         <option value="low"    {{ request('priority')==='low'    ?'selected':'' }}>🟢 Thấp</option>
                     </select>
                 </div>
+                <div>
+                    <label>Loại</label>
+                    <select name="ticket_type" onchange="this.form.submit()">
+                        <option value="">Tất cả</option>
+                        <option value="complaint" {{ request('ticket_type')==='complaint' ?'selected':'' }}>📋 Phản ánh</option>
+                        <option value="report"    {{ request('ticket_type')==='report'    ?'selected':'' }}>⚠️ Tố cáo</option>
+                    </select>
+                </div>
             </div>
-            @if(request()->hasAny(['block_id','search','status','priority']))
+            @if(request()->hasAny(['block_id','search','status','priority','ticket_type']))
                 <div style="margin-top:10px;">
                     <a href="{{ route('admin.tickets.index') }}" style="font-size:.82rem;color:#ef4444;text-decoration:none;font-weight:600;">× Xóa bộ lọc</a>
                 </div>
@@ -177,7 +185,12 @@
                                 </td>
                                 <td>
                                     <div class="tk-title-cell">
-                                        <span class="tk-title-cell__title">{{ $ticket->title }}</span>
+                                        <div style="display: flex; align-items: center; gap: 5px;">
+                                            @if($ticket->ticket_type === 'report')
+                                                <span style="display:inline-flex;padding:1px 6px;background:#fef2f2;color:#dc2626;border-radius:4px;font-size:0.65rem;font-weight:700;border:1px solid #fecaca;white-space:nowrap;">⚠️ Tố cáo</span>
+                                            @endif
+                                            <span class="tk-title-cell__title">{{ $ticket->title }}</span>
+                                        </div>
                                         <span class="tk-title-cell__desc">{{ Str::limit($ticket->description, 55) }}</span>
                                     </div>
                                 </td>
