@@ -51,6 +51,10 @@
             <span class="tk-stat-card__label">Hoàn thành</span>
             <span class="tk-stat-card__value" style="color:#16a34a;">{{ number_format($stats['completed']) }}</span>
         </div>
+        <div class="tk-stat-card" style="border-left:4px solid #dc2626;">
+            <span class="tk-stat-card__label">⚠️ Tố cáo</span>
+            <span class="tk-stat-card__value" style="color:#dc2626;">{{ number_format($stats['reports']) }}</span>
+        </div>
     </div>
 
     {{-- Filters --}}
@@ -179,6 +183,8 @@
                                 data-can-assign="{{ in_array($ticket->status, ['pending','assigned']) && in_array(auth()->user()->role, ['admin','manager']) ? '1' : '0' }}"
                                 data-can-progress="{{ in_array($ticket->status, ['assigned','in_progress']) ? '1' : '0' }}"
                                 data-overdue="{{ $overdue ? '1' : '0' }}"
+                                data-ticket-type="{{ $ticket->ticket_type }}"
+                                data-reported-person="{{ $ticket->reported_person ?? '' }}"
                             >
                                 <td>
                                     <span class="tk-priority-dot tk-priority-dot--{{ $ticket->priority }}" title="{{ $ticket->priorityLabel() }}"></span>
@@ -259,6 +265,15 @@
 
         {{-- Info --}}
         <div class="tk-panel__section">
+            {{-- Report badge --}}
+            <div id="panelReportBadge" style="display:none; background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:10px 14px; margin-bottom:12px;">
+                <div style="display:flex; align-items:center; gap:6px; color:#dc2626; font-weight:700; font-size:0.85rem;">
+                    ⚠️ Đây là TỐ CÁO
+                </div>
+                <div id="panelReportedPerson" style="margin-top:4px; color:#991b1b; font-size:0.82rem;">
+                    👤 Người bị tố cáo: <strong id="panelReportedName"></strong>
+                </div>
+            </div>
             <div class="tk-panel__info-grid">
                 <div><span class="tk-panel__lbl">Căn hộ</span><span class="tk-panel__val" id="panelApartment"></span></div>
                 <div><span class="tk-panel__lbl">Tòa nhà</span><span class="tk-panel__val" id="panelBlock"></span></div>
@@ -314,6 +329,15 @@ function openPanel(d, row) {
     document.getElementById('panelSender').textContent    = d.sender;
     document.getElementById('panelCreated').textContent   = d.createdFull + ' (' + d.created + ')';
     document.getElementById('panelDesc').textContent      = d.desc;
+
+    // report badge
+    const reportBadge = document.getElementById('panelReportBadge');
+    if (d.ticketType === 'report') {
+        reportBadge.style.display = 'block';
+        document.getElementById('panelReportedName').textContent = d.reportedPerson || 'Không rõ';
+    } else {
+        reportBadge.style.display = 'none';
+    }
 
     // overdue warning
     const warn = document.getElementById('panelOverdueWarn');

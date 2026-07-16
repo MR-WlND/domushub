@@ -88,6 +88,7 @@ class TicketController extends Controller
             'assigned'    => (clone $baseQuery)->where('status', 'assigned')->count(),
             'in_progress' => (clone $baseQuery)->where('status', 'in_progress')->count(),
             'completed'   => (clone $baseQuery)->where('status', 'completed')->count(),
+            'reports'     => (clone $baseQuery)->where('ticket_type', 'report')->count(),
         ];
 
         // Danh sách technician để phân công
