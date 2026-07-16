@@ -17,13 +17,16 @@ class Facility extends Model
         'close_time',
         'slot_duration',
         'price_per_slot',
+        'booking_type',
+        'price_per_person',
         'rules',
         'images',
     ];
 
     protected $casts = [
-        'price_per_slot' => 'decimal:0',
-        'images'         => 'array',
+        'price_per_slot'   => 'decimal:0',
+        'price_per_person' => 'decimal:0',
+        'images'           => 'array',
     ];
 
     /**
@@ -71,6 +74,16 @@ class Facility extends Model
      */
     public function getPriceLabelAttribute(): string
     {
+        $bookingType = $this->booking_type ?? 'slot';
+
+        if ($bookingType === 'person') {
+            if (!$this->price_per_person || $this->price_per_person == 0) {
+                return 'Miễn phí';
+            }
+            return number_format($this->price_per_person) . 'đ / người';
+        }
+
+        // Đặt theo tiếng (slot)
         if (!$this->price_per_slot || $this->price_per_slot == 0) {
             return 'Miễn phí';
         }
@@ -78,6 +91,18 @@ class Facility extends Model
             return number_format($this->price_per_slot) . 'đ / lượt';
         }
         return number_format($this->price_per_slot) . 'đ / ' . $this->slot_duration . ' phút';
+    }
+
+    /**
+     * Loại đặt chỗ: theo tiếng hay theo người
+     */
+    public function getBookingTypeLabelAttribute(): string
+    {
+        return match ($this->booking_type ?? 'slot') {
+            'person' => 'Đặt theo người (vé / lượt)',
+            'slot'   => 'Đặt theo thời gian (tiếng / ca)',
+            default  => 'Đặt theo thời gian (tiếng / ca)',
+        };
     }
 
     /**

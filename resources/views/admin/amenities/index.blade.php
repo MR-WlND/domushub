@@ -12,58 +12,39 @@
             <h1 class="am-title">Quản lý tiện ích chung cư</h1>
         </div>
         <a href="{{ route('admin.amenities.create') }}" class="am-btn am-btn--primary">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Thêm tiện ích
         </a>
     </div>
 
     {{-- Flash --}}
     @if(session('success'))
-        <div class="am-alert am-alert--success">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            {{ session('success') }}
-        </div>
+        <div class="am-alert am-alert--success">{{ session('success') }}</div>
     @endif
     @if(session('error'))
-        <div class="am-alert am-alert--error">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            {{ session('error') }}
-        </div>
+        <div class="am-alert am-alert--error">{{ session('error') }}</div>
     @endif
 
     {{-- Thống kê nhanh --}}
     <div class="am-stats-row">
         <div class="am-stat-card">
-            <div class="am-stat-icon am-stat-icon--blue">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-            </div>
             <div>
                 <p class="am-stat-value">{{ $facilities->count() }}</p>
                 <p class="am-stat-label">Tổng tiện ích</p>
             </div>
         </div>
         <div class="am-stat-card">
-            <div class="am-stat-icon am-stat-icon--green">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            </div>
             <div>
                 <p class="am-stat-value">{{ $facilities->where('status','available')->count() }}</p>
                 <p class="am-stat-label">Đang hoạt động</p>
             </div>
         </div>
         <div class="am-stat-card">
-            <div class="am-stat-icon am-stat-icon--orange">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-            </div>
             <div>
                 <p class="am-stat-value">{{ $facilities->where('status','maintenance')->count() }}</p>
                 <p class="am-stat-label">Đang bảo trì</p>
             </div>
         </div>
         <div class="am-stat-card">
-            <div class="am-stat-icon am-stat-icon--purple">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            </div>
             <div>
                 <p class="am-stat-value">{{ $facilities->sum('pending_bookings_count') }}</p>
                 <p class="am-stat-label">Chờ duyệt</p>
@@ -82,11 +63,8 @@
     <div class="am-grid">
         @foreach($facilities as $facility)
         <div class="am-card">
-            {{-- Top: icon + badge trạng thái --}}
+            {{-- Top: badge trạng thái --}}
             <div class="am-card-top">
-                <div class="am-card-icon">
-                    @include('partials.facility-placeholder', ['name' => $facility->name])
-                </div>
                 <span class="am-status-badge am-status--{{ $facility->status }}">
                     {{ $facility->status_label }}
                 </span>
@@ -98,42 +76,25 @@
 
             {{-- Meta: sức chứa + tổng đặt --}}
             <div class="am-card-meta">
-                <div class="am-meta-item">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                    Sức chứa: <strong>{{ $facility->capacity }} người</strong>
-                </div>
-                <div class="am-meta-item">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    Tổng lịch đặt: <strong>{{ $facility->bookings_count }}</strong>
-                </div>
+                <div class="am-meta-item">Sức chứa: <strong>{{ $facility->capacity }} người</strong></div>
+                <div class="am-meta-item">Tổng lịch đặt: <strong>{{ $facility->bookings_count }}</strong></div>
             </div>
 
             {{-- Badge chờ duyệt --}}
             @if($facility->pending_bookings_count > 0)
             <a href="{{ route('admin.amenities.show', $facility) }}" class="am-pending-badge">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 {{ $facility->pending_bookings_count }} lịch đặt chờ duyệt
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-left:auto"><polyline points="9 18 15 12 9 6"/></svg>
             </a>
             @endif
 
             {{-- Actions --}}
             <div class="am-card-actions">
-                <a href="{{ route('admin.amenities.show', $facility) }}" class="am-btn am-btn--sm am-btn--outline">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    Lịch đặt
-                </a>
-                <a href="{{ route('admin.amenities.edit', $facility) }}" class="am-btn am-btn--sm am-btn--ghost">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                    Sửa
-                </a>
+                <a href="{{ route('admin.amenities.show', $facility) }}" class="am-btn am-btn--sm am-btn--outline">Lịch đặt</a>
+                <a href="{{ route('admin.amenities.edit', $facility) }}" class="am-btn am-btn--sm am-btn--ghost">Sửa</a>
                 <form method="POST" action="{{ route('admin.amenities.destroy', $facility) }}"
                       onsubmit="return confirm('Xóa tiện ích \'{{ addslashes($facility->name) }}\'?')">
                     @csrf @method('DELETE')
-                    <button type="submit" class="am-btn am-btn--sm am-btn--danger">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                        Xóa
-                    </button>
+                    <button type="submit" class="am-btn am-btn--sm am-btn--danger">Xóa</button>
                 </form>
             </div>
         </div>

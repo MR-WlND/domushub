@@ -117,13 +117,30 @@ class FacilityBooking extends Model
     }
 
     /**
-     * Tính tiền dựa trên số slot, giá tiện ích và số người
+     * Tính tiền dựa trên booking_type của tiện ích
+     * - slot: price_per_slot × số slot thời gian
+     * - person: price_per_person × số người
      */
     public function getAmountAttribute(): int
     {
-        if (!$this->facility || !$this->facility->price_per_slot) {
+        if (!$this->facility) {
             return 0;
         }
+
+        $bookingType = $this->facility->booking_type ?? 'slot';
+
+        if ($bookingType === 'person') {
+            // Đặt theo người: giá/người × số người
+            $pricePerPerson = (int)($this->facility->price_per_person ?? 0);
+            if ($pricePerPerson <= 0) return 0;
+            $people = max(1, (int)($this->number_of_people ?? 1));
+            return $pricePerPerson * $people;
+        }
+
+        // Đặt theo tiếng (slot): giá/slot × số slot
+        $pricePerSlot = (int)($this->facility->price_per_slot ?? 0);
+        if ($pricePerSlot <= 0) return 0;
+
         $duration = $this->facility->slot_duration;
         if ($duration == 0) {
             $slots = 1;
@@ -131,9 +148,9 @@ class FacilityBooking extends Model
             $startTime = strtotime($this->start_time);
             $endTime   = strtotime($this->end_time);
             $minutes   = ($endTime - $startTime) / 60;
-            $slots     = ceil($minutes / $duration);
+            $slots     = max(1, (int)ceil($minutes / $duration));
         }
-        $people    = max(1, (int)($this->number_of_people ?? 1));
-        return intval($slots * $this->facility->price_per_slot * $people);
+
+        return $slots * $pricePerSlot;
     }
 }
