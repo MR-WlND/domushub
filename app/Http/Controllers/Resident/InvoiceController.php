@@ -159,6 +159,89 @@ class InvoiceController extends Controller
         return redirect($vnp_Url);
     }
 
+    public function payDetails(Request $request)
+    {
+        $user = Auth::user();
+        $apartmentIds = $user->residents()->whereNull('deleted_at')->pluck('apartment_id')->toArray();
+
+        $invoiceId = $request->input('invoice_id');
+        $detailIds = $request->input('detail_ids', []);
+
+        if (empty($detailIds) || !$invoiceId) {
+            return back()->with('error', 'Vui lòng chọn ít nhất một khoản phí để thanh toán.');
+        }
+
+        $invoice = Invoice::whereIn('apartment_id', $apartmentIds)
+            ->where('id', $invoiceId)
+            ->whereIn('status', ['unpaid', 'overdue'])
+            ->first();
+
+        if (!$invoice) {
+            return back()->with('error', 'Không tìm thấy hoá đơn hợp lệ.');
+        }
+
+        $details = $invoice->details()->whereIn('id', $detailIds)->whereNull('payment_id')->get();
+        if ($details->isEmpty()) {
+            return back()->with('error', 'Các khoản phí đã được thanh toán hoặc không tồn tại.');
+        }
+
+        $totalAmount = $details->sum('amount');
+        if ($totalAmount <= 0) {
+            return back()->with('error', 'Số tiền thanh toán phải lớn hơn 0.');
+        }
+
+        $vnp_TmnCode   = config('services.vnpay.tmn_code');
+        $vnp_HashSecret = config('services.vnpay.hash_secret');
+        $vnp_Url       = config('services.vnpay.url');
+        $vnp_Returnurl = route('resident.invoices.vnpay-return');
+        $vnp_IpnUrl    = route('vnpay.ipn');
+        
+        // Format: {invoice_id}D{detail_id_1}-{detail_id_2}T{time}
+        $vnp_TxnRef    = $invoice->id . 'D' . $details->pluck('id')->implode('-') . 'T' . time();
+        $vnp_OrderInfo = 'Thanh toan phi HD ' . $invoice->invoice_code;
+        $vnp_OrderType = 'other';
+        $vnp_Amount    = $totalAmount * 100;
+        $vnp_Locale    = 'vn';
+        $vnp_IpAddr    = request()->ip();
+
+        $inputData = [
+            'vnp_Version'   => '2.1.0',
+            'vnp_TmnCode'   => $vnp_TmnCode,
+            'vnp_Amount'    => $vnp_Amount,
+            'vnp_Command'   => 'pay',
+            'vnp_CreateDate' => date('YmdHis'),
+            'vnp_CurrCode'  => 'VND',
+            'vnp_IpAddr'    => $vnp_IpAddr,
+            'vnp_Locale'    => $vnp_Locale,
+            'vnp_OrderInfo' => $vnp_OrderInfo,
+            'vnp_OrderType' => $vnp_OrderType,
+            'vnp_ReturnUrl' => $vnp_Returnurl,
+            'vnp_TxnRef'    => $vnp_TxnRef,
+        ];
+
+        ksort($inputData);
+        $hashdata = '';
+        $query    = '';
+        $i = 0;
+        foreach ($inputData as $key => $value) {
+            if ($i == 1) {
+                $hashdata .= '&' . urlencode($key) . '=' . urlencode($value);
+            } else {
+                $hashdata .= urlencode($key) . '=' . urlencode($value);
+                $i = 1;
+            }
+            $query .= urlencode($key) . '=' . urlencode($value) . '&';
+        }
+
+        $vnp_Url = $vnp_Url . '?' . $query;
+        if (isset($vnp_HashSecret)) {
+            $vnpSecureHash = hash_hmac('sha512', $hashdata, $vnp_HashSecret);
+            $vnp_Url .= 'vnp_SecureHash=' . $vnpSecureHash;
+        }
+
+        return redirect($vnp_Url);
+    }
+
     // =========================================================================
     // IPN – Xử lý thông báo ngầm Server-to-Server từ VNPay
     // Không yêu cầu đăng nhập, VNPay gọi trực tiếp vào endpoint này.
@@ -270,7 +353,17 @@ class InvoiceController extends Controller
     {
         $txnRef  = $request->vnp_TxnRef ?? '';
         $idsPart = explode('T', $txnRef)[0];
-        $invoiceIds = array_map('intval', explode('-', $idsPart));
+        
+        $isDetailPayment = false;
+        $detailIds = [];
+        if (str_contains($idsPart, 'D')) {
+            $isDetailPayment = true;
+            $parts = explode('D', $idsPart);
+            $invoiceIds = [(int)$parts[0]];
+            $detailIds = array_map('intval', explode('-', $parts[1]));
+        } else {
+            $invoiceIds = array_map('intval', explode('-', $idsPart));
+        }
 
         $invoices = Invoice::whereIn('id', $invoiceIds)
             ->where('status', '!=', 'paid')
@@ -294,27 +387,59 @@ class InvoiceController extends Controller
 
         $fullTxnCode = implode('|', [$txnNo ?? '', '', $cardType, $bankCode]);
 
-        DB::transaction(function () use ($invoices, $txnNo, $fullTxnCode, $paidAt) {
+        DB::transaction(function () use ($invoices, $txnNo, $fullTxnCode, $paidAt, $isDetailPayment, $detailIds) {
             foreach ($invoices as $invoice) {
-                // Cập nhật trạng thái và số tiền đã thanh toán
-                $invoice->update([
-                    'status'      => 'paid',
-                    'paid_amount' => $invoice->total_amount,
-                ]);
+                if ($isDetailPayment) {
+                    $details = $invoice->details()->whereIn('id', $detailIds)->whereNull('payment_id')->get();
+                    if ($details->isEmpty()) continue;
+                    
+                    $amount = $details->sum('amount');
+                    $newPaidAmount = $invoice->paid_amount + $amount;
+                    
+                    $status = ($newPaidAmount >= (float) $invoice->total_amount - 0.001) ? 'paid' : 'partial_paid';
+                    
+                    $invoice->update([
+                        'paid_amount' => $newPaidAmount,
+                        'status'      => $status
+                    ]);
+                    
+                    $payment = Payment::create([
+                        'bill_id'          => $invoice->id,
+                        'amount'           => $amount,
+                        'payment_method'   => 'vnpay',
+                        'transaction_code' => $fullTxnCode . '|' . $invoice->id . '|D',
+                        'vnp_txn_ref'      => $txnNo,
+                        'status'           => 'success',
+                        'paid_at'          => $paidAt,
+                        'payer_name'       => auth()->user()->name ?? ($invoice->apartment->owner_name ?? 'Cư dân'),
+                        'note'             => 'Thanh toán các khoản phí: ' . implode(', ', $details->pluck('servicePrice.name')->toArray())
+                    ]);
+                    
+                    foreach ($details as $d) {
+                        $d->update(['payment_id' => $payment->id, 'status' => 'paid']);
+                    }
+                    
+                    $invoice->recalculateDetailsStatus();
+                } else {
+                    // Cập nhật trạng thái và số tiền đã thanh toán (Toàn bộ)
+                    $invoice->update([
+                        'status'      => 'paid',
+                        'paid_amount' => $invoice->total_amount,
+                    ]);
 
-                // Cập nhật trạng thái từng dòng chi tiết hóa đơn
-                $invoice->recalculateDetailsStatus();
+                    $invoice->recalculateDetailsStatus();
 
-                Payment::create([
-                    'bill_id'          => $invoice->id,
-                    'amount'           => $invoice->total_amount,
-                    'payment_method'   => 'vnpay',
-                    'transaction_code' => $fullTxnCode . '|' . $invoice->id,
-                    'vnp_txn_ref'      => $txnNo,
-                    'status'           => 'success',
-                    'paid_at'          => $paidAt,
-                    'payer_name'       => auth()->user()->name ?? ($invoice->apartment->owner_name ?? 'Cư dân'),
-                ]);
+                    Payment::create([
+                        'bill_id'          => $invoice->id,
+                        'amount'           => $invoice->total_amount,
+                        'payment_method'   => 'vnpay',
+                        'transaction_code' => $fullTxnCode . '|' . $invoice->id,
+                        'vnp_txn_ref'      => $txnNo,
+                        'status'           => 'success',
+                        'paid_at'          => $paidAt,
+                        'payer_name'       => auth()->user()->name ?? ($invoice->apartment->owner_name ?? 'Cư dân'),
+                    ]);
+                }
             }
         });
 
@@ -324,7 +449,7 @@ class InvoiceController extends Controller
         // ─── Cập nhật trạng thái thanh toán cho lịch đặt tiện ích liên kết ───
         foreach ($invoices as $invoice) {
             $booking = $invoice->facilityBooking;
-            if ($booking && $booking->payment_status !== 'paid') {
+            if ($booking && $booking->payment_status !== 'paid' && $invoice->status === 'paid') {
                 $booking->update([
                     'payment_status' => 'paid',
                     'payment_method' => 'vnpay',
@@ -339,7 +464,7 @@ class InvoiceController extends Controller
                 $invoice = $invoices->first();
                 $notificationData = [
                     'title' => 'Hoá đơn đã được thanh toán',
-                    'message' => "Cư dân đã thanh toán hoá đơn <strong>{$invoice->invoice_code}</strong> số tiền <strong>" . number_format($invoice->total_amount) . "đ</strong> qua VNPay.",
+                    'message' => "Cư dân đã thanh toán " . ($isDetailPayment ? "một phần" : "") . " hoá đơn <strong>{$invoice->invoice_code}</strong> qua VNPay.",
                     'url' => route('admin.invoices.show', $invoice->id),
                     'type' => 'payment',
                 ];
@@ -348,10 +473,9 @@ class InvoiceController extends Controller
                 }
             } else {
                 $invoiceCodes = $invoices->map(fn($inv) => $inv->invoice_code)->implode(', ');
-                $totalAmount = $invoices->sum('total_amount');
                 $notificationData = [
                     'title' => 'Nhiều hoá đơn đã được thanh toán',
-                    'message' => "Cư dân đã thanh toán <strong>{$invoices->count()}</strong> hoá đơn ({$invoiceCodes}) tổng số tiền <strong>" . number_format($totalAmount) . "đ</strong> qua VNPay.",
+                    'message' => "Cư dân đã thanh toán <strong>{$invoices->count()}</strong> hoá đơn ({$invoiceCodes}) qua VNPay.",
                     'url' => route('admin.invoices.index'),
                     'type' => 'payment_batch',
                 ];

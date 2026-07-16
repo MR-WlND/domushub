@@ -1,15 +1,15 @@
-/* ============================================================
-   FLOORS PAGE - Đồng bộ với users/shared.css & blocks/shared.css
+﻿/* ============================================================
+   FLOORS PAGE - Äá»“ng bá»™ vá»›i users/shared.css & blocks/shared.css
    ============================================================ */
 
-/* ─── Page layout ─── */
+/* â”€â”€â”€ Page layout â”€â”€â”€ */
 .floors-page {
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
-/* ─── Page Header ─── */
+/* â”€â”€â”€ Page Header â”€â”€â”€ */
 .floors-page__header {
     display: flex;
     align-items: flex-end;
@@ -55,9 +55,9 @@
     justify-content: flex-end;
 }
 
-/* ─── Alert ─── */
+/* â”€â”€â”€ Alert â”€â”€â”€ */
 .floors-alert {
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 12px 14px;
     font-size: 14px;
     font-weight: 600;
@@ -75,7 +75,7 @@
     border: 1px solid #f4b8b2;
 }
 
-/* ─── Buttons ─── */
+/* â”€â”€â”€ Buttons â”€â”€â”€ */
 .floors-button {
     display: inline-flex;
     align-items: center;
@@ -83,7 +83,7 @@
     gap: 6px;
     min-height: 40px;
     padding: 0 18px;
-    border-radius: 10px;
+    border-radius: 8px;
     border: 1px solid transparent;
     font-size: 14px;
     font-weight: 700;
@@ -148,11 +148,11 @@
     background: #fecaca;
 }
 
-/* ─── Filter Card ─── */
+/* â”€â”€â”€ Filter Card â”€â”€â”€ */
 .floors-filter-card {
     background: #f8f9ff;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 16px 18px;
 }
 
@@ -188,18 +188,18 @@
     box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.08);
 }
 
-/* ─── Floors Grid ─── */
+/* â”€â”€â”€ Floors Grid â”€â”€â”€ */
 .floors-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
     gap: 20px;
 }
 
-/* ─── Floor Card ─── */
+/* â”€â”€â”€ Floor Card â”€â”€â”€ */
 .floor-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 18px;
+    border-radius: 10px;
     padding: 22px;
     display: flex;
     flex-direction: column;
@@ -216,7 +216,7 @@
     border-color: #cbd5e1;
 }
 
-/* ─── Card Top ─── */
+/* â”€â”€â”€ Card Top â”€â”€â”€ */
 .floor-card__top {
     display: flex;
     justify-content: space-between;
@@ -239,13 +239,13 @@
     margin: 4px 0 0;
 }
 
-/* ─── Status Badge ─── */
+/* â”€â”€â”€ Status Badge â”€â”€â”€ */
 .floor-status {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     padding: 6px 12px;
-    border-radius: 9999px;
+    border-radius: 8px;
     font-size: 12px;
     font-weight: 700;
     white-space: nowrap;
@@ -256,7 +256,7 @@
     content: '';
     width: 7px;
     height: 7px;
-    border-radius: 50%;
+    border-radius: 10px;
     display: inline-block;
 }
 
@@ -288,7 +288,7 @@
     background: #ef4444;
 }
 
-/* ─── Description ─── */
+/* â”€â”€â”€ Description â”€â”€â”€ */
 .floor-card__desc {
     color: #64748b;
     font-size: 14px;
@@ -300,7 +300,7 @@
     overflow: hidden;
 }
 
-/* ─── Mini Stats ─── */
+/* â”€â”€â”€ Mini Stats â”€â”€â”€ */
 .floor-card__mini-stats {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -310,7 +310,7 @@
 .floor-mini-stat {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 14px;
     text-align: center;
 }
@@ -331,7 +331,7 @@
     margin-top: 5px;
 }
 
-/* ─── Card Actions ─── */
+/* â”€â”€â”€ Card Actions â”€â”€â”€ */
 .floor-card__actions {
     display: flex;
     gap: 8px;
@@ -344,11 +344,11 @@
     padding: 0 12px;
 }
 
-/* ─── Empty State ─── */
+/* â”€â”€â”€ Empty State â”€â”€â”€ */
 .floors-empty {
     background: #f8fafc;
     border: 2px dashed #cbd5e1;
-    border-radius: 18px;
+    border-radius: 10px;
     padding: 60px 24px;
     text-align: center;
     display: flex;
@@ -371,14 +371,14 @@
     line-height: 1.6;
 }
 
-/* ─── Pagination ─── */
+/* â”€â”€â”€ Pagination â”€â”€â”€ */
 .floors-pagination {
     display: flex;
     justify-content: center;
     margin-top: 8px;
 }
 
-/* ─── Responsive ─── */
+/* â”€â”€â”€ Responsive â”€â”€â”€ */
 @media (max-width: 768px) {
     .floors-page__header {
         align-items: flex-start;

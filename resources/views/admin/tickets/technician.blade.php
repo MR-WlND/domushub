@@ -98,6 +98,98 @@
         @endif
     </div>
 
+    {{-- Filters --}}
+    <form action="{{ route('admin.tickets.my-tasks') }}" method="GET" class="ktv-filters">
+        {{-- Tìm kiếm --}}
+        <div class="ktv-filters__group">
+            <label for="filterSearch" class="ktv-filters__label">Tìm kiếm</label>
+            <div class="ktv-filters__search-wrapper">
+                <input type="text" name="search" id="filterSearch" value="{{ request('search') }}" placeholder="Mã số, tiêu đề, căn hộ..." class="ktv-filters__input">
+                <span class="ktv-filters__search-icon-inside">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </span>
+            </div>
+        </div>
+
+        {{-- Tòa nhà --}}
+        <div class="ktv-filters__group">
+            <label for="filterBlock" class="ktv-filters__label">Tòa nhà</label>
+            <select name="block_id" id="filterBlock" class="ktv-filters__select">
+                <option value="">Tất cả tòa nhà</option>
+                @foreach($blocks as $block)
+                    <option value="{{ $block->id }}" {{ request('block_id') == $block->id ? 'selected' : '' }}>
+                        {{ $block->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        {{-- Độ ưu tiên --}}
+        <div class="ktv-filters__group">
+            <label for="filterPriority" class="ktv-filters__label">Độ ưu tiên</label>
+            <select name="priority" id="filterPriority" class="ktv-filters__select">
+                <option value="">Tất cả độ ưu tiên</option>
+                <option value="urgent" {{ request('priority') == 'urgent' ? 'selected' : '' }}>Khẩn cấp</option>
+                <option value="high" {{ request('priority') == 'high' ? 'selected' : '' }}>Cao</option>
+                <option value="medium" {{ request('priority') == 'medium' ? 'selected' : '' }}>Trung bình</option>
+                <option value="low" {{ request('priority') == 'low' ? 'selected' : '' }}>Thấp</option>
+            </select>
+        </div>
+
+        {{-- Loại công việc --}}
+        <div class="ktv-filters__group">
+            <label for="filterType" class="ktv-filters__label">Loại công việc</label>
+            <select name="type" id="filterType" class="ktv-filters__select">
+                <option value="">Tất cả loại</option>
+                <option value="normal" {{ request('type') == 'normal' ? 'selected' : '' }}>Bình thường</option>
+                <option value="recheck" {{ request('type') == 'recheck' ? 'selected' : '' }}>Cần làm lại (Reopen)</option>
+            </select>
+        </div>
+
+        {{-- Tháng --}}
+        <div class="ktv-filters__group">
+            <label for="filterMonth" class="ktv-filters__label">Tháng</label>
+            <select name="month" id="filterMonth" class="ktv-filters__select" style="min-width: 90px;">
+                <option value="">Tất cả</option>
+                @for($m = 1; $m <= 12; $m++)
+                    <option value="{{ $m }}" {{ request('month') == $m ? 'selected' : '' }}>{{ $m }}</option>
+                @endfor
+            </select>
+        </div>
+
+        {{-- Năm --}}
+        <div class="ktv-filters__group">
+            <label for="filterYear" class="ktv-filters__label">Năm</label>
+            <select name="year" id="filterYear" class="ktv-filters__select" style="min-width: 95px;">
+                <option value="">Tất cả</option>
+                @for($y = date('Y') + 1; $y >= date('Y') - 2; $y--)
+                    <option value="{{ $y }}" {{ request('year') == $y ? 'selected' : '' }}>{{ $y }}</option>
+                @endfor
+            </select>
+        </div>
+
+        {{-- Sắp xếp --}}
+        <div class="ktv-filters__group">
+            <label for="filterSort" class="ktv-filters__label">Sắp xếp</label>
+            <select name="sort" id="filterSort" class="ktv-filters__select">
+                <option value="priority_desc" {{ request('sort', 'priority_desc') == 'priority_desc' ? 'selected' : '' }}>Ưu tiên cao trước</option>
+                <option value="newest" {{ request('sort') == 'newest' ? 'selected' : '' }}>Mới nhất xếp trước</option>
+                <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>Cũ nhất xếp trước</option>
+            </select>
+        </div>
+
+        {{-- Nút hành động --}}
+        <div class="ktv-filters__actions">
+            <button type="submit" class="ktv-filters__btn-submit">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Lọc
+            </button>
+            <a href="{{ route('admin.tickets.my-tasks') }}" class="ktv-filters__btn-reset">
+                Đặt lại
+            </a>
+        </div>
+    </form>
+
     {{-- Kanban Columns --}}
     <div class="ktv-kanban">
 

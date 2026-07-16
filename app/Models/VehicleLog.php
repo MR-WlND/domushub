@@ -19,6 +19,12 @@ class VehicleLog extends Model
         'check_out_at',
         'qr_code',
         'status',
+        'guest_plate',
+        'guest_vehicle_type',
+        'guest_name',
+        'guest_phone',
+        'guest_note',
+        'is_guest',
     ];
 
     protected $casts = [

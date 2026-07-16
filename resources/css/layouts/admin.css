@@ -1,4 +1,4 @@
-/* Admin Layout Stylesheet */
+﻿/* Admin Layout Stylesheet */
 
 .dashboard-page {
     min-height: 100vh;
@@ -67,7 +67,7 @@
 
 .dashboard-nav::-webkit-scrollbar-thumb {
     background-color: #c5c5d3;
-    border-radius: 4px;
+    border-radius: 8px;
 }
 
 /* Nav Section Groups */
@@ -97,7 +97,7 @@
     height: 40px;
     font-size: 14px;
     font-weight: 500;
-    border-radius: 0;
+    border-radius: 8px;
     transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     border-right: 3px solid transparent;
@@ -234,7 +234,7 @@
     width: 100%;
     padding: 9px 16px 9px 44px;
     border: 1px solid #e2e8f0;
-    border-radius: 9999px;
+    border-radius: 20px;
     background-color: #f3f6fc;
     font-size: 14px;
     color: #0b1c30;
@@ -267,7 +267,7 @@
     justify-content: center;
     width: 36px;
     height: 36px;
-    border-radius: 50%;
+    border-radius: 8px;
     transition: all 0.2s ease;
 }
 
@@ -283,7 +283,7 @@
     min-width: 16px;
     height: 16px;
     background-color: #ba1a1a;
-    border-radius: 999px;
+    border-radius: 8px;
     border: 1px solid #ffffff;
     color: #ffffff;
     font-size: 9px;
@@ -302,7 +302,7 @@
     top: 44px;
     width: 380px;
     background: #ffffff;
-    border-radius: 12px;
+    border-radius: 10px;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
     border: 1px solid #cbd5e1;
     z-index: 1000;
@@ -397,9 +397,10 @@
 
 /* Dashboard Content & Cards */
 .dashboard-content {
-    padding: 40px;
+    padding:20px 30px;
     background-color: #ffffff;
     flex-grow: 1;
+    min-width: 0;
 }
 
 .dashboard-grid {
@@ -410,7 +411,7 @@
 
 .dashboard-card {
     background: #ffffff;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 24px;
     box-shadow: 0 4px 12px rgba(0, 35, 111, 0.03);
     border: 1px solid #e2e8f0;
@@ -469,7 +470,7 @@
 .dashboard-status-pill {
     display: inline-flex;
     align-items: center;
-    border-radius: 999px;
+    border-radius: 8px;
     padding: 4px 12px;
     font-size: 12px;
     font-weight: 700;
@@ -522,7 +523,7 @@
     align-items: center;
     justify-content: center;
     padding: 12px 20px;
-    border-radius: 999px;
+    border-radius: 8px;
     background: #f8faff;
     color: #0f172a;
     border: 1px solid transparent;
@@ -584,7 +585,7 @@
     width: 32px;
     height: 32px;
     border: 1px solid #cfd6e6;
-    border-radius: 8px;
+    border-radius: 10px;
     background: #ffffff;
     color: #061528;
     font-size: 14px;
@@ -768,7 +769,7 @@
     .pagination-arrow {
         width: 30px;
         height: 30px;
-        border-radius: 7px;
+        border-radius: 10px;
         font-size: 13px;
     }
 
@@ -814,4 +815,5 @@
         padding: 16px;
     }
 }
+
 

@@ -10,6 +10,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "google-gemini-php/laravel": "^2.0",
         "laravel/framework": "^13.8",
         "laravel/reverb": "^1.0",
         "laravel/sanctum": "^4.3",

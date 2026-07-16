@@ -8,22 +8,21 @@
             class="resident-header__link {{ request()->routeIs('resident.dashboard') ? 'resident-header__link--active' : '' }}">
             Home
         </a>
+        <a href="{{ route('resident.posts.index') }}"
+            class="resident-header__link {{ request()->routeIs('resident.posts.index') ? 'resident-header__link--active' : '' }}">
+            Bản tin của tôi
+        </a>
         <a href="{{ route('resident.members.index') }}"
             class="resident-header__link {{ request()->routeIs('resident.members.*') ? 'resident-header__link--active' : '' }}">
             Thành viên
         </a>
-        <a href="{{ route('resident.posts.index') }}"
-            class="resident-header__link {{ request()->routeIs('resident.posts.*') ? 'resident-header__link--active' : '' }}">
-            Bảng tin cư dân
-        </a>
+
         <div class="resident-header__dropdown-container" id="services-menu-container">
-            <button class="resident-header__link resident-header__dropdown-trigger {{ (request()->routeIs('resident.vehicles.*') || request()->routeIs('resident.invoices.*') || request()->routeIs('resident.visitors.*')) ? 'resident-header__link--active' : '' }}">
+            <button class="resident-header__link resident-header__dropdown-trigger {{ (request()->routeIs('resident.vehicles.*') || request()->routeIs('resident.invoices.*')) ? 'resident-header__link--active' : '' }}">
                 Dịch vụ <i class="fa-solid fa-chevron-down nav-dropdown-icon"></i>
             </button>
             <div class="resident-header__nav-dropdown">
                 <a href="{{ route('resident.vehicles.index') }}" class="nav-dropdown-item {{ request()->routeIs('resident.vehicles.*') ? 'nav-dropdown-item--active' : '' }}">Phương tiện</a>
-
-                <a href="{{ route('resident.visitors.index') }}" class="nav-dropdown-item {{ request()->routeIs('resident.visitors.*') ? 'nav-dropdown-item--active' : '' }}">Khách viếng thăm</a>
                 <a href="{{ route('resident.facilities.index') }}" class="nav-dropdown-item {{ request()->routeIs('resident.facilities.*') ? 'nav-dropdown-item--active' : '' }}">Tiện ích</a>
 
                 <a href="{{ route('resident.invoices.index') }}" class="nav-dropdown-item {{ request()->routeIs('resident.invoices.index') ? 'nav-dropdown-item--active' : '' }}">Thanh toán hóa đơn</a>

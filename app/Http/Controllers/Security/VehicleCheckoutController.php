@@ -28,10 +28,11 @@ class VehicleCheckoutController extends Controller
         ]);
 
         $token = trim($request->qr_token);
+        $cleanToken = str_replace([' ', '-'], '', $token);
 
+        // 1. Tìm xe cư dân trước
         $vehicle = Vehicle::with(['apartment.floor.block', 'parkingLot'])
-            ->where(function ($q) use ($token) {
-                $cleanToken = str_replace([' ', '-'], '', $token);
+            ->where(function ($q) use ($token, $cleanToken) {
                 $q->where('qr_code', $token)
                   ->orWhere('qr_code', 'qr/vehicles/' . $token . '.svg')
                   ->orWhereRaw("REPLACE(REPLACE(license_plate, ' ', ''), '-', '') = ?", [$cleanToken]);
@@ -39,31 +40,63 @@ class VehicleCheckoutController extends Controller
             ->withoutTrashed()
             ->first();
 
-        if (!$vehicle) {
+        if ($vehicle) {
+            // Xe cư dân — logic cũ
+            $lastLog = VehicleLog::where('vehicle_id', $vehicle->id)->latest()->first();
+
+            if (!$lastLog || $lastLog->status !== 'inside') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Xe không có trong bãi — không thể check-out.',
+                    'vehicle' => $this->vehicleInfo($vehicle),
+                ], 409);
+            }
+
             return response()->json([
-                'success' => false,
-                'message' => 'Không tìm thấy phương tiện với mã QR này.',
-            ], 404);
+                'success'     => true,
+                'is_guest'    => false,
+                'vehicle'     => $this->vehicleInfo($vehicle),
+                'check_in_at' => $lastLog->check_in_at?->format('H:i d/m/Y'),
+                'duration'    => $this->formatDuration($lastLog->check_in_at),
+                'log_id'      => $lastLog->id,
+            ]);
         }
 
-        // Kiểm tra xe có đang ở trong không
-        $lastLog = VehicleLog::where('vehicle_id', $vehicle->id)->latest()->first();
+        // 2. Tìm xe vãng lai theo biển số
+        $guestLog = VehicleLog::where('is_guest', true)
+            ->where('status', 'inside')
+            ->whereRaw("REPLACE(REPLACE(guest_plate, ' ', ''), '-', '') = ?", [$cleanToken])
+            ->latest()
+            ->first();
 
-        if (!$lastLog || $lastLog->status !== 'inside') {
+        if ($guestLog) {
             return response()->json([
-                'success' => false,
-                'message' => 'Xe không có trong bãi — không thể check-out.',
-                'vehicle' => $this->vehicleInfo($vehicle),
-            ], 409);
+                'success'     => true,
+                'is_guest'    => true,
+                'vehicle'     => [
+                    'license_plate' => $guestLog->guest_plate,
+                    'vehicle_type'  => match($guestLog->guest_vehicle_type) {
+                        'car' => 'Ô tô', 'motorbike' => 'Xe máy', 'electric_bike' => 'Xe điện', default => $guestLog->guest_vehicle_type
+                    },
+                    'brand'         => null,
+                    'status_label'  => 'Khách vãng lai',
+                    'apartment'     => '—',
+                    'block'         => '—',
+                    'parking_lot'   => null,
+                    'image'         => null,
+                    'guest_name'    => $guestLog->guest_name,
+                    'guest_phone'   => $guestLog->guest_phone,
+                ],
+                'check_in_at'  => $guestLog->check_in_at?->format('H:i d/m/Y'),
+                'duration'     => $this->formatDuration($guestLog->check_in_at),
+                'log_id'       => $guestLog->id,
+            ]);
         }
 
         return response()->json([
-            'success'        => true,
-            'vehicle'        => $this->vehicleInfo($vehicle),
-            'check_in_at'    => $lastLog->check_in_at?->format('H:i d/m/Y'),
-            'duration'       => $this->formatDuration($lastLog->check_in_at),
-            'log_id'         => $lastLog->id,
-        ]);
+            'success' => false,
+            'message' => 'Không tìm thấy phương tiện nào đang ở trong bãi với mã/biển số này.',
+        ], 404);
     }
 
     /**
@@ -73,11 +106,37 @@ class VehicleCheckoutController extends Controller
     {
         $request->validate([
             'qr_token' => ['required', 'string'],
+            'log_id'   => ['nullable', 'integer'],
         ]);
 
-        $vehicle = Vehicle::where(function ($q) use ($request) {
-                $token = trim($request->qr_token);
-                $cleanToken = str_replace([' ', '-'], '', $token);
+        $token = trim($request->qr_token);
+        $cleanToken = str_replace([' ', '-'], '', $token);
+
+        // Nếu có log_id cụ thể (xe vãng lai)
+        if ($request->log_id) {
+            $log = VehicleLog::where('id', $request->log_id)
+                ->where('status', 'inside')
+                ->first();
+
+            if (!$log) {
+                return response()->json(['success' => false, 'message' => 'Không tìm thấy lượt gửi xe.'], 404);
+            }
+
+            $log->update([
+                'checked_out_by' => Auth::id(),
+                'check_out_at'   => now(),
+                'status'         => 'outside',
+            ]);
+
+            return response()->json([
+                'success'  => true,
+                'message'  => 'Đã ghi nhận xe ra lúc ' . now()->format('H:i d/m/Y') . '.',
+                'duration' => $this->formatDuration($log->check_in_at),
+            ]);
+        }
+
+        // Xe cư dân — logic cũ
+        $vehicle = Vehicle::where(function ($q) use ($token, $cleanToken) {
                 $q->where('qr_code', $token)
                   ->orWhere('qr_code', 'qr/vehicles/' . $token . '.svg')
                   ->orWhereRaw("REPLACE(REPLACE(license_plate, ' ', ''), '-', '') = ?", [$cleanToken]);

@@ -86,8 +86,8 @@ class UtilityMeterController extends Controller
                     $countQuery->whereHas('apartment.floor', fn ($q) => $q->where('block_id', $blockId));
                 }
 
-                $allIds = $countQuery->orderBy('type')
-                    ->orderBy('apartment_id')
+                $allIds = $countQuery->orderByRaw("CASE WHEN status = 'pending' THEN 0 ELSE 1 END")
+                    ->orderByDesc('updated_at')
                     ->pluck('id')
                     ->toArray();
 
@@ -106,10 +106,99 @@ class UtilityMeterController extends Controller
             }
         }
 
-        $readings = $query->orderBy('type')
-            ->orderBy('apartment_id')
+        $readings = $query->orderByRaw("CASE WHEN status = 'pending' THEN 0 ELSE 1 END")
+            ->orderByDesc('updated_at')
             ->paginate(20)
             ->withQueryString();
+
+        // Query and attach history logs for premium tooltips
+        $readingIds = $readings->pluck('id')->toArray();
+        $activities = \Spatie\Activitylog\Models\Activity::with('causer')
+            ->where(function ($q) {
+                $q->where('log_name', 'utility')
+                  ->orWhere('log_name', 'system_security');
+            })
+            ->where(function ($q) use ($readingIds) {
+                $q->whereIn('properties->utility_meter_id', $readingIds)
+                  ->orWhereIn('subject_id', $readingIds);
+            })
+            ->where(function ($q) {
+                $q->whereIn('properties->action', ['rejected', 'approved'])
+                  ->orWhereIn('event', ['rejected', 'approved'])
+                  ->orWhereIn('description', ['Từ chối chốt số', 'Đã duyệt & chốt số kỳ này'])
+                  ->orWhereIn('properties->target', ['Từ chối chốt số', 'Đã duyệt & chốt số kỳ này']);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $oldLogs = \DB::table('utility_meter_logs')
+            ->whereIn('utility_meter_id', $readingIds)
+            ->whereIn('action', ['rejected', 'approved'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $readingHistory = [];
+        foreach ($activities as $act) {
+            $props = $act->properties;
+            $meterId = $props['utility_meter_id'] ?? $act->subject_id;
+            if (!$meterId) continue;
+
+            $action = $props['action'] ?? null;
+            if (!$action) {
+                $desc = $act->description;
+                $target = $props['target'] ?? '';
+                if ($act->event === 'approved' || $desc === 'Đã duyệt & chốt số kỳ này' || $target === 'Đã duyệt & chốt số kỳ này') {
+                    $action = 'approved';
+                } else {
+                    $action = 'rejected';
+                }
+            }
+
+            if (!isset($readingHistory[$meterId])) {
+                $readingHistory[$meterId] = [];
+            }
+            $readingHistory[$meterId][] = [
+                'action' => $action,
+                'user_name' => $act->causer->name ?? 'Kế toán viên',
+                'time' => $act->created_at ? $act->created_at->format('d/m/Y H:i') : '',
+                'reason' => $props['reject_reason'] ?? '',
+            ];
+        }
+
+        foreach ($oldLogs as $log) {
+            $meterId = $log->utility_meter_id;
+            if (!isset($readingHistory[$meterId])) {
+                $readingHistory[$meterId] = [];
+            }
+            
+            $time = $log->created_at ? \Carbon\Carbon::parse($log->created_at)->format('d/m/Y H:i') : '';
+            $exists = collect($readingHistory[$meterId])->contains(fn($item) => $item['time'] === $time);
+            if ($exists) continue;
+
+            $user = \App\Models\User::find($log->user_id);
+            $readingHistory[$meterId][] = [
+                'action' => $log->action,
+                'user_name' => $user->name ?? 'Kế toán viên',
+                'time' => $time,
+                'reason' => $log->reject_reason ?? '',
+            ];
+        }
+
+        foreach ($readings as $reading) {
+            $history = $readingHistory[$reading->id] ?? [];
+            if ($reading->status === 'approved') {
+                $hasApproved = collect($history)->contains(fn($h) => $h['action'] === 'approved');
+                if (!$hasApproved) {
+                    $history[] = [
+                        'action' => 'approved',
+                        'user_name' => 'Kế toán viên',
+                        'time' => $reading->updated_at ? $reading->updated_at->format('d/m/Y H:i') : '',
+                        'reason' => '',
+                    ];
+                }
+            }
+            $reading->setAttribute('history_logs', $history);
+        }
 
         // Thống kê tổng quan cho tháng/năm đã chọn
         $statsQuery = UtilityMeter::where('record_month', $month)->where('record_year', $year);
@@ -136,6 +225,10 @@ class UtilityMeterController extends Controller
      */
     public function create(): View
     {
+        if (!in_array(Auth::user()->role, ['technician', 'admin'])) {
+            abort(403, 'Bạn không có quyền ghi chỉ số.');
+        }
+
         $blocks     = Block::orderBy('name')->get();
         $floors     = Floor::orderBy('floor_number')->get();
         $apartments = Apartment::with('floor.block')
@@ -151,6 +244,10 @@ class UtilityMeterController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        if (!in_array(Auth::user()->role, ['technician', 'admin'])) {
+            abort(403, 'Bạn không có quyền ghi chỉ số.');
+        }
+
         $validated = $request->validate([
             'apartment_id'  => 'required|exists:apartments,id',
             'type'          => 'required|in:electricity,water',
@@ -254,6 +351,10 @@ class UtilityMeterController extends Controller
      */
     public function batchCreate(Request $request): View
     {
+        if (!in_array(Auth::user()->role, ['technician', 'admin'])) {
+            abort(403, 'Bạn không có quyền ghi chỉ số.');
+        }
+
         $blocks = Block::orderBy('name')->get();
         $floors = Floor::with('block')->orderBy('floor_number')->get();
 
@@ -321,6 +422,10 @@ class UtilityMeterController extends Controller
      */
     public function batchStore(Request $request): RedirectResponse
     {
+        if (!in_array(Auth::user()->role, ['technician', 'admin'])) {
+            abort(403, 'Bạn không có quyền ghi chỉ số.');
+        }
+
         $request->validate([
             'record_month' => 'required|integer|min:1|max:12',
             'record_year'  => 'required|integer|min:2020|max:2100',
@@ -459,6 +564,7 @@ class UtilityMeterController extends Controller
     public function show(int $id): \Illuminate\View\View|\Illuminate\Http\JsonResponse
     {
         $reading = UtilityMeter::with(['apartment.floor.block', 'recorder', 'rejecter'])->findOrFail($id);
+        $rejections = $this->getRejectionHistory($id);
 
         if (request()->ajax() || request()->wantsJson()) {
             // Tạo danh sách URL ảnh
@@ -494,11 +600,12 @@ class UtilityMeterController extends Controller
                     'rejecter_name' => $reading->rejecter ? $reading->rejecter->name : null,
                     'created_at' => $reading->created_at->format('d/m/Y H:i'),
                     'updated_at' => $reading->updated_at->format('d/m/Y H:i'),
-                ]
+                ],
+                'rejections' => $rejections
             ]);
         }
 
-        return view('admin.utility-readings.show', compact('reading'));
+        return view('admin.utility-readings.show', compact('reading', 'rejections'));
     }
 
     /**
@@ -511,6 +618,10 @@ class UtilityMeterController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
+        if (!in_array($user->role, ['technician', 'admin'])) {
+            abort(403, 'Bạn không có quyền chỉnh sửa chỉ số.');
+        }
+
         if ($user->role === 'technician') {
             if (!in_array($reading->status, ['pending', 'rejected'])) {
                 abort(403, 'Bạn không có quyền chỉnh sửa chỉ số đã được duyệt.');
@@ -520,7 +631,9 @@ class UtilityMeterController extends Controller
             }
         }
 
-        return view('admin.utility-readings.edit', compact('reading'));
+        $rejections = $this->getRejectionHistory($id);
+
+        return view('admin.utility-readings.edit', compact('reading', 'rejections'));
     }
 
     /**
@@ -532,6 +645,10 @@ class UtilityMeterController extends Controller
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
+
+        if (!in_array($user->role, ['technician', 'admin'])) {
+            abort(403, 'Bạn không có quyền chỉnh sửa chỉ số.');
+        }
 
         if ($user->role === 'technician') {
             if (!in_array($reading->status, ['pending', 'rejected'])) {
@@ -614,8 +731,13 @@ class UtilityMeterController extends Controller
     {
         $reading = UtilityMeter::findOrFail($id);
 
+        $user = auth()->user();
+        if (!in_array($user->role, ['technician', 'admin'])) {
+            abort(403, 'Bạn không có quyền sửa ảnh của bản ghi này.');
+        }
+
         // Chỉ cho phép người ghi hoặc admin sửa ảnh
-        if (auth()->user()->role === 'technician' && $reading->recorded_by !== auth()->id()) {
+        if ($user->role === 'technician' && $reading->recorded_by !== $user->id) {
             abort(403, 'Bạn không có quyền xóa ảnh của bản ghi này.');
         }
 
@@ -931,6 +1053,10 @@ class UtilityMeterController extends Controller
      */
     public function downloadTemplate(Request $request)
     {
+        if (!in_array(Auth::user()->role, ['technician', 'admin'])) {
+            abort(403, 'Bạn không có quyền tải mẫu nhập chỉ số.');
+        }
+
         $month = (int) $request->query('month', now()->month);
         $year  = (int) $request->query('year', now()->year);
 
@@ -992,6 +1118,10 @@ class UtilityMeterController extends Controller
      */
     public function import(Request $request): RedirectResponse
     {
+        if (!in_array(Auth::user()->role, ['technician', 'admin'])) {
+            abort(403, 'Bạn không có quyền import chỉ số.');
+        }
+
         $request->validate([
             'import_month' => 'required|integer|min:1|max:12',
             'import_year'  => 'required|integer|min:2020|max:2100',
@@ -1232,5 +1362,89 @@ class UtilityMeterController extends Controller
         }
     }
 
+    /**
+     * Lấy lịch sử từ chối của chỉ số điện nước từ Spatie Activity Log.
+     */
+    private function getRejectionHistory(int $id)
+    {
+        // 1. Lấy từ Spatie Activity Log
+        $rejections = \Spatie\Activitylog\Models\Activity::with('causer')
+            ->where(function ($q) {
+                $q->where('log_name', 'utility')
+                  ->orWhere('log_name', 'system_security');
+            })
+            ->where(function ($q) use ($id) {
+                $q->where('properties->utility_meter_id', $id)
+                  ->orWhere('subject_id', $id);
+            })
+            ->where(function ($q) {
+                $q->whereIn('properties->action', ['rejected', 'approved'])
+                  ->orWhereIn('event', ['rejected', 'approved'])
+                  ->orWhereIn('description', ['Từ chối chốt số', 'Đã duyệt & chốt số kỳ này'])
+                  ->orWhereIn('properties->target', ['Từ chối chốt số', 'Đã duyệt & chốt số kỳ này']);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($activity) {
+                $props = $activity->properties;
+                $action = $props['action'] ?? null;
+                if (!$action) {
+                    $desc = $activity->description;
+                    $target = $props['target'] ?? '';
+                    if ($activity->event === 'approved' || $desc === 'Đã duyệt & chốt số kỳ này' || $target === 'Đã duyệt & chốt số kỳ này') {
+                        $action = 'approved';
+                    } else {
+                        $action = 'rejected';
+                    }
+                }
+                return [
+                    'action' => $action,
+                    'reason' => $props['reject_reason'] ?? '',
+                    'rejecter_name' => $activity->causer->name ?? 'Kế toán viên',
+                    'rejected_at' => $activity->created_at ? $activity->created_at->format('d/m/Y H:i') : '',
+                ];
+            });
+
+        // 2. Nếu rỗng, truy vấn trực tiếp từ bảng cũ utility_meter_logs để tương thích ngược
+        if ($rejections->isEmpty()) {
+            $oldLogs = \DB::table('utility_meter_logs')
+                ->where('utility_meter_id', $id)
+                ->whereIn('action', ['rejected', 'approved'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            foreach ($oldLogs as $log) {
+                $user = \App\Models\User::find($log->user_id);
+                $rejections->push([
+                    'action' => $log->action,
+                    'reason' => $log->reject_reason ?? '',
+                    'rejecter_name' => $user->name ?? 'Kế toán viên',
+                    'rejected_at' => $log->created_at ? \Carbon\Carbon::parse($log->created_at)->format('d/m/Y H:i') : '',
+                ]);
+            }
+        }
+
+        // 3. Fallback: Nếu đã chốt nhưng chưa có log chốt trong lịch sử, tự động bù sự kiện chốt cuối cùng
+        $reading = UtilityMeter::find($id);
+        if ($reading && $reading->status === 'approved') {
+            $hasApproved = false;
+            foreach ($rejections as $rej) {
+                if ($rej['action'] === 'approved') {
+                    $hasApproved = true;
+                    break;
+                }
+            }
+            if (!$hasApproved) {
+                $rejections->prepend([
+                    'action' => 'approved',
+                    'reason' => '',
+                    'rejecter_name' => 'Kế toán viên',
+                    'rejected_at' => $reading->updated_at ? $reading->updated_at->format('d/m/Y H:i') : '',
+                ]);
+            }
+        }
+
+        return $rejections;
+    }
 
 }

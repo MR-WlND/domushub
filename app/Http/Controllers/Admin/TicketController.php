@@ -20,6 +20,16 @@ class TicketController extends Controller
             'priority' => 'nullable|in:low,medium,high,urgent',
             'block_id' => 'nullable|integer|exists:blocks,id',
             'search'   => 'nullable|string|max:200',
+
+            // Tab 2: Điều phối (Dispatch)
+            'dispatch_block_id' => 'nullable|integer|exists:blocks,id',
+            'dispatch_priority' => 'nullable|in:low,medium,high,urgent',
+            'dispatch_search'   => 'nullable|string|max:200',
+
+            // Tab 3: Nghiệm thu (Report)
+            'report_block_id'      => 'nullable|integer|exists:blocks,id',
+            'report_technician_id' => 'nullable|integer|exists:users,id',
+            'report_search'        => 'nullable|string|max:200',
         ]);
 
         // ── Tab 1: Tickets list ──
@@ -92,8 +102,26 @@ class TicketController extends Controller
         $dispatchStats  = ['pending' => 0, 'active' => 0];
 
         if (in_array($user->role, ['admin', 'manager'])) {
-            $pendingTickets = Ticket::with(['apartment.floor.block', 'sender'])
-                ->where('status', 'pending')->latest()->get();
+            $pendingQuery = Ticket::with(['apartment.floor.block', 'sender'])
+                ->where('status', 'pending')
+                ->latest();
+
+            if ($request->filled('dispatch_block_id')) {
+                $pendingQuery->whereHas('apartment.floor', fn($q) => $q->where('block_id', $request->dispatch_block_id));
+            }
+            if ($request->filled('dispatch_priority')) {
+                $pendingQuery->where('priority', $request->dispatch_priority);
+            }
+            if ($request->filled('dispatch_search')) {
+                $search = $request->dispatch_search;
+                $pendingQuery->where(function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                      ->orWhere('id', $search)
+                      ->orWhereHas('apartment', fn($aq) => $aq->where('apartment_number', 'like', "%{$search}%"));
+                });
+            }
+
+            $pendingTickets = $pendingQuery->get();
 
             $activeTickets = Ticket::with(['apartment.floor.block', 'sender', 'handler'])
                 ->whereIn('status', ['assigned', 'in_progress'])->latest()->get();
@@ -111,7 +139,24 @@ class TicketController extends Controller
         $reportStats     = ['total' => 0, 'pending' => 0, 'approved' => 0, 'rework' => 0];
 
         if (in_array($user->role, ['admin', 'manager'])) {
-            $allTickets = Ticket::with(['apartment.floor.block', 'handler', 'progress.updatedBy'])->get();
+            $allTicketsQuery = Ticket::with(['apartment.floor.block', 'handler', 'progress.updatedBy']);
+
+            if ($request->filled('report_block_id')) {
+                $allTicketsQuery->whereHas('apartment.floor', fn($q) => $q->where('block_id', $request->report_block_id));
+            }
+            if ($request->filled('report_technician_id')) {
+                $allTicketsQuery->where('handler_id', $request->report_technician_id);
+            }
+            if ($request->filled('report_search')) {
+                $search = $request->report_search;
+                $allTicketsQuery->where(function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                      ->orWhere('id', $search)
+                      ->orWhereHas('apartment', fn($aq) => $aq->where('apartment_number', 'like', "%{$search}%"));
+                });
+            }
+
+            $allTickets = $allTicketsQuery->get();
 
             $pendingReview = $allTickets->filter(function ($t) {
                 $last = $t->progress->last();
@@ -474,39 +519,175 @@ class TicketController extends Controller
     {
         $user = Auth::user();
 
-        $newTasks = Ticket::with(['apartment.floor.block', 'sender'])
+        $newTasksQuery = Ticket::with(['apartment.floor.block', 'sender'])
             ->where('handler_id', $user->id)
-            ->where('status', 'assigned')
-            ->orderByRaw("FIELD(priority, 'urgent','high','medium','low')")
-            ->orderBy('created_at', 'asc')
-            ->get();
+            ->where('status', 'assigned');
 
-        // Ưu tiên hiện ticket cần kiểm tra lại (reopened_count > 0) lên đầu
-        $activeTasks = Ticket::with(['apartment.floor.block', 'sender', 'progress'])
+        // Ưu tiên hiện ticket cần kiểm tra lại (reopened_count > 0) lên đầu theo mặc định
+        $activeTasksQuery = Ticket::with(['apartment.floor.block', 'sender', 'progress'])
             ->where('handler_id', $user->id)
-            ->where('status', 'in_progress')
-            ->orderByRaw("FIELD(priority, 'urgent','high','medium','low')")
-            ->orderByDesc('reopened_count')
-            ->orderBy('created_at', 'asc')
-            ->get();
+            ->where('status', 'in_progress');
 
-        $completedTasks = Ticket::with(['apartment.floor.block'])
+        $completedTasksQuery = Ticket::with(['apartment.floor.block'])
             ->where('handler_id', $user->id)
             ->where('status', 'completed')
-            ->orderBy('updated_at', 'desc')
-            ->limit(10)
-            ->get();
+            ->limit(10);
+
+        // 1. Lọc theo Block
+        if ($request->filled('block_id')) {
+            $blockId = $request->input('block_id');
+            $newTasksQuery->whereHas('apartment.floor', fn($q) => $q->where('block_id', $blockId));
+            $activeTasksQuery->whereHas('apartment.floor', fn($q) => $q->where('block_id', $blockId));
+            $completedTasksQuery->whereHas('apartment.floor', fn($q) => $q->where('block_id', $blockId));
+        }
+
+        // 2. Lọc theo Độ ưu tiên
+        if ($request->filled('priority')) {
+            $priority = $request->input('priority');
+            $newTasksQuery->where('priority', $priority);
+            $activeTasksQuery->where('priority', $priority);
+            $completedTasksQuery->where('priority', $priority);
+        }
+
+        // 3. Tìm kiếm từ khóa (ID, tiêu đề, số căn hộ)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $searchCallback = function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('id', $search)
+                  ->orWhereHas('apartment', fn($aq) => $aq->where('apartment_number', 'like', "%{$search}%"));
+            };
+            $newTasksQuery->where($searchCallback);
+            $activeTasksQuery->where($searchCallback);
+            $completedTasksQuery->where($searchCallback);
+        }
+
+        // 4. Lọc theo Loại công việc (bình thường / cần kiểm tra lại)
+        if ($request->filled('type')) {
+            $type = $request->type;
+            if ($type === 'recheck') {
+                $newTasksQuery->whereRaw('0 = 1');
+                $activeTasksQuery->where('reopened_count', '>', 0);
+                $completedTasksQuery->whereRaw('0 = 1');
+            } elseif ($type === 'normal') {
+                $activeTasksQuery->where('reopened_count', 0);
+            }
+        }
+
+        // 5. Lọc theo Tháng
+        if ($request->filled('month')) {
+            $month = $request->input('month');
+            $newTasksQuery->whereMonth('created_at', $month);
+            $activeTasksQuery->whereMonth('created_at', $month);
+            $completedTasksQuery->whereMonth('created_at', $month);
+        }
+
+        // 6. Lọc theo Năm
+        if ($request->filled('year')) {
+            $year = $request->input('year');
+            $newTasksQuery->whereYear('created_at', $year);
+            $activeTasksQuery->whereYear('created_at', $year);
+            $completedTasksQuery->whereYear('created_at', $year);
+        }
+
+        // 7. Sắp xếp (Sorting)
+        $sort = $request->input('sort', 'priority_desc');
+        if ($sort === 'newest') {
+            $newTasksQuery->orderBy('created_at', 'desc');
+            $activeTasksQuery->orderBy('created_at', 'desc');
+            $completedTasksQuery->orderBy('updated_at', 'desc');
+        } elseif ($sort === 'oldest') {
+            $newTasksQuery->orderBy('created_at', 'asc');
+            $activeTasksQuery->orderBy('created_at', 'asc');
+            $completedTasksQuery->orderBy('updated_at', 'asc');
+        } else {
+            // Mặc định: Độ ưu tiên cao xếp trước, sau đó là ngày tạo cũ trước
+            $newTasksQuery->orderByRaw("FIELD(priority, 'urgent','high','medium','low')")->orderBy('created_at', 'asc');
+            $activeTasksQuery->orderByRaw("FIELD(priority, 'urgent','high','medium','low')")->orderByDesc('reopened_count')->orderBy('created_at', 'asc');
+            $completedTasksQuery->orderBy('updated_at', 'desc');
+        }
+
+        $newTasks = $newTasksQuery->get();
+        $activeTasks = $activeTasksQuery->get();
+        $completedTasks = $completedTasksQuery->get();
+
+        // Tính toán các thẻ thống kê dựa trên tất cả bộ lọc
+        $statsNewQuery = Ticket::where('handler_id', $user->id)->where('status', 'assigned');
+        $statsActiveQuery = Ticket::where('handler_id', $user->id)->where('status', 'in_progress');
+        $statsCompletedQuery = Ticket::where('handler_id', $user->id)->where('status', 'completed');
+        $statsTotalQuery = Ticket::where('handler_id', $user->id);
+
+        $applyStatsFilters = function($q) use ($request) {
+            if ($request->filled('block_id')) {
+                $q->whereHas('apartment.floor', fn($sq) => $sq->where('block_id', $request->block_id));
+            }
+            if ($request->filled('priority')) {
+                $q->where('priority', $request->priority);
+            }
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $q->where(function ($sq) use ($search) {
+                    $sq->where('title', 'like', "%{$search}%")
+                      ->orWhere('id', $search)
+                      ->orWhereHas('apartment', fn($aq) => $aq->where('apartment_number', 'like', "%{$search}%"));
+                });
+            }
+            if ($request->filled('type')) {
+                if ($request->type === 'recheck') {
+                    $q->where('reopened_count', '>', 0);
+                } elseif ($request->type === 'normal') {
+                    $q->where('reopened_count', 0);
+                }
+            }
+            if ($request->filled('month')) {
+                $q->whereMonth('created_at', $request->month);
+            }
+            if ($request->filled('year')) {
+                $q->whereYear('created_at', $request->year);
+            }
+        };
+
+        $applyStatsFilters($statsNewQuery);
+        $applyStatsFilters($statsActiveQuery);
+        $applyStatsFilters($statsCompletedQuery);
+        $applyStatsFilters($statsTotalQuery);
+
+        $statsRecheckQuery = Ticket::where('handler_id', $user->id)
+            ->where('status', 'in_progress')
+            ->where('reopened_count', '>', 0);
+        if ($request->filled('block_id')) {
+            $statsRecheckQuery->whereHas('apartment.floor', fn($sq) => $sq->where('block_id', $request->block_id));
+        }
+        if ($request->filled('priority')) {
+            $statsRecheckQuery->where('priority', $request->priority);
+        }
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $statsRecheckQuery->where(function ($sq) use ($search) {
+                $sq->where('title', 'like', "%{$search}%")
+                  ->orWhere('id', $search)
+                  ->orWhereHas('apartment', fn($aq) => $aq->where('apartment_number', 'like', "%{$search}%"));
+            });
+        }
+        if ($request->filled('month')) {
+            $statsRecheckQuery->whereMonth('created_at', $request->month);
+        }
+        if ($request->filled('year')) {
+            $statsRecheckQuery->whereYear('created_at', $request->year);
+        }
 
         $stats = [
-            'new'       => $newTasks->count(),
-            'active'    => $activeTasks->count(),
-            'recheck'   => $activeTasks->where('reopened_count', '>', 0)->count(),
-            'completed' => Ticket::where('handler_id', $user->id)->where('status', 'completed')->count(),
-            'total'     => Ticket::where('handler_id', $user->id)->count(),
+            'new'       => $request->type === 'recheck' ? 0 : $statsNewQuery->count(),
+            'active'    => $statsActiveQuery->count(),
+            'recheck'   => $statsRecheckQuery->count(),
+            'completed' => $request->type === 'recheck' ? 0 : $statsCompletedQuery->count(),
+            'total'     => $statsTotalQuery->count(),
         ];
 
+        $blocks = \App\Models\Block::orderBy('name')->get();
+
         return view('admin.tickets.technician', compact(
-            'newTasks', 'activeTasks', 'completedTasks', 'stats'
+            'newTasks', 'activeTasks', 'completedTasks', 'stats', 'blocks'
         ));
     }
 

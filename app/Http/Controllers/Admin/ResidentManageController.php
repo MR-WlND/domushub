@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 
 use App\Models\Apartment;
 use App\Models\Block;
+use App\Models\Floor;
 use App\Models\Resident;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -20,20 +21,21 @@ class ResidentManageController extends Controller
     {
         $request->validate([
             'block_id' => 'nullable|integer|exists:blocks,id',
-            'status'   => 'nullable|in:active,inactive,banned',
+            'floor_id' => 'nullable|integer|exists:floors,id',
             'search'   => 'nullable|string|max:200',
         ]);
 
         $query = User::where('role', 'resident')
-            ->with(['apartment.floor.block'])
-            ->orderBy('created_at', 'desc');
+            ->whereHas('residents')
+            ->with(['apartment.floor.block', 'residents'])
+            ->orderBy('apartment_id', 'asc');
 
         if ($request->filled('block_id')) {
             $query->whereHas('apartment.floor', fn($q) => $q->where('block_id', $request->block_id));
         }
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        if ($request->filled('floor_id')) {
+            $query->whereHas('apartment', fn($q) => $q->where('floor_id', $request->floor_id));
         }
 
         if ($request->filled('search')) {
@@ -50,9 +52,11 @@ class ResidentManageController extends Controller
         $residents = $query->paginate(20)->withQueryString();
 
         $blocks = Block::orderBy('name')->get();
+        $floors = Floor::with('block')->orderBy('floor_number')->get();
 
-        // Stats
-        $baseQuery = User::where('role', 'resident');
+        // Stats (tất cả cư dân)
+        $baseQuery = User::where('role', 'resident')
+            ->whereHas('residents');
         $stats = [
             'total'    => (clone $baseQuery)->count(),
             'active'   => (clone $baseQuery)->where('status', 'active')->count(),
@@ -70,7 +74,7 @@ class ResidentManageController extends Controller
             ]);
         }
 
-        return view('admin.residents.index', compact('residents', 'blocks', 'stats'));
+        return view('admin.residents.index', compact('residents', 'blocks', 'floors', 'stats'));
     }
 
     /**

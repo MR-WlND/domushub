@@ -1,16 +1,16 @@
-/* ============================================================
-   ADMIN VEHICLES — Unified Design System
+﻿/* ============================================================
+   ADMIN VEHICLES â€” Unified Design System
    Matching Resident vehicles design language
    ============================================================ */
 
-/* ─── Page Layout ─── */
+/* â”€â”€â”€ Page Layout â”€â”€â”€ */
 .vehicles-page {
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
-/* ─── Header ─── */
+/* â”€â”€â”€ Header â”€â”€â”€ */
 .vehicles-page__header {
     display: flex;
     align-items: flex-end;
@@ -33,12 +33,12 @@
     font-size: 0.8125rem;
 }
 
-/* ─── Alerts ─── */
+/* â”€â”€â”€ Alerts â”€â”€â”€ */
 .vehicles-alert {
     display: flex;
     align-items: center;
     gap: 10px;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 14px 18px;
     font-size: 0.875rem;
     font-weight: 600;
@@ -62,7 +62,7 @@
     border: 1px solid #fecaca;
 }
 
-/* ─── Stats Grid ─── */
+/* â”€â”€â”€ Stats Grid â”€â”€â”€ */
 .vehicles-stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -72,7 +72,7 @@
 .veh-stat-card {
     background: #ffffff;
     border: 1px solid #e8ecf4;
-    border-radius: 14px;
+    border-radius: 10px;
     padding: 22px 24px;
     display: flex;
     flex-direction: column;
@@ -122,11 +122,11 @@
 .veh-stat--danger::before { background: #dc2626; }
 .veh-stat--danger .veh-stat-card__value { color: #dc2626; }
 
-/* ─── Filter Card ─── */
+/* â”€â”€â”€ Filter Card â”€â”€â”€ */
 .vehicles-filter-card {
     background: #ffffff;
     border: 1px solid #e8ecf4;
-    border-radius: 14px;
+    border-radius: 10px;
     padding: 18px 20px;
 }
 
@@ -176,7 +176,7 @@
     box-shadow: 0 0 0 3px rgba(99, 102, 241, .08);
 }
 
-/* ─── Tabs ─── */
+/* â”€â”€â”€ Tabs â”€â”€â”€ */
 .veh-tabs-nav {
     display: flex;
     gap: 0;
@@ -206,11 +206,11 @@
     border-bottom-color: #4f46e5;
 }
 
-/* ─── Table Card ─── */
+/* â”€â”€â”€ Table Card â”€â”€â”€ */
 .vehicles-table-card {
     background: #ffffff;
     border: 1px solid #e8ecf4;
-    border-radius: 14px;
+    border-radius: 10px;
     overflow: hidden;
 }
 
@@ -218,7 +218,7 @@
     overflow-x: auto;
 }
 
-/* ─── Table ─── */
+/* â”€â”€â”€ Table â”€â”€â”€ */
 .vehicles-table {
     width: 100%;
     border-collapse: collapse;
@@ -264,7 +264,7 @@
 .text-center { text-align: center !important; }
 .text-muted { color: #94a3b8 !important; }
 
-/* ─── Cell Styles ─── */
+/* â”€â”€â”€ Cell Styles â”€â”€â”€ */
 .veh-code {
     font-size: 0.8125rem;
     font-weight: 700;
@@ -315,13 +315,13 @@
     color: #cbd5e1;
 }
 
-/* ─── Status Badge ─── */
+/* â”€â”€â”€ Status Badge â”€â”€â”€ */
 .veh-status {
     display: inline-flex;
     align-items: center;
     gap: 5px;
     padding: 4px 10px;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 0.6875rem;
     font-weight: 700;
     white-space: nowrap;
@@ -333,7 +333,7 @@
     content: '';
     width: 6px;
     height: 6px;
-    border-radius: 50%;
+    border-radius: 10px;
     display: inline-block;
 }
 
@@ -377,7 +377,7 @@
     background: #94a3b8;
 }
 
-/* ─── Actions ─── */
+/* â”€â”€â”€ Actions â”€â”€â”€ */
 .veh-table-actions {
     display: inline-flex;
     align-items: center;
@@ -466,7 +466,7 @@
     box-shadow: 0 2px 8px rgba(79, 70, 229, .15);
 }
 
-/* ─── Pagination ─── */
+/* â”€â”€â”€ Pagination â”€â”€â”€ */
 .vehicles-pagination {
     display: flex;
     justify-content: center;
@@ -529,7 +529,7 @@
     height: 16px;
 }
 
-/* ─── Empty State ─── */
+/* â”€â”€â”€ Empty State â”€â”€â”€ */
 .vehicles-empty {
     padding: 3rem 2rem;
     text-align: center;
@@ -541,7 +541,7 @@
     margin-bottom: 8px;
 }
 
-/* ─── Responsive ─── */
+/* â”€â”€â”€ Responsive â”€â”€â”€ */
 @media (max-width: 1024px) {
     .vehicles-stats-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -570,3 +570,4 @@
         grid-template-columns: 1fr;
     }
 }
+

@@ -56,7 +56,7 @@ class FacilityBookingController extends Controller
 
         $booking->update(['status' => 'approved']);
 
-        SystemLogger::log('system', 'Duyệt đặt lịch tiện ích #' . $booking->id . ': ' . ($booking->facility->name ?? '') . ' - ' . ($booking->user->name ?? ''), $booking);
+
 
         return response()->json([
             'success' => true,
@@ -88,7 +88,7 @@ class FacilityBookingController extends Controller
 
         $booking->update(['status' => 'cancelled']);
 
-        SystemLogger::log('system', 'Hủy đặt lịch tiện ích #' . $booking->id . ': ' . ($booking->facility->name ?? '') . ' - ' . ($booking->user->name ?? ''), $booking);
+
 
         return response()->json([
             'success' => true,
@@ -125,7 +125,7 @@ class FacilityBookingController extends Controller
 
         $booking->update(['status' => $request->status]);
 
-        SystemLogger::log('system', 'Cập nhật trạng thái đặt lịch #' . $booking->id . ': ' . $oldStatus . ' → ' . $request->status, $booking);
+
 
         return response()->json([
             'success' => true,

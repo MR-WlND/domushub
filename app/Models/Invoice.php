@@ -108,7 +108,7 @@ class Invoice extends Model
     {
         return match ($status) {
             'paid'    => 'Đã thanh toán',
-            'partial' => 'Thanh toán một phần',
+            'partial_paid' => 'Thanh toán một phần',
             'unpaid'  => 'Chưa thanh toán',
             'overdue' => 'Quá hạn',
             'cancelled' => 'Đã hủy',
@@ -138,8 +138,22 @@ class Invoice extends Model
         $paidAmount = (float) $this->paid_amount;
         $details = $this->details()->orderBy('id')->get();
         
+        // Bước 1: Ưu tiên các chi tiết đã được gán cứng vào một payment_id
         foreach ($details as $detail) {
-            if ($paidAmount >= (float) $detail->amount) {
+            if ($detail->payment_id) {
+                if ($detail->status !== 'paid') {
+                    $detail->update(['status' => 'paid']);
+                }
+                $paidAmount -= (float) $detail->amount;
+            }
+        }
+
+        // Bước 2: Phân bổ số tiền còn lại cho các chi tiết chưa gán payment_id (waterfall)
+        foreach ($details as $detail) {
+            if ($detail->payment_id) {
+                continue; // Đã xử lý ở bước 1
+            }
+            if ($paidAmount >= (float) $detail->amount - 0.001) { // trừ hao sai số float
                 if ($detail->status !== 'paid') {
                     $detail->update(['status' => 'paid']);
                 }
