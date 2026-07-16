@@ -52,7 +52,7 @@
                 </ul>
             </div>
             <div id="infoBoxReport" style="display: none; background: #fef2f2; border-left: 4px solid #dc2626; padding: 16px; margin-bottom: 24px; border-radius: 4px; font-size: 0.9rem; color: #991b1b;">
-                <strong>⚠️ Lưu ý khi tố cáo:</strong>
+                <strong>Lưu ý khi tố cáo:</strong>
                 <ul style="margin: 8px 0 0 20px; padding: 0;">
                     <li><strong>Bắt buộc đính kèm ảnh/video</strong> làm bằng chứng.</li>
                     <li>Nhập đầy đủ tên người bị tố cáo.</li>
@@ -79,8 +79,8 @@
                                 class="tk-select"
                                 required
                                 onchange="toggleTicketType()">
-                            <option value="complaint" {{ old('ticket_type', 'complaint') === 'complaint' ? 'selected' : '' }}>📋 Phản ánh sự cố</option>
-                            <option value="report" {{ old('ticket_type') === 'report' ? 'selected' : '' }}>⚠️ Tố cáo</option>
+                            <option value="complaint" {{ old('ticket_type', 'complaint') === 'complaint' ? 'selected' : '' }}>Phản ánh sự cố</option>
+                            <option value="report" {{ old('ticket_type') === 'report' ? 'selected' : '' }}>Tố cáo</option>
                         </select>
                         <div class="tk-chevron">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>

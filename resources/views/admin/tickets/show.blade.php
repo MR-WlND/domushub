@@ -50,11 +50,11 @@
                     <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                         @if($ticket->ticket_type === 'report')
                             <span style="display: inline-flex; align-items: center; gap: 3px; padding: 3px 10px; background: #fef2f2; color: #dc2626; border-radius: 20px; font-size: 0.75rem; font-weight: 700; border: 1px solid #fecaca;">
-                                ⚠️ Tố cáo
+                                Tố cáo
                             </span>
                         @else
                             <span style="display: inline-flex; align-items: center; gap: 3px; padding: 3px 10px; background: #eff6ff; color: #2563eb; border-radius: 20px; font-size: 0.75rem; font-weight: 700; border: 1px solid #bfdbfe;">
-                                📋 Phản ánh
+                                Phản ánh
                             </span>
                         @endif
                         <span class="tk-priority tk-priority--{{ $ticket->priority }}">{{ $ticket->priorityLabel() }}</span>
@@ -88,7 +88,7 @@
                         </div>
                         @if($ticket->ticket_type === 'report' && $ticket->reported_person)
                             <div class="tk-info-item" style="grid-column: 1 / -1;">
-                                <span class="tk-info-item__label" style="color: #dc2626;">👤 Người bị tố cáo</span>
+                                <span class="tk-info-item__label" style="color: #dc2626;">Người bị tố cáo</span>
                                 <span class="tk-info-item__value" style="color: #dc2626; font-weight: 700;">{{ $ticket->reported_person }}</span>
                             </div>
                         @endif
@@ -269,11 +269,11 @@
                                             <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
                                                 @if($cost->cost_type === 'compensation')
                                                     <span style="display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; background: #fef2f2; color: #dc2626; border-radius: 20px; font-size: 0.72rem; font-weight: 700; border: 1px solid #fecaca;">
-                                                        ⚠️ Đền bù
+                                                        Đền bù
                                                     </span>
                                                 @else
                                                     <span style="display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; background: #eff6ff; color: #2563eb; border-radius: 20px; font-size: 0.72rem; font-weight: 700; border: 1px solid #bfdbfe;">
-                                                        🔧 Sửa chữa
+                                                        Sửa chữa
                                                     </span>
                                                 @endif
                                                 <span class="tk-cost-item__desc">{{ $cost->description }}</span>
@@ -282,7 +282,7 @@
                                         </div>
                                         @if($cost->cost_type === 'compensation' && $cost->responsibleUser)
                                             <p style="font-size: 0.78rem; color: #dc2626; margin: 4px 0 2px; font-weight: 600;">
-                                                👤 Người chịu trách nhiệm: {{ $cost->responsibleUser->name }}
+                                                Người chịu trách nhiệm: {{ $cost->responsibleUser->name }}
                                             </p>
                                         @endif
                                         @if($cost->note)
@@ -309,13 +309,13 @@
                                 <div class="tk-cost-total" style="flex-direction: column; gap: 6px;">
                                     @if($totalRepair > 0)
                                         <div style="display: flex; justify-content: space-between; width: 100%;">
-                                            <span style="color: #2563eb;">🔧 Tổng sửa chữa</span>
+                                            <span style="color: #2563eb;">Tổng sửa chữa</span>
                                             <strong style="color: #2563eb;">{{ number_format($totalRepair, 0, ',', '.') }}đ</strong>
                                         </div>
                                     @endif
                                     @if($totalCompensation > 0)
                                         <div style="display: flex; justify-content: space-between; width: 100%;">
-                                            <span style="color: #dc2626;">⚠️ Tổng đền bù</span>
+                                            <span style="color: #dc2626;">Tổng đền bù</span>
                                             <strong style="color: #dc2626;">{{ number_format($totalCompensation, 0, ',', '.') }}đ</strong>
                                         </div>
                                     @endif
@@ -335,8 +335,8 @@
                             <div class="tk-cost-form__group">
                                 <label>Loại chi phí <span style="color: #ef4444;">*</span></label>
                                 <select name="cost_type" id="costTypeSelect" required onchange="toggleResponsibleUser()">
-                                    <option value="repair" {{ old('cost_type') === 'compensation' ? '' : 'selected' }}>🔧 Chi phí sửa chữa</option>
-                                    <option value="compensation" {{ old('cost_type') === 'compensation' ? 'selected' : '' }}>⚠️ Chi phí đền bù</option>
+                                    <option value="repair" {{ old('cost_type') === 'compensation' ? '' : 'selected' }}>Chi phí sửa chữa</option>
+                                    <option value="compensation" {{ old('cost_type') === 'compensation' ? 'selected' : '' }}>Chi phí đền bù</option>
                                 </select>
                             </div>
                             <div class="tk-cost-form__group" id="responsibleUserGroup" style="display: {{ old('cost_type') === 'compensation' ? 'block' : 'none' }};">

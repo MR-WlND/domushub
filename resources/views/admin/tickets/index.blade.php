@@ -52,7 +52,7 @@
             <span class="tk-stat-card__value" style="color:#16a34a;">{{ number_format($stats['completed']) }}</span>
         </div>
         <div class="tk-stat-card" style="border-left:4px solid #dc2626;">
-            <span class="tk-stat-card__label">⚠️ Tố cáo</span>
+            <span class="tk-stat-card__label">Tố cáo</span>
             <span class="tk-stat-card__value" style="color:#dc2626;">{{ number_format($stats['reports']) }}</span>
         </div>
     </div>
@@ -89,18 +89,18 @@
                     <label>Ưu tiên</label>
                     <select name="priority" onchange="this.form.submit()">
                         <option value="">Tất cả</option>
-                        <option value="urgent" {{ request('priority')==='urgent' ?'selected':'' }}>🔴 Khẩn cấp</option>
-                        <option value="high"   {{ request('priority')==='high'   ?'selected':'' }}>🟠 Cao</option>
-                        <option value="medium" {{ request('priority')==='medium' ?'selected':'' }}>🟡 Trung bình</option>
-                        <option value="low"    {{ request('priority')==='low'    ?'selected':'' }}>🟢 Thấp</option>
+                        <option value="urgent" {{ request('priority')==='urgent' ?'selected':'' }}>Khẩn cấp</option>
+                        <option value="high"   {{ request('priority')==='high'   ?'selected':'' }}>Cao</option>
+                        <option value="medium" {{ request('priority')==='medium' ?'selected':'' }}>Trung bình</option>
+                        <option value="low"    {{ request('priority')==='low'    ?'selected':'' }}>Thấp</option>
                     </select>
                 </div>
                 <div>
                     <label>Loại</label>
                     <select name="ticket_type" onchange="this.form.submit()">
                         <option value="">Tất cả</option>
-                        <option value="complaint" {{ request('ticket_type')==='complaint' ?'selected':'' }}>📋 Phản ánh</option>
-                        <option value="report"    {{ request('ticket_type')==='report'    ?'selected':'' }}>⚠️ Tố cáo</option>
+                        <option value="complaint" {{ request('ticket_type')==='complaint' ?'selected':'' }}>Phản ánh</option>
+                        <option value="report"    {{ request('ticket_type')==='report'    ?'selected':'' }}>Tố cáo</option>
                     </select>
                 </div>
             </div>
@@ -193,7 +193,7 @@
                                     <div class="tk-title-cell">
                                         <div style="display: flex; align-items: center; gap: 5px;">
                                             @if($ticket->ticket_type === 'report')
-                                                <span style="display:inline-flex;padding:1px 6px;background:#fef2f2;color:#dc2626;border-radius:4px;font-size:0.65rem;font-weight:700;border:1px solid #fecaca;white-space:nowrap;">⚠️ Tố cáo</span>
+                                                <span style="display:inline-flex;padding:1px 6px;background:#fef2f2;color:#dc2626;border-radius:4px;font-size:0.65rem;font-weight:700;border:1px solid #fecaca;white-space:nowrap;">Tố cáo</span>
                                             @endif
                                             <span class="tk-title-cell__title">{{ $ticket->title }}</span>
                                         </div>
@@ -268,10 +268,10 @@
             {{-- Report badge --}}
             <div id="panelReportBadge" style="display:none; background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:10px 14px; margin-bottom:12px;">
                 <div style="display:flex; align-items:center; gap:6px; color:#dc2626; font-weight:700; font-size:0.85rem;">
-                    ⚠️ Đây là TỐ CÁO
+                    Đây là TỐ CÁO
                 </div>
                 <div id="panelReportedPerson" style="margin-top:4px; color:#991b1b; font-size:0.82rem;">
-                    👤 Người bị tố cáo: <strong id="panelReportedName"></strong>
+                    Người bị tố cáo: <strong id="panelReportedName"></strong>
                 </div>
             </div>
             <div class="tk-panel__info-grid">
