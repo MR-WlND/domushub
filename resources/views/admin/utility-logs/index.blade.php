@@ -188,7 +188,7 @@
                             </td>
                             <td>
                                 <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; background-color: #fff5f5; border: 1px solid #feb2b2; color: #e53e3e; font-weight: 700; font-size: 11px;">
-                                    <i class="fas fa-exclamation-triangle animate-pulse" style="font-size: 10px;"></i>
+                                    <i class="fas fa-exclamation-triangle" style="font-size: 10px;"></i>
                                     <span>{{ $log->reject_reason ?? 'Không rõ lý do' }}</span>
                                 </div>
                             </td>

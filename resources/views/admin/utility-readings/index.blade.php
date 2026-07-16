@@ -244,9 +244,22 @@
                     {{-- Trạng thái --}}
                     <td style="text-align:center;">
                         @if($reading->status === 'approved')
-                            <span class="util-badge util-badge--success" style="background:#e6f4ea; color:#137333; font-size:11px;">Đã chốt</span>
+                            @php
+                                $approveLog = collect($reading->history_logs ?? [])->firstWhere('action', 'approved');
+                                $approverName = $approveLog['user_name'] ?? 'Kế toán viên';
+                                $approveTime = $approveLog['time'] ?? ($reading->updated_at ? $reading->updated_at->format('d/m/Y H:i') : '');
+                                $tooltip = "Duyệt bởi: {$approverName} ({$approveTime})";
+                            @endphp
+                            <span class="util-badge util-badge--success" style="background:#e6f4ea; color:#137333; font-size:11px;" data-tooltip="{{ $tooltip }}">Đã chốt</span>
                         @elseif($reading->status === 'rejected')
-                            <span class="util-badge util-badge--danger" style="background:#fce8e6; color:#c5221f; font-size:11px;">Bị từ chối</span>
+                            @php
+                                $rejectLog = collect($reading->history_logs ?? [])->firstWhere('action', 'rejected');
+                                $rejecterName = $rejectLog['user_name'] ?? ($reading->rejecter->name ?? 'Kế toán viên');
+                                $rejectTime = $rejectLog['time'] ?? ($reading->updated_at ? $reading->updated_at->format('d/m/Y H:i') : '');
+                                $reason = $rejectLog['reason'] ?? ($reading->reject_reason ?? 'Không rõ lý do');
+                                $tooltip = "Từ chối bởi: {$rejecterName} ({$rejectTime}). Lý do: {$reason}";
+                            @endphp
+                            <span class="util-badge util-badge--danger" style="background:#fce8e6; color:#c5221f; font-size:11px;" data-tooltip="{{ $tooltip }}">Bị từ chối</span>
                         @else
                             <span class="util-badge util-badge--warning" style="background:#fef7e0; color:#b06000; font-size:11px;">Chờ chốt</span>
                         @endif
@@ -575,6 +588,56 @@
     display: inline-flex !important;
     margin: 0 !important;
 }
+
+/* Premium Tooltip */
+.util-badge[data-tooltip] {
+    position: relative;
+    cursor: help;
+}
+.util-badge[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 130%;
+    left: 50%;
+    transform: translateX(-50%) scale(0.95);
+    background: #1e293b;
+    color: #ffffff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.4;
+    text-align: center;
+    width: max-content;
+    max-width: 260px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    z-index: 999;
+    white-space: normal;
+}
+.util-badge[data-tooltip]:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+}
+.util-badge[data-tooltip]::before {
+    content: '';
+    position: absolute;
+    bottom: 118%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: #1e293b transparent transparent transparent;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+    z-index: 999;
+}
+.util-badge[data-tooltip]:hover::before {
+    opacity: 1;
+}
 </style>
 
 {{-- ── Global Proof Preview tooltip ─────────────────── --}}
@@ -854,69 +917,135 @@ function openDetailModal(id) {
             const rejectTableContainer = document.getElementById('detRejectTableContainer');
             const rejections = data.rejections || [];
             
-            if (rejections.length > 0) {
-                let html = `
-                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); overflow: hidden; margin-top: 8px;">
-                        <div style="background: #ffffff; border-bottom: 1px solid #f1f5f9; padding: 12px 16px; display: flex; align-items: center;">
-                            <div style="background: #fee2e2; color: #ef4444; border-radius: 6px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 13px;">
-                                <i class="fas fa-exclamation-circle"></i>
-                            </div>
-                            <span style="font-size: 13px; font-weight: 700; color: #1e293b;">Lý do từ chối</span>
-                        </div>
-                        <div style="overflow-x: auto;">
-                            <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left; vertical-align: middle;">
-                                <thead>
-                                    <tr style="background: #f8fafc; color: #64748b; border-bottom: 1px solid #e2e8f0; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; font-weight: 700;">
-                                        <th style="padding: 8px 12px; width: 30%;">Thời gian</th>
-                                        <th style="padding: 8px 12px; width: 30%;">Người từ chối</th>
-                                        <th style="padding: 8px 12px; width: 40%;">Lý do</th>
-                                    </tr>
-                                </thead>
-                                <tbody style="color: #334155;">
-                `;
-                rejections.forEach(rej => {
-                    html += `
-                        <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 10px 12px; color: #94a3b8; font-weight: 400; white-space: nowrap;">${rej.rejected_at}</td>
-                            <td style="padding: 10px 12px; font-weight: 500; color: #64748b;">${rej.rejecter_name}</td>
-                            <td style="padding: 10px 12px;">
-                                <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; background-color: #fff5f5; border: 1px solid #feb2b2; color: #e53e3e; font-weight: 700; font-size: 11px;">
-                                    <i class="fas fa-exclamation-triangle animate-pulse" style="font-size: 10px;"></i>
-                                    <span>${rej.reason}</span>
+            const hasRejection = rejections.some(rej => rej.action === 'rejected');
+            
+            if (reading.status === 'approved') {
+                if (hasRejection) {
+                    let html = `
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); overflow: hidden; margin-top: 8px;">
+                            <div style="background: #ffffff; border-bottom: 1px solid #f1f5f9; padding: 12px 16px; display: flex; align-items: center;">
+                                <div style="background: #f1f5f9; color: #475569; border-radius: 6px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 13px;">
+                                    <i class="fas fa-history"></i>
                                 </div>
-                            </td>
-                        </tr>
-                    `;
-                });
-                html += `
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                `;
-                rejectTableContainer.innerHTML = html;
-                rejectInfoEl.style.display = 'block';
-            } else if (reading.status === 'rejected') {
-                rejectTableContainer.innerHTML = `
-                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); overflow: hidden; margin-top: 8px;">
-                        <div style="background: #ffffff; border-bottom: 1px solid #f1f5f9; padding: 12px 16px; display: flex; align-items: center;">
-                            <div style="background: #fee2e2; color: #ef4444; border-radius: 6px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 13px;">
-                                <i class="fas fa-exclamation-circle"></i>
+                                <span style="font-size: 13px; font-weight: 700; color: #1e293b;">Lịch sử phê duyệt</span>
                             </div>
-                            <span style="font-size: 13px; font-weight: 700; color: #1e293b;">Lý do từ chối</span>
+                            <div style="overflow-x: auto;">
+                                <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left; vertical-align: middle;">
+                                    <thead>
+                                        <tr style="background: #f8fafc; color: #64748b; border-bottom: 1px solid #e2e8f0; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; font-weight: 700;">
+                                            <th style="padding: 8px 12px; width: 30%;">Thời gian</th>
+                                            <th style="padding: 8px 12px; width: 30%;">Người thực hiện</th>
+                                            <th style="padding: 8px 12px; width: 40%;">Hành động / Chi tiết</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody style="color: #334155;">
+                    `;
+                    rejections.forEach(rej => {
+                        if (rej.action === 'approved') {
+                            html += `
+                                <tr style="border-bottom: 1px solid #f1f5f9;">
+                                    <td style="padding: 10px 12px; color: #94a3b8; font-weight: 400; white-space: nowrap;">${rej.rejected_at}</td>
+                                    <td style="padding: 10px 12px; font-weight: 500; color: #64748b;">${rej.rejecter_name}</td>
+                                    <td style="padding: 10px 12px;">
+                                        <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; background-color: #e6f4ea; border: 1px solid #a3cfbb; color: #146c43; font-weight: 700; font-size: 11px;">
+                                            <i class="fas fa-check-circle" style="font-size: 10px;"></i>
+                                            <span>Đã chốt số</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
+                        } else {
+                            html += `
+                                <tr style="border-bottom: 1px solid #f1f5f9;">
+                                    <td style="padding: 10px 12px; color: #94a3b8; font-weight: 400; white-space: nowrap;">${rej.rejected_at}</td>
+                                    <td style="padding: 10px 12px; font-weight: 500; color: #64748b;">${rej.rejecter_name}</td>
+                                    <td style="padding: 10px 12px;">
+                                        <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; background-color: #fff5f5; border: 1px solid #feb2b2; color: #e53e3e; font-weight: 700; font-size: 11px;">
+                                            <i class="fas fa-exclamation-triangle" style="font-size: 10px;"></i>
+                                            <span>Từ chối: ${rej.reason}</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
+                        }
+                    });
+                    html += `
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                        <div style="padding: 16px; font-size:13px; color:#334155;">
-                            <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;">Thời gian: ${reading.updated_at || ''}</div>
-                            <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">Người từ chối: <strong style="color: #0f172a;">${reading.rejecter_name || 'Kế toán viên'}</strong></div>
-                            <span style="display: inline-block; background: #fee2e2; color: #b91c1c; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">
-                                ${reading.reject_reason || 'Không rõ lý do'}
-                            </span>
-                        </div>
-                    </div>
-                `;
-                rejectInfoEl.style.display = 'block';
+                    `;
+                    rejectTableContainer.innerHTML = html;
+                    rejectInfoEl.style.display = 'block';
+                } else {
+                    rejectInfoEl.style.display = 'none';
+                }
             } else {
-                rejectInfoEl.style.display = 'none';
+                const rejectedLogs = rejections.filter(rej => rej.action === 'rejected');
+                if (rejectedLogs.length > 0) {
+                    let html = `
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); overflow: hidden; margin-top: 8px;">
+                            <div style="background: #ffffff; border-bottom: 1px solid #f1f5f9; padding: 12px 16px; display: flex; align-items: center;">
+                                <div style="background: #fee2e2; color: #ef4444; border-radius: 6px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 13px;">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </div>
+                                <span style="font-size: 13px; font-weight: 700; color: #1e293b;">Lý do từ chối</span>
+                            </div>
+                            <div style="overflow-x: auto;">
+                                <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left; vertical-align: middle;">
+                                    <thead>
+                                        <tr style="background: #f8fafc; color: #64748b; border-bottom: 1px solid #e2e8f0; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; font-weight: 700;">
+                                            <th style="padding: 8px 12px; width: 30%;">Thời gian</th>
+                                            <th style="padding: 8px 12px; width: 30%;">Người từ chối</th>
+                                            <th style="padding: 8px 12px; width: 40%;">Lý do</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody style="color: #334155;">
+                    `;
+                    rejectedLogs.forEach(rej => {
+                        html += `
+                            <tr style="border-bottom: 1px solid #f1f5f9;">
+                                <td style="padding: 10px 12px; color: #94a3b8; font-weight: 400; white-space: nowrap;">${rej.rejected_at}</td>
+                                <td style="padding: 10px 12px; font-weight: 500; color: #64748b;">${rej.rejecter_name}</td>
+                                <td style="padding: 10px 12px;">
+                                    <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; background-color: #fff5f5; border: 1px solid #feb2b2; color: #e53e3e; font-weight: 700; font-size: 11px;">
+                                        <i class="fas fa-exclamation-triangle" style="font-size: 10px;"></i>
+                                        <span>${rej.reason}</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    html += `
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                    rejectTableContainer.innerHTML = html;
+                    rejectInfoEl.style.display = 'block';
+                } else if (reading.status === 'rejected') {
+                    rejectTableContainer.innerHTML = `
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); overflow: hidden; margin-top: 8px;">
+                            <div style="background: #ffffff; border-bottom: 1px solid #f1f5f9; padding: 12px 16px; display: flex; align-items: center;">
+                                <div style="background: #fee2e2; color: #ef4444; border-radius: 6px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 13px;">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </div>
+                                <span style="font-size: 13px; font-weight: 700; color: #1e293b;">Lý do từ chối</span>
+                            </div>
+                            <div style="padding: 16px; font-size:13px; color:#334155;">
+                                <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;">Thời gian: ${reading.updated_at || ''}</div>
+                                <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">Người từ chối: <strong style="color: #0f172a;">${reading.rejecter_name || 'Kế toán viên'}</strong></div>
+                                <span style="display: inline-block; background: #fee2e2; color: #b91c1c; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">
+                                    ${reading.reject_reason || 'Không rõ lý do'}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                    rejectInfoEl.style.display = 'block';
+                } else {
+                    rejectInfoEl.style.display = 'none';
+                }
             }
 
             // Image gallery container
