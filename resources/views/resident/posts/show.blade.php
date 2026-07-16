@@ -514,24 +514,14 @@
         <div class="rh-fb-card__actions">
             {{-- Thích --}}
             <div class="pc-like-container" style="display: flex; align-items: center; justify-content: center;">
-                <div class="pc-reactions-popup">
-                    <span class="pc-reaction-option" data-label="Thích" onclick="toggleLike(event, {{ $post->id }}, 'post', 'like')">👍</span>
-                    <span class="pc-reaction-option" data-label="Yêu thích" onclick="toggleLike(event, {{ $post->id }}, 'post', 'love')">❤️</span>
-                    <span class="pc-reaction-option" data-label="Haha" onclick="toggleLike(event, {{ $post->id }}, 'post', 'haha')">😆</span>
-                    <span class="pc-reaction-option" data-label="Wow" onclick="toggleLike(event, {{ $post->id }}, 'post', 'wow')">😮</span>
-                    <span class="pc-reaction-option" data-label="Buồn" onclick="toggleLike(event, {{ $post->id }}, 'post', 'sad')">😢</span>
-                    <span class="pc-reaction-option" data-label="Phẫn nộ" onclick="toggleLike(event, {{ $post->id }}, 'post', 'angry')">😡</span>
-                </div>
-
                 @php
                     $userLike = $post->likedByCurrentUser->first();
-                    $activeReaction = $userLike ? $userLike->type : null;
+                    $activeReaction = $userLike ? true : false;
                 @endphp
 
-                <button type="button" class="rh-fb-card__action pc-like-btn {{ $activeReaction ? 'rh-fb-like-btn--active' : '' }}" onclick="toggleLike(event, {{ $post->id }}, 'post')" style="width:100%;">
+                <button type="button" class="rh-fb-card__action pc-like-btn {{ $activeReaction ? 'rh-fb-like-btn--active' : '' }}" onclick="toggleLike(event, {{ $post->id }}, 'post', 'like')" style="width:100%;">
                     <svg class="like-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
-                    <span class="reaction-icon-span">{{ $activeReaction ? match($activeReaction) { 'love' => '❤️', 'haha' => '😆', 'wow' => '😮', 'sad' => '😢', 'angry' => '😡', default => '' } : '' }}</span>
-                    <span class="reaction-text-span">{{ $activeReaction ? match($activeReaction) { 'love' => 'Yêu thích', 'haha' => 'Haha', 'wow' => 'Wow', 'sad' => 'Buồn', 'angry' => 'Phẫn nộ', default => 'Thích' } : 'Thích' }}</span>
+                    <span class="reaction-text-span">Thích</span>
                 </button>
             </div>
 
@@ -671,20 +661,8 @@
 
                                     {{-- Like --}}
                                     <div class="fb-like-wrapper">
-                                        <div class="fb-reactions-popup">
-                                            <span class="fb-reaction-option" onclick="toggleLike(event, {{ $comment->id }}, 'comment', 'like')">👍</span>
-                                            <span class="fb-reaction-option" onclick="toggleLike(event, {{ $comment->id }}, 'comment', 'love')">❤️</span>
-                                            <span class="fb-reaction-option" onclick="toggleLike(event, {{ $comment->id }}, 'comment', 'haha')">😆</span>
-                                            <span class="fb-reaction-option" onclick="toggleLike(event, {{ $comment->id }}, 'comment', 'wow')">😮</span>
-                                            <span class="fb-reaction-option" onclick="toggleLike(event, {{ $comment->id }}, 'comment', 'sad')">😢</span>
-                                            <span class="fb-reaction-option" onclick="toggleLike(event, {{ $comment->id }}, 'comment', 'angry')">😡</span>
-                                        </div>
-                                        @php
-                                            $cLike = $comment->likedByCurrentUser->first();
-                                            $cReaction = $cLike ? $cLike->type : null;
-                                        @endphp
-                                        <button type="button" class="fb-comment__action-link fb-comment__action-link--like {{ $cReaction ? 'fb-comment__action-link--liked reaction-active-'.$cReaction : '' }}" onclick="toggleLike(event, {{ $comment->id }}, 'comment')">
-                                            <span class="reaction-text-span">{{ $cReaction ? match($cReaction) { 'love' => 'Yêu thích', 'haha' => 'Haha', 'wow' => 'Wow', 'sad' => 'Buồn', 'angry' => 'Phẫn nộ', default => 'Thích' } : 'Thích' }}</span>
+                                        <button type="button" class="fb-comment__action-link fb-comment__action-link--like {{ $comment->likedByCurrentUser->first() ? 'fb-comment__action-link--liked' : '' }}" onclick="toggleLike(event, {{ $comment->id }}, 'comment', 'like')">
+                                            <span class="reaction-text-span">Thích</span>
                                         </button>
                                     </div>
 
@@ -768,20 +746,8 @@
                                             <span class="fb-comment__time" title="{{ $reply->created_at }}">{{ $reply->created_at->diffForHumans() }}</span>
 
                                             <div class="fb-like-wrapper">
-                                                <div class="fb-reactions-popup">
-                                                    <span class="fb-reaction-option" onclick="toggleLike(event, {{ $reply->id }}, 'comment', 'like')">👍</span>
-                                                    <span class="fb-reaction-option" onclick="toggleLike(event, {{ $reply->id }}, 'comment', 'love')">❤️</span>
-                                                    <span class="fb-reaction-option" onclick="toggleLike(event, {{ $reply->id }}, 'comment', 'haha')">😆</span>
-                                                    <span class="fb-reaction-option" onclick="toggleLike(event, {{ $reply->id }}, 'comment', 'wow')">😮</span>
-                                                    <span class="fb-reaction-option" onclick="toggleLike(event, {{ $reply->id }}, 'comment', 'sad')">😢</span>
-                                                    <span class="fb-reaction-option" onclick="toggleLike(event, {{ $reply->id }}, 'comment', 'angry')">😡</span>
-                                                </div>
-                                                @php
-                                                    $rLike = $reply->likedByCurrentUser->first();
-                                                    $rReaction = $rLike ? $rLike->type : null;
-                                                @endphp
-                                                <button type="button" class="fb-comment__action-link fb-comment__action-link--like {{ $rReaction ? 'fb-comment__action-link--liked reaction-active-'.$rReaction : '' }}" onclick="toggleLike(event, {{ $reply->id }}, 'comment')">
-                                                    <span class="reaction-text-span">{{ $rReaction ? match($rReaction) { 'love' => 'Yêu thích', 'haha' => 'Haha', 'wow' => 'Wow', 'sad' => 'Buồn', 'angry' => 'Phẫn nộ', default => 'Thích' } : 'Thích' }}</span>
+                                                <button type="button" class="fb-comment__action-link fb-comment__action-link--like {{ $reply->likedByCurrentUser->first() ? 'fb-comment__action-link--liked' : '' }}" onclick="toggleLike(event, {{ $reply->id }}, 'comment', 'like')">
+                                                    <span class="reaction-text-span">Thích</span>
                                                 </button>
                                             </div>
 
