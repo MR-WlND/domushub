@@ -25,9 +25,14 @@ class InvoiceController extends Controller
             ->pluck('apartment_id')
             ->toArray();
 
+        // Fallback: nếu user có apartment_id nhưng không có record residents
+        if (empty($apartmentIds) && $user->apartment_id) {
+            $apartmentIds = [$user->apartment_id];
+        }
+
         $invoices = Invoice::with(['apartment.floor.block', 'details.servicePrice'])
             ->whereIn('apartment_id', $apartmentIds)
-            ->whereIn('status', ['unpaid', 'overdue'])
+            ->whereIn('status', ['unpaid', 'partial', 'overdue'])
             ->orderByDesc('billing_year')
             ->orderByDesc('billing_month')
             ->get();
@@ -46,6 +51,10 @@ class InvoiceController extends Controller
             ->whereNull('deleted_at')
             ->pluck('apartment_id')
             ->toArray();
+
+        if (empty($apartmentIds) && $user->apartment_id) {
+            $apartmentIds = [$user->apartment_id];
+        }
 
         $query = Invoice::with(['apartment.floor.block', 'details.servicePrice', 'payments'])
             ->whereIn('apartment_id', $apartmentIds)
@@ -70,6 +79,10 @@ class InvoiceController extends Controller
             ->pluck('apartment_id')
             ->toArray();
 
+        if (empty($apartmentIds) && $user->apartment_id) {
+            $apartmentIds = [$user->apartment_id];
+        }
+
         $invoice = Invoice::with(['apartment.floor.block', 'details.servicePrice', 'payments'])
             ->whereIn('apartment_id', $apartmentIds)
             ->findOrFail($id);
@@ -91,6 +104,10 @@ class InvoiceController extends Controller
             ->pluck('apartment_id')
             ->toArray();
 
+        if (empty($apartmentIds) && $user->apartment_id) {
+            $apartmentIds = [$user->apartment_id];
+        }
+
         $invoiceIds = $request->input('invoice_ids', []);
         if (empty($invoiceIds)) {
             return back()->with('error', 'Vui lòng chọn ít nhất một hoá đơn để thanh toán.');
@@ -98,7 +115,7 @@ class InvoiceController extends Controller
 
         $invoices = Invoice::whereIn('apartment_id', $apartmentIds)
             ->whereIn('id', $invoiceIds)
-            ->whereIn('status', ['unpaid', 'overdue'])
+            ->whereIn('status', ['unpaid', 'partial', 'overdue'])
             ->get();
 
         if ($invoices->isEmpty()) {
@@ -164,6 +181,10 @@ class InvoiceController extends Controller
         $user = Auth::user();
         $apartmentIds = $user->residents()->whereNull('deleted_at')->pluck('apartment_id')->toArray();
 
+        if (empty($apartmentIds) && $user->apartment_id) {
+            $apartmentIds = [$user->apartment_id];
+        }
+
         $invoiceId = $request->input('invoice_id');
         $detailIds = $request->input('detail_ids', []);
 
@@ -173,7 +194,7 @@ class InvoiceController extends Controller
 
         $invoice = Invoice::whereIn('apartment_id', $apartmentIds)
             ->where('id', $invoiceId)
-            ->whereIn('status', ['unpaid', 'overdue'])
+            ->whereIn('status', ['unpaid', 'partial', 'overdue'])
             ->first();
 
         if (!$invoice) {
