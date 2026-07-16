@@ -220,7 +220,7 @@ class InvoiceSeeder extends Seeder
             'due_date'      => Carbon::create(2026, 5, 25),
             'total_amount'  => 510000,
             'paid_amount'   => 200000,
-            'status'        => 'partial',
+            'status'        => 'partial_paid',
         ]);
 
         if ($managementPrice) {
