@@ -47,7 +47,16 @@
             <div class="tk-show-card">
                 <div class="tk-show-card__header">
                     <span class="tk-show-card__title">Nội dung phản ánh</span>
-                    <div style="display: flex; gap: 8px; align-items: center;">
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        @if($ticket->ticket_type === 'report')
+                            <span style="display: inline-flex; align-items: center; gap: 3px; padding: 3px 10px; background: #fef2f2; color: #dc2626; border-radius: 20px; font-size: 0.75rem; font-weight: 700; border: 1px solid #fecaca;">
+                                ⚠️ Tố cáo
+                            </span>
+                        @else
+                            <span style="display: inline-flex; align-items: center; gap: 3px; padding: 3px 10px; background: #eff6ff; color: #2563eb; border-radius: 20px; font-size: 0.75rem; font-weight: 700; border: 1px solid #bfdbfe;">
+                                📋 Phản ánh
+                            </span>
+                        @endif
                         <span class="tk-priority tk-priority--{{ $ticket->priority }}">{{ $ticket->priorityLabel() }}</span>
                         <span class="tk-status tk-status--{{ $ticket->status }}">{{ $ticket->statusLabel() }}</span>
                         @if($ticket->rating)
@@ -77,6 +86,12 @@
                             <span class="tk-info-item__label">Ngày gửi</span>
                             <span class="tk-info-item__value">{{ $ticket->created_at->format('d/m/Y H:i') }}</span>
                         </div>
+                        @if($ticket->ticket_type === 'report' && $ticket->reported_person)
+                            <div class="tk-info-item" style="grid-column: 1 / -1;">
+                                <span class="tk-info-item__label" style="color: #dc2626;">👤 Người bị tố cáo</span>
+                                <span class="tk-info-item__value" style="color: #dc2626; font-weight: 700;">{{ $ticket->reported_person }}</span>
+                            </div>
+                        @endif
                     </div>
 
                     <div style="border-top: 1px solid #f1f5f9; padding-top: 1rem;">

@@ -13,8 +13,10 @@ class Ticket extends Model
         'apartment_id',
         'sender_id',
         'handler_id',
+        'ticket_type',
         'title',
         'description',
+        'reported_person',
         'images',
         'priority',
         'status',
@@ -76,6 +78,20 @@ class Ticket extends Model
             'urgent' => 'Khẩn cấp',
             default  => $this->priority,
         };
+    }
+
+    public function ticketTypeLabel(): string
+    {
+        return match ($this->ticket_type) {
+            'complaint' => 'Phản ánh sự cố',
+            'report'    => 'Tố cáo',
+            default     => $this->ticket_type,
+        };
+    }
+
+    public function isReport(): bool
+    {
+        return $this->ticket_type === 'report';
     }
 
     // ── Status Checkers ─────────────────────────────────────────

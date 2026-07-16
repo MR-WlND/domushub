@@ -43,12 +43,21 @@
             @endif
 
             {{-- INFO BOX --}}
-            <div style="background: #f5f3ff; border-left: 4px solid #7c3aed; padding: 16px; margin-bottom: 24px; border-radius: 4px; font-size: 0.9rem; color: #4c1d95;">
+            <div id="infoBoxComplaint" style="background: #f5f3ff; border-left: 4px solid #7c3aed; padding: 16px; margin-bottom: 24px; border-radius: 4px; font-size: 0.9rem; color: #4c1d95;">
                 <strong>Hướng dẫn:</strong>
                 <ul style="margin: 8px 0 0 20px; padding: 0;">
                     <li>Mô tả chi tiết sự cố để Ban quản lý xử lý nhanh chóng hơn.</li>
                     <li>Đính kèm ảnh sự cố (nếu có) để minh chứng rõ ràng.</li>
                     <li>Phản ánh sẽ được xử lý trong vòng <strong>24-48 giờ</strong> làm việc.</li>
+                </ul>
+            </div>
+            <div id="infoBoxReport" style="display: none; background: #fef2f2; border-left: 4px solid #dc2626; padding: 16px; margin-bottom: 24px; border-radius: 4px; font-size: 0.9rem; color: #991b1b;">
+                <strong>⚠️ Lưu ý khi tố cáo:</strong>
+                <ul style="margin: 8px 0 0 20px; padding: 0;">
+                    <li><strong>Bắt buộc đính kèm ảnh/video</strong> làm bằng chứng.</li>
+                    <li>Nhập đầy đủ tên người bị tố cáo.</li>
+                    <li>Người gây ra sẽ phải chịu <strong>chi phí đền bù</strong> nếu xác minh đúng.</li>
+                    <li>Tố cáo sai sự thật có thể bị xử lý ngược.</li>
                 </ul>
             </div>
 
@@ -58,6 +67,39 @@
                   style="display: flex; flex-direction: column; gap: 1.25rem;">
 
                 @csrf
+
+                {{-- LOẠI PHẢN ÁNH --}}
+                <div>
+                    <label class="tk-label">
+                        Loại phản ánh <span style="color: #ef4444;">*</span>
+                    </label>
+                    <div style="position: relative; display: flex; align-items: center;">
+                        <select name="ticket_type"
+                                id="ticketTypeSelect"
+                                class="tk-select"
+                                required
+                                onchange="toggleTicketType()">
+                            <option value="complaint" {{ old('ticket_type', 'complaint') === 'complaint' ? 'selected' : '' }}>📋 Phản ánh sự cố</option>
+                            <option value="report" {{ old('ticket_type') === 'report' ? 'selected' : '' }}>⚠️ Tố cáo</option>
+                        </select>
+                        <div class="tk-chevron">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- NGƯỜI BỊ TỐ CÁO (chỉ hiện khi chọn Tố cáo) --}}
+                <div id="reportedPersonGroup" style="display: {{ old('ticket_type') === 'report' ? 'block' : 'none' }};">
+                    <label class="tk-label">
+                        Tên người bị tố cáo <span style="color: #ef4444;">*</span>
+                    </label>
+                    <input type="text"
+                           name="reported_person"
+                           id="reportedPersonInput"
+                           class="tk-input @error('reported_person') tk-input--err @enderror"
+                           value="{{ old('reported_person') }}"
+                           placeholder="Nhập họ tên người gây ra sự cố / vi phạm">
+                </div>
 
                 {{-- TIÊU ĐỀ --}}
                 <div>
@@ -140,9 +182,9 @@
                         Hủy bỏ
                     </a>
 
-                    <button type="submit" class="tk-btn tk-btn--primary" style="display: inline-flex; align-items: center; gap: 6px;">
+                    <button type="submit" id="submitBtn" class="tk-btn tk-btn--primary" style="display: inline-flex; align-items: center; gap: 6px;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-                        Gửi phản ánh
+                        <span id="submitBtnText">Gửi phản ánh</span>
                     </button>
                 </div>
 
@@ -287,6 +329,38 @@ function removeTicketPreviews() {
     document.getElementById('upload-preview').innerHTML = '';
     document.getElementById('upload-placeholder').style.display = 'flex';
 }
+
+function toggleTicketType() {
+    const type = document.getElementById('ticketTypeSelect').value;
+    const reportGroup = document.getElementById('reportedPersonGroup');
+    const reportInput = document.getElementById('reportedPersonInput');
+    const infoComplaint = document.getElementById('infoBoxComplaint');
+    const infoReport = document.getElementById('infoBoxReport');
+    const submitText = document.getElementById('submitBtnText');
+    const submitBtn = document.getElementById('submitBtn');
+
+    if (type === 'report') {
+        reportGroup.style.display = 'block';
+        reportInput.setAttribute('required', 'required');
+        infoComplaint.style.display = 'none';
+        infoReport.style.display = 'block';
+        submitText.textContent = 'Gửi tố cáo';
+        submitBtn.style.background = '#dc2626';
+    } else {
+        reportGroup.style.display = 'none';
+        reportInput.removeAttribute('required');
+        reportInput.value = '';
+        infoComplaint.style.display = 'block';
+        infoReport.style.display = 'none';
+        submitText.textContent = 'Gửi phản ánh';
+        submitBtn.style.background = '';
+    }
+}
+
+// Khởi tạo trạng thái khi load trang (cho trường hợp old() input)
+document.addEventListener('DOMContentLoaded', function() {
+    toggleTicketType();
+});
 </script>
 
 @endsection
