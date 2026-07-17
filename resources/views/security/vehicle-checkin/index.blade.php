@@ -168,7 +168,7 @@ function startCamera() {
     html5QrcodeScanner = new Html5Qrcode("reader");
     html5QrcodeScanner.start(
         { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 220, height: 220 } },
+        { fps: 20, qrbox: { width: 280, height: 280 }, aspectRatio: 1.0, experimentalFeatures: { useBarCodeDetectorIfSupported: true } },
         (decodedText) => {
             if (decodedText !== lastScannedToken) {
                 lastScannedToken = decodedText;
