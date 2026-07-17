@@ -20,10 +20,7 @@ class InvoiceController extends Controller
     {
         $user = Auth::user();
 
-        $apartmentIds = $user->residents()
-            ->whereNull('deleted_at')
-            ->pluck('apartment_id')
-            ->toArray();
+        $apartmentIds = $user->getApartmentIds();
 
         // Fallback: nếu user có apartment_id nhưng không có record residents
         if (empty($apartmentIds) && $user->apartment_id) {
@@ -47,10 +44,7 @@ class InvoiceController extends Controller
     {
         $user = Auth::user();
 
-        $apartmentIds = $user->residents()
-            ->whereNull('deleted_at')
-            ->pluck('apartment_id')
-            ->toArray();
+        $apartmentIds = $user->getApartmentIds();
 
         if (empty($apartmentIds) && $user->apartment_id) {
             $apartmentIds = [$user->apartment_id];
@@ -74,10 +68,7 @@ class InvoiceController extends Controller
     {
         $user = Auth::user();
 
-        $apartmentIds = $user->residents()
-            ->whereNull('deleted_at')
-            ->pluck('apartment_id')
-            ->toArray();
+        $apartmentIds = $user->getApartmentIds();
 
         if (empty($apartmentIds) && $user->apartment_id) {
             $apartmentIds = [$user->apartment_id];
@@ -99,10 +90,7 @@ class InvoiceController extends Controller
     {
         $user = Auth::user();
 
-        $apartmentIds = $user->residents()
-            ->whereNull('deleted_at')
-            ->pluck('apartment_id')
-            ->toArray();
+        $apartmentIds = $user->getApartmentIds();
 
         if (empty($apartmentIds) && $user->apartment_id) {
             $apartmentIds = [$user->apartment_id];
@@ -179,7 +167,7 @@ class InvoiceController extends Controller
     public function payDetails(Request $request)
     {
         $user = Auth::user();
-        $apartmentIds = $user->residents()->whereNull('deleted_at')->pluck('apartment_id')->toArray();
+        $apartmentIds = $user->getApartmentIds();
 
         if (empty($apartmentIds) && $user->apartment_id) {
             $apartmentIds = [$user->apartment_id];
@@ -432,7 +420,7 @@ class InvoiceController extends Controller
                         'vnp_txn_ref'      => $txnNo,
                         'status'           => 'success',
                         'paid_at'          => $paidAt,
-                        'payer_name'       => auth()->user()->name ?? ($invoice->apartment->owner_name ?? 'Cư dân'),
+                        'payer_name'       => auth()->user()?->name ?? ($invoice->apartment->owner_name ?? 'Cư dân'),
                         'note'             => 'Thanh toán các khoản phí: ' . implode(', ', $details->pluck('servicePrice.name')->toArray())
                     ]);
                     
@@ -458,7 +446,7 @@ class InvoiceController extends Controller
                         'vnp_txn_ref'      => $txnNo,
                         'status'           => 'success',
                         'paid_at'          => $paidAt,
-                        'payer_name'       => auth()->user()->name ?? ($invoice->apartment->owner_name ?? 'Cư dân'),
+                        'payer_name'       => auth()->user()?->name ?? ($invoice->apartment->owner_name ?? 'Cư dân'),
                     ]);
                 }
             }

@@ -165,6 +165,9 @@ Route::middleware(['admin'])->group(function () {
     Route::post('/admin/tickets/{id}/assign', [App\Http\Controllers\Admin\TicketController::class, 'assign'])->name('admin.tickets.assign');
     Route::post('/admin/tickets/{id}/accept', [App\Http\Controllers\Admin\TicketController::class, 'acceptTask'])->name('admin.tickets.accept');
     Route::post('/admin/tickets/{id}/update-progress', [App\Http\Controllers\Admin\TicketController::class, 'updateProgress'])->name('admin.tickets.update-progress');
+    Route::post('/admin/tickets/{id}/costs', [App\Http\Controllers\Admin\TicketController::class, 'addCost'])->name('admin.tickets.add-cost');
+    Route::delete('/admin/tickets/{id}/costs/{costId}', [App\Http\Controllers\Admin\TicketController::class, 'deleteCost'])->name('admin.tickets.delete-cost');
+    Route::post('/admin/tickets/{id}/assign-accused', [App\Http\Controllers\Admin\TicketController::class, 'assignAccused'])->name('admin.tickets.assign-accused');
 
     // QUẢN LÝ PHƯƠNG TIỆN PHÍA ADMIN
     Route::get('/admin/vehicles', [App\Http\Controllers\Admin\VehicleController::class, 'index'])->name('admin.vehicles.index');
@@ -301,28 +304,16 @@ Route::middleware(['resident'])->group(function () {
             ->limit(5)
             ->get();
 
-        // Tự động chạy migrate nếu bảng post_hides chưa được tạo
-        if (!\Illuminate\Support\Facades\Schema::hasTable('post_hides')) {
-            try {
-                \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-            } catch (\Exception $e) {
-                \Log::error('Migration check/run failed in web.php: ' . $e->getMessage());
-            }
-        }
-
         // Bài viết cư dân (full feed với filter + pagination)
         $postQuery = \App\Models\Post::with(['user', 'images', 'comments', 'likedByCurrentUser'])
             ->withCount(['likes', 'comments'])
             ->where('status', 'published')
             ->whereDoesntHave('reports', function($q) {
                 $q->where('user_id', auth()->id());
-            });
-
-        if (\Illuminate\Support\Facades\Schema::hasTable('post_hides')) {
-            $postQuery->whereDoesntHave('hides', function($q) {
+            })
+            ->whereDoesntHave('hides', function($q) {
                 $q->where('user_id', auth()->id());
             });
-        }
 
         $postQuery->orderBy('created_at', 'desc');
 
@@ -448,6 +439,7 @@ Route::middleware(['resident'])->group(function () {
         ->middleware('throttle:10,1')
         ->name('resident.chatbot.message');
     Route::post('/resident/chatbot/clear', [\App\Http\Controllers\Resident\ChatbotController::class, 'clearHistory'])->name('resident.chatbot.clear');
+    Route::post('/resident/tickets/{id}/respond-accusation', [ResidentTicketController::class, 'respondAccusation'])->name('resident.tickets.respond-accusation');
 });
 
 Route::middleware(['admin'])->name('admin.')->group(function () {

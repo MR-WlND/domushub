@@ -622,7 +622,7 @@ class InvoiceController extends Controller
             $proofPath = $request->file('proof_image')->store('proofs', 'public');
         }
 
-        DB::transaction(function () use ($invoice, $validated, $paymentMethodMap, $proofPath) {
+        DB::transaction(function () use ($invoice, $validated, $proofPath) {
             // Tạo bản ghi payment
             Payment::create([
                 'bill_id'        => $invoice->id,
