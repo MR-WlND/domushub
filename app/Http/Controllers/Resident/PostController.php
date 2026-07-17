@@ -512,6 +512,20 @@ class PostController extends Controller
     }
 
     /**
+     * Hiển thị trang chỉnh sửa bài viết
+     */
+    public function edit($id)
+    {
+        $post = Post::with('images')->findOrFail($id);
+
+        if ($post->user_id !== Auth::id()) {
+            abort(403, 'Bạn không có quyền chỉnh sửa bài viết này.');
+        }
+
+        return view('resident.posts.edit', compact('post'));
+    }
+
+    /**
      * Chỉnh sửa bài viết
      */
     public function update(Request $request, $id)
@@ -535,12 +549,59 @@ class PostController extends Controller
             'title' => 'nullable|string|max:200',
             'content' => 'required|string',
             'price' => 'nullable|numeric|min:0|max:999999999',
+            'media' => 'nullable|array|max:5',
+            'media.*' => 'file|mimes:jpeg,png,jpg,gif,webp,mp4,mov,avi,webm|max:20480',
+            'delete_media' => 'nullable|array',
+            'delete_media.*' => 'integer|exists:post_images,id',
+        ], [
+            'title.max' => 'Tiêu đề không được vượt quá 200 ký tự.',
+            'content.required' => 'Vui lòng nhập nội dung bài đăng.',
+            'price.numeric' => 'Giá bán phải là định dạng số.',
+            'price.min' => 'Giá bán không được nhỏ hơn 0đ.',
+            'media.array' => 'File đính kèm phải ở dạng danh sách.',
+            'media.max' => 'Bạn chỉ được đính kèm tối đa 5 file cho mỗi bài viết.',
+            'media.*.file' => 'File tải lên không hợp lệ.',
+            'media.*.mimes' => 'File phải có định dạng: jpeg, png, jpg, gif, webp, mp4, mov, avi, webm.',
+            'media.*.max' => 'Dung lượng mỗi file không được vượt quá 20MB.',
         ]);
 
         $post = Post::findOrFail($id);
 
         if ($post->user_id !== Auth::id()) {
             abort(403, 'Bạn không có quyền chỉnh sửa bài viết này.');
+        }
+
+        // Xử lý xóa media cũ
+        $deleteMediaIds = $request->input('delete_media', []);
+        if (!empty($deleteMediaIds)) {
+            $imagesToDelete = $post->images()->whereIn('id', $deleteMediaIds)->get();
+            foreach ($imagesToDelete as $img) {
+                Storage::disk('public')->delete($img->image_path);
+                $img->delete();
+            }
+        }
+
+        // Xử lý upload danh sách ảnh/video mới nếu có
+        if ($request->hasFile('media')) {
+            $currentMediaCount = $post->images()->count();
+            $newMediaCount = count($request->file('media'));
+            if ($currentMediaCount + $newMediaCount > 5) {
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json(['success' => false, 'message' => 'Tổng số hình ảnh/video của bài viết không được vượt quá 5.'], 422);
+                }
+                return redirect()->back()->withErrors(['media' => 'Tổng số hình ảnh/video của bài viết không được vượt quá 5.'])->withInput();
+            }
+
+            foreach ($request->file('media') as $file) {
+                $mime = $file->getMimeType();
+                $isVideo = str_starts_with($mime, 'video/');
+                $folder = $isVideo ? 'posts/videos' : 'posts';
+                $path = $file->store($folder, 'public');
+                $post->images()->create([
+                    'image_path' => $path,
+                    'type' => $isVideo ? 'video' : 'image',
+                ]);
+            }
         }
 
         $post->update([
@@ -559,11 +620,11 @@ class PostController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Cập nhật bài viết thành công!',
-                'post' => $post,
+                'post' => $post->load('images'),
             ]);
         }
 
-        return redirect()->back()->with('success', 'Cập nhật bài viết thành công!');
+        return redirect()->route('resident.posts.show', $post->id)->with('success', 'Cập nhật bài viết thành công!');
     }
 
     /**
