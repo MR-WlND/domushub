@@ -39,12 +39,14 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Gemini Verify SSL
+
+    | Verify SSL Certificate
     |--------------------------------------------------------------------------
     |
-    | By default, SSL certificate verification is enabled for requests to the
-    | Gemini API. You can disable it (e.g. for local development on Windows)
-    | by setting GEMINI_VERIFY_SSL to false in your .env file.
+    | For local development environments where the system trust store is not
+    | configured, you can disable SSL verification temporarily. This is only
+    | recommended for development and debugging.
+    |
     */
     'verify_ssl' => env('GEMINI_VERIFY_SSL', true),
 ];

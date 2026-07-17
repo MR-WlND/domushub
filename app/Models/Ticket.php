@@ -13,8 +13,14 @@ class Ticket extends Model
         'apartment_id',
         'sender_id',
         'handler_id',
+        'ticket_type',
         'title',
         'description',
+        'reported_person',
+        'accused_user_id',
+        'accused_response',
+        'accused_response_comment',
+        'accused_responded_at',
         'images',
         'priority',
         'status',
@@ -24,7 +30,8 @@ class Ticket extends Model
     ];
 
     protected $casts = [
-        'images' => 'array',
+        'images'              => 'array',
+        'accused_responded_at' => 'datetime',
     ];
 
     // ── Relationships ───────────────────────────────────────────
@@ -47,6 +54,16 @@ class Ticket extends Model
     public function progress()
     {
         return $this->hasMany(TicketProgress::class)->orderBy('created_at', 'asc');
+    }
+
+    public function costs()
+    {
+        return $this->hasMany(TicketCost::class)->orderBy('created_at', 'asc');
+    }
+
+    public function accusedUser()
+    {
+        return $this->belongsTo(User::class, 'accused_user_id');
     }
 
     // ── Label Helpers ───────────────────────────────────────────
@@ -72,6 +89,34 @@ class Ticket extends Model
             'urgent' => 'Khẩn cấp',
             default  => $this->priority,
         };
+    }
+
+    public function ticketTypeLabel(): string
+    {
+        return match ($this->ticket_type) {
+            'complaint' => 'Phản ánh sự cố',
+            'report'    => 'Tố cáo',
+            default     => $this->ticket_type,
+        };
+    }
+
+    public function isReport(): bool
+    {
+        return $this->ticket_type === 'report';
+    }
+
+    public function accusedResponseLabel(): string
+    {
+        return match ($this->accused_response) {
+            'confirmed' => 'Xác nhận',
+            'denied'    => 'Phản đối',
+            default     => 'Chưa phản hồi',
+        };
+    }
+
+    public function hasAccusedResponse(): bool
+    {
+        return $this->accused_response !== null;
     }
 
     // ── Status Checkers ─────────────────────────────────────────
