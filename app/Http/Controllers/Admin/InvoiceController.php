@@ -27,9 +27,9 @@ class InvoiceController extends Controller
         // KPI tổng quát
         $totalRevenue     = Invoice::where('status', 'paid')->sum('total_amount');
         $thisMonthRevenue = Invoice::where('status', 'paid')
-                               ->whereMonth('updated_at', now()->month)
-                               ->whereYear('updated_at', now()->year)
-                               ->sum('total_amount');
+            ->whereMonth('updated_at', now()->month)
+            ->whereYear('updated_at', now()->year)
+            ->sum('total_amount');
         $totalInvoices    = Invoice::count();
         $paidCount        = Invoice::where('status', 'paid')->count();
         $unpaidCount      = Invoice::where('status', 'unpaid')->count();
@@ -91,11 +91,20 @@ class InvoiceController extends Controller
         }, range(1, 12)));
 
         return view('admin.invoices.stats', compact(
-            'year', 'totalRevenue', 'thisMonthRevenue',
-            'totalInvoices', 'paidCount', 'unpaidCount',
-            'overdueCount', 'totalUnpaid', 'totalOverdue',
-            'revenueByMonth', 'byType', 'recentInvoices',
-            'topDebt', 'collectionRate'
+            'year',
+            'totalRevenue',
+            'thisMonthRevenue',
+            'totalInvoices',
+            'paidCount',
+            'unpaidCount',
+            'overdueCount',
+            'totalUnpaid',
+            'totalOverdue',
+            'revenueByMonth',
+            'byType',
+            'recentInvoices',
+            'topDebt',
+            'collectionRate'
         ));
     }
 
@@ -113,7 +122,7 @@ class InvoiceController extends Controller
         if ($request->filled('month')) {
             [$year, $month] = explode('-', $request->month);
             $query->where('billing_month', (int) $month)
-                  ->where('billing_year', (int) $year);
+                ->where('billing_year', (int) $year);
         }
 
         // Lọc theo căn hộ
@@ -131,10 +140,10 @@ class InvoiceController extends Controller
             $search = $request->search;
             $query->whereHas('apartment', function ($q) use ($search) {
                 $q->where('apartment_number', 'like', '%' . $search . '%')
-                  ->orWhereHas('floor.block', function ($b) use ($search) {
-                      $b->where('name', 'like', '%' . $search . '%')
-                        ->orWhere('code', 'like', '%' . $search . '%');
-                  });
+                    ->orWhereHas('floor.block', function ($b) use ($search) {
+                        $b->where('name', 'like', '%' . $search . '%')
+                            ->orWhere('code', 'like', '%' . $search . '%');
+                    });
             });
         }
 
@@ -164,7 +173,7 @@ class InvoiceController extends Controller
         if ($request->filled('month')) {
             [$year, $month] = explode('-', $request->month);
             $query->where('billing_month', (int) $month)
-                  ->where('billing_year', (int) $year);
+                ->where('billing_year', (int) $year);
         }
 
         $invoices = $query->paginate(20)->withQueryString();
@@ -259,7 +268,7 @@ class InvoiceController extends Controller
 
 
         return redirect()->route('admin.invoices.index')
-                         ->with('success', 'Hóa đơn đã được tạo thành công.');
+            ->with('success', 'Hóa đơn đã được tạo thành công.');
     }
 
     /**
@@ -275,18 +284,37 @@ class InvoiceController extends Controller
     /**
      * Form xuất hóa đơn hàng loạt.
      */
-    public function batchCreate()
+    public function batchCreate(Request $request)
     {
-        $allApartments  = Apartment::with('floor.block')->orderBy('id')->get();
-        $activePrices   = ServicePrice::where('status', 'active')->get();
+        $selectedMonth = $request->input('billing_month', now()->format('Y-m'));
+        [$selectedYear, $selectedMonthNumber] = array_pad(explode('-', $selectedMonth), 2, now()->format('Y-m'));
 
-        $occupiedCount  = $allApartments->where('status', 'occupied')->count();
-        $totalCount     = $allApartments->count();
-        $totalPriceSum  = $activePrices->sum('unit_price');
+        $selectedYear = (int) $selectedYear;
+        $selectedMonthNumber = (int) $selectedMonthNumber;
 
-        $apartments = $allApartments;
+        $activePrices = ServicePrice::where('status', 'active')->get();
 
-        return view('admin.invoices.batch', compact('apartments', 'activePrices', 'occupiedCount', 'totalCount', 'totalPriceSum'));
+        $apartments = Apartment::with('floor.block')
+            ->where('status', 'occupied')
+            ->whereDoesntHave('invoices', function ($query) use ($selectedYear, $selectedMonthNumber) {
+                $query->where('billing_month', $selectedMonthNumber)
+                    ->where('billing_year', $selectedYear);
+            })
+            ->orderBy('id')
+            ->get();
+
+        $occupiedCount = $apartments->count();
+        $totalCount = $apartments->count();
+        $totalPriceSum = $activePrices->sum('unit_price');
+
+        return view('admin.invoices.batch', compact(
+            'apartments',
+            'activePrices',
+            'occupiedCount',
+            'totalCount',
+            'totalPriceSum',
+            'selectedMonth'
+        ));
     }
 
     /**
@@ -306,8 +334,11 @@ class InvoiceController extends Controller
             'due_date'      => 'required|date',
             'types'         => 'required|array|min:1',
             'types.*'       => 'in:electricity,water,management_fee,motorbike,car,internet,service,other',
+            'apartment_ids' => 'required|array|min:1',
+            'apartment_ids.*' => 'integer|exists:apartments,id',
         ], [
             'types.required' => 'Vui lòng chọn ít nhất một loại phí.',
+            'apartment_ids.required' => 'Vui lòng chọn ít nhất một căn hộ mục tiêu.',
         ]);
 
         [$year, $month] = explode('-', $request->billing_month);
@@ -315,14 +346,13 @@ class InvoiceController extends Controller
         $year  = (int) $year;
 
         $skipExisting = $request->boolean('skip_existing', true);
-        $onlyOccupied = $request->boolean('only_occupied', true);
+        $selectedApartmentIds = array_values(array_unique(array_filter($request->input('apartment_ids', []), fn($id) => is_numeric($id))));
 
-        // --- Lấy danh sách căn hộ ---
-        $aptQuery = Apartment::with(['residents.user', 'vehicles']);
-        if ($onlyOccupied) {
-            $aptQuery->where('status', 'occupied');
-        }
-        $apartments = $aptQuery->get();
+        // --- Lấy danh sách căn hộ đã chọn ---
+        $apartments = Apartment::with(['residents.user', 'vehicles'])
+            ->whereIn('id', $selectedApartmentIds)
+            ->where('status', 'occupied')
+            ->get();
 
         // --- Lấy bảng đơn giá theo type ---
         $activePrices = ServicePrice::where('status', 'active')
@@ -351,14 +381,20 @@ class InvoiceController extends Controller
                 // ============================================================
                 if (in_array($type, ['electricity', 'water'])) {
                     $servicePrice = $activePrices->get($type);
-                    if (!$servicePrice) { $skipped++; continue; }
+                    if (!$servicePrice) {
+                        $skipped++;
+                        continue;
+                    }
 
                     // Kiểm tra đã tồn tại trong hóa đơn chưa
                     if ($invoice && $skipExisting) {
                         $exists = InvoiceDetail::where('bill_id', $invoice->id)
                             ->where('service_price_id', $servicePrice->id)
                             ->exists();
-                        if ($exists) { $skipped++; continue; }
+                        if ($exists) {
+                            $skipped++;
+                            continue;
+                        }
                     }
 
                     // Tạo hóa đơn nếu chưa có
@@ -411,14 +447,20 @@ class InvoiceController extends Controller
                 // ============================================================
                 if (in_array($type, ['motorbike', 'car'])) {
                     $servicePrice = $activePrices->get($type);
-                    if (!$servicePrice) { $skipped++; continue; }
+                    if (!$servicePrice) {
+                        $skipped++;
+                        continue;
+                    }
 
                     // Kiểm tra đã tồn tại
                     if ($invoice && $skipExisting) {
                         $exists = InvoiceDetail::where('bill_id', $invoice->id)
                             ->where('service_price_id', $servicePrice->id)
                             ->exists();
-                        if ($exists) { $skipped++; continue; }
+                        if ($exists) {
+                            $skipped++;
+                            continue;
+                        }
                     }
 
                     // Đếm xe theo từng loại (chỉ xe active)
@@ -454,8 +496,8 @@ class InvoiceController extends Controller
                     }
 
                     $detailAmount = $vehicleCount * $servicePrice->unit_price;
-                    $vehicleNote = ($type === 'motorbike') 
-                        ? "Xe máy/điện: {$vehicleCount} xe" 
+                    $vehicleNote = ($type === 'motorbike')
+                        ? "Xe máy/điện: {$vehicleCount} xe"
                         : "Ô tô: {$vehicleCount} xe";
 
                     InvoiceDetail::create([
@@ -474,13 +516,19 @@ class InvoiceController extends Controller
                 // PHÍ QUẢN LÝ, INTERNET, DỊCH VỤ KHÁC — ĐƠN GIÁ CỐ ĐỊNH × 1
                 // ============================================================
                 $servicePrice = $activePrices->get($type);
-                if (!$servicePrice) { $skipped++; continue; }
+                if (!$servicePrice) {
+                    $skipped++;
+                    continue;
+                }
 
                 if ($invoice && $skipExisting) {
                     $exists = InvoiceDetail::where('bill_id', $invoice->id)
                         ->where('service_price_id', $servicePrice->id)
                         ->exists();
-                    if ($exists) { $skipped++; continue; }
+                    if ($exists) {
+                        $skipped++;
+                        continue;
+                    }
                 }
 
                 if (!$invoice) {
@@ -583,7 +631,7 @@ class InvoiceController extends Controller
                 'note'           => $validated['note'] ?? null,
                 'proof_image'    => $proofPath,
                 'payer_name'     => $validated['payer_name'] ?? null,
-                'transaction_code'=> $validated['transaction_code'] ?? null,
+                'transaction_code' => $validated['transaction_code'] ?? null,
                 'recorded_by'    => auth()->id(),
                 'status'         => 'success',
                 'paid_at'        => now(),
