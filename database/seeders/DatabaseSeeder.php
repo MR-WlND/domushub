@@ -21,11 +21,20 @@ class DatabaseSeeder extends Seeder
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',
         // ]);
-        // Gọi lệnh $this->call() và truyền vào mảng chứa các class Seeder bạn muốn chạy
+
         $this->call([
+            ServicePriceSeeder::class,
             AdminSeeder::class,
+            ManagerSeeder::class,
+            StaffSeeder::class,
             SecuritySeeder::class,
+            TechnicianSeeder::class,
+            BlockFloorApartmentSeeder::class,
             ResidentSeeder::class,
+            InvoiceSeeder::class,
+            SystemSettingSeeder::class,
+            SampleTicketSeeder::class,
         ]);
+
     }
 }

@@ -1,0 +1,69 @@
+﻿.resident-section {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.resident-section__header {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+
+.resident-section__eyebrow {
+    margin: 0;
+    color: #2563eb;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.invite-form {
+    display: grid;
+    gap: 18px;
+}
+
+.invite-form__row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.invite-form label {
+    color: #334155;
+    font-weight: 600;
+}
+
+.input-field {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 14px;
+    outline: none;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.input-field:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+
+.error-msg {
+    color: #dc2626;
+    font-size: 0.9rem;
+}
+
+.pagination-wrapper {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+}
+

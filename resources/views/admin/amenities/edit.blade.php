@@ -1,0 +1,448 @@
+@extends('layouts.admin.master')
+
+@section('page_title', 'Chỉnh sửa: ' . $facility->name)
+
+@section('content')
+<div class="amf-page">
+
+    {{-- Breadcrumb --}}
+    <div class="amf-breadcrumb">
+        <a href="{{ route('admin.amenities.index') }}">Tiện ích chung cư</a>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        <a href="{{ route('admin.amenities.show', $facility) }}">{{ $facility->name }}</a>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        <span>Chỉnh sửa</span>
+    </div>
+
+    <div class="amf-header">
+        <h1 class="amf-title">Chỉnh sửa: {{ $facility->name }}</h1>
+        <p class="amf-subtitle">Cập nhật thông tin và cài đặt cấu hình tiện ích.</p>
+    </div>
+
+    <form method="POST" action="{{ route('admin.amenities.update', $facility) }}">
+        @csrf
+        @method('PUT')
+
+        {{-- Error summary --}}
+        @if($errors->any())
+        <div class="amf-error-summary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div>
+                <strong>Vui lòng kiểm tra lại:</strong>
+                <ul>@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
+            </div>
+        </div>
+        @endif
+
+        {{-- ====== PHẦN 1: Thông tin cơ bản ====== --}}
+        <div class="amf-card">
+            <div class="amf-section-label">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Thông tin cơ bản
+            </div>
+            <div class="amf-grid">
+                <div class="amf-field amf-field--wide">
+                    <label for="name">Tên tiện ích <span class="amf-required">*</span></label>
+                    <input type="text" id="name" name="name" value="{{ old('name', $facility->name) }}"
+                        placeholder="VD: Hồ bơi, Phòng Gym, Sân BBQ..." maxlength="100" required
+                        class="{{ $errors->has('name') ? 'amf-input--error' : '' }}">
+                    @error('name')<span class="amf-error">{{ $message }}</span>@enderror
+                </div>
+
+                <div class="amf-field">
+                    <label for="capacity">Sức chứa tối đa <span class="amf-required">*</span></label>
+                    <div class="amf-input-group">
+                        <input type="number" id="capacity" name="capacity"
+                            value="{{ old('capacity', $facility->capacity) }}"
+                            min="1" max="9999" required class="{{ $errors->has('capacity') ? 'amf-input--error' : '' }}">
+                        <span class="amf-input-suffix">người</span>
+                    </div>
+                    @error('capacity')<span class="amf-error">{{ $message }}</span>@enderror
+                </div>
+
+                <div class="amf-field">
+                    <label for="status">Trạng thái <span class="amf-required">*</span></label>
+                    <select id="status" name="status" required>
+                        <option value="available" {{ old('status', $facility->status) === 'available' ? 'selected' : '' }}>✅ Hoạt động</option>
+                        <option value="maintenance" {{ old('status', $facility->status) === 'maintenance' ? 'selected' : '' }}>🔧 Bảo trì</option>
+                        <option value="closed" {{ old('status', $facility->status) === 'closed' ? 'selected' : '' }}>🚫 Đóng cửa</option>
+                    </select>
+                    @error('status')<span class="amf-error">{{ $message }}</span>@enderror
+                </div>
+
+                <div class="amf-field amf-field--wide">
+                    <label for="description">Mô tả</label>
+                    <textarea id="description" name="description" rows="2"
+                        placeholder="Mô tả ngắn về tiện ích..." maxlength="500">{{ old('description', $facility->description) }}</textarea>
+                    @error('description')<span class="amf-error">{{ $message }}</span>@enderror
+                </div>
+            </div>
+        </div>
+
+        {{-- ====== PHẦN 2: Cấu hình khung giờ ====== --}}
+        <div class="amf-card">
+            <div class="amf-section-label">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Khung giờ hoạt động
+            </div>
+            <div class="amf-grid">
+                <div class="amf-field">
+                    <label for="open_time">Giờ mở cửa</label>
+                    <input type="time" id="open_time" name="open_time"
+                        value="{{ old('open_time', $facility->open_time ? substr($facility->open_time,0,5) : '06:00') }}"
+                        class="{{ $errors->has('open_time') ? 'amf-input--error' : '' }}">
+                    @error('open_time')<span class="amf-error">{{ $message }}</span>@enderror
+                </div>
+
+                <div class="amf-field">
+                    <label for="close_time">Giờ đóng cửa</label>
+                    <input type="time" id="close_time" name="close_time"
+                        value="{{ old('close_time', $facility->close_time ? substr($facility->close_time,0,5) : '22:00') }}"
+                        class="{{ $errors->has('close_time') ? 'amf-input--error' : '' }}">
+                    @error('close_time')<span class="amf-error">{{ $message }}</span>@enderror
+                    <span class="amf-hint">Phải sau giờ mở cửa</span>
+                </div>
+
+                <div id="slotSettingsWrap" style="display:contents">
+                <div class="amf-field">
+                    <label for="slot_duration">Thời lượng mỗi lần đặt <span class="amf-required">*</span></label>
+                    <select id="slot_duration" name="slot_duration">
+                        @php $dur = old('slot_duration', $facility->slot_duration ?? 60); @endphp
+                        <option value="0"   {{ $dur == 0   ? 'selected' : '' }}>Cả ngày (1 slot duy nhất)</option>
+                        <option value="30"  {{ $dur == 30  ? 'selected' : '' }}>30 phút</option>
+                        <option value="60"  {{ $dur == 60  ? 'selected' : '' }}>1 tiếng</option>
+                        <option value="90"  {{ $dur == 90  ? 'selected' : '' }}>1.5 tiếng</option>
+                        <option value="120" {{ $dur == 120 ? 'selected' : '' }}>2 tiếng</option>
+                    </select>
+                    <span class="amf-hint">Mỗi lần đặt kéo dài bao lâu</span>
+                    @error('slot_duration')<span class="amf-error">{{ $message }}</span>@enderror
+                </div>
+
+                <div class="amf-field amf-field--wide">
+                    <label>Xem trước các khung giờ</label>
+                    <div class="amf-slots-preview" id="slotsPreview">
+                        <span class="amf-hint">Đang tải...</span>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ====== PHẦN 3: Kiểu đặt chỗ & Bảng giá ====== --}}
+        <div class="amf-card">
+            <div class="amf-section-label">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                Kiểu đặt chỗ & Bảng giá
+            </div>
+            <div class="amf-grid">
+
+                {{-- Kiểu đặt chỗ --}}
+                <div class="amf-field amf-field--wide">
+                    <label>Kiểu đặt chỗ <span class="amf-required">*</span></label>
+                    @php $btype = old('booking_type', $facility->booking_type ?? 'slot'); @endphp
+                    <div class="amf-booking-type-wrap">
+                        <label class="amf-type-card {{ $btype === 'slot' ? 'amf-type-card--active' : '' }}" id="typeCardSlot">
+                            <input type="radio" name="booking_type" value="slot" id="typeSlot"
+                                {{ $btype === 'slot' ? 'checked' : '' }}>
+                            <span class="amf-type-icon"></span>
+                            <span class="amf-type-info">
+                                <strong>Đặt theo thời gian (tiếng / ca)</strong>
+                                <span>Thuê trọn không gian theo khung giờ — VD: sân bóng, sân tennis, phòng họp</span>
+                            </span>
+                        </label>
+                        <label class="amf-type-card {{ $btype === 'person' ? 'amf-type-card--active' : '' }}" id="typeCardPerson">
+                            <input type="radio" name="booking_type" value="person" id="typePerson"
+                                {{ $btype === 'person' ? 'checked' : '' }}>
+                            <span class="amf-type-icon"></span>
+                            <span class="amf-type-info">
+                                <strong>Đặt theo người (vé / lượt)</strong>
+                                <span>Tính phí theo số người sử dụng — VD: bể bơi, phòng xông hơi, khu vui chơi</span>
+                            </span>
+                        </label>
+                    </div>
+                    @error('booking_type')<span class="amf-error">{{ $message }}</span>@enderror
+                </div>
+
+                {{-- Giá theo tiếng --}}
+                <div class="amf-field" id="priceSlotWrap">
+                    <label for="price_per_slot">Giá mỗi slot (tiếng) <span class="amf-required">*</span></label>
+                    <div class="amf-input-group">
+                        <input type="number" id="price_per_slot" name="price_per_slot"
+                            value="{{ old('price_per_slot', $facility->price_per_slot ?? 0) }}"
+                            min="0" step="1000"
+                            class="{{ $errors->has('price_per_slot') ? 'amf-input--error' : '' }}">
+                        <span class="amf-input-suffix">đ</span>
+                    </div>
+                    <span class="amf-hint">Nhập 0 nếu miễn phí. Tính theo mỗi khung giờ đặt.</span>
+                    @error('price_per_slot')<span class="amf-error">{{ $message }}</span>@enderror
+                </div>
+
+                {{-- Giá theo người --}}
+                <div class="amf-field" id="pricePersonWrap">
+                    <label for="price_per_person">Giá mỗi người <span class="amf-required">*</span></label>
+                    <div class="amf-input-group">
+                        <input type="number" id="price_per_person" name="price_per_person"
+                            value="{{ old('price_per_person', $facility->price_per_person ?? 0) }}"
+                            min="0" step="1000"
+                            class="{{ $errors->has('price_per_person') ? 'amf-input--error' : '' }}">
+                        <span class="amf-input-suffix">đ</span>
+                    </div>
+                    <span class="amf-hint">Nhập 0 nếu miễn phí. Tính theo số người mỗi lần vào.</span>
+                    @error('price_per_person')<span class="amf-error">{{ $message }}</span>@enderror
+                </div>
+
+                {{-- Preview giá --}}
+                <div class="amf-field amf-price-preview-wrap">
+                    <label>Xem trước hiển thị giá</label>
+                    <div class="amf-price-preview" id="pricePreview">
+                        <span class="amf-hint">Đang tải...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ====== PHẦN 4: Nội quy sử dụng ====== --}}
+        <div class="amf-card">
+            <div class="amf-section-label">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                Nội quy & Lưu ý
+            </div>
+            <div class="amf-field">
+                <label for="rules">Quy định sử dụng</label>
+                <textarea id="rules" name="rules" rows="4"
+                    placeholder="VD: Mặc trang phục thể thao. Không mang đồ ăn vào. Trẻ em dưới 12 tuổi cần có người lớn..."
+                    maxlength="1000">{{ old('rules', $facility->rules) }}</textarea>
+                <span class="amf-hint">Tối đa 1000 ký tự. Hiển thị cho cư dân khi đặt lịch.</span>
+                @error('rules')<span class="amf-error">{{ $message }}</span>@enderror
+            </div>
+        </div>
+
+        {{-- Actions --}}
+        <div class="amf-actions">
+            <button type="submit" class="amf-btn amf-btn--primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Lưu thay đổi
+            </button>
+            <a href="{{ route('admin.amenities.index') }}" class="amf-btn amf-btn--ghost">Hủy bỏ</a>
+        </div>
+    </form>
+
+    {{-- ====== PHẦN 5: Quản lý hình ảnh ====== --}}
+    <div class="amf-card" style="margin-top: 18px;">
+        <div class="amf-section-label">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            Hình ảnh tiện ích
+        </div>
+
+        <form method="POST" action="{{ route('admin.amenities.images.store', $facility) }}" enctype="multipart/form-data">
+            @csrf
+            <div class="amf-field amf-field--wide">
+                <label for="images">Chọn thêm ảnh tiện ích (Tối đa 5 ảnh, mỗi ảnh &lt; 3MB)</label>
+                <div class="amf-image-upload-wrapper">
+                    <input type="file" id="images" name="images[]" multiple accept="image/*" class="amf-file-input">
+                    <button type="submit" class="amf-btn amf-btn--secondary">Tải ảnh lên</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="amf-image-gallery">
+            @if($facility->images && count($facility->images) > 0)
+                <div class="amf-gallery-grid">
+                    @foreach($facility->images as $index => $image)
+                        <div class="amf-gallery-item">
+                            <img src="{{ asset('storage/' . $image) }}" alt="Ảnh {{ $facility->name }}">
+                            <form method="POST" action="{{ route('admin.amenities.images.destroy', [$facility, $index]) }}" class="amf-delete-image-form" onsubmit="return confirm('Bạn có chắc chắn muốn xóa ảnh này?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="amf-btn-delete-img" title="Xóa ảnh">×</button>
+                            </form>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <p class="amf-no-image">Chưa có hình ảnh nào cho tiện ích này.</p>
+            @endif
+        </div>
+    </div>
+</div>
+
+<style>
+.amf-page { max-width: 820px; margin: 0 auto; padding: 24px 20px; display: flex; flex-direction: column; gap: 18px; }
+
+.amf-breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: #64748b; }
+.amf-breadcrumb a { color: #2563eb; text-decoration: none; font-weight: 500; }
+.amf-breadcrumb a:hover { text-decoration: underline; }
+
+.amf-header { margin-bottom: 4px; }
+.amf-title { font-size: 1.5rem; font-weight: 700; color: #0f172a; margin: 0 0 6px; }
+.amf-subtitle { font-size: 0.875rem; color: #64748b; margin: 0; }
+
+.amf-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 22px 26px; display: flex; flex-direction: column; gap: 16px; }
+
+.amf-section-label { display: flex; align-items: center; gap: 7px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; }
+
+.amf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.amf-field { display: flex; flex-direction: column; gap: 5px; }
+.amf-field--wide { grid-column: 1 / -1; }
+.amf-field label { font-size: 0.8rem; font-weight: 600; color: #374151; }
+.amf-required { color: #ef4444; }
+
+.amf-field input,
+.amf-field select,
+.amf-field textarea {
+    padding: 9px 13px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.875rem;
+    color: #1e293b; background: #f8fafc; outline: none; transition: border-color 0.15s, background 0.15s;
+    font-family: inherit; resize: vertical; width: 100%; box-sizing: border-box;
+}
+.amf-field input:focus,
+.amf-field select:focus,
+.amf-field textarea:focus { border-color: #3b82f6; background: #fff; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+.amf-input--error { border-color: #ef4444 !important; background: #fff5f5 !important; }
+.amf-error { font-size: 0.75rem; color: #dc2626; font-weight: 500; }
+.amf-hint { font-size: 0.73rem; color: #94a3b8; }
+
+.amf-input-group { display: flex; align-items: stretch; }
+.amf-input-group input { border-radius: 8px 0 0 8px; border-right: none; flex: 1; }
+.amf-input-suffix { padding: 9px 12px; background: #f1f5f9; border: 1.5px solid #e2e8f0; border-left: none; border-radius: 0 8px 8px 0; font-size: 0.8rem; color: #64748b; font-weight: 600; white-space: nowrap; display: flex; align-items: center; }
+
+.amf-slots-preview { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; background: #f8fafc; border: 1px dashed #e2e8f0; border-radius: 8px; min-height: 42px; align-items: center; }
+.amf-slot-chip { background: #eff6ff; color: #2563eb; font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 20px; border: 1px solid #bfdbfe; }
+
+.amf-price-preview-wrap { justify-content: flex-start; }
+.amf-price-preview { padding: 10px 14px; background: #f8fafc; border: 1px dashed #e2e8f0; border-radius: 8px; font-size: 0.9rem; font-weight: 700; color: #0f172a; min-height: 42px; display: flex; align-items: center; }
+.amf-free-badge { color: #16a34a; }
+.amf-paid-badge { color: #2563eb; }
+
+/* Booking type cards */
+.amf-booking-type-wrap { display: flex; gap: 12px; flex-wrap: wrap; }
+.amf-type-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px;
+    cursor: pointer; flex: 1; min-width: 200px; background: #f8fafc;
+    transition: all 0.18s;
+}
+.amf-type-card input[type="radio"] { display: none; }
+.amf-type-card:hover { border-color: #93c5fd; background: #eff6ff; }
+.amf-type-card--active { border-color: #3b82f6 !important; background: #eff6ff !important; box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+.amf-type-icon { font-size: 1.6rem; flex-shrink: 0; }
+.amf-type-info { display: flex; flex-direction: column; gap: 2px; }
+.amf-type-info strong { font-size: 0.875rem; font-weight: 700; color: #1e293b; }
+.amf-type-info span { font-size: 0.75rem; color: #64748b; }
+.amf-type-card--active .amf-type-info strong { color: #2563eb; }
+
+.amf-error-summary { display: flex; gap: 10px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px 14px; color: #b91c1c; font-size: 0.85rem; }
+.amf-error-summary svg { flex-shrink: 0; margin-top: 2px; }
+.amf-error-summary strong { display: block; margin-bottom: 4px; }
+.amf-error-summary ul { margin: 0; padding-left: 16px; }
+.amf-error-summary li { margin: 2px 0; }
+
+.amf-actions { display: flex; gap: 10px; align-items: center; }
+.amf-btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 20px; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer; border: none; text-decoration: none; transition: all 0.15s; }
+.amf-btn--primary { background: #2563eb; color: #fff; }
+.amf-btn--primary:hover { background: #1d4ed8; }
+.amf-btn--ghost { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
+.amf-btn--ghost:hover { background: #f1f5f9; }
+.amf-btn--secondary { background: #10b981; color: #fff; }
+.amf-btn--secondary:hover { background: #059669; }
+
+.amf-image-upload-wrapper { display: flex; gap: 12px; align-items: center; margin-top: 6px; }
+.amf-file-input { flex: 1; padding: 8px 12px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.875rem; }
+.amf-image-gallery { margin-top: 10px; }
+.amf-gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; margin-top: 8px; }
+.amf-gallery-item { position: relative; border-radius: 10px; overflow: hidden; aspect-ratio: 4/3; border: 1.5px solid #e2e8f0; background: #f8fafc; display: flex; align-items: center; justify-content: center; }
+.amf-gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+.amf-delete-image-form { position: absolute; top: 6px; right: 6px; z-index: 10; margin: 0; padding: 0; }
+.amf-btn-delete-img { width: 22px; height: 22px; border-radius: 50%; background: rgba(239, 68, 68, 0.9); color: #fff; border: none; font-size: 14px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; transition: background 0.15s; padding: 0; }
+.amf-btn-delete-img:hover { background: rgba(220, 38, 38, 1); }
+.amf-no-image { font-size: 0.85rem; color: #64748b; margin: 8px 0 0; }
+
+@media (max-width: 600px) {
+    .amf-grid { grid-template-columns: 1fr; }
+    .amf-card { padding: 16px; }
+    .amf-booking-type-wrap { flex-direction: column; }
+}
+</style>
+
+@push('scripts')
+<script>
+function generateSlots() {
+    const open     = document.getElementById('open_time').value;
+    const close    = document.getElementById('close_time').value;
+    const durationSelect = document.getElementById('slot_duration').value;
+    const duration = parseInt(durationSelect);
+    const preview  = document.getElementById('slotsPreview');
+    if (!open || !close) {
+        preview.innerHTML = '<span class="amf-hint">Nhập giờ mở/đóng cửa để xem trước</span>';
+        return;
+    }
+    if (duration === 0) {
+        preview.innerHTML = `<span class="amf-slot-chip">${open} – ${close}</span><span class="amf-hint" style="margin-left:4px">Cả ngày (1 slot duy nhất)</span>`;
+        return;
+    }
+    const [oh, om] = open.split(':').map(Number);
+    const [ch, cm] = close.split(':').map(Number);
+    let start = oh * 60 + om;
+    const end = ch * 60 + cm;
+    let chips = ''; let count = 0;
+    while (start + duration <= end) {
+        const s = String(Math.floor(start/60)).padStart(2,'0') + ':' + String(start%60).padStart(2,'0');
+        const e = String(Math.floor((start+duration)/60)).padStart(2,'0') + ':' + String((start+duration)%60).padStart(2,'0');
+        chips += `<span class="amf-slot-chip">${s} – ${e}</span>`;
+        start += duration; count++;
+    }
+    preview.innerHTML = count > 0
+        ? chips + `<span class="amf-hint" style="margin-left:4px">${count} khung giờ</span>`
+        : '<span class="amf-hint" style="color:#ef4444">Không tạo được khung giờ nào</span>';
+}
+
+function updatePricePreview() {
+    const isSlot  = document.getElementById('typeSlot').checked;
+    const preview = document.getElementById('pricePreview');
+    const labels  = { '0':'lượt', '30':'30 phút', '60':'1 tiếng', '90':'1.5 tiếng', '120':'2 tiếng' };
+    if (isSlot) {
+        const price    = parseInt(document.getElementById('price_per_slot').value) || 0;
+        const duration = document.getElementById('slot_duration').value;
+        preview.innerHTML = price === 0
+            ? '<span class="amf-free-badge">🎉 Miễn phí</span>'
+            : `<span class="amf-paid-badge">${price.toLocaleString('vi-VN')}đ / ${labels[duration] || duration+' phút'}</span>`;
+    } else {
+        const price = parseInt(document.getElementById('price_per_person').value) || 0;
+        preview.innerHTML = price === 0
+            ? '<span class="amf-free-badge">🎉 Miễn phí</span>'
+            : `<span class="amf-paid-badge">${price.toLocaleString('vi-VN')}đ / người</span>`;
+    }
+}
+
+function syncBookingType() {
+    const isSlot = document.getElementById('typeSlot').checked;
+    document.getElementById('priceSlotWrap').style.display   = isSlot ? '' : 'none';
+    document.getElementById('pricePersonWrap').style.display = isSlot ? 'none' : '';
+    document.getElementById('typeCardSlot').classList.toggle('amf-type-card--active', isSlot);
+    document.getElementById('typeCardPerson').classList.toggle('amf-type-card--active', !isSlot);
+    // Ẩn/hiện thời lượng và khung giờ preview theo loại đặt chỗ
+    const slotSettings = document.getElementById('slotSettingsWrap');
+    if (slotSettings) {
+        slotSettings.querySelectorAll('.amf-field').forEach(el => {
+            el.style.display = isSlot ? '' : 'none';
+        });
+    }
+    updatePricePreview();
+}
+
+document.getElementById('typeSlot').addEventListener('change', syncBookingType);
+document.getElementById('typePerson').addEventListener('change', syncBookingType);
+
+['open_time','close_time','slot_duration'].forEach(id =>
+    document.getElementById(id).addEventListener('change', generateSlots)
+);
+document.getElementById('price_per_slot').addEventListener('input', updatePricePreview);
+document.getElementById('price_per_person').addEventListener('input', updatePricePreview);
+document.getElementById('slot_duration').addEventListener('change', updatePricePreview);
+
+// Init on load
+syncBookingType();
+generateSlots();
+</script>
+@endpush
+
+@endsection

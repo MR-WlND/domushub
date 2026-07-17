@@ -1,0 +1,211 @@
+/* --------------------------------------------------------------------------
+   RESIDENT PROFILE PAGE â€“ Dashboard Style
+   -------------------------------------------------------------------------- */
+.resident-profile-page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 32px 16px 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* â”€â”€â”€ Alerts â”€â”€â”€ */
+.rp-alert {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 18px; border-radius: 10px;
+    font-size: 0.875rem; font-weight: 600;
+}
+.rp-alert--success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+.rp-alert--error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   HERO CARD
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+.rp-hero {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 24px; background: #ffffff;
+    border: 1px solid #e2e8f0; border-radius: 10px;
+    padding: 32px 36px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+.rp-hero__left { display: flex; align-items: center; gap: 22px; }
+
+/* Avatar */
+.rp-hero__avatar {
+    width: 96px; height: 96px; border-radius: 50%;
+    overflow: hidden; border: 4px solid #dbeafe;
+    flex-shrink: 0; position: relative; cursor: pointer;
+    transition: border-color 0.2s, transform 0.2s;
+}
+.rp-hero__avatar:hover { border-color: #2563eb; transform: scale(1.03); }
+.rp-hero__avatar img { width: 100%; height: 100%; object-fit: cover; }
+.rp-hero__avatar-placeholder {
+    width: 100%; height: 100%;
+    background: linear-gradient(135deg, #1e3a5f, #3b82f6);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 36px; font-weight: 800;
+}
+.rp-hero__avatar-badge {
+    position: absolute; bottom: 2px; right: 2px;
+    width: 26px; height: 26px; border-radius: 8px;
+    background: #2563eb; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 6px rgba(37,99,235,0.4);
+}
+
+/* Info */
+.rp-hero__info { display: flex; flex-direction: column; gap: 4px; }
+.rp-hero__name { margin: 0; font-size: 1.85rem; font-weight: 800; color: #0f172a; line-height: 1.2; }
+.rp-hero__apartment { margin: 0; display: flex; align-items: center; gap: 6px; font-size: 0.9rem; color: #475569; font-weight: 500; }
+.rp-hero__badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.rp-badge { display: inline-flex; align-items: center; padding: 5px 14px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; }
+.rp-badge--role { background: #1e40af; color: #ffffff; }
+.rp-badge--time { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+/* Balance */
+.rp-hero__right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; }
+.rp-hero__balance-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; }
+.rp-hero__balance-value { font-size: 2.4rem; font-weight: 800; color: #16a34a; line-height: 1; }
+.rp-hero__balance-value--debt { color: #dc2626; }
+.rp-hero__balance-unit { font-size: 0.8rem; font-weight: 600; color: #64748b; }
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   GRID
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+.rp-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 24px; }
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   CARD
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+.rp-card {
+    background: #ffffff; border: 1px solid #e2e8f0;
+    border-radius: 10px; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+.rp-card--full { grid-column: 1 / -1; }
+.rp-card__header {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; padding: 18px 24px; border-bottom: 1px solid #f1f5f9;
+}
+.rp-card__header-title { display: flex; align-items: center; gap: 10px; color: #1e293b; }
+.rp-card__header-title svg { color: #2563eb; flex-shrink: 0; }
+.rp-card__header-title h2 { font-size: 1rem; font-weight: 700; margin: 0; }
+.rp-card__header-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px; font-size: 0.78rem; font-weight: 700;
+    color: #2563eb; background: #eff6ff; border: 1px solid #bfdbfe;
+    border-radius: 10px; text-decoration: none; transition: all 0.15s; white-space: nowrap;
+}
+.rp-card__header-btn:hover { background: #dbeafe; border-color: #93c5fd; }
+.rp-card__header-btn--icon { width: 34px; height: 34px; padding: 0; justify-content: center; border-radius: 10px; }
+.rp-card__body { padding: 20px 24px; }
+.rp-card__body--flush { padding: 0; }
+.rp-empty { padding: 40px 20px; text-align: center; color: #94a3b8; }
+.rp-empty p { margin: 0; font-size: 0.875rem; }
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   MEMBERS TABLE
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+.rp-members-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+.rp-members-table thead th {
+    padding: 12px 20px; text-align: left; font-size: 0.72rem; font-weight: 700;
+    color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;
+    border-bottom: 1px solid #f1f5f9; background: #f8fafc;
+}
+.rp-members-table tbody tr { border-bottom: 1px solid #f1f5f9; transition: background 0.15s; }
+.rp-members-table tbody tr:last-child { border-bottom: none; }
+.rp-members-table tbody tr:hover { background: #f8faff; }
+.rp-members-table tbody td { padding: 14px 20px; vertical-align: middle; }
+
+.rp-member-cell { display: flex; align-items: center; gap: 12px; }
+.rp-member-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: #dc2626; display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; text-transform: uppercase;
+}
+.rp-member-avatar--alt { background: #f59e0b; }
+.rp-member-name { display: block; font-weight: 600; color: #0f172a; font-size: 0.875rem; }
+.rp-member-rel { display: block; font-size: 0.72rem; color: #94a3b8; }
+.rp-role-tag { font-size: 0.8rem; font-weight: 600; color: #1e293b; }
+.rp-verify-badge { display: inline-flex; padding: 4px 10px; border-radius: 8px; font-size: 0.72rem; font-weight: 700; }
+.rp-verify-badge--yes { background: #dcfce7; color: #15803d; }
+.rp-verify-badge--pending { background: #fef3c7; color: #92400e; }
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   VEHICLES LIST (with QR)
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+.rp-vehicles-list { display: flex; flex-direction: column; gap: 14px; }
+.rp-vehicle-item {
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+    padding: 16px; transition: box-shadow 0.2s, border-color 0.2s;
+}
+.rp-vehicle-item:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); border-color: #cbd5e1; }
+.rp-vehicle-main { display: flex; align-items: center; gap: 14px; }
+.rp-vehicle-icon {
+    width: 44px; height: 44px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.rp-vehicle-icon--car { background: #dbeafe; color: #1d4ed8; }
+.rp-vehicle-icon--motorbike { background: #f1f5f9; color: #475569; }
+.rp-vehicle-icon--electric_bike { background: #dcfce7; color: #15803d; }
+.rp-vehicle-info { flex: 1; min-width: 0; }
+.rp-vehicle-name { display: block; font-weight: 700; color: #0f172a; font-size: 0.9rem; }
+.rp-vehicle-plate { display: block; font-size: 0.8rem; color: #2563eb; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+.rp-vehicle-type {
+    padding: 4px 10px; border-radius: 10px; font-size: 0.72rem; font-weight: 700;
+    background: #f1f5f9; color: #475569; white-space: nowrap; flex-shrink: 0;
+}
+
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   FORM
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+.rp-form { display: flex; flex-direction: column; }
+.rp-form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.rp-form-grid--3col { grid-template-columns: repeat(3, 1fr); }
+.rp-form-group { display: flex; flex-direction: column; gap: 6px; }
+.rp-label { font-size: 0.85rem; font-weight: 600; color: #475569; }
+.rp-label .required { color: #ef4444; }
+.rp-input {
+    width: 100%; height: 44px; padding: 10px 14px;
+    border: 1.5px solid #cbd5e1; border-radius: 8px;
+    font-size: 0.9rem; color: #0f172a; background: #fff;
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s; box-sizing: border-box;
+}
+.rp-input::placeholder { color: #94a3b8; }
+.rp-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
+.rp-input--error { border-color: #ef4444 !important; background: #fffbfb; }
+.rp-error { font-size: 0.75rem; color: #ef4444; font-weight: 500; }
+.rp-form-actions { margin-top: 24px; padding-top: 20px; border-top: 1px solid #f1f5f9; }
+.rp-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 24px; font-size: 0.875rem; font-weight: 700;
+    border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s;
+}
+.rp-btn--primary { color: #fff; background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+.rp-btn--primary:hover { background: linear-gradient(135deg, #1d4ed8, #1e40af); box-shadow: 0 4px 14px rgba(37,99,235,0.3); transform: translateY(-1px); }
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   RESPONSIVE
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+@media (max-width: 900px) {
+    .rp-hero { flex-direction: column; align-items: flex-start; padding: 24px; }
+    .rp-hero__right { align-items: flex-start; padding-top: 16px; border-top: 1px solid #f1f5f9; width: 100%; }
+}
+@media (max-width: 768px) {
+    .rp-grid { grid-template-columns: 1fr; }
+    .rp-form-grid, .rp-form-grid--3col { grid-template-columns: 1fr; }
+    .rp-hero__name { font-size: 1.4rem; }
+    .rp-hero__balance-value { font-size: 1.8rem; }
+}
+@media (max-width: 480px) {
+    .resident-profile-page { padding: 16px 12px 40px; gap: 16px; }
+    .rp-hero { padding: 20px; }
+    .rp-hero__left { flex-direction: column; align-items: flex-start; gap: 14px; }
+    .rp-hero__avatar { width: 72px; height: 72px; }
+    .rp-card__body { padding: 16px; }
+    .rp-card__header { padding: 14px 16px; flex-wrap: wrap; gap: 10px; }
+}
+

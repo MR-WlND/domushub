@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'vnpay' => [
+        'tmn_code'    => env('VNPAY_TMN_CODE', '1PXMM020'),
+        'hash_secret' => env('VNPAY_HASH_SECRET', 'VIB0Z3N3INU5VHX26Y5F5N1OQSBW3L41'),
+        'url'         => env('VNPAY_URL', 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'),
+        'return_url'  => env('VNPAY_RETURN_URL', env('APP_URL') . '/resident/invoices/vnpay-return'),
+    ],
+
 ];
