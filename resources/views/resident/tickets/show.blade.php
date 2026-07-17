@@ -12,7 +12,7 @@
     {{-- HEADER --}}
     <div class="tk__header {{ $ticket->status === 'completed' ? 'tk__header--completed' : '' }}">
         <div>
-            <p class="tk__eyebrow">Chi tiết phản ánh #{{ $ticket->id }}</p>
+            <p class="tk__eyebrow">Chi tiết {{ $ticket->ticket_type === 'report' ? 'tố cáo' : 'phản ánh' }} #{{ $ticket->id }}</p>
             <h1 class="tk__title">{{ $ticket->title }}</h1>
         </div>
 
@@ -147,7 +147,7 @@
 
             {{-- TICKET CONTENT --}}
             <div class="tk-info-card">
-                <h3 class="tk-info-card__title">Nội dung phản ánh</h3>
+                <h3 class="tk-info-card__title">{{ $ticket->ticket_type === 'report' ? 'Nội dung tố cáo' : 'Nội dung phản ánh' }}</h3>
 
                 <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 1rem;">
                     <span class="tk-badge badge--{{ $ticket->priority }}">{{ $ticket->priorityLabel() }}</span>

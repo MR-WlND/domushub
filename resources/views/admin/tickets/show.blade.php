@@ -1,6 +1,6 @@
 @extends('layouts.admin.master')
 
-@section('page_title', 'Chi tiết phản ánh #' . $ticket->id)
+@section('page_title', 'Chi tiết ' . ($ticket->ticket_type === 'report' ? 'tố cáo' : 'phản ánh') . ' #' . $ticket->id)
 @section('page_kicker', 'Dịch vụ cư dân')
 @section('role_title', 'Admin Portal')
 @section('home_route', route('admin.dashboard'))
@@ -18,7 +18,7 @@
     <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
         <div>
             <h1 style="font-size: 1.6rem; font-weight: 800; color: #0f172a; margin: 0;">
-                Phản ánh #{{ $ticket->id }}
+                {{ $ticket->ticket_type === 'report' ? 'Tố cáo' : 'Phản ánh' }} #{{ $ticket->id }}
             </h1>
             <p class="tickets-page__subtitle">{{ $ticket->title }}</p>
         </div>
@@ -46,7 +46,7 @@
             {{-- Ticket Info --}}
             <div class="tk-show-card">
                 <div class="tk-show-card__header">
-                    <span class="tk-show-card__title">Nội dung phản ánh</span>
+                    <span class="tk-show-card__title">{{ $ticket->ticket_type === 'report' ? 'Nội dung tố cáo' : 'Nội dung phản ánh' }}</span>
                     <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                         @if($ticket->ticket_type === 'report')
                             <span style="display: inline-flex; align-items: center; gap: 3px; padding: 3px 10px; background: #fef2f2; color: #dc2626; border-radius: 20px; font-size: 0.75rem; font-weight: 700; border: 1px solid #fecaca;">
@@ -480,7 +480,7 @@
                 </div>
                 <div class="tk-show-card__body" style="display: flex; flex-direction: column; gap: 10px;">
                     <div style="display: flex; justify-content: space-between; font-size: 0.88rem;">
-                        <span style="color: #64748b;">Mã phản ánh</span>
+                        <span style="color: #64748b;">Mã {{ $ticket->ticket_type === 'report' ? 'tố cáo' : 'phản ánh' }}</span>
                         <strong>#{{ $ticket->id }}</strong>
                     </div>
                     <div style="display: flex; justify-content: space-between; font-size: 0.88rem;">
