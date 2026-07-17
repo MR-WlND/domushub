@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Ticket;
+use App\Models\TicketCost;
 use App\Models\TicketProgress;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\AccusationNotification;
 
 class TicketController extends Controller
 {
@@ -16,10 +19,11 @@ class TicketController extends Controller
         $user = Auth::user();
 
         $request->validate([
-            'status'   => 'nullable|in:pending,assigned,in_progress,completed,cancelled',
-            'priority' => 'nullable|in:low,medium,high,urgent',
-            'block_id' => 'nullable|integer|exists:blocks,id',
-            'search'   => 'nullable|string|max:200',
+            'status'      => 'nullable|in:pending,assigned,in_progress,completed,cancelled',
+            'priority'    => 'nullable|in:low,medium,high,urgent',
+            'ticket_type' => 'nullable|in:complaint,report',
+            'block_id'    => 'nullable|integer|exists:blocks,id',
+            'search'      => 'nullable|string|max:200',
 
             // Tab 2: Điều phối (Dispatch)
             'dispatch_block_id' => 'nullable|integer|exists:blocks,id',
@@ -54,6 +58,12 @@ class TicketController extends Controller
             $query->where('priority', $request->priority);
         }
 
+        // Lọc theo loại phản ánh
+        if ($request->filled('ticket_type')) {
+            $query->where('ticket_type', $request->ticket_type);
+        }
+
+        // Tìm kiếm
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -76,6 +86,7 @@ class TicketController extends Controller
             'assigned'    => (clone $baseQuery)->where('status', 'assigned')->count(),
             'in_progress' => (clone $baseQuery)->where('status', 'in_progress')->count(),
             'completed'   => (clone $baseQuery)->where('status', 'completed')->count(),
+            'reports'     => (clone $baseQuery)->where('ticket_type', 'report')->count(),
         ];
 
         $technicians = User::where('role', 'technician')
@@ -344,12 +355,128 @@ class TicketController extends Controller
 
     public function show($id)
     {
-        $ticket = Ticket::with(['apartment.floor.block', 'sender', 'handler', 'progress.updatedBy'])
+        $ticket = Ticket::with(['apartment.floor.block', 'sender', 'handler', 'progress.updatedBy', 'costs.createdBy', 'costs.responsibleUser', 'accusedUser.apartment'])
             ->findOrFail($id);
 
         $technicians = User::where('role', 'technician')->where('status', 'active')->orderBy('name')->get();
 
-        return view('admin.tickets.show', compact('ticket', 'technicians'));
+        // Danh sách cư dân để chọn "người chịu trách nhiệm" cho chi phí đền bù
+        $residents = User::with('apartment')
+            ->where('role', 'resident')
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.tickets.show', compact('ticket', 'technicians', 'residents'));
+    }
+
+    /**
+     * Admin chọn người bị tố cáo và gửi thông báo
+     */
+    public function assignAccused(Request $request, $id)
+    {
+        $ticket = Ticket::findOrFail($id);
+
+        if ($ticket->ticket_type !== 'report') {
+            return back()->withErrors(['Chỉ ticket loại tố cáo mới có thể chọn người bị tố cáo.']);
+        }
+
+        $validated = $request->validate([
+            'accused_user_id' => ['required', 'exists:users,id'],
+        ], [
+            'accused_user_id.required' => 'Vui lòng chọn cư dân bị tố cáo.',
+            'accused_user_id.exists'   => 'Cư dân không tồn tại.',
+        ]);
+
+        if ($validated['accused_user_id'] == $ticket->sender_id) {
+            return back()->withErrors(['Không thể chọn chính người gửi tố cáo làm người bị tố cáo.']);
+        }
+
+        $accusedUser = User::findOrFail($validated['accused_user_id']);
+
+        $ticket->update([
+            'accused_user_id' => $accusedUser->id,
+            'accused_response' => null,
+            'accused_response_comment' => null,
+            'accused_responded_at' => null,
+        ]);
+
+        TicketProgress::create([
+            'ticket_id'     => $ticket->id,
+            'status'        => $ticket->status,
+            'comment'       => 'Đã gửi thông báo tố cáo đến cư dân: ' . $accusedUser->name,
+            'updated_by'    => Auth::id(),
+        ]);
+
+        $emailSent = false;
+        if ($accusedUser->email) {
+            try {
+                Mail::to($accusedUser->email)->send(new AccusationNotification($ticket, $accusedUser));
+                $emailSent = true;
+            } catch (\Exception $e) {
+                \Log::error('Gửi email tố cáo thất bại: ' . $e->getMessage());
+            }
+        }
+
+        $msg = 'Đã gửi thông báo tố cáo đến ' . $accusedUser->name;
+        if ($emailSent) {
+            $msg .= ' (email đã gửi đến ' . $accusedUser->email . ')';
+        }
+        return back()->with('success', $msg . '.');
+    }
+
+    /**
+     * Thêm chi phí phát sinh cho phản ánh
+     */
+    public function addCost(Request $request, $id)
+    {
+        $ticket = Ticket::findOrFail($id);
+
+        if (!in_array(Auth::user()->role, ['admin', 'manager'], true)) {
+            abort(403, 'Bạn không có quyền thêm chi phí.');
+        }
+
+        $validated = $request->validate([
+            'cost_type'            => ['required', 'in:repair,compensation'],
+            'description'          => ['required', 'string', 'max:255'],
+            'amount'               => ['required', 'numeric', 'min:1000'],
+            'note'                 => ['nullable', 'string', 'max:1000'],
+            'responsible_user_id'  => ['nullable', 'required_if:cost_type,compensation', 'exists:users,id'],
+        ], [
+            'cost_type.required'             => 'Vui lòng chọn loại chi phí.',
+            'description.required'           => 'Vui lòng nhập mô tả chi phí.',
+            'amount.required'                => 'Vui lòng nhập số tiền.',
+            'amount.min'                     => 'Số tiền tối thiểu là 1,000đ.',
+            'responsible_user_id.required_if' => 'Vui lòng chọn người chịu trách nhiệm đền bù.',
+        ]);
+
+        TicketCost::create([
+            'ticket_id'            => $ticket->id,
+            'cost_type'            => $validated['cost_type'],
+            'description'          => $validated['description'],
+            'amount'               => $validated['amount'],
+            'note'                 => $validated['note'] ?? null,
+            'responsible_user_id'  => $validated['cost_type'] === 'compensation' ? $validated['responsible_user_id'] : null,
+            'created_by'           => Auth::id(),
+        ]);
+
+        $typeLabel = $validated['cost_type'] === 'repair' ? 'sửa chữa' : 'đền bù';
+        return back()->with('success', "Đã thêm chi phí {$typeLabel} thành công.");
+    }
+
+    /**
+     * Xóa chi phí phát sinh
+     */
+    public function deleteCost($id, $costId)
+    {
+        if (!in_array(Auth::user()->role, ['admin', 'manager'], true)) {
+            abort(403, 'Bạn không có quyền xóa chi phí.');
+        }
+
+        $cost = TicketCost::where('ticket_id', $id)->findOrFail($costId);
+        $cost->delete();
+
+        return back()->with('success', 'Đã xóa chi phí phát sinh.');
     }
 
     public function assign(Request $request, $id)
@@ -717,5 +844,69 @@ class TicketController extends Controller
             ->get();
 
         return view('admin.tickets.dispatch', compact('technicians', 'pendingTickets', 'activeTickets'));
+    }
+
+    /**
+     * Báo cáo đánh giá tổng hợp
+     */
+    public function report(Request $request)
+    {
+        // Thống kê chung về đánh giá
+        $totalRated = Ticket::whereNotNull('rating')->count();
+        $totalCompleted = Ticket::where('status', 'completed')->count();
+        $avgRating = Ticket::whereNotNull('rating')->avg('rating');
+
+        // Phân bố theo số sao (1-5)
+        $ratingDistribution = [];
+        for ($i = 1; $i <= 5; $i++) {
+            $count = Ticket::where('rating', $i)->count();
+            $ratingDistribution[$i] = [
+                'count'   => $count,
+                'percent' => $totalRated > 0 ? round($count / $totalRated * 100) : 0,
+            ];
+        }
+
+        // Top KTV được đánh giá (trung bình cao nhất, tối thiểu 3 đánh giá)
+        $topTechnicians = User::where('role', 'technician')
+            ->withCount(['handledTickets as rated_count' => function ($q) {
+                $q->whereNotNull('rating');
+            }])
+            ->withAvg(['handledTickets as avg_rating' => function ($q) {
+                $q->whereNotNull('rating');
+            }], 'rating')
+            ->having('rated_count', '>=', 1)
+            ->orderByDesc('avg_rating')
+            ->orderByDesc('rated_count')
+            ->limit(10)
+            ->get();
+
+        // Danh sách đánh giá gần đây
+        $recentRatings = Ticket::with(['sender', 'handler', 'apartment.floor.block'])
+            ->whereNotNull('rating')
+            ->orderByDesc('updated_at')
+            ->limit(20)
+            ->get();
+
+        // Thống kê theo tháng (6 tháng gần nhất)
+        $monthlyStats = [];
+        for ($m = 5; $m >= 0; $m--) {
+            $date = now()->subMonths($m);
+            $monthlyStats[] = [
+                'label'      => $date->format('m/Y'),
+                'avg_rating' => round(Ticket::whereNotNull('rating')
+                    ->whereYear('updated_at', $date->year)
+                    ->whereMonth('updated_at', $date->month)
+                    ->avg('rating') ?? 0, 1),
+                'count'      => Ticket::whereNotNull('rating')
+                    ->whereYear('updated_at', $date->year)
+                    ->whereMonth('updated_at', $date->month)
+                    ->count(),
+            ];
+        }
+
+        return view('admin.tickets.report', compact(
+            'totalRated', 'totalCompleted', 'avgRating',
+            'ratingDistribution', 'topTechnicians', 'recentRatings', 'monthlyStats'
+        ));
     }
 }

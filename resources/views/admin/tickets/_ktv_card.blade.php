@@ -6,12 +6,11 @@
     $slaLimit = match($ticket->priority) {
         'urgent' => 2, 'high' => 8, 'medium' => 24, default => 72
     };
-    $overdue      = $ageHours >= $slaLimit && $mode !== 'done';
-    $needsRecheck = $mode === 'active' && $ticket->reopened_count > 0;
+    $overdue = $ageHours >= $slaLimit && $mode !== 'done';
     $lastProgress = $ticket->progress?->last();
 @endphp
 
-<div class="ktv-card ktv-card--{{ $mode }} {{ $overdue ? 'ktv-card--overdue' : '' }} {{ $needsRecheck ? 'ktv-card--recheck' : '' }}" id="card-{{ $ticket->id }}">
+<div class="ktv-card ktv-card--{{ $mode }} {{ $overdue ? 'ktv-card--overdue' : '' }}" id="card-{{ $ticket->id }}">
 
     {{-- Priority bar --}}
     <div class="ktv-card__bar ktv-card__bar--{{ $ticket->priority }}"></div>
@@ -22,10 +21,8 @@
         <div class="ktv-card__top">
             <span class="ktv-card__id">#{{ $ticket->id }}</span>
             <span class="tk-priority tk-priority--{{ $ticket->priority }}">{{ $ticket->priorityLabel() }}</span>
-            @if($needsRecheck)
-                <span class="ktv-card__recheck-badge">Cần kiểm tra lại</span>
-            @elseif($overdue)
-                <span class="ktv-card__sla">Trễ SLA</span>
+            @if($overdue)
+                <span class="ktv-card__sla">⚠ Trễ SLA</span>
             @endif
         </div>
 
@@ -56,16 +53,6 @@
             @endif
         </div>
 
-        {{-- Recheck notice --}}
-        @if($needsRecheck)
-            <div class="ktv-card__recheck-notice">
-                Cư dân đánh giá {{ $ticket->rating }} sao — yêu cầu kiểm tra lại (lần {{ $ticket->reopened_count }})
-                @if($ticket->feedback_comment)
-                    <div class="ktv-card__recheck-reason">"{{ $ticket->feedback_comment }}"</div>
-                @endif
-            </div>
-        @endif
-
         {{-- Last progress (for active tasks) --}}
         @if($mode === 'active' && $lastProgress?->comment)
             <div class="ktv-card__last-update">
@@ -80,6 +67,18 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 Hoàn thành {{ $ticket->updated_at->format('d/m/Y') }}
             </div>
+            @if($ticket->rating)
+                <div style="display: flex; align-items: center; gap: 6px; margin-top: 6px; padding: 6px 10px; background: linear-gradient(135deg,#fffbeb,#fef3c7); border-radius: 8px; border: 1px solid #fde68a;">
+                    <div style="display: flex; gap: 1px;">
+                        @for($i = 1; $i <= 5; $i++)
+                            <span style="font-size: 0.85rem; color: {{ $i <= $ticket->rating ? '#f59e0b' : '#d1d5db' }};">★</span>
+                        @endfor
+                    </div>
+                    <span style="font-size: 0.75rem; font-weight: 700; color: #92400e;">{{ $ticket->rating }}/5 — {{ ['','Rất tệ','Chưa hài lòng','Bình thường','Hài lòng','Xuất sắc'][$ticket->rating] }}</span>
+                </div>
+            @elseif($ticket->status === 'completed')
+                <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 4px; font-style: italic;">Chưa có đánh giá từ cư dân</div>
+            @endif
         @endif
 
         {{-- Actions --}}

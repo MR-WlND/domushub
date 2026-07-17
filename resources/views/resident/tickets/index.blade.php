@@ -118,7 +118,17 @@
                     <div class="tk-card__body">
                         <div class="tk-card__header">
                             <span class="tk-card__id">#{{ $ticket->id }}</span>
-                            <span class="tk-badge badge--{{ $ticket->priority }}">{{ $ticket->priorityLabel() }}</span>
+                            <div class="tk-card__badges">
+                                <span class="tk-badge badge--{{ $ticket->priority }}">{{ $ticket->priorityLabel() }}</span>
+                                <span class="tk-badge badge--{{ $ticket->status }}">{{ $ticket->statusLabel() }}</span>
+                                @if($ticket->rating)
+                                    <div class="tk-rating-display" style="margin-left: 2px;">
+                                        @for($i = 1; $i <= 5; $i++)
+                                            <span class="tk-star {{ $i <= $ticket->rating ? 'tk-star--filled' : 'tk-star--empty' }}" style="font-size: 0.95rem;">★</span>
+                                        @endfor
+                                    </div>
+                                @endif
+                            </div>
                         </div>
                         <h3 class="tk-card__title">{{ $ticket->title }}</h3>
                         <p class="tk-card__desc">{{ $ticket->description }}</p>
@@ -135,17 +145,6 @@
                             @endif
                         </div>
                     </div>
-
-                    <div class="tk-card__right">
-                        <span class="tk-badge badge--{{ $ticket->status }}">{{ $ticket->statusLabel() }}</span>
-                        @if($ticket->rating)
-                            <div class="tk-rating-display">
-                                @for($i = 1; $i <= 5; $i++)
-                                    <span class="tk-star {{ $i <= $ticket->rating ? 'tk-star--filled' : 'tk-star--empty' }}">★</span>
-                                @endfor
-                            </div>
-                        @endif
-                    </div>
                 </a>
             @endforeach
         </div>
@@ -157,6 +156,60 @@
             </div>
         @endif
 
+    @endif
+
+    {{-- TỐ CÁO LIÊN QUAN ĐẾN TÔI --}}
+    @if($accusations->count() > 0)
+        <div style="margin-top: 2rem;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 1rem;">
+                <h2 style="font-size: 1.15rem; font-weight: 800; color: #dc2626; margin: 0;">
+                    Tố cáo liên quan đến tôi
+                </h2>
+                <span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: #dc2626; color: #fff; border-radius: 50%; font-size: 0.75rem; font-weight: 700;">
+                    {{ $accusations->count() }}
+                </span>
+            </div>
+
+            <div class="tk-list">
+                @foreach($accusations as $acc)
+                    <a href="{{ route('resident.tickets.show', $acc->id) }}" class="tk-card" style="border-left: 4px solid #dc2626;">
+                        <div class="tk-card__body">
+                            <div class="tk-card__header">
+                                <span class="tk-card__id">#{{ $acc->id }}</span>
+                                <div class="tk-card__badges">
+                                    <span style="display:inline-flex;padding:2px 8px;background:#fef2f2;color:#dc2626;border-radius:6px;font-size:0.7rem;font-weight:700;border:1px solid #fecaca;">
+                                        Tố cáo
+                                    </span>
+                                    @if($acc->accused_response === 'confirmed')
+                                        <span style="display:inline-flex;padding:2px 8px;background:#f0fdf4;color:#166534;border-radius:6px;font-size:0.7rem;font-weight:700;border:1px solid #86efac;">
+                                            Đã xác nhận
+                                        </span>
+                                    @elseif($acc->accused_response === 'denied')
+                                        <span style="display:inline-flex;padding:2px 8px;background:#fef2f2;color:#991b1b;border-radius:6px;font-size:0.7rem;font-weight:700;border:1px solid #fecaca;">
+                                            Đã phản đối
+                                        </span>
+                                    @else
+                                        <span style="display:inline-flex;padding:2px 8px;background:#fffbeb;color:#92400e;border-radius:6px;font-size:0.7rem;font-weight:700;border:1px solid #fde68a;">
+                                            Chờ phản hồi
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                            <h3 class="tk-card__title">{{ $acc->title }}</h3>
+                            <p class="tk-card__desc">{{ Str::limit($acc->description, 100) }}</p>
+                            <div class="tk-card__meta">
+                                <span class="tk-card__date">
+                                    Người tố cáo: {{ $acc->sender->name ?? 'N/A' }}
+                                </span>
+                                <span class="tk-card__date">
+                                    {{ $acc->created_at->format('d/m/Y H:i') }}
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                @endforeach
+            </div>
+        </div>
     @endif
 
 </div>
