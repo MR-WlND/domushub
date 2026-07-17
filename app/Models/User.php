@@ -83,6 +83,24 @@ class User extends Authenticatable
     }
 
     /**
+     * Lấy danh sách apartment_id mà cư dân này thuộc về.
+     * Fallback: nếu không có record trong bảng residents, dùng apartment_id trên user.
+     */
+    public function getApartmentIds(): array
+    {
+        $ids = $this->residents()
+            ->whereNull('deleted_at')
+            ->pluck('apartment_id')
+            ->toArray();
+
+        if (empty($ids) && $this->apartment_id) {
+            $ids = [$this->apartment_id];
+        }
+
+        return $ids;
+    }
+
+    /**
      * Danh sách phản ánh kỹ thuật viên này phụ trách xử lý
      */
     public function handledTickets()

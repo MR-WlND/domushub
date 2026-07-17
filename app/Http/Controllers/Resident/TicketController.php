@@ -18,6 +18,13 @@ class TicketController extends Controller
     {
         $user = Auth::user();
 
+        if (!$user->apartment_id) {
+            return view('resident.tickets.index', [
+                'tickets' => collect()->paginate(10),
+                'stats' => ['total' => 0, 'pending' => 0, 'in_progress' => 0, 'completed' => 0],
+            ]);
+        }
+
         $query = Ticket::with(['sender', 'handler'])
             ->where('apartment_id', $user->apartment_id)
             ->latest();

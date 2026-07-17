@@ -304,28 +304,16 @@ Route::middleware(['resident'])->group(function () {
             ->limit(5)
             ->get();
 
-        // Tự động chạy migrate nếu bảng post_hides chưa được tạo
-        if (!\Illuminate\Support\Facades\Schema::hasTable('post_hides')) {
-            try {
-                \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-            } catch (\Exception $e) {
-                \Log::error('Migration check/run failed in web.php: ' . $e->getMessage());
-            }
-        }
-
         // Bài viết cư dân (full feed với filter + pagination)
         $postQuery = \App\Models\Post::with(['user', 'images', 'comments', 'likedByCurrentUser'])
             ->withCount(['likes', 'comments'])
             ->where('status', 'published')
             ->whereDoesntHave('reports', function($q) {
                 $q->where('user_id', auth()->id());
-            });
-
-        if (\Illuminate\Support\Facades\Schema::hasTable('post_hides')) {
-            $postQuery->whereDoesntHave('hides', function($q) {
+            })
+            ->whereDoesntHave('hides', function($q) {
                 $q->where('user_id', auth()->id());
             });
-        }
 
         $postQuery->orderBy('created_at', 'desc');
 
