@@ -849,7 +849,7 @@ class TicketController extends Controller
     /**
      * Báo cáo đánh giá tổng hợp
      */
-    public function report(Request $request)
+    public function ratingReport(Request $request)
     {
         // Thống kê chung về đánh giá
         $totalRated = Ticket::whereNotNull('rating')->count();
