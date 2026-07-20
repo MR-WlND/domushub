@@ -82,29 +82,19 @@
             <h4>Thông tin chỉ số</h4>
         </div>
 
-        <div class="util-form-grid-2">
-            {{-- Loại --}}
-            <div class="util-form-group">
-                <label class="util-form-label">Loại <span style="color:#ef4444">*</span></label>
-                <select name="type" id="type"
-                    class="util-form-input" required style="background:#f8fafc; pointer-events:none;">
-                    <option value="water" selected>Nước</option>
-                </select>
-            </div>
+        <input type="hidden" name="type" id="type" value="water">
 
-            {{-- Tháng/Năm --}}
-            <div class="util-form-group">
-                <label class="util-form-label">Kỳ ghi <span style="color:#ef4444">*</span></label>
-                <div style="display: flex; gap: 8px;">
-                    <input type="number" name="record_month" id="record_month"
-                        value="{{ old('record_month', now()->month) }}" min="1" max="12"
-                        class="util-form-input {{ $errors->has('record_month') ? 'util-form-input--error' : '' }}"
-                        placeholder="Tháng" required style="flex: 1;">
-                    <input type="number" name="record_year" id="record_year"
-                        value="{{ old('record_year', now()->year) }}" min="2020" max="2100"
-                        class="util-form-input {{ $errors->has('record_year') ? 'util-form-input--error' : '' }}"
-                        placeholder="Năm" required style="flex: 1.5;">
-                </div>
+        <div class="util-form-group">
+            <label class="util-form-label">Kỳ ghi <span style="color:#ef4444">*</span></label>
+            <div style="display: flex; gap: 8px;">
+                <input type="number" name="record_month" id="record_month"
+                    value="{{ old('record_month', now()->month) }}" min="1" max="12"
+                    class="util-form-input {{ $errors->has('record_month') ? 'util-form-input--error' : '' }}"
+                    placeholder="Tháng" required style="flex: 1;">
+                <input type="number" name="record_year" id="record_year"
+                    value="{{ old('record_year', now()->year) }}" min="2020" max="2100"
+                    class="util-form-input {{ $errors->has('record_year') ? 'util-form-input--error' : '' }}"
+                    placeholder="Năm" required style="flex: 1.5;">
             </div>
         </div>
 
