@@ -73,7 +73,7 @@
                         </td>
                         <td style="text-align:center;">
                             @if($log->properties && count($log->properties) > 0)
-                                <a href="{{ route('admin.system-logs.show', $log->id) }}" class="al-btn-detail" style="text-decoration:none; display:inline-block; line-height: normal; padding: 4px 8px;">Xem chi tiết</a>
+                                <a href="{{ portal_route('system-logs.show', $log->id) }}" class="al-btn-detail" style="text-decoration:none; display:inline-block; line-height: normal; padding: 4px 8px;">Xem chi tiết</a>
                             @else
                                 <span style="color:#94a3b8;font-size:12px;">—</span>
                             @endif

@@ -117,11 +117,11 @@
             In chi tiết
         </button>
         @if(auth()->user()->role === 'admin' || (auth()->user()->role === 'technician' && in_array($reading->status, ['pending', 'rejected']) && $reading->recorded_by === auth()->id()))
-        <a href="{{ route('admin.utility-readings.edit', $reading->id) }}" class="util-btn util-btn--primary">
+        <a href="{{ portal_route('utility-readings.edit', $reading->id) }}" class="util-btn util-btn--primary">
             Chỉnh sửa
         </a>
         @endif
-        <a href="{{ route('admin.utility-readings.index', ['month' => $reading->record_month, 'year' => $reading->record_year]) }}" class="util-btn util-btn--outline">
+        <a href="{{ portal_route('utility-readings.index', ['month' => $reading->record_month, 'year' => $reading->record_year]) }}" class="util-btn util-btn--outline">
             Quay lại
         </a>
     </div>

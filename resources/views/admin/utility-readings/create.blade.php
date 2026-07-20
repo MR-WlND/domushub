@@ -14,7 +14,7 @@
         <h1>Ghi chỉ số đơn lẻ</h1>
         <p>Nhập chỉ số mới cho một căn hộ</p>
     </div>
-    <a href="{{ route('admin.utility-readings.index') }}" class="util-btn util-btn--outline">
+    <a href="{{ portal_route('utility-readings.index') }}" class="util-btn util-btn--outline">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
         </svg>
@@ -41,7 +41,7 @@
         <h4>Thông tin căn hộ</h4>
     </div>
 
-    <form action="{{ route('admin.utility-readings.store') }}" method="POST" id="createForm" enctype="multipart/form-data">
+    <form action="{{ portal_route('utility-readings.store') }}" method="POST" id="createForm" enctype="multipart/form-data">
         @csrf
 
         <div class="util-form-grid-2">
@@ -274,7 +274,7 @@
                 </svg>
                 Lưu chỉ số
             </button>
-            <a href="{{ route('admin.utility-readings.index') }}" class="util-btn util-btn--outline">Hủy</a>
+            <a href="{{ portal_route('utility-readings.index') }}" class="util-btn util-btn--outline">Hủy</a>
         </div>
 
     </form>
@@ -362,7 +362,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (!aptId || !t || !m || !y) return;
 
-        fetch(`{{ route('admin.utility-readings.get-old-value') }}?apartment_id=${aptId}&type=${t}&month=${m}&year=${y}`)
+        fetch(`{{ portal_route('utility-readings.get-old-value') }}?apartment_id=${aptId}&type=${t}&month=${m}&year=${y}`)
             .then(res => res.json())
             .then(data => {
                 fetchedOldValue = data.old_value ?? 0;

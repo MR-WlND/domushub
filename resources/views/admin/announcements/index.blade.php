@@ -16,7 +16,7 @@
                 <h1>Bảng tin chung cư (Thông báo BQL)</h1>
             </div>
             <div>
-                <a href="{{ route('admin.announcements.create') }}" class="announcements-btn announcements-btn--primary">
+                <a href="{{ portal_route('announcements.create') }}" class="announcements-btn announcements-btn--primary">
                     <i class="fa-solid fa-plus"></i> Soạn thông báo mới
                 </a>
             </div>
@@ -70,7 +70,7 @@
         </div>
 
         {{-- Filters --}}
-        <form class="announcements-filter" method="GET" action="{{ route('admin.announcements.index') }}">
+        <form class="announcements-filter" method="GET" action="{{ portal_route('announcements.index') }}">
             <div class="announcements-filter__field">
                 <span>Tìm kiếm</span>
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Nhập tiêu đề hoặc nội dung...">
@@ -99,7 +99,7 @@
 
             <div class="announcements-filter__actions">
                 <button type="submit" class="announcements-btn announcements-btn--primary">Lọc</button>
-                <a href="{{ route('admin.announcements.index') }}" class="announcements-btn">Xóa lọc</a>
+                <a href="{{ portal_route('announcements.index') }}" class="announcements-btn">Xóa lọc</a>
             </div>
         </form>
 
@@ -139,7 +139,7 @@
                                             </div>
                                         @endif
                                         <div class="announcement-info-wrap">
-                                            <a href="{{ route('admin.announcements.edit', $announcement->id) }}" class="announcement-title-link">
+                                            <a href="{{ portal_route('announcements.edit', $announcement->id) }}" class="announcement-title-link">
                                                 {{ $announcement->title }}
                                             </a>
                                         </div>
@@ -174,10 +174,10 @@
                                 <td>{{ $announcement->created_at->format('H:i d/m/Y') }}</td>
                                 <td style="text-align: center;">
                                     <div class="announcements-actions-cell">
-                                        <a href="{{ route('admin.announcements.edit', $announcement->id) }}" class="action-btn action-btn--edit" title="Chỉnh sửa">
+                                        <a href="{{ portal_route('announcements.edit', $announcement->id) }}" class="action-btn action-btn--edit" title="Chỉnh sửa">
                                             <i class="fa-regular fa-pen-to-square"></i>
                                         </a>
-                                        <form action="{{ route('admin.announcements.destroy', $announcement->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa thông báo này? Hành động này không thể hoàn tác!')" style="display: inline-block;">
+                                        <form action="{{ portal_route('announcements.destroy', $announcement->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa thông báo này? Hành động này không thể hoàn tác!')" style="display: inline-block;">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="action-btn action-btn--delete" title="Xóa">

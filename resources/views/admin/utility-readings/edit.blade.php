@@ -18,7 +18,7 @@
             – Tháng {{ $reading->record_month }}/{{ $reading->record_year }}
         </p>
     </div>
-    <a href="{{ route('admin.utility-readings.index', ['month' => $reading->record_month, 'year' => $reading->record_year]) }}"
+    <a href="{{ portal_route('utility-readings.index', ['month' => $reading->record_month, 'year' => $reading->record_year]) }}"
         class="util-btn util-btn--outline">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
@@ -147,7 +147,7 @@
         <h4>Chỉnh sửa chỉ số</h4>
     </div>
 
-    <form action="{{ route('admin.utility-readings.update', $reading->id) }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ portal_route('utility-readings.update', $reading->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
@@ -274,7 +274,7 @@
                 </svg>
                 Cập nhật chỉ số
             </button>
-            <a href="{{ route('admin.utility-readings.index', ['month' => $reading->record_month, 'year' => $reading->record_year]) }}"
+            <a href="{{ portal_route('utility-readings.index', ['month' => $reading->record_month, 'year' => $reading->record_year]) }}"
                 class="util-btn util-btn--outline">Hủy</a>
         </div>
 
@@ -380,7 +380,7 @@
 </div>
 
 {{-- Form xóa ảnh ẩn --}}
-<form id="delete-image-form" method="POST" action="{{ route('admin.utility-readings.remove-image', $reading->id) }}" style="display:none;">
+<form id="delete-image-form" method="POST" action="{{ portal_route('utility-readings.remove-image', $reading->id) }}" style="display:none;">
     @csrf
     @method('DELETE')
     <input type="hidden" name="index" id="delete-image-index" value="">

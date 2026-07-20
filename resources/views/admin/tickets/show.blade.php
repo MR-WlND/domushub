@@ -3,7 +3,7 @@
 @section('page_title', 'Chi tiết ' . ($ticket->ticket_type === 'report' ? 'tố cáo' : 'phản ánh') . ' #' . $ticket->id)
 @section('page_kicker', 'Dịch vụ cư dân')
 @section('role_title', 'Admin Portal')
-@section('home_route', route('admin.dashboard'))
+@section('home_route', portal_route('dashboard'))
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role', auth()->user()->role)
 
@@ -22,7 +22,7 @@
             </h1>
             <p class="tickets-page__subtitle">{{ $ticket->title }}</p>
         </div>
-        <a href="{{ route('admin.tickets.index') }}"
+        <a href="{{ portal_route('tickets.index') }}"
            style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; border-radius: 10px; background: #f1f5f9; color: #334155; font-weight: 600; font-size: 0.88rem; text-decoration: none; transition: all 0.2s;">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
             Quay lại
@@ -229,7 +229,7 @@
                         <span class="tk-show-card__title">Phân công xử lý</span>
                     </div>
                     <div class="tk-show-card__body">
-                        <form method="POST" action="{{ route('admin.tickets.assign', $ticket->id) }}">
+                        <form method="POST" action="{{ portal_route('tickets.assign', $ticket->id) }}">
                             @csrf
                             <div class="tk-form-group">
                                 <label>Kỹ thuật viên</label>
@@ -303,7 +303,7 @@
 
                             {{-- Cho phép đổi người bị tố cáo --}}
                             @if(!$ticket->hasAccusedResponse())
-                                <form method="POST" action="{{ route('admin.tickets.assign-accused', $ticket->id) }}" style="margin-top: 12px;">
+                                <form method="POST" action="{{ portal_route('tickets.assign-accused', $ticket->id) }}" style="margin-top: 12px;">
                                     @csrf
                                     <div class="tk-form-group">
                                         <label style="font-size: 0.78rem; color: #94a3b8;">Đổi người bị tố cáo</label>
@@ -328,7 +328,7 @@
                                     Cư dân ghi: <strong>{{ $ticket->reported_person }}</strong>
                                 </div>
                             @endif
-                            <form method="POST" action="{{ route('admin.tickets.assign-accused', $ticket->id) }}">
+                            <form method="POST" action="{{ portal_route('tickets.assign-accused', $ticket->id) }}">
                                 @csrf
                                 <div class="tk-form-group">
                                     <label>Chọn cư dân bị tố cáo</label>
@@ -391,7 +391,7 @@
                                         @endif
                                         <div class="tk-cost-item__meta">
                                             <span>{{ $cost->createdBy->name ?? 'N/A' }} · {{ $cost->created_at->format('d/m/Y H:i') }}</span>
-                                            <form method="POST" action="{{ route('admin.tickets.delete-cost', [$ticket->id, $cost->id]) }}" onsubmit="return confirm('Xóa chi phí này?')" style="display: inline;">
+                                            <form method="POST" action="{{ portal_route('tickets.delete-cost', [$ticket->id, $cost->id]) }}" onsubmit="return confirm('Xóa chi phí này?')" style="display: inline;">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="tk-cost-item__delete" title="Xóa">
@@ -431,7 +431,7 @@
                         @endif
 
                         {{-- Form thêm chi phí --}}
-                        <form method="POST" action="{{ route('admin.tickets.add-cost', $ticket->id) }}" class="tk-cost-form">
+                        <form method="POST" action="{{ portal_route('tickets.add-cost', $ticket->id) }}" class="tk-cost-form">
                             @csrf
                             <div class="tk-cost-form__group">
                                 <label>Loại chi phí <span style="color: #ef4444;">*</span></label>

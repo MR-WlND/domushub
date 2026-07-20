@@ -9,7 +9,7 @@
         <h1 class="page-title">Tạo Hóa đơn mới</h1>
         <p class="page-subtitle">Điền thông tin để phát hành hóa đơn cho căn hộ</p>
     </div>
-    <a href="{{ route('admin.invoices.index') }}" class="btn btn-outline">← Quay lại</a>
+    <a href="{{ portal_route('invoices.index') }}" class="btn btn-outline">← Quay lại</a>
 </div>
 
 <div style="max-width:680px">
@@ -26,7 +26,7 @@
 </div>
 @endif
 
-<form method="POST" action="{{ route('admin.invoices.store') }}">
+<form method="POST" action="{{ portal_route('invoices.store') }}">
     @csrf
 
     @php
@@ -122,7 +122,7 @@
 
         <div style="display:flex;gap:10px;padding-top:8px;border-top:1px solid var(--border)">
             <button type="submit" class="btn btn-primary">🚀 Phát hành hóa đơn</button>
-            <a href="{{ route('admin.invoices.index') }}" class="btn btn-outline">Hủy</a>
+            <a href="{{ portal_route('invoices.index') }}" class="btn btn-outline">Hủy</a>
         </div>
 
     </div>

@@ -7,9 +7,9 @@
 
     {{-- Breadcrumb --}}
     <div class="amf-breadcrumb">
-        <a href="{{ route('admin.amenities.index') }}">Tiện ích chung cư</a>
+        <a href="{{ portal_route('amenities.index') }}">Tiện ích chung cư</a>
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
-        <a href="{{ route('admin.amenities.show', $facility) }}">{{ $facility->name }}</a>
+        <a href="{{ portal_route('amenities.show', $facility) }}">{{ $facility->name }}</a>
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
         <span>Chỉnh sửa</span>
     </div>
@@ -19,7 +19,7 @@
         <p class="amf-subtitle">Cập nhật thông tin và cài đặt cấu hình tiện ích.</p>
     </div>
 
-    <form method="POST" action="{{ route('admin.amenities.update', $facility) }}">
+    <form method="POST" action="{{ portal_route('amenities.update', $facility) }}">
         @csrf
         @method('PUT')
 
@@ -223,7 +223,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                 Lưu thay đổi
             </button>
-            <a href="{{ route('admin.amenities.index') }}" class="amf-btn amf-btn--ghost">Hủy bỏ</a>
+            <a href="{{ portal_route('amenities.index') }}" class="amf-btn amf-btn--ghost">Hủy bỏ</a>
         </div>
     </form>
 
@@ -234,7 +234,7 @@
             Hình ảnh tiện ích
         </div>
 
-        <form method="POST" action="{{ route('admin.amenities.images.store', $facility) }}" enctype="multipart/form-data">
+        <form method="POST" action="{{ portal_route('amenities.images.store', $facility) }}" enctype="multipart/form-data">
             @csrf
             <div class="amf-field amf-field--wide">
                 <label for="images">Chọn thêm ảnh tiện ích (Tối đa 5 ảnh, mỗi ảnh &lt; 3MB)</label>
@@ -251,7 +251,7 @@
                     @foreach($facility->images as $index => $image)
                         <div class="amf-gallery-item">
                             <img src="{{ asset('storage/' . $image) }}" alt="Ảnh {{ $facility->name }}">
-                            <form method="POST" action="{{ route('admin.amenities.images.destroy', [$facility, $index]) }}" class="amf-delete-image-form" onsubmit="return confirm('Bạn có chắc chắn muốn xóa ảnh này?')">
+                            <form method="POST" action="{{ portal_route('amenities.images.destroy', [$facility, $index]) }}" class="amf-delete-image-form" onsubmit="return confirm('Bạn có chắc chắn muốn xóa ảnh này?')">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="amf-btn-delete-img" title="Xóa ảnh">×</button>

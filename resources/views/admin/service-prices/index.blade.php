@@ -25,7 +25,7 @@
     {{-- Form thêm mới --}}
     <div class="sp-form-card" id="addForm" style="display:none">
         <h3 class="sp-form-title">Thêm đơn giá mới</h3>
-        <form method="POST" action="{{ route('admin.service-prices.store') }}">
+        <form method="POST" action="{{ portal_route('service-prices.store') }}">
             @csrf
             <div class="sp-form-grid">
                 <div class="sp-field">
@@ -116,7 +116,7 @@
                     <td class="view-{{ $sp->id }}">
                         <div class="sp-actions">
                             <button class="sp-btn sp-btn--sm sp-btn--edit" onclick="openEdit({{ $sp->id }})">Sửa</button>
-                            <form method="POST" action="{{ route('admin.service-prices.destroy', $sp->id) }}"
+                            <form method="POST" action="{{ portal_route('service-prices.destroy', $sp->id) }}"
                                   onsubmit="return confirm('Xoá đơn giá {{ $sp->name }}?')">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="sp-btn sp-btn--sm sp-btn--danger">Xoá</button>
@@ -126,7 +126,7 @@
 
                     {{-- Edit mode (ẩn mặc định) --}}
                     <td colspan="6" class="edit-{{ $sp->id }}" style="display:none; padding:16px; background:#f8fafc;">
-                        <form method="POST" action="{{ route('admin.service-prices.update', $sp->id) }}">
+                        <form method="POST" action="{{ portal_route('service-prices.update', $sp->id) }}">
                             @csrf @method('PUT')
                             <div class="sp-form-grid">
                                 <div class="sp-field">

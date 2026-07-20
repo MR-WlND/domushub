@@ -13,8 +13,12 @@ class AdminMiddleware
 
     public function handle(Request $request, Closure $next): Response
     {
-        if (! Auth::check() || ! in_array(Auth::user()->role, $this->allowedRoles, true)) {
-            abort(403, 'Ban khong co quyen truy cap.');
+        if (! Auth::check()) {
+            return redirect()->route('admin.login');
+        }
+
+        if (! in_array(Auth::user()->role, $this->allowedRoles, true)) {
+            abort(403, 'Bạn không có quyền truy cập.');
         }
 
         $user = Auth::user();

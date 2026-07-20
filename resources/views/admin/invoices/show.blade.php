@@ -6,12 +6,12 @@
 <div class="invoice-detail-page">
     {{-- Header with back button --}}
     <div class="detail-header-row">
-        <a href="{{ route('admin.invoices.index') }}" class="btn-back">
+        <a href="{{ portal_route('invoices.index') }}" class="btn-back">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
             Quay lại danh sách
         </a>
         <div class="detail-actions">
-            <a href="{{ route('admin.invoices.print', $invoice) }}" target="_blank" class="btn-top-action">
+            <a href="{{ portal_route('invoices.print', $invoice) }}" target="_blank" class="btn-top-action">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                 In hóa đơn
             </a>
@@ -265,7 +265,7 @@
                 @endif
             </p>
 
-            <form method="POST" action="{{ route('admin.invoices.mark-paid', $invoice) }}" enctype="multipart/form-data" onsubmit="return confirmManualPayment(event);">
+            <form method="POST" action="{{ portal_route('invoices.mark-paid', $invoice) }}" enctype="multipart/form-data" onsubmit="return confirmManualPayment(event);">
                 @csrf
                 @method('PATCH')
                 <div class="payment-form-grid">

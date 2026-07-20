@@ -11,7 +11,7 @@
             <p class="am-eyebrow">Dịch vụ cư dân</p>
             <h1 class="am-title">Quản lý tiện ích chung cư</h1>
         </div>
-        <a href="{{ route('admin.amenities.create') }}" class="am-btn am-btn--primary">
+        <a href="{{ portal_route('amenities.create') }}" class="am-btn am-btn--primary">
             Thêm tiện ích
         </a>
     </div>
@@ -57,7 +57,7 @@
     <div class="am-empty">
         <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" fill="none" stroke="#cbd5e1" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
         <p>Chưa có tiện ích nào.</p>
-        <a href="{{ route('admin.amenities.create') }}" class="am-btn am-btn--primary" style="margin-top:12px;">Thêm tiện ích đầu tiên</a>
+        <a href="{{ portal_route('amenities.create') }}" class="am-btn am-btn--primary" style="margin-top:12px;">Thêm tiện ích đầu tiên</a>
     </div>
     @else
     <div class="am-grid">
@@ -82,16 +82,16 @@
 
             {{-- Badge chờ duyệt --}}
             @if($facility->pending_bookings_count > 0)
-            <a href="{{ route('admin.amenities.show', $facility) }}" class="am-pending-badge">
+            <a href="{{ portal_route('amenities.show', $facility) }}" class="am-pending-badge">
                 {{ $facility->pending_bookings_count }} lịch đặt chờ duyệt
             </a>
             @endif
 
             {{-- Actions --}}
             <div class="am-card-actions">
-                <a href="{{ route('admin.amenities.show', $facility) }}" class="am-btn am-btn--sm am-btn--outline">Lịch đặt</a>
-                <a href="{{ route('admin.amenities.edit', $facility) }}" class="am-btn am-btn--sm am-btn--ghost">Sửa</a>
-                <form method="POST" action="{{ route('admin.amenities.destroy', $facility) }}"
+                <a href="{{ portal_route('amenities.show', $facility) }}" class="am-btn am-btn--sm am-btn--outline">Lịch đặt</a>
+                <a href="{{ portal_route('amenities.edit', $facility) }}" class="am-btn am-btn--sm am-btn--ghost">Sửa</a>
+                <form method="POST" action="{{ portal_route('amenities.destroy', $facility) }}"
                       onsubmit="return confirm('Xóa tiện ích \'{{ addslashes($facility->name) }}\'?')">
                     @csrf @method('DELETE')
                     <button type="submit" class="am-btn am-btn--sm am-btn--danger">Xóa</button>

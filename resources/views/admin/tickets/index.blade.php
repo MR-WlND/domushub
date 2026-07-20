@@ -3,7 +3,7 @@
 @section('page_title', 'Quản lý Phản ánh')
 @section('page_kicker', 'Dịch vụ cư dân')
 @section('role_title', 'Admin Portal')
-@section('home_route', route('admin.dashboard'))
+@section('home_route', portal_route('dashboard'))
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role', auth()->user()->role)
 
@@ -106,7 +106,7 @@
             </div>
             @if(request()->hasAny(['block_id','search','status','priority','ticket_type']))
                 <div style="margin-top:10px;">
-                    <a href="{{ route('admin.tickets.index') }}" style="font-size:.82rem;color:#ef4444;text-decoration:none;font-weight:600;">× Xóa bộ lọc</a>
+                    <a href="{{ portal_route('tickets.index') }}" style="font-size:.82rem;color:#ef4444;text-decoration:none;font-weight:600;">× Xóa bộ lọc</a>
                 </div>
             @endif
         </form>
@@ -124,7 +124,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="#cbd5e1" stroke-width="1.5" style="margin-bottom:10px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             <br>Không có phản ánh nào
             @if(request()->hasAny(['block_id','search','status','priority']))
-                <br><a href="{{ route('admin.tickets.index') }}" style="color:#7c3aed;font-weight:600;font-size:.88rem;">Xóa bộ lọc để xem tất cả</a>
+                <br><a href="{{ portal_route('tickets.index') }}" style="color:#7c3aed;font-weight:600;font-size:.88rem;">Xóa bộ lọc để xem tất cả</a>
             @endif
         </div>
     @else
@@ -177,9 +177,9 @@
                                 data-handler-id="{{ $ticket->handler_id ?? '' }}"
                                 data-created="{{ $ticket->created_at->diffForHumans() }}"
                                 data-created-full="{{ $ticket->created_at->format('d/m/Y H:i') }}"
-                                data-assign-url="{{ route('admin.tickets.assign', $ticket->id) }}"
-                                data-progress-url="{{ route('admin.tickets.update-progress', $ticket->id) }}"
-                                data-detail-url="{{ route('admin.tickets.show', $ticket->id) }}"
+                                data-assign-url="{{ portal_route('tickets.assign', $ticket->id) }}"
+                                data-progress-url="{{ portal_route('tickets.update-progress', $ticket->id) }}"
+                                data-detail-url="{{ portal_route('tickets.show', $ticket->id) }}"
                                 data-can-assign="{{ in_array($ticket->status, ['pending','assigned']) && in_array(auth()->user()->role, ['admin','manager']) ? '1' : '0' }}"
                                 data-can-progress="{{ in_array($ticket->status, ['assigned','in_progress']) ? '1' : '0' }}"
                                 data-overdue="{{ $overdue ? '1' : '0' }}"

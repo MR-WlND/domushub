@@ -41,7 +41,7 @@
         </div>
 
         <div class="profile-card__body">
-            <form action="{{ route('admin.profile.update') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ portal_route('profile.update') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 
@@ -150,7 +150,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                         Lưu thay đổi
                     </button>
-                    <a href="{{ route('admin.dashboard') }}" class="btn-cancel">Hủy</a>
+                    <a href="{{ portal_route('dashboard') }}" class="btn-cancel">Hủy</a>
                 </div>
             </form>
         </div>
@@ -166,7 +166,7 @@
         </div>
 
         <div class="profile-card__body">
-            <form action="{{ route('admin.profile.change-password') }}" method="POST">
+            <form action="{{ portal_route('profile.change-password') }}" method="POST">
                 @csrf
                 @method('PUT')
 

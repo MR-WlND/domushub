@@ -3,7 +3,7 @@
 @section('page_title', 'Điều phối kỹ thuật')
 @section('page_kicker', 'Dịch vụ cư dân')
 @section('role_title', 'Admin Portal')
-@section('home_route', route('admin.dashboard'))
+@section('home_route', portal_route('dashboard'))
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role', auth()->user()->role)
 
@@ -312,7 +312,7 @@
                                             {{ $job->priorityLabel() }}
                                         </span>
                                     </span>
-                                    <a href="{{ route('admin.tickets.show', $job->id) }}">Chi tiết</a>
+                                    <a href="{{ portal_route('tickets.show', $job->id) }}">Chi tiết</a>
                                 </div>
                             @endforeach
                         </div>
@@ -340,7 +340,7 @@
                 @forelse($pendingTickets as $ticket)
                     <div class="dispatch-ticket-card">
                         <div class="dispatch-ticket-info">
-                            <a href="{{ route('admin.tickets.show', $ticket->id) }}" class="dispatch-ticket-title">
+                            <a href="{{ portal_route('tickets.show', $ticket->id) }}" class="dispatch-ticket-title">
                                 #{{ $ticket->id }} - {{ $ticket->title }}
                             </a>
                             <p class="dispatch-ticket-desc">{{ Str::limit($ticket->description, 120) }}</p>
@@ -354,7 +354,7 @@
 
                         {{-- Dispatch actions --}}
                         <div>
-                            <form method="POST" action="{{ route('admin.tickets.assign', $ticket->id) }}" class="dispatch-form">
+                            <form method="POST" action="{{ portal_route('tickets.assign', $ticket->id) }}" class="dispatch-form">
                                 @csrf
                                 <select name="handler_id" required class="dispatch-select">
                                     <option value="" disabled selected>-- Giao cho KTV --</option>
@@ -381,7 +381,7 @@
                 @forelse($activeTickets as $ticket)
                     <div class="dispatch-ticket-card">
                         <div class="dispatch-ticket-info">
-                            <a href="{{ route('admin.tickets.show', $ticket->id) }}" class="dispatch-ticket-title">
+                            <a href="{{ portal_route('tickets.show', $ticket->id) }}" class="dispatch-ticket-title">
                                 #{{ $ticket->id }} - {{ $ticket->title }}
                             </a>
                             <p class="dispatch-ticket-desc">{{ Str::limit($ticket->description, 120) }}</p>
@@ -396,7 +396,7 @@
 
                         {{-- Re-dispatch/Change technician --}}
                         <div>
-                            <form method="POST" action="{{ route('admin.tickets.assign', $ticket->id) }}" class="dispatch-form">
+                            <form method="POST" action="{{ portal_route('tickets.assign', $ticket->id) }}" class="dispatch-form">
                                 @csrf
                                 <select name="handler_id" required class="dispatch-select">
                                     <option value="" disabled>-- Chuyển KTV --</option>
