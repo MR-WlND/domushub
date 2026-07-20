@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Helpers\SystemLogger;
 use App\Models\Post;
 use App\Models\Comment;
 use App\Models\CommentReport;
@@ -123,6 +124,8 @@ class PostController extends Controller
 
         $post->save();
 
+
+
         return redirect()->back()->with('success', $message);
     }
 
@@ -172,6 +175,8 @@ class PostController extends Controller
 
         // Chỉ soft-delete bài viết để ẩn ở phía cư dân, giữ lại hình ảnh và lịch sử báo cáo cho Admin
         $post->delete();
+
+
 
         return redirect()->back()->with('success', 'Đã xóa bài viết khỏi phía cư dân thành công và lưu lại lịch sử.');
     }
@@ -243,6 +248,8 @@ class PostController extends Controller
 
         $user->save();
 
+
+
         return redirect()->back()->with('success', $message);
     }
 
@@ -285,6 +292,8 @@ class PostController extends Controller
         }
 
         $user->save();
+
+
 
         return redirect()->back()->with('success', $message);
     }

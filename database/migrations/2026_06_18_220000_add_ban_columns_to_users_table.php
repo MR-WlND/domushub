@@ -12,8 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dateTime('banned_posting_until')->nullable()->after('status');
-            $table->dateTime('banned_commenting_until')->nullable()->after('banned_posting_until');
+            if (!Schema::hasColumn('users', 'banned_posting_until')) {
+                $table->dateTime('banned_posting_until')->nullable()->after('status');
+            }
+            if (!Schema::hasColumn('users', 'banned_commenting_until')) {
+                $table->dateTime('banned_commenting_until')->nullable()->after('banned_posting_until');
+            }
         });
     }
 

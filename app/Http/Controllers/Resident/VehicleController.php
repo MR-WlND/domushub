@@ -188,4 +188,58 @@ class VehicleController extends Controller
 
         return back()->with('success', 'Đã hủy đăng ký phương tiện thành công.');
     }
+
+    /**
+     * Hiển thị mã QR cho xe (trang riêng dùng cho cư dân scan tại cổng)
+     */
+    public function showQr(Vehicle $vehicle)
+    {
+        $user = Auth::user();
+
+        // Kiểm tra quyền sở hữu
+        if ($vehicle->apartment_id != $user->apartment_id) {
+            abort(403);
+        }
+
+        // Chỉ hiện QR cho xe active hoặc pending_renewal (đã có QR)
+        if (!in_array($vehicle->status, ['active', 'pending_renewal'])) {
+            return back()->withErrors(['vehicle' => 'Xe chưa được cấp mã QR.']);
+        }
+
+        if (empty($vehicle->qr_code)) {
+            return back()->withErrors(['vehicle' => 'Xe chưa có mã QR. Vui lòng liên hệ Ban quản lý.']);
+        }
+
+        return view('resident.vehicles.qr', compact('vehicle'));
+    }
+
+    /**
+     * Tải mã QR về dưới dạng file ảnh
+     */
+    public function downloadQr(Vehicle $vehicle)
+    {
+        $user = Auth::user();
+
+        if ($vehicle->apartment_id != $user->apartment_id) {
+            abort(403);
+        }
+
+        if (!in_array($vehicle->status, ['active', 'pending_renewal'])) {
+            return back()->withErrors(['vehicle' => 'Xe chưa được cấp mã QR.']);
+        }
+
+        if (empty($vehicle->qr_code)) {
+            return back()->withErrors(['vehicle' => 'Xe chưa có mã QR.']);
+        }
+
+        $path = storage_path('app/public/' . $vehicle->qr_code);
+
+        if (!file_exists($path)) {
+            return back()->withErrors(['vehicle' => 'File QR không tồn tại.']);
+        }
+
+        $filename = 'QR_' . $vehicle->license_plate . '.' . pathinfo($path, PATHINFO_EXTENSION);
+
+        return response()->download($path, $filename);
+    }
 }

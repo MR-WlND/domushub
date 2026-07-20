@@ -9,16 +9,26 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AdminMiddleware
 {
-    /**
-     * Các role được phép truy cập admin panel.
-     * Mỗi role sẽ thấy menu khác nhau tuỳ theo phân quyền trong sidebar.
-     */
     protected array $allowedRoles = ['admin', 'manager', 'staff', 'technician'];
 
     public function handle(Request $request, Closure $next): Response
     {
         if (! Auth::check() || ! in_array(Auth::user()->role, $this->allowedRoles, true)) {
-            abort(403, 'Bạn không có quyền truy cập.');
+            abort(403, 'Ban khong co quyen truy cap.');
+        }
+
+        $user = Auth::user();
+
+        if (
+            $user->role === 'technician'
+            && $request->routeIs(
+                'admin.invoices.*',
+                'admin.service-prices.*',
+                'admin.statistics.finance',
+                'admin.finance-logs.*'
+            )
+        ) {
+            return redirect()->route('admin.tickets.my-tasks');
         }
 
         return $next($request);

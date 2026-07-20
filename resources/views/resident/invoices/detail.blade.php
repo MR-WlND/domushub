@@ -60,18 +60,33 @@
         {{-- Line Items Table --}}
         <div class="detail-card__items">
             <h3 class="section-title">Chi tiết khoản phí</h3>
+            <form id="pay-details-form" method="POST" action="{{ route('resident.invoices.pay-details') }}">
+                @csrf
+                <input type="hidden" name="invoice_id" value="{{ $invoice->id }}">
             <table class="items-table">
                 <thead>
                     <tr>
+                        @if($invoice->status !== 'paid')
+                            <th style="width: 40px; text-align: center;">
+                                <input type="checkbox" id="check-all-details" class="detail-checkbox" checked>
+                            </th>
+                        @endif
                         <th>Tên khoản phí</th>
                         <th class="text-right">Số lượng</th>
                         <th class="text-right">Thành tiền</th>
-                        <th class="text-right" style="padding-right: 15px;">Trạng thái</th>
+                        <th class="text-right">Trạng thái</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($invoice->details as $detail)
-                        <tr>
+                        <tr class="{{ $detail->status === 'paid' ? 'paid-row' : '' }}">
+                            @if($invoice->status !== 'paid')
+                                <td style="text-align: center;">
+                                    @if($detail->status !== 'paid')
+                                        <input type="checkbox" name="detail_ids[]" value="{{ $detail->id }}" class="detail-checkbox item-check" data-amount="{{ $detail->amount }}" checked>
+                                    @endif
+                                </td>
+                            @endif
                             <td>
                                 <div class="item-name">{{ $detail->servicePrice->name ?? 'Dịch vụ / Phí khác' }}</div>
                                 <div class="item-desc">
@@ -88,21 +103,23 @@
                                 @endif
                             </td>
                             <td class="text-right val-subtotal">{{ number_format($detail->amount, 0, ',', '.') }} đ</td>
-                            <td class="text-right" style="padding-right: 15px;">
+                            <td class="text-right">
                                 @if($detail->status === 'paid')
-                                    <span class="pay-badge pay-badge--paid" style="font-size: 0.7rem; padding: 2px 6px;">Đã đóng</span>
+                                    <span class="badge" style="background: #e2e8f0; color: #475569; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">Đã thanh toán</span>
                                 @else
-                                    <span class="pay-badge pay-badge--overdue" style="font-size: 0.7rem; padding: 2px 6px;">Chưa đóng</span>
+                                    <span class="badge" style="background: #fef9c3; color: #854d0e; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">Chưa thanh toán</span>
                                 @endif
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="text-center text-muted">Không có thông tin chi tiết khoản phí.</td>
+                            <td colspan="{{ $invoice->status !== 'paid' ? '5' : '4' }}" class="text-center text-muted">Không có thông tin chi tiết khoản phí.</td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
+        </div>
+
         </div>
 
         {{-- Total Row --}}
@@ -110,6 +127,13 @@
             <span class="total-label">Tổng cộng</span>
             <span class="total-val">{{ number_format($invoice->total_amount, 0, ',', '.') }} đ</span>
         </div>
+        
+        @if($invoice->status !== 'paid')
+        <div class="detail-card__selected-total" style="padding: 16px 24px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+            <span class="total-label" style="font-weight: 600; color: #475569;">Đang chọn thanh toán</span>
+            <span class="total-val" id="selected-total-val" style="font-size: 1.25rem; font-weight: 700; color: #0d9488;">0 đ</span>
+        </div>
+        @endif
 
         {{-- Payment History Info --}}
         <div class="detail-card__payment">
@@ -225,14 +249,6 @@
                         </span>
                     </div>
                     @endif
-                    <div class="payment-info-item">
-                        <span class="info-label">Thao tác:</span>
-                        <span class="info-val">
-                            <a href="{{ route('resident.payments.receipt', $payment->id) }}" target="_blank" style="color: #0d9488; font-weight: 600; text-decoration: underline; display: inline-flex; align-items: center; gap: 4px;">
-                                🖨 In biên lai
-                            </a>
-                        </span>
-                    </div>
                 </div>
             @empty
                 <div style="font-size: 0.85rem; color: #64748b; padding: 15px 0; text-align: center;">
@@ -244,18 +260,68 @@
         {{-- Pay Button (Only if Unpaid/Overdue) --}}
         @if($invoice->status !== 'paid')
             <div class="detail-card__pay-action">
-                <form method="POST" action="{{ route('resident.invoices.pay') }}">
-                    @csrf
-                    <input type="hidden" name="invoice_ids[]" value="{{ $invoice->id }}">
-                    <button type="submit" class="btn-pay-now">
-                        Thanh toán ngay qua VNPay
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                    </button>
-                </form>
+                <button type="submit" class="btn-pay-now" id="btn-submit-pay">
+                    Thanh toán mục đã chọn qua VNPay
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </button>
             </div>
+            </form>
         @endif
     </div>
 </div>
 
 @include('resident.invoices.partials.style')
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkAll = document.getElementById('check-all-details');
+        const itemChecks = document.querySelectorAll('.item-check');
+        const totalValEl = document.getElementById('selected-total-val');
+        const btnSubmit = document.getElementById('btn-submit-pay');
+
+        function updateTotal() {
+            let total = 0;
+            let checkedCount = 0;
+            itemChecks.forEach(check => {
+                if(check.checked) {
+                    total += parseFloat(check.dataset.amount);
+                    checkedCount++;
+                }
+            });
+
+            if(totalValEl) {
+                totalValEl.textContent = new Intl.NumberFormat('vi-VN').format(total) + ' đ';
+            }
+
+            if(checkAll) {
+                checkAll.checked = (checkedCount === itemChecks.length && itemChecks.length > 0);
+            }
+            
+            if(btnSubmit) {
+                btnSubmit.disabled = checkedCount === 0;
+                btnSubmit.style.opacity = checkedCount === 0 ? '0.5' : '1';
+                btnSubmit.style.cursor = checkedCount === 0 ? 'not-allowed' : 'pointer';
+            }
+        }
+
+        if(checkAll) {
+            checkAll.addEventListener('change', function() {
+                itemChecks.forEach(check => {
+                    check.checked = this.checked;
+                });
+                updateTotal();
+            });
+        }
+
+        itemChecks.forEach(check => {
+            check.addEventListener('change', updateTotal);
+        });
+
+        // Initialize total
+        updateTotal();
+    });
+</script>
+@endpush
+
 @endsection

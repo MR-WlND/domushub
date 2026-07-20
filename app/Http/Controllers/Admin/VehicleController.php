@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Helpers\SystemLogger;
 use App\Models\Block;
 use App\Models\Vehicle;
 use App\Models\ParkingLot;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class VehicleController extends Controller
 {
@@ -29,9 +31,10 @@ class VehicleController extends Controller
             });
         }
 
-        // Filter: Loại xe
+        // Filter: Loại xe (hỗ trợ nhiều loại: "motorbike,electric_bike")
         if ($request->filled('vehicle_type')) {
-            $query->where('vehicle_type', $request->vehicle_type);
+            $types = explode(',', $request->vehicle_type);
+            $query->whereIn('vehicle_type', $types);
         }
 
         // Filter: Trạng thái
@@ -72,6 +75,11 @@ class VehicleController extends Controller
             $vehicle->update(['parking_lot_id' => $lot->id, 'status' => 'active']);
         });
 
+        // Sinh QR code cho ô tô sau khi gán lốt
+        $this->generateVehicleQr($vehicle);
+
+
+
         return back()->with('success', 'Đã gán lốt ' . $lot->lot_number . ' cho xe ' . $vehicle->license_plate);
     }
 
@@ -93,6 +101,8 @@ class VehicleController extends Controller
             $vehicle->update(['parking_lot_id' => null, 'status' => 'pending']);
         });
 
+
+
         return back()->with('success', 'Đã thu hồi lốt đỗ của xe ' . $vehicle->license_plate);
     }
 
@@ -111,6 +121,9 @@ class VehicleController extends Controller
         }
 
         $vehicle->update(['status' => 'active']);
+        $this->generateVehicleQr($vehicle);
+
+
 
         return back()->with('success', 'Đã duyệt xe ' . $vehicle->license_plate . '. Phương tiện hiện đang hoạt động.');
     }
@@ -131,6 +144,8 @@ class VehicleController extends Controller
 
         $vehicle->update(['status' => 'locked']);
 
+
+
         return back()->with('success', 'Đã khóa xe ' . $vehicle->license_plate . '.');
     }
 
@@ -142,6 +157,47 @@ class VehicleController extends Controller
 
         $vehicle->update(['status' => 'active']);
 
+
+
         return back()->with('success', 'Đã mở khóa xe ' . $vehicle->license_plate . '.');
+    }
+
+    // =========================================================================
+    // QR GENERATION
+    // =========================================================================
+
+    /**
+     * Sinh QR image cho xe và lưu path vào cột qr_code.
+     * Content của QR là license_plate (bảo vệ quét → tìm xe theo biển số).
+     */
+    private function generateVehicleQr(Vehicle $vehicle): void
+    {
+        try {
+            $dir = storage_path('app/public/qr/vehicles');
+            if (!is_dir($dir)) {
+                mkdir($dir, 0775, true);
+            }
+
+            // QR content = biển số viết hoa, không dấu cách và gạch ngang
+            $content  = strtoupper(str_replace([' ', '-'], '', $vehicle->license_plate));
+            $filename = $content . '.svg';
+            $filePath = $dir . '/' . $filename;
+
+            if (class_exists(\SimpleSoftwareIO\QrCode\Facades\QrCode::class)) {
+                \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')
+                    ->size(300)
+                    ->errorCorrection('H')
+                    ->generate($content, $filePath);
+            }
+
+            // Lưu đường dẫn tương đối (dùng cho asset())
+            $vehicle->update(['qr_code' => 'qr/vehicles/' . $filename]);
+
+        } catch (\Throwable $e) {
+            Log::warning('Vehicle QR generation failed for ' . $vehicle->license_plate . ': ' . $e->getMessage());
+            // Fallback: lưu content làm qr_code để scanner vẫn hoạt động
+            $content = strtoupper(str_replace([' ', '-'], '', $vehicle->license_plate));
+            $vehicle->update(['qr_code' => $content]);
+        }
     }
 }

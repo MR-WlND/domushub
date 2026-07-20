@@ -15,38 +15,55 @@
 <div class="vehicles-page">
 
     {{-- Header --}}
-    <div class="vehicles-page__header">
+    <div class="vehicles-page__header" style="display: flex; justify-content: space-between; align-items: center;">
         <div>
             <h1>Quản lý Phương tiện</h1>
-            <p class="vehicles-page__subtitle">Hệ thống theo dõi và quản lý phương tiện lưu thông trong tòa nhà.</p>
+            <p class="vehicles-page__subtitle">Theo dõi và quản lý phương tiện lưu thông trong khu chung cư</p>
+        </div>
+        <div class="vehicles-page__actions">
+            @if(auth()->user()->role === 'admin')
+            <a href="{{ route('admin.vehicle-logs.index') }}" class="veh-tab-btn" style="background:#fff; color:#475569; border:1px solid #cbd5e1; display:inline-flex; align-items:center; gap:6px; padding: 8px 16px; text-decoration: none; border-radius: 6px; font-weight: 500; font-size: 14px;">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6z"></path>
+                    <path d="M14 3v5h5M16 13H8M16 17H8M10 9H8"></path>
+                </svg>
+                Lịch sử xe ra vào
+            </a>
+            @endif
         </div>
     </div>
 
     {{-- Alerts --}}
     @if(session('success'))
-        <div class="vehicles-alert vehicles-alert--success">{{ session('success') }}</div>
+        <div class="vehicles-alert vehicles-alert--success">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            {{ session('success') }}
+        </div>
     @endif
     @if($errors->any())
-        <div class="vehicles-alert vehicles-alert--danger">{{ $errors->first() }}</div>
+        <div class="vehicles-alert vehicles-alert--danger">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></svg>
+            {{ $errors->first() }}
+        </div>
     @endif
 
-    {{-- Stats Grid --}}
+    {{-- Stats --}}
     <div class="vehicles-stats-grid">
-        <div class="veh-stat-card" style="border-left: 4px solid #0b57d0;">
-            <span class="veh-stat-card__label">Tổng số phương tiện</span>
-            <span class="veh-stat-card__value" style="color: #0b57d0;">{{ number_format($vehicles->total()) }}</span>
+        <div class="veh-stat-card veh-stat--primary">
+            <span class="veh-stat-card__value">{{ number_format($vehicles->total()) }}</span>
+            <span class="veh-stat-card__label">Tổng phương tiện</span>
         </div>
-        <div class="veh-stat-card" style="border-left: 4px solid #16a34a;">
+        <div class="veh-stat-card veh-stat--success">
+            <span class="veh-stat-card__value">{{ number_format(App\Models\Vehicle::where('status', 'active')->count()) }}</span>
             <span class="veh-stat-card__label">Đang hoạt động</span>
-            <span class="veh-stat-card__value" style="color: #16a34a;">{{ number_format(App\Models\Vehicle::where('status', 'active')->count()) }}</span>
         </div>
-        <div class="veh-stat-card" style="border-left: 4px solid #f59e0b;">
-            <span class="veh-stat-card__label">Chờ duyệt / gia hạn</span>
-            <span class="veh-stat-card__value" style="color: #f59e0b;">{{ number_format(App\Models\Vehicle::whereIn('status', ['pending', 'pending_renewal'])->count()) }}</span>
+        <div class="veh-stat-card veh-stat--warning">
+            <span class="veh-stat-card__value">{{ number_format(App\Models\Vehicle::whereIn('status', ['pending', 'pending_renewal'])->count()) }}</span>
+            <span class="veh-stat-card__label">Chờ duyệt / Gia hạn</span>
         </div>
-        <div class="veh-stat-card" style="border-left: 4px solid #dc2626;">
+        <div class="veh-stat-card veh-stat--danger">
+            <span class="veh-stat-card__value">{{ number_format(App\Models\Vehicle::where('status', 'locked')->count()) }}</span>
             <span class="veh-stat-card__label">Đã khóa</span>
-            <span class="veh-stat-card__value" style="color: #dc2626;">{{ number_format(App\Models\Vehicle::where('status', 'locked')->count()) }}</span>
         </div>
     </div>
 
@@ -65,53 +82,47 @@
                         @endforeach
                     </select>
                 </div>
-
                 <div>
                     <label>Loại phương tiện</label>
                     <select name="vehicle_type" onchange="document.getElementById('filter-form').submit()">
                         <option value="">Tất cả loại xe</option>
-                        <option value="car"           {{ request('vehicle_type') === 'car'           ? 'selected' : '' }}>Ô tô</option>
-                        <option value="motorbike"     {{ request('vehicle_type') === 'motorbike'     ? 'selected' : '' }}>Xe máy</option>
+                        <option value="car" {{ request('vehicle_type') === 'car' ? 'selected' : '' }}>Ô tô</option>
+                        <option value="motorbike" {{ request('vehicle_type') === 'motorbike' ? 'selected' : '' }}>Xe máy</option>
                         <option value="electric_bike" {{ request('vehicle_type') === 'electric_bike' ? 'selected' : '' }}>Xe điện</option>
                     </select>
                 </div>
-
                 <div>
                     <label>Trạng thái</label>
                     <select name="status" onchange="document.getElementById('filter-form').submit()">
                         <option value="">Tất cả trạng thái</option>
-                        <option value="pending"         {{ request('status') === 'pending'         ? 'selected' : '' }}>Chờ duyệt</option>
-                        <option value="active"          {{ request('status') === 'active'          ? 'selected' : '' }}>Đang hoạt động</option>
+                        <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Chờ duyệt</option>
+                        <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Đang hoạt động</option>
                         <option value="pending_renewal" {{ request('status') === 'pending_renewal' ? 'selected' : '' }}>Chờ gia hạn</option>
-                        <option value="locked"          {{ request('status') === 'locked'          ? 'selected' : '' }}>Đã khóa</option>
-                        <option value="inactive"        {{ request('status') === 'inactive'        ? 'selected' : '' }}>Ngừng sử dụng</option>
+                        <option value="locked" {{ request('status') === 'locked' ? 'selected' : '' }}>Đã khóa</option>
+                        <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>Ngừng sử dụng</option>
                     </select>
                 </div>
             </div>
         </form>
     </div>
 
-    {{-- Tabs Navigation --}}
-    <div class="veh-tabs-nav" style="display: flex; gap: 12px; border-bottom: 1px solid #e2e8f0; margin-bottom: 20px;">
-        <a href="{{ route('admin.vehicles.index', array_merge(request()->query(), ['status' => ''])) }}"
-           class="veh-tab-btn {{ request('status') == '' ? 'active' : '' }}"
-           style="padding: 12px 20px; color: {{ request('status') == '' ? '#0b57d0' : '#64748b' }}; border-bottom: 3px solid {{ request('status') == '' ? '#0b57d0' : 'transparent' }}; font-weight: 600; text-decoration: none;">
-           Tất cả
+    {{-- Tabs --}}
+    <div class="veh-tabs-nav">
+        <a href="{{ route('admin.vehicles.index', array_merge(request()->except('status', 'page'), ['status' => ''])) }}"
+           class="veh-tab-btn {{ !request('status') ? 'active' : '' }}">
+            Tất cả
         </a>
-        <a href="{{ route('admin.vehicles.index', array_merge(request()->query(), ['status' => 'pending'])) }}"
-           class="veh-tab-btn {{ request('status') == 'pending' ? 'active' : '' }}"
-           style="padding: 12px 20px; color: {{ request('status') == 'pending' ? '#0b57d0' : '#64748b' }}; border-bottom: 3px solid {{ request('status') == 'pending' ? '#0b57d0' : 'transparent' }}; font-weight: 600; text-decoration: none;">
-           Chờ duyệt
+        <a href="{{ route('admin.vehicles.index', array_merge(request()->except('page'), ['status' => 'pending'])) }}"
+           class="veh-tab-btn {{ request('status') == 'pending' ? 'active' : '' }}">
+            Chờ duyệt
         </a>
-        <a href="{{ route('admin.vehicles.index', array_merge(request()->query(), ['status' => 'active'])) }}"
-           class="veh-tab-btn {{ request('status') == 'active' ? 'active' : '' }}"
-           style="padding: 12px 20px; color: {{ request('status') == 'active' ? '#0b57d0' : '#64748b' }}; border-bottom: 3px solid {{ request('status') == 'active' ? '#0b57d0' : 'transparent' }}; font-weight: 600; text-decoration: none;">
-           Đang hoạt động
+        <a href="{{ route('admin.vehicles.index', array_merge(request()->except('page'), ['status' => 'active'])) }}"
+           class="veh-tab-btn {{ request('status') == 'active' ? 'active' : '' }}">
+            Đang hoạt động
         </a>
-        <a href="{{ route('admin.vehicles.index', array_merge(request()->query(), ['status' => 'locked'])) }}"
-           class="veh-tab-btn {{ request('status') == 'locked' ? 'active' : '' }}"
-           style="padding: 12px 20px; color: {{ request('status') == 'locked' ? '#0b57d0' : '#64748b' }}; border-bottom: 3px solid {{ request('status') == 'locked' ? '#0b57d0' : 'transparent' }}; font-weight: 600; text-decoration: none;">
-           Đã khóa
+        <a href="{{ route('admin.vehicles.index', array_merge(request()->except('page'), ['status' => 'locked'])) }}"
+           class="veh-tab-btn {{ request('status') == 'locked' ? 'active' : '' }}">
+            Đã khóa
         </a>
     </div>
 
@@ -121,10 +132,10 @@
             <table class="vehicles-table">
                 <thead>
                     <tr>
-                        <th>Mã căn hộ</th>
+                        <th>Căn hộ</th>
                         <th>Tòa / Tầng</th>
                         <th>Chủ xe</th>
-                        <th>Biển số xe</th>
+                        <th>Biển số</th>
                         <th>Loại xe</th>
                         <th>Lốt đỗ</th>
                         <th>Trạng thái</th>
@@ -141,70 +152,65 @@
                         $floorName = $v->apartment?->floor?->name ?? '';
                     @endphp
                     <tr>
-                        {{-- Mã căn hộ --}}
                         <td>
                             <span class="veh-code">{{ $v->apartment?->apartment_number ?? 'N/A' }}</span>
                         </td>
-
-                        {{-- Tòa / Tầng --}}
                         <td>
                             <div class="veh-location-cell">
                                 <span class="veh-location-block">{{ $blockName }}</span>
-                                <span class="veh-location-floor">{{ $floorName }}</span>
+                                @if($floorName)
+                                    <span class="veh-location-floor">{{ $floorName }}</span>
+                                @endif
                             </div>
                         </td>
-
-                        {{-- Chủ xe --}}
                         <td>
                             <div class="veh-owner-cell">
                                 <span class="veh-owner-name">{{ $ownerName }}</span>
                                 @if($ownerPhone)
                                     <a href="tel:{{ $ownerPhone }}" class="veh-owner-phone">{{ $ownerPhone }}</a>
-                                @else
-                                    <span class="veh-owner-empty">—</span>
                                 @endif
                             </div>
                         </td>
-
-                        {{-- Biển số --}}
                         <td>
-                            <strong>{{ $v->license_plate }}</strong>
+                            <strong style="font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.8125rem;">{{ $v->license_plate }}</strong>
                         </td>
-
-                        {{-- Loại xe --}}
                         <td>
                             @if($v->vehicle_type === 'car')
-                                Ô tô
+                                <span style="display:inline-flex;align-items:center;gap:4px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
+                                    Ô tô
+                                </span>
                             @elseif($v->vehicle_type === 'electric_bike')
-                                Xe điện
+                                <span style="display:inline-flex;align-items:center;gap:4px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                                    Xe điện
+                                </span>
                             @else
-                                Xe máy
+                                <span style="display:inline-flex;align-items:center;gap:4px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M12 17h5M5 17h2M12 12l2.5-5.5H19l-3 7H9.7L7 11.5"/></svg>
+                                    Xe máy
+                                </span>
                             @endif
                         </td>
-
-                        {{-- Lốt đỗ --}}
                         <td>
                             @if($v->parking_lot_id && $v->parkingLot)
-                                <strong style="color: #0b57d0;">{{ $v->parkingLot->lot_number }}</strong>
+                                <span style="font-weight:700; color:#4f46e5; background:#eef2ff; padding:3px 8px; border-radius:5px; font-size:0.75rem;">
+                                    {{ $v->parkingLot->lot_number }}
+                                </span>
                             @else
                                 <span class="text-muted">—</span>
                             @endif
                         </td>
-
-                        {{-- Trạng thái --}}
                         <td>
                             <span class="veh-status veh-status--{{ $v->status }}">
                                 {{ $v->statusLabel() }}
                             </span>
                         </td>
-
-                        {{-- Thao tác --}}
                         <td class="text-right">
                             <div class="veh-table-actions">
-
-                                {{-- Ô tô chờ duyệt --}}
+                                {{-- Ô tô chờ duyệt → gán lốt --}}
                                 @if($v->status === 'pending' && $v->vehicle_type === 'car')
-                                    <form action="{{ route('admin.vehicles.assignLot', $v) }}" method="POST" style="display:flex; gap:6px;">
+                                    <form action="{{ route('admin.vehicles.assignLot', $v) }}" method="POST" style="display:flex; gap:6px; align-items:center;">
                                         @csrf
                                         <select name="parking_lot_id" required class="veh-lot-select">
                                             <option value="" disabled selected>Chọn lốt</option>
@@ -212,21 +218,21 @@
                                                 <option value="{{ $lot->id }}">{{ $lot->lot_number }}</option>
                                             @endforeach
                                         </select>
-                                        <button type="submit" class="veh-table-btn veh-table-btn--assign" title="Gán lốt">Gán lốt</button>
+                                        <button type="submit" class="veh-table-btn veh-table-btn--assign" title="Gán lốt & duyệt">Gán</button>
                                     </form>
                                 @endif
 
-                                {{-- Xe máy chờ duyệt --}}
+                                {{-- Xe máy/điện chờ duyệt → duyệt --}}
                                 @if($v->status === 'pending' && $v->isMotorbike())
                                     <form action="{{ route('admin.vehicles.approve', $v) }}" method="POST" style="display:contents;">
                                         @csrf
-                                        <button type="submit" class="veh-table-btn veh-table-btn--approve" title="Duyệt">
+                                        <button type="submit" class="veh-table-btn veh-table-btn--approve" title="Duyệt xe">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                                         </button>
                                     </form>
                                 @endif
 
-                                {{-- Active/Pending_Renewal --}}
+                                {{-- Active/Pending Renewal → thu hồi lốt + khóa --}}
                                 @if(in_array($v->status, ['active', 'pending_renewal']))
                                     @if($v->vehicle_type === 'car' && $v->parking_lot_id)
                                         <form action="{{ route('admin.vehicles.releaseLot', $v) }}" method="POST" style="display:contents;" onsubmit="return confirm('Thu hồi lốt đỗ của xe này?')">
@@ -245,7 +251,7 @@
                                     </form>
                                 @endif
 
-                                {{-- Locked --}}
+                                {{-- Locked → mở khóa --}}
                                 @if($v->status === 'locked')
                                     <form action="{{ route('admin.vehicles.unlock', $v) }}" method="POST" style="display:contents;" onsubmit="return confirm('Mở khóa xe này?')">
                                         @csrf
@@ -254,17 +260,17 @@
                                         </button>
                                     </form>
                                 @endif
-
                             </div>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="text-center text-muted" style="padding: 40px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="#cbd5e1" stroke-width="1.5" style="margin-bottom: 10px;">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        <td colspan="8" class="vehicles-empty">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
+                                <circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/>
                             </svg>
-                            <br>Chưa có phương tiện nào
+                            <p style="margin:8px 0 0; font-size:0.9rem;">Không tìm thấy phương tiện nào</p>
                         </td>
                     </tr>
                     @endforelse
@@ -274,7 +280,7 @@
     </div>
 
     {{-- Pagination --}}
-    @if ($vehicles->hasPages())
+    @if($vehicles->hasPages())
         <div class="vehicles-pagination">
             {{ $vehicles->links() }}
         </div>

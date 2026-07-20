@@ -18,6 +18,13 @@ class TicketController extends Controller
     {
         $user = Auth::user();
 
+        if (!$user->apartment_id) {
+            return view('resident.tickets.index', [
+                'tickets' => collect()->paginate(10),
+                'stats' => ['total' => 0, 'pending' => 0, 'in_progress' => 0, 'completed' => 0],
+            ]);
+        }
+
         $query = Ticket::with(['sender', 'handler'])
             ->where('apartment_id', $user->apartment_id)
             ->latest();
@@ -37,7 +44,13 @@ class TicketController extends Controller
             'completed'   => Ticket::where('apartment_id', $user->apartment_id)->where('status', 'completed')->count(),
         ];
 
-        return view('resident.tickets.index', compact('tickets', 'stats'));
+        // Tố cáo liên quan đến tôi (ticket mình bị tố cáo)
+        $accusations = Ticket::with(['sender', 'apartment.floor.block'])
+            ->where('accused_user_id', $user->id)
+            ->latest()
+            ->get();
+
+        return view('resident.tickets.index', compact('tickets', 'stats', 'accusations'));
     }
 
     /**
@@ -72,24 +85,41 @@ class TicketController extends Controller
             ]);
         }
 
-        $validated = $request->validate([
-            'title'       => ['required', 'string', 'max:200'],
-            'description' => ['required', 'string', 'max:2000'],
-            'priority'    => ['required', 'in:low,medium,high,urgent'],
-            'images'      => ['nullable', 'array', 'max:5'],
-            'images.*'    => ['image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-        ], [
-            'title.required'       => 'Vui lòng nhập tiêu đề phản ánh.',
-            'title.max'            => 'Tiêu đề không được quá 200 ký tự.',
-            'description.required' => 'Vui lòng mô tả chi tiết sự cố.',
-            'description.max'      => 'Mô tả không được quá 2000 ký tự.',
-            'priority.required'    => 'Vui lòng chọn mức độ ưu tiên.',
-            'images.max'           => 'Tối đa 5 ảnh đính kèm.',
-            'images.*.image'       => 'File tải lên phải là hình ảnh.',
-            'images.*.max'         => 'Dung lượng mỗi ảnh tối đa 2MB.',
+        $ticketType = $request->input('ticket_type', 'complaint');
+
+        $rules = [
+            'ticket_type'     => ['required', 'in:complaint,report'],
+            'title'           => ['required', 'string', 'max:200'],
+            'description'     => ['required', 'string', 'max:2000'],
+            'priority'        => ['required', 'in:low,medium,high,urgent'],
+            'images'          => ['nullable', 'array', 'max:5'],
+            'images.*'        => ['file', 'mimes:jpg,jpeg,png,webp,mp4,mov,avi,webm', 'max:20480'],
+        ];
+
+        // Nếu là tố cáo → bắt buộc đính kèm bằng chứng, tên người không bắt buộc
+        if ($ticketType === 'report') {
+            $rules['reported_person'] = ['nullable', 'string', 'max:255'];
+            $rules['images'] = ['required', 'array', 'min:1', 'max:5'];
+        } else {
+            $rules['reported_person'] = ['nullable', 'string', 'max:255'];
+        }
+
+        $validated = $request->validate($rules, [
+            'ticket_type.required'       => 'Vui lòng chọn loại phản ánh.',
+            'title.required'             => 'Vui lòng nhập tiêu đề phản ánh.',
+            'title.max'                  => 'Tiêu đề không được quá 200 ký tự.',
+            'description.required'       => 'Vui lòng mô tả chi tiết sự cố.',
+            'description.max'            => 'Mô tả không được quá 2000 ký tự.',
+            'priority.required'          => 'Vui lòng chọn mức độ ưu tiên.',
+            'images.required'            => 'Tố cáo bắt buộc phải đính kèm ảnh/video làm bằng chứng.',
+            'images.min'                 => 'Tố cáo bắt buộc phải đính kèm ít nhất 1 ảnh/video.',
+            'images.max'                 => 'Tối đa 5 file đính kèm.',
+            'images.*.file'              => 'File tải lên không hợp lệ.',
+            'images.*.mimes'             => 'Định dạng hỗ trợ: JPG, PNG, WEBP, MP4, MOV, AVI, WEBM.',
+            'images.*.max'               => 'Dung lượng mỗi file tối đa 20MB.',
         ]);
 
-        // Xử lý nhiều ảnh
+        // Xử lý nhiều ảnh/video
         $imagePaths = [];
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
@@ -98,25 +128,34 @@ class TicketController extends Controller
         }
 
         $ticket = Ticket::create([
-            'apartment_id' => $user->apartment_id,
-            'sender_id'    => $user->id,
-            'title'        => $validated['title'],
-            'description'  => $validated['description'],
-            'priority'     => $validated['priority'],
-            'images'       => !empty($imagePaths) ? $imagePaths : null,
-            'status'       => 'pending',
+            'apartment_id'    => $user->apartment_id,
+            'sender_id'       => $user->id,
+            'ticket_type'     => $validated['ticket_type'],
+            'title'           => $validated['title'],
+            'description'     => $validated['description'],
+            'reported_person' => $validated['reported_person'] ?? null,
+            'priority'        => $validated['priority'],
+            'images'          => !empty($imagePaths) ? $imagePaths : null,
+            'status'          => 'pending',
         ]);
 
         // Tạo bản ghi tiến trình đầu tiên
+        $progressComment = $ticketType === 'report'
+            ? 'Tố cáo đã được gửi thành công. Ban quản lý sẽ xem xét bằng chứng.'
+            : 'Phản ánh đã được gửi thành công.';
+
         TicketProgress::create([
             'ticket_id'  => $ticket->id,
             'status'     => 'pending',
-            'comment'    => 'Phản ánh đã được gửi thành công.',
+            'comment'    => $progressComment,
             'updated_by' => $user->id,
         ]);
 
-        return redirect()->route('resident.tickets.index')
-            ->with('success', 'Phản ánh của bạn đã được gửi thành công. Ban quản lý sẽ xem xét trong thời gian sớm nhất.');
+        $successMsg = $ticketType === 'report'
+            ? 'Tố cáo của bạn đã được gửi kèm bằng chứng. Ban quản lý sẽ xem xét và xử lý.'
+            : 'Phản ánh của bạn đã được gửi thành công. Ban quản lý sẽ xem xét trong thời gian sớm nhất.';
+
+        return redirect()->route('resident.tickets.index')->with('success', $successMsg);
     }
 
     /**
@@ -126,11 +165,18 @@ class TicketController extends Controller
     {
         $user = Auth::user();
 
-        $ticket = Ticket::with(['sender', 'handler', 'progress.updatedBy', 'apartment.floor.block'])
-            ->where('apartment_id', $user->apartment_id)
+        $ticket = Ticket::with(['sender', 'handler', 'progress.updatedBy', 'apartment.floor.block', 'costs.createdBy'])
+            ->where(function ($q) use ($user) {
+                // Cho phép xem nếu là cư dân cùng căn hộ HOẶC là người bị tố cáo
+                $q->where('apartment_id', $user->apartment_id)
+                  ->orWhere('accused_user_id', $user->id);
+            })
             ->findOrFail($id);
 
-        return view('resident.tickets.show', compact('ticket'));
+        // Check xem user hiện tại có phải người bị tố cáo không
+        $isAccused = (int) $ticket->accused_user_id === (int) $user->id;
+
+        return view('resident.tickets.show', compact('ticket', 'isAccused'));
     }
 
     /**
@@ -211,5 +257,51 @@ class TicketController extends Controller
         ]);
 
         return back()->with('success', 'Cảm ơn bạn đã phản hồi. Kỹ thuật viên sẽ kiểm tra lại sự cố này trong thời gian sớm nhất.');
+    }
+
+    /**
+     * Người bị tố cáo phản hồi (xác nhận / phản đối)
+     */
+    public function respondAccusation(Request $request, $id)
+    {
+        $user = Auth::user();
+
+        $ticket = Ticket::where('accused_user_id', $user->id)
+            ->where('ticket_type', 'report')
+            ->findOrFail($id);
+
+        // Đã phản hồi rồi thì không cho phản hồi lại
+        if ($ticket->hasAccusedResponse()) {
+            return back()->withErrors(['Bạn đã phản hồi tố cáo này rồi.']);
+        }
+
+        $validated = $request->validate([
+            'accused_response'         => ['required', 'in:confirmed,denied'],
+            'accused_response_comment' => ['nullable', 'string', 'max:1000'],
+        ], [
+            'accused_response.required' => 'Vui lòng chọn xác nhận hoặc phản đối.',
+        ]);
+
+        $ticket->update([
+            'accused_response'         => $validated['accused_response'],
+            'accused_response_comment' => $validated['accused_response_comment'] ?? null,
+            'accused_responded_at'     => now(),
+        ]);
+
+        // Thêm tiến trình
+        $label = $validated['accused_response'] === 'confirmed' ? 'XÁC NHẬN' : 'PHẢN ĐỐI';
+        TicketProgress::create([
+            'ticket_id'  => $ticket->id,
+            'status'     => $ticket->status,
+            'comment'    => 'Người bị tố cáo (' . $user->name . ') đã phản hồi: ' . $label
+                         . ($validated['accused_response_comment'] ? ' — "' . $validated['accused_response_comment'] . '"' : ''),
+            'updated_by' => $user->id,
+        ]);
+
+        $msg = $validated['accused_response'] === 'confirmed'
+            ? 'Bạn đã xác nhận tố cáo. Ban quản lý sẽ xử lý tiếp.'
+            : 'Bạn đã phản đối tố cáo. Ban quản lý sẽ xem xét lại.';
+
+        return back()->with('success', $msg);
     }
 }

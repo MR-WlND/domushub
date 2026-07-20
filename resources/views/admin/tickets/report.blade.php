@@ -1,6 +1,6 @@
 @extends('layouts.admin.master')
 
-@section('page_title', 'Báo cáo Nghiệm thu')
+@section('page_title', 'Báo cáo & Đánh giá')
 @section('page_kicker', 'Dịch vụ cư dân')
 @section('role_title', 'Admin Portal')
 @section('home_route', route('admin.dashboard'))
@@ -14,15 +14,152 @@
     <div class="rpt-page__header">
         <div>
             <p class="rpt-page__eyebrow">Dịch vụ cư dân</p>
-            <h1 class="rpt-page__title">Báo cáo Nghiệm thu</h1>
-            <p class="rpt-page__subtitle">Tổng hợp kết quả xử lý sự cố do kỹ thuật viên gửi về, chờ admin xác nhận.</p>
+            <h1 class="rpt-page__title">Báo cáo & Đánh giá</h1>
+            <p class="rpt-page__subtitle">Tổng hợp kết quả xử lý sự cố và đánh giá của cư dân.</p>
         </div>
         <button class="rpt-btn rpt-btn--ghost" onclick="window.print()">
             In báo cáo
         </button>
     </div>
 
-    {{-- Stats --}}
+    {{-- ══════ SECTION: THỐNG KÊ ĐÁNH GIÁ ══════ --}}
+    <div style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 60%, #fde68a 100%); border: 1.5px solid #fcd34d; border-radius: 20px; padding: 1.5rem 2rem;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="#f59e0b" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <h2 style="font-size: 1.1rem; font-weight: 800; color: #92400e; margin: 0;">Đánh giá của cư dân</h2>
+        </div>
+
+        {{-- Stats tổng --}}
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+            <div style="background: white; border-radius: 14px; padding: 1rem 1.25rem; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.06);">
+                <div style="font-size: 2.5rem; font-weight: 900; color: #f59e0b; line-height: 1;">
+                    {{ number_format($avgRating ?? 0, 1) }}
+                </div>
+                <div style="display: flex; justify-content: center; gap: 2px; margin: 6px 0;">
+                    @for($i = 1; $i <= 5; $i++)
+                        <span style="font-size: 1.2rem; color: {{ $i <= round($avgRating ?? 0) ? '#f59e0b' : '#d1d5db' }};">★</span>
+                    @endfor
+                </div>
+                <div style="font-size: 0.78rem; color: #92400e; font-weight: 600;">Trung bình đánh giá</div>
+            </div>
+            <div style="background: white; border-radius: 14px; padding: 1rem 1.25rem; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.06);">
+                <div style="font-size: 2.5rem; font-weight: 900; color: #16a34a; line-height: 1;">{{ $totalRated }}</div>
+                <div style="font-size: 0.78rem; color: #166534; font-weight: 600; margin-top: 6px;">Lượt đánh giá</div>
+            </div>
+            <div style="background: white; border-radius: 14px; padding: 1rem 1.25rem; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.06);">
+                <div style="font-size: 2.5rem; font-weight: 900; color: #7c3aed; line-height: 1;">{{ $totalCompleted }}</div>
+                <div style="font-size: 0.78rem; color: #5b21b6; font-weight: 600; margin-top: 6px;">Ticket hoàn thành</div>
+            </div>
+            <div style="background: white; border-radius: 14px; padding: 1rem 1.25rem; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.06);">
+                <div style="font-size: 2.5rem; font-weight: 900; color: #0284c7; line-height: 1;">
+                    {{ $totalCompleted > 0 ? round($totalRated / $totalCompleted * 100) : 0 }}%
+                </div>
+                <div style="font-size: 0.78rem; color: #075985; font-weight: 600; margin-top: 6px;">Tỷ lệ có đánh giá</div>
+            </div>
+        </div>
+
+        {{-- Phân bố sao --}}
+        <div style="background: white; border-radius: 14px; padding: 1.25rem; box-shadow: 0 2px 10px rgba(0,0,0,0.06); margin-bottom: 1.5rem;">
+            <h3 style="font-size: 0.82rem; font-weight: 700; color: #92400e; text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 1rem;">Phân bố đánh giá</h3>
+            @foreach(array_reverse([1,2,3,4,5], true) as $star)
+                @php $data = $ratingDistribution[$star] ?? ['count' => 0, 'percent' => 0]; @endphp
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                    <span style="font-size: 0.85rem; color: #f59e0b; font-weight: 700; width: 55px; flex-shrink: 0;">
+                        {{ $star }} ★
+                    </span>
+                    <div style="flex: 1; background: #f1f5f9; border-radius: 20px; height: 10px; overflow: hidden;">
+                        <div style="width: {{ $data['percent'] }}%; height: 100%; background: linear-gradient(90deg, #f59e0b, #fbbf24); border-radius: 20px; transition: width 0.5s;"></div>
+                    </div>
+                    <span style="font-size: 0.82rem; color: #64748b; font-weight: 600; width: 55px; text-align: right; flex-shrink: 0;">
+                        {{ $data['count'] }} ({{ $data['percent'] }}%)
+                    </span>
+                </div>
+            @endforeach
+        </div>
+
+        {{-- Top KTV --}}
+        @if($topTechnicians->isNotEmpty())
+        <div style="background: white; border-radius: 14px; padding: 1.25rem; box-shadow: 0 2px 10px rgba(0,0,0,0.06); margin-bottom: 1.5rem;">
+            <h3 style="font-size: 0.82rem; font-weight: 700; color: #92400e; text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 1rem;">🏆 Top kỹ thuật viên được đánh giá cao</h3>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                @foreach($topTechnicians as $idx => $ktv)
+                <div style="display: flex; align-items: center; gap: 14px; padding: 10px 14px; border-radius: 12px; background: {{ $idx === 0 ? '#fffbeb' : '#f8fafc' }}; border: 1px solid {{ $idx === 0 ? '#fde68a' : '#e2e8f0' }};">
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background: {{ $idx === 0 ? 'linear-gradient(135deg,#f59e0b,#d97706)' : ($idx === 1 ? 'linear-gradient(135deg,#94a3b8,#64748b)' : 'linear-gradient(135deg,#f97316,#ea580c)') }}; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 900; flex-shrink: 0;">
+                        {{ $idx + 1 }}
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 700; color: #0f172a; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $ktv->name }}</div>
+                        <div style="font-size: 0.75rem; color: #64748b;">{{ $ktv->rated_count }} đánh giá</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px; flex-shrink: 0;">
+                        <span style="font-size: 1.2rem; color: #f59e0b;">★</span>
+                        <span style="font-size: 1.1rem; font-weight: 900; color: {{ $idx === 0 ? '#d97706' : '#1e293b' }};">{{ number_format($ktv->avg_rating, 1) }}</span>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        {{-- Danh sách đánh giá gần đây --}}
+        @if($recentRatings->isNotEmpty())
+        <div style="background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.06);">
+            <div style="padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9;">
+                <h3 style="font-size: 0.82rem; font-weight: 700; color: #92400e; text-transform: uppercase; letter-spacing: 0.08em; margin: 0;">Đánh giá gần đây</h3>
+            </div>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.86rem;">
+                    <thead>
+                        <tr style="background: #f8fafc;">
+                            <th style="padding: 10px 16px; text-align: left; font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Mã</th>
+                            <th style="padding: 10px 16px; text-align: left; font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Tiêu đề</th>
+                            <th style="padding: 10px 16px; text-align: left; font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; white-space: nowrap;">KTV</th>
+                            <th style="padding: 10px 16px; text-align: center; font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Đánh giá</th>
+                            <th style="padding: 10px 16px; text-align: left; font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Nhận xét</th>
+                            <th style="padding: 10px 16px; text-align: left; font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; white-space: nowrap;">Thời gian</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($recentRatings as $r)
+                        <tr style="border-top: 1px solid #f1f5f9;" onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background=''">
+                            <td style="padding: 12px 16px;">
+                                <a href="{{ route('admin.tickets.show', $r->id) }}" style="font-family: monospace; font-size: 0.82rem; font-weight: 800; color: #7c3aed; text-decoration: none;">#{{ $r->id }}</a>
+                            </td>
+                            <td style="padding: 12px 16px; color: #1e293b; font-weight: 600; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $r->title }}</td>
+                            <td style="padding: 12px 16px; color: #475569; white-space: nowrap;">{{ $r->handler->name ?? '—' }}</td>
+                            <td style="padding: 12px 16px; text-align: center;">
+                                <div style="display: flex; justify-content: center; gap: 2px; align-items: center;">
+                                    @for($i = 1; $i <= 5; $i++)
+                                        <span style="font-size: 1rem; color: {{ $i <= $r->rating ? '#f59e0b' : '#d1d5db' }};">★</span>
+                                    @endfor
+                                    <span style="font-size: 0.82rem; font-weight: 700; color: #f59e0b; margin-left: 4px;">{{ $r->rating }}</span>
+                                </div>
+                            </td>
+                            <td style="padding: 12px 16px; color: #64748b; font-style: italic; font-size: 0.82rem; max-width: 200px;">
+                                @if($r->feedback_comment)
+                                    <span title="{{ $r->feedback_comment }}" style="display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;">
+                                        "{{ $r->feedback_comment }}"
+                                    </span>
+                                @else
+                                    <span style="color: #d1d5db;">—</span>
+                                @endif
+                            </td>
+                            <td style="padding: 12px 16px; color: #94a3b8; font-size: 0.78rem; white-space: nowrap;">{{ $r->updated_at->format('d/m/Y H:i') }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @else
+        <div style="background: white; border-radius: 14px; padding: 3rem; text-align: center; color: #94a3b8; box-shadow: 0 2px 10px rgba(0,0,0,0.06);">
+            <div style="font-size: 2.5rem; margin-bottom: 8px;">⭐</div>
+            <p style="margin: 0; font-size: 0.9rem;">Chưa có đánh giá nào từ cư dân</p>
+        </div>
+        @endif
+    </div>
+
+    {{-- Stats tổng (cũ) --}}
     <div class="rpt-stats">
         <div class="rpt-stat rpt-stat--neutral">
             <div class="rpt-stat__icon"></div>

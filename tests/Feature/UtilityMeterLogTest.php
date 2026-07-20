@@ -7,7 +7,6 @@ use App\Models\Block;
 use App\Models\Floor;
 use App\Models\User;
 use App\Models\UtilityMeter;
-use App\Models\UtilityMeterLog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -44,14 +43,14 @@ class UtilityMeterLogTest extends TestCase
         ]);
 
         // Assert: "recorded" log is created in DB
-        $this->assertDatabaseHas('utility_meter_logs', [
-            'utility_meter_id' => $meter->id,
-            'apartment_id'     => $apartment->id,
-            'user_id'          => $user->id,
-            'type'             => 'electricity',
-            'action'           => 'recorded',
-            'old_value'        => 100,
-            'new_value'        => 150,
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => 'utility',
+            'subject_type' => \App\Models\UtilityMeter::class,
+            'subject_id' => $meter->id,
+            'causer_id' => $user->id,
+            'properties->action' => 'recorded',
+            'properties->old_value' => 100,
+            'properties->new_value' => 150,
         ]);
 
         // Act: Edit utility meter (simulating a technician updating the recorded value)
@@ -60,11 +59,13 @@ class UtilityMeterLogTest extends TestCase
         ]);
 
         // Assert: "updated" log is created in DB
-        $this->assertDatabaseHas('utility_meter_logs', [
-            'utility_meter_id' => $meter->id,
-            'action'           => 'updated',
-            'old_value'        => 100,
-            'new_value'        => 160,
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => 'utility',
+            'subject_type' => \App\Models\UtilityMeter::class,
+            'subject_id' => $meter->id,
+            'properties->action' => 'updated',
+            'properties->old_value' => 100,
+            'properties->new_value' => 160,
         ]);
 
         // Act: Approve utility meter (simulating an accountant approving the index)
@@ -75,11 +76,13 @@ class UtilityMeterLogTest extends TestCase
         ]);
 
         // Assert: "approved" log is created in DB
-        $this->assertDatabaseHas('utility_meter_logs', [
-            'utility_meter_id' => $meter->id,
-            'user_id'          => $accountant->id,
-            'action'           => 'approved',
-            'new_value'        => 160,
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => 'utility',
+            'subject_type' => \App\Models\UtilityMeter::class,
+            'subject_id' => $meter->id,
+            'causer_id' => $accountant->id,
+            'properties->action' => 'approved',
+            'properties->new_value' => 160,
         ]);
 
         // Act: Reject utility meter (simulating an accountant rejecting the index)
@@ -90,12 +93,14 @@ class UtilityMeterLogTest extends TestCase
         ]);
 
         // Assert: "rejected" log is created in DB with rejection reason
-        $this->assertDatabaseHas('utility_meter_logs', [
-            'utility_meter_id' => $meter->id,
-            'user_id'          => $accountant->id,
-            'action'           => 'rejected',
-            'reject_reason'    => 'Chỉ số không khớp với ảnh thực tế',
-            'new_value'        => 160,
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => 'utility',
+            'subject_type' => \App\Models\UtilityMeter::class,
+            'subject_id' => $meter->id,
+            'causer_id' => $accountant->id,
+            'properties->action' => 'rejected',
+            'properties->reject_reason' => 'Chỉ số không khớp với ảnh thực tế',
+            'properties->new_value' => 160,
         ]);
     }
 }

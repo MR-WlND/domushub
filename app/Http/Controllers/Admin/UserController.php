@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-
+use App\Helpers\SystemLogger;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -14,8 +14,8 @@ class UserController extends Controller
     // 1. Hàm hiển thị danh sách, xử lý tìm kiếm và phân trang
     public function index(Request $request)
     {
-        // Khởi tạo query từ Model User
-        $query = User::query();
+        // Khởi tạo query từ Model User — chỉ lấy nhân sự nội bộ (không bao gồm cư dân)
+        $query = User::whereIn('role', ['admin', 'manager', 'staff', 'technician', 'security']);
 
         // Tìm kiếm theo Tên hoặc Email (nếu có nhập)
         if ($request->has('search') && $request->search != '') {
@@ -48,10 +48,9 @@ class UserController extends Controller
             'roleLabels' => [
                 'admin' => 'Quản trị viên',
                 'manager' => 'Quản lý',
-                'staff' => 'Nhân viên',
+                'staff' => 'Nhân viên kế toán',
                 'technician' => 'Kỹ thuật',
                 'security' => 'An ninh',
-                'resident' => 'Cư dân',
             ],
             'statusLabels' => [
                 'pending' => 'Chờ kích hoạt',
@@ -70,10 +69,9 @@ class UserController extends Controller
             'roleLabels' => [
                 'admin' => 'Quản trị viên',
                 'manager' => 'Quản lý',
-                'staff' => 'Nhân viên',
+                'staff' => 'Nhân viên kế toán',
                 'technician' => 'Kỹ thuật',
                 'security' => 'An ninh',
-                'resident' => 'Cư dân',
             ],
             'statusLabels' => [
                 'pending' => 'Chờ kích hoạt',
@@ -114,6 +112,8 @@ class UserController extends Controller
             'status' => $validated['status'],
         ]);
 
+        SystemLogger::log('Gán quyền nhân viên mới', 'Nhân viên: ' . $user->name . ' (' . $user->role . ')');
+
         return redirect()
             ->route('admin.users.index')
             ->with('success', 'Tạo tài khoản ' . $user->name . ' thành công. Mật khẩu mặc định: ' . self::DEFAULT_PASSWORD);
@@ -151,6 +151,8 @@ class UserController extends Controller
             'status' => $validated['status'],
         ]);
 
+        SystemLogger::log('Sửa thông tin nhân viên', 'Nhân viên: ' . $user->name);
+
         return redirect()->route('admin.users.index')->with('success', 'Cập nhật thông tin người dùng thành công!');
     }
 
@@ -172,6 +174,8 @@ class UserController extends Controller
             'status' => $request->status
         ]);
 
+        SystemLogger::log('Thay đổi phân quyền', 'Nhân viên: ' . $user->name . ' (' . $request->role . ')');
+
         return redirect()->back()->with('success', 'Cập nhật tài khoản thành công!');
     }
     public function resetPassword($id)
@@ -180,6 +184,8 @@ class UserController extends Controller
         $user->update([
             'password' => self::DEFAULT_PASSWORD,
         ]);
+
+        SystemLogger::log('Sửa thông tin nhân viên (Reset Password)', 'Nhân viên: ' . $user->name);
 
         return redirect()
             ->back()

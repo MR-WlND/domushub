@@ -1,15 +1,15 @@
-/* ============================================================
+﻿/* ============================================================
    APARTMENTS PAGE - Table layout matching reference design
    ============================================================ */
 
-/* ─── Page layout ─── */
+/* â”€â”€â”€ Page layout â”€â”€â”€ */
 .apartments-page {
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
-/* ─── Page Header ─── */
+/* â”€â”€â”€ Page Header â”€â”€â”€ */
 .apartments-page__header {
     display: flex;
     align-items: flex-end;
@@ -40,9 +40,9 @@
     justify-content: flex-end;
 }
 
-/* ─── Alert ─── */
+/* â”€â”€â”€ Alert â”€â”€â”€ */
 .apartments-alert {
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 12px 14px;
     font-size: 14px;
     font-weight: 600;
@@ -60,7 +60,7 @@
     border: 1px solid #f4b8b2;
 }
 
-/* ─── Buttons ─── */
+/* â”€â”€â”€ Buttons â”€â”€â”€ */
 .apts-button {
     display: inline-flex;
     align-items: center;
@@ -68,7 +68,7 @@
     gap: 6px;
     min-height: 40px;
     padding: 0 18px;
-    border-radius: 10px;
+    border-radius: 8px;
     border: 1px solid transparent;
     font-size: 14px;
     font-weight: 700;
@@ -92,7 +92,7 @@
     box-shadow: 0 6px 16px rgba(0, 35, 111, 0.18);
 }
 
-/* ─── Stats Grid ─── */
+/* â”€â”€â”€ Stats Grid â”€â”€â”€ */
 .apartments-stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -102,7 +102,7 @@
 .apts-stat-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 14px;
+    border-radius: 10px;
     padding: 20px;
     display: flex;
     flex-direction: column;
@@ -130,11 +130,11 @@
     line-height: 1;
 }
 
-/* ─── Filter Card ─── */
+/* â”€â”€â”€ Filter Card â”€â”€â”€ */
 .apartments-filter-card {
     background: #f8f9ff;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 18px;
 }
 
@@ -181,11 +181,11 @@
     cursor: not-allowed;
 }
 
-/* ─── Table Card ─── */
+/* â”€â”€â”€ Table Card â”€â”€â”€ */
 .apartments-table-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 14px;
+    border-radius: 10px;
     overflow: hidden;
 }
 
@@ -193,7 +193,7 @@
     overflow-x: auto;
 }
 
-/* ─── Table ─── */
+/* â”€â”€â”€ Table â”€â”€â”€ */
 .apartments-table {
     width: 100%;
     border-collapse: collapse;
@@ -247,7 +247,7 @@
     color: #94a3b8 !important;
 }
 
-/* ─── Apartment Code Link ─── */
+/* â”€â”€â”€ Apartment Code Link â”€â”€â”€ */
 .apt-code-link {
     text-decoration: none;
     display: inline-block;
@@ -266,7 +266,7 @@
     text-decoration: underline;
 }
 
-/* ─── Location Cell ─── */
+/* â”€â”€â”€ Location Cell â”€â”€â”€ */
 .apt-location-cell {
     display: flex;
     flex-direction: column;
@@ -284,13 +284,13 @@
     color: #94a3b8;
 }
 
-/* ─── Area ─── */
+/* â”€â”€â”€ Area â”€â”€â”€ */
 .apt-area {
     font-weight: 600;
     color: #475569;
 }
 
-/* ─── Owner Cell ─── */
+/* â”€â”€â”€ Owner Cell â”€â”€â”€ */
 .apt-owner-cell {
     display: flex;
     flex-direction: column;
@@ -312,13 +312,13 @@
     color: #cbd5e1;
 }
 
-/* ─── Status Badge ─── */
+/* â”€â”€â”€ Status Badge â”€â”€â”€ */
 .apt-status {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     padding: 5px 12px;
-    border-radius: 9999px;
+    border-radius: 8px;
     font-size: 12px;
     font-weight: 700;
     white-space: nowrap;
@@ -329,7 +329,7 @@
     content: '';
     width: 7px;
     height: 7px;
-    border-radius: 50%;
+    border-radius: 10px;
     display: inline-block;
 }
 
@@ -361,7 +361,7 @@
     background: #ef4444;
 }
 
-/* ─── Table Actions ─── */
+/* â”€â”€â”€ Table Actions â”€â”€â”€ */
 .apt-table-actions {
     display: inline-flex;
     align-items: center;
@@ -417,7 +417,7 @@
     transform: translateY(-1px);
 }
 
-/* ─── Pagination ─── */
+/* â”€â”€â”€ Pagination â”€â”€â”€ */
 .apartments-pagination {
     display: flex;
     justify-content: center;
@@ -483,7 +483,7 @@
     vertical-align: middle;
 }
 
-/* ─── Breadcrumb Nav ─── */
+/* â”€â”€â”€ Breadcrumb Nav â”€â”€â”€ */
 .breadcrumb-nav {
     display: flex;
     align-items: center;
@@ -513,7 +513,7 @@
     color: #334155;
 }
 
-/* ─── Extra Buttons ─── */
+/* â”€â”€â”€ Extra Buttons â”€â”€â”€ */
 .apts-button--edit {
     background: #f1f5f9;
     color: #475569;
@@ -547,7 +547,7 @@
     transform: translateY(-1px);
 }
 
-/* ─── Form Card ─── */
+/* â”€â”€â”€ Form Card â”€â”€â”€ */
 .form-card-custom {
     padding: 32px;
 }
@@ -559,7 +559,7 @@
     padding: 5px 12px;
     background: #f0f4ff;
     color: #00236f;
-    border-radius: 20px;
+    border-radius: 10px;
     font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.06em;
@@ -568,7 +568,7 @@
     border: 1px solid #d9e2ff;
 }
 
-/* ─── Form Sections ─── */
+/* â”€â”€â”€ Form Sections â”€â”€â”€ */
 .form-section-header {
     display: flex;
     align-items: center;
@@ -586,7 +586,7 @@
     height: 28px;
     background: #00236f;
     color: white;
-    border-radius: 50%;
+    border-radius: 10px;
     font-size: 12px;
     font-weight: 800;
     flex-shrink: 0;
@@ -599,7 +599,7 @@
     color: #0f172a;
 }
 
-/* ─── Form Grid ─── */
+/* â”€â”€â”€ Form Grid â”€â”€â”€ */
 .form-grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -613,7 +613,7 @@
     }
 }
 
-/* ─── Form Group ─── */
+/* â”€â”€â”€ Form Group â”€â”€â”€ */
 .form-group-custom {
     display: flex;
     flex-direction: column;
@@ -654,7 +654,7 @@
     min-height: 44px;
     padding: 0 14px 0 40px;
     border: 1.5px solid #d9e2f2;
-    border-radius: 10px;
+    border-radius: 8px;
     background: #ffffff;
     color: #0f172a;
     font-size: 14px;
@@ -691,7 +691,7 @@ select.form-input-custom {
     width: 100%;
     padding: 12px 14px;
     border: 1.5px solid #d9e2f2;
-    border-radius: 10px;
+    border-radius: 8px;
     background: #ffffff;
     color: #0f172a;
     font-size: 14px;
@@ -718,7 +718,7 @@ select.form-input-custom {
     margin: 2px 0 0 0;
 }
 
-/* ─── Responsive ─── */
+/* â”€â”€â”€ Responsive â”€â”€â”€ */
 @media (max-width: 1024px) {
     .apartments-stats-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -750,7 +750,7 @@ select.form-input-custom {
     }
 }
 
-/* ─── Extra Buttons & Modal Styles ─── */
+/* â”€â”€â”€ Extra Buttons & Modal Styles â”€â”€â”€ */
 .apts-button--secondary {
     background: #f1f5f9;
     color: #334155;
@@ -789,7 +789,7 @@ select.form-input-custom {
 
 .util-modal {
     background: #ffffff;
-    border-radius: 16px;
+    border-radius: 10px;
     width: 100%;
     max-width: 580px;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
@@ -828,7 +828,7 @@ select.form-input-custom {
     cursor: pointer;
     color: #94a3b8;
     padding: 4px;
-    border-radius: 6px;
+    border-radius: 10px;
     transition: all 0.15s;
     display: flex;
     align-items: center;
@@ -847,7 +847,7 @@ select.form-input-custom {
 /* Upload zone */
 .util-drag-zone {
     border: 2px dashed #cbd5e1;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 32px 20px;
     text-align: center;
     background: #f8fafc;
@@ -896,7 +896,7 @@ select.form-input-custom {
 .util-file-preview {
     margin-top: 16px;
     background: #f1f5f9;
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 10px 14px;
     display: none;
     align-items: center;
@@ -925,7 +925,7 @@ select.form-input-custom {
     margin-bottom: 20px;
     border: 1px solid #bfdbfe;
     background: #eff6ff;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 16px 20px;
 }
 
@@ -984,3 +984,4 @@ select.form-input-custom {
 .util-template-btn:hover {
     background: #1e40af;
 }
+

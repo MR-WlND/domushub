@@ -110,7 +110,7 @@ class InvoiceSeeder extends Seeder
             return;
         }
 
-        $apt1 = $aptList[0];
+        $apt1 = $apartmentA ?? $aptList[0];
         $apt2 = $aptList[1];
         $apt3 = $aptList[2];
         $apt4 = $aptList[3];
@@ -164,6 +164,50 @@ class InvoiceSeeder extends Seeder
             'recorded_by'      => $adminId,
         ]);
 
+        // --- TẠO HÓA ĐƠN CHƯA THANH TOÁN CHO CƯ DÂN A (test thanh toán) ---
+        $unpaidBill1 = Invoice::create([
+            'apartment_id'  => $apt1->id,
+            'title'         => 'Phí quản lý thử nghiệm Tháng 06/2026',
+            'billing_month' => 6,
+            'billing_year'  => 2026,
+            'due_date'      => Carbon::create(2026, 6, 25),
+            'total_amount'  => 100000,
+            'paid_amount'   => 0,
+            'status'        => 'unpaid',
+        ]);
+
+        if ($otherPrice) {
+            InvoiceDetail::create([
+                'bill_id'          => $unpaidBill1->id,
+                'service_price_id' => $otherPrice->id,
+                'quantity'         => 1,
+                'amount'           => 100000,
+                'status'           => 'unpaid',
+            ]);
+        }
+
+        // --- TẠO HÓA ĐƠN QUÁ HẠN CHO CƯ DÂN A (test cảnh báo quá hạn) ---
+        $overdueBill1 = Invoice::create([
+            'apartment_id'  => $apt1->id,
+            'title'         => 'Tiền điện nước thử nghiệm Tháng 05/2026',
+            'billing_month' => 5,
+            'billing_year'  => 2026,
+            'due_date'      => Carbon::create(2026, 5, 15),
+            'total_amount'  => 100000,
+            'paid_amount'   => 0,
+            'status'        => 'overdue',
+        ]);
+
+        if ($otherPrice) {
+            InvoiceDetail::create([
+                'bill_id'          => $overdueBill1->id,
+                'service_price_id' => $otherPrice->id,
+                'quantity'         => 1,
+                'amount'           => 100000,
+                'status'           => 'unpaid',
+            ]);
+        }
+
         // ==========================================
         // HÓA ĐƠN MẪU 2: Thanh toán một phần (Tháng 05/2026 - Căn 2)
         // ==========================================
@@ -176,7 +220,7 @@ class InvoiceSeeder extends Seeder
             'due_date'      => Carbon::create(2026, 5, 25),
             'total_amount'  => 510000,
             'paid_amount'   => 200000,
-            'status'        => 'partial',
+            'status'        => 'partial_paid',
         ]);
 
         if ($managementPrice) {

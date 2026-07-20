@@ -11,10 +11,10 @@
             Quay lại danh sách
         </a>
         <div class="detail-actions">
-            <button type="button" class="btn-top-action" onclick="window.print()">
+            <a href="{{ route('admin.invoices.print', $invoice) }}" target="_blank" class="btn-top-action">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                 In hóa đơn
-            </button>
+            </a>
         </div>
     </div>
 
@@ -47,7 +47,7 @@
                 </p>
             </div>
             <div class="invoice-status-wrap">
-                <span class="pay-badge pay-badge--{{ $invoice->status === 'paid' ? 'paid' : ($invoice->status === 'partial' ? 'partial' : ($invoice->status === 'overdue' ? 'overdue' : 'unpaid')) }}">
+                <span class="pay-badge pay-badge--{{ in_array($invoice->status, ['paid']) ? 'paid' : ($invoice->status === 'partial_paid' ? 'partial' : ($invoice->status === 'overdue' ? 'overdue' : ($invoice->status === 'cancelled' ? 'cancelled' : 'unpaid'))) }}">
                     {{ \App\Models\Invoice::statusLabel($invoice->status) }}
                 </span>
             </div>
@@ -81,8 +81,6 @@
                         <th>Loại phí</th>
                         <th class="text-right">Số lượng</th>
                         <th class="text-right">Thành tiền</th>
-                        <th style="padding-left: 15px;">Trạng thái</th>
-                        <th class="text-right" style="padding-right: 15px;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -103,28 +101,10 @@
                                 {{ $detail->quantity }}
                             </td>
                             <td class="text-right val-subtotal">{{ number_format($detail->amount, 0, ',', '.') }} đ</td>
-                            <td style="padding-left: 15px;">
-                                @if($detail->status === 'paid')
-                                    <span class="pay-badge pay-badge--paid" style="font-size: 0.7rem; padding: 2px 6px;">Đã thanh toán</span>
-                                @else
-                                    <span class="pay-badge pay-badge--overdue" style="font-size: 0.7rem; padding: 2px 6px;">Chưa thanh toán</span>
-                                @endif
-                            </td>
-                            <td class="text-right" style="padding-right: 15px;">
-                                @if($detail->status !== 'paid')
-                                    <button type="button" class="btn-sm-danger" 
-                                            style="background:#ecfdf5; color:#059669; border-color:#a7f3d0; padding: 4px 8px; cursor: pointer;"
-                                            onclick="openDetailPaymentModal({{ $detail->id }}, '{{ addslashes($detail->servicePrice->name ?? 'Phí dịch vụ') }}', {{ $detail->amount }})">
-                                        Thu tiền
-                                    </button>
-                                @else
-                                    —
-                                @endif
-                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center text-muted">Không có thông tin chi tiết dịch vụ.</td>
+                            <td colspan="4" class="text-center text-muted">Không có thông tin chi tiết dịch vụ.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -216,9 +196,9 @@
                         <span class="info-val">{{ $pm->recorder->name }}</span>
                     </div>
                     @endif
-                    @if($pm->payment_method === 'vnpay')
+                    @if($pm->payment_method === 'vnpay' || $pm->payment_method === 'bank_transfer' || $vnpTxnNo !== '—')
                     <div class="payment-info-item">
-                        <span class="info-label">Mã giao dịch đối soát (VNPay):</span>
+                        <span class="info-label">Mã giao dịch đối soát:</span>
                         <span class="info-val code-val">{{ $vnpTxnNo ?: '—' }}</span>
                     </div>
                     @endif
@@ -264,16 +244,6 @@
                             @endif
                         </span>
                     </div>
-                    @if(!$pm->is_refunded)
-                    <div class="payment-info-item">
-                        <span class="info-label">Thao tác:</span>
-                        <span class="info-val">
-                            <a href="{{ route('admin.payments.receipt', $pm->id) }}" target="_blank" style="color: #0d9488; font-weight: 600; text-decoration: underline; display: inline-flex; align-items: center; gap: 4px;">
-                                🖨 In biên lai
-                            </a>
-                        </span>
-                    </div>
-                    @endif
                 </div>
             @empty
                 <div style="font-size: 0.85rem; color: #64748b; padding: 15px 0; text-align: center;">
@@ -290,7 +260,7 @@
             </h3>
             <p style="font-size: 0.85rem; color: var(--color-text-secondary, #444651); margin-bottom: 20px;">
                 Ghi nhận khi cư dân nộp tiền mặt hoặc chuyển khoản.
-                @if($invoice->status === 'partial')
+                @if($invoice->status === 'partial_paid')
                 Còn thiếu <strong style="color:var(--color-error, #ba1a1a);">{{ number_format($invoice->remaining_amount) }}đ</strong>.
                 @endif
             </p>
@@ -321,8 +291,10 @@
                     <div class="form-group">
                         <label class="form-label" for="payment_method">Phương thức</label>
                         <select name="payment_method" id="payment_method" class="form-input">
-                            <option value="transfer">🏦 Chuyển khoản ngân hàng</option>
+                            <option value="bank_transfer">🏦 Chuyển khoản ngân hàng</option>
                             <option value="cash">💵 Tiền mặt</option>
+                            <option value="momo">💜 MoMo</option>
+                            <option value="vnpay">🔵 VNPay</option>
                             <option value="other">💳 Khác</option>
                         </select>
                     </div>
@@ -340,6 +312,21 @@
                             placeholder="Tên người thanh toán..."
                             value="{{ old('payer_name', $invoice->apartment->owner_name ?? '') }}">
                         @error('payer_name')
+                        <span class="form-error">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    {{-- ID giao dịch --}}
+                    <div class="form-group">
+                        <label class="form-label" for="transaction_code">ID giao dịch ngân hàng <span style="font-weight:400;text-transform:none;color:#757682;">(nếu chuyển khoản)</span></label>
+                        <input
+                            type="text"
+                            name="transaction_code"
+                            id="transaction_code"
+                            class="form-input"
+                            placeholder="Mã giao dịch đối soát..."
+                            value="{{ old('transaction_code') }}">
+                        @error('transaction_code')
                         <span class="form-error">{{ $message }}</span>
                         @enderror
                     </div>
@@ -827,6 +814,11 @@
                         <option value="cash">💵 Tiền mặt</option>
                         <option value="other">💳 Khác</option>
                     </select>
+                </div>
+
+                <div class="form-field">
+                    <label for="modal_detail_transaction_code">ID giao dịch ngân hàng <span style="font-weight:400;text-transform:none;color:#757682;">(nếu chuyển khoản)</span></label>
+                    <input type="text" name="transaction_code" id="modal_detail_transaction_code" class="form-input" style="width:100%" placeholder="Mã giao dịch đối soát...">
                 </div>
 
                 <div class="form-field">

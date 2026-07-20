@@ -1,4 +1,4 @@
-.users-page {
+﻿.users-page {
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -37,7 +37,7 @@
 }
 
 .users-alert {
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 12px 14px;
     font-size: 14px;
     font-weight: 600;
@@ -65,7 +65,7 @@
     align-items: end;
     padding: 16px;
     border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    border-radius: 10px;
     background: #f8f9ff;
 }
 
@@ -137,7 +137,7 @@
 
 .users-table-card {
     border: 1px solid #eef2f6;
-    border-radius: 16px;
+    border-radius: 10px;
     background: #ffffff;
     box-shadow: 0 4px 20px rgba(0, 35, 111, 0.02);
     overflow: hidden;
@@ -190,7 +190,7 @@
 .users-avatar-img {
     width: 42px;
     height: 42px;
-    border-radius: 50%;
+    border-radius: 8px;
     object-fit: cover;
     border: 1px solid #e2e8f0;
 }
@@ -245,7 +245,7 @@
     align-items: center;
     gap: 8px;
     padding: 6px 14px;
-    border-radius: 9999px;
+    border-radius: 8px;
     font-size: 13px;
     font-weight: 700;
 }
@@ -259,7 +259,7 @@
     width: 6px;
     height: 6px;
     background-color: #10b981;
-    border-radius: 50%;
+    border-radius: 8px;
 }
 
 .status-pill--suspended {
@@ -271,7 +271,7 @@
     width: 6px;
     height: 6px;
     background-color: #f59e0b;
-    border-radius: 50%;
+    border-radius: 8px;
 }
 
 .status-pill--terminated {
@@ -283,14 +283,14 @@
     width: 6px;
     height: 6px;
     background-color: #dc2626;
-    border-radius: 50%;
+    border-radius: 8px;
 }
 
 .status-dot {
     display: inline-flex;
     width: 6px;
     height: 6px;
-    border-radius: 50%;
+    border-radius: 10px;
 }
 
 .btn-edit-permissions {
@@ -348,7 +348,7 @@
     gap: 24px;
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 18px;
+    border-radius: 10px;
     padding: 24px;
     box-shadow: 0 18px 40px rgba(0, 35, 111, 0.05);
 }
@@ -360,7 +360,7 @@
     padding: 24px;
     background: #f8f9ff;
     border: 1px solid #e2e8f0;
-    border-radius: 16px;
+    border-radius: 10px;
 }
 
 .user-create-form__section h2 {
@@ -397,7 +397,7 @@
     min-height: 44px;
     padding: 12px 14px;
     border: 1px solid #d9e2f2;
-    border-radius: 12px;
+    border-radius: 8px;
     background: #ffffff;
     color: #0b1c30;
     font-size: 14px;
@@ -419,7 +419,7 @@
 }
 
 .user-create-form__note {
-    border-radius: 12px;
+    border-radius: 10px;
     border: 1px solid #d9e2f2;
     background: #eff6ff;
     color: #334155;
@@ -484,13 +484,13 @@
     padding: 16px;
     background: #f8fafc;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 10px;
 }
 
 .user-edit-form__reset {
     width: 100%;
     padding: 12px 16px;
-    border-radius: 12px;
+    border-radius: 10px;
     border: none;
     background: #dc2626;
     color: #ffffff;
@@ -513,7 +513,7 @@
     padding: 14px;
     background: #ffffff;
     border: 1px solid #d9e2f2;
-    border-radius: 12px;
+    border-radius: 10px;
     color: #475569;
     font-size: 13px;
 }
@@ -571,7 +571,7 @@
     .pagination-arrow {
         width: 30px;
         height: 30px;
-        border-radius: 7px;
+        border-radius: 10px;
         font-size: 13px;
     }
 
@@ -590,7 +590,7 @@
     width: 32px;
     height: 32px;
     border: 1px solid #cfd6e6;
-    border-radius: 8px;
+    border-radius: 10px;
     background: #ffffff;
     color: #061528;
     font-size: 14px;
@@ -638,3 +638,4 @@
     border-color: #d9dee9;
     cursor: not-allowed;
 }
+

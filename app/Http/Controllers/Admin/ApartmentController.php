@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-
+use App\Helpers\SystemLogger;
 use App\Models\Apartment;
 use App\Models\Block;
 use App\Models\Floor;
@@ -212,7 +212,9 @@ class ApartmentController extends Controller
         }
 
         $validated['area'] = 0;
-        Apartment::create($validated);
+        $apartment = Apartment::create($validated);
+
+
 
         return redirect()
             ->route(
@@ -233,9 +235,13 @@ class ApartmentController extends Controller
      */
     public function show(Apartment $apartment): View
     {
-        $apartment->load(['floor.block', 'residents']);
+        $apartment->load(['floor.block', 'residents.user']);
 
-        return view('admin.apartments.show', compact('apartment'));
+        $declaredMembers = \App\Models\ApartmentMember::where('apartment_id', $apartment->id)
+            ->orderBy('created_at')
+            ->get();
+
+        return view('admin.apartments.show', compact('apartment', 'declaredMembers'));
     }
 
     /**
@@ -327,6 +333,8 @@ class ApartmentController extends Controller
         $validated['area'] = 0;
         $apartment->update($validated);
 
+
+
         return redirect()
             ->route(
                 'admin.apartments.index',
@@ -360,7 +368,10 @@ class ApartmentController extends Controller
             return back()->with('error', 'Không thể xóa căn hộ đang có cư dân sinh sống. Vui lòng chuyển cư dân đi trước khi xóa.');
         }
 
+        $apartmentNumber = $apartment->apartment_number;
         $apartment->delete();
+
+
 
         return redirect()
             ->route(
@@ -574,6 +585,9 @@ class ApartmentController extends Controller
             });
 
             $msg = "Đã nhập dữ liệu thành công. Thêm mới {$successCount} căn hộ, cập nhật {$updatedCount} căn hộ.";
+
+
+
             return back()->with('success', $msg);
 
         } catch (\Exception $e) {
