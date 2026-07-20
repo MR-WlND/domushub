@@ -3,7 +3,7 @@
 @section('page_title', 'Quản lý Bãi đỗ xe')
 @section('page_kicker', 'Quản trị hệ thống')
 @section('role_title', 'Admin Portal')
-@section('home_route', route('admin.dashboard'))
+@section('home_route', portal_route('dashboard'))
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role', 'admin')
 
@@ -59,7 +59,7 @@
     {{-- Form tạo lốt --}}
     <div class="parking-create-card">
         <h3 class="parking-create-card__title">Thêm lốt đỗ mới</h3>
-        <form action="{{ route('admin.parking-lots.store') }}" method="POST">
+        <form action="{{ portal_route('parking-lots.store') }}" method="POST">
             @csrf
 
             <div class="parking-mode-switch">
@@ -175,14 +175,14 @@
                                     <td class="text-right">
                                         <div class="pk-table-actions">
                                             @if($lot->isAvailable())
-                                                <a href="{{ route('admin.vehicles.index', ['status' => 'pending', 'vehicle_type' => 'car']) }}" class="pk-table-btn pk-table-btn--primary">Gán xe</a>
+                                                <a href="{{ portal_route('vehicles.index', ['status' => 'pending', 'vehicle_type' => 'car']) }}" class="pk-table-btn pk-table-btn--primary">Gán xe</a>
                                             @elseif($lot->vehicle)
-                                                <form action="{{ route('admin.vehicles.releaseLot', $lot->vehicle) }}" method="POST" style="display:inline;" onsubmit="return confirm('Thu hồi lốt {{ $lot->lot_number }}?')">
+                                                <form action="{{ portal_route('vehicles.releaseLot', $lot->vehicle) }}" method="POST" style="display:inline;" onsubmit="return confirm('Thu hồi lốt {{ $lot->lot_number }}?')">
                                                     @csrf
                                                     <button type="submit" class="pk-table-btn pk-table-btn--warning">Thu hồi</button>
                                                 </form>
                                             @endif
-                                            <form action="{{ route('admin.parking-lots.destroy', $lot) }}" method="POST" style="display:inline;" onsubmit="return confirm('Xóa lốt {{ $lot->lot_number }}?')">
+                                            <form action="{{ portal_route('parking-lots.destroy', $lot) }}" method="POST" style="display:inline;" onsubmit="return confirm('Xóa lốt {{ $lot->lot_number }}?')">
                                                 @csrf @method('DELETE')
                                                 <button type="submit" class="pk-table-btn pk-table-btn--danger" {{ $lot->isOccupied() ? 'disabled' : '' }}>Xóa</button>
                                             </form>
@@ -236,8 +236,8 @@
                                 </td>
                                 <td class="text-right">
                                     <div class="pk-table-actions">
-                                        <a href="{{ route('admin.vehicles.index', ['vehicle_type' => 'motorbike,electric_bike']) }}" class="pk-table-btn pk-table-btn--outline">Xem xe</a>
-                                        <form action="{{ route('admin.parking-lots.destroy', $lot) }}" method="POST" style="display:inline;" onsubmit="return confirm('Xóa khu vực {{ $lot->lot_number }}?')">
+                                        <a href="{{ portal_route('vehicles.index', ['vehicle_type' => 'motorbike,electric_bike']) }}" class="pk-table-btn pk-table-btn--outline">Xem xe</a>
+                                        <form action="{{ portal_route('parking-lots.destroy', $lot) }}" method="POST" style="display:inline;" onsubmit="return confirm('Xóa khu vực {{ $lot->lot_number }}?')">
                                             @csrf @method('DELETE')
                                             <button type="submit" class="pk-table-btn pk-table-btn--danger">Xóa</button>
                                         </form>

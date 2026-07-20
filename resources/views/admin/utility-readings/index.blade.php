@@ -17,14 +17,14 @@
     @if(in_array(auth()->user()->role, ['technician', 'admin']))
     <div class="util-header-actions">
         @if(auth()->user()->role === 'admin')
-        <a href="{{ route('admin.utility-logs.index') }}" class="util-btn util-btn--outline" style="background:#fff; color:#475569; border:1px solid #cbd5e1; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+        <a href="{{ portal_route('utility-logs.index') }}" class="util-btn util-btn--outline" style="background:#fff; color:#475569; border:1px solid #cbd5e1; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             Lịch sử
         </a>
         @endif
-        <a href="{{ route('admin.utility-readings.batch') }}" class="util-btn util-btn--secondary">
+        <a href="{{ portal_route('utility-readings.batch') }}" class="util-btn util-btn--secondary">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
                 <rect x="9" y="3" width="6" height="4" rx="1"/>
@@ -32,7 +32,7 @@
             </svg>
             Ghi hàng loạt
         </a>
-        <a href="{{ route('admin.utility-readings.create') }}" class="util-btn util-btn--primary">
+        <a href="{{ portal_route('utility-readings.create') }}" class="util-btn util-btn--primary">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
@@ -79,7 +79,7 @@
 
 {{-- ── Filter Panel ────────────────────────────────── --}}
 <div class="util-filter-panel">
-    <form action="{{ route('admin.utility-readings.index') }}" method="GET">
+    <form action="{{ portal_route('utility-readings.index') }}" method="GET">
         <div class="util-filter-grid util-filter-grid--index">
             <div>
                 <label>Tòa nhà</label>
@@ -126,7 +126,7 @@
                     </svg>
                     Lọc
                 </button>
-                <a href="{{ route('admin.utility-readings.index') }}" class="util-btn util-btn--outline util-btn--sm">Đặt lại</a>
+                <a href="{{ portal_route('utility-readings.index') }}" class="util-btn util-btn--outline util-btn--sm">Đặt lại</a>
             </div>
         </div>
     </form>
@@ -140,7 +140,7 @@
         <span style="font-size:13px; color:#15803d; font-weight:600;">
             Đang chọn <span id="selectedCount">0</span> mục chờ phê duyệt
         </span>
-        <form action="{{ route('admin.utility-readings.batch-approve') }}" method="POST" id="batchApproveForm" style="margin:0; display:flex; gap:10px;">
+        <form action="{{ portal_route('utility-readings.batch-approve') }}" method="POST" id="batchApproveForm" style="margin:0; display:flex; gap:10px;">
             @csrf
             <input type="hidden" name="month" value="{{ $month }}">
             <input type="hidden" name="year" value="{{ $year }}">
@@ -292,7 +292,7 @@
                                     </svg>
                                 </button>
                                 @if($reading->status === 'pending')
-                                <form action="{{ route('admin.utility-readings.approve', $reading->id) }}" method="POST" style="margin:0;">
+                                <form action="{{ portal_route('utility-readings.approve', $reading->id) }}" method="POST" style="margin:0;">
                                     @csrf
                                     <button type="submit" class="util-btn-approve" title="Phê duyệt">
                                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -300,7 +300,7 @@
                                         </svg>
                                     </button>
                                 </form>
-                                <form action="{{ route('admin.utility-readings.reject', $reading->id) }}" method="POST" style="margin:0;" id="reject-form-{{ $reading->id }}">
+                                <form action="{{ portal_route('utility-readings.reject', $reading->id) }}" method="POST" style="margin:0;" id="reject-form-{{ $reading->id }}">
                                     @csrf
                                     <input type="hidden" name="reject_reason" id="reject-reason-{{ $reading->id }}">
                                     <button type="button" class="util-btn-reject" title="Từ chối" onclick="confirmAndReject({{ $reading->id }})">
@@ -312,14 +312,14 @@
                                 </form>
                                 @endif
                                 @if(auth()->user()->role === 'admin')
-                                <a href="{{ route('admin.utility-readings.edit', $reading->id) }}"
+                                <a href="{{ portal_route('utility-readings.edit', $reading->id) }}"
                                     class="util-btn-edit" title="Sửa">
                                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                                     </svg>
                                 </a>
-                                <form action="{{ route('admin.utility-readings.destroy', $reading->id) }}"
+                                <form action="{{ portal_route('utility-readings.destroy', $reading->id) }}"
                                     method="POST" style="margin: 0;"
                                     onsubmit="return confirm('Bạn có chắc muốn xóa chỉ số này?')">
                                     @csrf
@@ -342,7 +342,7 @@
                                     </svg>
                                 </button>
                                 @if(in_array($reading->status, ['pending', 'rejected']) && $reading->recorded_by === auth()->id())
-                                <a href="{{ route('admin.utility-readings.edit', $reading->id) }}"
+                                <a href="{{ portal_route('utility-readings.edit', $reading->id) }}"
                                     class="util-btn-edit" title="Sửa">
                                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -394,7 +394,7 @@
     <p>Chưa có chỉ số nào được ghi cho tháng {{ $month }}/{{ $year }}.</p>
     @if(in_array(auth()->user()->role, ['technician', 'admin']))
     <div class="util-empty-actions">
-        <a href="{{ route('admin.utility-readings.batch') }}" class="util-btn util-btn--secondary">
+        <a href="{{ portal_route('utility-readings.batch') }}" class="util-btn util-btn--secondary">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right: 6px;">
                 <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
                 <rect x="9" y="3" width="6" height="4" rx="1"/>
@@ -402,7 +402,7 @@
             </svg>
             Ghi hàng loạt
         </a>
-        <a href="{{ route('admin.utility-readings.create') }}" class="util-btn util-btn--primary">+ Ghi đơn lẻ</a>
+        <a href="{{ portal_route('utility-readings.create') }}" class="util-btn util-btn--primary">+ Ghi đơn lẻ</a>
     </div>
     @endif
 </div>

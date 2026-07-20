@@ -443,9 +443,9 @@ class InvoiceController extends Controller
                 }
 
                 // ============================================================
-                // XỬ LÝ GỬI XE (MOTORBIKE / CAR)
+                // XỬ LÝ GỬI XE (MOTORBIKE / CAR / BICYCLE)
                 // ============================================================
-                if (in_array($type, ['motorbike', 'car'])) {
+                if (in_array($type, ['motorbike', 'car', 'bicycle'])) {
                     $servicePrice = $activePrices->get($type);
                     if (!$servicePrice) {
                         $skipped++;
@@ -469,10 +469,14 @@ class InvoiceController extends Controller
                             ->whereIn('vehicle_type', ['motorbike', 'electric_bike'])
                             ->where('status', 'active')
                             ->count();
-                    } else {
-                        // type === 'car'
+                    } elseif ($type === 'car') {
                         $vehicleCount = Vehicle::where('apartment_id', $apartment->id)
                             ->where('vehicle_type', 'car')
+                            ->where('status', 'active')
+                            ->count();
+                    } elseif ($type === 'bicycle') {
+                        $vehicleCount = Vehicle::where('apartment_id', $apartment->id)
+                            ->where('vehicle_type', 'bicycle')
                             ->where('status', 'active')
                             ->count();
                     }
@@ -496,9 +500,12 @@ class InvoiceController extends Controller
                     }
 
                     $detailAmount = $vehicleCount * $servicePrice->unit_price;
-                    $vehicleNote = ($type === 'motorbike')
-                        ? "Xe máy/điện: {$vehicleCount} xe"
-                        : "Ô tô: {$vehicleCount} xe";
+                    $vehicleNote = match ($type) {
+                        'motorbike' => "Phí gửi xe máy: " . number_format($servicePrice->unit_price, 0, ',', '.') . "đ/xe x {$vehicleCount} xe",
+                        'car'       => "Phí gửi ô tô: " . number_format($servicePrice->unit_price, 0, ',', '.') . "đ/xe x {$vehicleCount} xe",
+                        'bicycle'   => "Phí gửi xe đạp: " . number_format($servicePrice->unit_price, 0, ',', '.') . "đ/xe x {$vehicleCount} xe",
+                        default     => "Gửi xe: {$vehicleCount} xe",
+                    };
 
                     InvoiceDetail::create([
                         'bill_id'          => $invoice->id,
@@ -513,7 +520,54 @@ class InvoiceController extends Controller
                 }
 
                 // ============================================================
-                // PHÍ QUẢN LÝ, INTERNET, DỊCH VỤ KHÁC — ĐƠN GIÁ CỐ ĐỊNH × 1
+                // PHÍ QUẢN LÝ
+                // ============================================================
+                if ($type === 'management_fee') {
+                    $servicePrice = $activePrices->get($type);
+                    if (!$servicePrice) {
+                        $skipped++;
+                        continue;
+                    }
+
+                    if ($invoice && $skipExisting) {
+                        $exists = InvoiceDetail::where('bill_id', $invoice->id)
+                            ->where('service_price_id', $servicePrice->id)
+                            ->exists();
+                        if ($exists) {
+                            $skipped++;
+                            continue;
+                        }
+                    }
+
+                    if (!$invoice) {
+                        $invoice = Invoice::create([
+                            'apartment_id'  => $apartment->id,
+                            'title'         => 'Hóa đơn tháng ' . $month . '/' . $year,
+                            'billing_month' => $month,
+                            'billing_year'  => $year,
+                            'due_date'      => $request->due_date,
+                            'total_amount'  => 0,
+                            'status'        => 'unpaid',
+                        ]);
+                    }
+
+                    $area = $apartment->area ?? 0;
+                    $detailAmount = $area * $servicePrice->unit_price;
+
+                    InvoiceDetail::create([
+                        'bill_id'          => $invoice->id,
+                        'service_price_id' => $servicePrice->id,
+                        'quantity'         => $area,
+                        'amount'           => $detailAmount,
+                        'note'             => "Phí quản lý: " . number_format($servicePrice->unit_price, 0, ',', '.') . "đ/m2 x {$area} m2",
+                    ]);
+
+                    $invoiceAmountAdded += $detailAmount;
+                    continue;
+                }
+
+                // ============================================================
+                // INTERNET, DỊCH VỤ KHÁC — ĐƠN GIÁ CỐ ĐỊNH × 1
                 // ============================================================
                 $servicePrice = $activePrices->get($type);
                 if (!$servicePrice) {
@@ -548,6 +602,7 @@ class InvoiceController extends Controller
                     'service_price_id' => $servicePrice->id,
                     'quantity'         => 1,
                     'amount'           => $servicePrice->unit_price,
+                    'note'             => "Phí dịch vụ: " . number_format($servicePrice->unit_price, 0, ',', '.') . "đ x 1",
                 ]);
 
                 $invoiceAmountAdded += $servicePrice->unit_price;

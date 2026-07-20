@@ -78,7 +78,7 @@
         <h1>Ghi chỉ số hàng loạt</h1>
         <p>Chốt chỉ số <strong>nước</strong> cho nhiều căn hộ cùng lúc</p>
     </div>
-    <a href="{{ route('admin.utility-readings.index') }}" class="util-btn util-btn--outline">
+    <a href="{{ portal_route('utility-readings.index') }}" class="util-btn util-btn--outline">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
         </svg>
@@ -95,7 +95,7 @@
 
 {{-- ── Filter Panel ────────────────────────────────── --}}
 <div class="util-filter-panel">
-    <form action="{{ route('admin.utility-readings.batch') }}" method="GET" id="filterForm">
+    <form action="{{ portal_route('utility-readings.batch') }}" method="GET" id="filterForm">
         <div class="util-filter-grid">
             <div>
                 <label>Tòa nhà</label>
@@ -168,7 +168,7 @@
 </div>
 
 {{-- ── Batch Form ───────────────────────────────────── --}}
-<form action="{{ route('admin.utility-readings.batch.store') }}" method="POST" id="batchForm" enctype="multipart/form-data">
+<form action="{{ portal_route('utility-readings.batch.store') }}" method="POST" id="batchForm" enctype="multipart/form-data">
     @csrf
     <input type="hidden" name="record_month" value="{{ $selectedMonth }}">
     <input type="hidden" name="record_year"  value="{{ $selectedYear }}">

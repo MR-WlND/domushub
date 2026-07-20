@@ -132,6 +132,11 @@ class Vehicle extends Model
         return in_array($this->vehicle_type, ['motorbike', 'electric_bike']);
     }
 
+    public function isBicycle(): bool
+    {
+        return $this->vehicle_type === 'bicycle';
+    }
+
     // =========================================================================
     // LABEL HELPERS
     // =========================================================================
@@ -156,6 +161,7 @@ class Vehicle extends Model
             'car'           => 'Ô tô',
             'electric_bike' => 'Xe điện',
             'motorbike'     => 'Xe máy',
+            'bicycle'       => 'Xe đạp',
             default         => ucfirst($this->vehicle_type),
         };
     }

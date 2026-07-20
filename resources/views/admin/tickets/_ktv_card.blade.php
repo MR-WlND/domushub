@@ -83,7 +83,7 @@
 
         {{-- Actions --}}
         <div class="ktv-card__actions">
-            <a href="{{ route('admin.tickets.show', $ticket->id) }}" class="ktv-btn ktv-btn--sm ktv-btn--ghost">
+            <a href="{{ portal_route('tickets.show', $ticket->id) }}" class="ktv-btn ktv-btn--sm ktv-btn--ghost">
                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                 Xem chi tiết
             </a>
@@ -91,7 +91,7 @@
             @if($mode === 'new')
                 {{-- Nút Nhận nhiệm vụ --}}
                 <button class="ktv-btn ktv-btn--sm ktv-btn--accept ktv-accept-btn"
-                        data-url="{{ route('admin.tickets.accept', $ticket->id) }}">
+                        data-url="{{ portal_route('tickets.accept', $ticket->id) }}">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                     Nhận nhiệm vụ
                 </button>
@@ -101,7 +101,7 @@
                 {{-- Nút Cập nhật tiến độ --}}
                 <button class="ktv-btn ktv-btn--sm ktv-btn--progress"
                         onclick="openProgressModal(this)"
-                        data-url="{{ route('admin.tickets.update-progress', $ticket->id) }}"
+                        data-url="{{ portal_route('tickets.update-progress', $ticket->id) }}"
                         data-title="{{ $ticket->title }}"
                         data-apt="{{ $ticket->apartment->apartment_number ?? 'N/A' }}"
                         data-block="Tòa {{ $ticket->apartment?->floor?->block?->name ?? 'N/A' }}"

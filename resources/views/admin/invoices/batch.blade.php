@@ -12,7 +12,7 @@
                 <h1 class="batch-title">Xuất hóa đơn hàng loạt</h1>
                 <p class="batch-sub">Tự động tạo hóa đơn cho tất cả căn hộ đang hoạt động theo biểu giá hiện tại</p>
             </div>
-            <a href="{{ route('admin.invoices.index') }}" class="batch-btn batch-btn--ghost">Danh sách hóa đơn</a>
+            <a href="{{ portal_route('invoices.index') }}" class="batch-btn batch-btn--ghost">Danh sách hóa đơn</a>
         </div>
 
         {{-- Flash --}}
@@ -34,7 +34,7 @@
             $selectedMonth = old('billing_month', request('billing_month', now()->format('Y-m')));
         @endphp
 
-        <form method="POST" action="{{ route('admin.invoices.batch.store') }}" id="batchForm">
+        <form method="POST" action="{{ portal_route('invoices.batch.store') }}" id="batchForm">
             @csrf
             <div class="batch-layout">
 
@@ -46,7 +46,7 @@
                             <div class="batch-field">
                                 <label>Tháng phát hành <span class="batch-req">*</span></label>
                                 <input type="month" name="billing_month" id="billing_month" value="{{ $selectedMonth }}"
-                                    onchange="window.location='{{ route('admin.invoices.batch') }}?billing_month=' + encodeURIComponent(this.value)"
+                                    onchange="window.location='{{ portal_route('invoices.batch') }}?billing_month=' + encodeURIComponent(this.value)"
                                     required>
                             </div>
                             <div class="batch-field">
@@ -70,6 +70,7 @@
                                 'management_fee',
                                 'motorbike',
                                 'car',
+                                'bicycle',
                                 'internet',
                                 'service',
                             ];

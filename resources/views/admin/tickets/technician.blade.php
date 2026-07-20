@@ -3,7 +3,7 @@
 @section('page_title', 'Nhiệm vụ của tôi')
 @section('page_kicker', 'Kỹ thuật viên')
 @section('role_title', 'Kỹ thuật viên')
-@section('home_route', route('admin.tickets.my-tasks'))
+@section('home_route', portal_route('tickets.my-tasks'))
 @section('user_name', auth()->user()->name ?? 'KTV')
 @section('user_role', 'technician')
 
@@ -26,7 +26,7 @@
             </div>
         </div>
         <div class="ktv-header__right">
-            <a href="{{ route('admin.tickets.index') }}" class="ktv-btn ktv-btn--ghost">
+            <a href="{{ portal_route('tickets.index') }}" class="ktv-btn ktv-btn--ghost">
                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                 Tất cả phản ánh
             </a>
@@ -99,7 +99,7 @@
     </div>
 
     {{-- Filters --}}
-    <form action="{{ route('admin.tickets.my-tasks') }}" method="GET" class="ktv-filters">
+    <form action="{{ portal_route('tickets.my-tasks') }}" method="GET" class="ktv-filters">
         {{-- Tìm kiếm --}}
         <div class="ktv-filters__group">
             <label for="filterSearch" class="ktv-filters__label">Tìm kiếm</label>
@@ -184,7 +184,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 Lọc
             </button>
-            <a href="{{ route('admin.tickets.my-tasks') }}" class="ktv-filters__btn-reset">
+            <a href="{{ portal_route('tickets.my-tasks') }}" class="ktv-filters__btn-reset">
                 Đặt lại
             </a>
         </div>

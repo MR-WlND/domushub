@@ -13,7 +13,7 @@
             <p class="db-header__sub">Thông tin chi tiết về hành động và dữ liệu thay đổi của thao tác trên hệ thống.</p>
         </div>
         <div class="db-header__actions">
-            <a href="{{ route('admin.system-logs.index') }}" class="db-btn db-btn--outline">
+            <a href="{{ portal_route('system-logs.index') }}" class="db-btn db-btn--outline">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                 Quay lại
             </a>

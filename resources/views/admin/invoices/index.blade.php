@@ -12,9 +12,9 @@
                 <h1 class="inv-admin__title">Quản lý Hóa đơn</h1>
             </div>
             <div style="display:flex;gap:10px">
-                <a href="{{ route('admin.invoices.batch') }}" class="inv-admin__btn inv-admin__btn--primary">Xuất hàng
+                <a href="{{ portal_route('invoices.batch') }}" class="inv-admin__btn inv-admin__btn--primary">Xuất hàng
                     loạt</a>
-                <a href="{{ route('admin.invoices.create') }}" class="inv-admin__btn"
+                <a href="{{ portal_route('invoices.create') }}" class="inv-admin__btn"
                     style="background:#f1f5f9;color:#475569;border:1px solid #e2e8f0">Tạo đơn lẻ</a>
             </div>
         </div>
@@ -55,7 +55,7 @@
 
         {{-- Filter Bar --}}
         <div class="inv-admin__filter-bar">
-            <form method="GET" action="{{ route('admin.invoices.index') }}" class="inv-admin__filter-form">
+            <form method="GET" action="{{ portal_route('invoices.index') }}" class="inv-admin__filter-form">
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Tìm căn hộ, tòa..."
                     class="inv-admin__input">
 
@@ -85,7 +85,7 @@
 
                 <button type="submit" class="inv-admin__btn inv-admin__btn--primary">Lọc</button>
                 @if (request()->hasAny(['search', 'status', 'month', 'apartment_id']))
-                    <a href="{{ route('admin.invoices.index') }}" class="inv-admin__btn inv-admin__btn--ghost">Xóa lọc</a>
+                    <a href="{{ portal_route('invoices.index') }}" class="inv-admin__btn inv-admin__btn--ghost">Xóa lọc</a>
                 @endif
             </form>
         </div>
@@ -155,13 +155,13 @@
                             </td>
                             <td>
                                 <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                                    <a href="{{ route('admin.invoices.show', $invoice) }}"
+                                    <a href="{{ portal_route('invoices.show', $invoice) }}"
                                         class="inv-admin__btn inv-admin__btn--sm inv-admin__btn--detail">Chi tiết</a>
-                                    <a href="{{ route('admin.invoices.print', $invoice) }}" target="_blank"
+                                    <a href="{{ portal_route('invoices.print', $invoice) }}" target="_blank"
                                         class="inv-admin__btn inv-admin__btn--sm"
                                         style="background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;">🖨 In</a>
                                     @if (!in_array($invoice->status, ['paid', 'cancelled']))
-                                        <form action="{{ route('admin.invoices.resend-notification', $invoice) }}"
+                                        <form action="{{ portal_route('invoices.resend-notification', $invoice) }}"
                                             method="POST" style="display:inline;">
                                             @csrf
                                             <button type="submit" class="inv-admin__btn inv-admin__btn--sm"
@@ -176,7 +176,7 @@
 
                                 {{-- Hidden cancel form --}}
                                 <form id="cancel-form-{{ $invoice->id }}"
-                                    action="{{ route('admin.invoices.cancel', $invoice) }}" method="POST"
+                                    action="{{ portal_route('invoices.cancel', $invoice) }}" method="POST"
                                     style="display:none;">
                                     @csrf
                                 </form>

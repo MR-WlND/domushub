@@ -1,7 +1,7 @@
 @extends('layouts.admin.master')
 
 @section('page_title', 'Thêm nhân sự')
-@section('home_route', route('admin.dashboard'))
+@section('home_route', portal_route('dashboard'))
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role_label', 'ADMIN')
 
@@ -27,7 +27,7 @@
             <div class="users-alert users-alert--danger">{{ $errors->first() }}</div>
         @endif
 
-        <form class="user-create-form" method="POST" action="{{ route('admin.users.store') }}">
+        <form class="user-create-form" method="POST" action="{{ portal_route('users.store') }}">
             @csrf
 
             <div class="user-create-form__section">
@@ -99,7 +99,7 @@
             </div>
 
             <div class="user-create-form__actions">
-                <a href="{{ route('admin.users.index') }}" class="users-button users-button--secondary">Hủy</a>
+                <a href="{{ portal_route('users.index') }}" class="users-button users-button--secondary">Hủy</a>
                 <button type="submit" class="users-button users-button--primary">Tạo tài khoản</button>
             </div>
         </form>

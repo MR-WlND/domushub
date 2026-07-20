@@ -3,7 +3,7 @@
 @section('page_title', 'Chi tiết Tầng')
 @section('page_kicker', 'Quản trị hệ thống')
 @section('role_title', 'Admin Portal')
-@section('home_route', route('admin.dashboard'))
+@section('home_route', portal_route('dashboard'))
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role', 'admin')
 
@@ -21,10 +21,10 @@
             </div>
 
             <div class="page-header-actions">
-                <a href="{{ route('admin.floors.edit', $floor) }}" class="btn btn-light">
+                <a href="{{ portal_route('floors.edit', $floor) }}" class="btn btn-light">
                     Sửa tầng
                 </a>
-                <a href="{{ route('admin.blocks.show', $floor->block_id) }}" class="btn btn-secondary">
+                <a href="{{ portal_route('blocks.show', $floor->block_id) }}" class="btn btn-secondary">
                     ← Tòa nhà
                 </a>
             </div>
@@ -161,7 +161,7 @@
                 <div>
                     <h2>Danh sách căn hộ</h2>
                 </div>
-                <a href="{{ route('admin.apartments.create', ['floor_id' => $floor->id]) }}" class="btn btn-primary">
+                <a href="{{ portal_route('apartments.create', ['floor_id' => $floor->id]) }}" class="btn btn-primary">
                     + Thêm căn hộ mới
                 </a>
             </div>
@@ -200,7 +200,7 @@
                                 @endphp
                                 <tr>
                                     <td style="font-weight: 700; color: #082b7a;">
-                                        <a href="{{ route('admin.apartments.show', $apartment->id) }}" style="text-decoration: none; color: inherit;">
+                                        <a href="{{ portal_route('apartments.show', $apartment->id) }}" style="text-decoration: none; color: inherit;">
                                             {{ $apartment->apartment_number }}
                                         </a>
                                     </td>
@@ -221,10 +221,10 @@
                                     </td>
                                     <td>
                                         <div class="action-buttons" style="justify-content: flex-end;">
-                                            <a href="{{ route('admin.apartments.show', $apartment->id) }}" class="btn-action btn-action--view" title="Chi tiết">
+                                            <a href="{{ portal_route('apartments.show', $apartment->id) }}" class="btn-action btn-action--view" title="Chi tiết">
                                                 <i class="fa-regular fa-eye"></i>
                                             </a>
-                                            <a href="{{ route('admin.apartments.edit', $apartment->id) }}" class="btn-action btn-action--edit" title="Sửa">
+                                            <a href="{{ portal_route('apartments.edit', $apartment->id) }}" class="btn-action btn-action--edit" title="Sửa">
                                                 <i class="fa-regular fa-pen-to-square"></i>
                                             </a>
                                         </div>

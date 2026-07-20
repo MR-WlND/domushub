@@ -3,7 +3,7 @@
 @section('page_title', 'Sửa Căn hộ')
 @section('page_kicker', 'Quản trị hệ thống')
 @section('role_title', 'Admin Portal')
-@section('home_route', route('admin.dashboard'))
+@section('home_route', portal_route('dashboard'))
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role', 'admin')
 
@@ -16,9 +16,9 @@
 
     {{-- Breadcrumb Navigation --}}
     <nav class="breadcrumb-nav">
-        <a href="{{ route('admin.dashboard') }}">Trang chủ</a>
+        <a href="{{ portal_route('dashboard') }}">Trang chủ</a>
         <span class="divider">/</span>
-        <a href="{{ route('admin.apartments.index') }}">Căn hộ</a>
+        <a href="{{ portal_route('apartments.index') }}">Căn hộ</a>
         <span class="divider">/</span>
         <span class="current">Cập nhật</span>
     </nav>
@@ -30,11 +30,11 @@
             <p class="apartments-page__subtitle">Đang chỉnh sửa căn hộ: <strong style="color: #0b57d0;">{{ $apartment->apartment_number }}</strong></p>
         </div>
         <div class="apartments-page__actions">
-            <a href="{{ route('admin.apartments.show', $apartment) }}" class="apts-button apts-button--view">
+            <a href="{{ portal_route('apartments.show', $apartment) }}" class="apts-button apts-button--view">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                 Xem chi tiết
             </a>
-            <a href="{{ route('admin.apartments.index') }}" class="apts-button apts-button--edit">
+            <a href="{{ portal_route('apartments.index') }}" class="apts-button apts-button--edit">
                 ← Quay lại
             </a>
         </div>
@@ -47,7 +47,7 @@
             APARTMENT UPDATE
         </div>
 
-        <form action="{{ route('admin.apartments.update', $apartment) }}" method="POST">
+        <form action="{{ portal_route('apartments.update', $apartment) }}" method="POST">
             @csrf
             @method('PUT')
 
@@ -201,7 +201,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
                     Xác nhận cập nhật
                 </button>
-                <a href="{{ route('admin.apartments.index') }}" class="apts-button apts-button--edit">
+                <a href="{{ portal_route('apartments.index') }}" class="apts-button apts-button--edit">
                     Hủy bỏ
                 </a>
             </div>

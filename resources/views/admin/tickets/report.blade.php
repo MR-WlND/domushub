@@ -3,7 +3,7 @@
 @section('page_title', 'Báo cáo & Đánh giá')
 @section('page_kicker', 'Dịch vụ cư dân')
 @section('role_title', 'Admin Portal')
-@section('home_route', route('admin.dashboard'))
+@section('home_route', portal_route('dashboard'))
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role', auth()->user()->role)
 
@@ -123,7 +123,7 @@
                         @foreach($recentRatings as $r)
                         <tr style="border-top: 1px solid #f1f5f9;" onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background=''">
                             <td style="padding: 12px 16px;">
-                                <a href="{{ route('admin.tickets.show', $r->id) }}" style="font-family: monospace; font-size: 0.82rem; font-weight: 800; color: #7c3aed; text-decoration: none;">#{{ $r->id }}</a>
+                                <a href="{{ portal_route('tickets.show', $r->id) }}" style="font-family: monospace; font-size: 0.82rem; font-weight: 800; color: #7c3aed; text-decoration: none;">#{{ $r->id }}</a>
                             </td>
                             <td style="padding: 12px 16px; color: #1e293b; font-weight: 600; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $r->title }}</td>
                             <td style="padding: 12px 16px; color: #475569; white-space: nowrap;">{{ $r->handler->name ?? '—' }}</td>
@@ -192,7 +192,7 @@
     </div>
 
     {{-- Filter --}}
-    <form method="GET" action="{{ route('admin.tickets.report') }}" class="rpt-filter">
+    <form method="GET" action="{{ portal_route('tickets.report') }}" class="rpt-filter">
         <div class="rpt-filter__search">
             <input type="text" name="search" placeholder="Tìm mã, tiêu đề, căn hộ, KTV..." value="{{ request('search') }}">
         </div>
@@ -308,7 +308,7 @@
                                                 <button class="rpt-btn rpt-btn--danger rpt-btn--full" data-reject-ticket="{{ $ticket->id }}">
                                                     Yêu cầu làm lại
                                                 </button>
-                                                <a href="{{ route('admin.tickets.show', $ticket->id) }}" class="rpt-btn rpt-btn--ghost rpt-btn--full">
+                                                <a href="{{ portal_route('tickets.show', $ticket->id) }}" class="rpt-btn rpt-btn--ghost rpt-btn--full">
                                                     Xem chi tiết
                                                 </a>
                                             </div>
@@ -356,7 +356,7 @@
                             <td>{{ $ticket->handler?->name ?? 'N/A' }}</td>
                             <td>{{ optional($lastProgress?->created_at)->format('d/m/Y H:i') }}</td>
                             <td>{{ $lastProgress?->updatedBy?->name ?? auth()->user()->name }}</td>
-                            <td><a href="{{ route('admin.tickets.show', $ticket->id) }}" class="rpt-btn rpt-btn--ghost rpt-btn--sm">Chi tiết</a></td>
+                            <td><a href="{{ portal_route('tickets.show', $ticket->id) }}" class="rpt-btn rpt-btn--ghost rpt-btn--sm">Chi tiết</a></td>
                         </tr>
                     @empty
                         <tr>
@@ -403,7 +403,7 @@
                                 <td>{{ $ticket->handler?->name ?? 'N/A' }}</td>
                                 <td>{{ $ticket->reopened_count }}</td>
                                 <td>{{ Str::limit($lastProgress?->comment ?? 'Không có lý do.', 80) }}</td>
-                                <td><a href="{{ route('admin.tickets.show', $ticket->id) }}" class="rpt-btn rpt-btn--ghost rpt-btn--sm">Chi tiết</a></td>
+                                <td><a href="{{ portal_route('tickets.show', $ticket->id) }}" class="rpt-btn rpt-btn--ghost rpt-btn--sm">Chi tiết</a></td>
                             </tr>
                         @endforeach
                     </tbody>
