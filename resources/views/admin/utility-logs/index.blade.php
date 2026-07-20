@@ -1,6 +1,6 @@
 @extends('layouts.admin.master')
 
-@section('page_title', 'Lịch sử Ghi số Điện Nước – DomusHub')
+@section('page_title', 'Lịch sử Ghi số Nước – DomusHub')
 @section('user_name', auth()->user()->name ?? 'Admin')
 
 @section('content')
@@ -9,8 +9,8 @@
     {{-- ===================== HEADER ===================== --}}
     <div class="db-header">
         <div>
-            <h1 class="db-header__title">Lịch sử Ghi số Điện Nước</h1>
-            <p class="db-header__sub">Tra cứu toàn bộ lịch sử ghi nhận chỉ số điện và nước trong hệ thống.</p>
+            <h1 class="db-header__title">Lịch sử Ghi số Nước</h1>
+            <p class="db-header__sub">Tra cứu toàn bộ lịch sử ghi nhận chỉ số nước trong hệ thống.</p>
         </div>
         <div>
             <a href="{{ route('admin.utility-readings.index') }}" class="al-btn-filter" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
@@ -25,10 +25,6 @@
         <div class="chart-card" style="padding:16px 20px; text-align:center; border-top:3px solid #00236f;">
             <div style="font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:.04em;">Tổng bản ghi</div>
             <div style="font-size:26px; font-weight:800; color:#00236f; margin-top:6px;">{{ number_format($stats['total']) }}</div>
-        </div>
-        <div class="chart-card" style="padding:16px 20px; text-align:center; border-top:3px solid #f59e0b;">
-            <div style="font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:.04em;">Ghi điện</div>
-            <div style="font-size:26px; font-weight:800; color:#b45309; margin-top:6px;">{{ number_format($stats['elec']) }}</div>
         </div>
         <div class="chart-card" style="padding:16px 20px; text-align:center; border-top:3px solid #3b82f6;">
             <div style="font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:.04em;">Ghi nước</div>
@@ -56,15 +52,6 @@
                 <label class="al-filter-label">Số căn hộ</label>
                 <input type="text" name="search" value="{{ request('search') }}"
                        class="al-filter-input" placeholder="VD: 101, 202...">
-            </div>
-
-            <div class="al-filter-group">
-                <label class="al-filter-label">Loại</label>
-                <select name="type" class="al-filter-input">
-                    <option value="">Tất cả</option>
-                    <option value="electricity" {{ request('type') == 'electricity' ? 'selected' : '' }}>Điện</option>
-                    <option value="water" {{ request('type') == 'water' ? 'selected' : '' }}>Nước</option>
-                </select>
             </div>
 
             @if($tab !== 'rejected')

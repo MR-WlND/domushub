@@ -87,14 +87,9 @@
             <div class="util-form-group">
                 <label class="util-form-label">Loại <span style="color:#ef4444">*</span></label>
                 <select name="type" id="type"
-                    class="util-form-input {{ $errors->has('type') ? 'util-form-input--error' : '' }}" required>
-                    <option value="">— Chọn loại —</option>
-                    <option value="electricity" {{ old('type') == 'electricity' ? 'selected' : '' }}>Điện</option>
-                    <option value="water" {{ old('type') == 'water' ? 'selected' : '' }}>Nước</option>
+                    class="util-form-input" required style="background:#f8fafc; pointer-events:none;">
+                    <option value="water" selected>Nước</option>
                 </select>
-                @error('type')
-                    <p class="util-form-error">{{ $message }}</p>
-                @enderror
             </div>
 
             {{-- Tháng/Năm --}}

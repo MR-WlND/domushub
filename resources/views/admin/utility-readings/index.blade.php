@@ -11,8 +11,8 @@
 {{-- ── Page Header ─────────────────────────────────── --}}
 <div class="util-page-header">
     <div>
-        <h1>Chốt số Điện Nước</h1>
-        <p>Quản lý chỉ số điện nước theo tháng – Tháng {{ $month }}/{{ $year }}</p>
+        <h1>Chốt số Nước</h1>
+        <p>Quản lý chỉ số nước theo tháng – Tháng {{ $month }}/{{ $year }}</p>
     </div>
     @if(in_array(auth()->user()->role, ['technician', 'admin']))
     <div class="util-header-actions">
@@ -55,13 +55,6 @@
     <div class="util-stat-card">
         <div class="util-stat-card__label">Tổng bản ghi</div>
         <div class="util-stat-card__value">{{ number_format($stats['total_records']) }}</div>
-    </div>
-    <div class="util-stat-card" style="border-top: 3px solid #f59e0b;">
-        <div class="util-stat-card__label">Tổng tiêu thụ Điện</div>
-        <div class="util-stat-card__value">
-            {{ number_format($stats['total_electricity']) }}
-            <small>kWh</small>
-        </div>
     </div>
     <div class="util-stat-card" style="border-top: 3px solid #3b82f6;">
         <div class="util-stat-card__label">Tổng tiêu thụ Nước</div>
@@ -108,14 +101,6 @@
                             {{ $floor->block->name ?? '' }} – {{ $floor->name ?? 'Tầng ' . $floor->floor_number }}
                         </option>
                     @endforeach
-                </select>
-            </div>
-            <div>
-                <label>Loại</label>
-                <select name="type" class="util-form-input">
-                    <option value="">Tất cả</option>
-                    <option value="electricity" {{ $type == 'electricity' ? 'selected' : '' }}>Điện</option>
-                    <option value="water" {{ $type == 'water' ? 'selected' : '' }}>Nước</option>
                 </select>
             </div>
             <div>
@@ -538,33 +523,35 @@
     </div>
 </div>
 
-{{-- ── Reject Reason Modal ────────────────────────────────── --}}
-<div class="util-modal-backdrop" id="rejectReasonModal">
-    <div class="util-modal" style="max-width: 450px;">
-        <div class="util-modal-header" style="border-bottom: 1px solid #f1f5f9; padding: 16px 20px;">
-            <h3 style="display:flex; align-items:center; gap:8px; margin:0; font-size:1.1rem; font-weight:700; color:#b91c1c;">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:#dc2626; display:inline-block; vertical-align:middle;">
+{{-- ── Reject Reason Modal ─────────────────────────────── --}}
+<div class="util-modal-backdrop" id="rejectModal">
+    <div class="util-modal" style="max-width: 500px;">
+        <div class="util-modal-header">
+            <h3>
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:inline-block; vertical-align:middle; margin-right:6px; color:#dc2626;">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 Từ chối chỉ số điện nước
             </h3>
-            <button class="util-modal-close" type="button" onclick="closeRejectReasonModal()">
+            <button class="util-modal-close" onclick="closeRejectModal()">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
             </button>
         </div>
-        <form id="rejectReasonForm" onsubmit="submitRejectForm(event)">
-            <div class="util-modal-body" style="padding: 20px;">
-                <label for="modal-reject-reason" style="display:block; font-size:13px; font-weight:600; color:#334155; margin-bottom:8px;">Nhập lý do từ chối chỉ số này:</label>
-                <textarea id="modal-reject-reason" placeholder="Vui lòng nhập lý do cụ thể..." required style="width:100%; min-height:90px; padding:10px; border:1.5px solid #cbd5e1; border-radius:8px; font-size:13px; font-family:inherit; outline:none; resize:vertical; box-sizing:border-box; transition:border-color 0.2s;"></textarea>
-                <div id="modal-reject-error" style="display:none; color:#ef4444; font-size:12px; font-weight:600; margin-top:6px;">Vui lòng cung cấp lý do từ chối.</div>
+        <div class="util-modal-body" style="padding: 20px 24px;">
+            <div style="margin-bottom: 16px;">
+                <label for="rejectReasonInput" style="display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 8px;">Nhập lý do từ chối chỉ số này:</label>
+                <textarea id="rejectReasonInput" class="util-form-input" rows="3" style="height: auto; min-height: 90px; resize: vertical; padding: 12px;" placeholder="Ví dụ: Chỉ số nhập không chính xác hoặc ảnh mờ..."></textarea>
+                <div id="rejectReasonError" style="color: #dc2626; font-size: 12px; margin-top: 6px; display: none; font-weight: 500;">
+                    Vui lòng nhập lý do từ chối.
+                </div>
             </div>
-            <div style="display:flex; justify-content:flex-end; gap:10px; padding:12px 20px 20px; border-top:1px solid #f1f5f9;">
-                <button type="button" class="util-btn util-btn--outline" onclick="closeRejectReasonModal()" style="padding: 8px 16px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; background: none; cursor: pointer; color:#475569; display:inline-flex; align-items:center; justify-content:center;">Hủy bỏ</button>
-                <button type="submit" class="util-btn util-btn--primary" style="padding: 8px 16px; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; background: #dc2626; color: #fff; cursor: pointer; display:inline-flex; align-items:center; justify-content:center;">Từ chối</button>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #f3f4f6; padding-top: 16px; margin-top: 20px;">
+                <button type="button" class="util-btn util-btn--outline util-btn--sm" onclick="closeRejectModal()">Hủy</button>
+                <button type="button" class="util-btn util-btn--primary util-btn--sm" style="background:#dc2626; border-color:#dc2626;" onclick="submitRejectForm()">Từ chối</button>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 
@@ -1097,7 +1084,7 @@ function openDetailModal(id) {
             }
 
             // Print / Link tab
-    document.getElementById('detLinkPrint').href = `{{ url('admin/utility-readings') }}/${reading.id}`;
+            document.getElementById('detLinkPrint').href = `{{ url('admin/utility-readings') }}/${reading.id}`;
 
             loading.style.display = 'none';
             content.style.display = 'block';
