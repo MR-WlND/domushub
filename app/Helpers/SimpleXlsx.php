@@ -37,7 +37,7 @@ class SimpleXlsx
         $workbook = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
   <sheets>
-    <sheet name="Chi so Dien Nuoc" sheetId="1" r:id="rId1"/>
+    <sheet name="Chi so Nuoc" sheetId="1" r:id="rId1"/>
   </sheets>
 </workbook>';
         $zip->addFromString('xl/workbook.xml', $workbook);
@@ -85,10 +85,8 @@ class SimpleXlsx
     <col min="1" max="1" width="25" customWidth="1"/>
     <col min="2" max="2" width="22" customWidth="1"/> <!-- Tòa Nhà / Tầng -->
     <col min="3" max="3" width="15" customWidth="1"/> <!-- Số Căn Hộ -->
-    <col min="4" max="4" width="18" customWidth="1"/>
-    <col min="5" max="5" width="28" customWidth="1"/>
-    <col min="6" max="6" width="18" customWidth="1"/>
-    <col min="7" max="7" width="28" customWidth="1"/>
+    <col min="4" max="4" width="18" customWidth="1"/> <!-- Chỉ Số Nước Cũ -->
+    <col min="5" max="5" width="28" customWidth="1"/> <!-- Chỉ Số Nước Mới -->
   </cols>
   <sheetData>';
 
@@ -97,10 +95,8 @@ class SimpleXlsx
         $sheet1 .= '<c r="A1" t="inlineStr"><is><t>ID Căn Hộ</t></is></c>';
         $sheet1 .= '<c r="B1" t="inlineStr"><is><t>Tòa Nhà / Tầng</t></is></c>';
         $sheet1 .= '<c r="C1" t="inlineStr"><is><t>Số Căn Hộ</t></is></c>';
-        $sheet1 .= '<c r="D1" t="inlineStr"><is><t>Chỉ Số Điện Cũ</t></is></c>';
-        $sheet1 .= '<c r="E1" t="inlineStr"><is><t>Chỉ Số Điện Mới</t></is></c>';
-        $sheet1 .= '<c r="F1" t="inlineStr"><is><t>Chỉ Số Nước Cũ</t></is></c>';
-        $sheet1 .= '<c r="G1" t="inlineStr"><is><t>Chỉ Số Nước Mới</t></is></c>';
+        $sheet1 .= '<c r="D1" t="inlineStr"><is><t>Chỉ Số Nước Cũ</t></is></c>';
+        $sheet1 .= '<c r="E1" t="inlineStr"><is><t>Chỉ Số Nước Mới</t></is></c>';
         $sheet1 .= '</row>';
 
         $rowNum = 2;
@@ -110,7 +106,6 @@ class SimpleXlsx
             $location = htmlspecialchars("{$blockName} / {$floorName}", ENT_XML1, 'UTF-8');
             $aptNumber = htmlspecialchars($apt->apartment_number, ENT_XML1, 'UTF-8');
 
-            $elecOld  = \App\Models\UtilityMeter::getPreviousNewValue($apt->id, 'electricity', $month, $year) ?? 0;
             $waterOld = \App\Models\UtilityMeter::getPreviousNewValue($apt->id, 'water', $month, $year) ?? 0;
 
             $sheet1 .= sprintf('<row r="%d">', $rowNum);
@@ -120,14 +115,10 @@ class SimpleXlsx
             $sheet1 .= sprintf('<c r="B%d" t="inlineStr"><is><t>%s</t></is></c>', $rowNum, $location);
             // Cột C: Số phòng
             $sheet1 .= sprintf('<c r="C%d" t="inlineStr"><is><t>%s</t></is></c>', $rowNum, $aptNumber);
-            // Cột D: Điện cũ
-            $sheet1 .= sprintf('<c r="D%d" s="1"><v>%d</v></c>', $rowNum, $elecOld);
-            // Cột E: Điện mới
+            // Cột D: Nước cũ
+            $sheet1 .= sprintf('<c r="D%d" s="1"><v>%d</v></c>', $rowNum, $waterOld);
+            // Cột E: Nước mới
             $sheet1 .= sprintf('<c r="E%d"/>', $rowNum);
-            // Cột F: Nước cũ
-            $sheet1 .= sprintf('<c r="F%d" s="1"><v>%d</v></c>', $rowNum, $waterOld);
-            // Cột G: Nước mới
-            $sheet1 .= sprintf('<c r="G%d"/>', $rowNum);
             $sheet1 .= '</row>';
 
             $rowNum++;

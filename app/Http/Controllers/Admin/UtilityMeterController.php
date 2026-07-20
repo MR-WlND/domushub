@@ -33,23 +33,10 @@ class UtilityMeterController extends Controller
 
         $blockId = $request->query('block_id');
         $floorId = $request->query('floor_id');
-        $type    = $request->query('type');
-        $month   = $request->query('month');
-        $year    = $request->query('year');
-
-        if (!$month || !$year) {
-            $latest = UtilityMeter::orderByDesc('record_year')
-                ->orderByDesc('record_month')
-                ->first();
-
-            if ($latest) {
-                $month = $month ?: $latest->record_month;
-                $year  = $year ?: $latest->record_year;
-            } else {
-                $month = $month ?: now()->month;
-                $year  = $year ?: now()->year;
-            }
-        }
+        $month   = (int) $request->query('month', date('n'));
+        $year    = (int) $request->query('year', date('Y'));
+        // Mặc định lọc chỉ số nước ngoại trừ khi có tham số type khác
+        $type    = $request->query('type', 'water');
 
         // Query chính
         $query = UtilityMeter::with(['apartment.floor.block', 'recorder'])
@@ -200,14 +187,13 @@ class UtilityMeterController extends Controller
             $reading->setAttribute('history_logs', $history);
         }
 
-        // Thống kê tổng quan cho tháng/năm đã chọn
+        // Thống kê tổng quan cho tháng/năm đã chọn (chỉ Nước)
         $statsQuery = UtilityMeter::where('record_month', $month)->where('record_year', $year);
 
         $stats = [
-            'total_records'       => (clone $statsQuery)->count(),
-            'total_electricity'   => (clone $statsQuery)->where('type', 'electricity')->sum('usage_amount'),
+            'total_records'       => (clone $statsQuery)->where('type', 'water')->count(),
             'total_water'         => (clone $statsQuery)->where('type', 'water')->sum('usage_amount'),
-            'apartments_recorded' => (clone $statsQuery)->distinct('apartment_id')->count('apartment_id'),
+            'apartments_recorded' => (clone $statsQuery)->where('type', 'water')->distinct('apartment_id')->count('apartment_id'),
             'apartments_total'    => Apartment::where('status', '!=', 'maintenance')->count(),
         ];
 
@@ -378,24 +364,14 @@ class UtilityMeterController extends Controller
                 ->get();
         }
 
-        // Lấy chỉ số cũ + trạng thái cho CẢ điện và nước mỗi căn hộ
+        // Lấy chỉ số cũ + trạng thái cho Nước mỗi căn hộ
         $apartmentData = [];
         foreach ($apartments as $apt) {
-            $elecRecorded = UtilityMeter::where('apartment_id', $apt->id)
-                ->where('type', 'electricity')
-                ->where('record_month', $selectedMonth)
-                ->where('record_year', $selectedYear)
-                ->exists();
-
             $waterRecorded = UtilityMeter::where('apartment_id', $apt->id)
                 ->where('type', 'water')
                 ->where('record_month', $selectedMonth)
                 ->where('record_year', $selectedYear)
                 ->exists();
-
-            $elecOld = UtilityMeter::getPreviousNewValue(
-                $apt->id, 'electricity', $selectedMonth, $selectedYear
-            ) ?? 0;
 
             $waterOld = UtilityMeter::getPreviousNewValue(
                 $apt->id, 'water', $selectedMonth, $selectedYear
@@ -403,11 +379,8 @@ class UtilityMeterController extends Controller
 
             $apartmentData[] = [
                 'apartment'      => $apt,
-                'elec_old'       => $elecOld,
                 'water_old'      => $waterOld,
-                'elec_recorded'  => $elecRecorded,
                 'water_recorded' => $waterRecorded,
-                'both_recorded'  => $elecRecorded && $waterRecorded,
             ];
         }
 
@@ -418,7 +391,7 @@ class UtilityMeterController extends Controller
     }
 
     /**
-     * Lưu hàng loạt – cả điện lẫn nước trong một lần submit
+     * Lưu hàng loạt – chỉ số nước
      */
     public function batchStore(Request $request): RedirectResponse
     {
@@ -443,7 +416,6 @@ class UtilityMeterController extends Controller
 
         foreach ($request->readings as $i => $reading) {
             $aptId = $reading['apartment_id'];
-            $elecSaved = false;
             $waterSaved = false;
 
             // Tải nhiều ảnh công tơ nếu có
@@ -455,37 +427,6 @@ class UtilityMeterController extends Controller
                     $imagePaths[] = $p;
                 }
                 $imageProofPath = $imagePaths[0] ?? null;
-            }
-
-            // ── Điện ────────────────────────────────────
-            if (isset($reading['elec_new']) && $reading['elec_new'] !== '') {
-                $elecExists = UtilityMeter::where('apartment_id', $aptId)
-                    ->where('type', 'electricity')
-                    ->where('record_month', $month)
-                    ->where('record_year', $year)
-                    ->exists();
-
-                if ($elecExists) {
-                    $skipped++;
-                } else {
-                    $elecIsReset = isset($reading['elec_is_reset']) && (bool)$reading['elec_is_reset'];
-                    $elecOld = $elecIsReset ? 0 : (UtilityMeter::getPreviousNewValue($aptId, 'electricity', $month, $year) ?? 0);
-                    UtilityMeter::create([
-                        'apartment_id' => $aptId,
-                        'type'         => 'electricity',
-                        'record_month' => $month,
-                        'record_year'  => $year,
-                        'old_value'    => $elecOld,
-                        'new_value'    => (int) $reading['elec_new'],
-                        'recorded_by'  => Auth::id(),
-                        'status'       => 'pending',
-                        'image_proof'  => $imageProofPath,
-                        'images'       => !empty($imagePaths) ? $imagePaths : null,
-                        'is_reset'     => $elecIsReset,
-                    ]);
-                    $saved++;
-                    $elecSaved = true;
-                }
             }
 
             // ── Nước ────────────────────────────────────
@@ -519,7 +460,7 @@ class UtilityMeterController extends Controller
                 }
             }
 
-            if ($elecSaved || $waterSaved) {
+            if ($waterSaved) {
                 $affectedApartments[$aptId] = true;
             }
         }
@@ -547,7 +488,7 @@ class UtilityMeterController extends Controller
             }
         }
 
-        $message = "Đã gửi thành công {$saved} chỉ số điện/nước và đang chờ kế toán phê duyệt.";
+        $message = "Đã gửi thành công {$saved} chỉ số nước và đang chờ kế toán phê duyệt.";
         if ($skipped > 0) {
             $message .= " Bỏ qua {$skipped} mục đã chốt trước đó.";
         }
@@ -930,18 +871,11 @@ class UtilityMeterController extends Controller
     }
 
     /**
-     * Tự động đồng bộ hóa hóa đơn tiền điện nước dựa trên số lượng tiêu thụ thực tế.
+     * Tự động đồng bộ hóa hóa đơn tiền nước dựa trên số lượng tiêu thụ thực tế.
      */
     private function syncInvoice(int $apartmentId, int $month, int $year): void
     {
-        // 1. Tìm tất cả chỉ số điện và nước của căn hộ này trong tháng/năm có trạng thái APPROVED
-        $elecReading = UtilityMeter::where('apartment_id', $apartmentId)
-            ->where('type', 'electricity')
-            ->where('record_month', $month)
-            ->where('record_year', $year)
-            ->where('status', 'approved')
-            ->first();
-
+        // 1. Tìm chỉ số nước của căn hộ này trong tháng/năm có trạng thái APPROVED
         $waterReading = UtilityMeter::where('apartment_id', $apartmentId)
             ->where('type', 'water')
             ->where('record_month', $month)
@@ -949,16 +883,7 @@ class UtilityMeterController extends Controller
             ->where('status', 'approved')
             ->first();
 
-        // 2. Đảm bảo ServicePrice tồn tại cho điện và nước
-        $elecService = \App\Models\ServicePrice::firstOrCreate(
-            ['type' => 'electricity', 'status' => 'active'],
-            [
-                'name' => 'Phí tiền điện',
-                'unit_price' => 2500,
-                'description' => 'Đơn giá điện mặc định hàng tháng (đ/kWh)'
-            ]
-        );
-
+        // 2. Đảm bảo ServicePrice tồn tại cho nước
         $waterService = \App\Models\ServicePrice::firstOrCreate(
             ['type' => 'water', 'status' => 'active'],
             [
@@ -968,8 +893,8 @@ class UtilityMeterController extends Controller
             ]
         );
 
-        // Nếu không có bất kỳ chỉ số tiêu thụ nào, hãy tìm hóa đơn hiện tại và xóa nếu cần
-        if (!$elecReading && !$waterReading) {
+        // Nếu không có bất kỳ chỉ số tiêu thụ nước nào, hãy tìm hóa đơn hiện tại và xóa nếu cần
+        if (!$waterReading) {
             $existingInvoice = \App\Models\Invoice::where('apartment_id', $apartmentId)
                 ->where('billing_month', $month)
                 ->where('billing_year', $year)
@@ -982,18 +907,9 @@ class UtilityMeterController extends Controller
             return;
         }
 
-        // 3. Tính toán tiền điện, nước
-        $elecAmount = 0;
-        $waterAmount = 0;
-
-        if ($elecReading) {
-            $elecAmount = $elecReading->usage_amount * $elecService->unit_price;
-        }
-        if ($waterReading) {
-            $waterAmount = $waterReading->usage_amount * $waterService->unit_price;
-        }
-
-        $totalAmount = $elecAmount + $waterAmount;
+        // 3. Tính toán tiền nước
+        $waterAmount = $waterReading->usage_amount * $waterService->unit_price;
+        $totalAmount = $waterAmount;
 
         // 4. Tìm hóa đơn hiện có hoặc tạo mới
         $invoice = \App\Models\Invoice::where('apartment_id', $apartmentId)
@@ -1002,11 +918,11 @@ class UtilityMeterController extends Controller
             ->first();
 
         if ($invoice) {
-            $oldDetails = $invoice->details()->whereIn('service_price_id', [$elecService->id, $waterService->id])->get();
+            $oldDetails = $invoice->details()->where('service_price_id', $waterService->id)->get();
             $oldAmount = $oldDetails->sum('amount');
             
-            // Xóa các chi tiết cũ liên quan đến điện/nước
-            $invoice->details()->whereIn('service_price_id', [$elecService->id, $waterService->id])->delete();
+            // Xóa các chi tiết cũ liên quan đến nước
+            $invoice->details()->where('service_price_id', $waterService->id)->delete();
 
             $newTotalAmount = max(0, $invoice->total_amount - $oldAmount + $totalAmount);
 
@@ -1029,15 +945,6 @@ class UtilityMeterController extends Controller
         }
 
         // 5. Đồng bộ chi tiết hóa đơn (bill_details)
-        if ($elecReading && $elecReading->usage_amount > 0) {
-            \App\Models\InvoiceDetail::create([
-                'bill_id' => $invoice->id,
-                'service_price_id' => $elecService->id,
-                'quantity' => $elecReading->usage_amount,
-                'amount' => $elecAmount,
-            ]);
-        }
-
         if ($waterReading && $waterReading->usage_amount > 0) {
             \App\Models\InvoiceDetail::create([
                 'bill_id' => $invoice->id,
@@ -1100,7 +1007,7 @@ class UtilityMeterController extends Controller
             return strnatcasecmp($a->apartment_number, $b->apartment_number);
         });
 
-        $filename = "Mau_Chot_So_Dien_Nuoc_Thang_{$month}_{$year}.xlsx";
+        $filename = "Mau_Chot_So_Nuoc_Thang_{$month}_{$year}.xlsx";
 
         try {
             $tempFilePath = \App\Helpers\SimpleXlsx::exportUtilityTemplate($apartments, $month, $year);
@@ -1114,7 +1021,7 @@ class UtilityMeterController extends Controller
     }
 
     /**
-     * Nhận file Excel hoặc CSV chỉ số điện nước dạng bảng ngang và import vào hệ thống
+     * Nhận file Excel hoặc CSV chỉ số nước dạng bảng ngang và import vào hệ thống
      */
     public function import(Request $request): RedirectResponse
     {
@@ -1202,11 +1109,11 @@ class UtilityMeterController extends Controller
 
         $headers = $rows[0];
         $hasIdColumn = false;
-        if ($headers && count($headers) >= 7 && str_contains(strtolower($headers[0]), 'id')) {
+        if ($headers && count($headers) >= 5 && str_contains(strtolower($headers[0]), 'id')) {
             $hasIdColumn = true;
         }
 
-        $minColumns = $hasIdColumn ? 7 : 6;
+        $minColumns = $hasIdColumn ? 5 : 4;
         if (!$headers || count($headers) < $minColumns) {
             return back()->with('error', "Cấu trúc file không đúng mẫu. Yêu cầu tối thiểu {$minColumns} cột.");
         }
@@ -1228,30 +1135,43 @@ class UtilityMeterController extends Controller
                     continue;
                 }
 
-                if ($hasIdColumn) {
-                    $aptId       = trim($row[0]);
-                    $location    = trim($row[1]);
-                    $aptNumber   = trim($row[2]);
-                    $elecOld     = isset($row[3]) && $row[3] !== '' ? (int)$row[3] : 0;
-                    $elecNewStr  = trim($row[4]);
-                    $waterOld    = isset($row[5]) && $row[5] !== '' ? (int)$row[5] : 0;
-                    $waterNewStr = trim($row[6]);
+                // Cấu trúc mẫu cũ (7/6 cột) hoặc mẫu mới (5/4 cột)
+                if (count($headers) >= 6) {
+                    if ($hasIdColumn) {
+                        $aptId       = trim($row[0]);
+                        $location    = trim($row[1]);
+                        $aptNumber   = trim($row[2]);
+                        $waterOld    = isset($row[5]) && $row[5] !== '' ? (int)$row[5] : 0;
+                        $waterNewStr = trim($row[6]);
+                    } else {
+                        $aptId       = null;
+                        $location    = trim($row[0]);
+                        $aptNumber   = trim($row[1]);
+                        $waterOld    = isset($row[4]) && $row[4] !== '' ? (int)$row[4] : 0;
+                        $waterNewStr = trim($row[5]);
+                    }
                 } else {
-                    $aptId       = null;
-                    $location    = trim($row[0]);
-                    $aptNumber   = trim($row[1]);
-                    $elecOld     = isset($row[2]) && $row[2] !== '' ? (int)$row[2] : 0;
-                    $elecNewStr  = trim($row[3]);
-                    $waterOld    = isset($row[4]) && $row[4] !== '' ? (int)$row[4] : 0;
-                    $waterNewStr = trim($row[5]);
+                    if ($hasIdColumn) {
+                        $aptId       = trim($row[0]);
+                        $location    = trim($row[1]);
+                        $aptNumber   = trim($row[2]);
+                        $waterOld    = isset($row[3]) && $row[3] !== '' ? (int)$row[3] : 0;
+                        $waterNewStr = trim($row[4]);
+                    } else {
+                        $aptId       = null;
+                        $location    = trim($row[0]);
+                        $aptNumber   = trim($row[1]);
+                        $waterOld    = isset($row[2]) && $row[2] !== '' ? (int)$row[2] : 0;
+                        $waterNewStr = trim($row[3]);
+                    }
                 }
 
-                // Nếu không có bất kỳ chỉ số mới nào được điền, bỏ qua căn hộ này
-                if ($elecNewStr === '' && $waterNewStr === '') {
+                // Nếu không có chỉ số nước mới, bỏ qua
+                if ($waterNewStr === '') {
                     continue;
                 }
 
-                // Định danh Căn hộ (Ưu tiên ID, fallback tìm theo block/floor/apartment_number)
+                // Định danh Căn hộ
                 $apartment = null;
                 if (is_numeric($aptId)) {
                     $apartment = Apartment::find((int)$aptId);
@@ -1281,32 +1201,6 @@ class UtilityMeterController extends Controller
                 }
 
                 $updated = false;
-
-                // ── Xử lý Điện ──────────────────────────────
-                if ($elecNewStr !== '') {
-                    $elecNew = (int)$elecNewStr;
-                    if ($elecNew < $elecOld) {
-                        $errors[] = "Dòng {$rowNum}: Căn hộ {$apartment->apartment_number} - Chỉ số ĐIỆN mới ({$elecNew}) phải lớn hơn hoặc bằng chỉ số cũ ({$elecOld}).";
-                        continue;
-                    }
-
-                    UtilityMeter::updateOrCreate(
-                        [
-                            'apartment_id' => $apartment->id,
-                            'type'         => 'electricity',
-                            'record_month' => $month,
-                            'record_year'  => $year,
-                        ],
-                        [
-                            'old_value'   => $elecOld,
-                            'new_value'   => $elecNew,
-                            'recorded_by' => Auth::id(),
-                            'status'      => 'pending',
-                        ]
-                    );
-                    $successCount++;
-                    $updated = true;
-                }
 
                 // ── Xử lý Nước ──────────────────────────────
                 if ($waterNewStr !== '') {

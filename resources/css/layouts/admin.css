@@ -201,6 +201,7 @@
     flex-direction: column;
     background-color: #ffffff;
     min-height: 100vh;
+    min-width: 0;
 }
 
 /* Topbar Header Styling */
