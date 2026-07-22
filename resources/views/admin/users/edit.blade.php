@@ -1,7 +1,7 @@
 @extends('layouts.admin.master')
 
 @section('page_title', 'Sửa quyền nhân sự')
-@section('home_route', route('admin.dashboard'))
+@section('home_route', portal_route('dashboard'))
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role_label', 'ADMIN')
 
@@ -26,14 +26,14 @@
             <div class="users-alert users-alert--danger">{{ $errors->first() }}</div>
         @endif
 
-        <form id="resetPasswordForm" method="POST" action="{{ route('admin.users.resetPassword', $user) }}"
+        <form id="resetPasswordForm" method="POST" action="{{ portal_route('users.resetPassword', $user) }}"
             onsubmit="return confirm('Đặt lại mật khẩu tài khoản này về Chungcu@2026?')">
             @csrf
             @method('PUT')
         </form>
 
         <div class="user-edit-page__layout">
-            <form class="user-edit-form" method="POST" action="{{ route('admin.users.update', $user) }}">
+            <form class="user-edit-form" method="POST" action="{{ portal_route('users.update', $user) }}">
                 @csrf
                 @method('PUT')
 
@@ -99,7 +99,7 @@
 
                 </div>
                 <div class="user-edit-form__actions">
-                    <a href="{{ route('admin.users.index') }}" class="users-button users-button--secondary">Hủy bản
+                    <a href="{{ portal_route('users.index') }}" class="users-button users-button--secondary">Hủy bản
                         thảo</a>
                     <button type="submit" class="users-button users-button--primary">Lưu thay đổi</button>
                 </div>

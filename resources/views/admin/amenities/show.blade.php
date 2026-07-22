@@ -7,7 +7,7 @@
 
     {{-- Breadcrumb --}}
     <div class="ams-breadcrumb">
-        <a href="{{ route('admin.amenities.index') }}">Tiện ích chung cư</a>
+        <a href="{{ portal_route('amenities.index') }}">Tiện ích chung cư</a>
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
         <span>{{ $facility->name }}</span>
     </div>
@@ -33,7 +33,7 @@
                 Sức chứa: <strong>{{ $facility->capacity }} người</strong>
             </p>
         </div>
-        <a href="{{ route('admin.amenities.edit', $facility) }}" class="ams-btn ams-btn--outline">
+        <a href="{{ portal_route('amenities.edit', $facility) }}" class="ams-btn ams-btn--outline">
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             Chỉnh sửa
         </a>
@@ -58,6 +58,15 @@
                 <p class="ams-config-label">Thời lượng mỗi lần đặt</p>
                 @php $dur = $facility->slot_duration ?? 60; $durLabel = match((int)$dur){0=>'Cả ngày',30=>'30 phút',60=>'1 tiếng',90=>'1.5 tiếng',120=>'2 tiếng',default=>$dur.' phút'}; @endphp
                 <p class="ams-config-value">{{ $durLabel }}</p>
+            </div>
+        </div>
+        <div class="ams-config-card">
+            <div class="ams-config-icon" style="background:#eff6ff;color:#2563eb">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div>
+                <p class="ams-config-label">Kiểu đặt chỗ</p>
+                <p class="ams-config-value">{{ $facility->booking_type_label }}</p>
             </div>
         </div>
         <div class="ams-config-card">
@@ -168,11 +177,11 @@
                     <td>
                         @if($booking->status === 'pending')
                         <div class="ams-row-actions">
-                            <form method="POST" action="{{ route('admin.amenities.bookings.approve', $booking) }}">
+                            <form method="POST" action="{{ portal_route('amenities.bookings.approve', $booking) }}">
                                 @csrf
                                 <button type="submit" class="ams-btn ams-btn--xs ams-btn--approve">Duyệt</button>
                             </form>
-                            <form method="POST" action="{{ route('admin.amenities.bookings.reject', $booking) }}">
+                            <form method="POST" action="{{ portal_route('amenities.bookings.reject', $booking) }}">
                                 @csrf
                                 <button type="submit" class="ams-btn ams-btn--xs ams-btn--reject" onclick="return confirm('Từ chối lịch đặt này?')">Từ chối</button>
                             </form>

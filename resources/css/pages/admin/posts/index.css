@@ -1,4 +1,4 @@
-/* CSS for Admin Posts Management Page */
+﻿/* CSS for Admin Posts Management Page */
 
 .posts-page {
     display: flex;
@@ -31,7 +31,7 @@
 /* Alert styles */
 .posts-alert {
     padding: 1rem 1.25rem;
-    border-radius: 6px;
+    border-radius: 10px;
     font-size: 0.875rem;
     font-weight: 500;
 }
@@ -55,7 +55,7 @@
     gap: 1rem;
     background: #ffffff;
     padding: 1.25rem;
-    border-radius: 8px;
+    border-radius: 10px;
     border: 1px solid #e2e8f0;
     align-items: flex-end;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
@@ -80,7 +80,7 @@
     height: 42px;
     padding: 0 0.75rem;
     border: 1px solid #cbd5e1;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 0.875rem;
     outline: none;
     color: #0f172a;
@@ -101,7 +101,7 @@
 .posts-button {
     height: 42px;
     padding: 0 1.25rem;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
@@ -137,7 +137,7 @@
 .posts-table-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
@@ -221,7 +221,7 @@
     display: inline-flex;
     align-items: center;
     padding: 0.25rem 0.5rem;
-    border-radius: 4px;
+    border-radius: 8px;
     font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -251,7 +251,7 @@
     align-items: center;
     gap: 0.35rem;
     padding: 0.25rem 0.6rem;
-    border-radius: 9999px;
+    border-radius: 8px;
     font-size: 0.75rem;
     font-weight: 600;
 }
@@ -269,7 +269,7 @@
 .status-dot {
     width: 6px;
     height: 6px;
-    border-radius: 50%;
+    border-radius: 10px;
 }
 
 .status-pill--published .status-dot {
@@ -288,7 +288,7 @@
 
 .admin-action-btn {
     padding: 0.4rem 0.75rem;
-    border-radius: 4px;
+    border-radius: 8px;
     font-size: 0.75rem;
     font-weight: 600;
     cursor: pointer;
@@ -384,7 +384,7 @@
 
 .adm-modal__content {
     background: #ffffff;
-    border-radius: 8px;
+    border-radius: 10px;
     width: 90%;
     max-width: 650px;
     max-height: 85vh;
@@ -461,7 +461,7 @@
     margin-bottom: 1rem;
 }
 
-/* Thư viện ảnh trong Admin detail */
+/* ThÆ° viá»‡n áº£nh trong Admin detail */
 .adm-post-gallery {
     display: flex;
     flex-wrap: wrap;
@@ -472,7 +472,7 @@
     width: 120px;
     height: 120px;
     object-fit: cover;
-    border-radius: 6px;
+    border-radius: 10px;
     border: 1px solid #cbd5e1;
     cursor: pointer;
     transition: transform 0.2s;
@@ -504,7 +504,7 @@
 .adm-report-item {
     background-color: #fef2f2;
     border: 1px solid #fecaca;
-    border-radius: 6px;
+    border-radius: 8px;
     padding: 0.75rem 1rem;
     display: flex;
     flex-direction: column;
@@ -577,7 +577,7 @@
     right: 0;
     height: 3px;
     background-color: #00236f;
-    border-radius: 3px 3px 0 0;
+    border-radius: 8px;
 }
 
 /* Comment Moderation Card Styling */
@@ -590,7 +590,7 @@
 .comment-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 1.25rem;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     display: flex;
@@ -607,7 +607,7 @@
 .comment-card__post-context {
     background: #f8fafc;
     border: 1px dashed #cbd5e1;
-    border-radius: 6px;
+    border-radius: 10px;
     padding: 0.65rem 0.85rem;
     font-size: 0.825rem;
     color: #475569;
@@ -677,7 +677,7 @@
     white-space: pre-wrap;
     background: #fffcfc;
     padding: 0.5rem;
-    border-radius: 4px;
+    border-radius: 10px;
     border: 1px solid #fff5f5;
 }
 
@@ -695,7 +695,7 @@
     font-size: 0.75rem;
     font-weight: 700;
     padding: 0.25rem 0.6rem;
-    border-radius: 4px;
+    border-radius: 8px;
     display: inline-flex;
     align-items: center;
     gap: 0.25rem;
@@ -716,7 +716,7 @@
     background-color: #1e293b;
     color: #ffffff;
     padding: 0.75rem 1rem;
-    border-radius: 6px;
+    border-radius: 10px;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
     z-index: 10;
     width: 280px;
@@ -817,7 +817,7 @@
 .ban-select {
     font-size: 0.725rem;
     padding: 3px 18px 3px 22px !important;
-    border-radius: 4px;
+    border-radius: 8px;
     border: 1px solid #cbd5e1;
     background: #fff;
     cursor: pointer;
@@ -845,7 +845,7 @@
 .ban-select--md {
     font-size: 0.825rem;
     padding: 0.4rem 20px 0.4rem 28px !important;
-    border-radius: 6px;
+    border-radius: 8px;
     height: 36px;
 }
 
@@ -859,5 +859,6 @@
     height: 36px;
     padding: 0 20px 0 28px !important;
 }
+
 
 

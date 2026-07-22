@@ -3,7 +3,7 @@
 @section('page_title', 'Chi tiết Tầng')
 @section('page_kicker', 'Quản trị hệ thống')
 @section('role_title', 'Admin Portal')
-@section('home_route', route('admin.dashboard'))
+@section('home_route', portal_route('dashboard'))
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role', 'admin')
 
@@ -21,10 +21,10 @@
             </div>
 
             <div class="page-header-actions">
-                <a href="{{ route('admin.floors.edit', $floor) }}" class="btn btn-light">
+                <a href="{{ portal_route('floors.edit', $floor) }}" class="btn btn-light">
                     Sửa tầng
                 </a>
-                <a href="{{ route('admin.blocks.show', $floor->block_id) }}" class="btn btn-secondary">
+                <a href="{{ portal_route('blocks.show', $floor->block_id) }}" class="btn btn-secondary">
                     ← Tòa nhà
                 </a>
             </div>
@@ -137,74 +137,84 @@
             <div class="card-header"
                 style="border-bottom: 1px solid #f1f5f9; padding-bottom: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                 <div>
-                    <h2>Sơ đồ căn hộ & Trạng thái lấp đầy</h2>
-                    <p style="font-size: 13px; color: #64748b; margin-top: 4px; font-weight: 500;">
-                        Trực quan hóa mặt bằng phòng trên tầng theo mã màu
-                    </p>
+                    <h2>Danh sách căn hộ</h2>
                 </div>
-                <a href="{{ route('admin.apartments.create', ['floor_id' => $floor->id]) }}" class="btn btn-primary"
-                    style="height: 40px; padding: 0 16px; border-radius: 10px; font-size: 13px;">
+                <a href="{{ portal_route('apartments.create', ['floor_id' => $floor->id]) }}" class="btn btn-primary">
                     + Thêm căn hộ mới
                 </a>
             </div>
 
-            <div class="card-body" style="padding: 0; overflow: hidden;">
+            <div class="card-body" style="padding: 0; overflow-x: auto; border-radius: 8px;">
                 @if ($floor->apartments->count() > 0)
                     <table class="premium-table">
                         <thead>
                             <tr>
-                                <th style="padding-left: 24px; width: 30%;">Số hiệu căn</th>
-                                <th style="width: 25%;">Số cư dân</th>
-                                <th style="width: 20%;">Trạng thái</th>
-                                <th style="text-align: right; padding-right: 24px; width: 25%;">Thao tác</th>
+                                <th>Tên căn hộ</th>
+                                <th>Loại căn hộ</th>
+                                <th>Diện tích</th>
+                                <th>Tên chủ hộ</th>
+                                <th>Số điện thoại</th>
+                                <th>Trạng thái</th>
+                                <th style="text-align: right;">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($floor->apartments as $apartment)
+                            @forelse ($floor->apartments as $apartment)
+                                @php
+                                    $area = $apartment->area;
+                                    if ($area >= 100) {
+                                        $type = '3BR Deluxe';
+                                    } elseif ($area >= 70) {
+                                        $type = '2BR Classic';
+                                    } elseif ($area >= 50) {
+                                        $type = '1BR Standard';
+                                    } else {
+                                        $type = 'Studio Plus';
+                                    }
+
+                                    $owner = $apartment->residents()->where('relationship', 'owner')->first() ?? $apartment->residents()->first();
+                                    $ownerName = $owner ? ($owner->user->name ?? '-') : '-';
+                                    $ownerPhone = $owner ? ($owner->user->phone ?? '-') : '-';
+                                @endphp
                                 <tr>
-                                    <td style="padding-left: 24px; padding-top: 14px; padding-bottom: 14px;">
-                                        <a href="{{ route('admin.apartments.show', $apartment->id) }}" style="font-weight: 700; color: #0b57d0; text-decoration: none; font-size: 16px;">
-                                            Căn {{ $apartment->apartment_number }}
+                                    <td style="font-weight: 700; color: #082b7a;">
+                                        <a href="{{ portal_route('apartments.show', $apartment->id) }}" style="text-decoration: none; color: inherit;">
+                                            {{ $apartment->apartment_number }}
                                         </a>
-                                        <div style="font-size: 12px; color: #64748b; margin-top: 4px; font-weight: 500;">
-                                            Diện tích: {{ number_format($apartment->area, 2) }} m²
-                                        </div>
                                     </td>
-                                    <td style="font-weight: 600; color: #334155;">
-                                        {{ $apartment->residents_count + $apartment->declared_members_count }} người
+                                    <td>{{ $type }}</td>
+                                    <td>{{ number_format($apartment->area, 0, ',', '.') }} m²</td>
+                                    <td>{{ $ownerName }}</td>
+                                    <td>{{ $ownerPhone }}</td>
+                                    <td>
+                                        <span class="badge-status badge-status--{{ $apartment->status }}">
+                                            @if ($apartment->status == 'occupied')
+                                                Đang ở
+                                            @elseif($apartment->status == 'vacant')
+                                                Trống
+                                            @else
+                                                Bảo trì
+                                            @endif
+                                        </span>
                                     </td>
                                     <td>
-                                        @if ($apartment->status == 'occupied')
-                                            <span class="badge badge-success">Đang ở</span>
-                                        @elseif($apartment->status == 'vacant')
-                                            <span class="badge badge-warning">Còn trống</span>
-                                        @else
-                                            <span class="badge badge-danger">Bảo trì</span>
-                                        @endif
-                                    </td>
-                                    <td style="text-align: right; padding-right: 24px;">
-                                        <div style="display: inline-flex; gap: 8px; align-items: center;">
-                                            <a href="{{ route('admin.apartments.show', $apartment->id) }}" class="btn btn-light btn-sm"
-                                                style="background: #eff6ff; color: #2563eb; border: none; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; padding: 0 12px; font-size: 12px; text-decoration: none;">
-                                                Chi tiết
+                                        <div class="action-buttons" style="justify-content: flex-end;">
+                                            <a href="{{ portal_route('apartments.show', $apartment->id) }}" class="btn-action btn-action--view" title="Chi tiết">
+                                                <i class="fa-regular fa-eye"></i>
                                             </a>
-                                            <a href="{{ route('admin.apartments.edit', $apartment->id) }}" class="btn btn-light btn-sm"
-                                                style="background: #f1f5f9; color: #475569; border: none; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; padding: 0 12px; font-size: 12px; text-decoration: none;">
-                                                Sửa
+                                            <a href="{{ portal_route('apartments.edit', $apartment->id) }}" class="btn-action btn-action--edit" title="Sửa">
+                                                <i class="fa-regular fa-pen-to-square"></i>
                                             </a>
-                                            <form action="{{ route('admin.apartments.destroy', $apartment->id) }}" method="POST"
-                                                onsubmit="return confirm('Bạn có chắc chắn muốn xóa căn hộ này?')" style="display: inline-flex;">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-light btn-sm"
-                                                    style="background: #fee2e2; color: #b91c1c; border: none; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; padding: 0 12px; font-size: 12px; cursor: pointer;">
-                                                    Xóa
-                                                </button>
-                                            </form>
                                         </div>
                                     </td>
                                 </tr>
-                            @endforeach
+                            @empty
+                                <tr>
+                                    <td colspan="7" style="text-align: center; padding: 40px; color: #64748b; font-weight: 500;">
+                                        Chưa có căn hộ nào được khai báo ở tầng này.
+                                    </td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 @else

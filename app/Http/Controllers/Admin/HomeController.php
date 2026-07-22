@@ -87,8 +87,8 @@ class HomeController extends Controller
 
         // Lấy danh sách các năm có dữ liệu để hiện trong bộ lọc
         $availableYearsQuery = DB::table('bills')
-            ->whereNull('deleted_at')
-            ->where('status', '!=', 'cancelled');
+            ->whereNull('bills.deleted_at')
+            ->where('bills.status', '!=', 'cancelled');
         if ($selectedBlock) {
             $availableYearsQuery->join('apartments', 'bills.apartment_id', '=', 'apartments.id')
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
@@ -111,8 +111,8 @@ class HomeController extends Controller
 
         // 1. KPI TỔNG QUAN (Toàn thời gian)
         $totalBilledQuery = DB::table('bills')
-            ->whereNull('deleted_at')
-            ->where('status', '!=', 'cancelled');
+            ->whereNull('bills.deleted_at')
+            ->where('bills.status', '!=', 'cancelled');
         if ($selectedBlock) {
             $totalBilledQuery->join('apartments', 'bills.apartment_id', '=', 'apartments.id')
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
@@ -121,8 +121,8 @@ class HomeController extends Controller
         $totalBilled = $totalBilledQuery->sum('total_amount');
 
         $totalCollectedQuery = DB::table('payments')
-            ->whereNull('deleted_at')
-            ->where('status', 'success');
+            ->whereNull('payments.deleted_at')
+            ->where('payments.status', 'success');
         if ($selectedBlock) {
             $totalCollectedQuery->join('bills', 'payments.bill_id', '=', 'bills.id')
                 ->join('apartments', 'bills.apartment_id', '=', 'apartments.id')
@@ -132,8 +132,8 @@ class HomeController extends Controller
         $totalCollected = $totalCollectedQuery->sum('amount');
 
         $totalUnpaidQuery = DB::table('bills')
-            ->whereNull('deleted_at')
-            ->where('status', '!=', 'cancelled');
+            ->whereNull('bills.deleted_at')
+            ->where('bills.status', '!=', 'cancelled');
         if ($selectedBlock) {
             $totalUnpaidQuery->join('apartments', 'bills.apartment_id', '=', 'apartments.id')
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
@@ -151,9 +151,9 @@ class HomeController extends Controller
                 DB::raw('SUM(total_amount) as total_billed'),
                 DB::raw("SUM(paid_amount) as total_collected")
             )
-            ->whereNull('deleted_at')
-            ->where('status', '!=', 'cancelled')
-            ->where('billing_year', $selectedYear);
+            ->whereNull('bills.deleted_at')
+            ->where('bills.status', '!=', 'cancelled')
+            ->where('bills.billing_year', $selectedYear);
         if ($selectedBlock) {
             $monthlyRevenueQuery->join('apartments', 'bills.apartment_id', '=', 'apartments.id')
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
@@ -165,9 +165,9 @@ class HomeController extends Controller
 
         // 3. KPI RIÊNG CHO NĂM ĐƯỢC CHỌN
         $yearBilledQuery = DB::table('bills')
-            ->whereNull('deleted_at')
-            ->where('status', '!=', 'cancelled')
-            ->where('billing_year', $selectedYear);
+            ->whereNull('bills.deleted_at')
+            ->where('bills.status', '!=', 'cancelled')
+            ->where('bills.billing_year', $selectedYear);
         if ($selectedBlock) {
             $yearBilledQuery->join('apartments', 'bills.apartment_id', '=', 'apartments.id')
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
@@ -189,9 +189,9 @@ class HomeController extends Controller
         $yearCollected = $yearCollectedQuery->sum('payments.amount');
 
         $yearUnpaidQuery = DB::table('bills')
-            ->whereNull('deleted_at')
-            ->where('status', '!=', 'cancelled')
-            ->where('billing_year', $selectedYear);
+            ->whereNull('bills.deleted_at')
+            ->where('bills.status', '!=', 'cancelled')
+            ->where('bills.billing_year', $selectedYear);
         if ($selectedBlock) {
             $yearUnpaidQuery->join('apartments', 'bills.apartment_id', '=', 'apartments.id')
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
@@ -252,9 +252,9 @@ class HomeController extends Controller
 
         // 5. Tỷ lệ hoàn thành đóng phí của tháng được chọn
         $latestMonthQuery = DB::table('bills')
-            ->whereNull('deleted_at')
-            ->where('status', '!=', 'cancelled')
-            ->where('billing_year', $selectedYear);
+            ->whereNull('bills.deleted_at')
+            ->where('bills.status', '!=', 'cancelled')
+            ->where('bills.billing_year', $selectedYear);
         if ($selectedBlock) {
             $latestMonthQuery->join('apartments', 'bills.apartment_id', '=', 'apartments.id')
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
@@ -271,10 +271,10 @@ class HomeController extends Controller
 
         if ($selectedMonth) {
             $monthStatsQuery = DB::table('bills')
-                ->whereNull('deleted_at')
-                ->where('status', '!=', 'cancelled')
-                ->where('billing_year', $selectedYear)
-                ->where('billing_month', $selectedMonth);
+                ->whereNull('bills.deleted_at')
+                ->where('bills.status', '!=', 'cancelled')
+                ->where('bills.billing_year', $selectedYear)
+                ->where('bills.billing_month', $selectedMonth);
             if ($selectedBlock) {
                 $monthStatsQuery->join('apartments', 'bills.apartment_id', '=', 'apartments.id')
                     ->join('floors', 'apartments.floor_id', '=', 'floors.id')
@@ -289,30 +289,29 @@ class HomeController extends Controller
             }
         }
 
-        // 4.5. Xu hướng sản lượng tiêu thụ Điện & Nước theo tháng
+        // 4.5. Xu hướng sản lượng tiêu thụ Nước theo tháng (Bỏ Điện công tơ)
         $utilityConsumptionQuery = DB::table('utility_meters')
             ->select(
-                'record_month',
-                'type',
-                DB::raw('SUM(usage_amount) as total_usage')
+                'utility_meters.record_month',
+                'utility_meters.type',
+                DB::raw('SUM(utility_meters.usage_amount) as total_usage')
             )
-            ->where('status', 'approved')
-            ->where('record_year', $selectedYear);
+            ->where('utility_meters.type', 'water')
+            ->where('utility_meters.status', 'approved')
+            ->where('utility_meters.record_year', $selectedYear);
         if ($selectedBlock) {
             $utilityConsumptionQuery->join('apartments', 'utility_meters.apartment_id', '=', 'apartments.id')
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
                 ->where('floors.block_id', $selectedBlock);
         }
-        $utilityConsumption = $utilityConsumptionQuery->groupBy('record_month', 'type')->get();
+        $utilityConsumption = $utilityConsumptionQuery->groupBy('utility_meters.record_month', 'utility_meters.type')->get();
 
         $electricityConsumption = array_fill(0, 12, 0);
         $waterConsumption = array_fill(0, 12, 0);
 
         foreach ($utilityConsumption as $row) {
             $monthIndex = (int)$row->record_month - 1; // 0-indexed for JS array
-            if ($row->type === 'electricity') {
-                $electricityConsumption[$monthIndex] = (float)$row->total_usage;
-            } elseif ($row->type === 'water') {
+            if ($row->type === 'water') {
                 $waterConsumption[$monthIndex] = (float)$row->total_usage;
             }
         }
@@ -484,9 +483,14 @@ class HomeController extends Controller
             $selectedYear = $availableYears[0];
         }
 
-        // Truy vấn tất cả các phản ánh của năm được chọn
+        $selectedMonth = $request->get('month');
+
+        // Truy vấn tất cả các phản ánh của năm và tháng được chọn
         $ticketsQuery = Ticket::with(['sender', 'apartment.floor.block'])
             ->whereYear('tickets.created_at', $selectedYear);
+        if ($selectedMonth) {
+            $ticketsQuery->whereMonth('tickets.created_at', $selectedMonth);
+        }
         if ($selectedBlock) {
             $ticketsQuery->join('apartments', 'tickets.apartment_id', '=', 'apartments.id')
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
@@ -497,7 +501,8 @@ class HomeController extends Controller
 
         try {
             $filePath = \App\Helpers\SimpleXlsx::exportOperationsReport($selectedYear, $tickets);
-            return response()->download($filePath, "Bao-cao-van-hanh-nam-{$selectedYear}.xlsx")->deleteFileAfterSend(true);
+            $filename = "Bao-cao-van-hanh-nam-{$selectedYear}" . ($selectedMonth ? "-thang-{$selectedMonth}" : "") . ".xlsx";
+            return response()->download($filePath, $filename)->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             return back()->with('error', 'Có lỗi xảy ra khi xuất file báo cáo vận hành: ' . $e->getMessage());
         }
@@ -509,10 +514,20 @@ class HomeController extends Controller
     public function exportResidentsExcel(Request $request)
     {
         $selectedBlock = $request->get('block_id');
+        $selectedYear = $request->get('year');
+        $selectedMonth = $request->get('month');
 
         // Truy vấn tất cả các căn hộ kèm quan hệ tòa/tầng và số cư dân hiện tại
         $apartmentsQuery = Apartment::with(['floor.block'])
-            ->withCount(['residents as resident_count' => fn($q) => $q->whereNull('deleted_at')]);
+            ->withCount(['residents as resident_count' => function ($q) use ($selectedYear, $selectedMonth) {
+                $q->whereNull('deleted_at');
+                if ($selectedYear) {
+                    $q->whereYear('created_at', $selectedYear);
+                    if ($selectedMonth) {
+                        $q->whereMonth('created_at', $selectedMonth);
+                    }
+                }
+            }]);
         if ($selectedBlock) {
             $apartmentsQuery->whereIn('floor_id', function($q) use ($selectedBlock) {
                 $q->select('id')->from('floors')->where('block_id', $selectedBlock);
@@ -522,7 +537,8 @@ class HomeController extends Controller
 
         try {
             $filePath = \App\Helpers\SimpleXlsx::exportResidentsReport($apartments);
-            return response()->download($filePath, "Bao-cao-cu-dan-va-ha-tang.xlsx")->deleteFileAfterSend(true);
+            $filename = "Bao-cao-cu-dan-va-ha-tang" . ($selectedYear ? "-nam-{$selectedYear}" : "") . ($selectedMonth ? "-thang-{$selectedMonth}" : "") . ".xlsx";
+            return response()->download($filePath, $filename)->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             return back()->with('error', 'Có lỗi xảy ra khi xuất file báo cáo cư dân: ' . $e->getMessage());
         }
@@ -560,10 +576,15 @@ class HomeController extends Controller
             $selectedYear = $availableYears[0];
         }
 
-        // 1. Số lượng phản ánh theo status lọc theo năm
+        $selectedMonth = $request->get('month');
+
+        // 1. Số lượng phản ánh theo status lọc theo năm/tháng
         $ticketStatsQuery = DB::table('tickets')
             ->whereNull('tickets.deleted_at')
             ->whereYear('tickets.created_at', $selectedYear);
+        if ($selectedMonth) {
+            $ticketStatsQuery->whereMonth('tickets.created_at', $selectedMonth);
+        }
         if ($selectedBlock) {
             $ticketStatsQuery->join('apartments', 'tickets.apartment_id', '=', 'apartments.id')
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
@@ -586,7 +607,11 @@ class HomeController extends Controller
             ->whereNull('tickets.deleted_at')
             ->where('tickets.status', 'completed')
             ->whereYear('tickets.created_at', $selectedYear)
+            ->whereMonth('tickets.created_at', $selectedMonth)
             ->whereNotNull('tickets.rating');
+        if ($selectedMonth) {
+            $csatStatsQuery->whereMonth('tickets.created_at', $selectedMonth);
+        }
         if ($selectedBlock) {
             $csatStatsQuery->join('apartments', 'tickets.apartment_id', '=', 'apartments.id')
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
@@ -619,7 +644,11 @@ class HomeController extends Controller
         $recentFeedbacksQuery = Ticket::with(['sender', 'apartment'])
             ->where('tickets.status', 'completed')
             ->whereYear('tickets.created_at', $selectedYear)
+            ->whereMonth('tickets.created_at', $selectedMonth)
             ->whereNotNull('tickets.rating');
+        if ($selectedMonth) {
+            $recentFeedbacksQuery->whereMonth('tickets.created_at', $selectedMonth);
+        }
         if ($selectedBlock) {
             $recentFeedbacksQuery->join('apartments', 'tickets.apartment_id', '=', 'apartments.id')
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
@@ -640,6 +669,9 @@ class HomeController extends Controller
             ->whereNull('tickets.deleted_at')
             ->where('tickets.status', 'completed')
             ->whereYear('tickets.created_at', $selectedYear);
+        if ($selectedMonth) {
+            $avgSlaQuery->whereMonth('tickets.created_at', $selectedMonth);
+        }
         if ($selectedBlock) {
             $avgSlaQuery->join('apartments', 'tickets.apartment_id', '=', 'apartments.id')
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
@@ -662,6 +694,9 @@ class HomeController extends Controller
         $priorityStatsQuery = DB::table('tickets')
             ->whereNull('tickets.deleted_at')
             ->whereYear('tickets.created_at', $selectedYear);
+        if ($selectedMonth) {
+            $priorityStatsQuery->whereMonth('tickets.created_at', $selectedMonth);
+        }
         if ($selectedBlock) {
             $priorityStatsQuery->join('apartments', 'tickets.apartment_id', '=', 'apartments.id')
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
@@ -682,29 +717,35 @@ class HomeController extends Controller
         // 6. Thống kê hiệu quả công việc của từng kỹ thuật viên (KPI) - Tương thích SQLite/MySQL
         if ($selectedBlock) {
             $technicianPerformanceQuery = DB::table('users')
-                ->leftJoin('tickets', function ($join) use ($selectedYear, $selectedBlock) {
-                    $join->on('users.id', '=', 'tickets.handler_id')
-                        ->whereNull('tickets.deleted_at')
-                        ->where('tickets.status', '=', 'completed')
-                        ->whereYear('tickets.created_at', $selectedYear)
-                        ->whereIn('tickets.apartment_id', function ($query) use ($selectedBlock) {
-                            $query->select('id')
-                                ->from('apartments')
-                                ->whereIn('floor_id', function ($q) use ($selectedBlock) {
-                                    $q->select('id')
-                                        ->from('floors')
-                                        ->where('block_id', $selectedBlock);
-                                });
-                        });
-                })
-                ->where('users.role', 'technician');
-        } else {
-            $technicianPerformanceQuery = DB::table('users')
-                ->leftJoin('tickets', function ($join) use ($selectedYear) {
+                ->leftJoin('tickets', function ($join) use ($selectedYear, $selectedMonth, $selectedBlock) {
                     $join->on('users.id', '=', 'tickets.handler_id')
                         ->whereNull('tickets.deleted_at')
                         ->where('tickets.status', '=', 'completed')
                         ->whereYear('tickets.created_at', $selectedYear);
+                    if ($selectedMonth) {
+                        $join->whereMonth('tickets.created_at', $selectedMonth);
+                    }
+                    $join->whereIn('tickets.apartment_id', function ($query) use ($selectedBlock) {
+                        $query->select('id')
+                            ->from('apartments')
+                            ->whereIn('floor_id', function ($q) use ($selectedBlock) {
+                                $q->select('id')
+                                    ->from('floors')
+                                    ->where('block_id', $selectedBlock);
+                            });
+                    });
+                })
+                ->where('users.role', 'technician');
+        } else {
+            $technicianPerformanceQuery = DB::table('users')
+                ->leftJoin('tickets', function ($join) use ($selectedYear, $selectedMonth) {
+                    $join->on('users.id', '=', 'tickets.handler_id')
+                        ->whereNull('tickets.deleted_at')
+                        ->where('tickets.status', '=', 'completed')
+                        ->whereYear('tickets.created_at', $selectedYear);
+                    if ($selectedMonth) {
+                        $join->whereMonth('tickets.created_at', $selectedMonth);
+                    }
                 })
                 ->where('users.role', 'technician');
         }
@@ -749,7 +790,7 @@ class HomeController extends Controller
 
         return view('admin.statistics.operations', compact(
             'blocks', 'selectedBlock',
-            'availableYears', 'selectedYear',
+            'availableYears', 'selectedYear', 'selectedMonth',
             'totalTickets', 'pendingCount', 'assignedCount', 'inProgressCount', 'completedCount', 'cancelledCount',
             'csatData', 'totalRated', 'averageRating', 'recentFeedbacks',
             'formattedResolutionTime', 'priorityData', 'technicianPerformance'
@@ -764,6 +805,38 @@ class HomeController extends Controller
         // Lấy danh sách tòa nhà/block
         $blocks = Block::orderBy('name')->get();
         $selectedBlock = $request->get('block_id');
+
+        // Lấy danh sách các năm cư dân đăng ký để hiện trong bộ lọc
+        $driver = DB::getDriverName();
+        $yearExpression = $driver === 'sqlite' ? "strftime('%Y', created_at)" : "YEAR(created_at)";
+
+        $availableYearsQuery = DB::table('residents')
+            ->whereNull('deleted_at');
+        if ($selectedBlock) {
+            $availableYearsQuery->whereIn('apartment_id', function($q) use ($selectedBlock) {
+                $q->select('id')->from('apartments')->whereIn('floor_id', function($q2) use ($selectedBlock) {
+                    $q2->select('id')->from('floors')->where('block_id', $selectedBlock);
+                });
+            });
+        }
+        $availableYears = $availableYearsQuery->selectRaw("DISTINCT $yearExpression as year")
+            ->orderBy('year', 'desc')
+            ->pluck('year')
+            ->map(fn($y) => (int)$y)
+            ->filter()
+            ->toArray();
+
+        if (empty($availableYears)) {
+            $availableYears = [(int) date('Y')];
+        }
+
+
+        $selectedYear = $request->get('year', date('Y'));
+        if (!in_array($selectedYear, $availableYears) && count($availableYears) > 0) {
+            $selectedYear = $availableYears[0];
+        }
+
+        $selectedMonth = $request->get('month');
 
         // ── 1. TỔNG QUAN HẠ TẦNG ──────────────────────────────────────
         $totalBlocks = Block::count();
@@ -796,7 +869,7 @@ class HomeController extends Controller
         $maintenance = $maintenanceQuery->count();
         $occupancyRate = $totalApartments > 0 ? round(($occupied / $totalApartments) * 100, 1) : 0;
 
-        // ── 2. TỔNG QUAN CƯ DÂN ───────────────────────────────────────
+        // ── 2. TỔNG QUAN CƯ DÂN (Lọc theo năm/tháng) ───────────────────
         $totalResidentsQuery = Resident::query();
         $ownerCountQuery = Resident::where('relationship', 'owner');
         $tenantCountQuery = Resident::where('relationship', 'tenant');
@@ -825,6 +898,20 @@ class HomeController extends Controller
             });
         }
 
+        if ($selectedYear) {
+            $totalResidentsQuery->whereYear('created_at', $selectedYear);
+            $ownerCountQuery->whereYear('created_at', $selectedYear);
+            $tenantCountQuery->whereYear('created_at', $selectedYear);
+            $familyCountQuery->whereYear('created_at', $selectedYear);
+            
+            if ($selectedMonth) {
+                $totalResidentsQuery->whereMonth('created_at', $selectedMonth);
+                $ownerCountQuery->whereMonth('created_at', $selectedMonth);
+                $tenantCountQuery->whereMonth('created_at', $selectedMonth);
+                $familyCountQuery->whereMonth('created_at', $selectedMonth);
+            }
+        }
+
         $totalResidents = $totalResidentsQuery->count();
         $ownerCount     = $ownerCountQuery->count();
         $tenantCount    = $tenantCountQuery->count();
@@ -849,15 +936,17 @@ class HomeController extends Controller
         }
         $blockStats = $blockStatsQuery->orderBy('name')->get();
 
-        // ── 5. XU HƯỚNG CƯ DÂN ĐĂNG KÝ THEO THÁNG (12 tháng gần nhất) ─
-        $driver = DB::getDriverName();
-        $dateFormatSelect = $driver === 'sqlite'
-            ? "strftime('%Y-%m', created_at)"
-            : "DATE_FORMAT(created_at, '%Y-%m')";
+        // ── 5. XU HƯỚNG CƯ DÂN ĐĂNG KÝ THEO THÁNG (12 tháng gần nhất dựa trên năm/tháng được chọn) ─
+        $selectedDate = now();
+        if ($selectedYear) {
+            $m = $selectedMonth ?: 12;
+            $selectedDate = \Carbon\Carbon::create($selectedYear, $m, 1);
+        }
 
         $residentTrendQuery = DB::table('residents')
             ->whereNull('deleted_at')
-            ->where('created_at', '>=', now()->subMonths(11)->startOfMonth());
+            ->where('created_at', '>=', $selectedDate->copy()->subMonths(11)->startOfMonth())
+            ->where('created_at', '<=', $selectedDate->copy()->endOfMonth());
         if ($selectedBlock) {
             $residentTrendQuery->whereIn('apartment_id', function($q) use ($selectedBlock) {
                 $q->select('id')->from('apartments')->whereIn('floor_id', function($q2) use ($selectedBlock) {
@@ -865,19 +954,22 @@ class HomeController extends Controller
                 });
             });
         }
+        $dateFormatSelect = $driver === 'sqlite'
+            ? "strftime('%Y-%m', created_at)"
+            : "DATE_FORMAT(created_at, '%Y-%m')";
+
         $residentTrend = $residentTrendQuery->selectRaw("$dateFormatSelect as month, COUNT(*) as count")
             ->groupBy('month')
             ->orderBy('month')
             ->pluck('count', 'month')
             ->toArray();
 
-        // Tạo mảng đủ 12 tháng (kể cả tháng = 0)
+        // Tạo mảng đủ 12 tháng của năm được chọn
         $trendLabels = [];
         $trendValues = [];
         for ($i = 11; $i >= 0; $i--) {
-            $key = now()->subMonths($i)->format('Y-m');
-            $label = now()->subMonths($i)->format('T' . now()->subMonths($i)->month . '/' . now()->subMonths($i)->year);
-            $trendLabels[] = 'T' . now()->subMonths($i)->month . '/' . now()->subMonths($i)->format('y');
+            $key = $selectedDate->copy()->subMonths($i)->format('Y-m');
+            $trendLabels[] = 'T' . $selectedDate->copy()->subMonths($i)->month . '/' . $selectedDate->copy()->subMonths($i)->format('y');
             $trendValues[] = $residentTrend[$key] ?? 0;
         }
 
@@ -886,7 +978,9 @@ class HomeController extends Controller
             ->join('apartments', 'residents.apartment_id', '=', 'apartments.id')
             ->join('floors', 'apartments.floor_id', '=', 'floors.id')
             ->join('blocks', 'floors.block_id', '=', 'blocks.id')
-            ->whereNull('residents.deleted_at');
+            ->whereNull('residents.deleted_at')
+            ->whereYear('residents.created_at', $selectedYear)
+            ->whereMonth('residents.created_at', $selectedMonth);
         if ($selectedBlock) {
             $topApartmentsQuery->where('blocks.id', $selectedBlock);
         }
@@ -921,6 +1015,7 @@ class HomeController extends Controller
 
         return view('admin.statistics.residents', compact(
             'blocks', 'selectedBlock',
+            'availableYears', 'selectedYear', 'selectedMonth',
             'totalBlocks', 'totalFloors', 'totalApartments',
             'occupied', 'vacant', 'maintenance', 'occupancyRate',
             'totalResidents', 'ownerCount', 'tenantCount', 'familyCount',

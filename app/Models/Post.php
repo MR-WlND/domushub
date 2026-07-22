@@ -54,6 +54,14 @@ class Post extends Model
     }
 
     /**
+     * Mối quan hệ với danh sách ẩn của bài viết này
+     */
+    public function hides(): HasMany
+    {
+        return $this->hasMany(PostHide::class);
+    }
+
+    /**
      * Mối quan hệ với người đăng bài (cư dân/admin)
      */
     public function user(): BelongsTo

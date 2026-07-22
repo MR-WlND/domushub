@@ -1,7 +1,7 @@
 @extends('layouts.admin.master')
 
 @section('page_title', 'Quản lý mã mời Cư dân')
-@section('home_route', route('admin.dashboard'))
+@section('home_route', portal_route('dashboard'))
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role_label', 'ADMIN')
 
@@ -44,7 +44,7 @@
                 <h2 class="invitations-create-card__title">Tạo Mã Đăng Ký Cư Dân Mới</h2>
             </div>
             <div class="invitations-create-card__body">
-                <form action="{{ route('admin.invitations.store') }}" method="POST" class="invitations-form">
+                <form action="{{ portal_route('invitations.store') }}" method="POST" class="invitations-form">
                     @csrf
 
                     <div class="invitations-form__field">
@@ -92,12 +92,12 @@
                         <label class="invitations-form__label">
                             Số lượt dùng tối đa <span>*</span>
                         </label>
-                        <input type="number" name="max_uses" class="invitations-form__input" min="1"
-                            value="{{ old('max_uses', 1) }}" required>
+                        <input type="number" name="max_uses" class="invitations-form__input" min="1" max="1"
+                            value="1" readonly required>
                         @error('max_uses')
                             <small class="invitations-form__hint invitations-form__hint--error">{{ $message }}</small>
                         @else
-                            <small class="invitations-form__hint">Số tài khoản cư dân có thể đăng ký bằng mã này.</small>
+                            <small class="invitations-form__hint">Mỗi mã mời chỉ sử dụng được 1 lần.</small>
                         @enderror
                     </div>
 
@@ -105,20 +105,12 @@
                         <label class="invitations-form__label">
                             Mối quan hệ với cư dân <span>*</span>
                         </label>
-                        <select name="intended_relationship" class="invitations-form__input" required>
-                            <option value="">-- Chọn quan hệ --</option>
-                            <option value="owner" {{ old('intended_relationship') == 'owner' ? 'selected' : '' }}>Chủ hộ
-                            </option>
-                            <option value="tenant" {{ old('intended_relationship') == 'tenant' ? 'selected' : '' }}>Người
-                                thuê</option>
-                            <option value="family_member"
-                                {{ old('intended_relationship') == 'family_member' ? 'selected' : '' }}>Thành viên gia đình
-                            </option>
-                        </select>
+                        <input type="hidden" name="intended_relationship" value="owner">
+                        <input type="text" class="invitations-form__input" value="Chủ hộ" readonly>
                         @error('intended_relationship')
                             <small class="invitations-form__hint invitations-form__hint--error">{{ $message }}</small>
                         @else
-                            <small class="invitations-form__hint">Chọn quan hệ giúp quản lý cư dân chính xác hơn.</small>
+                            <small class="invitations-form__hint">Mã mời dành cho chủ hộ đăng ký tài khoản.</small>
                         @enderror
                     </div>
 
@@ -245,7 +237,7 @@
                                 </td>
 
                                 <td style="text-align:right">
-                                    <form action="{{ route('admin.invitations.destroy', $invite->id) }}" method="POST"
+                                    <form action="{{ portal_route('invitations.destroy', $invite->id) }}" method="POST"
                                         onsubmit="return confirm('Bạn có chắc chắn muốn xóa mã mời này?')"
                                         style="display:inline">
                                         @csrf

@@ -72,12 +72,13 @@
 @section('content')
 
 {{-- ── Page Header ─────────────────────────────────── --}}
+{{-- ── Page Header ─────────────────────────────────── --}}
 <div class="util-page-header">
     <div>
         <h1>Ghi chỉ số hàng loạt</h1>
-        <p>Chốt cả <strong>điện</strong> và <strong>nước</strong> cho nhiều căn hộ cùng lúc</p>
+        <p>Chốt chỉ số <strong>nước</strong> cho nhiều căn hộ cùng lúc</p>
     </div>
-    <a href="{{ route('admin.utility-readings.index') }}" class="util-btn util-btn--outline">
+    <a href="{{ portal_route('utility-readings.index') }}" class="util-btn util-btn--outline">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
         </svg>
@@ -94,7 +95,7 @@
 
 {{-- ── Filter Panel ────────────────────────────────── --}}
 <div class="util-filter-panel">
-    <form action="{{ route('admin.utility-readings.batch') }}" method="GET" id="filterForm">
+    <form action="{{ portal_route('utility-readings.batch') }}" method="GET" id="filterForm">
         <div class="util-filter-grid">
             <div>
                 <label>Tòa nhà</label>
@@ -144,24 +145,12 @@
 @if (count($apartmentData) > 0)
 @php
     $total      = count($apartmentData);
-    $elecDone   = collect($apartmentData)->where('elec_recorded', true)->count();
     $waterDone  = collect($apartmentData)->where('water_recorded', true)->count();
-    $bothDone   = collect($apartmentData)->where('both_recorded', true)->count();
-    $elecPct    = $total > 0 ? round($elecDone / $total * 100) : 0;
     $waterPct   = $total > 0 ? round($waterDone / $total * 100) : 0;
 @endphp
 
 {{-- ── Progress summary ────────────────────────────── --}}
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 12px; margin-bottom: 20px;">
-
-    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:16px 20px;">
-        <div style="font-size:12px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Điện – Tháng {{ $selectedMonth }}/{{ $selectedYear }}</div>
-        <div style="font-size:26px;font-weight:800;color:#b45309;">{{ $elecDone }}<span style="font-size:16px;font-weight:600;color:#d97706;"> / {{ $total }}</span></div>
-        <div style="margin-top:8px;background:#e2e8f0;border-radius:999px;height:6px;overflow:hidden;">
-            <div style="height:100%;width:{{ $elecPct }}%;background:linear-gradient(90deg,#f59e0b,#d97706);border-radius:999px;"></div>
-        </div>
-        <div style="font-size:12px;color:#92400e;margin-top:4px;">{{ $elecPct }}% hoàn thành</div>
-    </div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 12px; margin-bottom: 20px;">
 
     <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:16px 20px;">
         <div style="font-size:12px;font-weight:700;color:#1e40af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Nước – Tháng {{ $selectedMonth }}/{{ $selectedYear }}</div>
@@ -172,24 +161,14 @@
         <div style="font-size:12px;color:#1e40af;margin-top:4px;">{{ $waterPct }}% hoàn thành</div>
     </div>
 
-    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px 20px;">
-        <div style="font-size:12px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Hoàn tất cả 2</div>
-        <div style="font-size:26px;font-weight:800;color:#15803d;">{{ $bothDone }}<span style="font-size:16px;font-weight:600;color:#22c55e;"> / {{ $total }}</span></div>
-        <div style="margin-top:8px;background:#e2e8f0;border-radius:999px;height:6px;overflow:hidden;">
-            <div style="height:100%;width:{{ $total > 0 ? round($bothDone/$total*100) : 0 }}%;background:linear-gradient(90deg,#10b981,#059669);border-radius:999px;"></div>
-        </div>
-        <div style="font-size:12px;color:#166534;margin-top:4px;">{{ $total > 0 ? round($bothDone/$total*100) : 0 }}% hoàn thành</div>
-    </div>
-
     <div style="background:#f8faff;border:1px solid #e2e8f0;border-radius:12px;padding:16px 20px;display:flex;flex-direction:column;justify-content:center;gap:6px;">
         <div style="font-size:13px;font-weight:600;color:#334155;">Tổng căn hộ: <strong>{{ $total }}</strong></div>
-        <div style="font-size:13px;color:#64748b;">Chưa chốt điện: <strong style="color:#f59e0b;">{{ $total - $elecDone }}</strong></div>
         <div style="font-size:13px;color:#64748b;">Chưa chốt nước: <strong style="color:#3b82f6;">{{ $total - $waterDone }}</strong></div>
     </div>
 </div>
 
 {{-- ── Batch Form ───────────────────────────────────── --}}
-<form action="{{ route('admin.utility-readings.batch.store') }}" method="POST" id="batchForm" enctype="multipart/form-data">
+<form action="{{ portal_route('utility-readings.batch.store') }}" method="POST" id="batchForm" enctype="multipart/form-data">
     @csrf
     <input type="hidden" name="record_month" value="{{ $selectedMonth }}">
     <input type="hidden" name="record_year"  value="{{ $selectedYear }}">
@@ -201,7 +180,6 @@
                 Danh sách căn hộ – Tháng {{ $selectedMonth }}/{{ $selectedYear }}
             </div>
             <div style="display:flex;align-items:center;gap:16px;font-size:13px;color:#64748b;">
-                <span>Cột vàng = Điện &nbsp;|&nbsp; Cột xanh = Nước</span>
                 <label style="display:flex;align-items:center;gap:6px;font-weight:600;cursor:pointer;">
                     <input type="checkbox" id="selectAll" checked style="width:15px;height:15px;accent-color:#00236f;cursor:pointer;">
                     Chọn tất cả
@@ -216,9 +194,6 @@
                         <th rowspan="2" style="width:40px; text-align:center;"></th>
                         <th rowspan="2" style="width:80px; text-align:center;">PHÒNG</th>
                         <th rowspan="2" style="width:150px; text-align:center;">TÒA / TẦNG</th>
-                        <th colspan="{{ auth()->user()->role === 'technician' ? '1' : '3' }}" class="col-elec col-divider-border" style="text-align:center; font-weight:700; color:#92400e;">
-                            ĐIỆN — THÁNG {{ $selectedMonth }}/{{ $selectedYear }}
-                        </th>
  
                         {{-- Water Header Group --}}
                         <th colspan="{{ auth()->user()->role === 'technician' ? '1' : '3' }}" class="col-water" style="text-align:center; font-weight:700; color:#1e40af;">
@@ -230,14 +205,6 @@
                     </tr>
                     <tr>
                         @if(auth()->user()->role !== 'technician')
-                        <th class="col-elec" style="text-align:center; font-size:12px; font-weight:600; color:#92400e;">CS Cũ</th>
-                        @endif
-                        <th class="col-elec {{ auth()->user()->role === 'technician' ? 'col-divider-border' : '' }}" style="text-align:center; font-size:12px; font-weight:600; color:#92400e;">CS Mới</th>
-                        @if(auth()->user()->role !== 'technician')
-                        <th class="col-elec col-divider-border" style="text-align:center; font-size:12px; font-weight:600; color:#92400e;">Tiêu thụ</th>
-                        @endif
- 
-                        @if(auth()->user()->role !== 'technician')
                         <th class="col-water" style="text-align:center; font-size:12px; font-weight:600; color:#1e40af;">CS Cũ</th>
                         @endif
                         <th class="col-water" style="text-align:center; font-size:12px; font-weight:600; color:#1e40af;">CS Mới</th>
@@ -248,11 +215,11 @@
                 </thead>
                 <tbody>
                     @foreach ($apartmentData as $i => $data)
-                    @php $bothDoneRow = $data['elec_recorded'] && $data['water_recorded']; @endphp
-                    <tr id="row-{{ $i }}" class="{{ $bothDoneRow ? 'batch-row--all-done' : '' }}">
+                    @php $isDoneRow = $data['water_recorded']; @endphp
+                    <tr id="row-{{ $i }}" class="{{ $isDoneRow ? 'batch-row--all-done' : '' }}">
                         {{-- Checkbox --}}
                         <td style="text-align:center;">
-                            @if (!$bothDoneRow)
+                            @if (!$isDoneRow)
                                 <input type="checkbox" class="row-check" data-index="{{ $i }}" checked
                                     style="width:15px;height:15px;accent-color:#00236f;cursor:pointer;">
                             @else
@@ -266,57 +233,13 @@
  
                         {{-- Room --}}
                         <td style="text-align:center;"><strong class="text-strong">{{ $data['apartment']->apartment_number }}</strong></td>
- 
+
                         {{-- Block/Floor --}}
                         <td class="text-muted" style="font-size:12px; text-align:center;">
                             {{ $data['apartment']->floor->block->name ?? '—' }}
                             / {{ $data['apartment']->floor->name ?? 'Tầng ' . $data['apartment']->floor->floor_number }}
                         </td>
- 
-                        {{-- ── ELECTRICITY ─────────────────────── --}}
-                        @if(auth()->user()->role !== 'technician')
-                        <td class="col-elec" style="font-weight:600;color:#92400e;text-align:center;">
-                            {{ number_format($data['elec_old']) }}
-                        </td>
-                        @endif
-                        <td class="col-elec {{ auth()->user()->role === 'technician' ? 'col-divider-border' : '' }}" style="text-align:center;">
-                            @if (!$data['elec_recorded'])
-                                <input type="hidden"
-                                    name="readings[{{ $i }}][apartment_id]"
-                                    value="{{ $data['apartment']->id }}"
-                                    class="apt-id-input">
-                                <input type="number"
-                                    name="readings[{{ $i }}][elec_new]"
-                                    class="batch-meter-input elec-input"
-                                    min="{{ $data['elec_old'] }}"
-                                    data-old="{{ $data['elec_old'] }}"
-                                    data-original-old="{{ $data['elec_old'] }}"
-                                    data-type="elec"
-                                    data-index="{{ $i }}"
-                                    placeholder="Chỉ số mới">
-                                <div style="margin-top: 4px;">
-                                    <label style="display:inline-flex; align-items:center; gap:4px; font-size:10px; color:#92400e; cursor:pointer;">
-                                        <input type="checkbox"
-                                            name="readings[{{ $i }}][elec_is_reset]"
-                                            value="1"
-                                            class="elec-reset-cb"
-                                            data-index="{{ $i }}"
-                                            style="width:12px; height:12px; margin:0;">
-                                        Thay mới
-                                    </label>
-                                </div>
-                            @else
-                                <span style="color:#15803d;font-weight:600;font-size:13px;">✓ Đã chốt</span>
-                                <input type="hidden" name="readings[{{ $i }}][apartment_id]" value="{{ $data['apartment']->id }}">
-                            @endif
-                        </td>
-                        @if(auth()->user()->role !== 'technician')
-                        <td class="col-elec col-divider-border" style="text-align:center;">
-                            <span class="usage-chip {{ !$data['elec_recorded'] ? 'usage-chip--zero' : 'usage-chip--elec' }}"
-                                id="elec-usage-{{ $i }}">—</span>
-                        </td>
-                        @endif
- 
+
                         {{-- ── WATER ───────────────────────────── --}}
                         @if(auth()->user()->role !== 'technician')
                         <td class="col-water" style="font-weight:600;color:#1e40af;text-align:center;">
@@ -325,6 +248,10 @@
                         @endif
                         <td class="col-water" style="text-align:center;">
                             @if (!$data['water_recorded'])
+                                <input type="hidden"
+                                    name="readings[{{ $i }}][apartment_id]"
+                                    value="{{ $data['apartment']->id }}"
+                                    class="apt-id-input">
                                 <input type="number"
                                     name="readings[{{ $i }}][water_new]"
                                     class="batch-meter-input water-input"
@@ -347,6 +274,7 @@
                                 </div>
                             @else
                                 <span style="color:#15803d;font-weight:600;font-size:13px;">✓ Đã chốt</span>
+                                <input type="hidden" name="readings[{{ $i }}][apartment_id]" value="{{ $data['apartment']->id }}">
                             @endif
                         </td>
                         @if(auth()->user()->role !== 'technician')
@@ -358,24 +286,27 @@
 
                         {{-- Ảnh công tơ --}}
                         <td style="text-align:center; vertical-align:middle; min-width:140px;">
-                            @if (!$bothDoneRow)
+                            @if (!$isDoneRow)
                                 <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
                                     {{-- Nút chụp camera (WebRTC) --}}
                                     <button type="button"
                                         onclick="openCameraModalBatch({{ $i }})"
-                                        style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;background:linear-gradient(135deg,#0b57d0,#1a73e8);color:#fff;border:none;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;">
-                                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
-                                        </svg>
-                                        📸 Chụp
+                                        style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:#00236f;color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.2s;"
+                                        onmouseover="this.style.background='#001850'"
+                                        onmouseout="this.style.background='#00236f'">
+                                        <i class="fa-solid fa-camera" style="font-size: 12px;"></i>
+                                        Chụp
                                     </button>
                                     {{-- Nút thư viện --}}
                                     <button type="button"
                                         onclick="document.getElementById('gal_{{ $i }}').click()"
-                                        style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;background:#f8fafc;color:#334155;border:1px solid #cbd5e1;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;">
-                                        📁 Chọn ảnh
+                                        style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:#fff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.2s;"
+                                        onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#94a3b8';"
+                                        onmouseout="this.style.background='#fff'; this.style.borderColor='#cbd5e1';">
+                                        <i class="fa-regular fa-image" style="font-size: 12px;"></i>
+                                        Chọn ảnh
                                     </button>
-                                    {{-- Gallery input (multiple, không capture) --}}
+                                    {{-- Gallery input --}}
                                     <input type="file" id="gal_{{ $i }}"
                                         accept="image/*" multiple style="display:none;"
                                         data-row="{{ $i }}">
@@ -392,15 +323,10 @@
                             @endif
                         </td>
 
-
                         {{-- Status --}}
                         <td style="text-align:center;">
-                            @if ($bothDoneRow)
+                            @if ($isDoneRow)
                                 <span class="util-badge util-badge--success">Đã chốt</span>
-                            @elseif ($data['elec_recorded'] || $data['water_recorded'])
-                                <span class="util-badge" style="background:#e0f2fe;color:#075985;font-size:11px;">
-                                    {{ $data['elec_recorded'] ? 'Điện ' : '' }}{{ $data['water_recorded'] ? 'Nước' : '' }} Chốt 1 phần
-                                </span>
                             @else
                                 <span class="util-badge util-badge--warning">Chưa chốt</span>
                             @endif
@@ -416,7 +342,7 @@
             <div class="util-batch-footer__info">
                 Tháng <strong>{{ $selectedMonth }}/{{ $selectedYear }}</strong>
                 &nbsp;·&nbsp; Tổng: <strong>{{ $total }}</strong> căn hộ
-                &nbsp;·&nbsp; Đang chọn: <strong id="countNum">{{ $total - $bothDone }}</strong>
+                &nbsp;·&nbsp; Đang chọn: <strong id="countNum">{{ $total - $waterDone }}</strong>
             </div>
             <div style="display:flex;gap:10px;align-items:center;">
                 <span style="font-size:12px;color:#64748b;">Có thể để trống ô không cần ghi</span>
@@ -737,15 +663,18 @@ function createBatchCameraModal() {
     modal.id = 'batchCameraModal';
     modal.style.cssText = 'display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:94vw;max-width:520px;background:#fff;border-radius:20px;box-shadow:0 24px 60px rgba(0,0,0,.3);z-index:10000;overflow:hidden;';
     modal.innerHTML = `
-        <div style="background:linear-gradient(135deg,#0b57d0,#1a73e8);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;">
-            <div style="color:#fff;font-weight:700;font-size:0.95rem;">📸 Chụp ảnh công tơ</div>
+        <div style="background:#00236f;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;">
+            <div style="color:#fff;font-weight:700;font-size:0.95rem;display:flex;align-items:center;gap:6px;">
+                <i class="fa-solid fa-camera" style="font-size: 14px;"></i>
+                Chụp ảnh công tơ
+            </div>
             <button type="button" onclick="closeBatchCameraModal()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:1.1rem;cursor:pointer;">✕</button>
         </div>
         <div style="padding:8px 14px;background:#f8fafc;display:flex;align-items:center;gap:8px;border-bottom:1px solid #e2e8f0;">
             <label style="font-size:12px;font-weight:600;color:#475569;">Camera:</label>
             <select id="batchCameraSelect" onchange="switchBatchCamera()" style="flex:1;padding:4px 8px;border:1px solid #cbd5e1;border-radius:7px;font-size:12px;">
-                <option value="environment">📷 Camera sau</option>
-                <option value="user">🤳 Camera trước</option>
+                <option value="environment">Camera sau</option>
+                <option value="user">Camera trước</option>
             </select>
         </div>
         <div style="background:#000;position:relative;aspect-ratio:4/3;max-height:320px;overflow:hidden;">
@@ -753,11 +682,11 @@ function createBatchCameraModal() {
             <div style="position:absolute;inset:0;pointer-events:none;">
                 <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:70%;height:70%;border:2px dashed rgba(255,255,255,0.5);border-radius:8px;"></div>
             </div>
-            <div id="batchCameraLoading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;background:rgba(0,0,0,0.5);">🔄 Đang khởi động camera...</div>
+            <div id="batchCameraLoading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;background:rgba(0,0,0,0.5);">Đang khởi động camera...</div>
         </div>
         <div style="padding:14px;display:flex;gap:10px;justify-content:center;background:#f8fafc;">
-            <button type="button" onclick="captureBatchPhoto()" style="display:inline-flex;align-items:center;gap:7px;padding:11px 24px;background:linear-gradient(135deg,#0b57d0,#1a73e8);color:#fff;border:none;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(11,87,208,.35);">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <button type="button" onclick="captureBatchPhoto()" style="display:inline-flex;align-items:center;gap:8px;padding:11px 24px;background:#00236f;color:#fff;border:none;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(0,35,111,0.25);">
+                <i class="fa-solid fa-camera" style="font-size: 15px;"></i>
                 Chụp
             </button>
             <button type="button" onclick="closeBatchCameraModal()" style="padding:11px 18px;background:#f1f5f9;color:#475569;border:none;border-radius:11px;font-size:13px;font-weight:600;cursor:pointer;">Hủy</button>
@@ -777,7 +706,7 @@ async function startBatchCamera(facing) {
     }
 
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        loading.textContent = '❌ Trình duyệt không hỗ trợ camera.';
+        loading.textContent = 'Trình duyệt không hỗ trợ camera.';
         return;
     }
 
@@ -788,17 +717,17 @@ async function startBatchCamera(facing) {
         video.srcObject = batchCameraStream;
         video.onloadedmetadata = () => { loading.style.display = 'none'; };
     } catch (err) {
-        let msg = '❌ Không thể mở camera.';
-        if (err.name === 'NotAllowedError')  msg = '🔒 Quyền camera bị chặn. Cho phép trong thanh địa chỉ và thử lại.';
-        if (err.name === 'NotFoundError')    msg = '📷 Không tìm thấy camera. Kiểm tra webcam.';
-        if (err.name === 'NotReadableError') msg = '⚠️ Camera đang dùng bởi ứng dụng khác.';
+        let msg = 'Không thể mở camera.';
+        if (err.name === 'NotAllowedError')  msg = 'Quyền camera bị chặn. Cho phép trong thanh địa chỉ và thử lại.';
+        if (err.name === 'NotFoundError')    msg = 'Không tìm thấy camera. Kiểm tra webcam.';
+        if (err.name === 'NotReadableError') msg = 'Camera đang dùng bởi ứng dụng khác.';
         if (err.name === 'OverconstrainedError') {
             try {
                 batchCameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
                 video.srcObject = batchCameraStream;
                 video.onloadedmetadata = () => { loading.style.display = 'none'; };
                 return;
-            } catch(e2) { msg = '❌ ' + e2.message; }
+            } catch(e2) { msg = e2.message; }
         }
         loading.innerHTML = `<div style="text-align:center;padding:16px;color:#fff;">${msg}<br><br><button onclick="closeBatchCameraModal()" style="padding:7px 14px;background:#fff;color:#1e293b;border:none;border-radius:7px;cursor:pointer;font-weight:600;">Đóng</button></div>`;
     }

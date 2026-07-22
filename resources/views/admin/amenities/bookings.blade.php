@@ -11,51 +11,40 @@
             <p class="amb-eyebrow">Tiện ích chung cư</p>
             <h1 class="amb-title">Quản lý lịch đặt</h1>
         </div>
-        <a href="{{ route('admin.amenities.index') }}" class="amb-btn amb-btn--outline">
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        <a href="{{ portal_route('amenities.index') }}" class="amb-btn amb-btn--outline">
             Danh sách tiện ích
         </a>
     </div>
 
     {{-- Flash --}}
     @if(session('success'))
-        <div class="amb-alert amb-alert--success">
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            {{ session('success') }}
-        </div>
+        <div class="amb-alert amb-alert--success">{{ session('success') }}</div>
     @endif
     @if(session('error'))
-        <div class="amb-alert amb-alert--error">
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            {{ session('error') }}
-        </div>
+        <div class="amb-alert amb-alert--error">{{ session('error') }}</div>
     @endif
 
     {{-- Stats --}}
     <div class="amb-stats">
-        <a href="{{ route('admin.amenities.bookings', ['status' => 'pending']) }}" class="amb-stat amb-stat--pending {{ request('status') === 'pending' ? 'amb-stat--active' : '' }}">
-            <div class="amb-stat-icon">⏳</div>
+        <a href="{{ portal_route('amenities.bookings', ['status' => 'pending']) }}" class="amb-stat amb-stat--pending {{ request('status') === 'pending' ? 'amb-stat--active' : '' }}">
             <div>
                 <div class="amb-stat-num">{{ $stats['pending'] }}</div>
                 <div class="amb-stat-label">Chờ duyệt</div>
             </div>
         </a>
-        <a href="{{ route('admin.amenities.bookings', ['status' => 'approved']) }}" class="amb-stat amb-stat--approved {{ request('status') === 'approved' ? 'amb-stat--active' : '' }}">
-            <div class="amb-stat-icon">✅</div>
+        <a href="{{ portal_route('amenities.bookings', ['status' => 'approved']) }}" class="amb-stat amb-stat--approved {{ request('status') === 'approved' ? 'amb-stat--active' : '' }}">
             <div>
                 <div class="amb-stat-num">{{ $stats['approved'] }}</div>
                 <div class="amb-stat-label">Đã duyệt</div>
             </div>
         </a>
-        <a href="{{ route('admin.amenities.bookings', ['status' => 'used']) }}" class="amb-stat amb-stat--used {{ request('status') === 'used' ? 'amb-stat--active' : '' }}">
-            <div class="amb-stat-icon">🏆</div>
+        <a href="{{ portal_route('amenities.bookings', ['status' => 'used']) }}" class="amb-stat amb-stat--used {{ request('status') === 'used' ? 'amb-stat--active' : '' }}">
             <div>
                 <div class="amb-stat-num">{{ $stats['used'] }}</div>
                 <div class="amb-stat-label">Đã sử dụng</div>
             </div>
         </a>
-        <a href="{{ route('admin.amenities.bookings', ['status' => 'cancelled']) }}" class="amb-stat amb-stat--cancelled {{ request('status') === 'cancelled' ? 'amb-stat--active' : '' }}">
-            <div class="amb-stat-icon">❌</div>
+        <a href="{{ portal_route('amenities.bookings', ['status' => 'cancelled']) }}" class="amb-stat amb-stat--cancelled {{ request('status') === 'cancelled' ? 'amb-stat--active' : '' }}">
             <div>
                 <div class="amb-stat-num">{{ $stats['cancelled'] }}</div>
                 <div class="amb-stat-label">Đã hủy</div>
@@ -75,15 +64,15 @@
         </select>
         <select name="status" onchange="this.form.submit()">
             <option value="">Tất cả trạng thái</option>
-            <option value="pending"   {{ request('status') === 'pending'   ? 'selected' : '' }}>⏳ Chờ duyệt</option>
-            <option value="approved"  {{ request('status') === 'approved'  ? 'selected' : '' }}>✅ Đã duyệt</option>
-            <option value="used"      {{ request('status') === 'used'      ? 'selected' : '' }}>🏆 Đã sử dụng</option>
-            <option value="rejected"  {{ request('status') === 'rejected'  ? 'selected' : '' }}>🚫 Từ chối</option>
-            <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>❌ Đã hủy</option>
+            <option value="pending"   {{ request('status') === 'pending'   ? 'selected' : '' }}>Chờ duyệt</option>
+            <option value="approved"  {{ request('status') === 'approved'  ? 'selected' : '' }}>Đã duyệt</option>
+            <option value="used"      {{ request('status') === 'used'      ? 'selected' : '' }}>Đã sử dụng</option>
+            <option value="rejected"  {{ request('status') === 'rejected'  ? 'selected' : '' }}>Từ chối</option>
+            <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Đã hủy</option>
         </select>
         <input type="date" name="date" value="{{ request('date') }}" onchange="this.form.submit()" class="amb-filter-date" placeholder="Lọc ngày">
         @if(request('facility_id') || request('status') || request('date'))
-            <a href="{{ route('admin.amenities.bookings') }}" class="amb-btn amb-btn--ghost amb-btn--sm">Xóa bộ lọc</a>
+            <a href="{{ portal_route('amenities.bookings') }}" class="amb-btn amb-btn--ghost amb-btn--sm">Xóa bộ lọc</a>
         @endif
     </form>
 
@@ -129,7 +118,7 @@
                         </div>
                     </td>
                     <td>
-                        <a href="{{ route('admin.amenities.show', $booking->facility) }}" class="amb-facility-link">
+                        <a href="{{ portal_route('amenities.show', $booking->facility) }}" class="amb-facility-link">
                             {{ $booking->facility->name ?? '—' }}
                         </a>
                     </td>
@@ -157,18 +146,16 @@
                                 {{ $booking->payment_label }}
                             </span>
                         </div>
-                        @else
-                        <span class="amb-free">Miễn phí</span>
                         @endif
                     </td>
                     <td>
                         <div class="amb-actions">
                             @if($booking->status === 'pending')
-                                <form method="POST" action="{{ route('admin.amenities.bookings.approve', $booking) }}">
+                                <form method="POST" action="{{ portal_route('amenities.bookings.approve', $booking) }}">
                                     @csrf
                                     <button type="submit" class="amb-btn amb-btn--xs amb-btn--approve" title="Duyệt lịch">✓ Duyệt</button>
                                 </form>
-                                <form method="POST" action="{{ route('admin.amenities.bookings.reject', $booking) }}">
+                                <form method="POST" action="{{ portal_route('amenities.bookings.reject', $booking) }}">
                                     @csrf
                                     <button type="submit" class="amb-btn amb-btn--xs amb-btn--reject" onclick="return confirm('Từ chối lịch đặt #{{ $booking->id }}?')" title="Từ chối">✕ Từ chối</button>
                                 </form>
@@ -176,19 +163,19 @@
                             @elseif($booking->status === 'approved')
                                 {{-- Cập nhật trạng thái --}}
                                 <button class="amb-btn amb-btn--xs amb-btn--status" onclick="openStatusModal({{ $booking->id }}, '{{ $booking->status }}', '{{ $booking->status_label }}')" title="Cập nhật trạng thái">
-                                    🔄 Trạng thái
+                                    Trạng thái
                                 </button>
                             @endif
 
                             @if(!in_array($booking->status, ['used', 'cancelled', 'rejected']))
-                                <form method="POST" action="{{ route('admin.amenities.bookings.cancel', $booking) }}" onsubmit="return confirm('Hủy lịch đặt #{{ $booking->id }}?')">
+                                <form method="POST" action="{{ portal_route('amenities.bookings.cancel', $booking) }}" onsubmit="return confirm('Hủy lịch đặt #{{ $booking->id }}?')">
                                     @csrf
-                                    <button type="submit" class="amb-btn amb-btn--xs amb-btn--cancel" title="Hủy lịch">🚫 Hủy</button>
+                                    <button type="submit" class="amb-btn amb-btn--xs amb-btn--cancel" title="Hủy lịch">Hủy</button>
                                 </form>
                             @endif
 
                             {{-- Xem chi tiết --}}
-                            <button class="amb-btn amb-btn--xs amb-btn--detail" onclick="openDetailModal({{ $booking->id }})" title="Xem chi tiết">👁</button>
+                            <button class="amb-btn amb-btn--xs amb-btn--detail" onclick="openDetailModal({{ $booking->id }})" title="Xem chi tiết">Chi tiết</button>
                         </div>
                     </td>
                 </tr>
@@ -221,14 +208,14 @@
                 <label class="amb-status-opt">
                     <input type="radio" name="status" value="used">
                     <div class="amb-status-opt-content amb-soc--used">
-                        <span>🏆 Đã sử dụng</span>
+                        <span>Đã sử dụng</span>
                         <small>Check-in thành công</small>
                     </div>
                 </label>
                 <label class="amb-status-opt">
                     <input type="radio" name="status" value="cancelled">
                     <div class="amb-status-opt-content amb-soc--cancelled">
-                        <span>❌ Hủy lịch</span>
+                        <span>Hủy lịch</span>
                         <small>Chủ động hủy</small>
                     </div>
                 </label>

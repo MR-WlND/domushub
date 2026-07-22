@@ -6,15 +6,15 @@
 <div class="invoice-detail-page">
     {{-- Header with back button --}}
     <div class="detail-header-row">
-        <a href="{{ route('admin.invoices.index') }}" class="btn-back">
+        <a href="{{ portal_route('invoices.apartment', $invoice->apartment_id) }}" class="btn-back">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
             Quay lại danh sách
         </a>
         <div class="detail-actions">
-            <button type="button" class="btn-top-action" onclick="window.print()">
+            <a href="{{ portal_route('invoices.print', $invoice) }}" target="_blank" class="btn-top-action">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                 In hóa đơn
-            </button>
+            </a>
         </div>
     </div>
 
@@ -47,7 +47,7 @@
                 </p>
             </div>
             <div class="invoice-status-wrap">
-                <span class="pay-badge pay-badge--{{ $invoice->status === 'paid' ? 'paid' : ($invoice->status === 'partial' ? 'partial' : ($invoice->status === 'overdue' ? 'overdue' : 'unpaid')) }}">
+                <span class="pay-badge pay-badge--{{ in_array($invoice->status, ['paid']) ? 'paid' : ($invoice->status === 'partial_paid' ? 'partial' : ($invoice->status === 'overdue' ? 'overdue' : ($invoice->status === 'cancelled' ? 'cancelled' : 'unpaid'))) }}">
                     {{ \App\Models\Invoice::statusLabel($invoice->status) }}
                 </span>
             </div>
@@ -260,12 +260,12 @@
             </h3>
             <p style="font-size: 0.85rem; color: var(--color-text-secondary, #444651); margin-bottom: 20px;">
                 Ghi nhận khi cư dân nộp tiền mặt hoặc chuyển khoản.
-                @if($invoice->status === 'partial')
+                @if($invoice->status === 'partial_paid')
                 Còn thiếu <strong style="color:var(--color-error, #ba1a1a);">{{ number_format($invoice->remaining_amount) }}đ</strong>.
                 @endif
             </p>
 
-            <form method="POST" action="{{ route('admin.invoices.mark-paid', $invoice) }}" enctype="multipart/form-data" onsubmit="return confirmManualPayment(event);">
+            <form method="POST" action="{{ portal_route('invoices.mark-paid', $invoice) }}" enctype="multipart/form-data" onsubmit="return confirmManualPayment(event);">
                 @csrf
                 @method('PATCH')
                 <div class="payment-form-grid">
@@ -291,8 +291,10 @@
                     <div class="form-group">
                         <label class="form-label" for="payment_method">Phương thức</label>
                         <select name="payment_method" id="payment_method" class="form-input">
-                            <option value="transfer">🏦 Chuyển khoản ngân hàng</option>
+                            <option value="bank_transfer">🏦 Chuyển khoản ngân hàng</option>
                             <option value="cash">💵 Tiền mặt</option>
+                            <option value="momo">💜 MoMo</option>
+                            <option value="vnpay">🔵 VNPay</option>
                             <option value="other">💳 Khác</option>
                         </select>
                     </div>

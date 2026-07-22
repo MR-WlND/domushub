@@ -20,9 +20,6 @@ class Resident extends Model
         'end_date',
     ];
 
-    /**
-     * Tự động kích hoạt cập nhật trạng thái căn hộ khi thêm/bớt cư dân
-     */
     protected static function boot()
     {
         parent::boot();
@@ -33,6 +30,12 @@ class Resident extends Model
                 // Lưu căn hộ sẽ kích hoạt sự kiện saving của Apartment và tự động tính toán lại trạng thái
                 $apartment->save();
             }
+
+            // Đồng bộ apartment_id vào bảng users
+            $user = $resident->user;
+            if ($user && $user->apartment_id !== $resident->apartment_id) {
+                $user->update(['apartment_id' => $resident->apartment_id]);
+            }
         });
 
         static::deleted(function ($resident) {
@@ -40,6 +43,13 @@ class Resident extends Model
             if ($apartment) {
                 // Lưu căn hộ sẽ kích hoạt sự kiện saving của Apartment và tự động tính toán lại trạng thái
                 $apartment->save();
+            }
+
+            // Đồng bộ apartment_id vào bảng users (gỡ bỏ hoặc lấy căn hộ còn lại của user)
+            $user = $resident->user;
+            if ($user) {
+                $otherResident = self::where('user_id', $user->id)->first();
+                $user->update(['apartment_id' => $otherResident ? $otherResident->apartment_id : null]);
             }
         });
     }

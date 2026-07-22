@@ -11,20 +11,20 @@
         <p class="page-subtitle">Tổng quan tài chính và tình trạng thu phí toàn tòa nhà</p>
     </div>
     <div class="page-actions">
-        <form method="GET" action="{{ route('admin.statistics.finance') }}" style="display:flex;gap:8px;align-items:center">
+        <form method="GET" action="{{ portal_route('statistics.finance') }}" style="display:flex;gap:8px;align-items:center">
             <select name="year" class="period-select" onchange="this.form.submit()">
                 @foreach(range(now()->year, now()->year - 2) as $y)
                     <option value="{{ $y }}" {{ $y == $year ? 'selected' : '' }}>{{ $y }}</option>
                 @endforeach
             </select>
         </form>
-        <a href="{{ route('admin.invoices.create') }}" class="btn btn-primary">
+        <a href="{{ portal_route('invoices.create') }}" class="btn btn-primary">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
             Tạo hóa đơn
         </a>
-        <a href="{{ route('admin.invoices.index') }}" class="btn btn-outline">
+        <a href="{{ portal_route('invoices.index') }}" class="btn btn-outline">
             Xem tất cả
         </a>
     </div>
@@ -169,7 +169,7 @@
     <div class="table-card">
         <div class="table-card-header">
             <div class="table-card-title">Hóa đơn gần đây</div>
-            <a href="{{ route('admin.invoices.index') }}" class="btn btn-outline btn-sm">Xem tất cả →</a>
+            <a href="{{ portal_route('invoices.index') }}" class="btn btn-outline btn-sm">Xem tất cả →</a>
         </div>
         <table class="data-table">
             <thead>

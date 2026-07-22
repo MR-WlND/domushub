@@ -1,6 +1,6 @@
 @extends('layouts.admin.master')
 
-@section('page_title', 'Sửa chỉ số điện nước – DomusHub')
+@section('page_title', 'Sửa chỉ số nước – DomusHub')
 
 @push('styles')
 @vite(['resources/css/pages/admin/utility-readings/index.css'])
@@ -11,14 +11,14 @@
 {{-- ── Page Header ─────────────────────────────────── --}}
 <div class="util-page-header">
     <div>
-        <h1>Sửa chỉ số điện nước</h1>
+        <h1>Sửa chỉ số nước</h1>
         <p>
             Căn hộ <strong>{{ $reading->apartment->apartment_number }}</strong>
-            – {{ $reading->type === 'electricity' ? 'Điện' : 'Nước' }}
+            – Nước
             – Tháng {{ $reading->record_month }}/{{ $reading->record_year }}
         </p>
     </div>
-    <a href="{{ route('admin.utility-readings.index', ['month' => $reading->record_month, 'year' => $reading->record_year]) }}"
+    <a href="{{ portal_route('utility-readings.index', ['month' => $reading->record_month, 'year' => $reading->record_year]) }}"
         class="util-btn util-btn--outline">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
@@ -56,6 +56,8 @@
                 <span style="font-size: 14px; font-weight: 700; color: #1e293b;">Lý do từ chối</span>
             </div>
             @if($rejections && $rejections->isNotEmpty())
+                @php $rejectedLogs = $rejections->filter(fn($r) => $r['action'] === 'rejected'); @endphp
+                @if($rejectedLogs->isNotEmpty())
                 <div style="overflow-x: auto;">
                     <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; vertical-align: middle;">
                         <thead>
@@ -66,13 +68,13 @@
                             </tr>
                         </thead>
                         <tbody style="color: #334155;">
-                            @foreach($rejections as $rej)
+                            @foreach($rejectedLogs as $rej)
                             <tr style="border-bottom: 1px solid #f1f5f9;">
                                 <td style="padding: 12px 16px; color: #94a3b8; font-weight: 400; white-space: nowrap; vertical-align: top;">{{ $rej['rejected_at'] }}</td>
                                 <td style="padding: 12px 16px; font-weight: 500; color: #64748b; vertical-align: top;">{{ $rej['rejecter_name'] }}</td>
                                 <td style="padding: 12px 16px; vertical-align: top;">
                                     <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; background-color: #fff5f5; border: 1px solid #feb2b2; color: #e53e3e; font-weight: 700; font-size: 12px;">
-                                        <i class="fas fa-exclamation-triangle animate-pulse" style="font-size: 11px;"></i>
+                                        <i class="fas fa-exclamation-triangle" style="font-size: 11px;"></i>
                                         <span>{{ $rej['reason'] }}</span>
                                     </div>
                                 </td>
@@ -81,6 +83,14 @@
                         </tbody>
                     </table>
                 </div>
+                @else
+                <div style="padding: 16px 20px; font-size: 13px; color: #991b1b;">
+                    <strong>Lý do từ chối:</strong> <em>{{ $reading->reject_reason }}</em>
+                    <div style="font-size: 11px; margin-top: 6px; color: #b91c1c; opacity: 0.9;">
+                        Người từ chối: <strong>{{ $reading->rejecter->name ?? 'Kế toán viên' }}</strong> | Ngày từ chối: <strong>{{ $reading->updated_at->format('d/m/Y H:i') }}</strong>
+                    </div>
+                </div>
+                @endif
             @else
                 <div style="padding: 16px 20px; font-size: 13px; color: #991b1b;">
                     <strong>Lý do từ chối:</strong> <em>{{ $reading->reject_reason }}</em>
@@ -137,7 +147,7 @@
         <h4>Chỉnh sửa chỉ số</h4>
     </div>
 
-    <form action="{{ route('admin.utility-readings.update', $reading->id) }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ portal_route('utility-readings.update', $reading->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
@@ -197,7 +207,7 @@
         @endphp
         @if (!empty($existingImages))
         <div style="margin-bottom:20px;">
-            <label class="util-form-label">📷 Ảnh minh chứng hiện tại</label>
+            <label class="util-form-label" style="display: flex; align-items: center; gap: 8px;"><i class="fa-regular fa-image" style="font-size: 15px; color: #475569;"></i><span>Ảnh minh chứng hiện tại</span></label>
             <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;">
                 @foreach ($existingImages as $idx => $img)
                 <div style="position:relative;width:120px;height:120px;border-radius:10px;overflow:hidden;border:2px solid #e2e8f0;box-shadow:0 2px 8px rgba(0,0,0,.06);">
@@ -223,21 +233,27 @@
         {{-- ── Upload thêm ảnh mới ── --}}
         @if (count($existingImages) < 5)
         <div style="margin-bottom:20px;">
-            <label class="util-form-label">
-                ➕ Thêm ảnh minh chứng
-                <span style="font-weight:400;color:#64748b;font-size:12px;">(Tối đa 5 ảnh tổng cộng)</span>
+            <label class="util-form-label" style="display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-camera" style="font-size: 16px; color: #475569;"></i>
+                <span>
+                    Thêm ảnh minh chứng
+                    <span style="font-weight:400;color:#64748b;font-size:12px;">(Tối đa 5 ảnh tổng cộng)</span>
+                </span>
             </label>
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin:10px 0;">
                 <button type="button" onclick="openCameraModal()"
-                    style="display:inline-flex;align-items:center;gap:7px;padding:8px 16px;background:linear-gradient(135deg,#0b57d0,#1a73e8);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;">
-                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
-                    </svg>
+                    style="display:inline-flex;align-items:center;gap:8px;padding:9px 18px;background:#00236f;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(0,35,111,0.15);transition:all 0.2s;"
+                    onmouseover="this.style.background='#001850'"
+                    onmouseout="this.style.background='#00236f'">
+                    <i class="fa-solid fa-camera" style="font-size: 14px;"></i>
                     Chụp ảnh
                 </button>
                 <button type="button" onclick="document.getElementById('edit_gal').click()"
-                    style="display:inline-flex;align-items:center;gap:7px;padding:8px 16px;background:#fff;color:#1e293b;border:1.5px solid #cbd5e1;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;">
-                    📁 Chọn ảnh
+                    style="display:inline-flex;align-items:center;gap:8px;padding:9px 18px;background:#fff;color:#334155;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;"
+                    onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#94a3b8';"
+                    onmouseout="this.style.background='#fff'; this.style.borderColor='#cbd5e1';">
+                    <i class="fa-regular fa-image" style="font-size: 14px;"></i>
+                    Chọn ảnh
                 </button>
             </div>
             <input type="file" id="edit_gal" accept="image/*" multiple style="display:none;">
@@ -258,12 +274,101 @@
                 </svg>
                 Cập nhật chỉ số
             </button>
-            <a href="{{ route('admin.utility-readings.index', ['month' => $reading->record_month, 'year' => $reading->record_year]) }}"
+            <a href="{{ portal_route('utility-readings.index', ['month' => $reading->record_month, 'year' => $reading->record_year]) }}"
                 class="util-btn util-btn--outline">Hủy</a>
         </div>
 
     </form>
 </div>
+
+@if($reading->status !== 'rejected' && $rejections && $rejections->isNotEmpty())
+    @php
+        $hasRejection = $rejections->contains(fn($r) => $r['action'] === 'rejected');
+    @endphp
+    
+    @if($reading->status === 'approved' && $hasRejection)
+        <div style="margin-top: 24px; max-width: 640px; margin-bottom: 24px;">
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); overflow: hidden;">
+                <div style="background: #ffffff; border-bottom: 1px solid #f1f5f9; padding: 16px 20px; display: flex; align-items: center;">
+                    <div style="background: #f1f5f9; color: #475569; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-size: 14px;">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <span style="font-size: 14px; font-weight: 700; color: #1e293b;">📋 Lịch sử phê duyệt</span>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; vertical-align: middle;">
+                        <thead>
+                            <tr style="background: #f8fafc; color: #64748b; border-bottom: 1px solid #e2e8f0; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; font-weight: 700;">
+                                <th style="padding: 10px 16px; width: 25%;">Thời gian</th>
+                                <th style="padding: 10px 16px; width: 25%;">Người thực hiện</th>
+                                <th style="padding: 10px 16px; width: 50%;">Hành động / Chi tiết</th>
+                            </tr>
+                        </thead>
+                        <tbody style="color: #334155;">
+                            @foreach($rejections as $rej)
+                            <tr style="border-bottom: 1px solid #f1f5f9;">
+                                <td style="padding: 12px 16px; color: #94a3b8; font-weight: 400; white-space: nowrap; vertical-align: top;">{{ $rej['rejected_at'] }}</td>
+                                <td style="padding: 12px 16px; font-weight: 500; color: #64748b; vertical-align: top;">{{ $rej['rejecter_name'] }}</td>
+                                <td style="padding: 12px 16px; vertical-align: top;">
+                                    @if($rej['action'] === 'approved')
+                                        <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; background-color: #e6f4ea; border: 1px solid #a3cfbb; color: #146c43; font-weight: 700; font-size: 12px;">
+                                            <i class="fas fa-check-circle" style="font-size: 11px;"></i>
+                                            <span>Đã chốt số</span>
+                                        </div>
+                                    @else
+                                        <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; background-color: #fff5f5; border: 1px solid #feb2b2; color: #e53e3e; font-weight: 700; font-size: 12px;">
+                                            <i class="fas fa-exclamation-triangle" style="font-size: 11px;"></i>
+                                            <span>Từ chối: {{ $rej['reason'] }}</span>
+                                        </div>
+                                    @endif
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    @elseif($reading->status !== 'approved')
+        @php $rejectedLogs = $rejections->filter(fn($r) => $r['action'] === 'rejected'); @endphp
+        @if($rejectedLogs->isNotEmpty())
+            <div style="margin-top: 24px; max-width: 640px; margin-bottom: 24px;">
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); overflow: hidden;">
+                    <div style="background: #fee2e2; color: #ef4444; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-size: 14px;">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <span style="font-size: 14px; font-weight: 700; color: #1e293b;">📋 Lý do các lần bị từ chối trước đó</span>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; vertical-align: middle;">
+                        <thead>
+                            <tr style="background: #f8fafc; color: #64748b; border-bottom: 1px solid #e2e8f0; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; font-weight: 700;">
+                                <th style="padding: 10px 16px; width: 25%;">Thời gian</th>
+                                <th style="padding: 10px 16px; width: 25%;">Người từ chối</th>
+                                <th style="padding: 10px 16px; width: 50%;">Lý do cụ thể</th>
+                            </tr>
+                        </thead>
+                        <tbody style="color: #334155;">
+                            @foreach($rejectedLogs as $rej)
+                            <tr style="border-bottom: 1px solid #f1f5f9;">
+                                <td style="padding: 12px 16px; color: #94a3b8; font-weight: 400; white-space: nowrap; vertical-align: top;">{{ $rej['rejected_at'] }}</td>
+                                <td style="padding: 12px 16px; font-weight: 500; color: #64748b; vertical-align: top;">{{ $rej['rejecter_name'] }}</td>
+                                <td style="padding: 12px 16px; vertical-align: top;">
+                                    <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; background-color: #fff5f5; border: 1px solid #feb2b2; color: #e53e3e; font-weight: 700; font-size: 12px;">
+                                        <i class="fas fa-exclamation-triangle" style="font-size: 12px;"></i>
+                                        <span>{{ $rej['reason'] }}</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    @endif
+@endif
+@endif
 
 {{-- Lightbox --}}
 <div id="lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;align-items:center;justify-content:center;flex-direction:column;">
@@ -275,11 +380,35 @@
 </div>
 
 {{-- Form xóa ảnh ẩn --}}
-<form id="delete-image-form" method="POST" action="{{ route('admin.utility-readings.remove-image', $reading->id) }}" style="display:none;">
+<form id="delete-image-form" method="POST" action="{{ portal_route('utility-readings.remove-image', $reading->id) }}" style="display:none;">
     @csrf
     @method('DELETE')
     <input type="hidden" name="index" id="delete-image-index" value="">
 </form>
+
+{{-- Modal Xác nhận Xóa ảnh --}}
+<div id="confirmDeleteModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:10000; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+    <div style="background:#fff; padding:24px; border-radius:12px; max-width:400px; width:90%; box-shadow:0 10px 25px rgba(0,0,0,0.15); position:relative; text-align:center; box-sizing:border-box; animation: confirmModalFadeIn 0.3s ease-out;">
+        <div style="font-size:2.5rem; color:#dc2626; margin-bottom:12px;">
+            <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:inline-block; vertical-align:middle; color:#dc2626;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+        </div>
+        <h3 style="margin:0 0 10px; font-size:1.15rem; font-weight:700; color:#00236f;">Xóa ảnh này?</h3>
+        <p style="margin:0 0 20px; font-size:0.88rem; color:#64748b; line-height:1.4;">Bạn có chắc chắn muốn xóa ảnh minh chứng này khỏi hệ thống không?</p>
+        <div style="display:flex; justify-content:center; gap:12px;">
+            <button type="button" class="util-btn util-btn--outline" style="padding: 10px 20px; font-weight:600; cursor:pointer;" onclick="closeDeleteModal()">Hủy bỏ</button>
+            <button type="button" class="util-btn" id="confirm-delete-btn" style="background:#dc2626; color:#fff; padding: 10px 20px; border:none; border-radius:6px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;">Xóa ảnh</button>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes confirmModalFadeIn {
+    from { opacity:0; transform:translateY(-10px); }
+    to { opacity:1; transform:translateY(0); }
+}
+</style>
 
 {{-- ── Camera Modal (WebRTC) ── --}}
 <div id="cameraModalOverlay"
@@ -288,8 +417,11 @@
 </div>
 <div id="cameraModal"
      style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:94vw;max-width:540px;background:#fff;border-radius:20px;box-shadow:0 24px 60px rgba(0,0,0,.3);z-index:10000;overflow:hidden;">
-    <div style="background:linear-gradient(135deg,#0b57d0,#1a73e8);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;">
-        <div style="color:#fff;font-weight:700;font-size:1rem;">📸 Chụp ảnh công tơ</div>
+    <div style="background:#00236f;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;">
+        <div style="color:#fff;font-weight:700;font-size:1rem;display:flex;align-items:center;gap:8px;">
+            <i class="fa-solid fa-camera" style="font-size: 15px;"></i>
+            Chụp ảnh công tơ
+        </div>
         <button type="button" onclick="closeCameraModal()"
             style="background:rgba(255,255,255,.2);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
     </div>
@@ -299,8 +431,8 @@
         <label style="font-size:12px;font-weight:600;color:#475569;">Camera:</label>
         <select id="cameraSelect" onchange="switchCamera()"
             style="flex:1;padding:5px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;background:#fff;">
-            <option value="environment">📷 Camera sau (chính)</option>
-            <option value="user">🤳 Camera trước (selfie)</option>
+            <option value="environment">Camera sau (chính)</option>
+            <option value="user">Camera trước (selfie)</option>
         </select>
     </div>
 
@@ -314,19 +446,18 @@
         </div>
         {{-- Loading text --}}
         <div id="cameraLoading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;background:rgba(0,0,0,0.5);">
-            🔄 Đang khởi động camera...
+            Đang khởi động camera...
         </div>
     </div>
 
     {{-- Nút chụp --}}
     <div style="padding:16px;display:flex;gap:10px;justify-content:center;background:#f8fafc;">
         <button type="button" onclick="capturePhoto()"
-            style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:linear-gradient(135deg,#0b57d0,#1a73e8);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(11,87,208,.35);transition:transform .1s;"
-            onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''">
-            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                <circle cx="12" cy="13" r="4"/>
-            </svg>
+            style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:#00236f;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(0,35,111,0.25);transition:transform 0.1s;"
+            onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''"
+            onmouseover="this.style.background='#001850'"
+            onmouseout="this.style.background='#00236f'">
+            <i class="fa-solid fa-camera" style="font-size: 16px;"></i>
             Chụp ảnh
         </button>
         <button type="button" onclick="closeCameraModal()"
@@ -477,6 +608,20 @@ function handleLbKey(e) {
     if (e.key === 'ArrowLeft') prevImg();
     if (e.key === 'ArrowRight') nextImg();
 }
+let pendingDeleteImageIdx = null;
+
+function deleteExistingImage(idx) {
+    pendingDeleteImageIdx = idx;
+    const modal = document.getElementById('confirmDeleteModal');
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeDeleteModal() {
+    const modal = document.getElementById('confirmDeleteModal');
+    if (modal) modal.style.display = 'none';
+    pendingDeleteImageIdx = null;
+}
+
 // Click backdrop to close
 document.addEventListener('DOMContentLoaded', function() {
     const lb = document.getElementById('lightbox');
@@ -485,18 +630,29 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.target === this) closeLightbox();
         });
     }
-});
 
-function deleteExistingImage(idx) {
-    if (confirm('Xóa ảnh này?')) {
-        const form = document.getElementById('delete-image-form');
-        const input = document.getElementById('delete-image-index');
-        if (form && input) {
-            input.value = idx;
-            form.submit();
-        }
+    const cdm = document.getElementById('confirmDeleteModal');
+    if (cdm) {
+        cdm.addEventListener('click', function(e) {
+            if (e.target === this) closeDeleteModal();
+        });
     }
-}
+
+    const confirmBtn = document.getElementById('confirm-delete-btn');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', function() {
+            if (pendingDeleteImageIdx === null) return;
+            const idx = pendingDeleteImageIdx;
+            closeDeleteModal();
+            const form = document.getElementById('delete-image-form');
+            const input = document.getElementById('delete-image-index');
+            if (form && input) {
+                input.value = idx;
+                form.submit();
+            }
+        });
+    }
+});
 
 // ── Camera Modal WebRTC ───────────────────────────────────────────────────
 let cameraStream = null;
@@ -547,13 +703,13 @@ async function startCamera(facing) {
             };
         }
     } catch (err) {
-        let msg = '❌ Không thể mở camera.';
+        let msg = 'Không thể mở camera.';
         if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-            msg = '🔒 Trình duyệt đã chặn quyền camera.\n\nHãy cho phép quyền camera trong thanh địa chỉ và thử lại.';
+            msg = 'Trình duyệt đã chặn quyền camera.\n\nHãy cho phép quyền camera trong thanh địa chỉ và thử lại.';
         } else if (err.name === 'NotFoundError') {
-            msg = '📷 Không tìm thấy camera. Kiểm tra kết nối webcam.';
+            msg = 'Không tìm thấy camera. Kiểm tra kết nối webcam.';
         } else if (err.name === 'NotReadableError') {
-            msg = '⚠️ Camera đang được dùng bởi ứng dụng khác. Đóng ứng dụng đó và thử lại.';
+            msg = 'Camera đang được dùng bởi ứng dụng khác. Đóng ứng dụng đó và thử lại.';
         } else if (err.name === 'OverconstrainedError') {
             // Thử lại không ràng buộc facingMode
             try {
@@ -564,7 +720,7 @@ async function startCamera(facing) {
                 }
                 return;
             } catch (e2) {
-                msg = '❌ Không thể mở camera: ' + e2.message;
+                msg = 'Không thể mở camera: ' + e2.message;
             }
         }
         if (loading) loading.innerHTML = `<div style="text-align:center;padding:20px;color:#fff;">${msg}<br><br><button onclick="closeCameraModal()" style="padding:8px 16px;background:#fff;color:#1e293b;border:none;border-radius:8px;cursor:pointer;font-weight:600;">Đóng</button></div>`;

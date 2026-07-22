@@ -13,6 +13,7 @@
                     <tr>
                         <th>Cư dân</th>
                         <th>Căn hộ</th>
+                        <th>Vai trò</th>
                         <th>Tòa / Tầng</th>
                         <th>Liên hệ</th>
                         <th>Trạng thái</th>
@@ -25,6 +26,8 @@
                         $apt = $user->apartment;
                         $block = $apt?->floor?->block;
                         $floor = $apt?->floor;
+                        $residentRecord = $user->residents->firstWhere('apartment_id', $user->apartment_id);
+                        $relationship = $residentRecord?->relationship;
                     @endphp
                     <tr>
                         <td>
@@ -57,6 +60,15 @@
                                 </a>
                             @else
                                 <span class="res-apt-number">N/A</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($relationship === 'owner')
+                                <span class="res-relationship res-relationship--owner">Chủ hộ</span>
+                            @elseif($relationship === 'tenant')
+                                <span class="res-relationship res-relationship--tenant">Người thuê</span>
+                            @else
+                                <span class="res-relationship">Thành viên</span>
                             @endif
                         </td>
                         <td>

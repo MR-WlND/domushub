@@ -32,6 +32,7 @@ class NotificationController extends Controller
                     'url' => $notif->data['url'] ?? '#',
                     'read_at' => $notif->read_at,
                     'created_at' => $notif->created_at->diffForHumans(),
+                    'data' => $notif->data,
                 ];
             });
 

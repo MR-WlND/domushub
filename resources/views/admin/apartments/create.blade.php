@@ -3,7 +3,7 @@
 @section('page_title', 'Tạo Căn hộ')
 @section('page_kicker', 'Quản trị hệ thống')
 @section('role_title', 'Admin Portal')
-@section('home_route', route('admin.dashboard'))
+@section('home_route', portal_route('dashboard'))
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role', 'admin')
 
@@ -16,9 +16,9 @@
 
     {{-- Breadcrumb Navigation --}}
     <nav class="breadcrumb-nav">
-        <a href="{{ route('admin.dashboard') }}">Trang chủ</a>
+        <a href="{{ portal_route('dashboard') }}">Trang chủ</a>
         <span class="divider">/</span>
-        <a href="{{ route('admin.apartments.index') }}">Căn hộ</a>
+        <a href="{{ portal_route('apartments.index') }}">Căn hộ</a>
         <span class="divider">/</span>
         <span class="current">Thêm mới</span>
     </nav>
@@ -30,7 +30,7 @@
             <p class="apartments-page__subtitle">Thêm căn hộ mới vào hệ thống quản lý chung cư</p>
         </div>
         <div class="apartments-page__actions">
-            <a href="{{ route('admin.apartments.index') }}" class="apts-button apts-button--edit">
+            <a href="{{ portal_route('apartments.index') }}" class="apts-button apts-button--edit">
                 ← Quay lại
             </a>
         </div>
@@ -43,7 +43,7 @@
             APARTMENT CREATION
         </div>
 
-        <form action="{{ route('admin.apartments.store') }}" method="POST">
+        <form action="{{ portal_route('apartments.store') }}" method="POST">
             @csrf
 
             @php
@@ -182,7 +182,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
                     Xác nhận thêm căn hộ
                 </button>
-                <a href="{{ route('admin.apartments.index') }}" class="apts-button apts-button--edit">
+                <a href="{{ portal_route('apartments.index') }}" class="apts-button apts-button--edit">
                     Hủy bỏ
                 </a>
             </div>

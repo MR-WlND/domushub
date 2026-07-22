@@ -1,235 +1,300 @@
 @extends('layouts.admin.master')
 
-@section('page_title', 'Thống kê tiện ích')
+@section('page_title', 'Thống kê tiện ích - DomusHub')
+@section('user_name', auth()->user()->name ?? 'Admin')
 
 @section('content')
-<div class="ams-stat-page">
+<div class="stat-page">
+
+    {{-- Tabs chuyển đổi thống kê --}}
+    @include('admin.statistics.partials.sub_nav')
 
     {{-- Header --}}
-    <div class="ams-stat-header">
-        <div>
-            <p class="ams-stat-eyebrow">Tiện ích chung cư</p>
-            <h1 class="ams-stat-title">Báo cáo thống kê</h1>
+    <div class="stat-header">
+        <div class="stat-header__text">
+            <h1 class="stat-title">Thống kê Tiện ích chung cư</h1>
+            <p class="stat-subtitle">Theo dõi tần suất đặt tiện ích, doanh thu và tỷ lệ phê duyệt lịch đặt của chung cư.</p>
         </div>
-        <a href="{{ route('admin.amenities.index') }}" class="ams-stat-btn ams-stat-btn--outline">
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-            Danh sách tiện ích
-        </a>
+        <div class="stat-header__filter">
+            <form method="GET" action="{{ portal_route('amenities.statistics') }}" class="year-filter-form">
+                <label class="year-filter-label" for="blockSelect">Tòa nhà:</label>
+                <div class="year-select-wrap">
+                    <select id="blockSelect" name="block_id" class="year-select" onchange="this.form.submit()">
+                        <option value="">Tất cả các Block</option>
+                        @foreach ($blocks as $bl)
+                            <option value="{{ $bl->id }}" {{ $selectedBlock == $bl->id ? 'selected' : '' }}>
+                                {{ $bl->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <svg class="year-select-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+
+                <label class="year-filter-label" for="yearSelect" style="margin-left: 12px;">Năm:</label>
+                <div class="year-select-wrap">
+                    <select id="yearSelect" name="year" class="year-select" onchange="this.form.submit()">
+                        @foreach ($availableYears as $yr)
+                            <option value="{{ $yr }}" {{ $selectedYear == $yr ? 'selected' : '' }}>
+                                Năm {{ $yr }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <svg class="year-select-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+
+                <label class="year-filter-label" for="monthSelect" style="margin-left: 12px;">Tháng:</label>
+                <div class="year-select-wrap">
+                    <select id="monthSelect" name="month" class="year-select" onchange="this.form.submit()">
+                        <option value="">Tất cả các tháng</option>
+                        @for ($m = 1; $m <= 12; $m++)
+                            <option value="{{ $m }}" {{ $selectedMonth == $m ? 'selected' : '' }}>
+                                Tháng {{ str_pad($m, 2, '0', STR_PAD_LEFT) }}
+                            </option>
+                        @endfor
+                    </select>
+                    <svg class="year-select-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+            </form>
+            <a href="{{ portal_route('amenities.statistics.export', ['year' => $selectedYear, 'month' => $selectedMonth, 'block_id' => $selectedBlock]) }}" class="btn-export">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Xuất Excel
+            </a>
+            <a href="{{ portal_route('amenities.index') }}" class="btn-export" style="background-color: #3b82f6;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                Danh sách tiện ích
+            </a>
+        </div>
     </div>
 
     {{-- Summary cards --}}
-    <div class="ams-stat-summary">
-        <div class="ams-sum-card">
-            <div class="ams-sum-icon" style="background:#eff6ff;color:#2563eb">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+    <div class="kpi-grid">
+        <div class="kpi-card kpi-card--blue">
+            <div class="kpi-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
             </div>
-            <div>
-                <p class="ams-sum-value">{{ $summary['total_facilities'] }}</p>
-                <p class="ams-sum-label">Tổng tiện ích</p>
-            </div>
-        </div>
-        <div class="ams-sum-card">
-            <div class="ams-sum-icon" style="background:#faf5ff;color:#7c3aed">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            </div>
-            <div>
-                <p class="ams-sum-value">{{ number_format($summary['total_bookings']) }}</p>
-                <p class="ams-sum-label">Tổng lịch đặt</p>
+            <div class="kpi-info">
+                <span class="kpi-label">Tổng tiện ích</span>
+                <span class="kpi-value">{{ $summary['total_facilities'] }}</span>
             </div>
         </div>
-        <div class="ams-sum-card">
-            <div class="ams-sum-icon" style="background:#f0fdf4;color:#16a34a">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <div class="kpi-card kpi-card--indigo">
+            <div class="kpi-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
             </div>
-            <div>
-                <p class="ams-sum-value">{{ number_format($summary['total_revenue']) }}đ</p>
-                <p class="ams-sum-label">Tổng doanh thu</p>
+            <div class="kpi-info">
+                <span class="kpi-label">Tổng lịch đặt</span>
+                <span class="kpi-value">{{ number_format($summary['total_bookings']) }}</span>
             </div>
         </div>
-        <div class="ams-sum-card">
-            <div class="ams-sum-icon" style="background:#fef9c3;color:#a16207">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <div class="kpi-card kpi-card--green">
+            <div class="kpi-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
-            <div>
-                <p class="ams-sum-value">{{ $summary['pending_total'] }}</p>
-                <p class="ams-sum-label">Chờ duyệt</p>
+            <div class="kpi-info">
+                <span class="kpi-label">Tổng doanh thu</span>
+                <span class="kpi-value">{{ number_format($summary['total_revenue']) }}đ</span>
+            </div>
+        </div>
+        <div class="kpi-card kpi-card--amber">
+            <div class="kpi-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div class="kpi-info">
+                <span class="kpi-label">Chờ duyệt</span>
+                <span class="kpi-value">{{ $summary['pending_total'] }}</span>
             </div>
         </div>
     </div>
 
     {{-- Bảng chi tiết theo tiện ích --}}
-    <div class="ams-stat-card">
-        <div class="ams-stat-card-header">Thống kê theo từng tiện ích</div>
+    <div class="table-card">
+        <div class="table-card__header">
+            <h3>Thống kê số liệu chi tiết theo từng tiện ích</h3>
+        </div>
 
         @if($facilities->isEmpty())
-        <div class="ams-stat-empty">Chưa có dữ liệu.</div>
+        <div class="empty-row">Chưa có tiện ích nào được tạo trong hệ thống.</div>
         @else
-        <table class="ams-stat-table">
-            <thead>
-                <tr>
-                    <th>Tiện ích</th>
-                    <th>Trạng thái</th>
-                    <th class="text-right">Tổng lịch đặt</th>
-                    <th class="text-right">Đã duyệt</th>
-                    <th class="text-right">Hoàn thành</th>
-                    <th class="text-right">Từ chối</th>
-                    <th class="text-right">Chờ duyệt</th>
-                    <th class="text-right">Doanh thu</th>
-                    <th class="text-right">Tỉ lệ duyệt</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($facilities->sortByDesc('bookings_count') as $f)
-                @php
-                    $total = $f->bookings_count;
-                    $approved = $f->approved_count;
-                    $completed = $f->completed_count;
-                    $rate = $total > 0 ? round(($approved + $completed) / $total * 100) : 0;
-                    $maxBookings = $facilities->max('bookings_count') ?: 1;
-                    $barWidth = $total > 0 ? round($total / $maxBookings * 100) : 0;
-                @endphp
-                <tr>
-                    <td>
-                        <div class="ams-facility-cell">
-                            <a href="{{ route('admin.amenities.show', $f) }}" class="ams-facility-link">{{ $f->name }}</a>
-                            @if($total > 0)
-                            <div class="ams-bar-wrap">
-                                <div class="ams-bar" style="width:{{ $barWidth }}%"></div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Tiện ích</th>
+                        <th>Trạng thái</th>
+                        <th class="text-right">Tổng lịch đặt</th>
+                        <th class="text-right">Đã duyệt</th>
+                        <th class="text-right">Hoàn thành</th>
+                        <th class="text-right">Từ chối</th>
+                        <th class="text-right">Chờ duyệt</th>
+                        <th class="text-right">Doanh thu</th>
+                        <th class="text-right">Tỉ lệ duyệt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($facilities->sortByDesc('bookings_count') as $f)
+                    @php
+                        $total = $f->bookings_count;
+                        $approved = $f->approved_count;
+                        $completed = $f->completed_count;
+                        $rate = $total > 0 ? round(($approved + $completed) / $total * 100) : 0;
+                        $maxBookings = $facilities->max('bookings_count') ?: 1;
+                        $barWidth = $total > 0 ? round($total / $maxBookings * 100) : 0;
+                    @endphp
+                    <tr>
+                        <td>
+                            <div class="ams-facility-cell">
+                                <a href="{{ portal_route('amenities.show', $f) }}" class="ams-facility-link">{{ $f->name }}</a>
+                                @if($total > 0)
+                                <div class="ams-bar-wrap">
+                                    <div class="ams-bar" style="width:{{ $barWidth }}%"></div>
+                                </div>
+                                @endif
                             </div>
+                        </td>
+                        <td>
+                            <span class="ams-stat-badge ams-badge-{{ $f->status }}">{{ $f->status_label }}</span>
+                        </td>
+                        <td class="text-right font-bold">{{ number_format($total) }}</td>
+                        <td class="text-right color-approved">{{ number_format($approved) }}</td>
+                        <td class="text-right color-completed">{{ number_format($completed) }}</td>
+                        <td class="text-right color-rejected">{{ number_format($f->rejected_count) }}</td>
+                        <td class="text-right color-pending">{{ number_format($f->pending_bookings_count) }}</td>
+                        <td class="text-right font-bold color-revenue">
+                            @if($f->revenue > 0)
+                                {{ number_format($f->revenue) }}đ
+                            @else
+                                <span style="color:#94a3b8; font-weight: normal;">Miễn phí</span>
                             @endif
-                        </div>
-                    </td>
-                    <td>
-                        <span class="ams-stat-badge ams-badge-{{ $f->status }}">{{ $f->status_label }}</span>
-                    </td>
-                    <td class="text-right font-bold">{{ number_format($total) }}</td>
-                    <td class="text-right color-approved">{{ number_format($approved) }}</td>
-                    <td class="text-right color-completed">{{ number_format($completed) }}</td>
-                    <td class="text-right color-rejected">{{ number_format($f->rejected_count) }}</td>
-                    <td class="text-right color-pending">{{ number_format($f->pending_bookings_count) }}</td>
-                    <td class="text-right font-bold color-revenue">
-                        @if($f->revenue > 0)
-                            {{ number_format($f->revenue) }}đ
-                        @else
-                            <span style="color:#94a3b8">Miễn phí</span>
-                        @endif
-                    </td>
-                    <td class="text-right">
-                        <div class="ams-rate-wrap">
-                            <span class="ams-rate {{ $rate >= 70 ? 'ams-rate--high' : ($rate >= 40 ? 'ams-rate--mid' : 'ams-rate--low') }}">{{ $rate }}%</span>
-                        </div>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-            <tfoot>
-                <tr class="ams-tfoot">
-                    <td colspan="2"><strong>Tổng cộng</strong></td>
-                    <td class="text-right font-bold">{{ number_format($summary['total_bookings']) }}</td>
-                    <td class="text-right">{{ number_format($facilities->sum('approved_count')) }}</td>
-                    <td class="text-right">{{ number_format($facilities->sum('completed_count')) }}</td>
-                    <td class="text-right">{{ number_format($facilities->sum('rejected_count')) }}</td>
-                    <td class="text-right">{{ number_format($summary['pending_total']) }}</td>
-                    <td class="text-right font-bold color-revenue">{{ number_format($summary['total_revenue']) }}đ</td>
-                    <td></td>
-                </tr>
-            </tfoot>
-        </table>
+                        </td>
+                        <td class="text-right">
+                            <div class="ams-rate-wrap">
+                                <span class="ams-rate {{ $rate >= 70 ? 'ams-rate--high' : ($rate >= 40 ? 'ams-rate--mid' : 'ams-rate--low') }}">{{ $rate }}%</span>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="2"><strong>Tổng cộng</strong></td>
+                        <td class="text-right font-bold">{{ number_format($summary['total_bookings']) }}</td>
+                        <td class="text-right">{{ number_format($facilities->sum('approved_count')) }}</td>
+                        <td class="text-right">{{ number_format($facilities->sum('completed_count')) }}</td>
+                        <td class="text-right">{{ number_format($facilities->sum('rejected_count')) }}</td>
+                        <td class="text-right">{{ number_format($summary['pending_total']) }}</td>
+                        <td class="text-right font-bold color-revenue">{{ number_format($summary['total_revenue']) }}đ</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
         @endif
     </div>
 
-    {{-- Chart lượt đặt theo tiện ích --}}
+    {{-- Biểu đồ Chart.js so sánh lượt đặt --}}
     @if($facilities->where('bookings_count', '>', 0)->isNotEmpty())
-    <div class="ams-stat-card">
-        <div class="ams-stat-card-header">Biểu đồ lượt đặt</div>
-        <div class="ams-chart">
-            @php $maxB = $facilities->max('bookings_count') ?: 1; @endphp
-            @foreach($facilities->sortByDesc('bookings_count') as $f)
-            <div class="ams-chart-row">
-                <div class="ams-chart-label">{{ $f->name }}</div>
-                <div class="ams-chart-bar-wrap">
-                    <div class="ams-chart-bar" style="width:{{ round($f->bookings_count / $maxB * 100) }}%">
-                        <span class="ams-chart-val">{{ $f->bookings_count }}</span>
-                    </div>
+    <div class="charts-grid" style="grid-template-columns: 1fr;">
+        <div class="chart-card">
+            <div class="chart-card__header">
+                <div>
+                    <h3 class="chart-card__title">Biểu đồ so sánh lượt đặt giữa các tiện ích</h3>
+                    <p class="chart-card__sub">Tổng quan phân bố số lượng đặt phòng/chỗ theo từng tiện ích</p>
                 </div>
+                <span class="chart-badge chart-badge--bar">Bar Chart</span>
             </div>
-            @endforeach
+            <div class="chart-wrap" style="height: {{ max(240, $facilities->where('bookings_count', '>', 0)->count() * 45) }}px;">
+                <canvas id="bookingsChart"></canvas>
+            </div>
         </div>
     </div>
     @endif
 
 </div>
-
-<style>
-.ams-stat-page { max-width: 1200px; margin: 0 auto; padding: 24px 20px; display: flex; flex-direction: column; gap: 20px; }
-
-.ams-stat-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
-.ams-stat-eyebrow { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; margin: 0 0 4px; font-weight: 600; }
-.ams-stat-title { font-size: 1.65rem; font-weight: 700; color: #0f172a; margin: 0; }
-
-/* Summary */
-.ams-stat-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-.ams-sum-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; display: flex; align-items: center; gap: 14px; }
-.ams-sum-icon { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.ams-sum-value { font-size: 1.6rem; font-weight: 800; color: #0f172a; margin: 0; line-height: 1; }
-.ams-sum-label { font-size: 0.78rem; color: #64748b; margin: 4px 0 0; font-weight: 500; }
-
-/* Table card */
-.ams-stat-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; }
-.ams-stat-card-header { padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 0.85rem; font-weight: 600; color: #334155; background: #f8fafc; }
-
-.ams-stat-table { width: 100%; border-collapse: collapse; }
-.ams-stat-table th { text-align: left; padding: 10px 14px; font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #e2e8f0; background: #f8fafc; white-space: nowrap; }
-.ams-stat-table td { padding: 12px 14px; font-size: 0.875rem; color: #1e293b; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-.ams-stat-table tr:last-child td { border-bottom: none; }
-.ams-stat-table tr:hover td { background: #fafbff; }
-.text-right { text-align: right !important; }
-.font-bold { font-weight: 700; }
-
-.ams-facility-link { font-weight: 600; color: #2563eb; text-decoration: none; }
-.ams-facility-link:hover { text-decoration: underline; }
-.ams-facility-cell { display: flex; flex-direction: column; gap: 5px; }
-.ams-bar-wrap { height: 4px; background: #f1f5f9; border-radius: 2px; width: 120px; }
-.ams-bar { height: 4px; background: #2563eb; border-radius: 2px; transition: width 0.3s; }
-
-.ams-stat-badge { font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
-.ams-badge-available   { background: #dcfce7; color: #15803d; }
-.ams-badge-maintenance { background: #fef9c3; color: #a16207; }
-.ams-badge-closed      { background: #fee2e2; color: #b91c1c; }
-
-.color-approved  { color: #16a34a; }
-.color-completed { color: #2563eb; }
-.color-rejected  { color: #b91c1c; }
-.color-pending   { color: #d97706; }
-.color-revenue   { color: #0f172a; }
-
-.ams-rate { font-size: 0.78rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
-.ams-rate--high { background: #dcfce7; color: #15803d; }
-.ams-rate--mid  { background: #fef9c3; color: #a16207; }
-.ams-rate--low  { background: #fee2e2; color: #b91c1c; }
-
-.ams-tfoot td { background: #f8fafc; font-size: 0.85rem; border-top: 2px solid #e2e8f0; }
-
-.ams-stat-empty { text-align: center; padding: 40px; color: #94a3b8; }
-
-/* Chart */
-.ams-chart { padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
-.ams-chart-row { display: flex; align-items: center; gap: 12px; }
-.ams-chart-label { min-width: 150px; font-size: 0.82rem; font-weight: 600; color: #334155; text-align: right; flex-shrink: 0; }
-.ams-chart-bar-wrap { flex: 1; height: 28px; background: #f1f5f9; border-radius: 6px; overflow: hidden; }
-.ams-chart-bar { height: 100%; background: linear-gradient(90deg, #2563eb, #60a5fa); border-radius: 6px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; min-width: 30px; transition: width 0.4s; }
-.ams-chart-val { font-size: 0.75rem; font-weight: 700; color: #fff; white-space: nowrap; }
-
-.ams-stat-btn { display: inline-flex; align-items: center; gap: 5px; padding: 8px 14px; border-radius: 7px; font-size: 0.85rem; font-weight: 600; text-decoration: none; transition: all 0.15s; border: none; cursor: pointer; }
-.ams-stat-btn--outline { background: #fff; color: #475569; border: 1px solid #e2e8f0; }
-.ams-stat-btn--outline:hover { background: #f8fafc; }
-
-@media (max-width: 900px) {
-    .ams-stat-summary { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 640px) {
-    .ams-stat-summary { grid-template-columns: 1fr 1fr; }
-    .ams-stat-table { font-size: 0.78rem; }
-}
-</style>
 @endsection
+
+@push('styles')
+    @vite('resources/css/pages/admin/statistics.css')
+    <style>
+        .ams-facility-link { font-weight: 600; color: #2563eb; text-decoration: none; }
+        .ams-facility-link:hover { text-decoration: underline; }
+        .ams-facility-cell { display: flex; flex-direction: column; gap: 5px; }
+        .ams-bar-wrap { height: 4px; background: #f1f5f9; border-radius: 2px; width: 120px; }
+        .ams-bar { height: 4px; background: #3b82f6; border-radius: 2px; transition: width 0.3s; }
+
+        .ams-stat-badge { font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 20px; display: inline-block; }
+        .ams-badge-available   { background: #dcfce7; color: #15803d; }
+        .ams-badge-maintenance { background: #fef9c3; color: #a16207; }
+        .ams-badge-closed      { background: #fee2e2; color: #b91c1c; }
+
+        .color-approved  { color: #16a34a; font-weight: 600; }
+        .color-completed { color: #2563eb; font-weight: 600; }
+        .color-rejected  { color: #b91c1c; font-weight: 600; }
+        .color-pending   { color: #d97706; font-weight: 600; }
+        .color-revenue   { color: #0f172a; font-weight: 700; }
+
+        .ams-rate { font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 20px; display: inline-block; }
+        .ams-rate--high { background: #dcfce7; color: #15803d; }
+        .ams-rate--mid  { background: #fef9c3; color: #a16207; }
+        .ams-rate--low  { background: #fee2e2; color: #b91c1c; }
+
+        .text-right { text-align: right !important; }
+        .font-bold { font-weight: 700; }
+        
+        .data-table tfoot td { background: #f8fafc; font-weight: bold; border-top: 2px solid #e2e8f0; color: #0f172a; }
+    </style>
+@endpush
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const ctxBookings = document.getElementById('bookingsChart');
+        if (ctxBookings) {
+            const facilityNames = @json($facilities->sortByDesc('bookings_count')->pluck('name'));
+            const bookingsCounts = @json($facilities->sortByDesc('bookings_count')->pluck('bookings_count'));
+
+            const tooltipDefaults = {
+                padding: 12,
+                backgroundColor: '#1e293b',
+                titleFont: { size: 13, weight: 'bold' },
+                bodyFont: { size: 12 },
+                cornerRadius: 8,
+            };
+
+            new Chart(ctxBookings.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: facilityNames,
+                    datasets: [{
+                        label: 'Số lượt đặt chỗ',
+                        data: bookingsCounts,
+                        backgroundColor: 'rgba(99, 102, 241, 0.85)', // Indigo
+                        borderRadius: 6,
+                        borderSkipped: false,
+                        barThickness: 20
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', // Biểu đồ ngang
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { ...tooltipDefaults }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: '#f1f5f9' },
+                            ticks: { font: { size: 11 }, color: '#64748b', precision: 0 }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { font: { size: 12, weight: 'bold' }, color: '#1e293b' }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+@endpush

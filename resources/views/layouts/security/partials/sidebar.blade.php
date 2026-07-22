@@ -72,9 +72,9 @@
         {{-- QUẢN LÝ KHÁCH --}}
         <div class="nav-section">
             <span class="nav-section__label">QUẢN LÝ KHÁCH</span>
-            <div class="dashboard-nav__group {{ request()->routeIs('security.visitor*') || request()->routeIs('security.visitor-logs*') ? 'dashboard-nav__group--open' : '' }}" id="group-visitor">
+            <div class="dashboard-nav__group {{ request()->routeIs('security.visitor*') || request()->routeIs('security.visitor-logs*') || request()->routeIs('security.walk-in*') ? 'dashboard-nav__group--open' : '' }}" id="group-visitor">
                 <button type="button"
-                    class="dashboard-nav__item dashboard-nav__item--parent {{ request()->routeIs('security.visitor*') || request()->routeIs('security.visitor-logs*') ? 'dashboard-nav__item--active' : '' }}"
+                    class="dashboard-nav__item dashboard-nav__item--parent {{ request()->routeIs('security.visitor*') || request()->routeIs('security.visitor-logs*') || request()->routeIs('security.walk-in*') ? 'dashboard-nav__item--active' : '' }}"
                     onclick="toggleNavGroup('group-visitor')">
                     <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -88,12 +88,16 @@
                     </svg>
                 </button>
                 <div class="dashboard-nav__submenu">
-                    <a href="{{ route('security.visitor-check.index') }}"
-                        class="dashboard-nav__subitem {{ request()->routeIs('security.visitor-check*') ? 'dashboard-nav__subitem--active' : '' }}">
+                    {{-- Walk-in: Đăng ký tại cổng (phổ biến nhất) --}}
+                    <a href="{{ route('security.walk-in.index') }}"
+                        class="dashboard-nav__subitem {{ request()->routeIs('security.walk-in*') ? 'dashboard-nav__subitem--active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="20 6 9 17 4 12"></polyline>
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <line x1="19" y1="8" x2="19" y2="14"/>
+                            <line x1="22" y1="11" x2="16" y2="11"/>
                         </svg>
-                        <span>Quét QR khách</span>
+                        <span>Đăng ký tại cổng</span>
                     </a>
                     <a href="{{ route('security.visitor-logs.index') }}"
                         class="dashboard-nav__subitem {{ request()->routeIs('security.visitor-logs*') ? 'dashboard-nav__subitem--active' : '' }}">

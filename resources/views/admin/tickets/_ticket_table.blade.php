@@ -47,8 +47,8 @@
                             data-sender="{{ $ticket->sender->name ?? 'N/A' }}" data-handler="{{ $ticket->handler->name ?? '' }}"
                             data-handler-id="{{ $ticket->handler_id ?? '' }}"
                             data-created="{{ $ticket->created_at->diffForHumans() }}" data-created-full="{{ $ticket->created_at->format('d/m/Y H:i') }}"
-                            data-assign-url="{{ route('admin.tickets.assign', $ticket->id) }}"
-                            data-detail-url="{{ route('admin.tickets.show', $ticket->id) }}"
+                            data-assign-url="{{ portal_route('tickets.assign', $ticket->id) }}"
+                            data-detail-url="{{ portal_route('tickets.show', $ticket->id) }}"
                             data-can-assign="{{ in_array($ticket->status, ['pending','assigned']) && in_array(auth()->user()->role, ['admin','manager']) ? '1' : '0' }}"
                             data-overdue="{{ $overdue ? '1' : '0' }}">
                             <td><span class="tk-priority-dot tk-priority-dot--{{ $ticket->priority }}" title="{{ $ticket->priorityLabel() }}"></span></td>

@@ -20,5 +20,5 @@ Route::middleware(['web', 'admin'])->prefix('admin/facility-bookings')->name('ap
     Route::patch('/{id}/cancel', [AdminFacilityBookingController::class, 'cancel'])->name('cancel');
 });
 
-// Thống kê Doanh thu
-Route::get('/statistics/revenue', [\App\Http\Controllers\Api\StatisticsController::class, 'getRevenue']);
+// Thống kê Doanh thu (chưa triển khai)
+// Route::get('/statistics/revenue', [\App\Http\Controllers\Api\StatisticsController::class, 'getRevenue']);

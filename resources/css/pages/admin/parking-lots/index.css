@@ -1,15 +1,15 @@
-/* ============================================================
-   PARKING LOTS PAGE — Clean Professional Design
+﻿/* ============================================================
+   PARKING LOTS PAGE â€” Clean Professional Design
    ============================================================ */
 
-/* ─── Layout ─── */
+/* â”€â”€â”€ Layout â”€â”€â”€ */
 .parking-page {
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
-/* ─── Header ─── */
+/* â”€â”€â”€ Header â”€â”€â”€ */
 .parking-page__header {
     display: flex;
     align-items: flex-end;
@@ -31,7 +31,7 @@
     font-size: 0.8125rem;
 }
 
-/* ─── Alerts ─── */
+/* â”€â”€â”€ Alerts â”€â”€â”€ */
 .parking-alert {
     border-radius: 10px;
     padding: 12px 16px;
@@ -57,7 +57,7 @@
     border: 1px solid #fecaca;
 }
 
-/* ─── Stats ─── */
+/* â”€â”€â”€ Stats â”€â”€â”€ */
 .parking-stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -67,7 +67,7 @@
 .pk-stat-card {
     background: #ffffff;
     border: 1px solid #e8ecf4;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 20px 22px;
     display: flex;
     flex-direction: column;
@@ -112,11 +112,11 @@
 .pk-stat--purple::before { background: #7c3aed; }
 .pk-stat--purple .pk-stat-card__value { color: #7c3aed; }
 
-/* ─── Create Form Card ─── */
+/* â”€â”€â”€ Create Form Card â”€â”€â”€ */
 .parking-create-card {
     background: #ffffff;
     border: 1px solid #e8ecf4;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 20px 22px;
 }
 
@@ -155,7 +155,7 @@
     height: 38px;
     padding: 0 12px;
     border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    border-radius: 10px;
     background: #ffffff;
     color: #0f172a;
     font-size: 0.8125rem;
@@ -224,7 +224,7 @@ select.parking-form-control {
     background: #4338ca;
 }
 
-/* ─── Tabs ─── */
+/* â”€â”€â”€ Tabs â”€â”€â”€ */
 .parking-tabs-nav {
     display: flex;
     gap: 0;
@@ -261,11 +261,11 @@ select.parking-form-control {
     display: block;
 }
 
-/* ─── Table ─── */
+/* â”€â”€â”€ Table â”€â”€â”€ */
 .parking-table-card {
     background: #ffffff;
     border: 1px solid #e8ecf4;
-    border-radius: 12px;
+    border-radius: 10px;
     overflow: hidden;
 }
 
@@ -316,7 +316,7 @@ select.parking-form-control {
 
 .text-right { text-align: right !important; }
 
-/* ─── Cells ─── */
+/* â”€â”€â”€ Cells â”€â”€â”€ */
 .pk-lot-code {
     font-size: 0.8125rem;
     font-weight: 700;
@@ -342,13 +342,13 @@ select.parking-form-control {
     font-size: 0.8125rem;
 }
 
-/* ─── Status ─── */
+/* â”€â”€â”€ Status â”€â”€â”€ */
 .pk-status {
     display: inline-flex;
     align-items: center;
     gap: 5px;
     padding: 4px 10px;
-    border-radius: 6px;
+    border-radius: 10px;
     font-size: 0.6875rem;
     font-weight: 700;
     white-space: nowrap;
@@ -358,7 +358,7 @@ select.parking-form-control {
     content: '';
     width: 6px;
     height: 6px;
-    border-radius: 50%;
+    border-radius: 10px;
 }
 
 .pk-status--available {
@@ -373,7 +373,7 @@ select.parking-form-control {
 }
 .pk-status--occupied::before { background: #eab308; }
 
-/* ─── Actions ─── */
+/* â”€â”€â”€ Actions â”€â”€â”€ */
 .pk-table-actions {
     display: inline-flex;
     align-items: center;
@@ -387,7 +387,7 @@ select.parking-form-control {
     justify-content: center;
     height: 30px;
     padding: 0 12px;
-    border-radius: 6px;
+    border-radius: 8px;
     border: 1px solid transparent;
     text-decoration: none;
     cursor: pointer;
@@ -430,7 +430,7 @@ select.parking-form-control {
     cursor: not-allowed;
 }
 
-/* ─── Progress Bar ─── */
+/* â”€â”€â”€ Progress Bar â”€â”€â”€ */
 .pk-progress-wrap {
     width: 100%;
 }
@@ -458,21 +458,21 @@ select.parking-form-control {
     width: 100%;
     height: 6px;
     background: #f1f5f9;
-    border-radius: 99px;
+    border-radius: 10px;
     overflow: hidden;
 }
 
 .pk-progress-fill {
     height: 100%;
     background: #22c55e;
-    border-radius: 99px;
+    border-radius: 10px;
     transition: width .3s ease;
 }
 
 .pk-progress-fill.warning { background: #eab308; }
 .pk-progress-fill.danger { background: #ef4444; }
 
-/* ─── Responsive ─── */
+/* â”€â”€â”€ Responsive â”€â”€â”€ */
 @media (max-width: 1024px) {
     .parking-stats-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -498,7 +498,7 @@ select.parking-form-control {
     }
 }
 
-/* ─── Zone Group ─── */
+/* â”€â”€â”€ Zone Group â”€â”€â”€ */
 .parking-zone-group {
     margin-bottom: 24px;
 }
@@ -510,7 +510,7 @@ select.parking-form-control {
     padding: 12px 18px;
     background: #f0f4ff;
     border: 1px solid #dbeafe;
-    border-radius: 10px 10px 0 0;
+    border-radius: 10px;
     border-bottom: none;
 }
 
@@ -525,3 +525,4 @@ select.parking-form-control {
     color: #64748b;
     font-weight: 500;
 }
+

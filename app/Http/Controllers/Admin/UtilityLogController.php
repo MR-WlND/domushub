@@ -30,9 +30,10 @@ class UtilityLogController extends Controller
             });
         }
 
-        // Lọc theo loại điện/nước
-        if ($request->filled('type')) {
-            $query->where('type', $request->type);
+        // Mặc định lọc chỉ số Nước ngoại trừ trường hợp lọc cụ thể
+        $type = $request->get('type', 'water');
+        if ($type) {
+            $query->where('type', $type);
         }
 
         // Lọc theo trạng thái
@@ -60,12 +61,11 @@ class UtilityLogController extends Controller
 
         // Thống kê tổng quan (không bị lọc)
         $stats = [
-            'total'     => UtilityMeter::count(),
-            'elec'      => UtilityMeter::where('type', 'electricity')->count(),
+            'total'     => UtilityMeter::where('type', 'water')->count(),
             'water'     => UtilityMeter::where('type', 'water')->count(),
-            'approved'  => UtilityMeter::where('status', 'approved')->count(),
-            'pending'   => UtilityMeter::where('status', 'pending')->count(),
-            'rejected'  => UtilityMeter::where('status', 'rejected')->count(),
+            'approved'  => UtilityMeter::where('type', 'water')->where('status', 'approved')->count(),
+            'pending'   => UtilityMeter::where('type', 'water')->where('status', 'pending')->count(),
+            'rejected'  => UtilityMeter::where('type', 'water')->where('status', 'rejected')->count(),
         ];
 
         return view('admin.utility-logs.index', compact('logs', 'stats', 'tab'));

@@ -15,7 +15,7 @@
             <p class="stat-subtitle">Đánh giá chất lượng dịch vụ phản ánh, thời gian xử lý sự cố kỹ thuật và mức độ hài lòng CSAT.</p>
         </div>
         <div class="stat-header__filter">
-            <form method="GET" action="{{ route('admin.statistics.operations') }}" class="year-filter-form">
+            <form method="GET" action="{{ portal_route('statistics.operations') }}" class="year-filter-form">
                 <label class="year-filter-label" for="blockSelect">Tòa nhà:</label>
                 <div class="year-select-wrap">
                     <select id="blockSelect" name="block_id" class="year-select" onchange="this.form.submit()">
@@ -29,7 +29,7 @@
                     <svg class="year-select-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                 </div>
 
-                <label class="year-filter-label" for="yearSelect" style="margin-left: 12px;">Xem theo năm:</label>
+                <label class="year-filter-label" for="yearSelect" style="margin-left: 12px;">Năm:</label>
                 <div class="year-select-wrap">
                     <select id="yearSelect" name="year" class="year-select" onchange="this.form.submit()">
                         @foreach ($availableYears as $yr)
@@ -40,8 +40,21 @@
                     </select>
                     <svg class="year-select-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                 </div>
+
+                <label class="year-filter-label" for="monthSelect" style="margin-left: 12px;">Tháng:</label>
+                <div class="year-select-wrap">
+                    <select id="monthSelect" name="month" class="year-select" onchange="this.form.submit()">
+                        <option value="">Tất cả các tháng</option>
+                        @for ($m = 1; $m <= 12; $m++)
+                            <option value="{{ $m }}" {{ $selectedMonth == $m ? 'selected' : '' }}>
+                                Tháng {{ str_pad($m, 2, '0', STR_PAD_LEFT) }}
+                            </option>
+                        @endfor
+                    </select>
+                    <svg class="year-select-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
             </form>
-            <a href="{{ route('admin.statistics.operations.export', ['year' => $selectedYear, 'block_id' => $selectedBlock]) }}" class="btn-export">
+            <a href="{{ portal_route('statistics.operations.export', ['year' => $selectedYear, 'month' => $selectedMonth, 'block_id' => $selectedBlock]) }}" class="btn-export">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 Xuất Excel
             </a>
@@ -287,7 +300,7 @@
                                 <div style="font-size: 12px; color: #64748b;">P. {{ $fb->apartment->name ?? 'N/A' }}</div>
                             </td>
                             <td>
-                                <a href="{{ route('admin.tickets.show', $fb->id) }}" style="color: #3b82f6; font-weight: 500; text-decoration: none;">
+                                <a href="{{ portal_route('tickets.show', $fb->id) }}" style="color: #3b82f6; font-weight: 500; text-decoration: none;">
                                     {{ $fb->title }}
                                 </a>
                             </td>

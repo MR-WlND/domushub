@@ -26,6 +26,21 @@ class AuthController extends Controller
         return view('auth.admin.login');
     }
 
+    public function showManagerLogin(): View
+    {
+        return view('auth.manager.login');
+    }
+
+    public function showStaffLogin(): View
+    {
+        return view('auth.staff.login');
+    }
+
+    public function showTechnicianLogin(): View
+    {
+        return view('auth.technician.login');
+    }
+
     public function showSecurityLogin(): View
     {
         return view('auth.security.login');
@@ -51,14 +66,56 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
-        // Cho phép admin, manager, staff, technician đăng nhập vào admin portal
-        $allowedRoles = ['admin', 'manager', 'staff', 'technician'];
-
-        if (! in_array($user->role, $allowedRoles, true)) {
+        if ($user->role !== 'admin') {
             Auth::logout();
 
             return back()->withErrors([
-                'email' => 'Tài khoản này không có quyền truy cập vào hệ thống quản trị.',
+                'email' => 'Tài khoản này không có quyền truy cập vào admin portal.',
+            ])->onlyInput('email');
+        }
+
+        $request->session()->regenerate();
+
+        \App\Helpers\SystemLogger::log('Đăng nhập', 'Hệ thống');
+
+        return redirect()->route($this->adminHomeRouteFor($user->role));
+    }
+
+    public function loginManager(Request $request): RedirectResponse
+    {
+        return $this->processLogin($request, 'manager', 'Quản lý');
+    }
+
+    public function loginStaff(Request $request): RedirectResponse
+    {
+        return $this->processLogin($request, 'staff', 'Kế toán');
+    }
+
+    public function loginTechnician(Request $request): RedirectResponse
+    {
+        return $this->processLogin($request, 'technician', 'Kỹ thuật viên');
+    }
+
+    private function processLogin(Request $request, string $role, string $roleName): RedirectResponse
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+            return back()->withErrors([
+                'email' => 'Email hoặc mật khẩu không đúng.',
+            ])->onlyInput('email');
+        }
+
+        $user = Auth::user();
+
+        if ($user->role !== $role) {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => "Tài khoản này không có quyền truy cập vào cổng $roleName.",
             ])->onlyInput('email');
         }
 
@@ -305,9 +362,18 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        // Admin, manager, staff, technician đều về trang login admin
-        if (in_array($role, ['admin', 'manager', 'staff', 'technician'], true)) {
+        // Redirect cho từng role
+        if ($role === 'admin') {
             return redirect()->route('admin.login');
+        }
+        if ($role === 'manager') {
+            return redirect()->route('manager.login');
+        }
+        if ($role === 'staff') {
+            return redirect()->route('staff.login');
+        }
+        if ($role === 'technician') {
+            return redirect()->route('technician.login');
         }
 
         if ($role === 'security') {
@@ -320,8 +386,9 @@ class AuthController extends Controller
     private function adminHomeRouteFor(string $role): string
     {
         return match ($role) {
-            'staff' => 'admin.utility-readings.index',
-            'technician' => 'admin.tickets.my-tasks',
+            'manager' => 'manager.dashboard',
+            'staff' => 'staff.utility-readings.index',
+            'technician' => 'technician.tickets.my-tasks',
             default => 'admin.dashboard',
         };
     }

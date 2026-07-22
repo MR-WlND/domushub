@@ -11,7 +11,11 @@ class SecurityMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (! Auth::check() || Auth::user()->role !== 'security') {
+        if (! Auth::check()) {
+            return redirect()->route('security.login');
+        }
+
+        if (Auth::user()->role !== 'security') {
             abort(403, 'Bạn không có quyền truy cập.');
         }
 

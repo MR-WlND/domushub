@@ -92,6 +92,14 @@ class Apartment extends Model
         return $this->hasMany(Vehicle::class);
     }
 
+    /**
+     * Hóa đơn thuộc căn hộ này
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
     /*
     |----------------------------
     | SCOPES

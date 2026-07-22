@@ -1,455 +1,593 @@
 @extends('layouts.resident.master')
 
-@section('title', 'Bảng điều khiển Cư dân – DomusHub')
+@section('title', 'Trang chủ - DomusHub')
 
 @push('styles')
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .resident-dashboard {
-            max-width: 800px;
-            margin: 0 auto;
-            padding-bottom: 48px;
-        }
-        
-        /* Greeting Header */
-        .welcome-header {
-            margin-bottom: 24px;
-            margin-top: 10px;
-        }
-        .welcome-header h1 {
-            font-size: 28px;
-            font-weight: 800;
-            color: #0b1c30;
-            margin: 0 0 6px;
-            letter-spacing: -0.02em;
-        }
-        .welcome-header p {
-            font-size: 15px;
-            color: #64748b;
-            margin: 0;
-        }
-
-        /* Premium Slideshow Wrapper */
-        .announcements-slider-wrapper {
-            position: relative;
-            width: 100%;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-            border: 1px solid #e2e8f0;
-            background: #ffffff;
-        }
-        
-        /* Horizontal scroll list with snap */
-        .announcements-slider {
-            display: flex;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none; /* Hide scrollbar for Firefox */
-        }
-        
-        .announcements-slider::-webkit-scrollbar {
-            display: none; /* Hide scrollbar for Chrome/Safari */
-        }
-        
-        .announcement-slide {
-            flex-shrink: 0;
-            width: 100%;
-            scroll-snap-align: start;
-        }
-        
-        /* Vertical Slide Card Structure */
-        .slide-card {
-            display: flex;
-            flex-direction: column;
-            text-decoration: none;
-            color: #1e293b;
-            background: #ffffff;
-            overflow: hidden;
-            transition: background-color 0.2s ease;
-        }
-        
-        .slide-card:hover {
-            background-color: #f8fafc;
-        }
-        
-        /* Top Image Container */
-        .slide-card__img-container {
-            position: relative;
-            width: 100%;
-            height: 180px;
-            overflow: hidden;
-            background: #f1f5f9;
-        }
-        
-        .slide-card__img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* Dark overlay for text readability */
-        .slide-card__overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 80%;
-            background: linear-gradient(to top, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.45) 60%, rgba(15, 23, 42, 0) 100%);
-            z-index: 1;
-        }
-
-        /* Overlaid content on image */
-        .slide-card__image-content {
-            position: absolute;
-            bottom: 16px;
-            left: 56px;
-            right: 56px;
-            z-index: 2;
-            color: #ffffff;
-        }
-        
-        /* Category Badge */
-        .slide-card__badge {
-            color: #ffffff;
-            font-size: 10px;
-            font-weight: 800;
-            padding: 3px 10px;
-            border-radius: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            display: inline-block;
-            margin-bottom: 8px;
-            width: fit-content;
-        }
-        .slide-card__badge--maintenance { background: #ea580c; }
-        .slide-card__badge--warning { background: #dc2626; }
-        .slide-card__badge--event { background: #16a34a; }
-        .slide-card__badge--general { background: #2563eb; }
-        .slide-card__badge--important { background: #b91c1c; } /* Red for important/pinned */
-        
-        .slide-card__title {
-            font-size: 20px;
-            font-weight: 700;
-            margin: 0;
-            line-height: 1.4;
-            padding-top: 4px;
-            padding-bottom: 2px;
-            color: #ffffff;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        /* Bottom Detail Area */
-        .slide-card__bottom {
-            display: flex;
-            align-items: center;
-            padding: 18px 24px;
-            background: #ffffff;
-            gap: 16px;
-            border-top: 1px solid #f1f5f9;
-        }
-
-        /* Icon container on the left */
-        .slide-card__icon-box {
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        .slide-card__icon-box--maintenance { background-color: #eff6ff; color: #2563eb; }
-        .slide-card__icon-box--warning { background-color: #fef2f2; color: #dc2626; }
-        .slide-card__icon-box--event { background-color: #f0fdf4; color: #16a34a; }
-        .slide-card__icon-box--general { background-color: #f5f3ff; color: #7c3aed; }
-
-        .slide-card__icon-box i {
-            font-size: 18px;
-        }
-
-        /* Details on the right */
-        .slide-card__details {
-            flex: 1;
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .slide-card__subtitle {
-            font-size: 15px;
-            font-weight: 700;
-            color: #0f172a;
-            margin: 0 0 4px 0;
-            line-height: 1.4;
-            padding-top: 2px;
-            padding-bottom: 2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .slide-card__desc {
-            font-size: 13.5px;
-            color: #64748b;
-            margin: 0;
-            line-height: 1.45;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        /* Navigation Arrows */
-        .slider-arrow {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            color: #64748b;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            z-index: 10;
-            opacity: 0;
-            pointer-events: none;
-        }
-        .announcements-slider-wrapper:hover .slider-arrow {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .slider-arrow:hover {
-            background: #f8fafc;
-            color: #0f172a;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-        }
-        .slider-arrow--prev {
-            left: 12px;
-        }
-        .slider-arrow--next {
-            right: 12px;
-        }
-        
-        /* Pagination Dots */
-        .slider-dots {
-            position: absolute;
-            bottom: 18px;
-            right: 24px;
-            display: flex;
-            gap: 6px;
-            z-index: 10;
-        }
-        .slider-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: #cbd5e1;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .slider-dot--active {
-            background: #475569;
-            transform: scale(1.2);
-        }
-
-        /* Mobile responsiveness */
-        @media (max-width: 640px) {
-            .slide-card__img-container {
-                height: 150px;
-            }
-            .slide-card__title {
-                font-size: 18px;
-            }
-            .slide-card__bottom {
-                padding: 14px 20px;
-                gap: 12px;
-            }
-            .slider-dots {
-                bottom: 14px;
-                right: 20px;
-            }
-        }
-    </style>
+    @vite(['resources/css/pages/resident/home/index.css', 'resources/css/resident/posts.css'])
 @endpush
 
 @section('content')
-    <div class="resident-dashboard">
-        {{-- Greeting Header --}}
-        <div class="welcome-header">
-            <h1>Xin chào, {{ auth()->user()->name ?? 'Cư dân' }}</h1>
-            <p>
-                @if($apartment)
-                    Chào mừng bạn quay trở lại căn hộ {{ $apartment->apartment_number }}.
-                @else
-                    Chào mừng bạn quay trở lại DomusHub.
+<div class="rh">
+
+    {{-- Welcome --}}
+    <div class="rh-welcome">
+        <h1>Xin chào, {{ $user->name }}</h1>
+        <p>Chào mừng bạn quay trở lại căn hộ {{ $apartment->apartment_number ?? '' }}.</p>
+    </div>
+
+    {{-- Hero: Debt + Announce --}}
+    <div class="rh-hero">
+        <div class="rh-debt-card">
+            <div>
+                <span class="rh-debt__label">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                    Số dư hiện tại
+                </span>
+                <div class="rh-debt__amount">{{ number_format($totalUnpaidAmount, 0, ',', '.') }} <small>VNĐ</small></div>
+                @if($dueDate)
+                    <span class="rh-debt__due">Hạn thanh toán: {{ \Carbon\Carbon::parse($dueDate)->format('d/m/Y') }}</span>
                 @endif
-            </p>
+            </div>
+            <a href="{{ route('resident.invoices.index') }}" class="rh-debt__btn" aria-label="Thanh toán hoá đơn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                Thanh toán ngay
+            </a>
         </div>
 
-        {{-- Announcement Board Card --}}
-        @if($recentAnnouncements->count() > 0)
-            <div class="announcements-slider-wrapper">
-                <div class="announcements-slider" id="announcementsSlider">
-                    @foreach($recentAnnouncements as $index => $notice)
-                        <div class="announcement-slide" data-index="{{ $index }}">
-                            <a href="{{ route('resident.announcements.show', $notice->id) }}" class="slide-card">
-                                <div class="slide-card__img-container">
-                                    @if($notice->image_path)
-                                        <img src="{{ asset('storage/' . $notice->image_path) }}" class="slide-card__img" alt="{{ $notice->title }}">
-                                    @else
-                                        <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80" class="slide-card__img" alt="Default announcement image">
-                                    @endif
-                                    
-                                    {{-- Dark Overlay --}}
-                                    <div class="slide-card__overlay"></div>
-                                    
-                                    {{-- Image Content Overlay --}}
-                                    <div class="slide-card__image-content">
-                                        <span class="slide-card__badge {{ $notice->pinned ? 'slide-card__badge--important' : 'slide-card__badge--' . $notice->category }}">
-                                            @if($notice->pinned)
-                                                Quan trọng
-                                            @elseif($notice->category === 'maintenance')
-                                                Bảo trì
-                                            @elseif($notice->category === 'warning')
-                                                Cảnh báo
-                                            @elseif($notice->category === 'event')
-                                                Sự kiện
-                                            @else
-                                                Tin chung
-                                            @endif
-                                        </span>
-                                        <h3 class="slide-card__title">{{ $notice->title }}</h3>
-                                    </div>
-                                </div>
-                                
-                                {{-- Bottom Content Area --}}
-                                <div class="slide-card__bottom">
-                                    {{-- Category Icon Box --}}
-                                    <div class="slide-card__icon-box slide-card__icon-box--{{ $notice->category }}">
-                                        @if($notice->category === 'maintenance')
-                                            <i class="fa-solid fa-wrench"></i>
-                                        @elseif($notice->category === 'warning')
-                                            <i class="fa-solid fa-triangle-exclamation"></i>
-                                        @elseif($notice->category === 'event')
-                                            <i class="fa-solid fa-calendar-days"></i>
-                                        @else
-                                            <i class="fa-solid fa-bullhorn"></i>
-                                        @endif
-                                    </div>
-                                    
-                                    {{-- Details --}}
-                                    <div class="slide-card__details">
-                                        <h4 class="slide-card__subtitle">
-                                            @if($notice->category === 'maintenance')
-                                                Lịch bảo trì kỹ thuật
-                                            @elseif($notice->category === 'warning')
-                                                Cảnh báo khẩn cấp
-                                            @elseif($notice->category === 'event')
-                                                Sự kiện chung cư
-                                            @else
-                                                Tin tức ban quản lý
-                                            @endif
-                                        </h4>
-                                        <p class="slide-card__desc">
-                                            {{ Str::limit(strip_tags($notice->content), 90) }}
-                                        </p>
-                                    </div>
-                                </div>
-                            </a>
+        <div class="rh-announce-card" role="region" aria-label="Thông báo quan trọng">
+            @if($announcements->isNotEmpty())
+                <div class="rh-announce-slider" id="announceSlider">
+                    @foreach($announcements as $i => $ann)
+                    <a href="{{ route('resident.announcements.show', $ann->id) }}" class="rh-announce-slide" role="group" aria-label="Thông báo {{ $i + 1 }}" style="text-decoration: none; color: inherit;">
+                        <div class="rh-announce__visual">
+                            @if($ann->image_path)
+                                <img src="{{ asset('storage/' . $ann->image_path) }}" class="rh-announce__img" alt="{{ $ann->title }}" loading="lazy">
+                            @else
+                                <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600&q=80" class="rh-announce__img" alt="Chung cư" loading="lazy">
+                            @endif
+                            @if($i === 0 && $ann->pinned)
+                                <span class="rh-announce__badge">Quan trọng</span>
+                            @endif
                         </div>
+                        <div class="rh-announce__body">
+                            <h4 class="rh-announce__title">{{ Str::limit($ann->title, 50) }}</h4>
+                            <p class="rh-announce__time">{{ $ann->created_at->diffForHumans() }}</p>
+                        </div>
+                    </a>
                     @endforeach
                 </div>
-
-                {{-- Interactive controls (only visible if there are multiple slides) --}}
-                @if($recentAnnouncements->count() > 1)
-                    <button class="slider-arrow slider-arrow--prev" onclick="moveSlider(-1)" aria-label="Previous slide">
-                        <i class="fa-solid fa-chevron-left"></i>
-                    </button>
-                    <button class="slider-arrow slider-arrow--next" onclick="moveSlider(1)" aria-label="Next slide">
-                        <i class="fa-solid fa-chevron-right"></i>
-                    </button>
-                    
-                    <div class="slider-dots">
-                        @foreach($recentAnnouncements as $index => $notice)
-                            <span class="slider-dot {{ $index === 0 ? 'slider-dot--active' : '' }}" onclick="goToSlide({{ $index }})"></span>
-                        @endforeach
-                    </div>
+                @if($announcements->count() > 1)
+                <div class="rh-announce-dots" id="announceDots" role="tablist">
+                    @foreach($announcements as $i => $ann)
+                        <span class="rh-dot {{ $i === 0 ? 'rh-dot--active' : '' }}" data-index="{{ $i }}" role="tab" tabindex="0" aria-label="Thông báo {{ $i + 1 }}"></span>
+                    @endforeach
+                </div>
                 @endif
+            @else
+                <div class="rh-announce__empty">Không có thông báo</div>
+            @endif
+        </div>
+    </div>
+
+    {{-- Phím tắt nhanh (ngay dưới hero) --}}
+    <div class="rh-shortcuts">
+        <a href="{{ route('resident.invoices.index') }}" class="rh-shortcut" aria-label="Thanh toán">
+            <div class="rh-shortcut__icon rh-shortcut__icon--pay" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
             </div>
-        @else
-            {{-- Empty state when there are no notices --}}
-            <div style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 16px; padding: 60px 20px; text-align: center; color: #64748b; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
-                <i class="fa-regular fa-bell-slash" style="font-size: 36px; color: #cbd5e1; margin-bottom: 12px; display: block;"></i>
-                Chưa có thông báo chính thức từ Ban Quản Lý.
+            <div><span class="rh-shortcut__label">Thanh toán</span><span class="rh-shortcut__desc">Xem lịch sử & phí</span></div>
+        </a>
+        <a href="{{ route('resident.tickets.create') }}" class="rh-shortcut" aria-label="Báo hỏng">
+            <div class="rh-shortcut__icon rh-shortcut__icon--report" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             </div>
+            <div><span class="rh-shortcut__label">Báo hỏng</span><span class="rh-shortcut__desc">Gửi yêu cầu kỹ thuật</span></div>
+        </a>
+        <a href="{{ route('resident.vehicles.index') }}" class="rh-shortcut" aria-label="Phương tiện">
+            <div class="rh-shortcut__icon rh-shortcut__icon--visitor" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17h2m10 0h2M2 9l2-6h16l2 6M2 9h20v8a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9z"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+            </div>
+            <div><span class="rh-shortcut__label">Phương tiện</span><span class="rh-shortcut__desc">Quản lý xe của bạn</span></div>
+        </a>
+        <a href="{{ route('resident.posts.create') }}" class="rh-shortcut" aria-label="Bảng tin">
+            <div class="rh-shortcut__icon rh-shortcut__icon--post" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div><span class="rh-shortcut__label">Bảng tin</span><span class="rh-shortcut__desc">Xem & đăng bài viết</span></div>
+        </a>
+    </div>
+
+    {{-- Bài viết cư dân (FB-style) --}}
+    <div class="rh-section">
+        <h3 class="rh-section__title">Bài viết từ cư dân</h3>
+        <div class="rh-section__actions">
+            <a href="{{ route('resident.posts.create') }}" class="rh-section__btn" aria-label="Đăng bài viết mới">+ Đăng bài</a>
+        </div>
+    </div>
+
+    @if(session('success'))
+        <div style="padding:12px 18px;background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;border-radius:10px;font-size:0.85rem;font-weight:600;margin-bottom:16px;">{{ session('success') }}</div>
+    @endif
+
+    <div class="rh-fb-feed">
+            @forelse($posts as $post)
+            <div class="rh-fb-card" id="post-card-{{ $post->id }}">
+                {{-- Header: avatar + name + time --}}
+                <div class="rh-fb-card__header">
+                    <div class="rh-fb-card__avatar">
+                        @if($post->user->avatar)
+                            <img src="{{ asset('storage/' . $post->user->avatar) }}" alt="" loading="lazy">
+                        @else
+                            <span>{{ mb_substr($post->user->name ?? '?', 0, 1) }}</span>
+                        @endif
+                    </div>
+                    <div>
+                        <span class="rh-fb-card__name">{{ $post->user->name ?? 'Cư dân' }}</span>
+                        <span class="rh-fb-card__time">{{ $post->created_at->diffForHumans() }}</span>
+                    </div>
+
+                    {{-- Nút ... tùy chọn --}}
+                    <div class="rh-fb-card__menu">
+                        <button type="button" class="rh-fb-card__menu-btn" onclick="togglePostMenu(event, {{ $post->id }})" aria-label="Tùy chọn">
+                            <i class="fa-solid fa-ellipsis"></i>
+                        </button>
+                        <div class="rh-fb-card__dropdown" id="post-menu-{{ $post->id }}">
+                            @if($post->user_id === auth()->id())
+                                <a href="{{ route('resident.posts.edit', $post->id) }}" class="rh-fb-card__dropdown-item">
+                                    <i class="fa-regular fa-pen-to-square"></i> Sửa bài viết
+                                </a>
+                            @endif
+                            @if($post->user_id === auth()->id() || auth()->user()->isAdminPortalUser())
+                                <form action="{{ route('resident.posts.destroy', $post->id) }}" method="POST" onsubmit="return confirm('Xóa bài đăng này?')" style="margin: 0;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="rh-fb-card__dropdown-item rh-fb-card__dropdown-item--danger">
+                                        <i class="fa-regular fa-trash-can"></i> Xóa bài viết
+                                    </button>
+                                </form>
+                            @endif
+                            @if($post->user_id !== auth()->id())
+                                <button type="button" class="rh-fb-card__dropdown-item" onclick="openReportModal(event, {{ $post->id }})">
+                                    <i class="fa-regular fa-flag"></i> Báo cáo bài viết
+                                </button>
+                                <button type="button" class="rh-fb-card__dropdown-item" onclick="hidePost(event, {{ $post->id }})">
+                                    <i class="fa-regular fa-eye-slash"></i> Ẩn bài viết
+                                </button>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Content text --}}
+                @if($post->content)
+                <div class="rh-fb-card__text">
+                    {{ Str::limit(strip_tags($post->content), 250) }}
+                    @if(strlen(strip_tags($post->content)) > 250)
+                        <a href="{{ route('resident.posts.show', $post->id) }}" class="rh-fb-card__more-text">Xem thêm</a>
+                    @endif
+                </div>
+                @endif
+
+                {{-- Media --}}
+                @if($post->images->isNotEmpty())
+                @php $imgCount = $post->images->count(); @endphp
+                @if($imgCount === 1 && ($post->images[0]->type ?? 'image') === 'video')
+                <div class="rh-fb-card__media" style="margin-top:12px;">
+                    <video src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-single" controls preload="metadata" style="max-height:500px;width:100%;object-fit:cover;display:block;"></video>
+                </div>
+                @else
+                <a href="{{ route('resident.posts.show', $post->id) }}" class="rh-fb-card__media">
+                    @if($imgCount === 1)
+                        <img src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-single" alt="" loading="lazy">
+                    @elseif($imgCount === 2)
+                        <div class="rh-fb-card__img-grid rh-fb-card__img-grid--2">
+                            @foreach($post->images->take(2) as $img)
+                                @if(($img->type ?? 'image') === 'video')
+                                    <video src="{{ asset('storage/' . $img->image_path) }}" controls preload="metadata" style="width:100%;height:300px;object-fit:cover;"></video>
+                                @else
+                                    <img src="{{ asset('storage/' . $img->image_path) }}" alt="" loading="lazy">
+                                @endif
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="rh-fb-card__img-grid rh-fb-card__img-grid--3plus">
+                            @if(($post->images[0]->type ?? 'image') === 'video')
+                                <video src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-main" controls preload="metadata" style="height:320px;width:100%;object-fit:cover;"></video>
+                            @else
+                                <img src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-main" alt="" loading="lazy">
+                            @endif
+                            <div class="rh-fb-card__img-side">
+                                @foreach($post->images->slice(1, 2) as $img)
+                                    @if(($img->type ?? 'image') === 'video')
+                                        <video src="{{ asset('storage/' . $img->image_path) }}" controls preload="metadata" style="width:100%;height:159px;object-fit:cover;"></video>
+                                    @else
+                                        <img src="{{ asset('storage/' . $img->image_path) }}" alt="" loading="lazy">
+                                    @endif
+                                @endforeach
+                                @if($imgCount > 3)
+                                    <div class="rh-fb-card__img-overlay">+{{ $imgCount - 3 }}</div>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+                </a>
+                @endif
+                @endif
+
+                {{-- Stats row --}}
+                <div class="rh-fb-card__stats">
+                    <span>{{ $post->likes_count ?? 0 }} lượt thích</span>
+                    <span>{{ $post->comments_count ?? 0 }} bình luận</span>
+                </div>
+
+                {{-- Action bar --}}
+                <div class="rh-fb-card__actions">
+                    <button type="button" class="rh-fb-card__action rh-fb-like-btn {{ $post->likedByCurrentUser->isNotEmpty() ? 'rh-fb-like-btn--active' : '' }}" data-post-id="{{ $post->id }}">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+                        Thích
+                    </button>
+                    <a href="{{ route('resident.posts.show', $post->id) }}" class="rh-fb-card__action">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        Bình luận
+                    </a>
+                    <button type="button" class="rh-fb-card__action rh-fb-share-btn" data-url="{{ route('resident.posts.show', $post->id) }}">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                        Chia sẻ
+                    </button>
+                </div>
+            </div>
+            @empty
+            <div class="rh-empty">
+                <p class="rh-empty__text">Chưa có bài viết nào</p>
+                <a href="{{ route('resident.posts.create') }}" class="rh-empty__btn">Đăng bài đầu tiên</a>
+            </div>
+            @endforelse
+
+        @if($posts->hasPages())
+        <div style="margin-top:20px;">{{ $posts->links() }}</div>
         @endif
     </div>
-@endsection
+
+</div>
 
 @push('scripts')
-    @if($recentAnnouncements->count() > 1)
-        <script>
-            let currentSlide = 0;
-            const slider = document.getElementById('announcementsSlider');
-            const slidesCount = {{ $recentAnnouncements->count() }};
-            const dots = document.querySelectorAll('.slider-dot');
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const slider = document.getElementById('announceSlider');
+    if (!slider) return;
+    const slides = slider.querySelectorAll('.rh-announce-slide');
+    const dots = document.querySelectorAll('#announceDots .rh-dot');
+    if (slides.length <= 1) return;
+    let current = 0, interval;
+    function show(i) { slides.forEach(s => s.style.display = 'none'); dots.forEach(d => d.classList.remove('rh-dot--active')); slides[i].style.display = 'flex'; dots[i].classList.add('rh-dot--active'); current = i; }
+    function next() { show((current + 1) % slides.length); }
+    interval = setInterval(next, 5000);
+    dots.forEach(d => { d.addEventListener('click', function() { clearInterval(interval); show(+this.dataset.index); interval = setInterval(next, 5000); }); });
+    slider.addEventListener('mouseenter', () => clearInterval(interval));
+    slider.addEventListener('mouseleave', () => { interval = setInterval(next, 5000); });
+    let sx = 0;
+    slider.addEventListener('touchstart', e => sx = e.touches[0].clientX);
+    slider.addEventListener('touchend', e => { const d = sx - e.changedTouches[0].clientX; if (Math.abs(d) > 40) { clearInterval(interval); d > 0 ? next() : show((current-1+slides.length)%slides.length); interval = setInterval(next, 5000); }});
+});
 
-            function updateActiveDot(index) {
-                dots.forEach((dot, idx) => {
-                    if (idx === index) {
-                        dot.classList.add('slider-dot--active');
-                    } else {
-                        dot.classList.remove('slider-dot--active');
+// Like AJAX
+document.querySelectorAll('.rh-fb-like-btn').forEach(btn => {
+    btn.addEventListener('click', async function(e) {
+        e.preventDefault();
+        const postId = this.dataset.postId;
+        const card = this.closest('.rh-fb-card');
+        const statsEl = card.querySelector('.rh-fb-card__stats span:first-child');
+        try {
+            const res = await fetch('{{ route("resident.posts.like") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+                body: JSON.stringify({ likeable_id: postId, likeable_type: 'post', type: 'like' })
+            });
+            const data = await res.json();
+            if (data.likes_count !== undefined) statsEl.textContent = data.likes_count + ' lượt thích';
+            if (data.liked) {
+                this.classList.add('rh-fb-like-btn--active');
+            } else {
+                this.classList.remove('rh-fb-like-btn--active');
+            }
+        } catch(e) { console.error(e); }
+    });
+});
+// Share - Copy link
+document.querySelectorAll('.rh-fb-share-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const url = this.dataset.url;
+        navigator.clipboard.writeText(url).then(() => {
+            const orig = this.innerHTML;
+            this.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Đã sao chép';
+            setTimeout(() => { this.innerHTML = orig; }, 2000);
+        });
+    });
+});
+</script>
+
+{{-- Modal Báo cáo Bài viết --}}
+<div id="reportPostModal" class="rep-modal" onclick="handleOutsideModalClick(event)" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="rep-modal__content" style="background: #fff; padding: 24px; border-radius: 12px; max-width: 450px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.15); position: relative; animation: postDropdownFadeIn 0.3s ease-out; box-sizing: border-box;">
+        <div class="rep-modal__header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 class="rep-modal__title" style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #00236f; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-triangle-exclamation" style="color: #dc2626;"></i> Báo cáo bài viết
+            </h3>
+            <button type="button" class="rep-modal__close" onclick="closeReportModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">&times;</button>
+        </div>
+        <form id="report-post-form">
+            @csrf
+            <input type="hidden" name="post_id" id="report-target-post-id" value="">
+            <div class="rep-modal__body" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+                <span class="rep-modal__label" style="font-size: 0.85rem; font-weight: 600; color: #334155; margin-bottom: 6px;">Tại sao bạn muốn báo cáo bài viết này?</span>
+                <label class="rep-option" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #334155; cursor: pointer;"><input type="radio" name="reason_preset" value="Spam, quảng cáo rác" onclick="toggleCustomReason(false)"><span class="rep-option__text">Spam, quảng cáo rác</span></label>
+                <label class="rep-option" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #334155; cursor: pointer;"><input type="radio" name="reason_preset" value="Từ ngữ thô tục, công kích" onclick="toggleCustomReason(false)"><span class="rep-option__text">Từ ngữ thô tục, công kích</span></label>
+                <label class="rep-option" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #334155; cursor: pointer;"><input type="radio" name="reason_preset" value="Lừa đảo, giả mạo" onclick="toggleCustomReason(false)"><span class="rep-option__text">Lừa đảo, giả mạo thông tin</span></label>
+                <label class="rep-option" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #334155; cursor: pointer;"><input type="radio" name="reason_preset" value="Nội dung phản cảm, thù địch" onclick="toggleCustomReason(false)"><span class="rep-option__text">Nội dung phản cảm, thù địch</span></label>
+                <label class="rep-option" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #334155; cursor: pointer;"><input type="radio" name="reason_preset" value="other" onclick="toggleCustomReason(true)"><span class="rep-option__text">Lý do khác...</span></label>
+                <div class="rep-modal__custom-reason" id="custom-reason-container" style="display: none; margin-top: 8px;">
+                    <textarea name="reason_custom" id="report-reason-custom" class="rep-modal__textarea" placeholder="Nhập lý do cụ thể..." style="width: 100%; padding: 10px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; outline: none; font-family: inherit; resize: vertical; box-sizing: border-box;" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="rep-modal__footer" style="display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid #f1f5f9; padding-top: 14px;">
+                <button type="button" class="rh-section__btn" style="background: #64748b;" onclick="closeReportModal()">Hủy bỏ</button>
+                <button type="submit" class="rh-section__btn" id="submit-report-btn" disabled style="background: #dc2626;">Gửi báo cáo</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- Modal Xác nhận Ẩn Bài viết --}}
+<div id="confirmHideModal" class="rep-modal" onclick="handleHideOutsideClick(event)" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="rep-modal__content" style="background: #fff; padding: 24px; border-radius: 12px; max-width: 400px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.15); position: relative; animation: postDropdownFadeIn 0.3s ease-out; box-sizing: border-box; text-align: center;">
+        <div style="font-size: 2.5rem; color: #eab308; margin-bottom: 12px;">
+            <i class="fa-solid fa-circle-question"></i>
+        </div>
+        <h3 style="margin: 0 0 10px; font-size: 1.15rem; font-weight: 700; color: #00236f;">Ẩn bài viết này?</h3>
+        <p style="margin: 0 0 20px; font-size: 0.88rem; color: #64748b; line-height: 1.4;">Bài viết này sẽ không còn hiển thị trên bảng tin của bạn nữa. Bạn vẫn muốn tiếp tục ẩn chứ?</p>
+        <div style="display: flex; justify-content: center; gap: 12px;">
+            <button type="button" class="rh-section__btn" style="background: #64748b; padding: 10px 20px;" onclick="closeHideModal()">Hủy bỏ</button>
+            <button type="button" class="rh-section__btn" id="confirm-hide-btn" style="background: #2563eb; padding: 10px 20px;">Đồng ý ẩn</button>
+        </div>
+    </div>
+</div>
+
+
+
+{{-- Toast Container --}}
+<div id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 10001; display: flex; flex-direction: column; gap: 0.5rem; max-width: 350px;"></div>
+
+<script>
+let pendingHidePostId = null;
+
+// Dropdown control
+function togglePostMenu(event, postId) {
+    event.stopPropagation();
+    // Close all other dropdowns
+    document.querySelectorAll('.rh-fb-card__dropdown').forEach(dropdown => {
+        if (dropdown.id !== 'post-menu-' + postId) {
+            dropdown.style.display = 'none';
+        }
+    });
+    const dropdown = document.getElementById('post-menu-' + postId);
+    if (dropdown.style.display === 'block') {
+        dropdown.style.display = 'none';
+    } else {
+        dropdown.style.display = 'block';
+    }
+}
+
+// Close dropdowns on document click
+document.addEventListener('click', function() {
+    document.querySelectorAll('.rh-fb-card__dropdown').forEach(dropdown => {
+        dropdown.style.display = 'none';
+    });
+});
+
+// Toast notification helper
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.style.cssText = `padding:0.75rem 1.25rem;border-radius:10px;box-shadow:0 8px 16px rgba(0,0,0,0.1);color:white;font-size:0.875rem;font-weight:600;display:flex;align-items:center;gap:0.65rem;opacity:0;transform:translateY(20px);transition:all 0.3s cubic-bezier(0.4,0,0.2,1);background-color:${type === 'success' ? '#10b981' : '#ef4444'};`;
+    const icon = type === 'success' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-triangle-exclamation"></i>';
+    toast.innerHTML = `${icon} <span>${message}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => { toast.style.opacity = '1'; toast.style.transform = 'translateY(0)'; }, 10);
+    setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(20px)'; setTimeout(() => toast.remove(), 300); }, 3500);
+}
+
+// Hide post function
+function hidePost(event, postId) {
+    event.preventDefault();
+    pendingHidePostId = postId;
+    const modal = document.getElementById('confirmHideModal');
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('show'), 10);
+}
+
+// Close hide modal
+function closeHideModal() {
+    const modal = document.getElementById('confirmHideModal');
+    modal.classList.remove('show');
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 300);
+    pendingHidePostId = null;
+}
+
+function handleHideOutsideClick(e) {
+    if (e.target === document.getElementById('confirmHideModal')) {
+        closeHideModal();
+    }
+}
+
+// Bind confirmation button
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmBtn = document.getElementById('confirm-hide-btn');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', async function() {
+            if (!pendingHidePostId) return;
+            const postId = pendingHidePostId;
+            closeHideModal();
+            try {
+                const res = await fetch(`/resident/posts/${postId}/hide`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
                     }
                 });
-            }
-
-            function moveSlider(direction) {
-                currentSlide = (currentSlide + direction + slidesCount) % slidesCount;
-                goToSlide(currentSlide);
-            }
-
-            function goToSlide(index) {
-                currentSlide = index;
-                const slideWidth = slider.clientWidth;
-                slider.scrollTo({
-                    left: slideWidth * index,
-                    behavior: 'smooth'
-                });
-                updateActiveDot(index);
-            }
-
-            // Sync dots if resident swipes manually
-            let scrollTimeout;
-            slider.addEventListener('scroll', () => {
-                clearTimeout(scrollTimeout);
-                scrollTimeout = setTimeout(() => {
-                    const slideWidth = slider.clientWidth;
-                    const index = Math.round(slider.scrollLeft / slideWidth);
-                    if (index >= 0 && index < slidesCount) {
-                        currentSlide = index;
-                        updateActiveDot(index);
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message || 'Đã ẩn bài viết thành công!');
+                    // Fade out and remove post card from DOM
+                    const card = document.getElementById('post-card-' + postId);
+                    if (card) {
+                        card.style.transition = 'all 0.5s ease';
+                        card.style.opacity = '0';
+                        card.style.transform = 'scale(0.9)';
+                        setTimeout(() => {
+                            card.remove();
+                            // If no posts left, show empty state
+                            const feed = document.querySelector('.rh-fb-feed');
+                            if (feed && feed.querySelectorAll('.rh-fb-card').length === 0) {
+                                feed.innerHTML = `<div class="rh-empty"><p class="rh-empty__text">Chưa có bài viết nào</p><a href="{{ route('resident.posts.create') }}" class="rh-empty__btn">Đăng bài đầu tiên</a></div>`;
+                            }
+                        }, 500);
                     }
-                }, 100);
-            });
+                } else {
+                    showToast(data.message || 'Có lỗi xảy ra, vui lòng thử lại.', 'error');
+                }
+            } catch(e) {
+                console.error(e);
+                showToast('Không thể kết nối máy chủ.', 'error');
+            }
+        });
+    }
+});
 
+// Report Modal functions
+function openReportModal(event, postId) {
+    event.preventDefault();
+    document.getElementById('report-target-post-id').value = postId;
+    document.getElementById('report-post-form').reset();
+    document.getElementById('custom-reason-container').style.display = 'none';
+    document.getElementById('submit-report-btn').setAttribute('disabled', 'disabled');
+    
+    const modal = document.getElementById('reportPostModal');
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('show'), 10);
+}
 
+function closeReportModal() {
+    const modal = document.getElementById('reportPostModal');
+    modal.classList.remove('show');
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 300);
+}
 
-            // Sync on window resize
-            window.addEventListener('resize', () => {
-                goToSlide(currentSlide);
-            });
-        </script>
-    @endif
+function handleOutsideModalClick(e) {
+    if (e.target === document.getElementById('reportPostModal')) {
+        closeReportModal();
+    }
+}
+
+function toggleCustomReason(show) {
+    const customContainer = document.getElementById('custom-reason-container');
+    const textarea = document.getElementById('report-reason-custom');
+    if (show) {
+        customContainer.style.display = 'block';
+        textarea.setAttribute('required', 'required');
+    } else {
+        customContainer.style.display = 'none';
+        textarea.removeAttribute('required');
+    }
+    checkReportFormStatus();
+}
+
+function checkReportFormStatus() {
+    const submitBtn = document.getElementById('submit-report-btn');
+    const presets = document.querySelectorAll('input[name="reason_preset"]:checked');
+    if (presets.length === 0) {
+        submitBtn.setAttribute('disabled', 'disabled');
+        return;
+    }
+    const val = presets[0].value;
+    if (val === 'other') {
+        const text = document.getElementById('report-reason-custom').value.trim();
+        if (text.length > 0) {
+            submitBtn.removeAttribute('disabled');
+        } else {
+            submitBtn.setAttribute('disabled', 'disabled');
+        }
+    } else {
+        submitBtn.removeAttribute('disabled');
+    }
+}
+
+// Attach listener to custom reason textarea
+document.addEventListener('DOMContentLoaded', function() {
+    const customTextarea = document.getElementById('report-reason-custom');
+    if (customTextarea) {
+        customTextarea.addEventListener('input', checkReportFormStatus);
+    }
+    
+    // Handle report form submit
+    const reportForm = document.getElementById('report-post-form');
+    if (reportForm) {
+        reportForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const postId = document.getElementById('report-target-post-id').value;
+            const presets = document.querySelectorAll('input[name="reason_preset"]:checked');
+            if (presets.length === 0) return;
+            
+            let reason = presets[0].value;
+            if (reason === 'other') {
+                reason = document.getElementById('report-reason-custom').value.trim();
+            }
+            
+            try {
+                const res = await fetch(`/resident/posts/${postId}/report`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ reason: reason })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    closeReportModal();
+                    showToast(data.message || 'Báo cáo bài viết thành công.');
+                    
+                    // Fade out and remove reported post from feed
+                    const card = document.getElementById('post-card-' + postId);
+                    if (card) {
+                        card.style.transition = 'all 0.5s ease';
+                        card.style.opacity = '0';
+                        card.style.transform = 'scale(0.9)';
+                        setTimeout(() => {
+                            card.remove();
+                            // If no posts left, show empty state
+                            const feed = document.querySelector('.rh-fb-feed');
+                            if (feed && feed.querySelectorAll('.rh-fb-card').length === 0) {
+                                feed.innerHTML = `<div class="rh-empty"><p class="rh-empty__text">Chưa có bài viết nào</p><a href="{{ route('resident.posts.create') }}" class="rh-empty__btn">Đăng bài đầu tiên</a></div>`;
+                            }
+                        }, 500);
+                    }
+                } else {
+                    showToast(data.message || 'Không thể gửi báo cáo.', 'error');
+                }
+            } catch(err) {
+                console.error(err);
+                showToast('Có lỗi xảy ra khi kết nối máy chủ.', 'error');
+            }
+        });
+    }
+});
+</script>
 @endpush
+@endsection

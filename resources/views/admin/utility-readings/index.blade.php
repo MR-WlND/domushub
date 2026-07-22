@@ -11,20 +11,20 @@
 {{-- ── Page Header ─────────────────────────────────── --}}
 <div class="util-page-header">
     <div>
-        <h1>Chốt số Điện Nước</h1>
-        <p>Quản lý chỉ số điện nước theo tháng – Tháng {{ $month }}/{{ $year }}</p>
+        <h1>Chốt số Nước</h1>
+        <p>Quản lý chỉ số nước theo tháng – Tháng {{ $month }}/{{ $year }}</p>
     </div>
     @if(in_array(auth()->user()->role, ['technician', 'admin']))
     <div class="util-header-actions">
         @if(auth()->user()->role === 'admin')
-        <a href="{{ route('admin.utility-logs.index') }}" class="util-btn util-btn--outline" style="background:#fff; color:#475569; border:1px solid #cbd5e1; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+        <a href="{{ portal_route('utility-logs.index') }}" class="util-btn util-btn--outline" style="background:#fff; color:#475569; border:1px solid #cbd5e1; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             Lịch sử
         </a>
         @endif
-        <a href="{{ route('admin.utility-readings.batch') }}" class="util-btn util-btn--secondary">
+        <a href="{{ portal_route('utility-readings.batch') }}" class="util-btn util-btn--secondary">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
                 <rect x="9" y="3" width="6" height="4" rx="1"/>
@@ -32,7 +32,7 @@
             </svg>
             Ghi hàng loạt
         </a>
-        <a href="{{ route('admin.utility-readings.create') }}" class="util-btn util-btn--primary">
+        <a href="{{ portal_route('utility-readings.create') }}" class="util-btn util-btn--primary">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
@@ -55,13 +55,6 @@
     <div class="util-stat-card">
         <div class="util-stat-card__label">Tổng bản ghi</div>
         <div class="util-stat-card__value">{{ number_format($stats['total_records']) }}</div>
-    </div>
-    <div class="util-stat-card" style="border-top: 3px solid #f59e0b;">
-        <div class="util-stat-card__label">Tổng tiêu thụ Điện</div>
-        <div class="util-stat-card__value">
-            {{ number_format($stats['total_electricity']) }}
-            <small>kWh</small>
-        </div>
     </div>
     <div class="util-stat-card" style="border-top: 3px solid #3b82f6;">
         <div class="util-stat-card__label">Tổng tiêu thụ Nước</div>
@@ -86,11 +79,11 @@
 
 {{-- ── Filter Panel ────────────────────────────────── --}}
 <div class="util-filter-panel">
-    <form action="{{ route('admin.utility-readings.index') }}" method="GET">
-        <div class="util-filter-grid">
+    <form action="{{ portal_route('utility-readings.index') }}" method="GET">
+        <div class="util-filter-grid util-filter-grid--index">
             <div>
                 <label>Tòa nhà</label>
-                <select name="block_id">
+                <select name="block_id" class="util-form-input">
                     <option value="">Tất cả tòa</option>
                     @foreach ($blocks as $block)
                         <option value="{{ $block->id }}" {{ $blockId == $block->id ? 'selected' : '' }}>
@@ -101,7 +94,7 @@
             </div>
             <div>
                 <label>Tầng</label>
-                <select name="floor_id">
+                <select name="floor_id" class="util-form-input">
                     <option value="">Tất cả tầng</option>
                     @foreach ($floors as $floor)
                         <option value="{{ $floor->id }}" data-block-id="{{ $floor->block_id }}" {{ $floorId == $floor->id ? 'selected' : '' }}>
@@ -111,29 +104,29 @@
                 </select>
             </div>
             <div>
-                <label>Loại</label>
-                <select name="type">
-                    <option value="">Tất cả</option>
-                    <option value="electricity" {{ $type == 'electricity' ? 'selected' : '' }}>Điện</option>
-                    <option value="water" {{ $type == 'water' ? 'selected' : '' }}>Nước</option>
+                <label>Tháng</label>
+                <select name="month" class="util-form-input">
+                    @for ($m = 1; $m <= 12; $m++)
+                        <option value="{{ $m }}" {{ $month == $m ? 'selected' : '' }}>Tháng {{ $m }}</option>
+                    @endfor
                 </select>
             </div>
             <div>
-                <label>Tháng</label>
-                <input type="number" name="month" value="{{ $month }}" min="1" max="12" placeholder="Tháng">
-            </div>
-            <div>
                 <label>Năm</label>
-                <input type="number" name="year" value="{{ $year }}" min="2020" max="2100" placeholder="Năm">
+                <select name="year" class="util-form-input">
+                    @for ($y = date('Y') + 1; $y >= 2020; $y--)
+                        <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>Năm {{ $y }}</option>
+                    @endfor
+                </select>
             </div>
             <div class="util-filter-actions">
                 <button type="submit" class="util-btn util-btn--primary util-btn--sm">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align: middle;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3H2l4 6.28V17l4 2v-7.72L16 3z" />
                     </svg>
                     Lọc
                 </button>
-                <a href="{{ route('admin.utility-readings.index') }}" class="util-btn util-btn--outline util-btn--sm">Đặt lại</a>
+                <a href="{{ portal_route('utility-readings.index') }}" class="util-btn util-btn--outline util-btn--sm">Đặt lại</a>
             </div>
         </div>
     </form>
@@ -147,7 +140,7 @@
         <span style="font-size:13px; color:#15803d; font-weight:600;">
             Đang chọn <span id="selectedCount">0</span> mục chờ phê duyệt
         </span>
-        <form action="{{ route('admin.utility-readings.batch-approve') }}" method="POST" id="batchApproveForm" style="margin:0; display:flex; gap:10px;">
+        <form action="{{ portal_route('utility-readings.batch-approve') }}" method="POST" id="batchApproveForm" style="margin:0; display:flex; gap:10px;">
             @csrf
             <input type="hidden" name="month" value="{{ $month }}">
             <input type="hidden" name="year" value="{{ $year }}">
@@ -244,9 +237,22 @@
                     {{-- Trạng thái --}}
                     <td style="text-align:center;">
                         @if($reading->status === 'approved')
-                            <span class="util-badge util-badge--success" style="background:#e6f4ea; color:#137333; font-size:11px;">Đã chốt</span>
+                            @php
+                                $approveLog = collect($reading->history_logs ?? [])->firstWhere('action', 'approved');
+                                $approverName = $approveLog['user_name'] ?? 'Kế toán viên';
+                                $approveTime = $approveLog['time'] ?? ($reading->updated_at ? $reading->updated_at->format('d/m/Y H:i') : '');
+                                $tooltip = "Duyệt bởi: {$approverName} ({$approveTime})";
+                            @endphp
+                            <span class="util-badge util-badge--success" style="background:#e6f4ea; color:#137333; font-size:11px;" data-tooltip="{{ $tooltip }}">Đã chốt</span>
                         @elseif($reading->status === 'rejected')
-                            <span class="util-badge util-badge--danger" style="background:#fce8e6; color:#c5221f; font-size:11px;">Bị từ chối</span>
+                            @php
+                                $rejectLog = collect($reading->history_logs ?? [])->firstWhere('action', 'rejected');
+                                $rejecterName = $rejectLog['user_name'] ?? ($reading->rejecter->name ?? 'Kế toán viên');
+                                $rejectTime = $rejectLog['time'] ?? ($reading->updated_at ? $reading->updated_at->format('d/m/Y H:i') : '');
+                                $reason = $rejectLog['reason'] ?? ($reading->reject_reason ?? 'Không rõ lý do');
+                                $tooltip = "Từ chối bởi: {$rejecterName} ({$rejectTime}). Lý do: {$reason}";
+                            @endphp
+                            <span class="util-badge util-badge--danger" style="background:#fce8e6; color:#c5221f; font-size:11px;" data-tooltip="{{ $tooltip }}">Bị từ chối</span>
                         @else
                             <span class="util-badge util-badge--warning" style="background:#fef7e0; color:#b06000; font-size:11px;">Chờ chốt</span>
                         @endif
@@ -286,7 +292,7 @@
                                     </svg>
                                 </button>
                                 @if($reading->status === 'pending')
-                                <form action="{{ route('admin.utility-readings.approve', $reading->id) }}" method="POST" style="margin:0;">
+                                <form action="{{ portal_route('utility-readings.approve', $reading->id) }}" method="POST" style="margin:0;">
                                     @csrf
                                     <button type="submit" class="util-btn-approve" title="Phê duyệt">
                                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -294,7 +300,7 @@
                                         </svg>
                                     </button>
                                 </form>
-                                <form action="{{ route('admin.utility-readings.reject', $reading->id) }}" method="POST" style="margin:0;" id="reject-form-{{ $reading->id }}">
+                                <form action="{{ portal_route('utility-readings.reject', $reading->id) }}" method="POST" style="margin:0;" id="reject-form-{{ $reading->id }}">
                                     @csrf
                                     <input type="hidden" name="reject_reason" id="reject-reason-{{ $reading->id }}">
                                     <button type="button" class="util-btn-reject" title="Từ chối" onclick="confirmAndReject({{ $reading->id }})">
@@ -306,14 +312,14 @@
                                 </form>
                                 @endif
                                 @if(auth()->user()->role === 'admin')
-                                <a href="{{ route('admin.utility-readings.edit', $reading->id) }}"
+                                <a href="{{ portal_route('utility-readings.edit', $reading->id) }}"
                                     class="util-btn-edit" title="Sửa">
                                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                                     </svg>
                                 </a>
-                                <form action="{{ route('admin.utility-readings.destroy', $reading->id) }}"
+                                <form action="{{ portal_route('utility-readings.destroy', $reading->id) }}"
                                     method="POST" style="margin: 0;"
                                     onsubmit="return confirm('Bạn có chắc muốn xóa chỉ số này?')">
                                     @csrf
@@ -336,7 +342,7 @@
                                     </svg>
                                 </button>
                                 @if(in_array($reading->status, ['pending', 'rejected']) && $reading->recorded_by === auth()->id())
-                                <a href="{{ route('admin.utility-readings.edit', $reading->id) }}"
+                                <a href="{{ portal_route('utility-readings.edit', $reading->id) }}"
                                     class="util-btn-edit" title="Sửa">
                                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -388,7 +394,7 @@
     <p>Chưa có chỉ số nào được ghi cho tháng {{ $month }}/{{ $year }}.</p>
     @if(in_array(auth()->user()->role, ['technician', 'admin']))
     <div class="util-empty-actions">
-        <a href="{{ route('admin.utility-readings.batch') }}" class="util-btn util-btn--secondary">
+        <a href="{{ portal_route('utility-readings.batch') }}" class="util-btn util-btn--secondary">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right: 6px;">
                 <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
                 <rect x="9" y="3" width="6" height="4" rx="1"/>
@@ -396,7 +402,7 @@
             </svg>
             Ghi hàng loạt
         </a>
-        <a href="{{ route('admin.utility-readings.create') }}" class="util-btn util-btn--primary">+ Ghi đơn lẻ</a>
+        <a href="{{ portal_route('utility-readings.create') }}" class="util-btn util-btn--primary">+ Ghi đơn lẻ</a>
     </div>
     @endif
 </div>
@@ -517,6 +523,38 @@
     </div>
 </div>
 
+{{-- ── Reject Reason Modal ─────────────────────────────── --}}
+<div class="util-modal-backdrop" id="rejectModal">
+    <div class="util-modal" style="max-width: 500px;">
+        <div class="util-modal-header">
+            <h3>
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:inline-block; vertical-align:middle; margin-right:6px; color:#dc2626;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Từ chối chỉ số điện nước
+            </h3>
+            <button class="util-modal-close" onclick="closeRejectModal()">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div class="util-modal-body" style="padding: 20px 24px;">
+            <div style="margin-bottom: 16px;">
+                <label for="rejectReasonInput" style="display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 8px;">Nhập lý do từ chối chỉ số này:</label>
+                <textarea id="rejectReasonInput" class="util-form-input" rows="3" style="height: auto; min-height: 90px; resize: vertical; padding: 12px;" placeholder="Ví dụ: Chỉ số nhập không chính xác hoặc ảnh mờ..."></textarea>
+                <div id="rejectReasonError" style="color: #dc2626; font-size: 12px; margin-top: 6px; display: none; font-weight: 500;">
+                    Vui lòng nhập lý do từ chối.
+                </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #f3f4f6; padding-top: 16px; margin-top: 20px;">
+                <button type="button" class="util-btn util-btn--outline util-btn--sm" onclick="closeRejectModal()">Hủy</button>
+                <button type="button" class="util-btn util-btn--primary util-btn--sm" style="background:#dc2626; border-color:#dc2626;" onclick="submitRejectForm()">Từ chối</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
 @keyframes spin {
     to { transform: rotate(360deg); }
@@ -544,6 +582,56 @@
 .util-actions form {
     display: inline-flex !important;
     margin: 0 !important;
+}
+
+/* Premium Tooltip */
+.util-badge[data-tooltip] {
+    position: relative;
+    cursor: help;
+}
+.util-badge[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 130%;
+    left: 50%;
+    transform: translateX(-50%) scale(0.95);
+    background: #1e293b;
+    color: #ffffff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.4;
+    text-align: center;
+    width: max-content;
+    max-width: 260px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    z-index: 999;
+    white-space: normal;
+}
+.util-badge[data-tooltip]:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+}
+.util-badge[data-tooltip]::before {
+    content: '';
+    position: absolute;
+    bottom: 118%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: #1e293b transparent transparent transparent;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+    z-index: 999;
+}
+.util-badge[data-tooltip]:hover::before {
+    opacity: 1;
 }
 </style>
 
@@ -824,69 +912,135 @@ function openDetailModal(id) {
             const rejectTableContainer = document.getElementById('detRejectTableContainer');
             const rejections = data.rejections || [];
             
-            if (rejections.length > 0) {
-                let html = `
-                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); overflow: hidden; margin-top: 8px;">
-                        <div style="background: #ffffff; border-bottom: 1px solid #f1f5f9; padding: 12px 16px; display: flex; align-items: center;">
-                            <div style="background: #fee2e2; color: #ef4444; border-radius: 6px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 13px;">
-                                <i class="fas fa-exclamation-circle"></i>
-                            </div>
-                            <span style="font-size: 13px; font-weight: 700; color: #1e293b;">Lý do từ chối</span>
-                        </div>
-                        <div style="overflow-x: auto;">
-                            <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left; vertical-align: middle;">
-                                <thead>
-                                    <tr style="background: #f8fafc; color: #64748b; border-bottom: 1px solid #e2e8f0; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; font-weight: 700;">
-                                        <th style="padding: 8px 12px; width: 30%;">Thời gian</th>
-                                        <th style="padding: 8px 12px; width: 30%;">Người từ chối</th>
-                                        <th style="padding: 8px 12px; width: 40%;">Lý do</th>
-                                    </tr>
-                                </thead>
-                                <tbody style="color: #334155;">
-                `;
-                rejections.forEach(rej => {
-                    html += `
-                        <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 10px 12px; color: #94a3b8; font-weight: 400; white-space: nowrap;">${rej.rejected_at}</td>
-                            <td style="padding: 10px 12px; font-weight: 500; color: #64748b;">${rej.rejecter_name}</td>
-                            <td style="padding: 10px 12px;">
-                                <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; background-color: #fff5f5; border: 1px solid #feb2b2; color: #e53e3e; font-weight: 700; font-size: 11px;">
-                                    <i class="fas fa-exclamation-triangle animate-pulse" style="font-size: 10px;"></i>
-                                    <span>${rej.reason}</span>
+            const hasRejection = rejections.some(rej => rej.action === 'rejected');
+            
+            if (reading.status === 'approved') {
+                if (rejections.length > 0) {
+                    let html = `
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); overflow: hidden; margin-top: 8px;">
+                            <div style="background: #ffffff; border-bottom: 1px solid #f1f5f9; padding: 12px 16px; display: flex; align-items: center;">
+                                <div style="background: #f1f5f9; color: #475569; border-radius: 6px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 13px;">
+                                    <i class="fas fa-history"></i>
                                 </div>
-                            </td>
-                        </tr>
-                    `;
-                });
-                html += `
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                `;
-                rejectTableContainer.innerHTML = html;
-                rejectInfoEl.style.display = 'block';
-            } else if (reading.status === 'rejected') {
-                rejectTableContainer.innerHTML = `
-                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); overflow: hidden; margin-top: 8px;">
-                        <div style="background: #ffffff; border-bottom: 1px solid #f1f5f9; padding: 12px 16px; display: flex; align-items: center;">
-                            <div style="background: #fee2e2; color: #ef4444; border-radius: 6px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 13px;">
-                                <i class="fas fa-exclamation-circle"></i>
+                                <span style="font-size: 13px; font-weight: 700; color: #1e293b;">Lịch sử phê duyệt</span>
                             </div>
-                            <span style="font-size: 13px; font-weight: 700; color: #1e293b;">Lý do từ chối</span>
+                            <div style="overflow-x: auto;">
+                                <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left; vertical-align: middle;">
+                                    <thead>
+                                        <tr style="background: #f8fafc; color: #64748b; border-bottom: 1px solid #e2e8f0; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; font-weight: 700;">
+                                            <th style="padding: 8px 12px; width: 30%;">Thời gian</th>
+                                            <th style="padding: 8px 12px; width: 30%;">Người thực hiện</th>
+                                            <th style="padding: 8px 12px; width: 40%;">Hành động / Chi tiết</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody style="color: #334155;">
+                    `;
+                    rejections.forEach(rej => {
+                        if (rej.action === 'approved') {
+                            html += `
+                                <tr style="border-bottom: 1px solid #f1f5f9;">
+                                    <td style="padding: 10px 12px; color: #94a3b8; font-weight: 400; white-space: nowrap;">${rej.rejected_at}</td>
+                                    <td style="padding: 10px 12px; font-weight: 500; color: #64748b;">${rej.rejecter_name}</td>
+                                    <td style="padding: 10px 12px;">
+                                        <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; background-color: #e6f4ea; border: 1px solid #a3cfbb; color: #146c43; font-weight: 700; font-size: 11px;">
+                                            <i class="fas fa-check-circle" style="font-size: 10px;"></i>
+                                            <span>Đã chốt số</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
+                        } else {
+                            html += `
+                                <tr style="border-bottom: 1px solid #f1f5f9;">
+                                    <td style="padding: 10px 12px; color: #94a3b8; font-weight: 400; white-space: nowrap;">${rej.rejected_at}</td>
+                                    <td style="padding: 10px 12px; font-weight: 500; color: #64748b;">${rej.rejecter_name}</td>
+                                    <td style="padding: 10px 12px;">
+                                        <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; background-color: #fff5f5; border: 1px solid #feb2b2; color: #e53e3e; font-weight: 700; font-size: 11px;">
+                                            <i class="fas fa-exclamation-triangle" style="font-size: 10px;"></i>
+                                            <span>Từ chối: ${rej.reason}</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
+                        }
+                    });
+                    html += `
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                        <div style="padding: 16px; font-size:13px; color:#334155;">
-                            <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;">Thời gian: ${reading.updated_at || ''}</div>
-                            <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">Người từ chối: <strong style="color: #0f172a;">${reading.rejecter_name || 'Kế toán viên'}</strong></div>
-                            <span style="display: inline-block; background: #fee2e2; color: #b91c1c; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">
-                                ${reading.reject_reason || 'Không rõ lý do'}
-                            </span>
-                        </div>
-                    </div>
-                `;
-                rejectInfoEl.style.display = 'block';
+                    `;
+                    rejectTableContainer.innerHTML = html;
+                    rejectInfoEl.style.display = 'block';
+                } else {
+                    rejectInfoEl.style.display = 'none';
+                }
             } else {
-                rejectInfoEl.style.display = 'none';
+                const rejectedLogs = rejections.filter(rej => rej.action === 'rejected');
+                if (rejectedLogs.length > 0) {
+                    let html = `
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); overflow: hidden; margin-top: 8px;">
+                            <div style="background: #ffffff; border-bottom: 1px solid #f1f5f9; padding: 12px 16px; display: flex; align-items: center;">
+                                <div style="background: #fee2e2; color: #ef4444; border-radius: 6px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 13px;">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </div>
+                                <span style="font-size: 13px; font-weight: 700; color: #1e293b;">Lý do từ chối</span>
+                            </div>
+                            <div style="overflow-x: auto;">
+                                <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left; vertical-align: middle;">
+                                    <thead>
+                                        <tr style="background: #f8fafc; color: #64748b; border-bottom: 1px solid #e2e8f0; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; font-weight: 700;">
+                                            <th style="padding: 8px 12px; width: 30%;">Thời gian</th>
+                                            <th style="padding: 8px 12px; width: 30%;">Người từ chối</th>
+                                            <th style="padding: 8px 12px; width: 40%;">Lý do</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody style="color: #334155;">
+                    `;
+                    rejectedLogs.forEach(rej => {
+                        html += `
+                            <tr style="border-bottom: 1px solid #f1f5f9;">
+                                <td style="padding: 10px 12px; color: #94a3b8; font-weight: 400; white-space: nowrap;">${rej.rejected_at}</td>
+                                <td style="padding: 10px 12px; font-weight: 500; color: #64748b;">${rej.rejecter_name}</td>
+                                <td style="padding: 10px 12px;">
+                                    <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; background-color: #fff5f5; border: 1px solid #feb2b2; color: #e53e3e; font-weight: 700; font-size: 11px;">
+                                        <i class="fas fa-exclamation-triangle" style="font-size: 10px;"></i>
+                                        <span>${rej.reason}</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    html += `
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                    rejectTableContainer.innerHTML = html;
+                    rejectInfoEl.style.display = 'block';
+                } else if (reading.status === 'rejected') {
+                    rejectTableContainer.innerHTML = `
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); overflow: hidden; margin-top: 8px;">
+                            <div style="background: #ffffff; border-bottom: 1px solid #f1f5f9; padding: 12px 16px; display: flex; align-items: center;">
+                                <div style="background: #fee2e2; color: #ef4444; border-radius: 6px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 13px;">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </div>
+                                <span style="font-size: 13px; font-weight: 700; color: #1e293b;">Lý do từ chối</span>
+                            </div>
+                            <div style="padding: 16px; font-size:13px; color:#334155;">
+                                <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;">Thời gian: ${reading.updated_at || ''}</div>
+                                <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">Người từ chối: <strong style="color: #0f172a;">${reading.rejecter_name || 'Kế toán viên'}</strong></div>
+                                <span style="display: inline-block; background: #fee2e2; color: #b91c1c; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">
+                                    ${reading.reject_reason || 'Không rõ lý do'}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                    rejectInfoEl.style.display = 'block';
+                } else {
+                    rejectInfoEl.style.display = 'none';
+                }
             }
 
             // Image gallery container
@@ -897,7 +1051,7 @@ function openDetailModal(id) {
             if (imgsUrls.length > 0) {
                 const label = document.createElement('div');
                 label.style.cssText = 'font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;margin-bottom:10px;';
-                label.textContent = `📷 Ảnh công tơ minh chứng (${imgsUrls.length} ảnh)`;
+                label.textContent = `Ảnh công tơ minh chứng (${imgsUrls.length} ảnh)`;
                 imgContainer.appendChild(label);
 
                 const galleryWrap = document.createElement('div');
@@ -930,7 +1084,7 @@ function openDetailModal(id) {
             }
 
             // Print / Link tab
-    document.getElementById('detLinkPrint').href = `{{ url('admin/utility-readings') }}/${reading.id}`;
+            document.getElementById('detLinkPrint').href = `{{ url('admin/utility-readings') }}/${reading.id}`;
 
             loading.style.display = 'none';
             content.style.display = 'block';
@@ -946,15 +1100,45 @@ function closeDetailModal() {
     document.getElementById('detailModal').classList.remove('active');
 }
 
+let pendingRejectReadingId = null;
+
 window.confirmAndReject = function(id) {
-    const reason = prompt("Nhập lý do từ chối chỉ số này:");
-    if (reason === null) return; // Hủy bỏ
-    if (reason.trim() === "") {
-        alert("Vui lòng cung cấp lý do từ chối.");
+    pendingRejectReadingId = id;
+    const modal = document.getElementById('rejectModal');
+    const textarea = document.getElementById('rejectReasonInput');
+    if (!modal || !textarea) return;
+    textarea.value = '';
+    const err = document.getElementById('rejectReasonError');
+    if (err) err.style.display = 'none';
+    modal.classList.add('active');
+    setTimeout(() => textarea.focus(), 100);
+}
+
+window.closeRejectModal = function() {
+    const modal = document.getElementById('rejectModal');
+    if (modal) modal.classList.remove('active');
+    pendingRejectReadingId = null;
+}
+
+window.submitRejectForm = function(event) {
+    if (event) event.preventDefault();
+    if (!pendingRejectReadingId) return;
+    const id = pendingRejectReadingId;
+    const textarea = document.getElementById('rejectReasonInput');
+    const reason = textarea ? textarea.value.trim() : '';
+    if (reason === "") {
+        const err = document.getElementById('rejectReasonError');
+        if (err) err.style.display = 'block';
         return;
     }
-    document.getElementById('reject-reason-' + id).value = reason.trim();
-    document.getElementById('reject-form-' + id).submit();
+    
+    const hiddenInput = document.getElementById('reject-reason-' + id);
+    const form = document.getElementById('reject-form-' + id);
+    if (hiddenInput && form) {
+        hiddenInput.value = reason;
+        form.submit();
+    }
+    closeRejectModal();
 }
 </script>
 @endpush

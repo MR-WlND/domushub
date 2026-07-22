@@ -22,9 +22,47 @@ Route::get('/', function () {
     return redirect()->route('resident.login');
 });
 
+// Shortcut routes
+Route::get('/resident', function () {
+    if (! Auth::check()) return redirect()->route('resident.login');
+    return redirect()->route('resident.dashboard');
+});
+
+Route::get('/security', function () {
+    if (! Auth::check()) return redirect()->route('security.login');
+    return redirect()->route('security.dashboard');
+});
+
+Route::get('/manager', function () {
+    if (! Auth::check()) return redirect()->route('manager.login');
+    return redirect()->route('manager.dashboard');
+});
+
+Route::get('/staff', function () {
+    if (! Auth::check()) return redirect()->route('staff.login');
+    return redirect()->route('staff.utility-readings.index');
+});
+
+Route::get('/technician', function () {
+    if (! Auth::check()) return redirect()->route('technician.login');
+    return redirect()->route('technician.tickets.my-tasks');
+});
+
 // Admin Login Routes
 Route::get('/admin/login', [AuthController::class, 'showAdminLogin'])->name('admin.login');
 Route::post('/admin/login', [AuthController::class, 'loginAdmin'])->name('admin.login.submit');
+
+// Manager Login Routes
+Route::get('/manager/login', [AuthController::class, 'showManagerLogin'])->name('manager.login');
+Route::post('/manager/login', [AuthController::class, 'loginManager'])->name('manager.login.submit');
+
+// Staff Login Routes
+Route::get('/staff/login', [AuthController::class, 'showStaffLogin'])->name('staff.login');
+Route::post('/staff/login', [AuthController::class, 'loginStaff'])->name('staff.login.submit');
+
+// Technician Login Routes
+Route::get('/technician/login', [AuthController::class, 'showTechnicianLogin'])->name('technician.login');
+Route::post('/technician/login', [AuthController::class, 'loginTechnician'])->name('technician.login.submit');
 
 // Resident Routes
 Route::get('/resident/login', [AuthController::class, 'showResidentLogin'])->name('resident.login');
@@ -52,174 +90,204 @@ Route::get('/vnpay/ipn', [\App\Http\Controllers\Resident\InvoiceController::clas
 // =========================================================================
 // DASHBOARD ADMIN ROUTES
 // =========================================================================
-Route::middleware(['admin'])->group(function () {
-    Route::get('admin', [HomeController::class, 'index'])->name('admin.dashboard');
-    Route::get('/admin/statistics', [HomeController::class, 'statistics'])->name('admin.statistics');
-    Route::get('/admin/statistics/finance', [HomeController::class, 'statisticsFinance'])->name('admin.statistics.finance');
-    Route::get('/admin/statistics/finance/export', [HomeController::class, 'exportFinanceExcel'])->name('admin.statistics.finance.export');
-    Route::get('/admin/statistics/operations', [HomeController::class, 'statisticsOperations'])->name('admin.statistics.operations');
-    Route::get('/admin/statistics/operations/export', [HomeController::class, 'exportOperationsExcel'])->name('admin.statistics.operations.export');
-    Route::get('/admin/statistics/residents', [HomeController::class, 'statisticsResidents'])->name('admin.statistics.residents');
-    Route::get('/admin/statistics/residents/export', [HomeController::class, 'exportResidentsExcel'])->name('admin.statistics.residents.export');
+$portalRoutes = function () {
+
+    Route::get('/', [HomeController::class, 'index'])->name('dashboard');
+    Route::get('/statistics', [HomeController::class, 'statistics'])->name('statistics');
+    Route::get('/statistics/finance', [HomeController::class, 'statisticsFinance'])->name('statistics.finance');
+    Route::get('/statistics/finance/export', [HomeController::class, 'exportFinanceExcel'])->name('statistics.finance.export');
+    Route::get('/statistics/operations', [HomeController::class, 'statisticsOperations'])->name('statistics.operations');
+    Route::get('/statistics/operations/export', [HomeController::class, 'exportOperationsExcel'])->name('statistics.operations.export');
+    Route::get('/statistics/residents', [HomeController::class, 'statisticsResidents'])->name('statistics.residents');
+    Route::get('/statistics/residents/export', [HomeController::class, 'exportResidentsExcel'])->name('statistics.residents.export');
 
     // System & Security Logs
-    Route::get('/admin/system-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('admin.system-logs.index');
-    Route::get('/admin/system-logs/{id}', [\App\Http\Controllers\Admin\ActivityLogController::class, 'show'])->name('admin.system-logs.show');
+    Route::get('/system-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('system-logs.index');
+    Route::get('/system-logs/{id}', [\App\Http\Controllers\Admin\ActivityLogController::class, 'show'])->name('system-logs.show');
 
     // Notification History
-    Route::get('/admin/notification-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'notificationLogs'])->name('admin.notification-logs.index');
+    Route::get('/notification-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'notificationLogs'])->name('notification-logs.index');
 
     // Finance History
-    Route::get('/admin/finance-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'financeLogs'])->name('admin.finance-logs.index');
+    Route::get('/finance-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'financeLogs'])->name('finance-logs.index');
 
     // Utility Meter History (Lịch sử ghi số điện nước)
-    Route::get('/admin/utility-logs', [\App\Http\Controllers\Admin\UtilityLogController::class, 'index'])->name('admin.utility-logs.index');
+    Route::get('/utility-logs', [\App\Http\Controllers\Admin\UtilityLogController::class, 'index'])->name('utility-logs.index');
 
     // Block/Building routes (used in views)
-    Route::get('/admin/blocks', [\App\Http\Controllers\Admin\BlockController::class, 'index'])->name('admin.blocks.index');
-    Route::get('/admin/blocks/create', [\App\Http\Controllers\Admin\BlockController::class, 'create'])->name('admin.blocks.create');
-    Route::post('/admin/blocks', [\App\Http\Controllers\Admin\BlockController::class, 'store'])->name('admin.blocks.store');
-    Route::get('/admin/blocks/{block}', [\App\Http\Controllers\Admin\BlockController::class, 'show'])->name('admin.blocks.show');
-    Route::get('/admin/blocks/{block}/edit', [\App\Http\Controllers\Admin\BlockController::class, 'edit'])->name('admin.blocks.edit');
-    Route::put('/admin/blocks/{block}', [\App\Http\Controllers\Admin\BlockController::class, 'update'])->name('admin.blocks.update');
-    Route::delete('/admin/blocks/{block}', [\App\Http\Controllers\Admin\BlockController::class, 'destroy'])->name('admin.blocks.destroy');
+    Route::get('/blocks', [\App\Http\Controllers\Admin\BlockController::class, 'index'])->name('blocks.index');
+    Route::get('/blocks/create', [\App\Http\Controllers\Admin\BlockController::class, 'create'])->name('blocks.create');
+    Route::post('/blocks', [\App\Http\Controllers\Admin\BlockController::class, 'store'])->name('blocks.store');
+    Route::get('/blocks/{block}', [\App\Http\Controllers\Admin\BlockController::class, 'show'])->name('blocks.show');
+    Route::get('/blocks/{block}/edit', [\App\Http\Controllers\Admin\BlockController::class, 'edit'])->name('blocks.edit');
+    Route::put('/blocks/{block}', [\App\Http\Controllers\Admin\BlockController::class, 'update'])->name('blocks.update');
+    Route::delete('/blocks/{block}', [\App\Http\Controllers\Admin\BlockController::class, 'destroy'])->name('blocks.destroy');
 
     // Floors (Tầng)
-    Route::get('/admin/floors/create', [\App\Http\Controllers\Admin\FloorController::class, 'create'])->name('admin.floors.create');
-    Route::post('/admin/floors', [\App\Http\Controllers\Admin\FloorController::class, 'store'])->name('admin.floors.store');
-    Route::get('/admin/floors/{floor}', [\App\Http\Controllers\Admin\FloorController::class, 'show'])->name('admin.floors.show');
-    Route::get('/admin/floors/{floor}/edit', [\App\Http\Controllers\Admin\FloorController::class, 'edit'])->name('admin.floors.edit');
-    Route::put('/admin/floors/{floor}', [\App\Http\Controllers\Admin\FloorController::class, 'update'])->name('admin.floors.update');
-    Route::delete('/admin/floors/{floor}', [\App\Http\Controllers\Admin\FloorController::class, 'destroy'])->name('admin.floors.destroy');
+    Route::get('/floors/create', [\App\Http\Controllers\Admin\FloorController::class, 'create'])->name('floors.create');
+    Route::post('/floors', [\App\Http\Controllers\Admin\FloorController::class, 'store'])->name('floors.store');
+    Route::get('/floors/{floor}', [\App\Http\Controllers\Admin\FloorController::class, 'show'])->name('floors.show');
+    Route::get('/floors/{floor}/edit', [\App\Http\Controllers\Admin\FloorController::class, 'edit'])->name('floors.edit');
+    Route::put('/floors/{floor}', [\App\Http\Controllers\Admin\FloorController::class, 'update'])->name('floors.update');
+    Route::delete('/floors/{floor}', [\App\Http\Controllers\Admin\FloorController::class, 'destroy'])->name('floors.destroy');
 
     // Apartments (Căn hộ/Phòng)
-    Route::get('/admin/apartments', [\App\Http\Controllers\Admin\ApartmentController::class, 'index'])->name('admin.apartments.index');
-    Route::get('/admin/apartments/create', [\App\Http\Controllers\Admin\ApartmentController::class, 'create'])->name('admin.apartments.create');
-    Route::post('/admin/apartments', [\App\Http\Controllers\Admin\ApartmentController::class, 'store'])->name('admin.apartments.store');
-    Route::get('/admin/apartments/import-template', [\App\Http\Controllers\Admin\ApartmentController::class, 'downloadTemplate'])->name('admin.apartments.import-template');
-    Route::post('/admin/apartments/import', [\App\Http\Controllers\Admin\ApartmentController::class, 'import'])->name('admin.apartments.import');
-    Route::get('/admin/apartments/{apartment}', [\App\Http\Controllers\Admin\ApartmentController::class, 'show'])->name('admin.apartments.show');
-    Route::get('/admin/apartments/{apartment}/edit', [\App\Http\Controllers\Admin\ApartmentController::class, 'edit'])->name('admin.apartments.edit');
-    Route::put('/admin/apartments/{apartment}', [\App\Http\Controllers\Admin\ApartmentController::class, 'update'])->name('admin.apartments.update');
-    Route::delete('/admin/apartments/{apartment}', [\App\Http\Controllers\Admin\ApartmentController::class, 'destroy'])->name('admin.apartments.destroy');
+    Route::get('/apartments', [\App\Http\Controllers\Admin\ApartmentController::class, 'index'])->name('apartments.index');
+    Route::get('/apartments/create', [\App\Http\Controllers\Admin\ApartmentController::class, 'create'])->name('apartments.create');
+    Route::post('/apartments', [\App\Http\Controllers\Admin\ApartmentController::class, 'store'])->name('apartments.store');
+    Route::get('/apartments/import-template', [\App\Http\Controllers\Admin\ApartmentController::class, 'downloadTemplate'])->name('apartments.import-template');
+    Route::post('/apartments/import', [\App\Http\Controllers\Admin\ApartmentController::class, 'import'])->name('apartments.import');
+    Route::get('/apartments/{apartment}', [\App\Http\Controllers\Admin\ApartmentController::class, 'show'])->name('apartments.show');
+    Route::get('/apartments/{apartment}/edit', [\App\Http\Controllers\Admin\ApartmentController::class, 'edit'])->name('apartments.edit');
+    Route::put('/apartments/{apartment}', [\App\Http\Controllers\Admin\ApartmentController::class, 'update'])->name('apartments.update');
+    Route::delete('/apartments/{apartment}', [\App\Http\Controllers\Admin\ApartmentController::class, 'destroy'])->name('apartments.destroy');
 
     // Xoá mềm cư dân khỏi phòng
-    Route::delete('/admin/residents/{id}', [ResidentManageController::class, 'destroy'])->name('admin.residents.destroy');
+    Route::delete('/residents/{id}', [ResidentManageController::class, 'destroy'])->name('residents.destroy');
 
     // Thông báo (Notifications)
-    Route::get('/admin/notifications', [\App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('admin.notifications.index');
-    Route::post('/admin/notifications/mark-read/{id?}', [\App\Http\Controllers\Admin\NotificationController::class, 'markRead'])->name('admin.notifications.mark-read');
+    Route::get('/notifications', [\App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/mark-read/{id?}', [\App\Http\Controllers\Admin\NotificationController::class, 'markRead'])->name('notifications.mark-read');
 
     // Điện nước & hoá đơn
-    Route::get('/admin/utility-readings', [UtilityMeterController::class, 'index'])->name('admin.utility-readings.index');
-    Route::get('/admin/utility-readings/create', [UtilityMeterController::class, 'create'])->name('admin.utility-readings.create');
-    Route::post('/admin/utility-readings', [UtilityMeterController::class, 'store'])->name('admin.utility-readings.store');
-    Route::get('/admin/utility-readings/batch', [UtilityMeterController::class, 'batchCreate'])->name('admin.utility-readings.batch');
-    Route::post('/admin/utility-readings/batch', [UtilityMeterController::class, 'batchStore'])->name('admin.utility-readings.batch.store');
-    Route::get('/admin/utility-readings/get-old-value', [UtilityMeterController::class, 'getOldValue'])->name('admin.utility-readings.get-old-value');
-    Route::get('/admin/utility-readings/import-template', [UtilityMeterController::class, 'downloadTemplate'])->name('admin.utility-readings.import-template');
-    Route::post('/admin/utility-readings/import', [UtilityMeterController::class, 'import'])->name('admin.utility-readings.import');
-    Route::get('/admin/utility-readings/{id}', [UtilityMeterController::class, 'show'])->name('admin.utility-readings.show');
-    Route::get('/admin/utility-readings/{id}/edit', [UtilityMeterController::class, 'edit'])->name('admin.utility-readings.edit');
-    Route::put('/admin/utility-readings/{id}', [UtilityMeterController::class, 'update'])->name('admin.utility-readings.update');
-    Route::delete('/admin/utility-readings/{id}', [UtilityMeterController::class, 'destroy'])->name('admin.utility-readings.destroy');
-    Route::post('/admin/utility-readings/{id}/approve', [UtilityMeterController::class, 'approve'])->name('admin.utility-readings.approve');
-    Route::post('/admin/utility-readings/{id}/reject', [UtilityMeterController::class, 'reject'])->name('admin.utility-readings.reject');
-    Route::post('/admin/utility-readings/batch-approve', [UtilityMeterController::class, 'batchApprove'])->name('admin.utility-readings.batch-approve');
-    Route::delete('/admin/utility-readings/{id}/image', [UtilityMeterController::class, 'removeImage'])->name('admin.utility-readings.remove-image');
+    Route::get('/utility-readings', [UtilityMeterController::class, 'index'])->name('utility-readings.index');
+    Route::get('/utility-readings/create', [UtilityMeterController::class, 'create'])->name('utility-readings.create');
+    Route::post('/utility-readings', [UtilityMeterController::class, 'store'])->name('utility-readings.store');
+    Route::get('/utility-readings/batch', [UtilityMeterController::class, 'batchCreate'])->name('utility-readings.batch');
+    Route::post('/utility-readings/batch', [UtilityMeterController::class, 'batchStore'])->name('utility-readings.batch.store');
+    Route::get('/utility-readings/get-old-value', [UtilityMeterController::class, 'getOldValue'])->name('utility-readings.get-old-value');
+    Route::get('/utility-readings/import-template', [UtilityMeterController::class, 'downloadTemplate'])->name('utility-readings.import-template');
+    Route::post('/utility-readings/import', [UtilityMeterController::class, 'import'])->name('utility-readings.import');
+    Route::get('/utility-readings/{id}', [UtilityMeterController::class, 'show'])->name('utility-readings.show');
+    Route::get('/utility-readings/{id}/edit', [UtilityMeterController::class, 'edit'])->name('utility-readings.edit');
+    Route::put('/utility-readings/{id}', [UtilityMeterController::class, 'update'])->name('utility-readings.update');
+    Route::delete('/utility-readings/{id}', [UtilityMeterController::class, 'destroy'])->name('utility-readings.destroy');
+    Route::post('/utility-readings/{id}/approve', [UtilityMeterController::class, 'approve'])->name('utility-readings.approve');
+    Route::post('/utility-readings/{id}/reject', [UtilityMeterController::class, 'reject'])->name('utility-readings.reject');
+    Route::post('/utility-readings/batch-approve', [UtilityMeterController::class, 'batchApprove'])->name('utility-readings.batch-approve');
+    Route::delete('/utility-readings/{id}/image', [UtilityMeterController::class, 'removeImage'])->name('utility-readings.remove-image');
 
-    Route::get('/admin/service-prices', [ServicePriceController::class, 'index'])->name('admin.service-prices.index');
-    Route::post('/admin/service-prices', [ServicePriceController::class, 'store'])->name('admin.service-prices.store');
-    Route::put('/admin/service-prices/{id}', [ServicePriceController::class, 'update'])->name('admin.service-prices.update');
-    Route::delete('/admin/service-prices/{id}', [ServicePriceController::class, 'destroy'])->name('admin.service-prices.destroy');
+    Route::get('/service-prices', [ServicePriceController::class, 'index'])->name('service-prices.index');
+    Route::post('/service-prices', [ServicePriceController::class, 'store'])->name('service-prices.store');
+    Route::put('/service-prices/{id}', [ServicePriceController::class, 'update'])->name('service-prices.update');
+    Route::delete('/service-prices/{id}', [ServicePriceController::class, 'destroy'])->name('service-prices.destroy');
 
-    Route::get('/admin/invoices', [InvoiceController::class, 'index'])->name('admin.invoices.index');
-    Route::get('/admin/invoices/stats', [InvoiceController::class, 'stats'])->name('admin.invoices.stats');
-    Route::get('/admin/invoices/create', [InvoiceController::class, 'create'])->name('admin.invoices.create');
-    Route::post('/admin/invoices', [InvoiceController::class, 'store'])->name('admin.invoices.store');
+    Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
+    Route::get('/invoices/stats', [InvoiceController::class, 'stats'])->name('invoices.stats');
+    Route::get('/invoices/create', [InvoiceController::class, 'create'])->name('invoices.create');
+    Route::post('/invoices', [InvoiceController::class, 'store'])->name('invoices.store');
 
-    Route::get('/admin/invoices/batch', [InvoiceController::class, 'batchCreate'])->name('admin.invoices.batch');
-    Route::post('/admin/invoices/batch', [InvoiceController::class, 'batchStore'])->name('admin.invoices.batch.store');
+    Route::get('/invoices/batch', [InvoiceController::class, 'batchCreate'])->name('invoices.batch');
+    Route::post('/invoices/batch', [InvoiceController::class, 'batchStore'])->name('invoices.batch.store');
 
-    Route::post('/admin/invoices/generate', [InvoiceController::class, 'generate'])->name('admin.invoices.generate');
-    Route::get('/admin/invoices/{invoice}', [InvoiceController::class, 'show'])->name('admin.invoices.show');
-    Route::match(['post', 'patch'], '/admin/invoices/{invoice}/mark-paid', [InvoiceController::class, 'markAsPaid'])->name('admin.invoices.mark-paid');
-    Route::post('/admin/invoices/details/{detail}/mark-paid', [InvoiceController::class, 'markDetailAsPaid'])->name('admin.invoices.details.mark-paid');
-    Route::post('/admin/payments/{payment}/refund', [InvoiceController::class, 'refundPayment'])->name('admin.payments.refund');
-    Route::get('/admin/payments/{payment}/receipt', [InvoiceController::class, 'printReceipt'])->name('admin.payments.receipt');
+    Route::post('/invoices/generate', [InvoiceController::class, 'generate'])->name('invoices.generate');
+    Route::get('/invoices/apartment/{apartment}', [InvoiceController::class, 'apartmentInvoices'])->name('invoices.apartment');
+    Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
+    Route::match(['post', 'patch'], '/invoices/{invoice}/mark-paid', [InvoiceController::class, 'markAsPaid'])->name('invoices.mark-paid');
+    Route::post('/invoices/{invoice}/cancel', [InvoiceController::class, 'cancelInvoice'])->name('invoices.cancel');
+    Route::post('/invoices/{invoice}/resend-notification', [InvoiceController::class, 'resendNotification'])->name('invoices.resend-notification');
+    Route::get('/invoices/{invoice}/print', [InvoiceController::class, 'printInvoice'])->name('invoices.print');
+    Route::post('/payments/{payment}/refund', [InvoiceController::class, 'refundPayment'])->name('payments.refund');
+    Route::get('/payments/{payment}/receipt', [InvoiceController::class, 'printReceipt'])->name('payments.receipt');
 
     // Danh sách cư dân
-    Route::get('/admin/residents', [ResidentManageController::class, 'index'])->name('admin.residents.index');
+    Route::get('/residents', [ResidentManageController::class, 'index'])->name('residents.index');
 
     // Quản lý phản ánh & điều phối kỹ thuật (admin / manager)
-    Route::get('/admin/tickets', [App\Http\Controllers\Admin\TicketController::class, 'index'])->name('admin.tickets.index');
-    Route::get('/admin/tickets/report', [App\Http\Controllers\Admin\TicketController::class, 'report'])->name('admin.tickets.report');
-    Route::post('/admin/tickets/{id}/review/approve', [App\Http\Controllers\Admin\TicketController::class, 'approveReview'])->name('admin.tickets.review.approve');
-    Route::post('/admin/tickets/{id}/review/reject', [App\Http\Controllers\Admin\TicketController::class, 'rejectReview'])->name('admin.tickets.review.reject');
-    Route::get('/admin/tickets/dispatch', [App\Http\Controllers\Admin\TicketController::class, 'dispatchIndex'])->name('admin.tickets.dispatch');
-    Route::get('/admin/tickets/my-tasks', [App\Http\Controllers\Admin\TicketController::class, 'myTasks'])->name('admin.tickets.my-tasks');
-    Route::get('/admin/tickets/{id}', [App\Http\Controllers\Admin\TicketController::class, 'show'])->name('admin.tickets.show');
-    Route::post('/admin/tickets/{id}/assign', [App\Http\Controllers\Admin\TicketController::class, 'assign'])->name('admin.tickets.assign');
-    Route::post('/admin/tickets/{id}/accept', [App\Http\Controllers\Admin\TicketController::class, 'acceptTask'])->name('admin.tickets.accept');
-    Route::post('/admin/tickets/{id}/update-progress', [App\Http\Controllers\Admin\TicketController::class, 'updateProgress'])->name('admin.tickets.update-progress');
+    Route::get('/tickets', [App\Http\Controllers\Admin\TicketController::class, 'index'])->name('tickets.index');
+    Route::get('/tickets/report', [App\Http\Controllers\Admin\TicketController::class, 'report'])->name('tickets.report');
+    Route::post('/tickets/{id}/review/approve', [App\Http\Controllers\Admin\TicketController::class, 'approveReview'])->name('tickets.review.approve');
+    Route::post('/tickets/{id}/review/reject', [App\Http\Controllers\Admin\TicketController::class, 'rejectReview'])->name('tickets.review.reject');
+    Route::get('/tickets/dispatch', [App\Http\Controllers\Admin\TicketController::class, 'dispatchIndex'])->name('tickets.dispatch');
+    Route::get('/tickets/my-tasks', [App\Http\Controllers\Admin\TicketController::class, 'myTasks'])->name('tickets.my-tasks');
+    Route::get('/tickets/{id}', [App\Http\Controllers\Admin\TicketController::class, 'show'])->name('tickets.show');
+    Route::post('/tickets/{id}/assign', [App\Http\Controllers\Admin\TicketController::class, 'assign'])->name('tickets.assign');
+    Route::post('/tickets/{id}/accept', [App\Http\Controllers\Admin\TicketController::class, 'acceptTask'])->name('tickets.accept');
+    Route::post('/tickets/{id}/update-progress', [App\Http\Controllers\Admin\TicketController::class, 'updateProgress'])->name('tickets.update-progress');
+    Route::post('/tickets/{id}/costs', [App\Http\Controllers\Admin\TicketController::class, 'addCost'])->name('tickets.add-cost');
+    Route::delete('/tickets/{id}/costs/{costId}', [App\Http\Controllers\Admin\TicketController::class, 'deleteCost'])->name('tickets.delete-cost');
+    Route::post('/tickets/{id}/assign-accused', [App\Http\Controllers\Admin\TicketController::class, 'assignAccused'])->name('tickets.assign-accused');
 
     // QUẢN LÝ PHƯƠNG TIỆN PHÍA ADMIN
-    Route::get('/admin/vehicles', [App\Http\Controllers\Admin\VehicleController::class, 'index'])->name('admin.vehicles.index');
-    Route::post('/admin/vehicles/{vehicle}/assign-lot',  [App\Http\Controllers\Admin\VehicleController::class, 'assignLot'])->name('admin.vehicles.assignLot');
-    Route::post('/admin/vehicles/{vehicle}/release-lot', [App\Http\Controllers\Admin\VehicleController::class, 'releaseLot'])->name('admin.vehicles.releaseLot');
-    Route::post('/admin/vehicles/{vehicle}/approve',     [App\Http\Controllers\Admin\VehicleController::class, 'approve'])->name('admin.vehicles.approve');
-    Route::post('/admin/vehicles/{vehicle}/lock',        [App\Http\Controllers\Admin\VehicleController::class, 'lock'])->name('admin.vehicles.lock');
-    Route::post('/admin/vehicles/{vehicle}/unlock',      [App\Http\Controllers\Admin\VehicleController::class, 'unlock'])->name('admin.vehicles.unlock');
+    Route::get('/vehicles', [App\Http\Controllers\Admin\VehicleController::class, 'index'])->name('vehicles.index');
+    Route::post('/vehicles/{vehicle}/assign-lot',  [App\Http\Controllers\Admin\VehicleController::class, 'assignLot'])->name('vehicles.assignLot');
+    Route::post('/vehicles/{vehicle}/release-lot', [App\Http\Controllers\Admin\VehicleController::class, 'releaseLot'])->name('vehicles.releaseLot');
+    Route::post('/vehicles/{vehicle}/approve',     [App\Http\Controllers\Admin\VehicleController::class, 'approve'])->name('vehicles.approve');
+    Route::post('/vehicles/{vehicle}/lock',        [App\Http\Controllers\Admin\VehicleController::class, 'lock'])->name('vehicles.lock');
+    Route::post('/vehicles/{vehicle}/unlock',      [App\Http\Controllers\Admin\VehicleController::class, 'unlock'])->name('vehicles.unlock');
     
     // LỊCH SỬ RA VÀO (Admin)
-    Route::get('/admin/vehicle-logs', [App\Http\Controllers\Admin\VehicleLogController::class, 'index'])->name('admin.vehicle-logs.index');
-    Route::get('/admin/visitor-logs', [App\Http\Controllers\Admin\VisitorLogController::class, 'index'])->name('admin.visitor-logs.index');
+    Route::get('/vehicle-logs', [App\Http\Controllers\Admin\VehicleLogController::class, 'index'])->name('vehicle-logs.index');
+    Route::get('/visitor-logs', [App\Http\Controllers\Admin\VisitorLogController::class, 'index'])->name('visitor-logs.index');
 
     // QUẢN LÝ LỐT ĐỖ XE
-    Route::get('/admin/parking-lots', [App\Http\Controllers\Admin\ParkingLotController::class, 'index'])->name('admin.parking-lots.index');
-    Route::post('/admin/parking-lots', [App\Http\Controllers\Admin\ParkingLotController::class, 'store'])->name('admin.parking-lots.store');
-    Route::put('/admin/parking-lots/{parkingLot}', [App\Http\Controllers\Admin\ParkingLotController::class, 'update'])->name('admin.parking-lots.update');
-    Route::delete('/admin/parking-lots/{parkingLot}', [App\Http\Controllers\Admin\ParkingLotController::class, 'destroy'])->name('admin.parking-lots.destroy');
+    Route::get('/parking-lots', [App\Http\Controllers\Admin\ParkingLotController::class, 'index'])->name('parking-lots.index');
+    Route::post('/parking-lots', [App\Http\Controllers\Admin\ParkingLotController::class, 'store'])->name('parking-lots.store');
+    Route::put('/parking-lots/{parkingLot}', [App\Http\Controllers\Admin\ParkingLotController::class, 'update'])->name('parking-lots.update');
+    Route::delete('/parking-lots/{parkingLot}', [App\Http\Controllers\Admin\ParkingLotController::class, 'destroy'])->name('parking-lots.destroy');
 
     // Quản lý tiện ích chung cư (Facilities)
-    Route::get('/admin/amenities', [AdminFacilityController::class, 'index'])->name('admin.amenities.index');
-    Route::get('/admin/amenities/create', [AdminFacilityController::class, 'create'])->name('admin.amenities.create');
-    Route::post('/admin/amenities', [AdminFacilityController::class, 'store'])->name('admin.amenities.store');
-    Route::get('/admin/amenities/statistics', [AdminFacilityController::class, 'statistics'])->name('admin.amenities.statistics');
-    Route::get('/admin/amenities/bookings', [AdminFacilityController::class, 'bookings'])->name('admin.amenities.bookings');
-    Route::get('/admin/amenities/{facility}', [AdminFacilityController::class, 'show'])->name('admin.amenities.show');
-    Route::get('/admin/amenities/{facility}/edit', [AdminFacilityController::class, 'edit'])->name('admin.amenities.edit');
-    Route::put('/admin/amenities/{facility}', [AdminFacilityController::class, 'update'])->name('admin.amenities.update');
-    Route::delete('/admin/amenities/{facility}', [AdminFacilityController::class, 'destroy'])->name('admin.amenities.destroy');
-    Route::post('/admin/amenities/{facility}/images', [AdminFacilityController::class, 'storeImage'])->name('admin.amenities.images.store');
-    Route::delete('/admin/amenities/{facility}/images/{index}', [AdminFacilityController::class, 'destroyImage'])->name('admin.amenities.images.destroy');
-    Route::patch('/admin/amenities/{facility}/status', [AdminFacilityController::class, 'updateStatus'])->name('admin.amenities.status');
-    Route::post('/admin/facility-bookings/{booking}/approve', [AdminFacilityController::class, 'approveBooking'])->name('admin.amenities.bookings.approve');
-    Route::post('/admin/facility-bookings/{booking}/reject', [AdminFacilityController::class, 'rejectBooking'])->name('admin.amenities.bookings.reject');
-    Route::post('/admin/facility-bookings/{booking}/cancel', [AdminFacilityController::class, 'cancelBooking'])->name('admin.amenities.bookings.cancel');
-    Route::patch('/admin/facility-bookings/{booking}/status', [AdminFacilityController::class, 'updateBookingStatus'])->name('admin.amenities.bookings.status');
+    Route::get('/amenities', [AdminFacilityController::class, 'index'])->name('amenities.index');
+    Route::get('/amenities/create', [AdminFacilityController::class, 'create'])->name('amenities.create');
+    Route::post('/amenities', [AdminFacilityController::class, 'store'])->name('amenities.store');
+    Route::get('/amenities/statistics', [AdminFacilityController::class, 'statistics'])->name('amenities.statistics');
+    Route::get('/amenities/statistics/export', [AdminFacilityController::class, 'exportExcel'])->name('amenities.statistics.export');
+    Route::get('/amenities/bookings', [AdminFacilityController::class, 'bookings'])->name('amenities.bookings');
+    Route::get('/amenities/{facility}', [AdminFacilityController::class, 'show'])->name('amenities.show');
+    Route::get('/amenities/{facility}/edit', [AdminFacilityController::class, 'edit'])->name('amenities.edit');
+    Route::put('/amenities/{facility}', [AdminFacilityController::class, 'update'])->name('amenities.update');
+    Route::delete('/amenities/{facility}', [AdminFacilityController::class, 'destroy'])->name('amenities.destroy');
+    Route::post('/amenities/{facility}/images', [AdminFacilityController::class, 'storeImage'])->name('amenities.images.store');
+    Route::delete('/amenities/{facility}/images/{index}', [AdminFacilityController::class, 'destroyImage'])->name('amenities.images.destroy');
+    Route::patch('/amenities/{facility}/status', [AdminFacilityController::class, 'updateStatus'])->name('amenities.status');
+    Route::post('/facility-bookings/{booking}/approve', [AdminFacilityController::class, 'approveBooking'])->name('amenities.bookings.approve');
+    Route::post('/facility-bookings/{booking}/reject', [AdminFacilityController::class, 'rejectBooking'])->name('amenities.bookings.reject');
+    Route::post('/facility-bookings/{booking}/cancel', [AdminFacilityController::class, 'cancelBooking'])->name('amenities.bookings.cancel');
+    Route::patch('/facility-bookings/{booking}/status', [AdminFacilityController::class, 'updateBookingStatus'])->name('amenities.bookings.status');
 
-    Route::post('/admin/announcements/{id}/toggle-pin', [\App\Http\Controllers\Admin\AnnouncementController::class, 'togglePin'])->name('admin.announcements.toggle-pin');
-    Route::resource('/admin/announcements', \App\Http\Controllers\Admin\AnnouncementController::class)->names('admin.announcements');
+    Route::post('/announcements/{id}/toggle-pin', [\App\Http\Controllers\Admin\AnnouncementController::class, 'togglePin'])->name('announcements.toggle-pin');
+    Route::resource('/announcements', \App\Http\Controllers\Admin\AnnouncementController::class)->names('announcements');
     // Quản lý tài khoản người dùng
-    Route::get('/admin/users', [UserController::class, 'index'])->name('admin.users.index');
-    Route::get('/admin/users/create', [UserController::class, 'create'])->name('admin.users.create');
-    Route::post('/admin/users', [UserController::class, 'store'])->name('admin.users.store');
-    Route::get('/admin/users/{id}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
-    Route::put('/admin/users/{id}', [UserController::class, 'update'])->name('admin.users.update');
-    Route::put('/admin/users/{id}/update-status', [UserController::class, 'updateStatus'])->name('admin.users.updateStatus');
-    Route::put('/admin/users/{id}/reset-password', [UserController::class, 'resetPassword'])->name('admin.users.resetPassword');
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+    Route::post('/users', [UserController::class, 'store'])->name('users.store');
+    Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
+    Route::put('/users/{id}/update-status', [UserController::class, 'updateStatus'])->name('users.updateStatus');
+    Route::put('/users/{id}/reset-password', [UserController::class, 'resetPassword'])->name('users.resetPassword');
 
     // Quản lý mã mời
-    Route::get('/admin/invitations', [AdminInvitationController::class, 'index'])->name('admin.invitations.index');
-    Route::post('/admin/invitations', [AdminInvitationController::class, 'store'])->name('admin.invitations.store');
-    Route::delete('/admin/invitations/{id}', [AdminInvitationController::class, 'destroy'])->name('admin.invitations.destroy');
+    Route::get('/invitations', [AdminInvitationController::class, 'index'])->name('invitations.index');
+    Route::post('/invitations', [AdminInvitationController::class, 'store'])->name('invitations.store');
+    Route::delete('/invitations/{id}', [AdminInvitationController::class, 'destroy'])->name('invitations.destroy');
 
     // Trang cá nhân quản trị viên
-    Route::get('/admin/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'index'])->name('admin.profile.index');
-    Route::put('/admin/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('admin.profile.update');
-    Route::put('/admin/profile/change-password', [\App\Http\Controllers\Admin\ProfileController::class, 'changePassword'])->name('admin.profile.change-password');
-});
+    Route::get('/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'index'])->name('profile.index');
+    Route::put('/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/change-password', [\App\Http\Controllers\Admin\ProfileController::class, 'changePassword'])->name('profile.change-password');
+
+
+
+    // Quản lý bài đăng cư dân (Admin Portal)
+    Route::get('/posts', [\App\Http\Controllers\Admin\PostController::class, 'index'])->name('posts.index');
+    Route::post('/posts/{id}/restore', [\App\Http\Controllers\Admin\PostController::class, 'restore'])->name('posts.restore');
+    Route::post('/posts/{id}/toggle-status', [\App\Http\Controllers\Admin\PostController::class, 'toggleStatus'])->name('posts.toggle-status');
+    Route::post('/posts/{id}/dismiss-reports', [\App\Http\Controllers\Admin\PostController::class, 'dismissReports'])->name('posts.dismiss-reports');
+    Route::get('/posts/{id}/json', [\App\Http\Controllers\Admin\PostController::class, 'getPostJson'])->name('posts.json');
+    Route::delete('/posts/{id}', [\App\Http\Controllers\Admin\PostController::class, 'destroy'])->name('posts.destroy');
+    Route::post('/comments/{id}/dismiss-reports', [\App\Http\Controllers\Admin\PostController::class, 'dismissCommentReports'])->name('comments.dismiss-reports');
+    Route::delete('/comments/{id}', [\App\Http\Controllers\Admin\PostController::class, 'destroyComment'])->name('comments.destroy');
+    Route::post('/comments/{id}/restore', [\App\Http\Controllers\Admin\PostController::class, 'restoreComment'])->name('comments.restore');
+    Route::post('/users/{id}/ban-posting', [\App\Http\Controllers\Admin\PostController::class, 'banPosting'])->name('users.ban-posting');
+    Route::post('/users/{id}/ban-commenting', [\App\Http\Controllers\Admin\PostController::class, 'banCommenting'])->name('users.ban-commenting');
+
+};
+
+Route::middleware(['admin'])->prefix('admin')->name('admin.')->group($portalRoutes);
+Route::middleware(['manager'])->prefix('manager')->name('manager.')->group($portalRoutes);
+Route::middleware(['staff'])->prefix('staff')->name('staff.')->group($portalRoutes);
+Route::middleware(['technician'])->prefix('technician')->name('technician.')->group($portalRoutes);
+
 
 // DASHBOARD SECURITY ROUTES
 Route::middleware(['security'])->group(function () {
@@ -244,6 +312,7 @@ Route::middleware(['security'])->group(function () {
     Route::get('/security/vehicle-checkin', [\App\Http\Controllers\Security\VehicleCheckinController::class, 'index'])->name('security.vehicle-checkin.index');
     Route::post('/security/vehicle-checkin/scan', [\App\Http\Controllers\Security\VehicleCheckinController::class, 'scan'])->name('security.vehicle-checkin.scan');
     Route::post('/security/vehicle-checkin/confirm', [\App\Http\Controllers\Security\VehicleCheckinController::class, 'checkin'])->name('security.vehicle-checkin.confirm');
+    Route::post('/security/vehicle-checkin/guest', [\App\Http\Controllers\Security\VehicleCheckinController::class, 'guestCheckin'])->name('security.vehicle-checkin.guest');
 
     // Quét QR xe ra
     Route::get('/security/vehicle-checkout', [\App\Http\Controllers\Security\VehicleCheckoutController::class, 'index'])->name('security.vehicle-checkout.index');
@@ -256,6 +325,12 @@ Route::middleware(['security'])->group(function () {
     Route::post('/security/visitor-check/checkin', [\App\Http\Controllers\Security\VisitorCheckinController::class, 'checkin'])->name('security.visitor-check.checkin');
     Route::post('/security/visitor-check/checkout', [\App\Http\Controllers\Security\VisitorCheckinController::class, 'checkout'])->name('security.visitor-check.checkout');
 
+    // Đăng ký khách vãng lai tại cổng (walk-in)
+    Route::get('/security/walk-in', [\App\Http\Controllers\Security\WalkInVisitorController::class, 'index'])->name('security.walk-in.index');
+    Route::get('/security/walk-in/residents', [\App\Http\Controllers\Security\WalkInVisitorController::class, 'getResidents'])->name('security.walk-in.residents');
+    Route::post('/security/walk-in', [\App\Http\Controllers\Security\WalkInVisitorController::class, 'store'])->name('security.walk-in.store');
+    Route::post('/security/walk-in/checkout', [\App\Http\Controllers\Security\WalkInVisitorController::class, 'checkout'])->name('security.walk-in.checkout');
+
     // Xem lịch sử xe và khách cho bảo vệ
     Route::get('/security/vehicle-logs', [\App\Http\Controllers\Admin\VehicleLogController::class, 'index'])->name('security.vehicle-logs.index');
     Route::get('/security/visitor-logs', [\App\Http\Controllers\Admin\VisitorLogController::class, 'index'])->name('security.visitor-logs.index');
@@ -263,16 +338,12 @@ Route::middleware(['security'])->group(function () {
 
 // DASHBOARD RESIDENT ROUTES
 Route::middleware(['resident'])->group(function () {
-    Route::get('/resident/dashboard', function () {
+    Route::get('/resident/dashboard', function (\Illuminate\Http\Request $request) {
         $user = auth()->user();
         $apartment = $user->apartment;
-        
-        $recentAnnouncements = \App\Models\Announcement::with('user')
-            ->published()
-            ->ordered()
-            ->take(5)
-            ->get();
+        $apartmentId = $user->apartment_id;
 
+        // Số dư nợ
         $totalUnpaidAmount = 0;
         $dueDate = null;
         if ($apartment) {
@@ -287,7 +358,32 @@ Route::middleware(['resident'])->group(function () {
             }
         }
 
-        return view('resident.home.index', compact('recentAnnouncements', 'totalUnpaidAmount', 'dueDate', 'apartment'));
+        // Thông báo từ ban quản lý
+        $announcements = \App\Models\Announcement::where('status', 'published')
+            ->orderByDesc('pinned')
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        // Bài viết cư dân (full feed với filter + pagination)
+        $postQuery = \App\Models\Post::with(['user', 'images', 'comments', 'likedByCurrentUser'])
+            ->withCount(['likes', 'comments'])
+            ->where('status', 'published')
+            ->whereDoesntHave('reports', function($q) {
+                $q->where('user_id', auth()->id());
+            })
+            ->whereDoesntHave('hides', function($q) {
+                $q->where('user_id', auth()->id());
+            });
+
+        $postQuery->orderBy('created_at', 'desc');
+
+        $posts = $postQuery->paginate(10)->withQueryString();
+
+        return view('resident.home.index', compact(
+            'user', 'apartment', 'totalUnpaidAmount', 'dueDate',
+            'announcements', 'posts'
+        ));
     })->name('resident.dashboard');
 
     Route::get('/resident/contact', function () {
@@ -305,6 +401,7 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/invoices/vnpay-return', [ResidentInvoiceController::class, 'vnpayReturn'])->name('resident.invoices.vnpay-return');
     Route::get('/resident/invoices/{id}', [ResidentInvoiceController::class, 'show'])->name('resident.invoices.show');
     Route::post('/resident/invoices/pay', [ResidentInvoiceController::class, 'pay'])->name('resident.invoices.pay');
+    Route::post('/resident/invoices/pay-details', [ResidentInvoiceController::class, 'payDetails'])->name('resident.invoices.pay-details');
     Route::get('/resident/payments/{payment}/receipt', [ResidentInvoiceController::class, 'printReceipt'])->name('resident.payments.receipt');
 
     // Quản lý thành viên gia đình & nhân khẩu & mã mời
@@ -328,13 +425,15 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/vehicles/{vehicle}/qr', [App\Http\Controllers\Resident\VehicleController::class, 'showQr'])
         ->name('resident.vehicles.qr');
 
+    Route::get('/resident/vehicles/{vehicle}/qr/download', [App\Http\Controllers\Resident\VehicleController::class, 'downloadQr'])
+        ->name('resident.vehicles.qr.download');
+
     // QUẢN LÝ KHÁCH PHÍA CƯ DÂN
     Route::get('/resident/visitors', [\App\Http\Controllers\Resident\VisitorController::class, 'index'])->name('resident.visitors.index');
     Route::get('/resident/visitors/create', [\App\Http\Controllers\Resident\VisitorController::class, 'create'])->name('resident.visitors.create');
     Route::post('/resident/visitors', [\App\Http\Controllers\Resident\VisitorController::class, 'store'])->name('resident.visitors.store');
     Route::get('/resident/visitors/{id}', [\App\Http\Controllers\Resident\VisitorController::class, 'show'])->name('resident.visitors.show');
     Route::delete('/resident/visitors/{id}', [\App\Http\Controllers\Resident\VisitorController::class, 'destroy'])->name('resident.visitors.destroy');
-
     // PHẢN ÁNH SỰ CỐ PHÍA CƯ DÂN
     Route::get('/resident/tickets', [ResidentTicketController::class, 'index'])->name('resident.tickets.index');
     Route::get('/resident/tickets/create', [ResidentTicketController::class, 'create'])->name('resident.tickets.create');
@@ -344,15 +443,28 @@ Route::middleware(['resident'])->group(function () {
     Route::post('/resident/tickets/{id}/feedback', [ResidentTicketController::class, 'feedback'])->name('resident.tickets.feedback');
 
     // BẢNG TIN & BÌNH LUẬN PHÍA CƯ DÂN
-    Route::get('/resident/posts', [\App\Http\Controllers\Resident\PostController::class, 'index'])->name('resident.posts.index');
+    Route::get('/resident/posts', function (\Illuminate\Http\Request $request) {
+        $user = auth()->user();
+        $posts = \App\Models\Post::with(['user', 'images', 'comments', 'likedByCurrentUser'])
+            ->withCount(['likes', 'comments'])
+            ->where('status', 'published')
+            ->where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+            
+        return view('resident.posts.index', compact('posts', 'user'));
+    })->name('resident.posts.index');
+    Route::get('/resident/posts/create', function() { return view('resident.posts.create'); })->name('resident.posts.create');
     Route::post('/resident/posts', [\App\Http\Controllers\Resident\PostController::class, 'store'])->name('resident.posts.store');
     Route::get('/resident/posts/{id}', [\App\Http\Controllers\Resident\PostController::class, 'show'])->name('resident.posts.show');
+    Route::get('/resident/posts/{id}/edit', [\App\Http\Controllers\Resident\PostController::class, 'edit'])->name('resident.posts.edit');
     Route::put('/resident/posts/{id}', [\App\Http\Controllers\Resident\PostController::class, 'update'])->name('resident.posts.update');
     Route::delete('/resident/posts/{id}', [\App\Http\Controllers\Resident\PostController::class, 'destroy'])->name('resident.posts.destroy');
     Route::post('/resident/posts/{id}/comments', [\App\Http\Controllers\Resident\PostController::class, 'storeComment'])->name('resident.posts.comments.store');
     Route::put('/resident/comments/{id}', [\App\Http\Controllers\Resident\PostController::class, 'updateComment'])->name('resident.comments.update');
     Route::delete('/resident/comments/{id}', [\App\Http\Controllers\Resident\PostController::class, 'destroyComment'])->name('resident.comments.destroy');
     Route::post('/resident/posts/{id}/report', [\App\Http\Controllers\Resident\PostController::class, 'report'])->name('resident.posts.report');
+    Route::post('/resident/posts/{id}/hide', [\App\Http\Controllers\Resident\PostController::class, 'hide'])->name('resident.posts.hide');
     Route::post('/resident/comments/{id}/report', [\App\Http\Controllers\Resident\PostController::class, 'reportComment'])->name('resident.comments.report');
     Route::post('/resident/like', [\App\Http\Controllers\Resident\PostController::class, 'toggleLike'])->name('resident.posts.like');
     Route::get('/resident/posts/{id}/comments', [\App\Http\Controllers\Resident\PostController::class, 'loadComments'])->name('resident.posts.comments.load');
@@ -382,22 +494,17 @@ Route::middleware(['resident'])->group(function () {
 
     // AJAX: Khung giờ còn trống (dùng trong form đặt lịch)
     Route::post('/resident/api/available-slots', [\App\Http\Controllers\FacilityBookingController::class, 'getAvailableSlots'])->name('resident.api.available-slots');
+
+    // CHATBOT AI CƯ DÂN
+    Route::get('/resident/chatbot/history', [\App\Http\Controllers\Resident\ChatbotController::class, 'getHistory'])->name('resident.chatbot.history');
+    Route::post('/resident/chatbot/message', [\App\Http\Controllers\Resident\ChatbotController::class, 'sendMessage'])
+        ->middleware('throttle:10,1')
+        ->name('resident.chatbot.message');
+    Route::post('/resident/chatbot/clear', [\App\Http\Controllers\Resident\ChatbotController::class, 'clearHistory'])->name('resident.chatbot.clear');
+    Route::post('/resident/tickets/{id}/respond-accusation', [ResidentTicketController::class, 'respondAccusation'])->name('resident.tickets.respond-accusation');
 });
 
-Route::middleware(['admin'])->name('admin.')->group(function () {
-    // Quản lý bài đăng cư dân (Admin Portal)
-    Route::get('/admin/posts', [\App\Http\Controllers\Admin\PostController::class, 'index'])->name('posts.index');
-    Route::post('/admin/posts/{id}/restore', [\App\Http\Controllers\Admin\PostController::class, 'restore'])->name('posts.restore');
-    Route::post('/admin/posts/{id}/toggle-status', [\App\Http\Controllers\Admin\PostController::class, 'toggleStatus'])->name('posts.toggle-status');
-    Route::post('/admin/posts/{id}/dismiss-reports', [\App\Http\Controllers\Admin\PostController::class, 'dismissReports'])->name('posts.dismiss-reports');
-    Route::get('/admin/posts/{id}/json', [\App\Http\Controllers\Admin\PostController::class, 'getPostJson'])->name('posts.json');
-    Route::delete('/admin/posts/{id}', [\App\Http\Controllers\Admin\PostController::class, 'destroy'])->name('posts.destroy');
-    Route::post('/admin/comments/{id}/dismiss-reports', [\App\Http\Controllers\Admin\PostController::class, 'dismissCommentReports'])->name('comments.dismiss-reports');
-    Route::delete('/admin/comments/{id}', [\App\Http\Controllers\Admin\PostController::class, 'destroyComment'])->name('comments.destroy');
-    Route::post('/admin/comments/{id}/restore', [\App\Http\Controllers\Admin\PostController::class, 'restoreComment'])->name('comments.restore');
-    Route::post('/admin/users/{id}/ban-posting', [\App\Http\Controllers\Admin\PostController::class, 'banPosting'])->name('users.ban-posting');
-    Route::post('/admin/users/{id}/ban-commenting', [\App\Http\Controllers\Admin\PostController::class, 'banCommenting'])->name('users.ban-commenting');
-});
+
 
 // Fallback route to serve uploaded public storage files
 Route::get('/storage/{any}', function ($any) {

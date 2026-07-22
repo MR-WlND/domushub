@@ -14,7 +14,7 @@
         <h1>Ghi chỉ số đơn lẻ</h1>
         <p>Nhập chỉ số mới cho một căn hộ</p>
     </div>
-    <a href="{{ route('admin.utility-readings.index') }}" class="util-btn util-btn--outline">
+    <a href="{{ portal_route('utility-readings.index') }}" class="util-btn util-btn--outline">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
         </svg>
@@ -41,7 +41,7 @@
         <h4>Thông tin căn hộ</h4>
     </div>
 
-    <form action="{{ route('admin.utility-readings.store') }}" method="POST" id="createForm" enctype="multipart/form-data">
+    <form action="{{ portal_route('utility-readings.store') }}" method="POST" id="createForm" enctype="multipart/form-data">
         @csrf
 
         <div class="util-form-grid-2">
@@ -82,34 +82,19 @@
             <h4>Thông tin chỉ số</h4>
         </div>
 
-        <div class="util-form-grid-2">
-            {{-- Loại --}}
-            <div class="util-form-group">
-                <label class="util-form-label">Loại <span style="color:#ef4444">*</span></label>
-                <select name="type" id="type"
-                    class="util-form-input {{ $errors->has('type') ? 'util-form-input--error' : '' }}" required>
-                    <option value="">— Chọn loại —</option>
-                    <option value="electricity" {{ old('type') == 'electricity' ? 'selected' : '' }}>Điện</option>
-                    <option value="water" {{ old('type') == 'water' ? 'selected' : '' }}>Nước</option>
-                </select>
-                @error('type')
-                    <p class="util-form-error">{{ $message }}</p>
-                @enderror
-            </div>
+        <input type="hidden" name="type" id="type" value="water">
 
-            {{-- Tháng/Năm --}}
-            <div class="util-form-group">
-                <label class="util-form-label">Kỳ ghi <span style="color:#ef4444">*</span></label>
-                <div style="display: flex; gap: 8px;">
-                    <input type="number" name="record_month" id="record_month"
-                        value="{{ old('record_month', now()->month) }}" min="1" max="12"
-                        class="util-form-input {{ $errors->has('record_month') ? 'util-form-input--error' : '' }}"
-                        placeholder="Tháng" required style="flex: 1;">
-                    <input type="number" name="record_year" id="record_year"
-                        value="{{ old('record_year', now()->year) }}" min="2020" max="2100"
-                        class="util-form-input {{ $errors->has('record_year') ? 'util-form-input--error' : '' }}"
-                        placeholder="Năm" required style="flex: 1.5;">
-                </div>
+        <div class="util-form-group">
+            <label class="util-form-label">Kỳ ghi <span style="color:#ef4444">*</span></label>
+            <div style="display: flex; gap: 8px;">
+                <input type="number" name="record_month" id="record_month"
+                    value="{{ old('record_month', now()->month) }}" min="1" max="12"
+                    class="util-form-input {{ $errors->has('record_month') ? 'util-form-input--error' : '' }}"
+                    placeholder="Tháng" required style="flex: 1;">
+                <input type="number" name="record_year" id="record_year"
+                    value="{{ old('record_year', now()->year) }}" min="2020" max="2100"
+                    class="util-form-input {{ $errors->has('record_year') ? 'util-form-input--error' : '' }}"
+                    placeholder="Năm" required style="flex: 1.5;">
             </div>
         </div>
 
@@ -159,9 +144,12 @@
 
         {{-- ── Ảnh minh chứng công tơ ── --}}
         <div class="util-form-group" style="margin-top: 15px; margin-bottom: 20px;">
-            <label class="util-form-label">
-                📷 Ảnh minh chứng công tơ
-                <span style="font-weight:400; color:#64748b; font-size:12px;">(Tối đa 5 ảnh, mỗi ảnh ≤ 4MB)</span>
+            <label class="util-form-label" style="display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-camera" style="font-size: 16px; color: #475569;"></i>
+                <span>
+                    Ảnh minh chứng công tơ
+                    <span style="font-weight:400; color:#64748b; font-size:12px;">(Tối đa 5 ảnh, mỗi ảnh ≤ 4MB)</span>
+                </span>
             </label>
 
             {{-- Các nút chọn ảnh --}}
@@ -169,21 +157,19 @@
 
                 {{-- Nút chụp ảnh qua WebRTC (hoạt động cả laptop lẫn mobile) --}}
                 <button type="button" id="btn_camera" onclick="openCameraModal()"
-                    style="display:inline-flex;align-items:center;gap:7px;padding:9px 18px;background:linear-gradient(135deg,#0b57d0,#1a73e8);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(11,87,208,.25);transition:opacity .2s;">
-                    <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                        <circle cx="12" cy="13" r="4"/>
-                    </svg>
-                    📸 Chụp ảnh
+                    style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;background:#00236f;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(0,35,111,0.15);transition:all 0.2s;"
+                    onmouseover="this.style.background='#001850'"
+                    onmouseout="this.style.background='#00236f'">
+                    <i class="fa-solid fa-camera" style="font-size: 14px;"></i>
+                    Chụp ảnh
                 </button>
 
                 {{-- Nút chọn từ thư viện --}}
                 <button type="button" id="btn_gallery" onclick="document.getElementById('image_gallery').click()"
-                    style="display:inline-flex;align-items:center;gap:7px;padding:9px 18px;background:#fff;color:#1e293b;border:1.5px solid #cbd5e1;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;transition:border-color .2s;">
-                    <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
-                        <polyline points="21 15 16 10 5 21"/>
-                    </svg>
+                    style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;background:#fff;color:#334155;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;"
+                    onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#94a3b8';"
+                    onmouseout="this.style.background='#fff'; this.style.borderColor='#cbd5e1';">
+                    <i class="fa-regular fa-image" style="font-size: 14px;"></i>
                     Chọn từ thư viện
                 </button>
             </div>
@@ -197,8 +183,9 @@
             {{-- Gallery preview --}}
             <div id="image_preview_gallery" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:6px;"></div>
 
-            <p class="util-form-hint" style="margin-top:8px;">
-                💡 Nhấn <strong>📸 Chụp ảnh</strong> để mở camera (laptop & điện thoại), hoặc <strong>Chọn từ thư viện</strong> để upload ảnh có sẵn.
+            <p class="util-form-hint" style="margin-top:8px; display: flex; align-items: center; gap: 6px;">
+                <i class="fa-regular fa-lightbulb" style="color: #eab308; font-size: 13px;"></i>
+                <span>Nhấn <strong>Chụp ảnh</strong> để mở camera (laptop & điện thoại), hoặc <strong>Chọn từ thư viện</strong> để upload ảnh có sẵn.</span>
             </p>
         </div>
 
@@ -209,8 +196,11 @@
         </div>
         <div id="cameraModal"
              style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:94vw;max-width:540px;background:#fff;border-radius:20px;box-shadow:0 24px 60px rgba(0,0,0,.3);z-index:10000;overflow:hidden;">
-            <div style="background:linear-gradient(135deg,#0b57d0,#1a73e8);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;">
-                <div style="color:#fff;font-weight:700;font-size:1rem;">📸 Chụp ảnh công tơ</div>
+            <div style="background:#00236f;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;">
+                <div style="color:#fff;font-weight:700;font-size:1rem;display:flex;align-items:center;gap:8px;">
+                    <i class="fa-solid fa-camera" style="font-size: 15px;"></i>
+                    Chụp ảnh công tơ
+                </div>
                 <button type="button" onclick="closeCameraModal()"
                     style="background:rgba(255,255,255,.2);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
             </div>
@@ -220,8 +210,8 @@
                 <label style="font-size:12px;font-weight:600;color:#475569;">Camera:</label>
                 <select id="cameraSelect" onchange="switchCamera()"
                     style="flex:1;padding:5px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;background:#fff;">
-                    <option value="environment">📷 Camera sau (chính)</option>
-                    <option value="user">🤳 Camera trước (selfie)</option>
+                    <option value="environment">Camera sau (chính)</option>
+                    <option value="user">Camera trước (selfie)</option>
                 </select>
             </div>
 
@@ -235,19 +225,18 @@
                 </div>
                 {{-- Loading text --}}
                 <div id="cameraLoading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;background:rgba(0,0,0,0.5);">
-                    🔄 Đang khởi động camera...
+                    Đang khởi động camera...
                 </div>
             </div>
 
             {{-- Nút chụp --}}
             <div style="padding:16px;display:flex;gap:10px;justify-content:center;background:#f8fafc;">
                 <button type="button" onclick="capturePhoto()"
-                    style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:linear-gradient(135deg,#0b57d0,#1a73e8);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(11,87,208,.35);transition:transform .1s;"
-                    onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                        <circle cx="12" cy="13" r="4"/>
-                    </svg>
+                    style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:#00236f;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(0,35,111,0.25);transition:transform 0.1s;"
+                    onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''"
+                    onmouseover="this.style.background='#001850'"
+                    onmouseout="this.style.background='#00236f'">
+                    <i class="fa-solid fa-camera" style="font-size: 16px;"></i>
                     Chụp ảnh
                 </button>
                 <button type="button" onclick="closeCameraModal()"
@@ -270,7 +259,7 @@
                 </svg>
                 Lưu chỉ số
             </button>
-            <a href="{{ route('admin.utility-readings.index') }}" class="util-btn util-btn--outline">Hủy</a>
+            <a href="{{ portal_route('utility-readings.index') }}" class="util-btn util-btn--outline">Hủy</a>
         </div>
 
     </form>
@@ -358,7 +347,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (!aptId || !t || !m || !y) return;
 
-        fetch(`{{ route('admin.utility-readings.get-old-value') }}?apartment_id=${aptId}&type=${t}&month=${m}&year=${y}`)
+        fetch(`{{ portal_route('utility-readings.get-old-value') }}?apartment_id=${aptId}&type=${t}&month=${m}&year=${y}`)
             .then(res => res.json())
             .then(data => {
                 fetchedOldValue = data.old_value ?? 0;
@@ -553,13 +542,13 @@ async function startCamera(facing) {
             loading.style.display = 'none';
         };
     } catch (err) {
-        let msg = '❌ Không thể mở camera.';
+        let msg = 'Không thể mở camera.';
         if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-            msg = '🔒 Trình duyệt đã chặn quyền camera.\n\nHãy cho phép quyền camera trong thanh địa chỉ và thử lại.';
+            msg = 'Trình duyệt đã chặn quyền camera.\n\nHãy cho phép quyền camera trong thanh địa chỉ và thử lại.';
         } else if (err.name === 'NotFoundError') {
-            msg = '📷 Không tìm thấy camera. Kiểm tra kết nối webcam.';
+            msg = 'Không tìm thấy camera. Kiểm tra kết nối webcam.';
         } else if (err.name === 'NotReadableError') {
-            msg = '⚠️ Camera đang được dùng bởi ứng dụng khác. Đóng ứng dụng đó và thử lại.';
+            msg = 'Camera đang được dùng bởi ứng dụng khác. Đóng ứng dụng đó và thử lại.';
         } else if (err.name === 'OverconstrainedError') {
             // Thử lại không ràng buộc facingMode
             try {

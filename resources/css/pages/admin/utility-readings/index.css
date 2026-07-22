@@ -1,5 +1,5 @@
-/* ============================================================
-   UTILITY READINGS – Chốt số Điện Nước
+﻿/* ============================================================
+   UTILITY READINGS â€“ Chá»‘t sá»‘ Äiá»‡n NÆ°á»›c
    ============================================================ */
 
 /* ---- Stat Cards ---- */
@@ -12,7 +12,7 @@
 
 .util-stat-card {
     background: #ffffff;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 20px 24px;
     border: 1px solid #e2e8f0;
     box-shadow: 0 2px 8px rgba(0, 35, 111, 0.03);
@@ -52,7 +52,7 @@
     align-items: center;
     gap: 4px;
     padding: 4px 12px;
-    border-radius: 999px;
+    border-radius: 8px;
     font-size: 12px;
     font-weight: 600;
     white-space: nowrap;
@@ -87,7 +87,7 @@
 .util-filter-panel {
     background: #f8faff;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 20px 24px;
     margin-bottom: 24px;
 }
@@ -108,24 +108,36 @@
 }
 
 .util-filter-grid select,
-.util-filter-grid input[type="number"] {
+.util-filter-grid input,
+.util-filter-grid .util-form-input {
     width: 100%;
-    height: 40px;
+    height: 40px !important;
     padding: 8px 12px;
     border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    font-size: 14px;
+    border-radius: 8px !important;
+    font-size: 13px !important;
     color: #1e293b;
     background: #ffffff;
     outline: none;
-    transition: border-color 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
     box-sizing: border-box;
 }
 
 .util-filter-grid select:focus,
-.util-filter-grid input:focus {
+.util-filter-grid input:focus,
+.util-filter-grid .util-form-input:focus {
     border-color: #0b57d0;
     box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.08);
+}
+
+/* Custom select dropdown styling within filter grid */
+.util-filter-grid select.util-form-input {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 14px;
+    padding-right: 32px;
 }
 
 .util-filter-actions {
@@ -134,11 +146,91 @@
     align-items: end;
 }
 
+/* ---- Filter Search Input with Icon ---- */
+.filter-search-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.filter-search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+}
+
+.filter-search-input {
+    padding-left: 34px !important;
+}
+
+/* ---- Responsive Filter Grids ---- */
+.util-filter-grid--logs {
+    grid-template-columns: repeat(6, 1fr);
+}
+
+.util-filter-grid--index {
+    grid-template-columns: repeat(6, 1fr);
+}
+
+/* Grid Column Spans & Alignments */
+.util-filter-grid__search {
+    grid-column: span 2;
+}
+
+.util-filter-actions--logs {
+    grid-column: 6 / 7;
+}
+
+/* Media Queries for Logs Grid */
+@media (max-width: 1200px) {
+    .util-filter-grid--logs {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .util-filter-grid__search {
+        grid-column: span 2;
+    }
+    .util-filter-actions--logs {
+        grid-column: 3 / 4;
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 768px) {
+    .util-filter-grid--logs {
+        grid-template-columns: 1fr;
+    }
+    .util-filter-grid__search {
+        grid-column: span 1;
+    }
+    .util-filter-actions--logs {
+        grid-column: span 1;
+        justify-content: flex-start;
+        margin-top: 10px;
+    }
+}
+
+/* Media Queries for Index Grid */
+@media (max-width: 1024px) {
+    .util-filter-grid--index {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .util-filter-grid--index {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* ---- Table ---- */
 .util-table-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 10px;
     overflow: hidden;
 }
 
@@ -215,7 +307,7 @@
     justify-content: center;
     width: 28px;
     height: 28px;
-    border-radius: 6px;
+    border-radius: 8px;
     border: 1px solid #e2e8f0;
     background: #ffffff;
     cursor: pointer;
@@ -299,7 +391,7 @@
     align-items: center;
     gap: 6px;
     padding: 10px 20px;
-    border-radius: 10px;
+    border-radius: 8px;
     font-size: 14px;
     font-weight: 600;
     text-decoration: none;
@@ -353,7 +445,7 @@
     padding: 60px 20px;
     background: #f8faff;
     border: 2px dashed #e2e8f0;
-    border-radius: 12px;
+    border-radius: 10px;
     color: #64748b;
 }
 
@@ -426,7 +518,7 @@
 /* ---- Form Card (Create/Edit) ---- */
 .util-form-card {
     background: #ffffff;
-    border-radius: 16px;
+    border-radius: 10px;
     padding: 32px;
     box-shadow: 0 4px 16px rgba(0, 35, 111, 0.04);
     border: 1px solid #e2e8f0;
@@ -492,7 +584,7 @@
     height: 46px;
     padding: 10px 16px;
     border: 1px solid #cbd5e1;
-    border-radius: 10px;
+    border-radius: 8px;
     font-size: 14px;
     color: #1e293b;
     background: #ffffff;
@@ -582,7 +674,7 @@ select.util-form-input {
 
 .util-modal {
     background: #ffffff;
-    border-radius: 16px;
+    border-radius: 10px;
     width: 100%;
     max-width: 580px;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
@@ -624,7 +716,7 @@ select.util-form-input {
     cursor: pointer;
     color: #94a3b8;
     padding: 4px;
-    border-radius: 6px;
+    border-radius: 10px;
     transition: all 0.15s;
     display: flex;
     align-items: center;
@@ -645,7 +737,7 @@ select.util-form-input {
 /* Upload zone */
 .util-drag-zone {
     border: 2px dashed #cbd5e1;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 32px 20px;
     text-align: center;
     background: #f8fafc;
@@ -694,7 +786,7 @@ select.util-form-input {
 .util-file-preview {
     margin-top: 16px;
     background: #f1f5f9;
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 10px 14px;
     display: none;
     align-items: center;
@@ -723,7 +815,7 @@ select.util-form-input {
     margin-bottom: 20px;
     border: 1px solid #bfdbfe;
     background: #eff6ff;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 16px 20px;
 }
 
@@ -821,7 +913,7 @@ select.util-form-input {
     width: 44px;
     height: 44px;
     object-fit: cover;
-    border-radius: 8px;
+    border-radius: 10px;
     border: 1px solid #cbd5e1;
     cursor: pointer;
     background-color: #f8fafc;
@@ -842,7 +934,7 @@ select.util-form-input {
     pointer-events: none;
     background: #ffffff;
     border: 1px solid #cbd5e1;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 8px;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.12);
     width: 250px;
@@ -876,7 +968,7 @@ select.util-form-input {
     height: auto;
     max-height: 240px;
     object-fit: contain;
-    border-radius: 8px;
+    border-radius: 10px;
     display: block;
     background: #f8fafc;
 }
@@ -891,5 +983,6 @@ select.util-form-input {
     background: #fef3c7;
     color: #b45309;
 }
+
 
 
