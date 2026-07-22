@@ -93,116 +93,83 @@
         {{-- Invoice Table --}}
         <div class="inv-admin__card">
             <div class="inv-admin__card-header">
-                <span>{{ $invoices->total() }} hóa đơn</span>
-                <span class="inv-admin__muted">Trang {{ $invoices->currentPage() }}/{{ $invoices->lastPage() }}</span>
+                <span>{{ $apartmentsPaginated->total() }} căn hộ</span>
+                <span class="inv-admin__muted">Trang {{ $apartmentsPaginated->currentPage() }}/{{ $apartmentsPaginated->lastPage() }}</span>
             </div>
 
             <table class="inv-admin__table">
                 <thead>
                     <tr>
-                        <th>Mã HĐ</th>
                         <th>Căn hộ</th>
-                        <th>Kỳ</th>
-                        <th>Hạn TT</th>
-                        <th>Tổng tiền</th>
+                        <th>Tòa/Tầng</th>
+                        <th>Tình trạng</th>
+                        <th>Số lượng HĐ</th>
+                        <th>Tổng tiền HĐ</th>
                         <th>Đã thu</th>
-                        <th>Trạng thái</th>
-                        <th>Thao tác</th>
+                        <th>Tổng dư nợ</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($invoices as $invoice)
+                    @forelse($apartmentsPaginated as $apt)
                         @php
-                            $apt = $invoice->apartment;
                             $blockName = optional(optional($apt->floor)->block)->name ?? '—';
-                            $isRecentlyCreated = $invoice->created_at && $invoice->created_at->diffInMinutes(now()) < 1;
+                            $floorName = optional($apt->floor)->name ?? '—';
+                            $totalAmount = $apt->invoices_sum_total_amount ?? 0;
+                            $paidAmount = $apt->invoices_sum_paid_amount ?? 0;
+                            $debt = max(0, $totalAmount - $paidAmount);
+                            $highlightIds = session('highlightAptIds', []);
+                            $errorIds = session('errorAptIds', []);
+                            $isFresh = in_array($apt->id, $highlightIds);
+                            $isError = in_array($apt->id, $errorIds);
                         @endphp
-                        <tr class="{{ $isRecentlyCreated ? 'inv-admin__row--fresh' : '' }}">
-                            <td>
-                                <span class="inv-apt-code">{{ $invoice->invoice_code }}</span>
-                            </td>
+                        <tr onclick="window.location='{{ portal_route('invoices.apartment', $apt) }}'" style="cursor:pointer;" class="{{ $isFresh ? 'inv-admin__row--fresh' : '' }} {{ $isError ? 'inv-admin__row--error' : '' }}">
                             <td>
                                 <div style="font-weight:600; color:#0f172a; font-size:0.88rem;">
                                     Căn {{ $apt->apartment_number ?? '—' }}
                                 </div>
-                                <div class="inv-admin__muted">{{ $blockName }}</div>
                             </td>
                             <td>
-                                Tháng {{ $invoice->billing_month->format('m/Y') }}
+                                <div class="inv-admin__muted">{{ $blockName }} - Tầng {{ $floorName }}</div>
                             </td>
                             <td>
-                                @php $isOverdue = $invoice->due_date && $invoice->due_date->isPast() && !in_array($invoice->status, ['paid','cancelled']); @endphp
-                                <span style="{{ $isOverdue ? 'color:#b91c1c;font-weight:700;' : '' }}">
-                                    {{ $invoice->due_date ? $invoice->due_date->format('d/m/Y') : '—' }}
-                                </span>
+                                @if($apt->status === 'occupied')
+                                    <span class="inv-admin__badge inv-admin__badge--paid" style="font-weight:600;font-size:0.75rem;">{{ $apt->status_label }}</span>
+                                @elseif($apt->status === 'vacant')
+                                    <span class="inv-admin__badge inv-admin__badge--unpaid" style="font-weight:600;font-size:0.75rem;">{{ $apt->status_label }}</span>
+                                @else
+                                    <span class="inv-admin__badge inv-admin__badge--cancelled" style="font-weight:600;font-size:0.75rem;">{{ $apt->status_label }}</span>
+                                @endif
                             </td>
-                            <td style="font-weight:600;">{{ number_format($invoice->total_amount) }}đ</td>
-                            <td style="color:#16a34a; font-weight:600;">{{ number_format($invoice->paid_amount) }}đ</td>
-                            <td>
-                                @php
-                                    $badgeMap = [
-                                        'unpaid' => 'inv-admin__badge--unpaid',
-                                        'partial_paid' => 'inv-admin__badge--partial',
-                                        'paid' => 'inv-admin__badge--paid',
-                                        'overdue' => 'inv-admin__badge--overdue',
-                                        'cancelled' => 'inv-admin__badge--cancelled',
-                                    ];
-                                    $badgeClass = $badgeMap[$invoice->status] ?? 'inv-admin__badge--unpaid';
-                                @endphp
-                                <span class="inv-admin__badge {{ $badgeClass }}">
-                                    {{ \App\Models\Invoice::statusLabel($invoice->status) }}
-                                </span>
+                            <td style="font-weight:600;">
+                                {{ $apt->invoices_count ?? 0 }}
                             </td>
-                            <td>
-                                <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                                    <a href="{{ portal_route('invoices.show', $invoice) }}"
-                                        class="inv-admin__btn inv-admin__btn--sm inv-admin__btn--detail">Chi tiết</a>
-                                    <a href="{{ portal_route('invoices.print', $invoice) }}" target="_blank"
-                                        class="inv-admin__btn inv-admin__btn--sm"
-                                        style="background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;">🖨 In</a>
-                                    @if (!in_array($invoice->status, ['paid', 'cancelled']))
-                                        <form action="{{ portal_route('invoices.resend-notification', $invoice) }}"
-                                            method="POST" style="display:inline;">
-                                            @csrf
-                                            <button type="submit" class="inv-admin__btn inv-admin__btn--sm"
-                                                style="background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;"
-                                                title="Gửi lại thông báo">🔔</button>
-                                        </form>
-                                        <button class="inv-admin__btn inv-admin__btn--sm"
-                                            style="background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;"
-                                            onclick="confirmCancel({{ $invoice->id }})" title="Hủy hóa đơn">✕ Hủy</button>
-                                    @endif
-                                </div>
-
-                                {{-- Hidden cancel form --}}
-                                <form id="cancel-form-{{ $invoice->id }}"
-                                    action="{{ portal_route('invoices.cancel', $invoice) }}" method="POST"
-                                    style="display:none;">
-                                    @csrf
-                                </form>
+                            <td style="font-weight:600;">{{ number_format($totalAmount) }}đ</td>
+                            <td style="color:#16a34a; font-weight:600;">{{ number_format($paidAmount) }}đ</td>
+                            <td style="{{ $debt > 0 ? 'color:#b91c1c;font-weight:700;' : 'color:#16a34a;font-weight:600;' }}">
+                                {{ number_format($debt) }}đ
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8">
-                                <div class="inv-admin__empty">Không tìm thấy hóa đơn nào phù hợp</div>
+                            <td colspan="7">
+                                <div class="inv-admin__empty">Không tìm thấy căn hộ nào phù hợp</div>
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
 
-            @if ($invoices->hasPages())
+            @if ($apartmentsPaginated->hasPages())
                 <div class="inv-admin__pagination">
-                    @if (!$invoices->onFirstPage())
-                        <a href="{{ $invoices->previousPageUrl() }}" class="inv-admin__page-btn">‹ Trước</a>
+                    @if (!$apartmentsPaginated->onFirstPage())
+                        <a href="{{ $apartmentsPaginated->previousPageUrl() }}" class="inv-admin__page-btn">‹ Trước</a>
                     @endif
-                    @foreach ($invoices->getUrlRange(max(1, $invoices->currentPage() - 2), min($invoices->lastPage(), $invoices->currentPage() + 2)) as $page => $url)
+                    @foreach ($apartmentsPaginated->getUrlRange(max(1, $apartmentsPaginated->currentPage() - 2), min($apartmentsPaginated->lastPage(), $apartmentsPaginated->currentPage() + 2)) as $page => $url)
                         <a href="{{ $url }}"
-                            class="inv-admin__page-btn {{ $page == $invoices->currentPage() ? 'inv-admin__page-btn--active' : '' }}">{{ $page }}</a>
+                            class="inv-admin__page-btn {{ $page == $apartmentsPaginated->currentPage() ? 'inv-admin__page-btn--active' : '' }}">{{ $page }}</a>
                     @endforeach
-                    @if ($invoices->hasMorePages())
-                        <a href="{{ $invoices->nextPageUrl() }}" class="inv-admin__page-btn">Sau ›</a>
+                    @if ($apartmentsPaginated->hasMorePages())
+                        <a href="{{ $apartmentsPaginated->nextPageUrl() }}" class="inv-admin__page-btn">Sau ›</a>
                     @endif
                 </div>
             @endif
@@ -475,6 +442,21 @@
         @keyframes invFreshPulse {
             0% {
                 background: #dcfce7;
+            }
+
+            100% {
+                background: transparent;
+            }
+        }
+
+        .inv-admin__row--error td {
+            background: #fee2e2 !important;
+            animation: invErrorPulse 60s linear 1 forwards;
+        }
+
+        @keyframes invErrorPulse {
+            0% {
+                background: #fee2e2;
             }
 
             100% {

@@ -113,45 +113,48 @@ class InvoiceController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Invoice::with(['apartment.floor.block', 'payments'])
-            ->orderBy('billing_year', 'desc')
-            ->orderBy('billing_month', 'desc')
-            ->orderBy('id', 'desc');
+        $query = Apartment::with(['floor.block'])
+            ->withCount('invoices')
+            ->withSum('invoices', 'total_amount')
+            ->withSum('invoices', 'paid_amount');
 
         // Lọc theo tháng/năm (format: YYYY-MM)
         if ($request->filled('month')) {
             [$year, $month] = explode('-', $request->month);
-            $query->where('billing_month', (int) $month)
-                ->where('billing_year', (int) $year);
+            $query->whereHas('invoices', function($q) use ($year, $month) {
+                $q->where('billing_month', (int) $month)
+                  ->where('billing_year', (int) $year);
+            });
         }
 
         // Lọc theo căn hộ
         if ($request->filled('apartment_id')) {
-            $query->where('apartment_id', $request->apartment_id);
+            $query->where('id', $request->apartment_id);
         }
 
         // Lọc theo trạng thái
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $status = $request->status;
+            $query->whereHas('invoices', function ($q) use ($status) {
+                $q->where('status', $status);
+            });
         }
 
         // Tìm kiếm theo tên/mã căn hộ hoặc tòa
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->whereHas('apartment', function ($q) use ($search) {
-                $q->where('apartment_number', 'like', '%' . $search . '%')
-                    ->orWhereHas('floor.block', function ($b) use ($search) {
-                        $b->where('name', 'like', '%' . $search . '%')
-                            ->orWhere('code', 'like', '%' . $search . '%');
-                    });
-            });
+            $query->where('apartment_number', 'like', '%' . $search . '%')
+                ->orWhereHas('floor.block', function ($b) use ($search) {
+                    $b->where('name', 'like', '%' . $search . '%')
+                        ->orWhere('code', 'like', '%' . $search . '%');
+                });
         }
 
-        $invoices   = $query->paginate(20)->withQueryString();
+        $apartmentsPaginated = $query->paginate(20)->withQueryString();
         $apartments = Apartment::with('floor.block')->orderBy('apartment_number')->get();
         $statuses   = ['unpaid', 'partial_paid', 'paid', 'overdue', 'cancelled'];
 
-        return view('admin.invoices.index', compact('invoices', 'apartments', 'statuses'));
+        return view('admin.invoices.index', compact('apartmentsPaginated', 'apartments', 'statuses'));
     }
 
     /**
@@ -208,6 +211,20 @@ class InvoiceController extends Controller
             'billing_month'  => 'required|string',
             'due_date'       => 'required|date',
             'note'           => 'nullable|string|max:500',
+        ], [
+            'apartment_id.required'   => 'Vui lòng chọn căn hộ.',
+            'apartment_id.exists'     => 'Căn hộ không hợp lệ.',
+            'title.required'          => 'Vui lòng nhập tiêu đề hóa đơn.',
+            'title.max'               => 'Tiêu đề không được vượt quá 150 ký tự.',
+            'type.required'           => 'Vui lòng chọn loại phí.',
+            'type.in'                 => 'Loại phí không hợp lệ.',
+            'amount.required'         => 'Vui lòng nhập số tiền.',
+            'amount.numeric'          => 'Số tiền phải là số.',
+            'amount.min'              => 'Số tiền không được âm.',
+            'billing_month.required'  => 'Vui lòng chọn kỳ hóa đơn.',
+            'due_date.required'       => 'Vui lòng chọn hạn thanh toán.',
+            'due_date.date'           => 'Hạn thanh toán không đúng định dạng.',
+            'note.max'                => 'Ghi chú không được vượt quá 500 ký tự.',
         ]);
 
         // Parse month and year from YYYY-MM
@@ -268,7 +285,8 @@ class InvoiceController extends Controller
 
 
         return redirect()->route('admin.invoices.index')
-            ->with('success', 'Hóa đơn đã được tạo thành công.');
+            ->with('success', 'Hóa đơn đã được tạo thành công.')
+            ->with('highlightAptIds', [$validated['apartment_id']]);
     }
 
     /**
@@ -337,8 +355,15 @@ class InvoiceController extends Controller
             'apartment_ids' => 'required|array|min:1',
             'apartment_ids.*' => 'integer|exists:apartments,id',
         ], [
-            'types.required' => 'Vui lòng chọn ít nhất một loại phí.',
+            'billing_month.required' => 'Vui lòng chọn kỳ hóa đơn.',
+            'due_date.required'      => 'Vui lòng chọn hạn thanh toán.',
+            'due_date.date'          => 'Hạn thanh toán không đúng định dạng ngày.',
+            'types.required'         => 'Vui lòng chọn ít nhất một loại phí.',
+            'types.min'              => 'Vui lòng chọn ít nhất một loại phí.',
+            'types.*.in'             => 'Loại phí không hợp lệ.',
             'apartment_ids.required' => 'Vui lòng chọn ít nhất một căn hộ mục tiêu.',
+            'apartment_ids.min'      => 'Vui lòng chọn ít nhất một căn hộ mục tiêu.',
+            'apartment_ids.*.exists' => 'Căn hộ đã chọn không hợp lệ.',
         ]);
 
         [$year, $month] = explode('-', $request->billing_month);
@@ -362,6 +387,8 @@ class InvoiceController extends Controller
 
         $created = 0;
         $skipped = 0;
+        $highlightAptIds = [];
+        $errorAptIds = [];
 
         foreach ($apartments as $apartment) {
             // --- Tìm hoặc chuẩn bị tạo hóa đơn ---
@@ -616,6 +643,7 @@ class InvoiceController extends Controller
             // Đếm số hóa đơn mới tạo trong kỳ này
             if ($invoice && !$invoiceExistedBefore) {
                 $created++;
+                $highlightAptIds[] = $apartment->id;
 
                 // --- Gửi thông báo cho cư dân ---
                 try {
@@ -628,6 +656,10 @@ class InvoiceController extends Controller
                 } catch (\Throwable $e) {
                     // Không để lỗi notification ảnh hưởng đến tiến trình
                 }
+            } elseif ($invoice && ($invoiceAmountAdded > 0 || $pendingUtilityAdded)) {
+                $highlightAptIds[] = $apartment->id;
+            } else {
+                $errorAptIds[] = $apartment->id;
             }
         } // end foreach apartments
 
@@ -653,7 +685,10 @@ class InvoiceController extends Controller
             $msg .= '.';
         }
 
-        return redirect()->route('admin.invoices.index')->with('success', $msg);
+        return redirect()->route('admin.invoices.index')
+            ->with('success', $msg)
+            ->with('highlightAptIds', array_unique($highlightAptIds))
+            ->with('errorAptIds', array_unique($errorAptIds));
     }
 
     /**
@@ -670,6 +705,18 @@ class InvoiceController extends Controller
             'proof_image'    => 'nullable|image|max:4096', // Max 4MB
             'payer_name'     => 'nullable|string|max:255',
             'transaction_code' => 'nullable|string|max:100',
+        ], [
+            'payment_method.required' => 'Vui lòng chọn phương thức thanh toán.',
+            'payment_method.in'       => 'Phương thức thanh toán không hợp lệ.',
+            'amount.required'         => 'Vui lòng nhập số tiền.',
+            'amount.numeric'          => 'Số tiền phải là số.',
+            'amount.min'              => 'Số tiền phải lớn hơn 0.',
+            'amount.max'              => 'Số tiền không được lớn hơn ' . number_format($maxAmount) . 'đ.',
+            'note.max'                => 'Ghi chú không được vượt quá 500 ký tự.',
+            'proof_image.image'       => 'Minh chứng phải là hình ảnh.',
+            'proof_image.max'         => 'Dung lượng ảnh tối đa 4MB.',
+            'payer_name.max'          => 'Tên người nộp không được vượt quá 255 ký tự.',
+            'transaction_code.max'    => 'Mã giao dịch không được vượt quá 100 ký tự.',
         ]);
 
         $proofPath = null;
@@ -738,6 +785,8 @@ class InvoiceController extends Controller
 
         $validated = $request->validate([
             'refund_note' => 'nullable|string|max:500',
+        ], [
+            'refund_note.max' => 'Ghi chú hủy không được vượt quá 500 ký tự.',
         ]);
 
         DB::transaction(function () use ($payment, $validated) {
@@ -824,6 +873,8 @@ class InvoiceController extends Controller
 
         $validated = $request->validate([
             'cancel_note' => 'nullable|string|max:500',
+        ], [
+            'cancel_note.max' => 'Lý do hủy không được vượt quá 500 ký tự.',
         ]);
 
         $invoice->update(['status' => 'cancelled']);

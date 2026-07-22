@@ -90,7 +90,7 @@
             </thead>
             <tbody>
                 @forelse($invoices as $inv)
-                <tr>
+                <tr onclick="window.location='{{ portal_route('invoices.show', $inv) }}'" style="cursor:pointer;">
                     <td>
                         <span class="apt-inv-code">{{ $inv->invoice_code }}</span>
                     </td>
@@ -131,13 +131,25 @@
                         @endif
                     </td>
                     <td>
-                        <div style="display:flex; gap:6px; align-items:center;">
-                            <a href="{{ portal_route('invoices.show', $inv) }}" class="apt-inv-btn apt-inv-btn--detail">Chi tiết</a>
+                        <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                            <a href="{{ portal_route('invoices.print', $inv) }}" target="_blank" class="apt-inv-btn apt-inv-btn--print" title="In" onclick="event.stopPropagation()">🖨 In</a>
                             @if($inv->status !== 'paid')
                             <button type="button" class="apt-inv-btn apt-inv-btn--pay"
-                                onclick="openPayModal({{ $inv->id }}, '{{ $inv->invoice_code }}', '{{ addslashes($inv->title) }}', {{ $inv->remaining_amount ?: $inv->total_amount }}, '{{ addslashes($apartment->owner_name ?? '') }}', 'Tháng {{ $inv->billing_month->format('m/Y') }}')">
+                                onclick="event.stopPropagation(); openPayModal({{ $inv->id }}, '{{ $inv->invoice_code }}', '{{ addslashes($inv->title) }}', {{ $inv->remaining_amount ?: $inv->total_amount }}, '{{ addslashes($apartment->owner_name ?? '') }}', 'Tháng {{ $inv->billing_month->format('m/Y') }}')">
                                 Thu tiền
                             </button>
+                            @endif
+                            @if (!in_array($inv->status, ['paid', 'cancelled']))
+                                <form action="{{ portal_route('invoices.resend-notification', $inv) }}"
+                                    method="POST" style="display:inline;" onclick="event.stopPropagation()">
+                                    @csrf
+                                    <button type="submit" class="apt-inv-btn apt-inv-btn--notify" title="Gửi lại thông báo">🔔</button>
+                                </form>
+                                <button class="apt-inv-btn apt-inv-btn--cancel" onclick="event.stopPropagation(); confirmCancel({{ $inv->id }})" title="Hủy hóa đơn">✕ Hủy</button>
+
+                                <form id="cancel-form-{{ $inv->id }}" action="{{ portal_route('invoices.cancel', $inv) }}" method="POST" style="display:none;">
+                                    @csrf
+                                </form>
                             @endif
                         </div>
                     </td>
@@ -271,8 +283,14 @@
 .apt-inv-btn--ghost { background: none; color: #ef4444; border: 1px solid #fecaca; }
 .apt-inv-btn--detail { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
 .apt-inv-btn--detail:hover { background: #dbeafe; }
+.apt-inv-btn--print { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+.apt-inv-btn--print:hover { background: #e2e8f0; }
 .apt-inv-btn--pay { background: #16a34a; color: #fff; }
 .apt-inv-btn--pay:hover { background: #15803d; }
+.apt-inv-btn--notify { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+.apt-inv-btn--notify:hover { background: #dbeafe; }
+.apt-inv-btn--cancel { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.apt-inv-btn--cancel:hover { background: #fee2e2; }
 
 /* Empty */
 .apt-inv-empty { text-align: center; padding: 40px 20px; color: #94a3b8; font-size: 0.95rem; }
@@ -322,6 +340,12 @@ function confirmPay(event) {
     const payer = document.getElementById('pay_payer').value || 'Cư dân';
     const msg = `Xác nhận thu tiền:\n• Hóa đơn: ${currentCode}\n• Số tiền: ${Number(currentAmt).toLocaleString('vi-VN')} đ\n• Phương thức: ${methodLabel}\n• Người nộp: ${payer}\n\nBạn có chắc không?`;
     return confirm(msg);
+}
+
+function confirmCancel(id) {
+    if (confirm('Bạn có chắc muốn hủy hóa đơn này? Hành động này không thể hoàn tác.')) {
+        document.getElementById('cancel-form-' + id).submit();
+    }
 }
 
 document.getElementById('payModal').addEventListener('click', function(e) {
