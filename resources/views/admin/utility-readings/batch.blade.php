@@ -317,6 +317,7 @@
                                     {{-- Preview thumbnails --}}
                                     <div id="preview_{{ $i }}"
                                         style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:4px;"></div>
+                                    <div id="ocr_status_{{ $i }}" style="font-size: 10px; color: #3b82f6; font-weight: 600; display: none; margin-top: 4px; text-align: center; max-width: 130px; word-break: break-word;"></div>
                                 </div>
                             @else
                                 <span style="color:#64748b; font-size:12px;">—</span>
@@ -379,7 +380,138 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
+// OCR & Image Preprocessing Functions
+let tesseractWorker = null;
+
+async function getTesseractWorker() {
+    if (tesseractWorker) return tesseractWorker;
+    // Tìm phần tử status của dòng đầu tiên hoặc dùng chung
+    console.log("Đang khởi động bộ OCR...");
+    try {
+        tesseractWorker = await Tesseract.createWorker('eng');
+        await tesseractWorker.setParameters({
+            tessedit_char_whitelist: '0123456789',
+        });
+        return tesseractWorker;
+    } catch (err) {
+        console.error("Lỗi khởi tạo Tesseract:", err);
+        return null;
+    }
+}
+
+function showOCRStatusBatch(text, rowId, isError = false) {
+    const statusEl = document.getElementById('ocr_status_' + rowId);
+    if (statusEl) {
+        statusEl.innerHTML = (isError ? '' : '<i class="fa-solid fa-circle-notch fa-spin"></i> ') + text;
+        statusEl.style.color = isError ? '#ef4444' : '#3b82f6';
+        statusEl.style.display = 'block';
+    }
+}
+
+function hideOCRStatusBatch(rowId) {
+    const statusEl = document.getElementById('ocr_status_' + rowId);
+    if (statusEl) {
+        statusEl.style.display = 'none';
+    }
+}
+
+function preprocessImage(canvas, ctx) {
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imgData.data;
+    
+    let totalGray = 0;
+    const pixelCount = data.length / 4;
+
+    for (let i = 0; i < data.length; i += 4) {
+        const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+        data[i] = gray; 
+        totalGray += gray;
+    }
+
+    const avgBrightness = totalGray / pixelCount;
+    const threshold = avgBrightness * 0.9; 
+
+    for (let i = 0; i < data.length; i += 4) {
+        const gray = data[i]; 
+        const v = (gray < threshold) ? 0 : 255;
+        data[i]     = v;
+        data[i + 1] = v;
+        data[i + 2] = v;
+    }
+    
+    ctx.putImageData(imgData, 0, 0);
+}
+
+async function runOCRBatch(canvas, rowId) {
+    showOCRStatusBatch("Đang nhận diện...", rowId);
+    const worker = await getTesseractWorker();
+    if (!worker) {
+        showOCRStatusBatch("❌ Lỗi tải OCR", rowId, true);
+        setTimeout(() => hideOCRStatusBatch(rowId), 4000);
+        return;
+    }
+    
+    try {
+        const { data: { text } } = await worker.recognize(canvas);
+        const digits = text.replace(/\D/g, ''); 
+        
+        if (digits) {
+            const inputVal = parseInt(digits, 10);
+            const rowEl = document.getElementById('row-' + rowId);
+            if (rowEl) {
+                const inp = rowEl.querySelector('.water-input');
+                if (inp) {
+                    inp.value = inputVal;
+                    inp.dispatchEvent(new Event('input'));
+                    showOCRStatusBatch("✅ Quét: " + inputVal, rowId);
+                    setTimeout(() => hideOCRStatusBatch(rowId), 4000);
+                }
+            }
+        } else {
+            showOCRStatusBatch("⚠️ Không rõ số", rowId, true);
+            setTimeout(() => hideOCRStatusBatch(rowId), 4000);
+        }
+    } catch (err) {
+        console.error("OCR Error:", err);
+        showOCRStatusBatch("❌ Lỗi nhận diện", rowId, true);
+        setTimeout(() => hideOCRStatusBatch(rowId), 4000);
+    }
+}
+
+function runOCROnFileBatch(file, rowId) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            const maxDim = 800;
+            let w = img.width;
+            let h = img.height;
+            if (w > maxDim || h > maxDim) {
+                if (w > h) {
+                    h = Math.round((h * maxDim) / w);
+                    w = maxDim;
+                } else {
+                    w = Math.round((w * maxDim) / h);
+                    h = maxDim;
+                }
+            }
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            
+            preprocessImage(canvas, ctx);
+            runOCRBatch(canvas, rowId);
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
 document.addEventListener('DOMContentLoaded', function () {
 
     // ── Tính tiêu thụ realtime ─────────────────────────
@@ -553,6 +685,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 syncBatchProxy(rowId);
                 renderBatchPreview(rowId);
+
+                // Chạy OCR trên ảnh đầu tiên được chọn
+                if (files.length > 0) {
+                    runOCROnFileBatch(files[0], rowId);
+                }
             }
             this.value = '';
         });
@@ -679,10 +816,11 @@ function createBatchCameraModal() {
         </div>
         <div style="background:#000;position:relative;aspect-ratio:4/3;max-height:320px;overflow:hidden;">
             <video id="batchCameraVideo" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover;display:block;"></video>
-            <div style="position:absolute;inset:0;pointer-events:none;">
-                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:70%;height:70%;border:2px dashed rgba(255,255,255,0.5);border-radius:8px;"></div>
+            <div style="position:absolute;inset:0;pointer-events:none;z-index:10;">
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80%;height:25%;border:2px dashed #10b981;border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,0.5);box-sizing:border-box;"></div>
+                <div style="position:absolute;top:calc(50% - 12.5% - 18px);left:50%;transform:translateX(-50%);color:#10b981;font-size:10px;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,0.8);white-space:nowrap;">CĂN DÃY SỐ VÀO KHUNG NÀY</div>
             </div>
-            <div id="batchCameraLoading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;background:rgba(0,0,0,0.5);">Đang khởi động camera...</div>
+            <div id="batchCameraLoading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;background:rgba(0,0,0,0.5);z-index:20;">Đang khởi động camera...</div>
         </div>
         <div style="padding:14px;display:flex;gap:10px;justify-content:center;background:#f8fafc;">
             <button type="button" onclick="captureBatchPhoto()" style="display:inline-flex;align-items:center;gap:8px;padding:11px 24px;background:#00236f;color:#fff;border:none;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(0,35,111,0.25);">
@@ -746,6 +884,30 @@ function captureBatchPhoto() {
     const canvas = document.getElementById('batchCameraCanvas');
     if (!video.videoWidth) { alert('Camera chưa sẵn sàng.'); return; }
 
+    const rowId = batchCameraRowId;
+
+    // Tỉ lệ vùng quét (crop): 80% chiều rộng, 25% chiều cao, căn giữa
+    const vWidth = video.videoWidth;
+    const vHeight = video.videoHeight;
+    const cropWidth = vWidth * 0.8;
+    const cropHeight = vHeight * 0.25;
+    const cropX = (vWidth - cropWidth) / 2;
+    const cropY = (vHeight - cropHeight) / 2;
+
+    // Canvas ẩn dùng riêng cho OCR (crop & preprocess)
+    const ocrCanvas = document.createElement('canvas');
+    ocrCanvas.width = cropWidth;
+    ocrCanvas.height = cropHeight;
+    const ocrCtx = ocrCanvas.getContext('2d');
+    ocrCtx.drawImage(video, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+    
+    // Tiền xử lý ocrCanvas
+    preprocessImage(ocrCanvas, ocrCtx);
+    
+    // Chạy OCR bất đồng bộ cho dòng tương ứng
+    runOCRBatch(ocrCanvas, rowId);
+
+    // Lưu ảnh gốc làm minh chứng
     canvas.width  = video.videoWidth;
     canvas.height = video.videoHeight;
     canvas.getContext('2d').drawImage(video, 0, 0);
@@ -759,7 +921,6 @@ function captureBatchPhoto() {
         document.body.appendChild(flash);
         setTimeout(() => { flash.style.opacity='0'; setTimeout(()=>flash.remove(),300); }, 50);
 
-        const rowId = batchCameraRowId;
         const file  = new File([blob], `cam_${rowId}_${Date.now()}.jpg`, { type: 'image/jpeg' });
         const dt    = getBatchDT(rowId);
 

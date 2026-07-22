@@ -112,7 +112,12 @@
             @endif
 
             <div class="util-form-group" style="{{ auth()->user()->role === 'technician' ? 'grid-column: span 3;' : '' }}">
-                <label class="util-form-label">Chỉ số mới <span style="color:#ef4444">*</span></label>
+                <label class="util-form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>Chỉ số mới <span style="color:#ef4444">*</span></span>
+                    <span id="ocr_status" style="font-size: 11px; color: #3b82f6; font-weight: 600; display: none; align-items: center; gap: 4px;">
+                        <i class="fa-solid fa-circle-notch fa-spin"></i> Đang nhận diện...
+                    </span>
+                </label>
                 <input type="number" name="new_value" id="new_value"
                     value="{{ old('new_value') }}" min="0"
                     class="util-form-input {{ $errors->has('new_value') ? 'util-form-input--error' : '' }}"
@@ -220,11 +225,12 @@
                 <video id="cameraVideo" autoplay playsinline muted
                     style="width:100%;height:100%;object-fit:cover;display:block;"></video>
                 {{-- Khung ngắm --}}
-                <div style="position:absolute;inset:0;pointer-events:none;">
-                    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:70%;height:70%;border:2px dashed rgba(255,255,255,0.5);border-radius:8px;"></div>
+                <div style="position:absolute;inset:0;pointer-events:none;z-index:10;">
+                    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80%;height:25%;border:2px dashed #10b981;border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,0.5);box-sizing:border-box;"></div>
+                    <div style="position:absolute;top:calc(50% - 12.5% - 20px);left:50%;transform:translateX(-50%);color:#10b981;font-size:11px;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,0.8);white-space:nowrap;">CĂN DÃY SỐ VÀO KHUNG NÀY</div>
                 </div>
                 {{-- Loading text --}}
-                <div id="cameraLoading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;background:rgba(0,0,0,0.5);">
+                <div id="cameraLoading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;background:rgba(0,0,0,0.5);z-index:20;">
                     Đang khởi động camera...
                 </div>
             </div>
@@ -268,7 +274,196 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
+// OCR & Image Preprocessing Functions
+let tesseractWorker = null;
+
+async function getTesseractWorker() {
+    if (tesseractWorker) return tesseractWorker;
+    showOCRStatus("Đang khởi động bộ OCR...");
+    try {
+        tesseractWorker = await Tesseract.createWorker('eng');
+        await tesseractWorker.setParameters({
+            tessedit_char_whitelist: '0123456789',
+        });
+        hideOCRStatus();
+        return tesseractWorker;
+    } catch (err) {
+        console.error("Lỗi khởi tạo Tesseract:", err);
+        showOCRStatus("❌ Lỗi tải OCR", true);
+        return null;
+    }
+}
+
+function showOCRStatus(text, isError = false) {
+    const statusEl = document.getElementById('ocr_status');
+    if (statusEl) {
+        statusEl.innerHTML = (isError ? '' : '<i class="fa-solid fa-circle-notch fa-spin"></i> ') + text;
+        statusEl.style.color = isError ? '#ef4444' : '#3b82f6';
+        statusEl.style.display = 'inline-flex';
+    }
+}
+
+function hideOCRStatus() {
+    const statusEl = document.getElementById('ocr_status');
+    if (statusEl) {
+        statusEl.style.display = 'none';
+    }
+}
+
+function preprocessImage(canvas, ctx) {
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imgData.data;
+    
+    let totalGray = 0;
+    const pixelCount = data.length / 4;
+
+    for (let i = 0; i < data.length; i += 4) {
+        const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+        data[i] = gray; 
+        totalGray += gray;
+    }
+
+    const avgBrightness = totalGray / pixelCount;
+    const threshold = avgBrightness * 0.9; 
+
+    for (let i = 0; i < data.length; i += 4) {
+        const gray = data[i]; 
+        const v = (gray < threshold) ? 0 : 255;
+        data[i]     = v;
+        data[i + 1] = v;
+        data[i + 2] = v;
+    }
+    
+    ctx.putImageData(imgData, 0, 0);
+}
+
+// Hàm trích xuất chỉ số công tơ thông minh từ văn bản thô
+function extractMeterReading(text) {
+    if (!text) return null;
+    const words = text.split(/[\s\n\r]+/);
+    let candidates = [];
+    
+    for (let word of words) {
+        let clean = word.replace(/^[.,\/#!$%\^&\*;:{}=\-_`~()]+|[.,\/#!$%\^&\*;:{}=\-_`~()]+$/g, "");
+        if (/^\d+$/.test(clean)) {
+            candidates.push(clean);
+        }
+    }
+    
+    let bestCandidates = candidates.filter(c => c.length >= 4 && c.length <= 6);
+    if (bestCandidates.length > 0) {
+        return bestCandidates[0];
+    }
+    
+    let fallbackCandidates = candidates.filter(c => c.length >= 3 && c.length <= 8);
+    if (fallbackCandidates.length > 0) {
+        return fallbackCandidates[0];
+    }
+    
+    const allDigits = text.replace(/\D/g, '');
+    return allDigits || null;
+}
+
+async function performOCR(canvas) {
+    const worker = await getTesseractWorker();
+    if (!worker) return null;
+    try {
+        const { data: { text } } = await worker.recognize(canvas);
+        return extractMeterReading(text);
+    } catch (err) {
+        console.error("Tesseract error:", err);
+        return null;
+    }
+}
+
+async function runOCR(canvas) {
+    showOCRStatus("Đang nhận diện...");
+    const reading = await performOCR(canvas);
+    if (reading) {
+        const newValueInp = document.getElementById('new_value');
+        if (newValueInp) {
+            newValueInp.value = parseInt(reading, 10);
+            newValueInp.dispatchEvent(new Event('input'));
+            showOCRStatus("✅ Nhận diện thành công: " + reading);
+            setTimeout(hideOCRStatus, 3000);
+        }
+    } else {
+        showOCRStatus("⚠️ Không rõ chữ số", true);
+        setTimeout(hideOCRStatus, 4000);
+    }
+}
+
+function runOCROnFile(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = async function() {
+            showOCRStatus("Đang quét ảnh...");
+            const W = img.width;
+            const H = img.height;
+            
+            // 1. Thử nghiệm trên vùng cắt trung tâm (Crop) trước để loại bỏ vỏ, số seri ngoài
+            const cropWidth = W * 0.7;
+            const cropHeight = H * 0.28;
+            const cropX = (W - cropWidth) / 2;
+            const cropY = H * 0.32;
+            
+            const cropCanvas = document.createElement('canvas');
+            cropCanvas.width = cropWidth;
+            cropCanvas.height = cropHeight;
+            const cropCtx = cropCanvas.getContext('2d');
+            cropCtx.drawImage(img, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+            
+            preprocessImage(cropCanvas, cropCtx);
+            let reading = await performOCR(cropCanvas);
+            
+            // 2. Nếu không tìm thấy chỉ số phù hợp ở vùng cắt, quét toàn bộ ảnh làm dự phòng (Fallback)
+            if (!reading) {
+                console.log("Không quét được vùng cắt, chuyển sang quét toàn bộ ảnh...");
+                showOCRStatus("Quét toàn ảnh dự phòng...");
+                const maxDim = 800;
+                let w = W;
+                let h = H;
+                if (w > maxDim || h > maxDim) {
+                    if (w > h) {
+                        h = Math.round((h * maxDim) / w);
+                        w = maxDim;
+                    } else {
+                        w = Math.round((w * maxDim) / h);
+                        h = maxDim;
+                    }
+                }
+                
+                const fullCanvas = document.createElement('canvas');
+                fullCanvas.width = w;
+                fullCanvas.height = h;
+                const fullCtx = fullCanvas.getContext('2d');
+                fullCtx.drawImage(img, 0, 0, w, h);
+                
+                preprocessImage(fullCanvas, fullCtx);
+                reading = await performOCR(fullCanvas);
+            }
+            
+            if (reading) {
+                const newValueInp = document.getElementById('new_value');
+                if (newValueInp) {
+                    newValueInp.value = parseInt(reading, 10);
+                    newValueInp.dispatchEvent(new Event('input'));
+                    showOCRStatus("✅ Nhận diện thành công: " + reading);
+                    setTimeout(hideOCRStatus, 3000);
+                }
+            } else {
+                showOCRStatus("⚠️ Không nhận diện được số", true);
+                setTimeout(hideOCRStatus, 4000);
+            }
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     const blockSelect  = document.getElementById('block_select');
     const floorSelect  = document.getElementById('floor_select');
@@ -413,6 +608,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         syncProxy();
         renderGallery();
+
+        // Tự động quét số từ ảnh đầu tiên được tải lên
+        if (fileList.length > 0) {
+            runOCROnFile(fileList[0]);
+        }
     }
 
     function renderGallery() {
@@ -581,6 +781,28 @@ function capturePhoto() {
         return;
     }
 
+    // Tỉ lệ vùng quét (crop): 80% chiều rộng, 25% chiều cao, căn giữa
+    const vWidth = video.videoWidth;
+    const vHeight = video.videoHeight;
+    const cropWidth = vWidth * 0.8;
+    const cropHeight = vHeight * 0.25;
+    const cropX = (vWidth - cropWidth) / 2;
+    const cropY = (vHeight - cropHeight) / 2;
+
+    // Canvas ẩn dùng riêng cho OCR (crop & preprocess)
+    const ocrCanvas = document.createElement('canvas');
+    ocrCanvas.width = cropWidth;
+    ocrCanvas.height = cropHeight;
+    const ocrCtx = ocrCanvas.getContext('2d');
+    ocrCtx.drawImage(video, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+    
+    // Tiền xử lý ảnh trên ocrCanvas
+    preprocessImage(ocrCanvas, ocrCtx);
+    
+    // Chạy OCR bất đồng bộ
+    runOCR(ocrCanvas);
+
+    // Lưu ảnh gốc làm minh chứng
     canvas.width  = video.videoWidth;
     canvas.height = video.videoHeight;
     canvas.getContext('2d').drawImage(video, 0, 0);
