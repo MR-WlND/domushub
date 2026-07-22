@@ -316,6 +316,7 @@
                                     {{-- Preview thumbnails --}}
                                     <div id="preview_{{ $i }}"
                                         style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:4px;"></div>
+
                                     <div id="ocr_status_{{ $i }}" style="font-size: 10px; color: #3b82f6; font-weight: 600; display: none; margin-top: 4px; text-align: center; max-width: 130px; word-break: break-word;"></div>
                                 </div>
                             @else
@@ -359,43 +360,8 @@
 </form>
 
 @elseif ($selectedBlockId || $selectedFloorId)
-<div class="util-empty-state">
-    <svg width="48" height="48" fill="none" stroke="#cbd5e1" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 16px;">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-        <polyline points="9 22 9 12 15 12 15 22"/>
-    </svg>
-    <p>Không tìm thấy căn hộ nào trong khu vực đã chọn.</p>
-</div>
-@else
-<div class="util-empty-state">
-    <svg width="52" height="52" fill="none" stroke="#cbd5e1" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 16px;">
-        <rect x="2" y="3" width="20" height="18" rx="1"/>
-        <path d="M9 3v18"/><path d="M15 3v18"/><path d="M2 9h20"/><path d="M2 15h20"/>
-    </svg>
-    <p>Vui lòng chọn <strong>Tòa nhà</strong> để hiển thị danh sách căn hộ cần chốt.</p>
-</div>
-@endif
-
-@endsection
-
-@push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<div class="util-empty-state">@push('scripts')
 <script>
-// OCR & Image Preprocessing Functions
-let tesseractWorker = null;
-
-async function getTesseractWorker() {
-    if (tesseractWorker) return tesseractWorker;
-    console.log("Đang khởi động bộ OCR...");
-    try {
-        tesseractWorker = await Tesseract.createWorker('eng');
-        return tesseractWorker;
-    } catch (err) {
-        console.error("Lỗi khởi tạo Tesseract:", err);
-        return null;
-    }
-}
-
 function showOCRStatusBatch(text, rowId, isError = false) {
     const statusEl = document.getElementById('ocr_status_' + rowId);
     if (statusEl) {
@@ -412,219 +378,53 @@ function hideOCRStatusBatch(rowId) {
     }
 }
 
-function preprocessImage(canvas, ctx) {
-    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imgData.data;
+async function runAIOCRBatch(file, rowId) {
+    showOCRStatusBatch("AI đang quét...", rowId);
     
-    for (let i = 0; i < data.length; i += 4) {
-        const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-        data[i]     = gray; 
-        data[i + 1] = gray; 
-        data[i + 2] = gray; 
-    }
-    
-    ctx.putImageData(imgData, 0, 0);
-}
 
-// Hàm trích xuất chỉ số công tơ thông minh từ văn bản thô
-function extractMeterReading(text, oldVal = 0) {
-    if (!text) return null;
-    
-    // Làm sạch các ký tự nhiễu của viền mặt số (|, [, ], i, l, \, /...)
-    const cleanedText = text.replace(/[\[\]|il!\\\/I:.;]/g, '');
-    
-    // 1. Tách văn bản thành các từ
-    const words = cleanedText.split(/[\s\n\r]+/);
-    
-    // 2. Tìm tất cả các chuỗi số liên tục kèm theo ngữ cảnh xung quanh
-    let candidates = [];
-    const numRegex = /\d{3,8}/g;
-    
-    for (let i = 0; i < words.length; i++) {
-        const word = words[i];
-        const match = word.match(numRegex);
-        if (match) {
-            for (let numStr of match) {
-                const prevWord = i > 0 ? words[i - 1] : "";
-                const nextWord = i < words.length - 1 ? words[i + 1] : "";
-                
-                // Điểm tin cậy (score) cho mỗi ứng viên
-                let score = 0;
-                
-                // Đồng hồ nước thường có 5 số (VD: 00279)
-                if (numStr.length === 5) {
-                    score += 8; // Tăng điểm ưu tiên tối đa cho 5 số
-                } else if (numStr.length === 4) {
-                    score += 5;
-                } else if (numStr.length === 6) {
-                    score += 2;
-                } else {
-                    // Phạt nặng các số quá ngắn hoặc quá dài (như model year 7-8 số hoặc số lẻ 1-3 số)
-                    score -= 15;
-                }
-                
-                // Đồng hồ nước thường bắt đầu bằng các số 0 ở đầu
-                if (numStr.startsWith('000')) {
-                    score += 4;
-                } else if (numStr.startsWith('00')) {
-                    score += 3;
-                } else if (numStr.startsWith('0')) {
-                    score += 2;
-                }
-                
-                // Có chữ "H" hoặc "V" hoặc đơn vị "m3", "m³" ở bên cạnh
-                const surroundingText = (prevWord + " " + nextWord).toLowerCase();
-                if (surroundingText.includes('h') || surroundingText.includes('v')) {
-                    score += 5;
-                }
-                if (surroundingText.includes('m3') || surroundingText.includes('m³') || surroundingText.includes('rn3')) {
-                    score += 6;
-                }
-                
-                // So sánh với chỉ số cũ nếu chỉ số cũ > 0
-                if (oldVal > 0) {
-                    const val = parseInt(numStr, 10);
-                    if (val >= oldVal && val - oldVal < 1000) {
-                        score += 10;
-                    } else if (val < oldVal) {
-                        score -= 20;
-                    } else {
-                        score -= 15;
-                    }
-                }
-                
-                candidates.push({
-                    value: numStr,
-                    score: score
-                });
-            }
-        }
-    }
-    
-    if (candidates.length === 0) return null;
-    
-    // Sắp xếp ứng viên có điểm số tin cậy cao nhất xếp trước
-    candidates.sort((a, b) => b.score - a.score);
-    console.log("OCR candidates scored:", candidates);
-    
-    // Trả về giá trị có điểm số cao nhất nếu điểm không bị phạt âm quá mức
-    if (candidates[0].score < -5) {
-        return null;
-    }
-    return candidates[0].value;
-}
 
-async function performOCR(canvas, oldVal = 0) {
-    const worker = await getTesseractWorker();
-    if (!worker) return { reading: null, rawText: "" };
-    try {
-        const { data: { text } } = await worker.recognize(canvas);
-        return {
-            reading: extractMeterReading(text, oldVal),
-            rawText: text
-        };
-    } catch (err) {
-        console.error("Tesseract error:", err);
-        return { reading: null, rawText: "" };
-    }
-}
-
-async function runOCRBatch(canvas, rowId) {
-    showOCRStatusBatch("Đang nhận diện...", rowId);
-    
     const rowEl = document.getElementById('row-' + rowId);
     const inp = rowEl ? rowEl.querySelector('.water-input') : null;
-    const oldVal = inp ? (parseInt(inp.dataset.old) || 0) : 0;
-    
-    const res = await performOCR(canvas, oldVal);
-    if (res && res.reading) {
-        const inputVal = parseInt(res.reading, 10);
-        if (inp) {
-            inp.value = inputVal;
-            inp.dispatchEvent(new Event('input'));
-            showOCRStatusBatch("✅ Quét: " + res.reading, rowId);
-            setTimeout(() => hideOCRStatusBatch(rowId), 4000);
+    const typeVal = inp ? (inp.dataset.type || 'water') : 'water';
+
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('type', typeVal);
+    formData.append('_token', document.querySelector('input[name="_token"]')?.value || '{{ csrf_token() }}');
+
+    try {
+        const response = await fetch('{{ portal_route('utility-readings.ocr') }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        if (!response.ok) {
+            const errData = await response.json();
+            throw new Error(errData.message || 'Lỗi nhận diện');
         }
-    } else {
-        const cleanedRaw = res ? res.rawText.replace(/[\r\n]+/g, ' ').trim() : "";
-        showOCRStatusBatch("⚠️ Không rõ số. Đọc được: " + (cleanedRaw || "Trống"), rowId, true);
-        console.log("Raw Tesseract Text:", res ? res.rawText : "");
+
+        const res = await response.json();
+
+        if (res.success && res.reading) {
+            const inputVal = parseInt(res.reading, 10);
+            if (inp) {
+                inp.value = inputVal;
+                inp.dispatchEvent(new Event('input'));
+                showOCRStatusBatch("✅ AI nhận diện: " + res.reading, rowId);
+                setTimeout(() => hideOCRStatusBatch(rowId), 5000);
+            }
+        } else {
+            showOCRStatusBatch("⚠️ AI: " + (res.message || "Không rõ số"), rowId, true);
+            setTimeout(() => hideOCRStatusBatch(rowId), 6000);
+        }
+    } catch (err) {
+        console.error("AI OCR Batch Error:", err);
+        showOCRStatusBatch("❌ Lỗi AI: " + err.message, rowId, true);
         setTimeout(() => hideOCRStatusBatch(rowId), 6000);
     }
-}
-
-function runOCROnFileBatch(file, rowId) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const img = new Image();
-        img.onload = async function() {
-            showOCRStatusBatch("Đang quét ảnh...", rowId);
-            const W = img.width;
-            const H = img.height;
-            
-            const rowEl = document.getElementById('row-' + rowId);
-            const inp = rowEl ? rowEl.querySelector('.water-input') : null;
-            const oldVal = inp ? (parseInt(inp.dataset.old) || 0) : 0;
-            
-            // 1. Thử nghiệm trên vùng cắt trung tâm (Crop) trước để loại bỏ vỏ, số seri ngoài
-            const cropWidth = W * 0.7;
-            const cropHeight = H * 0.28;
-            const cropX = (W - cropWidth) / 2;
-            const cropY = H * 0.32;
-            
-            const cropCanvas = document.createElement('canvas');
-            cropCanvas.width = cropWidth;
-            cropCanvas.height = cropHeight;
-            const cropCtx = cropCanvas.getContext('2d');
-            cropCtx.drawImage(img, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
-            
-            preprocessImage(cropCanvas, cropCtx);
-            let res = await performOCR(cropCanvas, oldVal);
-            
-            // 2. Nếu không tìm thấy chỉ số phù hợp ở vùng cắt, quét toàn bộ ảnh làm dự phòng (Fallback)
-            if (!res || !res.reading) {
-                console.log("Không quét được vùng cắt, chuyển sang quét toàn bộ ảnh...");
-                showOCRStatusBatch("Quét toàn ảnh dự phòng...", rowId);
-                const maxDim = 800;
-                let w = W;
-                let h = H;
-                if (w > maxDim || h > maxDim) {
-                    if (w > h) {
-                        h = Math.round((h * maxDim) / w);
-                        w = maxDim;
-                    } else {
-                        w = Math.round((w * maxDim) / h);
-                        h = maxDim;
-                    }
-                }
-                
-                const fullCanvas = document.createElement('canvas');
-                fullCanvas.width = w;
-                fullCanvas.height = h;
-                const fullCtx = fullCanvas.getContext('2d');
-                fullCtx.drawImage(img, 0, 0, w, h);
-                
-                preprocessImage(fullCanvas, fullCtx);
-                res = await performOCR(fullCanvas, oldVal);
-            }
-            
-            if (res && res.reading) {
-                if (inp) {
-                    inp.value = parseInt(res.reading, 10);
-                    inp.dispatchEvent(new Event('input'));
-                    showOCRStatusBatch("✅ Quét: " + res.reading, rowId);
-                    setTimeout(() => hideOCRStatusBatch(rowId), 4000);
-                }
-            } else {
-                const cleanedRaw = res ? res.rawText.replace(/[\r\n]+/g, ' ').trim() : "";
-                showOCRStatusBatch("⚠️ Không nhận dạng được. Đọc được: " + (cleanedRaw || "Trống"), rowId, true);
-                console.log("Raw Tesseract Text:", res ? res.rawText : "");
-                setTimeout(() => hideOCRStatusBatch(rowId), 6000);
-            }
-        };
-        img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -801,9 +601,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 syncBatchProxy(rowId);
                 renderBatchPreview(rowId);
 
-                // Chạy OCR trên ảnh đầu tiên được chọn
+                // Chạy AI OCR trên ảnh đầu tiên được chọn
                 if (files.length > 0) {
-                    runOCROnFileBatch(files[0], rowId);
+                    runAIOCRBatch(files[0], rowId);
                 }
             }
             this.value = '';
@@ -976,11 +776,18 @@ async function startBatchCamera(facing) {
         if (err.name === 'NotReadableError') msg = 'Camera đang dùng bởi ứng dụng khác.';
         if (err.name === 'OverconstrainedError') {
             try {
-                batchCameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                batchCameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
                 video.srcObject = batchCameraStream;
                 video.onloadedmetadata = () => { loading.style.display = 'none'; };
                 return;
-            } catch(e2) { msg = e2.message; }
+            } catch(e2) {
+                try {
+                    batchCameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    video.srcObject = batchCameraStream;
+                    video.onloadedmetadata = () => { loading.style.display = 'none'; };
+                    return;
+                } catch (e3) { msg = e3.message; }
+            }
         }
         loading.innerHTML = `<div style="text-align:center;padding:16px;color:#fff;">${msg}<br><br><button onclick="closeBatchCameraModal()" style="padding:7px 14px;background:#fff;color:#1e293b;border:none;border-radius:7px;cursor:pointer;font-weight:600;">Đóng</button></div>`;
     }
@@ -1000,27 +807,6 @@ function captureBatchPhoto() {
     if (!video.videoWidth) { alert('Camera chưa sẵn sàng.'); return; }
 
     const rowId = batchCameraRowId;
-
-    // Tỉ lệ vùng quét (crop): 80% chiều rộng, 25% chiều cao, căn giữa
-    const vWidth = video.videoWidth;
-    const vHeight = video.videoHeight;
-    const cropWidth = vWidth * 0.8;
-    const cropHeight = vHeight * 0.25;
-    const cropX = (vWidth - cropWidth) / 2;
-    const cropY = (vHeight - cropHeight) / 2;
-
-    // Canvas ẩn dùng riêng cho OCR (crop & preprocess)
-    const ocrCanvas = document.createElement('canvas');
-    ocrCanvas.width = cropWidth;
-    ocrCanvas.height = cropHeight;
-    const ocrCtx = ocrCanvas.getContext('2d');
-    ocrCtx.drawImage(video, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
-    
-    // Tiền xử lý ocrCanvas
-    preprocessImage(ocrCanvas, ocrCtx);
-    
-    // Chạy OCR bất đồng bộ cho dòng tương ứng
-    runOCRBatch(ocrCanvas, rowId);
 
     // Lưu ảnh gốc làm minh chứng
     canvas.width  = video.videoWidth;
@@ -1048,6 +834,9 @@ function captureBatchPhoto() {
         dt.items.add(file);
         syncBatchProxy(rowId);
         renderBatchPreview(rowId);
+        // Chạy AI OCR trên ảnh vừa chụp
+        runAIOCRBatch(file, rowId);
+        
         closeBatchCameraModal();
     }, 'image/jpeg', 0.92);
 }

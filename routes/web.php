@@ -156,6 +156,7 @@ $portalRoutes = function () {
     Route::get('/utility-readings/batch', [UtilityMeterController::class, 'batchCreate'])->name('utility-readings.batch');
     Route::post('/utility-readings/batch', [UtilityMeterController::class, 'batchStore'])->name('utility-readings.batch.store');
     Route::get('/utility-readings/get-old-value', [UtilityMeterController::class, 'getOldValue'])->name('utility-readings.get-old-value');
+    Route::post('/utility-readings/ocr', [UtilityMeterController::class, 'ocr'])->name('utility-readings.ocr');
     Route::get('/utility-readings/import-template', [UtilityMeterController::class, 'downloadTemplate'])->name('utility-readings.import-template');
     Route::post('/utility-readings/import', [UtilityMeterController::class, 'import'])->name('utility-readings.import');
     Route::get('/utility-readings/{id}', [UtilityMeterController::class, 'show'])->name('utility-readings.show');
