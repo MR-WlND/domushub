@@ -1104,33 +1104,41 @@ let pendingRejectReadingId = null;
 
 window.confirmAndReject = function(id) {
     pendingRejectReadingId = id;
-    const modal = document.getElementById('rejectReasonModal');
-    const textarea = document.getElementById('modal-reject-reason');
+    const modal = document.getElementById('rejectModal');
+    const textarea = document.getElementById('rejectReasonInput');
+    if (!modal || !textarea) return;
     textarea.value = '';
-    document.getElementById('modal-reject-error').style.display = 'none';
+    const err = document.getElementById('rejectReasonError');
+    if (err) err.style.display = 'none';
     modal.classList.add('active');
     setTimeout(() => textarea.focus(), 100);
 }
 
-window.closeRejectReasonModal = function() {
-    const modal = document.getElementById('rejectReasonModal');
-    modal.classList.remove('active');
+window.closeRejectModal = function() {
+    const modal = document.getElementById('rejectModal');
+    if (modal) modal.classList.remove('active');
     pendingRejectReadingId = null;
 }
 
 window.submitRejectForm = function(event) {
-    event.preventDefault();
+    if (event) event.preventDefault();
     if (!pendingRejectReadingId) return;
     const id = pendingRejectReadingId;
-    const reason = document.getElementById('modal-reject-reason').value.trim();
+    const textarea = document.getElementById('rejectReasonInput');
+    const reason = textarea ? textarea.value.trim() : '';
     if (reason === "") {
-        document.getElementById('modal-reject-error').style.display = 'block';
+        const err = document.getElementById('rejectReasonError');
+        if (err) err.style.display = 'block';
         return;
     }
     
-    document.getElementById('reject-reason-' + id).value = reason;
-    document.getElementById('reject-form-' + id).submit();
-    closeRejectReasonModal();
+    const hiddenInput = document.getElementById('reject-reason-' + id);
+    const form = document.getElementById('reject-form-' + id);
+    if (hiddenInput && form) {
+        hiddenInput.value = reason;
+        form.submit();
+    }
+    closeRejectModal();
 }
 </script>
 @endpush
