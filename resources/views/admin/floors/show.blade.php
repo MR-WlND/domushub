@@ -161,16 +161,7 @@
                         <tbody>
                             @forelse ($floor->apartments as $apartment)
                                 @php
-                                    $area = $apartment->area;
-                                    if ($area >= 100) {
-                                        $type = '3BR Deluxe';
-                                    } elseif ($area >= 70) {
-                                        $type = '2BR Classic';
-                                    } elseif ($area >= 50) {
-                                        $type = '1BR Standard';
-                                    } else {
-                                        $type = 'Studio Plus';
-                                    }
+                                    $type = $apartment->apartmentType->name ?? 'Chưa xác định';
 
                                     $owner = $apartment->residents()->where('relationship', 'owner')->first() ?? $apartment->residents()->first();
                                     $ownerName = $owner ? ($owner->user->name ?? '-') : '-';

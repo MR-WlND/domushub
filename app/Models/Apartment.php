@@ -15,6 +15,7 @@ class Apartment extends Model
 
     protected $fillable = [
         'floor_id',
+        'apartment_type_id',
         'apartment_number',
         'area',
         'status',
@@ -51,6 +52,14 @@ class Apartment extends Model
     | RELATIONSHIPS
     |----------------------------
     */
+
+    /**
+     * Quan hệ loại căn hộ
+     */
+    public function apartmentType(): BelongsTo
+    {
+        return $this->belongsTo(ApartmentType::class);
+    }
 
     /**
      * Quan hệ tầng

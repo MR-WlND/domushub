@@ -136,7 +136,50 @@
                     @enderror
                 </div>
 
+                {{-- Loại căn hộ --}}
+                <div class="form-group-custom">
+                    <label class="form-label-custom">Loại căn hộ</label>
+                    <div class="input-wrapper-custom">
+                        <span class="input-icon-custom">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line></svg>
+                        </span>
+                        <select name="apartment_type_id" class="form-input-custom @error('apartment_type_id') input-error @enderror">
+                            <option value="">-- Chọn Loại căn hộ --</option>
+                            @foreach($apartmentTypes as $type)
+                                <option value="{{ $type->id }}" {{ old('apartment_type_id') == $type->id ? 'selected' : '' }}>
+                                    {{ $type->name }} ({{ $type->bedroom_count }} PN / {{ $type->bathroom_count }} WC - {{ number_format($type->base_service_fee, 0, ',', '.') }}đ/m²)
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @error('apartment_type_id')
+                        <p class="form-error-custom">{{ $message }}</p>
+                    @enderror
+                </div>
 
+                {{-- Diện tích --}}
+                <div class="form-group-custom">
+                    <label class="form-label-custom">
+                        Diện tích (m²) <span class="required">*</span>
+                    </label>
+                    <div class="input-wrapper-custom">
+                        <span class="input-icon-custom">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 12v-4m0 0H2m2 0h2m8-4v-4m0 12v-4m0 0h-2m2 0h2" /></svg>
+                        </span>
+                        <input
+                            type="number"
+                            name="area"
+                            step="0.01"
+                            value="{{ old('area') }}"
+                            placeholder="VD: 75.5..."
+                            class="form-input-custom @error('area') input-error @enderror"
+                            required
+                        >
+                    </div>
+                    @error('area')
+                        <p class="form-error-custom">{{ $message }}</p>
+                    @enderror
+                </div>
 
                 {{-- Trạng thái --}}
                 <div class="form-group-custom">

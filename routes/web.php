@@ -142,6 +142,15 @@ $portalRoutes = function () {
     Route::put('/apartments/{apartment}', [\App\Http\Controllers\Admin\ApartmentController::class, 'update'])->name('apartments.update');
     Route::delete('/apartments/{apartment}', [\App\Http\Controllers\Admin\ApartmentController::class, 'destroy'])->name('apartments.destroy');
 
+    // Apartment Types (Loại căn hộ)
+    Route::get('/apartment-types', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'index'])->name('apartment-types.index');
+    Route::get('/apartment-types/create', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'create'])->name('apartment-types.create');
+    Route::post('/apartment-types', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'store'])->name('apartment-types.store');
+    Route::get('/apartment-types/{apartmentType}/edit', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'edit'])->name('apartment-types.edit');
+    Route::put('/apartment-types/{apartmentType}', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'update'])->name('apartment-types.update');
+    Route::delete('/apartment-types/{apartmentType}', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'destroy'])->name('apartment-types.destroy');
+
+
     // Xoá mềm cư dân khỏi phòng
     Route::delete('/residents/{id}', [ResidentManageController::class, 'destroy'])->name('residents.destroy');
 

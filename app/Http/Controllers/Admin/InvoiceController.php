@@ -374,7 +374,7 @@ class InvoiceController extends Controller
         $selectedApartmentIds = array_values(array_unique(array_filter($request->input('apartment_ids', []), fn($id) => is_numeric($id))));
 
         // --- Lấy danh sách căn hộ đã chọn ---
-        $apartments = Apartment::with(['residents.user', 'vehicles'])
+        $apartments = Apartment::with(['residents.user', 'vehicles', 'apartmentType'])
             ->whereIn('id', $selectedApartmentIds)
             ->where('status', 'occupied')
             ->get();
@@ -579,14 +579,17 @@ class InvoiceController extends Controller
                     }
 
                     $area = $apartment->area ?? 0;
-                    $detailAmount = $area * $servicePrice->unit_price;
+                    $unitPrice = ($apartment->apartmentType && $apartment->apartmentType->base_service_fee > 0)
+                        ? $apartment->apartmentType->base_service_fee
+                        : $servicePrice->unit_price;
+                    $detailAmount = $area * $unitPrice;
 
                     InvoiceDetail::create([
                         'bill_id'          => $invoice->id,
                         'service_price_id' => $servicePrice->id,
                         'quantity'         => $area,
                         'amount'           => $detailAmount,
-                        'note'             => "Phí quản lý: " . number_format($servicePrice->unit_price, 0, ',', '.') . "đ/m2 x {$area} m2",
+                        'note'             => "Phí quản lý: " . number_format($unitPrice, 0, ',', '.') . "đ/m2 x {$area} m2",
                     ]);
 
                     $invoiceAmountAdded += $detailAmount;
