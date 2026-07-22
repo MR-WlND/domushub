@@ -81,7 +81,6 @@ class Apartment extends Model
      * Users thuộc căn hộ này
      */
     public function users(): HasMany
-    {
         return $this->hasMany(User::class);
     }
 
@@ -118,8 +117,6 @@ class Apartment extends Model
     /**
      * Scope căn hoạt động
      */
-    public function scopeActive($query)
-    {
         return $query->where('status', '!=', 'maintenance');
     }
 
