@@ -26,6 +26,10 @@ class Visitor extends Model
         'note',
         'vehicle_plate',
         'vehicle_type',
+        'walk_in',
+        'resident_to_meet',
+        'confirmed_by_resident',
+        'face_image',
     ];
 
     protected $casts = [
@@ -58,6 +62,11 @@ class Visitor extends Model
     public function checkedOutBy()
     {
         return $this->belongsTo(User::class, 'check_out_by');
+    }
+
+    public function confirmedByResident()
+    {
+        return $this->belongsTo(User::class, 'confirmed_by_resident');
     }
 
     // =========================================================================
