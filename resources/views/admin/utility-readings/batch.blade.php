@@ -360,7 +360,24 @@
 </form>
 
 @elseif ($selectedBlockId || $selectedFloorId)
-<div class="util-empty-state">@push('scripts')
+<div class="util-empty-state">
+    <svg width="48" height="48" fill="none" stroke="#cbd5e1" stroke-width="1.5" viewBox="0 0 24 24" style="margin: 0 auto 16px;">
+        <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>
+    </svg>
+    <p>Không có căn hộ nào chưa chốt số nước trong khu vực đã chọn.</p>
+</div>
+@else
+<div class="util-empty-state">
+    <svg width="48" height="48" fill="none" stroke="#cbd5e1" stroke-width="1.5" viewBox="0 0 24 24" style="margin: 0 auto 16px;">
+        <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>
+    </svg>
+    <p>Vui lòng chọn Tòa nhà hoặc Tầng để hiển thị danh sách ghi chỉ số nước hàng loạt.</p>
+</div>
+@endif
+
+@endsection
+
+@push('scripts')
 <script>
 function showOCRStatusBatch(text, rowId, isError = false) {
     const statusEl = document.getElementById('ocr_status_' + rowId);
@@ -771,22 +788,29 @@ async function startBatchCamera(facing) {
         video.onloadedmetadata = () => { loading.style.display = 'none'; };
     } catch (err) {
         let msg = 'Không thể mở camera.';
-        if (err.name === 'NotAllowedError')  msg = 'Quyền camera bị chặn. Cho phép trong thanh địa chỉ và thử lại.';
-        if (err.name === 'NotFoundError')    msg = 'Không tìm thấy camera. Kiểm tra webcam.';
-        if (err.name === 'NotReadableError') msg = 'Camera đang dùng bởi ứng dụng khác.';
-        if (err.name === 'OverconstrainedError') {
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+            msg = 'Quyền camera bị chặn. Cho phép trong thanh địa chỉ và thử lại.';
+        } else {
             try {
                 batchCameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
                 video.srcObject = batchCameraStream;
                 video.onloadedmetadata = () => { loading.style.display = 'none'; };
                 return;
-            } catch(e2) {
+            } catch (e2) {
                 try {
                     batchCameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
                     video.srcObject = batchCameraStream;
                     video.onloadedmetadata = () => { loading.style.display = 'none'; };
                     return;
-                } catch (e3) { msg = e3.message; }
+                } catch (e3) {
+                    if (err.name === 'NotFoundError') {
+                        msg = 'Không tìm thấy camera. Kiểm tra webcam.';
+                    } else if (err.name === 'NotReadableError') {
+                        msg = 'Camera đang dùng bởi ứng dụng khác.';
+                    } else {
+                        msg = 'Không thể khởi động camera: ' + (err.message || err.name);
+                    }
+                }
             }
         }
         loading.innerHTML = `<div style="text-align:center;padding:16px;color:#fff;">${msg}<br><br><button onclick="closeBatchCameraModal()" style="padding:7px 14px;background:#fff;color:#1e293b;border:none;border-radius:7px;cursor:pointer;font-weight:600;">Đóng</button></div>`;

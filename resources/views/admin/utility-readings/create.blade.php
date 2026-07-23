@@ -636,12 +636,7 @@ async function startCamera(facing) {
         let msg = 'Không thể mở camera.';
         if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
             msg = 'Trình duyệt đã chặn quyền camera.\n\nHãy cho phép quyền camera trong thanh địa chỉ và thử lại.';
-        } else if (err.name === 'NotFoundError') {
-            msg = 'Không tìm thấy camera. Kiểm tra kết nối webcam.';
-        } else if (err.name === 'NotReadableError') {
-            msg = 'Camera đang được dùng bởi ứng dụng khác. Đóng ứng dụng đó và thử lại.';
-        } else if (err.name === 'OverconstrainedError') {
-            // Thử lại không ràng buộc quá nhiều, ưu tiên camera sau
+        } else {
             try {
                 cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
                 video.srcObject = cameraStream;
@@ -654,7 +649,13 @@ async function startCamera(facing) {
                     video.onloadedmetadata = () => { loading.style.display = 'none'; };
                     return;
                 } catch (e3) {
-                    msg = '❌ Không thể mở camera: ' + e3.message;
+                    if (err.name === 'NotFoundError') {
+                        msg = 'Không tìm thấy camera. Kiểm tra kết nối webcam.';
+                    } else if (err.name === 'NotReadableError') {
+                        msg = 'Camera đang được dùng bởi ứng dụng khác. Đóng ứng dụng đó và thử lại.';
+                    } else {
+                        msg = 'Không thể mở camera: ' + (err.message || err.name);
+                    }
                 }
             }
         }

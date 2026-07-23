@@ -407,8 +407,13 @@ class UtilityMeterController extends Controller
             'record_year'  => 'required|integer|min:2020|max:2100',
             'readings'     => 'required|array|min:1',
             'readings.*.apartment_id' => 'required|exists:apartments,id',
+            'readings.*.images'       => 'nullable|array|max:5',
+            'readings.*.images.*'     => 'image|max:4096',
         ], [
             'readings.required' => 'Vui lòng nhập ít nhất 1 chỉ số.',
+            'readings.*.images.max' => 'Tối đa 5 ảnh minh chứng mỗi căn hộ.',
+            'readings.*.images.*.image' => 'Tệp minh chứng phải là hình ảnh.',
+            'readings.*.images.*.max' => 'Dung lượng mỗi ảnh tối đa là 4MB.',
         ]);
 
         $month   = (int) $request->record_month;
