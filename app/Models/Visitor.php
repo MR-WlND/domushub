@@ -29,6 +29,7 @@ class Visitor extends Model
         'walk_in',
         'resident_to_meet',
         'confirmed_by_resident',
+        'face_image',
     ];
 
     protected $casts = [
@@ -66,15 +67,6 @@ class Visitor extends Model
     public function confirmedByResident()
     {
         return $this->belongsTo(User::class, 'confirmed_by_resident');
-    }
-
-    // =========================================================================
-    // WALK-IN HELPERS
-    // =========================================================================
-
-    public function isWalkIn(): bool
-    {
-        return (bool) $this->walk_in;
     }
 
     // =========================================================================
