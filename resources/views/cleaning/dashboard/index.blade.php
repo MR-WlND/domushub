@@ -233,7 +233,7 @@
     </div>
     <nav class="sidebar-nav">
         <a href="#" class="active"><i class="fa-solid fa-grid-2"></i> Bảng điều khiển</a>
-        <a href="{{ route('cleaning.report') }}"><i class="fa-solid fa-clipboard-list"></i> Công việc hàng ngày</a>
+        <a href="{{ route('cleaning.tasks') }}"><i class="fa-solid fa-clipboard-list"></i> Công việc hàng ngày</a>
         <a href="{{ route('cleaning.report') }}"><i class="fa-solid fa-triangle-exclamation"></i> Báo cáo sự cố</a>
         <a href="#"><i class="fa-solid fa-spray-can-sparkles"></i> Thiết bị</a>
         <a href="#"><i class="fa-solid fa-route"></i> Lịch trình</a>

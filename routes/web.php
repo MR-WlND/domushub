@@ -354,6 +354,10 @@ Route::middleware(['cleaning'])->group(function () {
     Route::get('/cleaning/report', function () {
         return view('cleaning.report.index');
     })->name('cleaning.report');
+
+    Route::get('/cleaning/tasks', function () {
+        return view('cleaning.tasks.index');
+    })->name('cleaning.tasks');
 });
 
 // DASHBOARD RESIDENT ROUTES
