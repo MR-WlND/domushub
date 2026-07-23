@@ -5,14 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DomusHub – Đăng nhập Vệ sinh</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    @vite(['resources/css/auth/cleaning.css'])
+    @vite(['resources/css/auth/admin.css'])
 </head>
 <body>
 
 <div class="card">
 
-    <div class="badge">
-        <i class="fa-solid fa-broom"></i> Nhân viên Vệ sinh
+    <div class="logo">
+        <div class="logo-icon"><i class="fa-solid fa-broom"></i></div>
+        DomusHub Vệ sinh
     </div>
 
     <h2>Xin chào, Vệ sinh</h2>
@@ -30,7 +31,7 @@
         <div class="group">
             <label>Email</label>
             <div class="input-box">
-                <i class="fa-regular fa-envelope"></i>
+                <i class="fa-regular fa-envelope icon"></i>
                 <input type="email" name="email" placeholder="" value="{{ old('email') }}" required>
             </div>
             @error('email')<span class="error-msg">{{ $message }}</span>@enderror
@@ -39,16 +40,18 @@
         <div class="group">
             <label>Mật khẩu</label>
             <div class="input-box">
-                <i class="fa-solid fa-lock"></i>
+                <i class="fa-solid fa-lock icon"></i>
                 <input type="password" name="password" id="password" placeholder="••••••••" required>
                 <i class="fa-regular fa-eye toggle-pw" id="toggleIcon" onclick="togglePassword()"></i>
             </div>
         </div>
 
-        <div class="row">
-            <label class="remember">
-                <input type="checkbox" name="remember"> Ghi nhớ đăng nhập
-            </label>
+        <div class="form-row">
+            <div>
+                <label class="remember">
+                    <input type="checkbox" name="remember"> Ghi nhớ đăng nhập
+                </label>
+            </div>
         </div>
 
         <button type="submit" class="login-btn">
@@ -58,7 +61,7 @@
 
     <div class="info-box">
         <i class="fa-solid fa-lock"></i>
-        <span>Phiên đăng nhập được ghi lại. Cần hỗ trợ liên hệ Quản lý <strong>1900-XXXX</strong></span>
+        <span>Phiên đăng nhập được mã hóa và ghi lại nhật ký. Nếu cần hỗ trợ, liên hệ IT <strong>1900-XXXX</strong></span>
     </div>
 
 </div>
