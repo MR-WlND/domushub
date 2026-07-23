@@ -16,6 +16,7 @@
         'staff' => 'Nhân viên kế toán',
         'technician' => 'Kỹ thuật',
         'security' => 'An ninh',
+        'cleaning' => 'Nhân viên vệ sinh',
     ];
 
     $statusLabels = [
