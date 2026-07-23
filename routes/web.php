@@ -350,6 +350,10 @@ Route::middleware(['cleaning'])->group(function () {
     Route::get('/cleaning/dashboard', function () {
         return view('cleaning.dashboard.index');
     })->name('cleaning.dashboard');
+
+    Route::get('/cleaning/report', function () {
+        return view('cleaning.report.index');
+    })->name('cleaning.report');
 });
 
 // DASHBOARD RESIDENT ROUTES
