@@ -48,6 +48,11 @@ Route::get('/technician', function () {
     return redirect()->route('technician.tickets.my-tasks');
 });
 
+Route::get('/cleaning', function () {
+    if (! Auth::check()) return redirect()->route('cleaning.login');
+    return redirect()->route('cleaning.dashboard');
+});
+
 // Admin Login Routes
 Route::get('/admin/login', [AuthController::class, 'showAdminLogin'])->name('admin.login');
 Route::post('/admin/login', [AuthController::class, 'loginAdmin'])->name('admin.login.submit');
@@ -77,6 +82,10 @@ Route::post('/resident/reset-password', [AuthController::class, 'resetPassword']
 // Security Login Routes
 Route::get('/security/login', [AuthController::class, 'showSecurityLogin'])->name('security.login');
 Route::post('/security/login', [AuthController::class, 'loginSecurity'])->name('security.login.submit');
+
+// Cleaning Login Routes
+Route::get('/cleaning/login', [AuthController::class, 'showCleaningLogin'])->name('cleaning.login');
+Route::post('/cleaning/login', [AuthController::class, 'loginCleaning'])->name('cleaning.login.submit');
 
 // Logout (accessible from all roles)
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -334,6 +343,13 @@ Route::middleware(['security'])->group(function () {
     // Xem lịch sử xe và khách cho bảo vệ
     Route::get('/security/vehicle-logs', [\App\Http\Controllers\Admin\VehicleLogController::class, 'index'])->name('security.vehicle-logs.index');
     Route::get('/security/visitor-logs', [\App\Http\Controllers\Admin\VisitorLogController::class, 'index'])->name('security.visitor-logs.index');
+});
+
+// DASHBOARD CLEANING ROUTES
+Route::middleware(['cleaning'])->group(function () {
+    Route::get('/cleaning/dashboard', function () {
+        return view('cleaning.dashboard.index');
+    })->name('cleaning.dashboard');
 });
 
 // DASHBOARD RESIDENT ROUTES

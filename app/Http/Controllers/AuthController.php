@@ -46,6 +46,11 @@ class AuthController extends Controller
         return view('auth.security.login');
     }
 
+    public function showCleaningLogin(): View
+    {
+        return view('auth.cleaning.login');
+    }
+
     public function showResidentLogin(): View
     {
         return view('auth.resident.login');
@@ -154,6 +159,36 @@ class AuthController extends Controller
         \App\Helpers\SystemLogger::log('Đăng nhập', 'Hệ thống');
 
         return redirect()->route('security.dashboard');
+    }
+
+    public function loginCleaning(Request $request): RedirectResponse
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+            return back()->withErrors([
+                'email' => 'Email hoặc mật khẩu không đúng.',
+            ])->onlyInput('email');
+        }
+
+        $user = Auth::user();
+
+        if ($user->role !== 'cleaning') {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản này không có quyền truy cập vào cổng Vệ sinh.',
+            ])->onlyInput('email');
+        }
+
+        $request->session()->regenerate();
+
+        \App\Helpers\SystemLogger::log('Đăng nhập', 'Hệ thống');
+
+        return redirect()->route('cleaning.dashboard');
     }
 
     public function loginResident(Request $request): RedirectResponse
@@ -378,6 +413,10 @@ class AuthController extends Controller
 
         if ($role === 'security') {
             return redirect()->route('security.login');
+        }
+
+        if ($role === 'cleaning') {
+            return redirect()->route('cleaning.login');
         }
 
         return redirect()->route('resident.login');
