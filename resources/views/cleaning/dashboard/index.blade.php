@@ -24,7 +24,7 @@
             padding:28px 0;
         }
         .sidebar-brand{padding:0 24px;margin-bottom:32px;}
-        .sidebar-brand h2{font-size:18px;font-weight:800;color:#3652D9;letter-spacing:-.3px;}
+        .sidebar-brand h2{font-size:18px;font-weight:800;color:#082B7A;letter-spacing:-.3px;}
         .sidebar-brand p{font-size:11px;color:#A3AED0;font-weight:500;margin-top:2px;}
         .sidebar-nav{flex:1;display:flex;flex-direction:column;gap:2px;padding:0 12px;}
         .sidebar-nav a{
@@ -228,16 +228,13 @@
 <!-- ===== SIDEBAR ===== -->
 <aside class="sidebar">
     <div class="sidebar-brand">
-        <h2>Domus Hub</h2>
-        <p>Luxury Management</p>
+        <h2>Chung cư Số</h2>
+        <p>Nhân viên vệ sinh</p>
     </div>
     <nav class="sidebar-nav">
         <a href="#" class="active"><i class="fa-solid fa-grid-2"></i> Bảng điều khiển</a>
         <a href="{{ route('cleaning.tasks') }}"><i class="fa-solid fa-clipboard-list"></i> Công việc hàng ngày</a>
         <a href="{{ route('cleaning.report') }}"><i class="fa-solid fa-triangle-exclamation"></i> Báo cáo sự cố</a>
-        <a href="#"><i class="fa-solid fa-spray-can-sparkles"></i> Thiết bị</a>
-        <a href="#"><i class="fa-solid fa-route"></i> Lịch trình</a>
-        <a href="#"><i class="fa-solid fa-gear"></i> Cài đặt</a>
     </nav>
     <div class="sidebar-footer">
         <form method="POST" action="{{ route('logout') }}">
@@ -259,10 +256,6 @@
             <input type="text" placeholder="Tìm kiếm công việc, khu vực...">
         </div>
         <div class="topbar-right">
-            <div class="topbar-icons">
-                <button title="Thông báo"><i class="fa-solid fa-bell"></i></button>
-                <button title="Cài đặt"><i class="fa-solid fa-gear"></i></button>
-            </div>
             <div class="topbar-user">
                 <div class="topbar-user-info">
                     <div class="name">{{ auth()->user()->name }}</div>

@@ -24,7 +24,7 @@
             display:flex;align-items:center;justify-content:center;
             color:white;font-size:15px;
         }
-        .sidebar-brand-text h2{font-size:16px;font-weight:800;color:#3652D9;letter-spacing:-.3px;line-height:1.2;}
+        .sidebar-brand-text h2{font-size:16px;font-weight:800;color:#082B7A;letter-spacing:-.3px;line-height:1.2;}
         .sidebar-brand-text p{font-size:10.5px;color:#A3AED0;font-weight:500;}
         .sidebar-nav{flex:1;display:flex;flex-direction:column;gap:2px;padding:0 12px;}
         .sidebar-nav a{
@@ -243,17 +243,14 @@
     <div class="sidebar-brand">
         <div class="sidebar-brand-icon"><i class="fa-solid fa-building"></i></div>
         <div class="sidebar-brand-text">
-            <h2>Domus Hub</h2>
-            <p>Luxury Management</p>
+            <h2>Chung cư Số</h2>
+            <p>Nhân viên vệ sinh</p>
         </div>
     </div>
     <nav class="sidebar-nav">
         <a href="{{ route('cleaning.dashboard') }}"><i class="fa-solid fa-grid-2"></i> Bảng điều khiển</a>
         <a href="{{ route('cleaning.tasks') }}"><i class="fa-solid fa-clipboard-list"></i> Công việc hàng ngày</a>
         <a href="{{ route('cleaning.report') }}" class="active"><i class="fa-solid fa-triangle-exclamation"></i> Báo cáo sự cố</a>
-        <a href="#"><i class="fa-solid fa-spray-can-sparkles"></i> Thiết bị</a>
-        <a href="#"><i class="fa-solid fa-route"></i> Lịch trình</a>
-        <a href="#"><i class="fa-solid fa-gear"></i> Cài đặt</a>
     </nav>
     <div class="sidebar-footer">
         <a href="#"><i class="fa-solid fa-circle-question"></i> Hỗ trợ</a>
@@ -270,10 +267,6 @@
             <input type="text" placeholder="Tìm kiếm tài sản, báo cáo...">
         </div>
         <div class="topbar-right">
-            <div class="topbar-icons">
-                <button title="Thông báo"><i class="fa-solid fa-bell"></i></button>
-                <button title="Cài đặt"><i class="fa-solid fa-gear"></i></button>
-            </div>
             <div class="topbar-user">
                 <div class="topbar-user-info">
                     <div class="name">{{ auth()->user()->name }}</div>
