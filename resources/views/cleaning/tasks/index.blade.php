@@ -19,7 +19,7 @@
         .sidebar-nav{flex:1;display:flex;flex-direction:column;gap:2px;padding:0 12px;}
         .sidebar-nav a{display:flex;align-items:center;gap:12px;padding:11px 16px;border-radius:10px;font-size:13.5px;font-weight:500;color:#707EAE;text-decoration:none;transition:.2s;}
         .sidebar-nav a:hover{background:#F4F7FE;color:#3652D9;}
-        .sidebar-nav a.active{background:#F4F7FE;color:#3652D9;font-weight:700;border-left:3px solid #3652D9;}
+        .sidebar-nav a.active{background:#F4F7FE;color:#3652D9;font-weight:700;}
         .sidebar-nav a.active i{color:#3652D9;}
         .sidebar-nav a i{width:18px;text-align:center;font-size:15px;color:#A3AED0;}
         .sidebar-footer{padding:16px 24px;border-top:1px solid #E9EDF7;margin-top:auto;}
@@ -31,10 +31,7 @@
 
         /* ===== TOP BAR ===== */
         .topbar{background:white;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #E9EDF7;position:sticky;top:0;z-index:40;}
-        .topbar-left{display:flex;align-items:center;gap:16px;}
-        .topbar-back{width:36px;height:36px;border-radius:10px;border:1px solid #E9EDF7;display:flex;align-items:center;justify-content:center;color:#707EAE;text-decoration:none;transition:.2s;font-size:14px;}
-        .topbar-back:hover{border-color:#3652D9;color:#3652D9;background:#F4F7FE;}
-        .topbar-search{display:flex;align-items:center;gap:10px;background:#F4F7FE;border-radius:10px;padding:10px 16px;width:300px;}
+        .topbar-search{display:flex;align-items:center;gap:10px;background:#F4F7FE;border-radius:10px;padding:10px 16px;width:360px;}
         .topbar-search i{color:#A3AED0;font-size:14px;}
         .topbar-search input{border:none;background:none;outline:none;font-size:13px;color:#1B2559;width:100%;font-family:inherit;}
         .topbar-search input::placeholder{color:#A3AED0;}
@@ -49,147 +46,110 @@
         .topbar-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#3652D9,#6B8AFF);display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:700;}
 
         /* ===== CONTENT ===== */
-        .content{padding:28px 32px;flex:1;display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;}
+        .content{padding:28px 32px;flex:1;}
 
-        /* ===== TASK DETAIL ===== */
-        .task-detail{display:flex;flex-direction:column;gap:20px;}
-
-        /* Breadcrumb & Title */
-        .task-breadcrumb{font-size:12px;color:#A3AED0;margin-bottom:4px;}
-        .task-breadcrumb span{color:#3652D9;font-weight:600;}
-        .task-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:6px;}
-        .task-title{font-size:24px;font-weight:800;color:#1B2559;letter-spacing:-.3px;}
-        .task-actions{display:flex;gap:10px;flex-shrink:0;}
-        .btn-start{
-            display:inline-flex;align-items:center;gap:8px;
-            background:#3652D9;color:white;border:none;padding:11px 20px;border-radius:10px;
-            font-size:13px;font-weight:700;cursor:pointer;transition:.2s;font-family:inherit;
-        }
-        .btn-start:hover{background:#2a43b8;transform:translateY(-1px);box-shadow:0 6px 16px rgba(54,82,217,.3);}
-        .btn-complete{
-            display:inline-flex;align-items:center;gap:8px;
-            background:white;color:#05CD99;border:1.5px solid #05CD99;padding:11px 20px;border-radius:10px;
-            font-size:13px;font-weight:700;cursor:pointer;transition:.2s;font-family:inherit;
-        }
-        .btn-complete:hover{background:#E6F9F0;transform:translateY(-1px);}
-
-        .task-meta{display:flex;align-items:center;gap:16px;margin-bottom:4px;}
-        .status-pill{
+        /* ===== PAGE HEADER ===== */
+        .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+        .page-header h1{font-size:24px;font-weight:800;color:#1B2559;letter-spacing:-.3px;}
+        .page-header p{font-size:13px;color:#A3AED0;margin-top:4px;}
+        .header-actions{display:flex;gap:10px;}
+        .btn-filter{
             display:inline-flex;align-items:center;gap:6px;
-            padding:5px 12px;border-radius:20px;font-size:11.5px;font-weight:700;
-            background:#EEF2FF;color:#3652D9;
+            background:white;border:1px solid #E9EDF7;border-radius:10px;
+            padding:10px 16px;font-size:12.5px;font-weight:600;color:#707EAE;
+            cursor:pointer;transition:.2s;font-family:inherit;
         }
-        .status-pill i{font-size:10px;}
-        .meta-text{font-size:12px;color:#A3AED0;display:flex;align-items:center;gap:5px;}
-        .meta-text i{font-size:11px;}
+        .btn-filter:hover{border-color:#3652D9;color:#3652D9;}
+        .btn-filter.active{background:#3652D9;color:white;border-color:#3652D9;}
 
-        /* Description card */
-        .detail-card{background:white;border-radius:14px;padding:28px;box-shadow:0 2px 12px rgba(54,82,217,.04);}
-        .detail-card__title{font-size:16px;font-weight:700;color:#1B2559;margin-bottom:14px;}
-        .detail-card__text{font-size:13.5px;color:#4A5568;line-height:1.8;}
-        .detail-card__info{display:flex;gap:32px;margin-top:20px;padding-top:18px;border-top:1px solid #E9EDF7;}
-        .info-item{display:flex;align-items:center;gap:10px;}
-        .info-item__icon{width:36px;height:36px;border-radius:10px;background:#F4F7FE;display:flex;align-items:center;justify-content:center;color:#3652D9;font-size:14px;}
-        .info-item__label{font-size:11px;color:#A3AED0;font-weight:600;text-transform:uppercase;letter-spacing:.3px;}
-        .info-item__value{font-size:13px;color:#1B2559;font-weight:700;}
+        /* ===== TABS ===== */
+        .tabs{display:flex;gap:4px;margin-bottom:20px;background:white;border-radius:12px;padding:4px;box-shadow:0 2px 8px rgba(54,82,217,.04);width:fit-content;}
+        .tab{
+            padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;
+            color:#707EAE;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px;
+        }
+        .tab:hover{color:#3652D9;}
+        .tab.active{background:#3652D9;color:white;}
+        .tab .badge{
+            background:rgba(255,255,255,.2);padding:2px 7px;border-radius:10px;
+            font-size:10.5px;font-weight:700;
+        }
+        .tab.active .badge{background:rgba(255,255,255,.25);}
+        .tab:not(.active) .badge{background:#F4F7FE;color:#3652D9;}
 
-        /* Checklist card */
-        .checklist-card{background:white;border-radius:14px;padding:28px;box-shadow:0 2px 12px rgba(54,82,217,.04);}
-        .checklist-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
-        .checklist-header h3{font-size:16px;font-weight:700;color:#1B2559;}
-        .checklist-progress{
-            display:inline-flex;align-items:center;gap:6px;
-            padding:4px 12px;border-radius:20px;font-size:11.5px;font-weight:700;
-            background:#E6F9F0;color:#05CD99;
+        /* ===== TASK LIST ===== */
+        .task-list{display:flex;flex-direction:column;gap:12px;}
+        .task-item{
+            background:white;border-radius:14px;padding:20px 24px;
+            box-shadow:0 2px 8px rgba(54,82,217,.04);
+            display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;
+            transition:.2s;cursor:pointer;border:1.5px solid transparent;
         }
-        .checklist{list-style:none;padding:0;margin:0;}
-        .checklist li{
-            display:flex;align-items:center;gap:14px;
-            padding:14px 16px;border-bottom:1px solid #F4F7FE;
-            font-size:14px;color:#1B2559;transition:.15s;border-radius:8px;
-        }
-        .checklist li:last-child{border-bottom:none;}
-        .checklist li:hover{background:#FAFCFE;}
-        .checklist li.done{color:#A3AED0;text-decoration:line-through;}
-        .check-box{
-            width:22px;height:22px;border-radius:6px;border:2px solid #D8E0F0;
-            display:flex;align-items:center;justify-content:center;
-            cursor:pointer;transition:.2s;flex-shrink:0;
-        }
-        .check-box:hover{border-color:#3652D9;}
-        .check-box.checked{background:#3652D9;border-color:#3652D9;}
-        .check-box.checked i{color:white;font-size:10px;}
+        .task-item:hover{border-color:#D8E0F0;transform:translateY(-1px);box-shadow:0 4px 16px rgba(54,82,217,.08);}
 
-        /* ===== RIGHT COLUMN ===== */
-        .right-col{display:flex;flex-direction:column;gap:20px;}
+        .task-item__indicator{width:4px;height:48px;border-radius:4px;}
+        .task-item__indicator--high{background:#EE5D50;}
+        .task-item__indicator--medium{background:#FFB547;}
+        .task-item__indicator--low{background:#05CD99;}
 
-        /* Assignee card */
-        .assignee-card{background:white;border-radius:14px;padding:22px;box-shadow:0 2px 12px rgba(54,82,217,.04);}
-        .assignee-card__header{font-size:11px;font-weight:700;color:#A3AED0;text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;}
-        .assignee-profile{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
-        .assignee-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#3652D9,#6B8AFF);display:flex;align-items:center;justify-content:center;color:white;font-size:16px;font-weight:700;}
-        .assignee-name{font-size:14px;font-weight:700;color:#1B2559;}
-        .assignee-role{font-size:12px;color:#A3AED0;}
-        .assignee-chat{
-            width:32px;height:32px;border-radius:8px;border:1px solid #E9EDF7;
-            display:flex;align-items:center;justify-content:center;
-            color:#A3AED0;font-size:13px;cursor:pointer;transition:.2s;margin-left:auto;
+        .task-item__body{display:flex;flex-direction:column;gap:6px;}
+        .task-item__title{font-size:14.5px;font-weight:700;color:#1B2559;}
+        .task-item__desc{font-size:12.5px;color:#A3AED0;}
+        .task-item__meta{display:flex;align-items:center;gap:16px;margin-top:4px;}
+        .task-meta-tag{
+            display:inline-flex;align-items:center;gap:5px;
+            font-size:11.5px;color:#707EAE;
         }
-        .assignee-chat:hover{border-color:#3652D9;color:#3652D9;}
-        .assignee-meta{display:flex;flex-direction:column;gap:10px;padding-top:14px;border-top:1px solid #E9EDF7;}
-        .assignee-meta-row{display:flex;justify-content:space-between;align-items:center;}
-        .assignee-meta-label{font-size:12px;color:#A3AED0;}
-        .assignee-meta-value{font-size:12px;font-weight:700;color:#1B2559;}
-        .priority-dot{display:inline-flex;align-items:center;gap:5px;}
-        .priority-dot::before{content:"";width:8px;height:8px;border-radius:50%;}
-        .priority-dot--high::before{background:#EE5D50;}
-        .priority-dot--medium::before{background:#FFB547;}
-        .priority-dot--low::before{background:#05CD99;}
+        .task-meta-tag i{font-size:11px;color:#A3AED0;}
 
-        /* Image card */
-        .image-card{background:white;border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(54,82,217,.04);}
-        .image-card__img{width:100%;height:160px;object-fit:cover;position:relative;display:block;background:#E9EDF7;}
-        .image-card__overlay{
-            position:absolute;bottom:0;left:0;right:0;
-            background:linear-gradient(transparent,rgba(0,0,0,.6));
-            padding:12px 16px;color:white;font-size:11.5px;font-weight:600;
+        .task-item__right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;}
+        .task-time{font-size:12px;font-weight:600;color:#1B2559;}
+        .task-time span{color:#A3AED0;font-weight:400;}
+        .priority-badge{
+            display:inline-flex;align-items:center;gap:4px;
+            padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;
         }
-        .image-card__footer{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;}
-        .image-card__footer span{font-size:12px;color:#707EAE;}
-        .image-card__footer a{font-size:12px;color:#3652D9;font-weight:600;text-decoration:none;}
-        .image-card__footer a:hover{text-decoration:underline;}
-        .image-placeholder{
-            width:100%;height:160px;background:linear-gradient(135deg,#1B2559,#3652D9);
-            display:flex;align-items:center;justify-content:center;position:relative;
+        .priority-badge--high{background:#FFF0F0;color:#EE5D50;}
+        .priority-badge--medium{background:#FFF4E5;color:#FF9B05;}
+        .priority-badge--low{background:#E6F9F0;color:#05CD99;}
+        .priority-badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;}
+        .status-badge{
+            display:inline-flex;align-items:center;gap:5px;
+            padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;
         }
-        .image-placeholder i{font-size:32px;color:rgba(255,255,255,.3);}
-        .image-placeholder__label{
-            position:absolute;bottom:12px;left:16px;right:16px;
-            font-size:11.5px;font-weight:600;color:rgba(255,255,255,.8);
-            display:flex;align-items:center;gap:6px;
-        }
+        .status-badge--progress{background:#EEF2FF;color:#3652D9;}
+        .status-badge--pending{background:#F4F7FE;color:#A3AED0;}
+        .status-badge--done{background:#E6F9F0;color:#05CD99;}
+        .status-badge i{font-size:9px;}
 
-        /* Notes card */
-        .notes-card{background:linear-gradient(135deg,#F4F7FE,#EEF2FF);border-radius:14px;padding:22px;border:1px solid #D8E0F0;}
-        .notes-card__header{font-size:11px;font-weight:700;color:#A3AED0;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;}
-        .notes-card textarea{
-            width:100%;min-height:80px;border:1.5px solid #D8E0F0;border-radius:10px;
-            padding:12px 14px;font-size:13px;color:#1B2559;font-family:inherit;
-            background:white;resize:vertical;transition:.2s;
+        /* ===== SUMMARY BAR ===== */
+        .summary-bar{
+            display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;
         }
-        .notes-card textarea:focus{outline:none;border-color:#3652D9;box-shadow:0 0 0 3px rgba(54,82,217,.08);}
-        .notes-card textarea::placeholder{color:#A3AED0;}
-        .btn-note{
-            display:inline-flex;align-items:center;gap:8px;
-            background:white;border:1.5px solid #E9EDF7;color:#1B2559;
-            padding:10px 18px;border-radius:10px;font-size:12.5px;font-weight:700;
-            cursor:pointer;transition:.2s;margin-top:12px;font-family:inherit;width:100%;justify-content:center;
+        .summary-item{
+            background:white;border-radius:12px;padding:16px 18px;
+            box-shadow:0 2px 8px rgba(54,82,217,.04);
+            display:flex;align-items:center;gap:12px;
         }
-        .btn-note:hover{border-color:#3652D9;color:#3652D9;background:#F4F7FE;}
+        .summary-icon{
+            width:40px;height:40px;border-radius:10px;
+            display:flex;align-items:center;justify-content:center;font-size:16px;
+        }
+        .summary-icon--blue{background:#EEF2FF;color:#3652D9;}
+        .summary-icon--orange{background:#FFF4E5;color:#FF9B05;}
+        .summary-icon--green{background:#E6F9F0;color:#05CD99;}
+        .summary-icon--red{background:#FFF0F0;color:#EE5D50;}
+        .summary-info .summary-value{font-size:20px;font-weight:800;color:#1B2559;}
+        .summary-info .summary-label{font-size:11px;color:#A3AED0;font-weight:500;}
 
         /* ===== RESPONSIVE ===== */
-        @media(max-width:1100px){.content{grid-template-columns:1fr;}}
-        @media(max-width:768px){.sidebar{display:none;}.main{margin-left:0;}.content{padding:20px 16px;}.task-title-row{flex-direction:column;}.task-actions{width:100%;}.detail-card__info{flex-direction:column;gap:14px;}}
+        @media(max-width:1024px){.summary-bar{grid-template-columns:repeat(2,1fr);}}
+        @media(max-width:768px){
+            .sidebar{display:none;}.main{margin-left:0;}.content{padding:20px 16px;}
+            .topbar-search{width:180px;}.summary-bar{grid-template-columns:1fr 1fr;}
+            .task-item{grid-template-columns:auto 1fr;}.task-item__right{display:none;}
+            .page-header{flex-direction:column;align-items:flex-start;gap:12px;}
+        }
     </style>
 </head>
 <body>
@@ -221,12 +181,9 @@
 
     <!-- TOP BAR -->
     <header class="topbar">
-        <div class="topbar-left">
-            <a href="{{ route('cleaning.dashboard') }}" class="topbar-back"><i class="fa-solid fa-arrow-left"></i></a>
-            <div class="topbar-search">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" placeholder="Tìm kiếm công việc...">
-            </div>
+        <div class="topbar-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" placeholder="Tìm kiếm công việc, khu vực...">
         </div>
         <div class="topbar-right">
             <div class="topbar-icons">
@@ -246,124 +203,178 @@
     <!-- CONTENT -->
     <div class="content">
 
-        <!-- LEFT: TASK DETAIL -->
-        <div class="task-detail">
-
-            <!-- Breadcrumb -->
+        <!-- PAGE HEADER -->
+        <div class="page-header">
             <div>
-                <div class="task-breadcrumb">Công việc hàng ngày &gt; <span>#TSK-4492</span></div>
-                <div class="task-title-row">
-                    <h1 class="task-title">Vệ sinh sâu sảnh chính</h1>
-                    <div class="task-actions">
-                        <button class="btn-start"><i class="fa-solid fa-play"></i> Bắt đầu công việc</button>
-                        <button class="btn-complete"><i class="fa-solid fa-circle-check"></i> Đánh dấu hoàn thành</button>
-                    </div>
-                </div>
-                <div class="task-meta">
-                    <span class="status-pill"><i class="fa-solid fa-rotate"></i> Đang thực hiện</span>
-                    <span class="meta-text"><i class="fa-solid fa-clock"></i> Cập nhật lần cuối: 10 phút trước</span>
-                </div>
+                <h1>Công việc hàng ngày</h1>
+                <p>Danh sách tất cả công việc được giao hôm nay — {{ now()->isoFormat('dddd, D MMMM Y') }}</p>
             </div>
-
-            <!-- Description -->
-            <div class="detail-card">
-                <h2 class="detail-card__title">Mô tả công việc</h2>
-                <p class="detail-card__text">
-                    Thực hiện quy trình vệ sinh chuyên sâu tại khu vực sảnh chính. Tập trung vào việc khử trùng toàn bộ các bề mặt tiếp xúc cao như tay nắm cửa, quầy lễ tân và nút bấm thang máy. Thực hiện đánh bóng sàn đá marble bằng thiết bị chuyên dụng và lau sạch hệ thống cửa kính mặt tiền để đảm bảo vẻ ngoài sang trọng của tòa nhà.
-                </p>
-                <div class="detail-card__info">
-                    <div class="info-item">
-                        <div class="info-item__icon"><i class="fa-solid fa-location-dot"></i></div>
-                        <div>
-                            <div class="info-item__label">Khu vực</div>
-                            <div class="info-item__value">Tầng trệt - Cửa chính</div>
-                        </div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item__icon"><i class="fa-solid fa-clock"></i></div>
-                        <div>
-                            <div class="info-item__label">Thời gian</div>
-                            <div class="info-item__value">09:00 AM - 11:00 AM</div>
-                        </div>
-                    </div>
-                </div>
+            <div class="header-actions">
+                <button class="btn-filter"><i class="fa-solid fa-filter"></i> Lọc</button>
+                <button class="btn-filter"><i class="fa-solid fa-arrow-down-wide-short"></i> Sắp xếp</button>
             </div>
-
-            <!-- Checklist -->
-            <div class="checklist-card">
-                <div class="checklist-header">
-                    <h3>Danh sách kiểm tra</h3>
-                    <span class="checklist-progress">2/5 Hoàn thành</span>
-                </div>
-                <ul class="checklist">
-                    <li class="done">
-                        <div class="check-box checked"><i class="fa-solid fa-check"></i></div>
-                        Quét sàn
-                    </li>
-                    <li class="done">
-                        <div class="check-box checked"><i class="fa-solid fa-check"></i></div>
-                        Lau sàn
-                    </li>
-                    <li>
-                        <div class="check-box"></div>
-                        Đổ rác
-                    </li>
-                    <li>
-                        <div class="check-box"></div>
-                        Lau cửa kính
-                    </li>
-                    <li>
-                        <div class="check-box"></div>
-                        Khử trùng tay vịn
-                    </li>
-                </ul>
-            </div>
-
         </div>
 
-        <!-- RIGHT COLUMN -->
-        <div class="right-col">
-
-            <!-- Assignee -->
-            <div class="assignee-card">
-                <div class="assignee-card__header">Người giao việc</div>
-                <div class="assignee-profile">
-                    <div class="assignee-avatar">M</div>
-                    <div>
-                        <div class="assignee-name">Marcus Chen</div>
-                        <div class="assignee-role">Quản lý tòa nhà</div>
-                    </div>
-                    <div class="assignee-chat" title="Nhắn tin"><i class="fa-solid fa-comment"></i></div>
+        <!-- SUMMARY -->
+        <div class="summary-bar">
+            <div class="summary-item">
+                <div class="summary-icon summary-icon--blue"><i class="fa-solid fa-list-check"></i></div>
+                <div class="summary-info">
+                    <div class="summary-value">12</div>
+                    <div class="summary-label">Tổng công việc</div>
                 </div>
-                <div class="assignee-meta">
-                    <div class="assignee-meta-row">
-                        <span class="assignee-meta-label">Ngày tạo</span>
-                        <span class="assignee-meta-value">{{ now()->format('d/m/Y') }}</span>
+            </div>
+            <div class="summary-item">
+                <div class="summary-icon summary-icon--orange"><i class="fa-solid fa-spinner"></i></div>
+                <div class="summary-info">
+                    <div class="summary-value">02</div>
+                    <div class="summary-label">Đang thực hiện</div>
+                </div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-icon summary-icon--green"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="summary-info">
+                    <div class="summary-value">08</div>
+                    <div class="summary-label">Hoàn thành</div>
+                </div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-icon summary-icon--red"><i class="fa-solid fa-clock"></i></div>
+                <div class="summary-info">
+                    <div class="summary-value">02</div>
+                    <div class="summary-label">Chờ xử lý</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABS -->
+        <div class="tabs">
+            <div class="tab active" data-filter="all">Tất cả <span class="badge">12</span></div>
+            <div class="tab" data-filter="progress">Đang làm <span class="badge">2</span></div>
+            <div class="tab" data-filter="pending">Chờ xử lý <span class="badge">2</span></div>
+            <div class="tab" data-filter="done">Hoàn thành <span class="badge">8</span></div>
+        </div>
+
+        <!-- TASK LIST -->
+        <div class="task-list">
+
+            <div class="task-item" data-status="progress" onclick="window.location='{{ route('cleaning.tasks.show', 1) }}'">
+                <div class="task-item__indicator task-item__indicator--high"></div>
+                <div class="task-item__body">
+                    <div class="task-item__title">Vệ sinh sâu sảnh chính</div>
+                    <div class="task-item__desc">Làm sạch sàn, cửa kính mặt tiền và khử trùng bề mặt tiếp xúc</div>
+                    <div class="task-item__meta">
+                        <span class="task-meta-tag"><i class="fa-solid fa-location-dot"></i> Tầng trệt</span>
+                        <span class="task-meta-tag"><i class="fa-solid fa-clock"></i> 09:00 - 11:00</span>
+                        <span class="task-meta-tag"><i class="fa-solid fa-check-double"></i> 2/5 bước</span>
                     </div>
-                    <div class="assignee-meta-row">
-                        <span class="assignee-meta-label">Độ ưu tiên</span>
-                        <span class="assignee-meta-value"><span class="priority-dot priority-dot--high"></span> Cao</span>
-                    </div>
+                </div>
+                <div class="task-item__right">
+                    <span class="priority-badge priority-badge--high">Cao</span>
+                    <span class="status-badge status-badge--progress"><i class="fa-solid fa-rotate"></i> Đang làm</span>
                 </div>
             </div>
 
-            <!-- Image -->
-            <div class="image-card">
-                <div class="image-placeholder">
-                    <i class="fa-solid fa-image"></i>
-                    <div class="image-placeholder__label"><i class="fa-solid fa-camera"></i> Hình ảnh khu vực</div>
+            <div class="task-item" data-status="progress" onclick="window.location='{{ route('cleaning.tasks.show', 2) }}'">
+                <div class="task-item__indicator task-item__indicator--medium"></div>
+                <div class="task-item__body">
+                    <div class="task-item__title">Lau kính cánh đông</div>
+                    <div class="task-item__desc">Vệ sinh bề mặt kính bên ngoài tầng 4</div>
+                    <div class="task-item__meta">
+                        <span class="task-meta-tag"><i class="fa-solid fa-location-dot"></i> Tầng 4</span>
+                        <span class="task-meta-tag"><i class="fa-solid fa-clock"></i> 10:30 - 12:30</span>
+                        <span class="task-meta-tag"><i class="fa-solid fa-check-double"></i> 1/3 bước</span>
+                    </div>
                 </div>
-                <div class="image-card__footer">
-                    <span>Sảnh chính tầng trệt</span>
-                    <a href="#">Xem bản đồ</a>
+                <div class="task-item__right">
+                    <span class="priority-badge priority-badge--medium">Trung bình</span>
+                    <span class="status-badge status-badge--progress"><i class="fa-solid fa-rotate"></i> Đang làm</span>
                 </div>
             </div>
 
-            <!-- Quick Notes -->
-            <div class="notes-card">
-                <div class="notes-card__header">Ghi chú nhanh</div>
-                <textarea placeholder="Nhập ghi chú hoặc vấn đề phát sinh..."></textarea>
-                <button class="btn-note"><i class="fa-solid fa-floppy-disk"></i> Lưu ghi chú</button>
+            <div class="task-item" data-status="pending" onclick="window.location='{{ route('cleaning.tasks.show', 3) }}'">
+                <div class="task-item__indicator task-item__indicator--low"></div>
+                <div class="task-item__body">
+                    <div class="task-item__title">Kiểm tra hệ thống đèn</div>
+                    <div class="task-item__desc">Hành lang khu vực C, kiểm tra bóng đèn hỏng</div>
+                    <div class="task-item__meta">
+                        <span class="task-meta-tag"><i class="fa-solid fa-location-dot"></i> Tầng 2</span>
+                        <span class="task-meta-tag"><i class="fa-solid fa-clock"></i> 13:00 - 15:00</span>
+                        <span class="task-meta-tag"><i class="fa-solid fa-check-double"></i> 0/4 bước</span>
+                    </div>
+                </div>
+                <div class="task-item__right">
+                    <span class="priority-badge priority-badge--low">Thấp</span>
+                    <span class="status-badge status-badge--pending"><i class="fa-solid fa-clock"></i> Chờ xử lý</span>
+                </div>
+            </div>
+
+            <div class="task-item" data-status="done" onclick="window.location='{{ route('cleaning.tasks.show', 4) }}'">
+                <div class="task-item__indicator task-item__indicator--medium"></div>
+                <div class="task-item__body">
+                    <div class="task-item__title">Thu gom rác văn phòng</div>
+                    <div class="task-item__desc">Khu vực văn phòng điều hành tầng 5</div>
+                    <div class="task-item__meta">
+                        <span class="task-meta-tag"><i class="fa-solid fa-location-dot"></i> Tầng 5</span>
+                        <span class="task-meta-tag"><i class="fa-solid fa-clock"></i> 07:30 - 08:30</span>
+                        <span class="task-meta-tag"><i class="fa-solid fa-check-double"></i> 3/3 bước</span>
+                    </div>
+                </div>
+                <div class="task-item__right">
+                    <span class="priority-badge priority-badge--medium">Trung bình</span>
+                    <span class="status-badge status-badge--done"><i class="fa-solid fa-check"></i> Hoàn thành</span>
+                </div>
+            </div>
+
+            <div class="task-item" data-status="done" onclick="window.location='{{ route('cleaning.tasks.show', 5) }}'">
+                <div class="task-item__indicator task-item__indicator--high"></div>
+                <div class="task-item__body">
+                    <div class="task-item__title">Vệ sinh thang máy A1, A2</div>
+                    <div class="task-item__desc">Lau sàn, gương và nút bấm thang máy block A</div>
+                    <div class="task-item__meta">
+                        <span class="task-meta-tag"><i class="fa-solid fa-location-dot"></i> Block A</span>
+                        <span class="task-meta-tag"><i class="fa-solid fa-clock"></i> 08:00 - 09:00</span>
+                        <span class="task-meta-tag"><i class="fa-solid fa-check-double"></i> 4/4 bước</span>
+                    </div>
+                </div>
+                <div class="task-item__right">
+                    <span class="priority-badge priority-badge--high">Cao</span>
+                    <span class="status-badge status-badge--done"><i class="fa-solid fa-check"></i> Hoàn thành</span>
+                </div>
+            </div>
+
+            <div class="task-item" data-status="done" onclick="window.location='{{ route('cleaning.tasks.show', 6) }}'">
+                <div class="task-item__indicator task-item__indicator--low"></div>
+                <div class="task-item__body">
+                    <div class="task-item__title">Tưới cây cảnh hành lang</div>
+                    <div class="task-item__desc">Tưới nước và kiểm tra cây xanh khu vực hành lang tầng 1-3</div>
+                    <div class="task-item__meta">
+                        <span class="task-meta-tag"><i class="fa-solid fa-location-dot"></i> Tầng 1-3</span>
+                        <span class="task-meta-tag"><i class="fa-solid fa-clock"></i> 06:30 - 07:30</span>
+                        <span class="task-meta-tag"><i class="fa-solid fa-check-double"></i> 2/2 bước</span>
+                    </div>
+                </div>
+                <div class="task-item__right">
+                    <span class="priority-badge priority-badge--low">Thấp</span>
+                    <span class="status-badge status-badge--done"><i class="fa-solid fa-check"></i> Hoàn thành</span>
+                </div>
+            </div>
+
+            <div class="task-item" data-status="done" onclick="window.location='{{ route('cleaning.tasks.show', 7) }}'">
+                <div class="task-item__indicator task-item__indicator--medium"></div>
+                <div class="task-item__body">
+                    <div class="task-item__title">Dọn dẹp khu vực hồ bơi</div>
+                    <div class="task-item__desc">Thu dọn ghế, lau sàn ướt và kiểm tra thùng rác</div>
+                    <div class="task-item__meta">
+                        <span class="task-meta-tag"><i class="fa-solid fa-location-dot"></i> Tầng thượng</span>
+                        <span class="task-meta-tag"><i class="fa-solid fa-clock"></i> 14:00 - 15:30</span>
+                        <span class="task-meta-tag"><i class="fa-solid fa-check-double"></i> 3/3 bước</span>
+                    </div>
+                </div>
+                <div class="task-item__right">
+                    <span class="priority-badge priority-badge--medium">Trung bình</span>
+                    <span class="status-badge status-badge--done"><i class="fa-solid fa-check"></i> Hoàn thành</span>
+                </div>
             </div>
 
         </div>
@@ -372,21 +383,23 @@
 </div>
 
 <script>
-// Toggle checklist items
-document.querySelectorAll('.check-box').forEach(box => {
-    box.addEventListener('click', function() {
-        this.classList.toggle('checked');
-        const li = this.closest('li');
-        li.classList.toggle('done');
-        if (this.classList.contains('checked')) {
-            this.innerHTML = '<i class="fa-solid fa-check"></i>';
-        } else {
-            this.innerHTML = '';
-        }
-        // Update progress
-        const total = document.querySelectorAll('.checklist li').length;
-        const done = document.querySelectorAll('.checklist li.done').length;
-        document.querySelector('.checklist-progress').textContent = done + '/' + total + ' Hoàn thành';
+// Tab filtering
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+        // Switch active tab
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+
+        const filter = this.dataset.filter;
+        const items = document.querySelectorAll('.task-item');
+
+        items.forEach(item => {
+            if (filter === 'all' || item.dataset.status === filter) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
     });
 });
 </script>
