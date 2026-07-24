@@ -48,6 +48,11 @@ Route::get('/technician', function () {
     return redirect()->route('technician.tickets.my-tasks');
 });
 
+Route::get('/cleaning', function () {
+    if (! Auth::check()) return redirect()->route('cleaning.login');
+    return redirect()->route('cleaning.dashboard');
+});
+
 // Admin Login Routes
 Route::get('/admin/login', [AuthController::class, 'showAdminLogin'])->name('admin.login');
 Route::post('/admin/login', [AuthController::class, 'loginAdmin'])->name('admin.login.submit');
@@ -77,6 +82,10 @@ Route::post('/resident/reset-password', [AuthController::class, 'resetPassword']
 // Security Login Routes
 Route::get('/security/login', [AuthController::class, 'showSecurityLogin'])->name('security.login');
 Route::post('/security/login', [AuthController::class, 'loginSecurity'])->name('security.login.submit');
+
+// Cleaning Login Routes
+Route::get('/cleaning/login', [AuthController::class, 'showCleaningLogin'])->name('cleaning.login');
+Route::post('/cleaning/login', [AuthController::class, 'loginCleaning'])->name('cleaning.login.submit');
 
 // Logout (accessible from all roles)
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -281,6 +290,15 @@ $portalRoutes = function () {
     Route::post('/users/{id}/ban-posting', [\App\Http\Controllers\Admin\PostController::class, 'banPosting'])->name('users.ban-posting');
     Route::post('/users/{id}/ban-commenting', [\App\Http\Controllers\Admin\PostController::class, 'banCommenting'])->name('users.ban-commenting');
 
+    // Quản lý vệ sinh (Admin & Manager)
+    Route::get('/cleaning-tasks', [\App\Http\Controllers\Admin\CleaningTaskController::class, 'index'])->name('cleaning-tasks.index');
+    Route::get('/cleaning-tasks/create', [\App\Http\Controllers\Admin\CleaningTaskController::class, 'create'])->name('cleaning-tasks.create');
+    Route::post('/cleaning-tasks', [\App\Http\Controllers\Admin\CleaningTaskController::class, 'store'])->name('cleaning-tasks.store');
+    Route::delete('/cleaning-tasks/{id}', [\App\Http\Controllers\Admin\CleaningTaskController::class, 'destroy'])->name('cleaning-tasks.destroy');
+
+    Route::get('/cleaning-reports', [\App\Http\Controllers\Admin\CleaningReportController::class, 'index'])->name('cleaning-reports.index');
+    Route::patch('/cleaning-reports/{id}/status', [\App\Http\Controllers\Admin\CleaningReportController::class, 'updateStatus'])->name('cleaning-reports.update-status');
+
 };
 
 Route::middleware(['admin'])->prefix('admin')->name('admin.')->group($portalRoutes);
@@ -334,6 +352,23 @@ Route::middleware(['security'])->group(function () {
     // Xem lịch sử xe và khách cho bảo vệ
     Route::get('/security/vehicle-logs', [\App\Http\Controllers\Admin\VehicleLogController::class, 'index'])->name('security.vehicle-logs.index');
     Route::get('/security/visitor-logs', [\App\Http\Controllers\Admin\VisitorLogController::class, 'index'])->name('security.visitor-logs.index');
+});
+
+// DASHBOARD CLEANING ROUTES
+Route::middleware(['cleaning'])->group(function () {
+    Route::get('/cleaning/dashboard', [\App\Http\Controllers\Cleaning\DashboardController::class, 'index'])->name('cleaning.dashboard');
+
+    Route::get('/cleaning/profile', [\App\Http\Controllers\Cleaning\ProfileController::class, 'index'])->name('cleaning.profile');
+    Route::put('/cleaning/profile', [\App\Http\Controllers\Cleaning\ProfileController::class, 'update'])->name('cleaning.profile.update');
+    Route::put('/cleaning/profile/change-password', [\App\Http\Controllers\Cleaning\ProfileController::class, 'changePassword'])->name('cleaning.profile.change-password');
+
+    Route::get('/cleaning/report', [\App\Http\Controllers\Cleaning\ReportController::class, 'index'])->name('cleaning.report');
+    Route::post('/cleaning/report', [\App\Http\Controllers\Cleaning\ReportController::class, 'store'])->name('cleaning.report.store');
+
+    Route::get('/cleaning/tasks', [\App\Http\Controllers\Cleaning\TaskController::class, 'index'])->name('cleaning.tasks');
+    Route::get('/cleaning/tasks/{id}', [\App\Http\Controllers\Cleaning\TaskController::class, 'show'])->name('cleaning.tasks.show');
+    Route::patch('/cleaning/tasks/{id}/status', [\App\Http\Controllers\Cleaning\TaskController::class, 'updateStatus'])->name('cleaning.tasks.update-status');
+    Route::patch('/cleaning/tasks/{id}/checklist', [\App\Http\Controllers\Cleaning\TaskController::class, 'updateChecklist'])->name('cleaning.tasks.update-checklist');
 });
 
 // DASHBOARD RESIDENT ROUTES

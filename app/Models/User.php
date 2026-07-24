@@ -130,6 +130,11 @@ class User extends Authenticatable
         return $this->role === 'technician';
     }
 
+    public function isCleaning(): bool
+    {
+        return $this->role === 'cleaning';
+    }
+
     /**
      * Kiểm tra user có thuộc nhóm admin portal hay không
      */

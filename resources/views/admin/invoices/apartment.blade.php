@@ -259,6 +259,10 @@
 .apt-inv-badge--water { background: #dbeafe; color: #1e40af; }
 .apt-inv-badge--management_fee { background: #f3e8ff; color: #6b21a8; }
 .apt-inv-badge--parking { background: #dcfce7; color: #166534; }
+.apt-inv-badge--motorbike { background: #fff7ed; color: #c2410c; }
+.apt-inv-badge--electric_bike { background: #f0fdf4; color: #15803d; }
+.apt-inv-badge--car { background: #fef3c7; color: #92400e; }
+.apt-inv-badge--bicycle { background: #ecfdf5; color: #065f46; }
 .apt-inv-badge--other, .apt-inv-badge--internet, .apt-inv-badge--service { background: #f1f5f9; color: #475569; }
 
 /* Status Pills */

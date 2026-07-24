@@ -17,9 +17,10 @@ class ServicePriceSeeder extends Seeder
             'electricity'    => ['name' => 'Giá điện', 'unit_price' => 3000, 'description' => 'Biểu giá điện theo kWh'],
             'water'          => ['name' => 'Giá nước', 'unit_price' => 15000, 'description' => 'Biểu giá nước theo m³'],
             'management_fee' => ['name' => 'Phí quản lý', 'unit_price' => 15000, 'description' => 'Phí quản lý hàng tháng (trên m2)'],
-            'motorbike'      => ['name' => 'Phí gửi xe máy', 'unit_price' => 100000, 'description' => 'Phí gửi xe máy/xe điện'],
-            'car'            => ['name' => 'Phí gửi ô tô', 'unit_price' => 1200000, 'description' => 'Phí gửi xe ô tô'],
-            'bicycle'        => ['name' => 'Phí gửi xe đạp', 'unit_price' => 50000, 'description' => 'Phí gửi xe đạp'],
+            'motorbike'      => ['name' => 'Phí gửi xe máy',  'unit_price' => 100000,  'description' => 'Phí gửi xe máy (xăng)'],
+            'electric_bike'  => ['name' => 'Phí gửi xe điện', 'unit_price' => 100000,  'description' => 'Phí gửi xe điện / xe đạp điện'],
+            'car'            => ['name' => 'Phí gửi ô tô',    'unit_price' => 1200000, 'description' => 'Phí gửi xe ô tô'],
+            'bicycle'        => ['name' => 'Phí gửi xe đạp',  'unit_price' => 50000,   'description' => 'Phí gửi xe đạp'],
             'internet'       => ['name' => 'Phí Internet', 'unit_price' => 130000, 'description' => 'Phí Internet hàng tháng'],
             'service'        => ['name' => 'Phí dịch vụ khác', 'unit_price' => 0, 'description' => 'Các phí dịch vụ phát sinh'],
         ];
