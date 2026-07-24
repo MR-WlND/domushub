@@ -30,24 +30,31 @@
             <div class="sp-form-grid">
                 <div class="sp-field">
                     <label>Loại dịch vụ <span class="sp-required">*</span></label>
-                    <select name="type" required>
+                    <select name="type" required onchange="toggleAddVehicleType(this)">
                         <option value="">-- Chọn loại --</option>
-                        <option value="electricity" {{ old('type')=='electricity'?'selected':'' }}>Điện</option>
                         <option value="water"       {{ old('type')=='water'?'selected':'' }}>Nước</option>
                         <option value="management_fee" {{ old('type')=='management_fee'?'selected':'' }}>Phí quản lý</option>
-                        <option value="motorbike"   {{ old('type')=='motorbike'?'selected':'' }}>Gửi xe máy</option>
-                        <option value="electric_bike" {{ old('type')=='electric_bike'?'selected':'' }}>Gửi xe điện</option>
-                        <option value="car"         {{ old('type')=='car'?'selected':'' }}>Gửi ô tô</option>
-                        <option value="bicycle"     {{ old('type')=='bicycle'?'selected':'' }}>Gửi xe đạp</option>
+                        <option value="parking_fee" {{ old('type')=='parking_fee'?'selected':'' }}>Phí quản lý xe</option>
                         <option value="internet"    {{ old('type')=='internet'?'selected':'' }}>Internet</option>
                         <option value="service"     {{ old('type')=='service'?'selected':'' }}>Dịch vụ khác</option>
                         <option value="other"       {{ old('type')=='other'?'selected':'' }}>Khác</option>
                     </select>
                     @error('type')<span class="sp-error">{{ $message }}</span>@enderror
                 </div>
+                <div class="sp-field" id="addVehicleTypeField" style="display: {{ old('type') == 'parking_fee' ? 'flex' : 'none' }};">
+                    <label>Áp dụng cho loại xe <span class="sp-required">*</span></label>
+                    <select name="vehicle_type">
+                        <option value="">-- Chọn xe --</option>
+                        <option value="car" {{ old('vehicle_type')=='car'?'selected':'' }}>Ô tô</option>
+                        <option value="motorbike" {{ old('vehicle_type')=='motorbike'?'selected':'' }}>Xe máy</option>
+                        <option value="electric_bike" {{ old('vehicle_type')=='electric_bike'?'selected':'' }}>Xe điện</option>
+                        <option value="bicycle" {{ old('vehicle_type')=='bicycle'?'selected':'' }}>Xe đạp</option>
+                    </select>
+                    @error('vehicle_type')<span class="sp-error">{{ $message }}</span>@enderror
+                </div>
                 <div class="sp-field">
                     <label>Tên dịch vụ <span class="sp-required">*</span></label>
-                    <input type="text" name="name" value="{{ old('name') }}" placeholder="VD: Giá điện sinh hoạt" required maxlength="100">
+                    <input type="text" name="name" value="{{ old('name') }}" placeholder="VD: Giá nước sinh hoạt" required maxlength="100">
                     @error('name')<span class="sp-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="sp-field">
@@ -71,16 +78,18 @@
     <div class="sp-stats">
         @php
             $typeLabels = [
-                'electricity'    => 'Điện',
                 'water'          => 'Nước',
                 'management_fee' => 'Quản lý',
-                'motorbike'      => 'Xe máy',
-                'electric_bike'  => 'Xe điện',
-                'car'            => 'Ô tô',
-                'bicycle'        => 'Xe đạp',
+                'parking_fee'    => 'Phí gửi xe',
                 'internet'       => 'Internet',
                 'service'        => 'Dịch vụ',
                 'other'          => 'Khác',
+            ];
+            $vehicleLabels = [
+                'car' => 'Ô tô',
+                'motorbike' => 'Xe máy',
+                'electric_bike' => 'Xe điện',
+                'bicycle' => 'Xe đạp',
             ];
             $grouped = $servicePrices->groupBy('type');
         @endphp
@@ -115,6 +124,9 @@
                     <td class="view-{{ $sp->id }}">
                         <span class="sp-type-badge sp-type--{{ $sp->type }}">
                             {{ $typeLabels[$sp->type] ?? $sp->type }}
+                            @if($sp->type === 'parking_fee' && $sp->vehicle_type)
+                                ({{ $vehicleLabels[$sp->vehicle_type] ?? $sp->vehicle_type }})
+                            @endif
                         </span>
                     </td>
                     <td class="view-{{ $sp->id }} sp-name">{{ $sp->name }}</td>
@@ -145,17 +157,23 @@
                             <div class="sp-form-grid">
                                 <div class="sp-field">
                                     <label>Loại dịch vụ</label>
-                                    <select name="type" required>
-                                        <option value="electricity" {{ $sp->type=='electricity'?'selected':'' }}>Điện</option>
+                                    <select name="type" required onchange="toggleEditVehicleType(this, {{ $sp->id }})">
                                         <option value="water"       {{ $sp->type=='water'?'selected':'' }}>Nước</option>
                                         <option value="management_fee" {{ $sp->type=='management_fee'?'selected':'' }}>Phí quản lý</option>
-                                        <option value="motorbike"   {{ $sp->type=='motorbike'?'selected':'' }}>Gửi xe máy</option>
-                                        <option value="electric_bike" {{ $sp->type=='electric_bike'?'selected':'' }}>Gửi xe điện</option>
-                                        <option value="car"         {{ $sp->type=='car'?'selected':'' }}>Gửi ô tô</option>
-                                        <option value="bicycle"     {{ $sp->type=='bicycle'?'selected':'' }}>Gửi xe đạp</option>
+                                        <option value="parking_fee" {{ $sp->type=='parking_fee'?'selected':'' }}>Phí quản lý xe</option>
                                         <option value="internet"    {{ $sp->type=='internet'?'selected':'' }}>Internet</option>
                                         <option value="service"     {{ $sp->type=='service'?'selected':'' }}>Dịch vụ khác</option>
                                         <option value="other"       {{ $sp->type=='other'?'selected':'' }}>Khác</option>
+                                    </select>
+                                </div>
+                                <div class="sp-field editVehicleTypeField-{{ $sp->id }}" style="display: {{ $sp->type == 'parking_fee' ? 'flex' : 'none' }};">
+                                    <label>Áp dụng cho loại xe <span class="sp-required">*</span></label>
+                                    <select name="vehicle_type">
+                                        <option value="">-- Chọn xe --</option>
+                                        <option value="car" {{ $sp->vehicle_type=='car'?'selected':'' }}>Ô tô</option>
+                                        <option value="motorbike" {{ $sp->vehicle_type=='motorbike'?'selected':'' }}>Xe máy</option>
+                                        <option value="electric_bike" {{ $sp->vehicle_type=='electric_bike'?'selected':'' }}>Xe điện</option>
+                                        <option value="bicycle" {{ $sp->vehicle_type=='bicycle'?'selected':'' }}>Xe đạp</option>
                                     </select>
                                 </div>
                                 <div class="sp-field">
@@ -245,14 +263,9 @@
 .sp-table tr:hover td { background: #fafbff; }
 
 .sp-type-badge { font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 5px; background: #f1f5f9; color: #475569; white-space: nowrap; }
-.sp-type--electricity { background: #fefce8; color: #854d0e; }
 .sp-type--water       { background: #eff6ff; color: #1e40af; }
 .sp-type--management_fee { background: #f0fdf4; color: #166534; }
-.sp-type--parking     { background: #fff7ed; color: #c2410c; }
-.sp-type--motorbike   { background: #fff7ed; color: #c2410c; }
-.sp-type--electric_bike { background: #f0fdf4; color: #15803d; }
-.sp-type--car         { background: #fef3c7; color: #92400e; }
-.sp-type--bicycle     { background: #ecfdf5; color: #065f46; }
+.sp-type--parking_fee { background: #fff7ed; color: #c2410c; }
 .sp-type--internet    { background: #f5f3ff; color: #5b21b6; }
 .sp-type--service     { background: #fff1f2; color: #be123c; }
 
@@ -301,6 +314,32 @@ function openEdit(id) {
 function closeEdit(id) {
     document.querySelectorAll(`.view-${id}`).forEach(el => el.style.display = '');
     document.querySelectorAll(`.edit-${id}`).forEach(el => el.style.display = 'none');
+}
+
+function toggleAddVehicleType(sel) {
+    const field = document.getElementById('addVehicleTypeField');
+    const input = field.querySelector('select');
+    if(sel.value === 'parking_fee') {
+        field.style.display = 'flex';
+        input.required = true;
+    } else {
+        field.style.display = 'none';
+        input.required = false;
+        input.value = '';
+    }
+}
+
+function toggleEditVehicleType(sel, id) {
+    const field = document.querySelector('.editVehicleTypeField-' + id);
+    const input = field.querySelector('select');
+    if(sel.value === 'parking_fee') {
+        field.style.display = 'flex';
+        input.required = true;
+    } else {
+        field.style.display = 'none';
+        input.required = false;
+        input.value = '';
+    }
 }
 </script>
 @endpush

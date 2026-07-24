@@ -19,7 +19,7 @@ use Illuminate\View\View;
 class UtilityMeterController extends Controller
 {
     /**
-     * Danh sách chỉ số điện nước + thống kê tổng quan
+     * Danh sách chỉ số nước + thống kê tổng quan
      */
     public function index(Request $request): View|RedirectResponse
     {
@@ -791,7 +791,7 @@ class UtilityMeterController extends Controller
             $reason = $request->input('reject_reason');
             
             $notificationData = [
-                'title' => '❌ Chỉ số điện nước bị từ chối',
+                'title' => '❌ Chỉ số nước bị từ chối',
                 'message' => "Chỉ số <strong>{$typeName}</strong> mới cho căn hộ <strong>{$apartmentNumber}</strong> (Kỳ {$reading->record_month}/{$reading->record_year}) đã bị từ chối bởi kế toán <strong>{$rejecterName}</strong>. Lý do: <em>{$reason}</em>. Vui lòng kiểm tra và ghi lại.",
                 'url' => route('admin.utility-readings.index', [
                     'month' => $reading->record_month,
@@ -898,7 +898,7 @@ class UtilityMeterController extends Controller
             $existingInvoice = \App\Models\Invoice::where('apartment_id', $apartmentId)
                 ->where('billing_month', $month)
                 ->where('billing_year', $year)
-                ->where('title', 'like', '%Phí điện nước%')
+                ->where('title', 'like', '%Phí nước%')
                 ->first();
             if ($existingInvoice) {
                 $existingInvoice->details()->delete();
@@ -956,7 +956,7 @@ class UtilityMeterController extends Controller
     }
 
     /**
-     * Xuất file Excel mẫu chỉ số điện nước (Dạng Bảng Ngang) có Protect Sheet để BQL điền
+     * Xuất file Excel mẫu chỉ số nước (Dạng Bảng Ngang) có Protect Sheet để BQL điền
      */
     public function downloadTemplate(Request $request)
     {
@@ -1257,7 +1257,7 @@ class UtilityMeterController extends Controller
     }
 
     /**
-     * Lấy lịch sử từ chối của chỉ số điện nước từ Spatie Activity Log.
+     * Lấy lịch sử từ chối của chỉ số nước từ Spatie Activity Log.
      */
     private function getRejectionHistory(int $id)
     {

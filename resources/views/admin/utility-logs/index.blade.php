@@ -226,7 +226,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="{{ $tab === 'rejected' ? 10 : 11 }}" class="empty-row">Chưa có dữ liệu ghi số điện nước nào.</td></tr>
+                    <tr><td colspan="{{ $tab === 'rejected' ? 10 : 11 }}" class="empty-row">Chưa có dữ liệu ghi số nước nào.</td></tr>
                     @endforelse
                 </tbody>
             </table>

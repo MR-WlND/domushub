@@ -205,7 +205,8 @@ class InvoiceController extends Controller
     public function create()
     {
         $apartments = Apartment::with('floor.block')->get();
-        return view('admin.invoices.create', compact('apartments'));
+        $servicePrices = \App\Models\ServicePrice::where('status', 'active')->get();
+        return view('admin.invoices.create', compact('apartments', 'servicePrices'));
     }
 
     /**
@@ -216,7 +217,8 @@ class InvoiceController extends Controller
         $validated = $request->validate([
             'apartment_id'   => 'required|exists:apartments,id',
             'title'          => 'required|string|max:150',
-            'type'           => 'required|in:electricity,water,management_fee,motorbike,car,bicycle,electric_bike,other',
+            'type'           => 'required|in:water,management_fee,parking_fee,internet,service,other',
+            'vehicle_type'   => 'nullable|required_if:type,parking_fee|in:motorbike,electric_bike,car,bicycle',
             'amount'         => 'required|numeric|min:0',
             'billing_month'  => 'required|string',
             'due_date'       => 'required|date',
@@ -228,6 +230,7 @@ class InvoiceController extends Controller
             'title.max'               => 'Tiêu đề không được vượt quá 150 ký tự.',
             'type.required'           => 'Vui lòng chọn loại phí.',
             'type.in'                 => 'Loại phí không hợp lệ.',
+            'vehicle_type.required_if'=> 'Vui lòng chọn loại xe khi loại phí là Phí gửi xe.',
             'amount.required'         => 'Vui lòng nhập số tiền.',
             'amount.numeric'          => 'Số tiền phải là số.',
             'amount.min'              => 'Số tiền không được âm.',
@@ -244,7 +247,10 @@ class InvoiceController extends Controller
 
         // Ensure ServicePrice exists
         $servicePrice = \App\Models\ServicePrice::firstOrCreate(
-            ['type' => $validated['type']],
+            [
+                'type' => $validated['type'],
+                'vehicle_type' => $validated['type'] === 'parking_fee' ? $validated['vehicle_type'] : null
+            ],
             [
                 'name' => 'Phí ' . Invoice::typeLabel($validated['type']),
                 'unit_price' => $validated['amount'],
@@ -361,7 +367,7 @@ class InvoiceController extends Controller
             'billing_month' => 'required|string',
             'due_date'      => 'required|date',
             'types'         => 'required|array|min:1',
-            'types.*'       => 'in:electricity,water,management_fee,motorbike,electric_bike,car,bicycle,internet,service,other',
+            'types.*'       => 'in:water,management_fee,parking_fee_motorbike,parking_fee_car,parking_fee_electric_bike,parking_fee_bicycle,internet,service,other',
             'apartment_ids' => 'required|array|min:1',
             'apartment_ids.*' => 'integer|exists:apartments,id',
         ], [
@@ -384,16 +390,20 @@ class InvoiceController extends Controller
         $selectedApartmentIds = array_values(array_unique(array_filter($request->input('apartment_ids', []), fn($id) => is_numeric($id))));
 
         // --- Lấy danh sách căn hộ đã chọn ---
-        $apartments = Apartment::with(['residents.user', 'vehicles'])
+        $apartments = Apartment::with(['residents.user', 'vehicles', 'apartmentType'])
             ->whereIn('id', $selectedApartmentIds)
             ->where('status', 'occupied')
             ->get();
 
         // --- Lấy bảng đơn giá theo type ---
+        $queryTypes = array_map(function($t) {
+            return str_starts_with($t, 'parking_fee_') ? 'parking_fee' : $t;
+        }, $request->types);
+
         $activePrices = ServicePrice::where('status', 'active')
-            ->whereIn('type', $request->types)
+            ->whereIn('type', $queryTypes)
             ->get()
-            ->keyBy('type');
+            ->groupBy('type');
 
         $created = 0;
         $skipped = 0;
@@ -416,8 +426,8 @@ class InvoiceController extends Controller
                 // ============================================================
                 // XỬ LÝ ĐIỆN / NƯỚC
                 // ============================================================
-                if (in_array($type, ['electricity', 'water'])) {
-                    $servicePrice = $activePrices->get($type);
+                if (in_array($type, ['internet', 'service', 'other'])) {
+                    $servicePrice = $activePrices->get($type)?->first();
                     if (!$servicePrice) {
                         $skipped++;
                         continue;
@@ -480,85 +490,77 @@ class InvoiceController extends Controller
                 }
 
                 // ============================================================
-                // XỬ LÝ GỬI XE (MOTORBIKE / ELECTRIC_BIKE / CAR / BICYCLE)
+                // XỬ LÝ GỬI XE (PARKING FEE CỤ THỂ)
                 // ============================================================
-                if (in_array($type, ['motorbike', 'electric_bike', 'car', 'bicycle'])) {
-                    $servicePrice = $activePrices->get($type);
+                if (str_starts_with($type, 'parking_fee_')) {
+                    $vType = str_replace('parking_fee_', '', $type);
+                    
+                    $servicePrices = $activePrices->get('parking_fee');
+                    if (!$servicePrices) {
+                        $skipped++;
+                        continue;
+                    }
+                    
+                    $servicePrice = $servicePrices->where('vehicle_type', $vType)->first();
                     if (!$servicePrice) {
                         $skipped++;
                         continue;
                     }
 
-                    // Kiểm tra đã tồn tại
-                    if ($invoice && $skipExisting) {
-                        $exists = InvoiceDetail::where('bill_id', $invoice->id)
-                            ->where('service_price_id', $servicePrice->id)
-                            ->exists();
-                        if ($exists) {
-                            $skipped++;
-                            continue;
-                        }
-                    }
-
-                    // Đếm xe theo từng loại (chỉ xe active)
-                    if ($type === 'motorbike') {
-                        $vehicleCount = Vehicle::where('apartment_id', $apartment->id)
-                            ->where('vehicle_type', 'motorbike')
-                            ->where('status', 'active')
-                            ->count();
-                    } elseif ($type === 'electric_bike') {
-                        $vehicleCount = Vehicle::where('apartment_id', $apartment->id)
-                            ->where('vehicle_type', 'electric_bike')
-                            ->where('status', 'active')
-                            ->count();
-                    } elseif ($type === 'car') {
-                        $vehicleCount = Vehicle::where('apartment_id', $apartment->id)
-                            ->where('vehicle_type', 'car')
-                            ->where('status', 'active')
-                            ->count();
-                    } elseif ($type === 'bicycle') {
-                        $vehicleCount = Vehicle::where('apartment_id', $apartment->id)
-                            ->where('vehicle_type', 'bicycle')
-                            ->where('status', 'active')
-                            ->count();
-                    }
+                    $vehicleCount = Vehicle::where('apartment_id', $apartment->id)
+                        ->where('vehicle_type', $vType)
+                        ->where('status', 'active')
+                        ->count();
 
                     // Không tạo dòng xe nếu căn hộ không có xe nào
                     if ($vehicleCount === 0) {
                         continue;
                     }
 
-                    // Tạo hóa đơn nếu chưa có
-                    if (!$invoice) {
-                        $invoice = Invoice::create([
-                            'apartment_id'  => $apartment->id,
-                            'title'         => 'Hóa đơn tháng ' . $month . '/' . $year,
-                            'billing_month' => $month,
-                            'billing_year'  => $year,
-                            'due_date'      => $request->due_date,
-                            'total_amount'  => 0,
-                            'status'        => 'unpaid',
+                        // Kiểm tra đã tồn tại
+                        if ($invoice && $skipExisting) {
+                            $exists = InvoiceDetail::where('bill_id', $invoice->id)
+                                ->where('service_price_id', $servicePrice->id)
+                                ->exists();
+                            if ($exists) {
+                                $skipped++;
+                                continue;
+                            }
+                        }
+
+                        // Tạo hóa đơn nếu chưa có
+                        if (!$invoice) {
+                            $invoice = Invoice::create([
+                                'apartment_id'  => $apartment->id,
+                                'title'         => 'Hóa đơn tháng ' . $month . '/' . $year,
+                                'billing_month' => $month,
+                                'billing_year'  => $year,
+                                'due_date'      => $request->due_date,
+                                'total_amount'  => 0,
+                                'status'        => 'unpaid',
+                            ]);
+                        }
+
+                        $detailAmount = $vehicleCount * $servicePrice->unit_price;
+                        $vLabels = [
+                            'motorbike' => 'xe máy',
+                            'electric_bike' => 'xe điện',
+                            'car' => 'ô tô',
+                            'bicycle' => 'xe đạp'
+                        ];
+                        $vName = $vLabels[$vType] ?? 'xe';
+                        $vehicleNote = "Phí gửi {$vName}: " . number_format($servicePrice->unit_price, 0, ',', '.') . "đ/xe x {$vehicleCount} xe";
+
+                        InvoiceDetail::create([
+                            'bill_id'          => $invoice->id,
+                            'service_price_id' => $servicePrice->id,
+                            'quantity'         => $vehicleCount,
+                            'amount'           => $detailAmount,
+                            'note'             => $vehicleNote,
                         ]);
-                    }
 
-                    $detailAmount = $vehicleCount * $servicePrice->unit_price;
-                    $vehicleNote = match ($type) {
-                        'motorbike'    => "Phí gửi xe máy: " . number_format($servicePrice->unit_price, 0, ',', '.') . "đ/xe x {$vehicleCount} xe",
-                        'electric_bike'=> "Phí gửi xe điện: " . number_format($servicePrice->unit_price, 0, ',', '.') . "đ/xe x {$vehicleCount} xe",
-                        'car'          => "Phí gửi ô tô: " . number_format($servicePrice->unit_price, 0, ',', '.') . "đ/xe x {$vehicleCount} xe",
-                        'bicycle'      => "Phí gửi xe đạp: " . number_format($servicePrice->unit_price, 0, ',', '.') . "đ/xe x {$vehicleCount} xe",
-                        default        => "Gửi xe: {$vehicleCount} xe",
-                    };
-
-                    InvoiceDetail::create([
-                        'bill_id'          => $invoice->id,
-                        'service_price_id' => $servicePrice->id,
-                        'quantity'         => $vehicleCount,
-                        'amount'           => $detailAmount,
-                        'note'             => $vehicleNote,
-                    ]);
-
-                    $invoiceAmountAdded += $detailAmount;
+                        $invoiceAmountAdded += $detailAmount;
+                    
                     continue;
                 }
 
@@ -566,7 +568,7 @@ class InvoiceController extends Controller
                 // PHÍ QUẢN LÝ
                 // ============================================================
                 if ($type === 'management_fee') {
-                    $servicePrice = $activePrices->get($type);
+                    $servicePrice = $activePrices->get($type)?->first();
                     if (!$servicePrice) {
                         $skipped++;
                         continue;
@@ -595,14 +597,17 @@ class InvoiceController extends Controller
                     }
 
                     $area = $apartment->area ?? 0;
-                    $detailAmount = $area * $servicePrice->unit_price;
+                    $unitPrice = ($apartment->apartmentType && $apartment->apartmentType->base_service_fee > 0)
+                        ? $apartment->apartmentType->base_service_fee
+                        : $servicePrice->unit_price;
+                    $detailAmount = $area * $unitPrice;
 
                     InvoiceDetail::create([
                         'bill_id'          => $invoice->id,
                         'service_price_id' => $servicePrice->id,
                         'quantity'         => $area,
                         'amount'           => $detailAmount,
-                        'note'             => "Phí quản lý: " . number_format($servicePrice->unit_price, 0, ',', '.') . "đ/m2 x {$area} m2",
+                        'note'             => "Phí quản lý: " . number_format($unitPrice, 0, ',', '.') . "đ/m2 x {$area} m2",
                     ]);
 
                     $invoiceAmountAdded += $detailAmount;

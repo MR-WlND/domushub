@@ -110,6 +110,14 @@
                             <span class="item-value">{{ $apartment->floor->name ?? 'Tầng ' . $apartment->floor->floor_number }}</span>
                         </div>
                         <div class="detail-item">
+                            <span class="item-label">Loại căn hộ</span>
+                            <span class="item-value font-semibold text-primary">{{ $apartment->apartmentType->name ?? 'Chưa xác định' }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="item-label">Diện tích</span>
+                            <span class="item-value font-semibold">{{ number_format($apartment->area, 1, ',', '.') }} m²</span>
+                        </div>
+                        <div class="detail-item">
                             <span class="item-label">Trạng thái</span>
                             <span class="item-value">
                                 @if ($apartment->status == 'occupied')

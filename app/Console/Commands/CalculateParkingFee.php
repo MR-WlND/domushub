@@ -19,14 +19,13 @@ class CalculateParkingFee extends Command
     {
         $this->info('Bắt đầu tính phí gửi xe...');
 
-        // Đọc đơn giá từ bảng service_prices theo từng loại xe
+        // Đọc đơn giá từ bảng service_prices theo loại parking_fee
         $prices = \App\Models\ServicePrice::where('status', 'active')
-            ->whereIn('type', ['motorbike', 'electric_bike', 'car', 'bicycle'])
-            ->get()
-            ->keyBy('type');
+            ->where('type', 'parking_fee')
+            ->get();
 
         if ($prices->isEmpty()) {
-            $this->warn('Chưa có đơn giá gửi xe nào được cấu hình (motorbike/car/bicycle). Vui lòng thêm trong Biểu giá dịch vụ.');
+            $this->warn('Chưa có đơn giá gửi xe nào được cấu hình (parking_fee). Vui lòng thêm trong Biểu giá dịch vụ.');
             return;
         }
 
@@ -43,23 +42,15 @@ class CalculateParkingFee extends Command
                 ->where('billing_year', Carbon::now()->year)
                 ->first();
 
-            foreach ($prices as $type => $servicePrice) {
+            foreach ($prices as $servicePrice) {
+                $vType = $servicePrice->vehicle_type;
+                if (!$vType) continue;
+
                 // Đếm xe theo loại
-                $vehicleCount = match ($type) {
-                    'motorbike'    => Vehicle::where('apartment_id', $apartment->id)
-                        ->where('vehicle_type', 'motorbike')
-                        ->where('status', 'active')->count(),
-                    'electric_bike'=> Vehicle::where('apartment_id', $apartment->id)
-                        ->where('vehicle_type', 'electric_bike')
-                        ->where('status', 'active')->count(),
-                    'car'       => Vehicle::where('apartment_id', $apartment->id)
-                        ->where('vehicle_type', 'car')
-                        ->where('status', 'active')->count(),
-                    'bicycle'   => Vehicle::where('apartment_id', $apartment->id)
-                        ->where('vehicle_type', 'bicycle')
-                        ->where('status', 'active')->count(),
-                    default     => 0,
-                };
+                $vehicleCount = Vehicle::where('apartment_id', $apartment->id)
+                    ->where('vehicle_type', $vType)
+                    ->where('status', 'active')
+                    ->count();
 
                 if ($vehicleCount === 0) {
                     continue;
@@ -84,13 +75,13 @@ class CalculateParkingFee extends Command
                     ->delete();
 
                 $detailAmount = $vehicleCount * $servicePrice->unit_price;
-                $label = match ($type) {
-                    'motorbike'    => 'Xe máy',
-                    'electric_bike'=> 'Xe điện',
-                    'car'          => 'Ô tô',
-                    'bicycle'      => 'Xe đạp',
-                    default        => 'Xe',
-                };
+                $vLabels = [
+                    'motorbike' => 'xe máy',
+                    'electric_bike' => 'xe điện',
+                    'car' => 'ô tô',
+                    'bicycle' => 'xe đạp'
+                ];
+                $label = $vLabels[$vType] ?? 'xe';
 
                 InvoiceDetail::create([
                     'bill_id'          => $invoice->id,

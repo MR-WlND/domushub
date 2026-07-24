@@ -119,12 +119,8 @@ class Invoice extends Model
     public static function typeLabel(string $type): string
     {
         return match ($type) {
-            'electricity'    => 'Tiền điện',
             'water'          => 'Tiền nước',
-            'motorbike'      => 'Phí gửi xe máy',
-            'car'            => 'Phí gửi ô tô',
-            'bicycle'        => 'Phí gửi xe đạp',
-            'electric_bike'  => 'Phí gửi xe điện',
+            'parking_fee'    => 'Phí gửi xe',
             'management_fee' => 'Phí quản lý',
             'internet'       => 'Internet',
             'service'        => 'Dịch vụ',

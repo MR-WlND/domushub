@@ -62,15 +62,26 @@
                         onblur="this.style.borderColor='var(--border)'"
                         onchange="autoTitle(this.value)">
                     <option value="">-- Chọn loại --</option>
-                    <option value="electricity" {{ old('type')=='electricity'?'selected':'' }}>Tiền điện</option>
                     <option value="water"       {{ old('type')=='water'?'selected':'' }}>Tiền nước</option>
                     <option value="management_fee" {{ old('type')=='management_fee'?'selected':'' }}>🏢 Phí quản lý</option>
-                    <option value="motorbike"   {{ old('type')=='motorbike'?'selected':'' }}>🏍️ Phí gửi xe máy</option>
-                    <option value="car"         {{ old('type')=='car'?'selected':'' }}>🚗 Phí gửi ô tô</option>
-                    <option value="bicycle"     {{ old('type')=='bicycle'?'selected':'' }}>🚲 Phí gửi xe đạp</option>
-                    <option value="electric_bike" {{ old('type')=='electric_bike'?'selected':'' }}>🛵 Phí gửi xe điện</option>
+                    <option value="parking_fee" {{ old('type')=='parking_fee'?'selected':'' }}>🚗 Phí gửi xe</option>
+                    <option value="internet" {{ old('type')=='internet'?'selected':'' }}>🌐 Internet</option>
+                    <option value="service" {{ old('type')=='service'?'selected':'' }}>✨ Dịch vụ</option>
                     <option value="other"       {{ old('type')=='other'?'selected':'' }}>📦 Phí khác</option>
-                </select>
+                <div id="vehicleTypeGroup" style="display: {{ old('type') == 'parking_fee' ? 'block' : 'none' }}; margin-top: 12px;">
+                    <label style="{{ $labelStyle }}">Áp dụng cho loại xe <span style="color:var(--red-500)">*</span></label>
+                    <select name="vehicle_type" id="vehicle_type"
+                            style="{{ $inputStyle }}"
+                            onfocus="this.style.borderColor='var(--brand-400)'"
+                            onblur="this.style.borderColor='var(--border)'"
+                            onchange="autoTitle('parking_fee')">
+                        <option value="">-- Chọn loại xe --</option>
+                        <option value="motorbike" {{ old('vehicle_type')=='motorbike'?'selected':'' }}>Xe máy</option>
+                        <option value="electric_bike" {{ old('vehicle_type')=='electric_bike'?'selected':'' }}>Xe điện</option>
+                        <option value="car" {{ old('vehicle_type')=='car'?'selected':'' }}>Ô tô</option>
+                        <option value="bicycle" {{ old('vehicle_type')=='bicycle'?'selected':'' }}>Xe đạp</option>
+                    </select>
+                </div>
             </div>
 
             <div>
@@ -138,17 +149,54 @@
 @push('scripts')
 <script>
 const typeNames = {
-    electricity: 'Tiền điện', water: 'Tiền nước',
+    water: 'Tiền nước',
     management_fee: 'Phí quản lý',
-    motorbike: 'Phí gửi xe máy', car: 'Phí gửi ô tô',
-    bicycle: 'Phí gửi xe đạp', electric_bike: 'Phí gửi xe điện',
+    parking_fee: 'Phí gửi xe',
+    internet: 'Internet',
+    service: 'Dịch vụ',
     other: 'Phí khác'
 };
+const servicePrices = @json(isset($servicePrices) ? $servicePrices->mapToGroups(function($item) {
+    if ($item->type === 'parking_fee' && $item->vehicle_type) {
+        return ['parking_fee_' . $item->vehicle_type => $item->unit_price];
+    }
+    return [$item->type => $item->unit_price];
+})->map(fn($g) => $g->first()) : []);
 let currentType = '';
 
 function autoTitle(type) {
     currentType = type;
     updateTitle();
+    
+    // Show/hide vehicle type dropdown
+    const vGroup = document.getElementById('vehicleTypeGroup');
+    if (type === 'parking_fee') {
+        vGroup.style.display = 'block';
+        document.getElementById('vehicle_type').required = true;
+    } else {
+        vGroup.style.display = 'none';
+        document.getElementById('vehicle_type').required = false;
+        document.getElementById('vehicle_type').value = '';
+    }
+    
+    const amountInput = document.querySelector('input[name="amount"]');
+    
+    let lookupKey = type;
+    if (type === 'parking_fee') {
+        const vType = document.getElementById('vehicle_type').value;
+        if (vType) {
+            lookupKey = 'parking_fee_' + vType;
+        } else {
+            amountInput.value = '';
+            return;
+        }
+    }
+    
+    if (servicePrices[lookupKey] !== undefined) {
+        amountInput.value = servicePrices[lookupKey];
+    } else {
+        amountInput.value = '';
+    }
 }
 
 function updateTitle() {
@@ -156,7 +204,22 @@ function updateTitle() {
     const monthInput = document.getElementById('billing_month').value;
     if (!monthInput) return;
     const [y, m] = monthInput.split('-');
-    document.getElementById('titleInput').value = `${typeNames[currentType]} tháng ${m}/${y}`;
+    
+    let title = typeNames[currentType];
+    if (currentType === 'parking_fee') {
+        const vType = document.getElementById('vehicle_type').value;
+        const vNames = {
+            'motorbike': 'xe máy',
+            'electric_bike': 'xe điện',
+            'car': 'ô tô',
+            'bicycle': 'xe đạp'
+        };
+        if (vType && vNames[vType]) {
+            title += ' ' + vNames[vType];
+        }
+    }
+    
+    document.getElementById('titleInput').value = `${title} tháng ${m}/${y}`;
 }
 </script>
 @endpush

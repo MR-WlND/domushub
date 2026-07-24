@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
             TechnicianSeeder::class,
             CleaningSeeder::class,
             BlockFloorApartmentSeeder::class,
+            ApartmentTypeSeeder::class,
             ResidentSeeder::class,
             InvoiceSeeder::class,
             SystemSettingSeeder::class,
