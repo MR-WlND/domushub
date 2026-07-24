@@ -35,7 +35,10 @@
                         <option value="electricity" {{ old('type')=='electricity'?'selected':'' }}>Điện</option>
                         <option value="water"       {{ old('type')=='water'?'selected':'' }}>Nước</option>
                         <option value="management_fee" {{ old('type')=='management_fee'?'selected':'' }}>Phí quản lý</option>
-                        <option value="parking"     {{ old('type')=='parking'?'selected':'' }}>Gửi xe</option>
+                        <option value="motorbike"   {{ old('type')=='motorbike'?'selected':'' }}>Gửi xe máy</option>
+                        <option value="electric_bike" {{ old('type')=='electric_bike'?'selected':'' }}>Gửi xe điện</option>
+                        <option value="car"         {{ old('type')=='car'?'selected':'' }}>Gửi ô tô</option>
+                        <option value="bicycle"     {{ old('type')=='bicycle'?'selected':'' }}>Gửi xe đạp</option>
                         <option value="internet"    {{ old('type')=='internet'?'selected':'' }}>Internet</option>
                         <option value="service"     {{ old('type')=='service'?'selected':'' }}>Dịch vụ khác</option>
                         <option value="other"       {{ old('type')=='other'?'selected':'' }}>Khác</option>
@@ -67,7 +70,18 @@
     {{-- Thống kê nhanh --}}
     <div class="sp-stats">
         @php
-            $typeLabels = ['electricity'=>'Điện','water'=>'Nước','management_fee'=>'Quản lý','parking'=>'Gửi xe','internet'=>'Internet','service'=>'Dịch vụ','other'=>'Khác'];
+            $typeLabels = [
+                'electricity'    => 'Điện',
+                'water'          => 'Nước',
+                'management_fee' => 'Quản lý',
+                'motorbike'      => 'Xe máy',
+                'electric_bike'  => 'Xe điện',
+                'car'            => 'Ô tô',
+                'bicycle'        => 'Xe đạp',
+                'internet'       => 'Internet',
+                'service'        => 'Dịch vụ',
+                'other'          => 'Khác',
+            ];
             $grouped = $servicePrices->groupBy('type');
         @endphp
         @foreach($grouped as $type => $items)
@@ -135,7 +149,10 @@
                                         <option value="electricity" {{ $sp->type=='electricity'?'selected':'' }}>Điện</option>
                                         <option value="water"       {{ $sp->type=='water'?'selected':'' }}>Nước</option>
                                         <option value="management_fee" {{ $sp->type=='management_fee'?'selected':'' }}>Phí quản lý</option>
-                                        <option value="parking"     {{ $sp->type=='parking'?'selected':'' }}>Gửi xe</option>
+                                        <option value="motorbike"   {{ $sp->type=='motorbike'?'selected':'' }}>Gửi xe máy</option>
+                                        <option value="electric_bike" {{ $sp->type=='electric_bike'?'selected':'' }}>Gửi xe điện</option>
+                                        <option value="car"         {{ $sp->type=='car'?'selected':'' }}>Gửi ô tô</option>
+                                        <option value="bicycle"     {{ $sp->type=='bicycle'?'selected':'' }}>Gửi xe đạp</option>
                                         <option value="internet"    {{ $sp->type=='internet'?'selected':'' }}>Internet</option>
                                         <option value="service"     {{ $sp->type=='service'?'selected':'' }}>Dịch vụ khác</option>
                                         <option value="other"       {{ $sp->type=='other'?'selected':'' }}>Khác</option>
@@ -232,6 +249,10 @@
 .sp-type--water       { background: #eff6ff; color: #1e40af; }
 .sp-type--management_fee { background: #f0fdf4; color: #166534; }
 .sp-type--parking     { background: #fff7ed; color: #c2410c; }
+.sp-type--motorbike   { background: #fff7ed; color: #c2410c; }
+.sp-type--electric_bike { background: #f0fdf4; color: #15803d; }
+.sp-type--car         { background: #fef3c7; color: #92400e; }
+.sp-type--bicycle     { background: #ecfdf5; color: #065f46; }
 .sp-type--internet    { background: #f5f3ff; color: #5b21b6; }
 .sp-type--service     { background: #fff1f2; color: #be123c; }
 

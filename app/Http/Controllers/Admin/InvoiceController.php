@@ -54,7 +54,13 @@ class InvoiceController extends Controller
             'electricity'    => 'Tiền điện',
             'water'          => 'Tiền nước',
             'management_fee' => 'Phí quản lý',
+            'motorbike'      => 'Phí gửi xe máy',
+            'car'            => 'Phí gửi ô tô',
+            'bicycle'        => 'Phí gửi xe đạp',
+            'electric_bike'  => 'Phí gửi xe điện',
             'parking'        => 'Phí đỗ xe',
+            'internet'       => 'Internet',
+            'service'        => 'Dịch vụ',
             'other'          => 'Khác',
         ];
         $byType = DB::table('bills')
@@ -351,7 +357,7 @@ class InvoiceController extends Controller
             'billing_month' => 'required|string',
             'due_date'      => 'required|date',
             'types'         => 'required|array|min:1',
-            'types.*'       => 'in:electricity,water,management_fee,motorbike,car,internet,service,other',
+            'types.*'       => 'in:electricity,water,management_fee,motorbike,electric_bike,car,bicycle,internet,service,other',
             'apartment_ids' => 'required|array|min:1',
             'apartment_ids.*' => 'integer|exists:apartments,id',
         ], [
@@ -470,9 +476,9 @@ class InvoiceController extends Controller
                 }
 
                 // ============================================================
-                // XỬ LÝ GỬI XE (MOTORBIKE / CAR / BICYCLE)
+                // XỬ LÝ GỬI XE (MOTORBIKE / ELECTRIC_BIKE / CAR / BICYCLE)
                 // ============================================================
-                if (in_array($type, ['motorbike', 'car', 'bicycle'])) {
+                if (in_array($type, ['motorbike', 'electric_bike', 'car', 'bicycle'])) {
                     $servicePrice = $activePrices->get($type);
                     if (!$servicePrice) {
                         $skipped++;
@@ -493,7 +499,12 @@ class InvoiceController extends Controller
                     // Đếm xe theo từng loại (chỉ xe active)
                     if ($type === 'motorbike') {
                         $vehicleCount = Vehicle::where('apartment_id', $apartment->id)
-                            ->whereIn('vehicle_type', ['motorbike', 'electric_bike'])
+                            ->where('vehicle_type', 'motorbike')
+                            ->where('status', 'active')
+                            ->count();
+                    } elseif ($type === 'electric_bike') {
+                        $vehicleCount = Vehicle::where('apartment_id', $apartment->id)
+                            ->where('vehicle_type', 'electric_bike')
                             ->where('status', 'active')
                             ->count();
                     } elseif ($type === 'car') {
@@ -528,10 +539,11 @@ class InvoiceController extends Controller
 
                     $detailAmount = $vehicleCount * $servicePrice->unit_price;
                     $vehicleNote = match ($type) {
-                        'motorbike' => "Phí gửi xe máy: " . number_format($servicePrice->unit_price, 0, ',', '.') . "đ/xe x {$vehicleCount} xe",
-                        'car'       => "Phí gửi ô tô: " . number_format($servicePrice->unit_price, 0, ',', '.') . "đ/xe x {$vehicleCount} xe",
-                        'bicycle'   => "Phí gửi xe đạp: " . number_format($servicePrice->unit_price, 0, ',', '.') . "đ/xe x {$vehicleCount} xe",
-                        default     => "Gửi xe: {$vehicleCount} xe",
+                        'motorbike'    => "Phí gửi xe máy: " . number_format($servicePrice->unit_price, 0, ',', '.') . "đ/xe x {$vehicleCount} xe",
+                        'electric_bike'=> "Phí gửi xe điện: " . number_format($servicePrice->unit_price, 0, ',', '.') . "đ/xe x {$vehicleCount} xe",
+                        'car'          => "Phí gửi ô tô: " . number_format($servicePrice->unit_price, 0, ',', '.') . "đ/xe x {$vehicleCount} xe",
+                        'bicycle'      => "Phí gửi xe đạp: " . number_format($servicePrice->unit_price, 0, ',', '.') . "đ/xe x {$vehicleCount} xe",
+                        default        => "Gửi xe: {$vehicleCount} xe",
                     };
 
                     InvoiceDetail::create([
