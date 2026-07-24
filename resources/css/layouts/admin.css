@@ -1,4 +1,4 @@
-﻿/* Admin Layout Stylesheet */
+/* Admin Layout Stylesheet */
 
 .dashboard-page {
     min-height: 100vh;
@@ -54,7 +54,7 @@
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    padding-right: 0;
+    padding: 0 12px; /* Added padding so items don't touch the edge */
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-width: thin;
@@ -82,7 +82,7 @@
     font-weight: 600;
     letter-spacing: 0.05em;
     color: #9da3b4;
-    padding: 12px 24px 4px;
+    padding: 12px 12px 4px; /* Adjusted padding */
     text-transform: uppercase;
     user-select: none;
 }
@@ -93,7 +93,7 @@
     gap: 10px;
     color: #3c4563;
     text-decoration: none;
-    padding: 0 24px;
+    padding: 0 12px; /* Adjusted padding */
     height: 40px;
     font-size: 14px;
     font-weight: 500;
@@ -102,6 +102,7 @@
     position: relative;
     border-right: 3px solid transparent;
     box-sizing: border-box;
+    margin-right: 8px; /* Leave space for translateX */
 }
 
 .dashboard-nav__icon {

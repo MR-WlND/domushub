@@ -113,18 +113,26 @@ class InvoiceController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Apartment::with(['floor.block'])
-            ->withCount('invoices')
-            ->withSum('invoices', 'total_amount')
-            ->withSum('invoices', 'paid_amount');
+        $query = Apartment::with(['floor.block']);
+        
+        $invoiceFilter = function($q) use ($request) {
+            if ($request->filled('month')) {
+                [$year, $month] = explode('-', $request->month);
+                $q->where('billing_month', (int) $month)
+                  ->where('billing_year', (int) $year);
+            }
+            if ($request->filled('status')) {
+                $q->where('status', $request->status);
+            }
+        };
+
+        $query->withCount(['invoices' => $invoiceFilter])
+            ->withSum(['invoices' => $invoiceFilter], 'total_amount')
+            ->withSum(['invoices' => $invoiceFilter], 'paid_amount');
 
         // Lọc theo tháng/năm (format: YYYY-MM)
         if ($request->filled('month')) {
-            [$year, $month] = explode('-', $request->month);
-            $query->whereHas('invoices', function($q) use ($year, $month) {
-                $q->where('billing_month', (int) $month)
-                  ->where('billing_year', (int) $year);
-            });
+            $query->whereHas('invoices', $invoiceFilter);
         }
 
         // Lọc theo căn hộ
@@ -134,10 +142,7 @@ class InvoiceController extends Controller
 
         // Lọc theo trạng thái
         if ($request->filled('status')) {
-            $status = $request->status;
-            $query->whereHas('invoices', function ($q) use ($status) {
-                $q->where('status', $status);
-            });
+            $query->whereHas('invoices', $invoiceFilter);
         }
 
         // Tìm kiếm theo tên/mã căn hộ hoặc tòa

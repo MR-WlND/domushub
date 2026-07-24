@@ -56,37 +56,53 @@
         {{-- Filter Bar --}}
         <div class="inv-admin__filter-bar">
             <form method="GET" action="{{ portal_route('invoices.index') }}" class="inv-admin__filter-form">
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Tìm căn hộ, tòa..."
-                    class="inv-admin__input">
+                
+                <div class="inv-admin__filter-group">
+                    <svg class="inv-admin__filter-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Tìm căn hộ, tòa..." class="inv-admin__input inv-admin__input--with-icon">
+                </div>
 
-                <input type="month" name="month" value="{{ request('month') }}" class="inv-admin__input"
-                    style="flex:0;min-width:160px;" placeholder="Tháng/Năm">
+                <div class="inv-admin__filter-group">
+                    <svg class="inv-admin__filter-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <input type="month" name="month" value="{{ request('month') }}" class="inv-admin__input inv-admin__input--with-icon" style="flex:0;min-width:160px;" placeholder="Tháng/Năm">
+                </div>
 
-                <select name="apartment_id" class="inv-admin__select">
-                    <option value="">Tất cả căn hộ</option>
-                    @foreach ($apartments as $apt)
-                        <option value="{{ $apt->id }}" {{ request('apartment_id') == $apt->id ? 'selected' : '' }}>
-                            Căn {{ $apt->apartment_number }}
-                            @if (optional(optional($apt->floor)->block)->name)
-                                ({{ $apt->floor->block->name }})
-                            @endif
-                        </option>
-                    @endforeach
-                </select>
+                <div class="inv-admin__filter-group">
+                    <svg class="inv-admin__filter-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    <select name="apartment_id" class="inv-admin__select inv-admin__select--with-icon">
+                        <option value="">Tất cả căn hộ</option>
+                        @foreach ($apartments as $apt)
+                            <option value="{{ $apt->id }}" {{ request('apartment_id') == $apt->id ? 'selected' : '' }}>
+                                Căn {{ $apt->apartment_number }}
+                                @if (optional(optional($apt->floor)->block)->name)
+                                    ({{ $apt->floor->block->name }})
+                                @endif
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
 
-                <select name="status" class="inv-admin__select">
-                    <option value="">Tất cả trạng thái</option>
-                    @foreach ($statuses as $s)
-                        <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>
-                            {{ \App\Models\Invoice::statusLabel($s) }}
-                        </option>
-                    @endforeach
-                </select>
+                <div class="inv-admin__filter-group">
+                    <svg class="inv-admin__filter-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                    <select name="status" class="inv-admin__select inv-admin__select--with-icon">
+                        <option value="">Tất cả trạng thái</option>
+                        @foreach ($statuses as $s)
+                            <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>
+                                {{ \App\Models\Invoice::statusLabel($s) }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
 
-                <button type="submit" class="inv-admin__btn inv-admin__btn--primary">Lọc</button>
-                @if (request()->hasAny(['search', 'status', 'month', 'apartment_id']))
-                    <a href="{{ portal_route('invoices.index') }}" class="inv-admin__btn inv-admin__btn--ghost">Xóa lọc</a>
-                @endif
+                <div style="display:flex; gap:8px;">
+                    <button type="submit" class="inv-admin__btn inv-admin__btn--primary">Lọc</button>
+                    @if (request()->hasAny(['search', 'status', 'month', 'apartment_id']))
+                        <a href="{{ portal_route('invoices.index') }}" class="inv-admin__btn inv-admin__btn--clear">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            Xóa
+                        </a>
+                    @endif
+                </div>
             </form>
         </div>
 
@@ -304,51 +320,98 @@
         .inv-admin__filter-bar {
             background: #fff;
             border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 12px 16px;
-            margin-bottom: 16px;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
         }
 
         .inv-admin__filter-form {
             display: flex;
-            gap: 10px;
+            gap: 16px;
             align-items: center;
             flex-wrap: wrap;
         }
 
-        .inv-admin__input {
+        .inv-admin__filter-group {
+            position: relative;
+            display: flex;
+            align-items: center;
             flex: 1;
-            min-width: 180px;
-            padding: 7px 12px;
+            min-width: 200px;
+        }
+
+        .inv-admin__filter-icon {
+            position: absolute;
+            left: 14px;
+            color: #94a3b8;
+            pointer-events: none;
+            transition: color 0.2s ease;
+        }
+
+        .inv-admin__filter-group:focus-within .inv-admin__filter-icon {
+            color: #3b82f6;
+        }
+
+        .inv-admin__input {
+            width: 100%;
+            padding: 10px 14px;
             border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            color: #1e293b;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #0f172a;
             background: #f8fafc;
+            transition: all 0.2s ease;
+        }
+
+        .inv-admin__input:focus, .inv-admin__select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: #fff;
         }
 
         .inv-admin__select {
-            padding: 7px 12px;
+            width: 100%;
+            padding: 10px 14px;
+            padding-right: 36px;
             border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            color: #1e293b;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #0f172a;
             background: #f8fafc;
             cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            background-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .inv-admin__input--with-icon, .inv-admin__select--with-icon {
+            padding-left: 42px;
+        }
+        
+        .inv-admin__select option {
+            padding: 8px;
+            font-size: 0.9rem;
         }
 
         /* Buttons */
         .inv-admin__btn {
-            padding: 7px 14px;
-            border-radius: 6px;
-            font-size: 0.85rem;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 0.88rem;
             font-weight: 600;
             cursor: pointer;
             border: none;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s ease;
         }
 
         .inv-admin__btn--primary {
@@ -358,6 +421,18 @@
 
         .inv-admin__btn--primary:hover {
             background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        .inv-admin__btn--clear {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .inv-admin__btn--clear:hover {
+            background: #fee2e2;
+            border-color: #fca5a5;
         }
 
         .inv-admin__btn--ghost {
