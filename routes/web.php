@@ -347,9 +347,7 @@ Route::middleware(['security'])->group(function () {
 
 // DASHBOARD CLEANING ROUTES
 Route::middleware(['cleaning'])->group(function () {
-    Route::get('/cleaning/dashboard', function () {
-        return view('cleaning.dashboard.index');
-    })->name('cleaning.dashboard');
+    Route::get('/cleaning/dashboard', [\App\Http\Controllers\Cleaning\DashboardController::class, 'index'])->name('cleaning.dashboard');
 
     Route::get('/cleaning/report', function () {
         return view('cleaning.report.index');
