@@ -349,9 +349,12 @@ Route::middleware(['security'])->group(function () {
 Route::middleware(['cleaning'])->group(function () {
     Route::get('/cleaning/dashboard', [\App\Http\Controllers\Cleaning\DashboardController::class, 'index'])->name('cleaning.dashboard');
 
-    Route::get('/cleaning/report', function () {
-        return view('cleaning.report.index');
-    })->name('cleaning.report');
+    Route::get('/cleaning/profile', [\App\Http\Controllers\Cleaning\ProfileController::class, 'index'])->name('cleaning.profile');
+    Route::put('/cleaning/profile', [\App\Http\Controllers\Cleaning\ProfileController::class, 'update'])->name('cleaning.profile.update');
+    Route::put('/cleaning/profile/change-password', [\App\Http\Controllers\Cleaning\ProfileController::class, 'changePassword'])->name('cleaning.profile.change-password');
+
+    Route::get('/cleaning/report', [\App\Http\Controllers\Cleaning\ReportController::class, 'index'])->name('cleaning.report');
+    Route::post('/cleaning/report', [\App\Http\Controllers\Cleaning\ReportController::class, 'store'])->name('cleaning.report.store');
 
     Route::get('/cleaning/tasks', [\App\Http\Controllers\Cleaning\TaskController::class, 'index'])->name('cleaning.tasks');
     Route::get('/cleaning/tasks/{id}', [\App\Http\Controllers\Cleaning\TaskController::class, 'show'])->name('cleaning.tasks.show');

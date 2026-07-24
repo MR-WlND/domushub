@@ -55,8 +55,10 @@
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
     <aside class="sidebar" id="sidebar" role="navigation" aria-label="Menu chính">
         <div class="sidebar-brand">
-            <h2>Chung cư Số</h2>
-            <p>Nhân viên vệ sinh</p>
+            <a href="{{ route('cleaning.dashboard') }}" style="text-decoration:none;color:inherit;">
+                <h2>Chung cư Số</h2>
+                <p>Nhân viên vệ sinh</p>
+            </a>
         </div>
         <nav class="sidebar-nav" role="menubar">
             <a href="{{ route('cleaning.dashboard') }}" role="menuitem" class="{{ request()->routeIs('cleaning.dashboard') ? 'active' : '' }}">Bảng điều khiển</a>
@@ -85,7 +87,7 @@
                         <div class="name">{{ auth()->user()->name }}</div>
                         <div class="role">NHÂN VIÊN VỆ SINH</div>
                     </div>
-                    <div class="topbar-avatar" aria-hidden="true">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</div>
+                    <a href="{{ route('cleaning.profile') }}" class="topbar-avatar" aria-label="Trang cá nhân" style="text-decoration:none;">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</a>
                 </div>
             </div>
         </header>
