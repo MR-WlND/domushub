@@ -241,19 +241,18 @@
 <!-- ===== SIDEBAR ===== -->
 <aside class="sidebar">
     <div class="sidebar-brand">
-        <div class="sidebar-brand-icon"><i class="fa-solid fa-building"></i></div>
         <div class="sidebar-brand-text">
             <h2>Chung cư Số</h2>
             <p>Nhân viên vệ sinh</p>
         </div>
     </div>
     <nav class="sidebar-nav">
-        <a href="{{ route('cleaning.dashboard') }}"><i class="fa-solid fa-grid-2"></i> Bảng điều khiển</a>
-        <a href="{{ route('cleaning.tasks') }}"><i class="fa-solid fa-clipboard-list"></i> Công việc hàng ngày</a>
-        <a href="{{ route('cleaning.report') }}" class="active"><i class="fa-solid fa-triangle-exclamation"></i> Báo cáo sự cố</a>
+        <a href="{{ route('cleaning.dashboard') }}">Bảng điều khiển</a>
+        <a href="{{ route('cleaning.tasks') }}">Công việc hàng ngày</a>
+        <a href="{{ route('cleaning.report') }}" class="active">Báo cáo sự cố</a>
     </nav>
     <div class="sidebar-footer">
-        <a href="#"><i class="fa-solid fa-circle-question"></i> Hỗ trợ</a>
+        <a href="#">Hỗ trợ</a>
     </div>
 </aside>
 

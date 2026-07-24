@@ -355,24 +355,10 @@ Route::middleware(['cleaning'])->group(function () {
         return view('cleaning.report.index');
     })->name('cleaning.report');
 
-    Route::get('/cleaning/tasks', function () {
-        return view('cleaning.tasks.index');
-    })->name('cleaning.tasks');
-
-    Route::get('/cleaning/tasks/{id}', function ($id) {
-        // Static data for demo - replace with DB query later
-        $tasks = [
-            1 => ['id' => '4492', 'title' => 'Vệ sinh sâu sảnh chính', 'description' => 'Thực hiện quy trình vệ sinh chuyên sâu tại khu vực sảnh chính. Tập trung vào việc khử trùng toàn bộ các bề mặt tiếp xúc cao như tay nắm cửa, quầy lễ tân và nút bấm thang máy. Thực hiện đánh bóng sàn đá marble bằng thiết bị chuyên dụng và lau sạch hệ thống cửa kính mặt tiền.', 'area' => 'Tầng trệt - Cửa chính', 'time' => '09:00 - 11:00', 'priority' => 'high', 'priority_label' => 'Cao', 'status_label' => 'Đang thực hiện', 'done_steps' => 2, 'total_steps' => 5, 'checklist' => ['Quét sàn' => true, 'Lau sàn' => true, 'Đổ rác' => false, 'Lau cửa kính' => false, 'Khử trùng tay vịn' => false]],
-            2 => ['id' => '4493', 'title' => 'Lau kính cánh đông', 'description' => 'Vệ sinh toàn bộ bề mặt kính bên ngoài tầng 4 khu vực cánh đông. Sử dụng dung dịch chuyên dụng và cây lau kính để đảm bảo không để lại vết ố.', 'area' => 'Tầng 4 - Cánh đông', 'time' => '10:30 - 12:30', 'priority' => 'medium', 'priority_label' => 'Trung bình', 'status_label' => 'Chờ xử lý', 'done_steps' => 0, 'total_steps' => 3, 'checklist' => ['Chuẩn bị dung dịch' => false, 'Lau kính ngoài' => false, 'Kiểm tra vết ố' => false]],
-            3 => ['id' => '4494', 'title' => 'Kiểm tra hệ thống đèn', 'description' => 'Kiểm tra toàn bộ hệ thống đèn chiếu sáng hành lang khu vực C tầng 2. Ghi nhận các bóng đèn hỏng và báo cáo để thay thế.', 'area' => 'Tầng 2 - Hành lang C', 'time' => '13:00 - 15:00', 'priority' => 'low', 'priority_label' => 'Thấp', 'status_label' => 'Chờ xử lý', 'done_steps' => 0, 'total_steps' => 4, 'checklist' => ['Kiểm tra đèn hành lang' => false, 'Kiểm tra đèn cầu thang' => false, 'Ghi nhận bóng hỏng' => false, 'Báo cáo kỹ thuật' => false]],
-            4 => ['id' => '4495', 'title' => 'Thu gom rác văn phòng', 'description' => 'Thu gom rác tại khu vực văn phòng điều hành tầng 5. Thay túi rác mới và vệ sinh thùng rác.', 'area' => 'Tầng 5 - Văn phòng', 'time' => '07:30 - 08:30', 'priority' => 'medium', 'priority_label' => 'Trung bình', 'status_label' => 'Hoàn thành', 'done_steps' => 3, 'total_steps' => 3, 'checklist' => ['Thu gom rác' => true, 'Thay túi rác' => true, 'Vệ sinh thùng' => true]],
-            5 => ['id' => '4496', 'title' => 'Vệ sinh thang máy A1, A2', 'description' => 'Lau sàn, gương và nút bấm thang máy block A. Khử trùng tay vịn và bảng điều khiển.', 'area' => 'Block A - Thang máy', 'time' => '08:00 - 09:00', 'priority' => 'high', 'priority_label' => 'Cao', 'status_label' => 'Hoàn thành', 'done_steps' => 4, 'total_steps' => 4, 'checklist' => ['Lau sàn thang máy' => true, 'Lau gương' => true, 'Khử trùng nút bấm' => true, 'Kiểm tra mùi' => true]],
-            6 => ['id' => '4497', 'title' => 'Tưới cây cảnh hành lang', 'description' => 'Tưới nước và kiểm tra tình trạng cây xanh khu vực hành lang tầng 1 đến tầng 3.', 'area' => 'Tầng 1-3 - Hành lang', 'time' => '06:30 - 07:30', 'priority' => 'low', 'priority_label' => 'Thấp', 'status_label' => 'Hoàn thành', 'done_steps' => 2, 'total_steps' => 2, 'checklist' => ['Tưới cây' => true, 'Kiểm tra lá vàng' => true]],
-            7 => ['id' => '4498', 'title' => 'Dọn dẹp khu vực hồ bơi', 'description' => 'Thu dọn ghế nằm, lau sàn ướt xung quanh hồ bơi và kiểm tra thùng rác khu vực tầng thượng.', 'area' => 'Tầng thượng - Hồ bơi', 'time' => '14:00 - 15:30', 'priority' => 'medium', 'priority_label' => 'Trung bình', 'status_label' => 'Hoàn thành', 'done_steps' => 3, 'total_steps' => 3, 'checklist' => ['Thu dọn ghế' => true, 'Lau sàn ướt' => true, 'Kiểm tra thùng rác' => true]],
-        ];
-        $task = $tasks[$id] ?? $tasks[1];
-        return view('cleaning.tasks.show', compact('task'));
-    })->name('cleaning.tasks.show');
+    Route::get('/cleaning/tasks', [\App\Http\Controllers\Cleaning\TaskController::class, 'index'])->name('cleaning.tasks');
+    Route::get('/cleaning/tasks/{id}', [\App\Http\Controllers\Cleaning\TaskController::class, 'show'])->name('cleaning.tasks.show');
+    Route::patch('/cleaning/tasks/{id}/status', [\App\Http\Controllers\Cleaning\TaskController::class, 'updateStatus'])->name('cleaning.tasks.update-status');
+    Route::patch('/cleaning/tasks/{id}/checklist', [\App\Http\Controllers\Cleaning\TaskController::class, 'updateChecklist'])->name('cleaning.tasks.update-checklist');
 });
 
 // DASHBOARD RESIDENT ROUTES

@@ -232,15 +232,15 @@
         <p>Nhân viên vệ sinh</p>
     </div>
     <nav class="sidebar-nav">
-        <a href="#" class="active"><i class="fa-solid fa-grid-2"></i> Bảng điều khiển</a>
-        <a href="{{ route('cleaning.tasks') }}"><i class="fa-solid fa-clipboard-list"></i> Công việc hàng ngày</a>
-        <a href="{{ route('cleaning.report') }}"><i class="fa-solid fa-triangle-exclamation"></i> Báo cáo sự cố</a>
+        <a href="#" class="active">Bảng điều khiển</a>
+        <a href="{{ route('cleaning.tasks') }}">Công việc hàng ngày</a>
+        <a href="{{ route('cleaning.report') }}">Báo cáo sự cố</a>
     </nav>
     <div class="sidebar-footer">
         <form method="POST" action="{{ route('logout') }}">
             @csrf
             <button type="submit" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:13px;color:#707EAE;font-weight:500;font-family:inherit;">
-                <i class="fa-solid fa-circle-question" style="font-size:15px;"></i> Hỗ trợ
+                Đăng xuất
             </button>
         </form>
     </div>

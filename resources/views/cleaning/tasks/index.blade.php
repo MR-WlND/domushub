@@ -1,401 +1,242 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DomusHub – Công việc hàng ngày</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box;}
-        body{font-family:'Inter',system-ui,sans-serif;background:#F4F7FE;color:#1B2559;min-height:100vh;display:flex;}
+@extends('layouts.cleaning.master')
 
-        /* ===== SIDEBAR ===== */
-        .sidebar{width:240px;background:white;border-right:1px solid #E9EDF7;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50;padding:28px 0;}
-        .sidebar-brand{padding:0 24px;margin-bottom:32px;display:flex;align-items:center;gap:12px;}
-        .sidebar-brand-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#3652D9,#6B8AFF);display:flex;align-items:center;justify-content:center;color:white;font-size:15px;}
-        .sidebar-brand-text h2{font-size:16px;font-weight:800;color:#082B7A;letter-spacing:-.3px;line-height:1.2;}
-        .sidebar-brand-text p{font-size:10.5px;color:#A3AED0;font-weight:500;}
-        .sidebar-nav{flex:1;display:flex;flex-direction:column;gap:2px;padding:0 12px;}
-        .sidebar-nav a{display:flex;align-items:center;gap:12px;padding:11px 16px;border-radius:10px;font-size:13.5px;font-weight:500;color:#707EAE;text-decoration:none;transition:.2s;}
-        .sidebar-nav a:hover{background:#F4F7FE;color:#3652D9;}
-        .sidebar-nav a.active{background:#F4F7FE;color:#3652D9;font-weight:700;}
-        .sidebar-nav a.active i{color:#3652D9;}
-        .sidebar-nav a i{width:18px;text-align:center;font-size:15px;color:#A3AED0;}
-        .sidebar-footer{padding:16px 24px;border-top:1px solid #E9EDF7;margin-top:auto;}
-        .sidebar-footer a{display:flex;align-items:center;gap:10px;font-size:13px;color:#707EAE;text-decoration:none;font-weight:500;}
-        .sidebar-footer a:hover{color:#3652D9;}
+@section('page_title', 'Công việc hàng ngày – DomusHub')
 
-        /* ===== MAIN ===== */
-        .main{margin-left:240px;flex:1;min-height:100vh;display:flex;flex-direction:column;}
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/cleaning-tasks.css') }}">
+<style>
+@import url('{{ asset("css/cleaning-tasks.css") }}');
+</style>
+@endpush
 
-        /* ===== TOP BAR ===== */
-        .topbar{background:white;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #E9EDF7;position:sticky;top:0;z-index:40;}
-        .topbar-search{display:flex;align-items:center;gap:10px;background:#F4F7FE;border-radius:10px;padding:10px 16px;width:360px;}
-        .topbar-search i{color:#A3AED0;font-size:14px;}
-        .topbar-search input{border:none;background:none;outline:none;font-size:13px;color:#1B2559;width:100%;font-family:inherit;}
-        .topbar-search input::placeholder{color:#A3AED0;}
-        .topbar-right{display:flex;align-items:center;gap:20px;}
-        .topbar-icons{display:flex;align-items:center;gap:14px;}
-        .topbar-icons button{background:none;border:none;cursor:pointer;width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#A3AED0;font-size:16px;transition:.2s;}
-        .topbar-icons button:hover{background:#F4F7FE;color:#3652D9;}
-        .topbar-user{display:flex;align-items:center;gap:10px;}
-        .topbar-user-info{text-align:right;}
-        .topbar-user-info .name{font-size:13px;font-weight:700;color:#1B2559;}
-        .topbar-user-info .role{font-size:11px;color:#A3AED0;font-weight:500;}
-        .topbar-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#3652D9,#6B8AFF);display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:700;}
+@section('topbar_left')
+<div class="topbar-search">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="text" placeholder="Tìm kiếm công việc, khu vực..." id="searchInput" aria-label="Tìm kiếm công việc">
+</div>
+@endsection
 
-        /* ===== CONTENT ===== */
-        .content{padding:28px 32px;flex:1;}
+@section('content')
 
-        /* ===== PAGE HEADER ===== */
-        .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
-        .page-header h1{font-size:24px;font-weight:800;color:#1B2559;letter-spacing:-.3px;}
-        .page-header p{font-size:13px;color:#A3AED0;margin-top:4px;}
-        .header-actions{display:flex;gap:10px;}
-        .btn-filter{
-            display:inline-flex;align-items:center;gap:6px;
-            background:white;border:1px solid #E9EDF7;border-radius:10px;
-            padding:10px 16px;font-size:12.5px;font-weight:600;color:#707EAE;
-            cursor:pointer;transition:.2s;font-family:inherit;
-        }
-        .btn-filter:hover{border-color:#3652D9;color:#3652D9;}
-        .btn-filter.active{background:#3652D9;color:white;border-color:#3652D9;}
-
-        /* ===== TABS ===== */
-        .tabs{display:flex;gap:4px;margin-bottom:20px;background:white;border-radius:12px;padding:4px;box-shadow:0 2px 8px rgba(54,82,217,.04);width:fit-content;}
-        .tab{
-            padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;
-            color:#707EAE;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px;
-        }
-        .tab:hover{color:#3652D9;}
-        .tab.active{background:#3652D9;color:white;}
-        .tab .badge{
-            background:rgba(255,255,255,.2);padding:2px 7px;border-radius:10px;
-            font-size:10.5px;font-weight:700;
-        }
-        .tab.active .badge{background:rgba(255,255,255,.25);}
-        .tab:not(.active) .badge{background:#F4F7FE;color:#3652D9;}
-
-        /* ===== TASK LIST ===== */
-        .task-list{display:flex;flex-direction:column;gap:12px;}
-        .task-item{
-            background:white;border-radius:14px;padding:20px 24px;
-            box-shadow:0 2px 8px rgba(54,82,217,.04);
-            display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;
-            transition:.2s;cursor:pointer;border:1.5px solid transparent;
-        }
-        .task-item:hover{border-color:#D8E0F0;transform:translateY(-1px);box-shadow:0 4px 16px rgba(54,82,217,.08);}
-
-        .task-item__indicator{width:4px;height:48px;border-radius:4px;}
-        .task-item__indicator--high{background:#EE5D50;}
-        .task-item__indicator--medium{background:#FFB547;}
-        .task-item__indicator--low{background:#05CD99;}
-
-        .task-item__body{display:flex;flex-direction:column;gap:6px;}
-        .task-item__title{font-size:14.5px;font-weight:700;color:#1B2559;}
-        .task-item__desc{font-size:12.5px;color:#A3AED0;}
-        .task-item__meta{display:flex;align-items:center;gap:16px;margin-top:4px;}
-        .task-meta-tag{
-            display:inline-flex;align-items:center;gap:5px;
-            font-size:11.5px;color:#707EAE;
-        }
-        .task-meta-tag i{font-size:11px;color:#A3AED0;}
-
-        .task-item__right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;}
-        .task-time{font-size:12px;font-weight:600;color:#1B2559;}
-        .task-time span{color:#A3AED0;font-weight:400;}
-        .priority-badge{
-            display:inline-flex;align-items:center;gap:4px;
-            padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;
-        }
-        .priority-badge--high{background:#FFF0F0;color:#EE5D50;}
-        .priority-badge--medium{background:#FFF4E5;color:#FF9B05;}
-        .priority-badge--low{background:#E6F9F0;color:#05CD99;}
-        .priority-badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;}
-        .status-badge{
-            display:inline-flex;align-items:center;gap:5px;
-            padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;
-        }
-        .status-badge--progress{background:#EEF2FF;color:#3652D9;}
-        .status-badge--pending{background:#F4F7FE;color:#A3AED0;}
-        .status-badge--done{background:#E6F9F0;color:#05CD99;}
-        .status-badge i{font-size:9px;}
-
-        /* ===== SUMMARY BAR ===== */
-        .summary-bar{
-            display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;
-        }
-        .summary-item{
-            background:white;border-radius:12px;padding:16px 18px;
-            box-shadow:0 2px 8px rgba(54,82,217,.04);
-            display:flex;align-items:center;gap:12px;
-        }
-        .summary-icon{
-            width:40px;height:40px;border-radius:10px;
-            display:flex;align-items:center;justify-content:center;font-size:16px;
-        }
-        .summary-icon--blue{background:#EEF2FF;color:#3652D9;}
-        .summary-icon--orange{background:#FFF4E5;color:#FF9B05;}
-        .summary-icon--green{background:#E6F9F0;color:#05CD99;}
-        .summary-icon--red{background:#FFF0F0;color:#EE5D50;}
-        .summary-info .summary-value{font-size:20px;font-weight:800;color:#1B2559;}
-        .summary-info .summary-label{font-size:11px;color:#A3AED0;font-weight:500;}
-
-        /* ===== RESPONSIVE ===== */
-        @media(max-width:1024px){.summary-bar{grid-template-columns:repeat(2,1fr);}}
-        @media(max-width:768px){
-            .sidebar{display:none;}.main{margin-left:0;}.content{padding:20px 16px;}
-            .topbar-search{width:180px;}.summary-bar{grid-template-columns:1fr 1fr;}
-            .task-item{grid-template-columns:auto 1fr;}.task-item__right{display:none;}
-            .page-header{flex-direction:column;align-items:flex-start;gap:12px;}
-        }
-    </style>
-</head>
-<body>
-
-<!-- ===== SIDEBAR ===== -->
-<aside class="sidebar">
-    <div class="sidebar-brand">
-        <div class="sidebar-brand-icon"><i class="fa-solid fa-building"></i></div>
-        <div class="sidebar-brand-text">
-            <h2>Chung cư Số</h2>
-            <p>Nhân viên vệ sinh</p>
+<!-- SHIFT BANNER -->
+<div class="shift-banner" role="banner">
+    <div class="shift-banner__left">
+        <div class="shift-banner__icon" aria-hidden="true"><i class="fa-solid fa-sun"></i></div>
+        <div>
+            <div class="shift-banner__title">Ca sáng</div>
+            <div class="shift-banner__sub">06:00 – 14:00 • {{ auth()->user()->name }}</div>
         </div>
     </div>
-    <nav class="sidebar-nav">
-        <a href="{{ route('cleaning.dashboard') }}"><i class="fa-solid fa-grid-2"></i> Bảng điều khiển</a>
-        <a href="{{ route('cleaning.tasks') }}" class="active"><i class="fa-solid fa-clipboard-list"></i> Công việc hàng ngày</a>
-        <a href="{{ route('cleaning.report') }}"><i class="fa-solid fa-triangle-exclamation"></i> Báo cáo sự cố</a>
-    </nav>
-    <div class="sidebar-footer">
-        <a href="#"><i class="fa-solid fa-circle-question"></i> Hỗ trợ</a>
-    </div>
-</aside>
-
-<!-- ===== MAIN ===== -->
-<div class="main">
-
-    <!-- TOP BAR -->
-    <header class="topbar">
-        <div class="topbar-search">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" placeholder="Tìm kiếm công việc, khu vực...">
-        </div>
-        <div class="topbar-right">
-            <div class="topbar-user">
-                <div class="topbar-user-info">
-                    <div class="name">{{ auth()->user()->name }}</div>
-                    <div class="role">NHÂN VIÊN VỆ SINH</div>
-                </div>
-                <div class="topbar-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</div>
-            </div>
-        </div>
-    </header>
-
-    <!-- CONTENT -->
-    <div class="content">
-
-        <!-- PAGE HEADER -->
-        <div class="page-header">
-            <div>
-                <h1>Công việc hàng ngày</h1>
-                <p>Danh sách tất cả công việc được giao hôm nay — {{ now()->isoFormat('dddd, D MMMM Y') }}</p>
-            </div>
-            <div class="header-actions">
-                <button class="btn-filter"><i class="fa-solid fa-filter"></i> Lọc</button>
-                <button class="btn-filter"><i class="fa-solid fa-arrow-down-wide-short"></i> Sắp xếp</button>
-            </div>
-        </div>
-
-        <!-- SUMMARY -->
-        <div class="summary-bar">
-            <div class="summary-item">
-                <div class="summary-icon summary-icon--blue"><i class="fa-solid fa-list-check"></i></div>
-                <div class="summary-info">
-                    <div class="summary-value">07</div>
-                    <div class="summary-label">Tổng công việc</div>
-                </div>
-            </div>
-            <div class="summary-item">
-                <div class="summary-icon summary-icon--orange"><i class="fa-solid fa-spinner"></i></div>
-                <div class="summary-info">
-                    <div class="summary-value">02</div>
-                    <div class="summary-label">Đang thực hiện</div>
-                </div>
-            </div>
-            <div class="summary-item">
-                <div class="summary-icon summary-icon--green"><i class="fa-solid fa-circle-check"></i></div>
-                <div class="summary-info">
-                    <div class="summary-value">03</div>
-                    <div class="summary-label">Hoàn thành</div>
-                </div>
-            </div>
-            <div class="summary-item">
-                <div class="summary-icon summary-icon--red"><i class="fa-solid fa-clock"></i></div>
-                <div class="summary-info">
-                    <div class="summary-value">02</div>
-                    <div class="summary-label">Chờ xử lý</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TABS -->
-        <div class="tabs">
-            <div class="tab active" data-filter="all">Tất cả <span class="badge">7</span></div>
-            <div class="tab" data-filter="progress">Đang làm <span class="badge">2</span></div>
-            <div class="tab" data-filter="pending">Chờ xử lý <span class="badge">2</span></div>
-            <div class="tab" data-filter="done">Hoàn thành <span class="badge">3</span></div>
-        </div>
-
-        <!-- TASK LIST -->
-        <div class="task-list">
-
-            <div class="task-item" data-status="progress" onclick="window.location='{{ route('cleaning.tasks.show', 1) }}'">
-                <div class="task-item__indicator task-item__indicator--high"></div>
-                <div class="task-item__body">
-                    <div class="task-item__title">Vệ sinh sâu sảnh chính</div>
-                    <div class="task-item__desc">Làm sạch sàn, cửa kính mặt tiền và khử trùng bề mặt tiếp xúc</div>
-                    <div class="task-item__meta">
-                        <span class="task-meta-tag"><i class="fa-solid fa-location-dot"></i> Tầng trệt</span>
-                        <span class="task-meta-tag"><i class="fa-solid fa-clock"></i> 09:00 - 11:00</span>
-                        <span class="task-meta-tag"><i class="fa-solid fa-check-double"></i> 2/5 bước</span>
-                    </div>
-                </div>
-                <div class="task-item__right">
-                    <span class="priority-badge priority-badge--high">Cao</span>
-                    <span class="status-badge status-badge--progress"><i class="fa-solid fa-rotate"></i> Đang làm</span>
-                </div>
-            </div>
-
-            <div class="task-item" data-status="progress" onclick="window.location='{{ route('cleaning.tasks.show', 2) }}'">
-                <div class="task-item__indicator task-item__indicator--medium"></div>
-                <div class="task-item__body">
-                    <div class="task-item__title">Lau kính cánh đông</div>
-                    <div class="task-item__desc">Vệ sinh bề mặt kính bên ngoài tầng 4</div>
-                    <div class="task-item__meta">
-                        <span class="task-meta-tag"><i class="fa-solid fa-location-dot"></i> Tầng 4</span>
-                        <span class="task-meta-tag"><i class="fa-solid fa-clock"></i> 10:30 - 12:30</span>
-                        <span class="task-meta-tag"><i class="fa-solid fa-check-double"></i> 1/3 bước</span>
-                    </div>
-                </div>
-                <div class="task-item__right">
-                    <span class="priority-badge priority-badge--medium">Trung bình</span>
-                    <span class="status-badge status-badge--progress"><i class="fa-solid fa-rotate"></i> Đang làm</span>
-                </div>
-            </div>
-
-            <div class="task-item" data-status="pending" onclick="window.location='{{ route('cleaning.tasks.show', 3) }}'">
-                <div class="task-item__indicator task-item__indicator--low"></div>
-                <div class="task-item__body">
-                    <div class="task-item__title">Kiểm tra hệ thống đèn</div>
-                    <div class="task-item__desc">Hành lang khu vực C, kiểm tra bóng đèn hỏng</div>
-                    <div class="task-item__meta">
-                        <span class="task-meta-tag"><i class="fa-solid fa-location-dot"></i> Tầng 2</span>
-                        <span class="task-meta-tag"><i class="fa-solid fa-clock"></i> 13:00 - 15:00</span>
-                        <span class="task-meta-tag"><i class="fa-solid fa-check-double"></i> 0/4 bước</span>
-                    </div>
-                </div>
-                <div class="task-item__right">
-                    <span class="priority-badge priority-badge--low">Thấp</span>
-                    <span class="status-badge status-badge--pending"><i class="fa-solid fa-clock"></i> Chờ xử lý</span>
-                </div>
-            </div>
-
-            <div class="task-item" data-status="pending" onclick="window.location='{{ route('cleaning.tasks.show', 4) }}'">
-                <div class="task-item__indicator task-item__indicator--medium"></div>
-                <div class="task-item__body">
-                    <div class="task-item__title">Thu gom rác văn phòng</div>
-                    <div class="task-item__desc">Khu vực văn phòng điều hành tầng 5</div>
-                    <div class="task-item__meta">
-                        <span class="task-meta-tag"><i class="fa-solid fa-location-dot"></i> Tầng 5</span>
-                        <span class="task-meta-tag"><i class="fa-solid fa-clock"></i> 14:00 - 15:00</span>
-                        <span class="task-meta-tag"><i class="fa-solid fa-check-double"></i> 0/3 bước</span>
-                    </div>
-                </div>
-                <div class="task-item__right">
-                    <span class="priority-badge priority-badge--medium">Trung bình</span>
-                    <span class="status-badge status-badge--pending"><i class="fa-solid fa-clock"></i> Chờ xử lý</span>
-                </div>
-            </div>
-
-            <div class="task-item" data-status="done" onclick="window.location='{{ route('cleaning.tasks.show', 5) }}'">
-                <div class="task-item__indicator task-item__indicator--high"></div>
-                <div class="task-item__body">
-                    <div class="task-item__title">Vệ sinh thang máy A1, A2</div>
-                    <div class="task-item__desc">Lau sàn, gương và nút bấm thang máy block A</div>
-                    <div class="task-item__meta">
-                        <span class="task-meta-tag"><i class="fa-solid fa-location-dot"></i> Block A</span>
-                        <span class="task-meta-tag"><i class="fa-solid fa-clock"></i> 08:00 - 09:00</span>
-                        <span class="task-meta-tag"><i class="fa-solid fa-check-double"></i> 4/4 bước</span>
-                    </div>
-                </div>
-                <div class="task-item__right">
-                    <span class="priority-badge priority-badge--high">Cao</span>
-                    <span class="status-badge status-badge--done"><i class="fa-solid fa-check"></i> Hoàn thành</span>
-                </div>
-            </div>
-
-            <div class="task-item" data-status="done" onclick="window.location='{{ route('cleaning.tasks.show', 6) }}'">
-                <div class="task-item__indicator task-item__indicator--low"></div>
-                <div class="task-item__body">
-                    <div class="task-item__title">Tưới cây cảnh hành lang</div>
-                    <div class="task-item__desc">Tưới nước và kiểm tra cây xanh khu vực hành lang tầng 1-3</div>
-                    <div class="task-item__meta">
-                        <span class="task-meta-tag"><i class="fa-solid fa-location-dot"></i> Tầng 1-3</span>
-                        <span class="task-meta-tag"><i class="fa-solid fa-clock"></i> 06:30 - 07:30</span>
-                        <span class="task-meta-tag"><i class="fa-solid fa-check-double"></i> 2/2 bước</span>
-                    </div>
-                </div>
-                <div class="task-item__right">
-                    <span class="priority-badge priority-badge--low">Thấp</span>
-                    <span class="status-badge status-badge--done"><i class="fa-solid fa-check"></i> Hoàn thành</span>
-                </div>
-            </div>
-
-            <div class="task-item" data-status="done" onclick="window.location='{{ route('cleaning.tasks.show', 7) }}'">
-                <div class="task-item__indicator task-item__indicator--medium"></div>
-                <div class="task-item__body">
-                    <div class="task-item__title">Dọn dẹp khu vực hồ bơi</div>
-                    <div class="task-item__desc">Thu dọn ghế, lau sàn ướt và kiểm tra thùng rác</div>
-                    <div class="task-item__meta">
-                        <span class="task-meta-tag"><i class="fa-solid fa-location-dot"></i> Tầng thượng</span>
-                        <span class="task-meta-tag"><i class="fa-solid fa-clock"></i> 14:00 - 15:30</span>
-                        <span class="task-meta-tag"><i class="fa-solid fa-check-double"></i> 3/3 bước</span>
-                    </div>
-                </div>
-                <div class="task-item__right">
-                    <span class="priority-badge priority-badge--medium">Trung bình</span>
-                    <span class="status-badge status-badge--done"><i class="fa-solid fa-check"></i> Hoàn thành</span>
-                </div>
-            </div>
-
-        </div>
-
+    <div class="shift-banner__right">
+        <div class="shift-banner__time" id="currentTime">{{ now()->format('H:i') }}</div>
+        <div class="shift-banner__date">{{ now()->isoFormat('dddd, D/MM/Y') }}</div>
     </div>
 </div>
 
+<!-- PROGRESS -->
+<div class="day-progress" role="progressbar" aria-valuenow="{{ $percentage }}" aria-valuemin="0" aria-valuemax="100" aria-label="Tiến độ hôm nay">
+    <div class="day-progress__header">
+        <span class="day-progress__title">Tiến độ hôm nay</span>
+        <span class="day-progress__count" id="progressCount">{{ $done }}/{{ $total }} hoàn thành</span>
+    </div>
+    <div class="day-progress__bar">
+        <div class="day-progress__fill" id="progressFill" style="width:{{ $percentage }}%;"></div>
+    </div>
+    <div class="day-progress__text" id="progressText">Bạn đã hoàn thành {{ $percentage }}% công việc trong ca. Còn {{ $total - $done }} việc cần xử lý.</div>
+</div>
+
+<!-- CONTROLS -->
+<div class="controls-row">
+    <div class="tabs" role="tablist" aria-label="Lọc theo trạng thái">
+        <button class="tab" role="tab" aria-selected="true" data-filter="all">Tất cả <span class="badge">{{ $total }}</span></button>
+        <button class="tab" role="tab" aria-selected="false" data-filter="progress">Đang làm <span class="badge">{{ $progress }}</span></button>
+        <button class="tab" role="tab" aria-selected="false" data-filter="pending">Chờ xử lý <span class="badge">{{ $pending }}</span></button>
+        <button class="tab" role="tab" aria-selected="false" data-filter="done">Hoàn thành <span class="badge">{{ $done }}</span></button>
+    </div>
+</div>
+
+<!-- TASK LIST GROUPED BY AREA -->
+@forelse($grouped as $areaName => $areaTasks)
+<div class="area-group" data-area="{{ Str::slug($areaName) }}">
+    <div class="area-group__header">
+        <span class="area-group__label">{{ $areaName }}</span>
+        <span class="area-group__count">{{ $areaTasks->count() }} việc</span>
+    </div>
+    <div class="task-list">
+        @foreach($areaTasks as $task)
+        @php
+            $doneSteps = collect($task->checklist ?? [])->where('done', true)->count();
+            $totalSteps = count($task->checklist ?? []);
+            $endTime = \Carbon\Carbon::parse($task->task_date->format('Y-m-d') . ' ' . $task->end_time);
+            $minutesLeft = now()->diffInMinutes($endTime, false);
+            $isUrgent = $task->status !== 'done' && $minutesLeft > 0 && $minutesLeft <= 90;
+        @endphp
+        <div class="task-item" data-id="{{ $task->id }}" data-status="{{ $task->status }}" data-time="{{ str_replace(':', '', $task->start_time) }}" tabindex="0"
+             role="article" aria-label="{{ $task->title }}">
+            <div class="task-item__indicator task-item__indicator--{{ $task->priority }}" aria-hidden="true"></div>
+            <div class="task-item__body" onclick="window.location='{{ route('cleaning.tasks.show', $task->id) }}'" role="link">
+                <div class="task-item__title">{{ $task->title }}</div>
+                <div class="task-item__desc">{{ $task->description }}</div>
+                <div class="task-item__meta">
+                    <span class="task-meta-tag"><i class="fa-solid fa-clock" aria-hidden="true"></i> {{ \Carbon\Carbon::parse($task->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($task->end_time)->format('H:i') }}</span>
+                    <span class="task-meta-tag"><i class="fa-solid fa-check-double" aria-hidden="true"></i> {{ $doneSteps }}/{{ $totalSteps }} bước</span>
+                    @if($task->status === 'done' && $task->completed_at)
+                    <span class="task-meta-tag" style="color:#05CD99;"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Xong lúc {{ $task->completed_at->format('H:i') }}</span>
+                    @elseif($isUrgent)
+                    <span class="deadline-warn" aria-live="polite"><i class="fa-solid fa-bolt" aria-hidden="true"></i> Còn {{ $minutesLeft }} phút</span>
+                    @endif
+                </div>
+            </div>
+            <div class="task-item__right">
+                <span class="priority-badge priority-badge--{{ $task->priority }}">{{ $task->priority === 'high' ? 'Cao' : ($task->priority === 'medium' ? 'TB' : 'Thấp') }}</span>
+                <span class="status-badge status-badge--{{ $task->status }}">{{ $task->status === 'done' ? 'Hoàn thành' : ($task->status === 'progress' ? 'Đang làm' : 'Chờ xử lý') }}</span>
+                <button class="quick-action" 
+                        aria-pressed="{{ $task->status === 'done' ? 'true' : 'false' }}" 
+                        aria-label="{{ $task->status === 'done' ? 'Đã hoàn thành' : 'Đánh dấu hoàn thành' }}"
+                        data-task-id="{{ $task->id }}"
+                        {{ $task->status === 'done' ? 'disabled' : '' }}>
+                    <i class="fa-solid fa-check"></i>
+                </button>
+            </div>
+        </div>
+        @endforeach
+    </div>
+</div>
+@empty
+<div class="empty-state" role="status">
+    <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>
+    <p>Không có công việc nào hôm nay.</p>
+</div>
+@endforelse
+
+<!-- EMPTY STATE FOR FILTERS -->
+<div class="empty-state" id="emptyFilter" style="display:none;" role="status">
+    <i class="fa-solid fa-filter-circle-xmark" aria-hidden="true"></i>
+    <p>Không có công việc nào trong nhóm này.</p>
+</div>
+
+@endsection
+
+@push('scripts')
 <script>
-// Tab filtering
+const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+// Tab filtering with keyboard support
 document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', function() {
-        // Switch active tab
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        this.classList.add('active');
+    tab.addEventListener('click', handleTabClick);
+    tab.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){e.preventDefault();handleTabClick.call(tab);} });
+});
 
-        const filter = this.dataset.filter;
-        const items = document.querySelectorAll('.task-item');
+function handleTabClick() {
+    document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', 'false'));
+    this.setAttribute('aria-selected', 'true');
+    const filter = this.dataset.filter;
+    let visibleCount = 0;
+    document.querySelectorAll('.task-item').forEach(item => {
+        const show = filter === 'all' || item.dataset.status === filter;
+        item.style.display = show ? '' : 'none';
+        if(show) visibleCount++;
+    });
+    document.querySelectorAll('.area-group').forEach(group => {
+        let hasVisible = false;
+        group.querySelectorAll('.task-item').forEach(i => { if(i.style.display !== 'none') hasVisible = true; });
+        group.style.display = hasVisible ? '' : 'none';
+    });
+    document.getElementById('emptyFilter').style.display = visibleCount === 0 ? '' : 'none';
+}
 
-        items.forEach(item => {
-            if (filter === 'all' || item.dataset.status === filter) {
-                item.style.display = '';
-            } else {
-                item.style.display = 'none';
-            }
-        });
+// Quick action - update status via API
+document.querySelectorAll('.quick-action:not([disabled])').forEach(btn => {
+    btn.addEventListener('click', async function(e) {
+        e.stopPropagation();
+        const taskId = this.dataset.taskId;
+        const item = this.closest('.task-item');
+        
+        try {
+            const res = await fetch(`/cleaning/tasks/${taskId}/status`, {
+                method: 'PATCH',
+                headers: {'Content-Type':'application/json','X-CSRF-TOKEN':csrfToken,'Accept':'application/json'},
+                body: JSON.stringify({status: 'done'})
+            });
+            if(!res.ok) throw new Error('Failed');
+            
+            // Update UI
+            this.setAttribute('aria-pressed', 'true');
+            this.setAttribute('disabled', '');
+            this.setAttribute('aria-label', 'Đã hoàn thành');
+            item.dataset.status = 'done';
+            const badge = item.querySelector('.status-badge');
+            if(badge){badge.className='status-badge status-badge--done';badge.textContent='Hoàn thành';}
+            const warn = item.querySelector('.deadline-warn');
+            if(warn) warn.remove();
+            
+            // Add completion time
+            const meta = item.querySelector('.task-item__meta');
+            const timeTag = document.createElement('span');
+            timeTag.className = 'task-meta-tag';
+            timeTag.style.color = '#05CD99';
+            const now = new Date();
+            timeTag.innerHTML = `<i class="fa-solid fa-circle-check"></i> Xong lúc ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+            meta.appendChild(timeTag);
+            
+            updateProgress();
+            checkCelebration();
+        } catch(err) {
+            alert('Không thể cập nhật. Vui lòng thử lại.');
+        }
     });
 });
-</script>
 
-</body>
-</html>
+function updateProgress(){
+    const total = document.querySelectorAll('.task-item').length;
+    const done = document.querySelectorAll('.task-item[data-status="done"]').length;
+    const progress = document.querySelectorAll('.task-item[data-status="progress"]').length;
+    const pending = document.querySelectorAll('.task-item[data-status="pending"]').length;
+    const pct = total > 0 ? Math.round((done/total)*100) : 0;
+    
+    document.getElementById('progressCount').textContent = `${done}/${total} hoàn thành`;
+    document.getElementById('progressFill').style.width = `${pct}%`;
+    document.getElementById('progressText').textContent = `Bạn đã hoàn thành ${pct}% công việc trong ca. Còn ${total-done} việc cần xử lý.`;
+    document.querySelector('[role="progressbar"]').setAttribute('aria-valuenow', pct);
+    
+    // Update tab badges
+    const tabs = document.querySelectorAll('.tab');
+    tabs[0].querySelector('.badge').textContent = total;
+    tabs[1].querySelector('.badge').textContent = progress;
+    tabs[2].querySelector('.badge').textContent = pending;
+    tabs[3].querySelector('.badge').textContent = done;
+}
+
+function checkCelebration(){
+    // disabled
+}
+
+// Search
+document.getElementById('searchInput').addEventListener('input', function(){
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('.task-item').forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.style.display = text.includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.area-group').forEach(group => {
+        let hasVisible = false;
+        group.querySelectorAll('.task-item').forEach(i => { if(i.style.display !== 'none') hasVisible = true; });
+        group.style.display = hasVisible ? '' : 'none';
+    });
+});
+
+// Keyboard nav on task items
+document.querySelectorAll('.task-item').forEach(item => {
+    item.addEventListener('keydown', e => {
+        if(e.key === 'Enter') item.querySelector('.task-item__body').click();
+    });
+});
+
+// Live clock
+setInterval(() => {
+    const now = new Date();
+    const el = document.getElementById('currentTime');
+    if(el) el.textContent = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+}, 60000);
+</script>
+@endpush
