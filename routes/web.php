@@ -290,6 +290,15 @@ $portalRoutes = function () {
     Route::post('/users/{id}/ban-posting', [\App\Http\Controllers\Admin\PostController::class, 'banPosting'])->name('users.ban-posting');
     Route::post('/users/{id}/ban-commenting', [\App\Http\Controllers\Admin\PostController::class, 'banCommenting'])->name('users.ban-commenting');
 
+    // Quản lý vệ sinh (Admin & Manager)
+    Route::get('/cleaning-tasks', [\App\Http\Controllers\Admin\CleaningTaskController::class, 'index'])->name('cleaning-tasks.index');
+    Route::get('/cleaning-tasks/create', [\App\Http\Controllers\Admin\CleaningTaskController::class, 'create'])->name('cleaning-tasks.create');
+    Route::post('/cleaning-tasks', [\App\Http\Controllers\Admin\CleaningTaskController::class, 'store'])->name('cleaning-tasks.store');
+    Route::delete('/cleaning-tasks/{id}', [\App\Http\Controllers\Admin\CleaningTaskController::class, 'destroy'])->name('cleaning-tasks.destroy');
+
+    Route::get('/cleaning-reports', [\App\Http\Controllers\Admin\CleaningReportController::class, 'index'])->name('cleaning-reports.index');
+    Route::patch('/cleaning-reports/{id}/status', [\App\Http\Controllers\Admin\CleaningReportController::class, 'updateStatus'])->name('cleaning-reports.update-status');
+
 };
 
 Route::middleware(['admin'])->prefix('admin')->name('admin.')->group($portalRoutes);
