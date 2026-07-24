@@ -65,7 +65,10 @@
                     <option value="electricity" {{ old('type')=='electricity'?'selected':'' }}>Tiền điện</option>
                     <option value="water"       {{ old('type')=='water'?'selected':'' }}>Tiền nước</option>
                     <option value="management_fee" {{ old('type')=='management_fee'?'selected':'' }}>🏢 Phí quản lý</option>
-                    <option value="parking"     {{ old('type')=='parking'?'selected':'' }}>🚗 Phí gửi xe</option>
+                    <option value="motorbike"   {{ old('type')=='motorbike'?'selected':'' }}>🏍️ Phí gửi xe máy</option>
+                    <option value="car"         {{ old('type')=='car'?'selected':'' }}>🚗 Phí gửi ô tô</option>
+                    <option value="bicycle"     {{ old('type')=='bicycle'?'selected':'' }}>🚲 Phí gửi xe đạp</option>
+                    <option value="electric_bike" {{ old('type')=='electric_bike'?'selected':'' }}>🛵 Phí gửi xe điện</option>
                     <option value="other"       {{ old('type')=='other'?'selected':'' }}>📦 Phí khác</option>
                 </select>
             </div>
@@ -136,7 +139,10 @@
 <script>
 const typeNames = {
     electricity: 'Tiền điện', water: 'Tiền nước',
-    management_fee: 'Phí quản lý', parking: 'Phí gửi xe', other: 'Phí khác'
+    management_fee: 'Phí quản lý',
+    motorbike: 'Phí gửi xe máy', car: 'Phí gửi ô tô',
+    bicycle: 'Phí gửi xe đạp', electric_bike: 'Phí gửi xe điện',
+    other: 'Phí khác'
 };
 let currentType = '';
 

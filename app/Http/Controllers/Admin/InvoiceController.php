@@ -58,7 +58,6 @@ class InvoiceController extends Controller
             'car'            => 'Phí gửi ô tô',
             'bicycle'        => 'Phí gửi xe đạp',
             'electric_bike'  => 'Phí gửi xe điện',
-            'parking'        => 'Phí đỗ xe',
             'internet'       => 'Internet',
             'service'        => 'Dịch vụ',
             'other'          => 'Khác',
@@ -217,7 +216,7 @@ class InvoiceController extends Controller
         $validated = $request->validate([
             'apartment_id'   => 'required|exists:apartments,id',
             'title'          => 'required|string|max:150',
-            'type'           => 'required|in:electricity,water,management_fee,parking,other',
+            'type'           => 'required|in:electricity,water,management_fee,motorbike,car,bicycle,electric_bike,other',
             'amount'         => 'required|numeric|min:0',
             'billing_month'  => 'required|string',
             'due_date'       => 'required|date',

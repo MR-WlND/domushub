@@ -121,7 +121,6 @@ class Invoice extends Model
         return match ($type) {
             'electricity'    => 'Tiền điện',
             'water'          => 'Tiền nước',
-            'parking'        => 'Phí gửi xe',
             'motorbike'      => 'Phí gửi xe máy',
             'car'            => 'Phí gửi ô tô',
             'bicycle'        => 'Phí gửi xe đạp',
