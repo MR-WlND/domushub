@@ -67,8 +67,22 @@ class TaskController extends Controller
 
         if ($request->status === 'done') {
             $task->completed_at = now();
-        } elseif ($request->status !== 'done') {
+
+            // Tick all checklist items when marking as done
+            if ($task->checklist) {
+                $checklist = collect($task->checklist)->map(function ($item) {
+                    $item['done'] = true;
+                    return $item;
+                })->toArray();
+                $task->checklist = $checklist;
+            }
+        } else {
             $task->completed_at = null;
+        }
+
+        // Save note if provided
+        if ($request->has('note')) {
+            $task->manager_note = $request->input('note');
         }
 
         $task->save();
@@ -87,9 +101,27 @@ class TaskController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $task->checklist = $request->input('checklist');
+        $checklist = $request->input('checklist');
+        $task->checklist = $checklist;
+
+        // If all checklist items are done, auto-mark task as done
+        $allDone = collect($checklist)->every(fn($item) => $item['done'] === true);
+        if ($allDone && $task->status !== 'done') {
+            $task->status = 'done';
+            $task->completed_at = now();
+        }
+        // If not all done but task was marked done, revert to progress
+        if (!$allDone && $task->status === 'done') {
+            $task->status = 'progress';
+            $task->completed_at = null;
+        }
+
         $task->save();
 
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success' => true,
+            'status' => $task->status,
+            'completed_at' => $task->completed_at?->format('H:i'),
+        ]);
     }
 }
