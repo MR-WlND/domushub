@@ -220,7 +220,7 @@
             <div class="summary-item">
                 <div class="summary-icon summary-icon--blue"><i class="fa-solid fa-list-check"></i></div>
                 <div class="summary-info">
-                    <div class="summary-value">12</div>
+                    <div class="summary-value">07</div>
                     <div class="summary-label">Tổng công việc</div>
                 </div>
             </div>
@@ -234,7 +234,7 @@
             <div class="summary-item">
                 <div class="summary-icon summary-icon--green"><i class="fa-solid fa-circle-check"></i></div>
                 <div class="summary-info">
-                    <div class="summary-value">08</div>
+                    <div class="summary-value">03</div>
                     <div class="summary-label">Hoàn thành</div>
                 </div>
             </div>
@@ -249,10 +249,10 @@
 
         <!-- TABS -->
         <div class="tabs">
-            <div class="tab active" data-filter="all">Tất cả <span class="badge">12</span></div>
+            <div class="tab active" data-filter="all">Tất cả <span class="badge">7</span></div>
             <div class="tab" data-filter="progress">Đang làm <span class="badge">2</span></div>
             <div class="tab" data-filter="pending">Chờ xử lý <span class="badge">2</span></div>
-            <div class="tab" data-filter="done">Hoàn thành <span class="badge">8</span></div>
+            <div class="tab" data-filter="done">Hoàn thành <span class="badge">3</span></div>
         </div>
 
         <!-- TASK LIST -->
@@ -309,20 +309,20 @@
                 </div>
             </div>
 
-            <div class="task-item" data-status="done" onclick="window.location='{{ route('cleaning.tasks.show', 4) }}'">
+            <div class="task-item" data-status="pending" onclick="window.location='{{ route('cleaning.tasks.show', 4) }}'">
                 <div class="task-item__indicator task-item__indicator--medium"></div>
                 <div class="task-item__body">
                     <div class="task-item__title">Thu gom rác văn phòng</div>
                     <div class="task-item__desc">Khu vực văn phòng điều hành tầng 5</div>
                     <div class="task-item__meta">
                         <span class="task-meta-tag"><i class="fa-solid fa-location-dot"></i> Tầng 5</span>
-                        <span class="task-meta-tag"><i class="fa-solid fa-clock"></i> 07:30 - 08:30</span>
-                        <span class="task-meta-tag"><i class="fa-solid fa-check-double"></i> 3/3 bước</span>
+                        <span class="task-meta-tag"><i class="fa-solid fa-clock"></i> 14:00 - 15:00</span>
+                        <span class="task-meta-tag"><i class="fa-solid fa-check-double"></i> 0/3 bước</span>
                     </div>
                 </div>
                 <div class="task-item__right">
                     <span class="priority-badge priority-badge--medium">Trung bình</span>
-                    <span class="status-badge status-badge--done"><i class="fa-solid fa-check"></i> Hoàn thành</span>
+                    <span class="status-badge status-badge--pending"><i class="fa-solid fa-clock"></i> Chờ xử lý</span>
                 </div>
             </div>
 
