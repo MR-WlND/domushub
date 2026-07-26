@@ -1,0 +1,223 @@
+.payroll-page {
+    padding: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.payroll-page__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.payroll-page__eyebrow {
+    font-size: 13px;
+    font-weight: 600;
+    color: #3b82f6;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 4px 0;
+}
+
+.payroll-page__header h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+.payroll-page__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.pr-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 42px;
+    padding: 0 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.pr-btn--primary {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+.pr-btn--primary:hover {
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    transform: translateY(-1px);
+}
+
+.pr-btn--secondary {
+    background: #fff;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+}
+.pr-btn--secondary:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+}
+
+.pr-btn--success {
+    background: linear-gradient(135deg, #16a34a, #15803d);
+    color: #fff;
+}
+.pr-btn--success:hover {
+    background: linear-gradient(135deg, #15803d, #166534);
+}
+
+.payroll-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.pr-stat-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.pr-stat-card__icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.pr-stat-card__icon--blue { background: #eff6ff; color: #2563eb; }
+.pr-stat-card__icon--green { background: #f0fdf4; color: #16a34a; }
+.pr-stat-card__icon--amber { background: #fffbeb; color: #d97706; }
+.pr-stat-card__icon--purple { background: #faf5ff; color: #9333ea; }
+
+.pr-stat-card__val {
+    font-size: 20px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.2;
+}
+
+.pr-stat-card__lbl {
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+.payroll-filter {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.payroll-filter__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1 1 180px;
+}
+
+.payroll-filter__field span {
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.pr-form-control {
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    color: #0f172a;
+}
+.pr-form-control:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+
+.payroll-table-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.payroll-table-wrap {
+    overflow-x: auto;
+}
+
+.payroll-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    text-align: left;
+}
+
+.payroll-table th {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 600;
+    padding: 14px 18px;
+    border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
+}
+
+.payroll-table td {
+    padding: 14px 18px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+    vertical-align: middle;
+}
+
+.payroll-table tr:last-child td {
+    border-bottom: none;
+}
+
+.payroll-table tr:hover td {
+    background: #f8fafc;
+}
+
+.pr-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.pr-badge--nhap { background: #f1f5f9; color: #64748b; }
+.pr-badge--cho_duyet { background: #fff7ed; color: #c2410c; }
+.pr-badge--da_duyet { background: #eff6ff; color: #1d4ed8; }
+.pr-badge--da_thanh_toan { background: #f0fdf4; color: #15803d; }
