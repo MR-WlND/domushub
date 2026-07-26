@@ -54,7 +54,12 @@ class InvoiceController extends Controller
             'electricity'    => 'Tiền điện',
             'water'          => 'Tiền nước',
             'management_fee' => 'Phí quản lý',
-            'parking'        => 'Phí đỗ xe',
+            'motorbike'      => 'Phí gửi xe máy',
+            'car'            => 'Phí gửi ô tô',
+            'bicycle'        => 'Phí gửi xe đạp',
+            'electric_bike'  => 'Phí gửi xe điện',
+            'internet'       => 'Internet',
+            'service'        => 'Dịch vụ',
             'other'          => 'Khác',
         ];
         $byType = DB::table('bills')
@@ -113,45 +118,87 @@ class InvoiceController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Invoice::with(['apartment.floor.block', 'payments'])
-            ->orderBy('billing_year', 'desc')
-            ->orderBy('billing_month', 'desc')
-            ->orderBy('id', 'desc');
+        $search = trim($request->search);
+        $parsedSearchApt = null;
+
+        // Trường hợp 1: Nhập đúng định dạng HD-202607-A502 hoặc tương tự
+        if (preg_match('/^HD-(\d{4})(\d{2})-(.+)$/i', $search, $matches)) {
+            $searchYear = (int) $matches[1];
+            $searchMonth = (int) $matches[2];
+            $parsedSearchApt = trim($matches[3]);
+            
+            // Override or set request month parameter to YYYY-MM
+            $request->merge([
+                'month' => sprintf('%04d-%02d', $searchYear, $searchMonth)
+            ]);
+        }
+        // Trường hợp 2: Định dạng BILL-XXXXX
+        elseif (preg_match('/^BILL-(\d+)$/i', $search, $matches)) {
+            $parsedInvoiceId = (int) $matches[1];
+            $inv = Invoice::find($parsedInvoiceId);
+            if ($inv) {
+                $parsedSearchApt = optional($inv->apartment)->apartment_number;
+                $request->merge([
+                    'month' => sprintf('%04d-%02d', $inv->billing_year, $inv->getRawOriginal('billing_month'))
+                ]);
+            }
+        }
+
+        $query = Apartment::with(['floor.block']);
+        
+        $invoiceFilter = function($q) use ($request) {
+            if ($request->filled('month')) {
+                [$year, $month] = explode('-', $request->month);
+                $q->where('billing_month', (int) $month)
+                  ->where('billing_year', (int) $year);
+            }
+            if ($request->filled('status')) {
+                $q->where('status', $request->status);
+            } else {
+                $q->where('status', '!=', 'cancelled');
+            }
+        };
+
+        $query->withCount(['invoices' => $invoiceFilter])
+            ->withSum(['invoices' => $invoiceFilter], 'total_amount')
+            ->withSum(['invoices' => $invoiceFilter], 'paid_amount');
 
         // Lọc theo tháng/năm (format: YYYY-MM)
         if ($request->filled('month')) {
-            [$year, $month] = explode('-', $request->month);
-            $query->where('billing_month', (int) $month)
-                ->where('billing_year', (int) $year);
+            $query->whereHas('invoices', $invoiceFilter);
         }
 
         // Lọc theo căn hộ
         if ($request->filled('apartment_id')) {
-            $query->where('apartment_id', $request->apartment_id);
+            $query->where('id', $request->apartment_id);
         }
 
         // Lọc theo trạng thái
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $query->whereHas('invoices', $invoiceFilter);
         }
 
         // Tìm kiếm theo tên/mã căn hộ hoặc tòa
         if ($request->filled('search')) {
-            $search = $request->search;
-            $query->whereHas('apartment', function ($q) use ($search) {
-                $q->where('apartment_number', 'like', '%' . $search . '%')
-                    ->orWhereHas('floor.block', function ($b) use ($search) {
-                        $b->where('name', 'like', '%' . $search . '%')
-                            ->orWhere('code', 'like', '%' . $search . '%');
-                    });
-            });
+            if ($parsedSearchApt) {
+                $query->where('apartment_number', 'like', '%' . $parsedSearchApt . '%');
+            } else {
+                $searchVal = $request->search;
+                $query->where(function($sub) use ($searchVal) {
+                    $sub->where('apartment_number', 'like', '%' . $searchVal . '%')
+                        ->orWhereHas('floor.block', function ($b) use ($searchVal) {
+                            $b->where('name', 'like', '%' . $searchVal . '%')
+                                ->orWhere('code', 'like', '%' . $searchVal . '%');
+                        });
+                });
+            }
         }
 
-        $invoices   = $query->paginate(20)->withQueryString();
+        $apartmentsPaginated = $query->paginate(20)->withQueryString();
         $apartments = Apartment::with('floor.block')->orderBy('apartment_number')->get();
         $statuses   = ['unpaid', 'partial_paid', 'paid', 'overdue', 'cancelled'];
 
-        return view('admin.invoices.index', compact('invoices', 'apartments', 'statuses'));
+        return view('admin.invoices.index', compact('apartmentsPaginated', 'apartments', 'statuses'));
     }
 
     /**
@@ -178,9 +225,9 @@ class InvoiceController extends Controller
 
         $invoices = $query->paginate(20)->withQueryString();
 
-        // Tổng công nợ của căn hộ
-        $totalAmount  = Invoice::where('apartment_id', $apartment->id)->sum('total_amount');
-        $totalPaid    = Invoice::where('apartment_id', $apartment->id)->sum('paid_amount');
+        // Tổng công nợ của căn hộ (bỏ qua hóa đơn đã hủy)
+        $totalAmount  = Invoice::where('apartment_id', $apartment->id)->where('status', '!=', 'cancelled')->sum('total_amount');
+        $totalPaid    = Invoice::where('apartment_id', $apartment->id)->where('status', '!=', 'cancelled')->sum('paid_amount');
         $totalDebt    = max(0, $totalAmount - $totalPaid);
 
         return view('admin.invoices.apartment', compact('apartment', 'invoices', 'totalAmount', 'totalPaid', 'totalDebt'));
@@ -191,8 +238,9 @@ class InvoiceController extends Controller
      */
     public function create()
     {
-        $apartments = Apartment::with('floor.block')->get();
-        return view('admin.invoices.create', compact('apartments'));
+        $apartments = Apartment::with(['floor.block', 'residents.user', 'vehicles', 'apartmentType', 'utilityMeters'])->get();
+        $servicePrices = \App\Models\ServicePrice::where('status', 'active')->get();
+        return view('admin.invoices.create', compact('apartments', 'servicePrices'));
     }
 
     /**
@@ -203,11 +251,23 @@ class InvoiceController extends Controller
         $validated = $request->validate([
             'apartment_id'   => 'required|exists:apartments,id',
             'title'          => 'required|string|max:150',
-            'type'           => 'required|in:electricity,water,management_fee,parking,other',
-            'amount'         => 'required|numeric|min:0',
             'billing_month'  => 'required|string',
             'due_date'       => 'required|date',
-            'note'           => 'nullable|string|max:500',
+            'custom_fees'    => 'required|array|min:1',
+            'custom_fees.*.name' => 'required|string|max:255',
+            'custom_fees.*.type' => 'required|in:other,service,parking_fee',
+            'custom_fees.*.amount' => 'required|numeric|min:0',
+            'custom_fees.*.note' => 'nullable|string|max:255',
+        ], [
+            'apartment_id.required'   => 'Vui lòng chọn căn hộ.',
+            'title.required'          => 'Vui lòng nhập tiêu đề hóa đơn.',
+            'billing_month.required'  => 'Vui lòng chọn kỳ hóa đơn.',
+            'due_date.required'       => 'Vui lòng chọn hạn thanh toán.',
+            'custom_fees.required'    => 'Vui lòng thêm ít nhất một khoản phí.',
+            'custom_fees.min'         => 'Vui lòng thêm ít nhất một khoản phí.',
+            'custom_fees.*.name.required' => 'Vui lòng nhập tên/mô tả khoản phí.',
+            'custom_fees.*.amount.required' => 'Vui lòng nhập số tiền cho khoản phí.',
+            'custom_fees.*.note.max' => 'Ghi chú không được dài quá 255 ký tự.',
         ]);
 
         // Parse month and year from YYYY-MM
@@ -215,60 +275,63 @@ class InvoiceController extends Controller
         $billingMonth = (int) $monthYear[1];
         $billingYear = (int) $monthYear[0];
 
-        // Ensure ServicePrice exists
-        $servicePrice = \App\Models\ServicePrice::firstOrCreate(
-            ['type' => $validated['type']],
-            [
-                'name' => 'Phí ' . Invoice::typeLabel($validated['type']),
-                'unit_price' => $validated['amount'],
-                'status' => 'active',
-                'description' => 'Tự động tạo từ màn hình phát hành hóa đơn'
-            ]
-        );
+        $previousDebt = \App\Models\Invoice::where('apartment_id', $validated['apartment_id'])
+            ->where('status', '!=', 'cancelled')
+            ->sum(\Illuminate\Support\Facades\DB::raw('total_amount - paid_amount'));
 
-        // Find if an invoice already exists for the apartment in this month/year
-        $invoice = Invoice::where('apartment_id', $validated['apartment_id'])
-            ->where('billing_month', $billingMonth)
-            ->where('billing_year', $billingYear)
-            ->first();
+        $invoice = Invoice::create([
+            'apartment_id'  => $validated['apartment_id'],
+            'title'         => $validated['title'],
+            'billing_month' => $billingMonth,
+            'billing_year'  => $billingYear,
+            'due_date'      => $validated['due_date'],
+            'total_amount'  => 0, // Sẽ cập nhật sau
+            'previous_debt' => $previousDebt,
+            'current_amount' => 0,
+            'total_due_at_issue' => $previousDebt,
+            'status'        => 'unpaid',
+        ]);
 
-        if ($invoice) {
-            // Check if this service type already exists
-            $exists = \App\Models\InvoiceDetail::where('bill_id', $invoice->id)
-                ->where('service_price_id', $servicePrice->id)
-                ->exists();
+        $totalAddedAmount = 0;
 
-            if ($exists) {
-                return redirect()->back()
-                    ->withInput()
-                    ->with('error', 'Hóa đơn tháng này của căn hộ đã có loại phí này.');
+        foreach ($validated['custom_fees'] as $fee) {
+            // Find or create a ServicePrice placeholder for this type
+            $servicePrice = \App\Models\ServicePrice::firstOrCreate(
+                ['type' => $fee['type'], 'vehicle_type' => null],
+                [
+                    'name' => Invoice::typeLabel($fee['type']), 
+                    'unit_price' => 0, 
+                    'status' => 'active',
+                    'description' => 'Phí ' . Invoice::typeLabel($fee['type'])
+                ]
+            );
+
+            $fullNote = $fee['name'];
+            if (!empty($fee['note'])) {
+                $fullNote .= ' (' . $fee['note'] . ')';
             }
 
-            $invoice->increment('total_amount', $validated['amount']);
-        } else {
-            $invoice = Invoice::create([
-                'apartment_id'  => $validated['apartment_id'],
-                'title'         => 'Hóa đơn tháng ' . $billingMonth . '/' . $billingYear,
-                'billing_month' => $billingMonth,
-                'billing_year'  => $billingYear,
-                'due_date'      => $validated['due_date'],
-                'total_amount'  => $validated['amount'],
-                'status'        => 'unpaid',
+            \App\Models\InvoiceDetail::create([
+                'bill_id'          => $invoice->id,
+                'service_price_id' => $servicePrice->id,
+                'quantity'         => 1,
+                'amount'           => $fee['amount'],
+                'note'             => $fullNote,
+            ]);
+
+            $totalAddedAmount += $fee['amount'];
+        }
+
+        if ($totalAddedAmount > 0) {
+            $invoice->update([
+                'total_amount' => $totalAddedAmount,
+                'current_amount' => $totalAddedAmount,
+                'total_due_at_issue' => $previousDebt + $totalAddedAmount
             ]);
         }
 
-        // Create InvoiceDetail
-        \App\Models\InvoiceDetail::create([
-            'bill_id'          => $invoice->id,
-            'service_price_id' => $servicePrice->id,
-            'quantity'         => 1,
-            'amount'           => $validated['amount'],
-        ]);
-
-
-
-        return redirect()->route('admin.invoices.index')
-            ->with('success', 'Hóa đơn đã được tạo thành công.');
+        return redirect()->route('admin.invoices.show', $invoice->id)
+            ->with('success', 'Hóa đơn lẻ đã được tạo thành công.');
     }
 
     /**
@@ -298,7 +361,8 @@ class InvoiceController extends Controller
             ->where('status', 'occupied')
             ->whereDoesntHave('invoices', function ($query) use ($selectedYear, $selectedMonthNumber) {
                 $query->where('billing_month', $selectedMonthNumber)
-                    ->where('billing_year', $selectedYear);
+                    ->where('billing_year', $selectedYear)
+                    ->where('status', '!=', 'cancelled');
             })
             ->orderBy('id')
             ->get();
@@ -333,12 +397,19 @@ class InvoiceController extends Controller
             'billing_month' => 'required|string',
             'due_date'      => 'required|date',
             'types'         => 'required|array|min:1',
-            'types.*'       => 'in:electricity,water,management_fee,motorbike,car,internet,service,other',
+            'types.*'       => 'in:water,management_fee,parking_fee_motorbike,parking_fee_car,parking_fee_electric_bike,parking_fee_bicycle,internet,service,other',
             'apartment_ids' => 'required|array|min:1',
             'apartment_ids.*' => 'integer|exists:apartments,id',
         ], [
-            'types.required' => 'Vui lòng chọn ít nhất một loại phí.',
+            'billing_month.required' => 'Vui lòng chọn kỳ hóa đơn.',
+            'due_date.required'      => 'Vui lòng chọn hạn thanh toán.',
+            'due_date.date'          => 'Hạn thanh toán không đúng định dạng ngày.',
+            'types.required'         => 'Vui lòng chọn ít nhất một loại phí.',
+            'types.min'              => 'Vui lòng chọn ít nhất một loại phí.',
+            'types.*.in'             => 'Loại phí không hợp lệ.',
             'apartment_ids.required' => 'Vui lòng chọn ít nhất một căn hộ mục tiêu.',
+            'apartment_ids.min'      => 'Vui lòng chọn ít nhất một căn hộ mục tiêu.',
+            'apartment_ids.*.exists' => 'Căn hộ đã chọn không hợp lệ.',
         ]);
 
         [$year, $month] = explode('-', $request->billing_month);
@@ -349,26 +420,42 @@ class InvoiceController extends Controller
         $selectedApartmentIds = array_values(array_unique(array_filter($request->input('apartment_ids', []), fn($id) => is_numeric($id))));
 
         // --- Lấy danh sách căn hộ đã chọn ---
-        $apartments = Apartment::with(['residents.user', 'vehicles'])
+        $apartments = Apartment::with(['residents.user', 'vehicles', 'apartmentType'])
             ->whereIn('id', $selectedApartmentIds)
             ->where('status', 'occupied')
             ->get();
 
         // --- Lấy bảng đơn giá theo type ---
+        $queryTypes = array_map(function($t) {
+            return str_starts_with($t, 'parking_fee_') ? 'parking_fee' : $t;
+        }, $request->types);
+
         $activePrices = ServicePrice::where('status', 'active')
-            ->whereIn('type', $request->types)
+            ->whereIn('type', $queryTypes)
             ->get()
-            ->keyBy('type');
+            ->groupBy('type');
 
         $created = 0;
         $skipped = 0;
+        $highlightAptIds = [];
+        $errorAptIds = [];
 
         foreach ($apartments as $apartment) {
             // --- Tìm hoặc chuẩn bị tạo hóa đơn ---
             $invoice = Invoice::where('apartment_id', $apartment->id)
                 ->where('billing_month', $month)
                 ->where('billing_year', $year)
+                ->where('status', '!=', 'cancelled')
                 ->first();
+
+            $apartmentPreviousDebt = \App\Models\Invoice::where('apartment_id', $apartment->id)
+                ->where('status', '!=', 'cancelled')
+                ->where(function ($q) use ($month, $year) {
+                    $q->where('billing_year', '<', $year)
+                      ->orWhere(function ($q2) use ($month, $year) {
+                          $q2->where('billing_year', $year)->where('billing_month', '<', $month);
+                      });
+                })->sum(\Illuminate\Support\Facades\DB::raw('total_amount - paid_amount'));
 
             $invoiceExistedBefore = (bool) $invoice;
             $invoiceAmountAdded   = 0;
@@ -379,8 +466,8 @@ class InvoiceController extends Controller
                 // ============================================================
                 // XỬ LÝ ĐIỆN / NƯỚC
                 // ============================================================
-                if (in_array($type, ['electricity', 'water'])) {
-                    $servicePrice = $activePrices->get($type);
+                if (in_array($type, ['internet', 'service', 'other'])) {
+                    $servicePrice = $activePrices->get($type)?->first();
                     if (!$servicePrice) {
                         $skipped++;
                         continue;
@@ -443,79 +530,80 @@ class InvoiceController extends Controller
                 }
 
                 // ============================================================
-                // XỬ LÝ GỬI XE (MOTORBIKE / CAR / BICYCLE)
+                // XỬ LÝ GỬI XE (PARKING FEE CỤ THỂ)
                 // ============================================================
-                if (in_array($type, ['motorbike', 'car', 'bicycle'])) {
-                    $servicePrice = $activePrices->get($type);
+                if (str_starts_with($type, 'parking_fee_')) {
+                    $vType = str_replace('parking_fee_', '', $type);
+                    
+                    $servicePrices = $activePrices->get('parking_fee');
+                    if (!$servicePrices) {
+                        $skipped++;
+                        continue;
+                    }
+                    
+                    $servicePrice = $servicePrices->where('vehicle_type', $vType)->first();
                     if (!$servicePrice) {
                         $skipped++;
                         continue;
                     }
 
-                    // Kiểm tra đã tồn tại
-                    if ($invoice && $skipExisting) {
-                        $exists = InvoiceDetail::where('bill_id', $invoice->id)
-                            ->where('service_price_id', $servicePrice->id)
-                            ->exists();
-                        if ($exists) {
-                            $skipped++;
-                            continue;
-                        }
-                    }
-
-                    // Đếm xe theo từng loại (chỉ xe active)
-                    if ($type === 'motorbike') {
-                        $vehicleCount = Vehicle::where('apartment_id', $apartment->id)
-                            ->whereIn('vehicle_type', ['motorbike', 'electric_bike'])
-                            ->where('status', 'active')
-                            ->count();
-                    } elseif ($type === 'car') {
-                        $vehicleCount = Vehicle::where('apartment_id', $apartment->id)
-                            ->where('vehicle_type', 'car')
-                            ->where('status', 'active')
-                            ->count();
-                    } elseif ($type === 'bicycle') {
-                        $vehicleCount = Vehicle::where('apartment_id', $apartment->id)
-                            ->where('vehicle_type', 'bicycle')
-                            ->where('status', 'active')
-                            ->count();
-                    }
+                    $vehicleCount = Vehicle::where('apartment_id', $apartment->id)
+                        ->where('vehicle_type', $vType)
+                        ->where('status', 'active')
+                        ->count();
 
                     // Không tạo dòng xe nếu căn hộ không có xe nào
                     if ($vehicleCount === 0) {
                         continue;
                     }
 
-                    // Tạo hóa đơn nếu chưa có
-                    if (!$invoice) {
-                        $invoice = Invoice::create([
-                            'apartment_id'  => $apartment->id,
-                            'title'         => 'Hóa đơn tháng ' . $month . '/' . $year,
-                            'billing_month' => $month,
-                            'billing_year'  => $year,
-                            'due_date'      => $request->due_date,
-                            'total_amount'  => 0,
-                            'status'        => 'unpaid',
+                        // Kiểm tra đã tồn tại
+                        if ($invoice && $skipExisting) {
+                            $exists = InvoiceDetail::where('bill_id', $invoice->id)
+                                ->where('service_price_id', $servicePrice->id)
+                                ->exists();
+                            if ($exists) {
+                                $skipped++;
+                                continue;
+                            }
+                        }
+
+                        // Tạo hóa đơn nếu chưa có
+                        if (!$invoice) {
+                            $invoice = Invoice::create([
+                                'apartment_id'  => $apartment->id,
+                                'title'         => 'Hóa đơn tháng ' . $month . '/' . $year,
+                                'billing_month' => $month,
+                                'billing_year'  => $year,
+                                'due_date'      => $request->due_date,
+                                'total_amount'  => 0,
+                                'previous_debt' => $apartmentPreviousDebt,
+                                'current_amount' => 0,
+                                'total_due_at_issue' => $apartmentPreviousDebt,
+                                'status'        => 'unpaid',
+                            ]);
+                        }
+
+                        $detailAmount = $vehicleCount * $servicePrice->unit_price;
+                        $vLabels = [
+                            'motorbike' => 'xe máy',
+                            'electric_bike' => 'xe điện',
+                            'car' => 'ô tô',
+                            'bicycle' => 'xe đạp'
+                        ];
+                        $vName = $vLabels[$vType] ?? 'xe';
+                        $vehicleNote = "Phí gửi {$vName}: " . number_format($servicePrice->unit_price, 0, ',', '.') . "đ/xe x {$vehicleCount} xe";
+
+                        InvoiceDetail::create([
+                            'bill_id'          => $invoice->id,
+                            'service_price_id' => $servicePrice->id,
+                            'quantity'         => $vehicleCount,
+                            'amount'           => $detailAmount,
+                            'note'             => $vehicleNote,
                         ]);
-                    }
 
-                    $detailAmount = $vehicleCount * $servicePrice->unit_price;
-                    $vehicleNote = match ($type) {
-                        'motorbike' => "Phí gửi xe máy: " . number_format($servicePrice->unit_price, 0, ',', '.') . "đ/xe x {$vehicleCount} xe",
-                        'car'       => "Phí gửi ô tô: " . number_format($servicePrice->unit_price, 0, ',', '.') . "đ/xe x {$vehicleCount} xe",
-                        'bicycle'   => "Phí gửi xe đạp: " . number_format($servicePrice->unit_price, 0, ',', '.') . "đ/xe x {$vehicleCount} xe",
-                        default     => "Gửi xe: {$vehicleCount} xe",
-                    };
-
-                    InvoiceDetail::create([
-                        'bill_id'          => $invoice->id,
-                        'service_price_id' => $servicePrice->id,
-                        'quantity'         => $vehicleCount,
-                        'amount'           => $detailAmount,
-                        'note'             => $vehicleNote,
-                    ]);
-
-                    $invoiceAmountAdded += $detailAmount;
+                        $invoiceAmountAdded += $detailAmount;
+                    
                     continue;
                 }
 
@@ -523,7 +611,7 @@ class InvoiceController extends Controller
                 // PHÍ QUẢN LÝ
                 // ============================================================
                 if ($type === 'management_fee') {
-                    $servicePrice = $activePrices->get($type);
+                    $servicePrice = $activePrices->get($type)?->first();
                     if (!$servicePrice) {
                         $skipped++;
                         continue;
@@ -547,19 +635,25 @@ class InvoiceController extends Controller
                             'billing_year'  => $year,
                             'due_date'      => $request->due_date,
                             'total_amount'  => 0,
+                            'previous_debt' => $apartmentPreviousDebt,
+                            'current_amount' => 0,
+                            'total_due_at_issue' => $apartmentPreviousDebt,
                             'status'        => 'unpaid',
                         ]);
                     }
 
                     $area = $apartment->area ?? 0;
-                    $detailAmount = $area * $servicePrice->unit_price;
+                    $unitPrice = ($apartment->apartmentType && $apartment->apartmentType->base_service_fee > 0)
+                        ? $apartment->apartmentType->base_service_fee
+                        : $servicePrice->unit_price;
+                    $detailAmount = $area * $unitPrice;
 
                     InvoiceDetail::create([
                         'bill_id'          => $invoice->id,
                         'service_price_id' => $servicePrice->id,
                         'quantity'         => $area,
                         'amount'           => $detailAmount,
-                        'note'             => "Phí quản lý: " . number_format($servicePrice->unit_price, 0, ',', '.') . "đ/m2 x {$area} m2",
+                        'note'             => "Phí quản lý: " . number_format($unitPrice, 0, ',', '.') . "đ/m2 x {$area} m2",
                     ]);
 
                     $invoiceAmountAdded += $detailAmount;
@@ -569,7 +663,7 @@ class InvoiceController extends Controller
                 // ============================================================
                 // INTERNET, DỊCH VỤ KHÁC — ĐƠN GIÁ CỐ ĐỊNH × 1
                 // ============================================================
-                $servicePrice = $activePrices->get($type);
+                $servicePrice = $activePrices->get($type)?->first();
                 if (!$servicePrice) {
                     $skipped++;
                     continue;
@@ -593,6 +687,9 @@ class InvoiceController extends Controller
                         'billing_year'  => $year,
                         'due_date'      => $request->due_date,
                         'total_amount'  => 0,
+                        'previous_debt' => $apartmentPreviousDebt,
+                        'current_amount' => 0,
+                        'total_due_at_issue' => $apartmentPreviousDebt,
                         'status'        => 'unpaid',
                     ]);
                 }
@@ -611,11 +708,14 @@ class InvoiceController extends Controller
             // --- Cập nhật tổng tiền hóa đơn ---
             if ($invoice && $invoiceAmountAdded > 0) {
                 $invoice->increment('total_amount', $invoiceAmountAdded);
+                $invoice->increment('current_amount', $invoiceAmountAdded);
+                $invoice->increment('total_due_at_issue', $invoiceAmountAdded);
             }
 
             // Đếm số hóa đơn mới tạo trong kỳ này
             if ($invoice && !$invoiceExistedBefore) {
                 $created++;
+                $highlightAptIds[] = $apartment->id;
 
                 // --- Gửi thông báo cho cư dân ---
                 try {
@@ -628,6 +728,10 @@ class InvoiceController extends Controller
                 } catch (\Throwable $e) {
                     // Không để lỗi notification ảnh hưởng đến tiến trình
                 }
+            } elseif ($invoice && ($invoiceAmountAdded > 0 || $pendingUtilityAdded)) {
+                $highlightAptIds[] = $apartment->id;
+            } else {
+                $errorAptIds[] = $apartment->id;
             }
         } // end foreach apartments
 
@@ -653,7 +757,10 @@ class InvoiceController extends Controller
             $msg .= '.';
         }
 
-        return redirect()->route('admin.invoices.index')->with('success', $msg);
+        return redirect()->route('admin.invoices.index')
+            ->with('success', $msg)
+            ->with('highlightAptIds', array_unique($highlightAptIds))
+            ->with('errorAptIds', array_unique($errorAptIds));
     }
 
     /**
@@ -670,6 +777,18 @@ class InvoiceController extends Controller
             'proof_image'    => 'nullable|image|max:4096', // Max 4MB
             'payer_name'     => 'nullable|string|max:255',
             'transaction_code' => 'nullable|string|max:100',
+        ], [
+            'payment_method.required' => 'Vui lòng chọn phương thức thanh toán.',
+            'payment_method.in'       => 'Phương thức thanh toán không hợp lệ.',
+            'amount.required'         => 'Vui lòng nhập số tiền.',
+            'amount.numeric'          => 'Số tiền phải là số.',
+            'amount.min'              => 'Số tiền phải lớn hơn 0.',
+            'amount.max'              => 'Số tiền không được lớn hơn ' . number_format($maxAmount) . 'đ.',
+            'note.max'                => 'Ghi chú không được vượt quá 500 ký tự.',
+            'proof_image.image'       => 'Minh chứng phải là hình ảnh.',
+            'proof_image.max'         => 'Dung lượng ảnh tối đa 4MB.',
+            'payer_name.max'          => 'Tên người nộp không được vượt quá 255 ký tự.',
+            'transaction_code.max'    => 'Mã giao dịch không được vượt quá 100 ký tự.',
         ]);
 
         $proofPath = null;
@@ -738,6 +857,8 @@ class InvoiceController extends Controller
 
         $validated = $request->validate([
             'refund_note' => 'nullable|string|max:500',
+        ], [
+            'refund_note.max' => 'Ghi chú hủy không được vượt quá 500 ký tự.',
         ]);
 
         DB::transaction(function () use ($payment, $validated) {
@@ -824,6 +945,8 @@ class InvoiceController extends Controller
 
         $validated = $request->validate([
             'cancel_note' => 'nullable|string|max:500',
+        ], [
+            'cancel_note.max' => 'Lý do hủy không được vượt quá 500 ký tự.',
         ]);
 
         $invoice->update(['status' => 'cancelled']);
@@ -831,7 +954,7 @@ class InvoiceController extends Controller
         SystemLogger::log(
             'finance',
             'Hủy hóa đơn #' . $invoice->id . ' (' . $invoice->title . ')'
-                . ($validated['cancel_note'] ? ' — Lý do: ' . $validated['cancel_note'] : ''),
+                . (!empty($validated['cancel_note']) ? ' — Lý do: ' . $validated['cancel_note'] : ''),
             ['invoice_id' => $invoice->id, 'note' => $validated['cancel_note'] ?? null]
         );
 
@@ -872,5 +995,50 @@ class InvoiceController extends Controller
         }
 
         return back()->with('success', "Đã gửi lại thông báo cho {$sent} cư dân.");
+    }
+
+    /**
+     * Gửi nhắc nợ hàng loạt cho toàn bộ các hóa đơn chưa thanh toán.
+     */
+    public function batchResendNotification(Request $request)
+    {
+        // Lấy tất cả hóa đơn chưa thanh toán hoặc quá hạn
+        $invoices = Invoice::whereIn('status', ['unpaid', 'partial_paid', 'overdue'])
+            ->with(['apartment.residents.user'])
+            ->get();
+
+        if ($invoices->isEmpty()) {
+            return back()->with('error', 'Không có hóa đơn nợ nào cần nhắc nhở.');
+        }
+
+        $sentCount = 0;
+        $apartmentCount = 0;
+
+        foreach ($invoices as $invoice) {
+            $invoiceSent = 0;
+            foreach ($invoice->apartment->residents as $resident) {
+                $user = $resident->user;
+                if (!$user) continue;
+                try {
+                    $user->notify(new \App\Notifications\NewInvoiceNotification($invoice));
+                    $sentCount++;
+                    $invoiceSent++;
+                } catch (\Throwable $e) {
+                    // Bỏ qua lỗi gửi thông báo để tránh gián đoạn
+                }
+            }
+            if ($invoiceSent > 0) {
+                $apartmentCount++;
+            }
+        }
+
+        // Ghi Activity Log
+        SystemLogger::log(
+            'finance',
+            "Gửi nhắc nợ hàng loạt cho {$apartmentCount} căn hộ ({$sentCount} cư dân).",
+            ['sent_count' => $sentCount, 'apartment_count' => $apartmentCount]
+        );
+
+        return back()->with('success', "Đã gửi thông báo nhắc nợ thành công đến {$apartmentCount} căn hộ ({$sentCount} cư dân).");
     }
 }

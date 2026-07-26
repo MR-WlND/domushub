@@ -2,24 +2,155 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\HomeController;
+use App\Http\Controllers\Admin\UtilityMeterController;
+use App\Http\Controllers\Admin\ServicePriceController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\ResidentManageController;
-use App\Http\Controllers\Admin\ServicePriceController;
-use App\Http\Controllers\Admin\UtilityMeterController;
-use App\Http\Controllers\Admin\FacilityController as AdminFacilityController;
-use App\Http\Controllers\Resident\ProfileController;
+use App\Http\Controllers\Admin\AdminFacilityController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\InvitationController;
 use App\Http\Controllers\Resident\InvoiceController as ResidentInvoiceController;
+use App\Http\Controllers\Resident\ProfileController;
 use App\Http\Controllers\Resident\TicketController as ResidentTicketController;
 use App\Http\Controllers\Resident\FacilityController as ResidentFacilityController;
-
-use App\Http\Controllers\Admin\InvitationController as AdminInvitationController;
-
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\UserController;
 
 // Root route - redirect to resident login
 Route::get('/', function () {
     return redirect()->route('resident.login');
+});
+
+// Admin Login Routes
+Route::get('/admin/login', [AuthController::class, 'showAdminLogin'])->name('admin.login');
+Route::post('/admin/login', [AuthController::class, 'loginAdmin'])->name('admin.login.submit');
+
+// Resident Routes
+Route::get('/resident/login', [AuthController::class, 'showResidentLogin'])->name('resident.login');
+Route::post('/resident/login', [AuthController::class, 'loginResident'])->name('resident.login.submit');
+Route::get('/resident/register', [AuthController::class, 'showResidentRegister'])->name('resident.register');
+Route::post('/resident/register', [AuthController::class, 'registerResident'])->name('resident.register.submit');
+Route::get('/resident/forgot-password', [AuthController::class, 'showForgotPassword'])->name('resident.forgot-password');
+Route::post('/resident/forgot-password', [AuthController::class, 'sendResetCode'])->name('resident.forgot-password.submit');
+Route::get('/resident/reset-password', [AuthController::class, 'showResetPassword'])->name('resident.reset-password');
+Route::post('/resident/reset-password', [AuthController::class, 'resetPassword'])->name('resident.reset-password.submit');
+
+// Security Login Routes
+Route::get('/security/login', [AuthController::class, 'showSecurityLogin'])->name('security.login');
+Route::post('/security/login', [AuthController::class, 'loginSecurity'])->name('security.login.submit');
+
+// Logout (accessible from all roles)
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Dashboard Routes
+Route::middleware(['admin'])->group(function () {
+    Route::get('/admin/dashboard', function () {
+        return view('admin.dashboard.index');
+    })->name('admin.dashboard');
+
+    // Quản lý hạ tầng - Buildings/Blocks
+    Route::get('/admin/buildings', [\App\Http\Controllers\BlockController::class, 'index'])->name('admin.buildings.index');
+    Route::get('/admin/buildings/create', [\App\Http\Controllers\BlockController::class, 'create'])->name('admin.buildings.create');
+    Route::post('/admin/buildings', [\App\Http\Controllers\BlockController::class, 'store'])->name('admin.buildings.store');
+    Route::get('/admin/buildings/{block}/edit', [\App\Http\Controllers\BlockController::class, 'edit'])->name('admin.buildings.edit');
+    Route::put('/admin/buildings/{block}', [\App\Http\Controllers\BlockController::class, 'update'])->name('admin.buildings.update');
+    Route::delete('/admin/buildings/{block}', [\App\Http\Controllers\BlockController::class, 'destroy'])->name('admin.buildings.destroy');
+
+    // Block/Building routes (used in views)
+    Route::get('/admin/blocks', [\App\Http\Controllers\BlockController::class, 'index'])->name('admin.blocks.index');
+    Route::get('/admin/blocks/create', [\App\Http\Controllers\BlockController::class, 'create'])->name('admin.blocks.create');
+    Route::post('/admin/blocks', [\App\Http\Controllers\BlockController::class, 'store'])->name('admin.blocks.store');
+    Route::get('/admin/blocks/{block}/edit', [\App\Http\Controllers\BlockController::class, 'edit'])->name('admin.blocks.edit');
+    Route::put('/admin/blocks/{block}', [\App\Http\Controllers\BlockController::class, 'update'])->name('admin.blocks.update');
+    Route::delete('/admin/blocks/{block}', [\App\Http\Controllers\BlockController::class, 'destroy'])->name('admin.blocks.destroy');
+
+    // Floors (Tầng)
+    Route::get('/admin/floors', [\App\Http\Controllers\FloorController::class, 'index'])->name('admin.floors.index');
+    Route::get('/admin/floors/create', [\App\Http\Controllers\FloorController::class, 'create'])->name('admin.floors.create');
+    Route::post('/admin/floors', [\App\Http\Controllers\FloorController::class, 'store'])->name('admin.floors.store');
+    Route::get('/admin/floors/{floor}/edit', [\App\Http\Controllers\FloorController::class, 'edit'])->name('admin.floors.edit');
+    Route::put('/admin/floors/{floor}', [\App\Http\Controllers\FloorController::class, 'update'])->name('admin.floors.update');
+    Route::delete('/admin/floors/{floor}', [\App\Http\Controllers\FloorController::class, 'destroy'])->name('admin.floors.destroy');
+
+    // Apartments (Căn hộ/Phòng)
+    Route::get('/admin/apartments', [\App\Http\Controllers\ApartmentController::class, 'index'])->name('admin.apartments.index');
+    Route::get('/admin/apartments/create', [\App\Http\Controllers\ApartmentController::class, 'create'])->name('admin.apartments.create');
+    Route::post('/admin/apartments', [\App\Http\Controllers\ApartmentController::class, 'store'])->name('admin.apartments.store');
+    Route::get('/admin/apartments/{apartment}/edit', [\App\Http\Controllers\ApartmentController::class, 'edit'])->name('admin.apartments.edit');
+    Route::put('/admin/apartments/{apartment}', [\App\Http\Controllers\ApartmentController::class, 'update'])->name('admin.apartments.update');
+    Route::delete('/admin/apartments/{apartment}', [\App\Http\Controllers\ApartmentController::class, 'destroy'])->name('admin.apartments.destroy');
+
+    Route::get('/admin/invitations', function () {
+        return view('admin.dashboard.index');
+    })->name('admin.invitations.index');
+
+    // Điện nước & hoá đơn
+    Route::get('/admin/utility-readings', function () {
+        return view('admin.dashboard.index');
+    })->name('admin.utility-readings.index');
+
+    Route::get('/admin/service-prices', function () {
+        return view('admin.dashboard.index');
+    })->name('admin.service-prices.index');
+
+    Route::get('/admin/invoices', function () {
+        return view('admin.dashboard.index');
+    })->name('admin.invoices.index');
+
+    // Dịch vụ cư dân
+    Route::get('/admin/residents', function () {
+        return view('admin.dashboard.index');
+    })->name('admin.residents.index');
+
+    Route::get('/admin/vehicles', function () {
+        return view('admin.dashboard.index');
+    })->name('admin.vehicles.index');
+
+    Route::get('/admin/incidents', function () {
+        return view('admin.dashboard.index');
+    })->name('admin.incidents.index');
+
+    Route::get('/admin/amenities', function () {
+        return view('admin.dashboard.index');
+    })->name('admin.amenities.index');
+
+    // Tương tác & bảng tin
+    Route::get('/admin/announcements', function () {
+        return view('admin.dashboard.index');
+    })->name('admin.announcements.index');
+
+    // Cấu hình hệ thống
+    Route::get('/admin/roles', function () {
+        return view('admin.dashboard.index');
+    })->name('admin.roles.index');
+
+    Route::get('/admin/activity-logs', function () {
+        return view('admin.dashboard.index');
+    })->name('admin.activity-logs.index');
+});
+
+Route::middleware(['security'])->group(function () {
+    Route::get('/security/dashboard', function () {
+        return view('security.dashboard.index');
+    })->name('security.dashboard');
+
+    Route::get('/security/vehicle-checkin', function () {
+        return view('security.vehicle-checkin.index');
+    })->name('security.vehicle-checkin.index');
+
+    Route::get('/security/vehicle-checkout', function () {
+        return view('security.vehicle-checkout.index');
+    })->name('security.vehicle-checkout.index');
+
+    Route::get('/security/visitor-check', function () {
+        return view('security.visitor-check.index');
+    })->name('security.visitor-check.index');
+});
+
+
+Route::middleware(['resident'])->group(function () {
+    Route::get('/resident/dashboard', function () {
+        return view('resident.home.index');
+    })->name('resident.dashboard');
 });
 
 // Shortcut routes
@@ -46,6 +177,11 @@ Route::get('/staff', function () {
 Route::get('/technician', function () {
     if (! Auth::check()) return redirect()->route('technician.login');
     return redirect()->route('technician.tickets.my-tasks');
+});
+
+Route::get('/cleaning', function () {
+    if (! Auth::check()) return redirect()->route('cleaning.login');
+    return redirect()->route('cleaning.dashboard');
 });
 
 // Admin Login Routes
@@ -77,6 +213,10 @@ Route::post('/resident/reset-password', [AuthController::class, 'resetPassword']
 // Security Login Routes
 Route::get('/security/login', [AuthController::class, 'showSecurityLogin'])->name('security.login');
 Route::post('/security/login', [AuthController::class, 'loginSecurity'])->name('security.login.submit');
+
+// Cleaning Login Routes
+Route::get('/cleaning/login', [AuthController::class, 'showCleaningLogin'])->name('cleaning.login');
+Route::post('/cleaning/login', [AuthController::class, 'loginCleaning'])->name('cleaning.login.submit');
 
 // Logout (accessible from all roles)
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -142,6 +282,15 @@ $portalRoutes = function () {
     Route::put('/apartments/{apartment}', [\App\Http\Controllers\Admin\ApartmentController::class, 'update'])->name('apartments.update');
     Route::delete('/apartments/{apartment}', [\App\Http\Controllers\Admin\ApartmentController::class, 'destroy'])->name('apartments.destroy');
 
+    // Apartment Types (Loại căn hộ)
+    Route::get('/apartment-types', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'index'])->name('apartment-types.index');
+    Route::get('/apartment-types/create', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'create'])->name('apartment-types.create');
+    Route::post('/apartment-types', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'store'])->name('apartment-types.store');
+    Route::get('/apartment-types/{apartmentType}/edit', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'edit'])->name('apartment-types.edit');
+    Route::put('/apartment-types/{apartmentType}', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'update'])->name('apartment-types.update');
+    Route::delete('/apartment-types/{apartmentType}', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'destroy'])->name('apartment-types.destroy');
+
+
     // Xoá mềm cư dân khỏi phòng
     Route::delete('/residents/{id}', [ResidentManageController::class, 'destroy'])->name('residents.destroy');
 
@@ -186,6 +335,7 @@ $portalRoutes = function () {
     Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
     Route::match(['post', 'patch'], '/invoices/{invoice}/mark-paid', [InvoiceController::class, 'markAsPaid'])->name('invoices.mark-paid');
     Route::post('/invoices/{invoice}/cancel', [InvoiceController::class, 'cancelInvoice'])->name('invoices.cancel');
+    Route::post('/invoices/batch-resend-notification', [InvoiceController::class, 'batchResendNotification'])->name('invoices.batch-resend-notification');
     Route::post('/invoices/{invoice}/resend-notification', [InvoiceController::class, 'resendNotification'])->name('invoices.resend-notification');
     Route::get('/invoices/{invoice}/print', [InvoiceController::class, 'printInvoice'])->name('invoices.print');
     Route::post('/payments/{payment}/refund', [InvoiceController::class, 'refundPayment'])->name('payments.refund');
@@ -258,9 +408,9 @@ $portalRoutes = function () {
     Route::put('/users/{id}/reset-password', [UserController::class, 'resetPassword'])->name('users.resetPassword');
 
     // Quản lý mã mời
-    Route::get('/invitations', [AdminInvitationController::class, 'index'])->name('invitations.index');
-    Route::post('/invitations', [AdminInvitationController::class, 'store'])->name('invitations.store');
-    Route::delete('/invitations/{id}', [AdminInvitationController::class, 'destroy'])->name('invitations.destroy');
+    Route::get('/invitations', [InvitationController::class, 'index'])->name('invitations.index');
+    Route::post('/invitations', [InvitationController::class, 'store'])->name('invitations.store');
+    Route::delete('/invitations/{id}', [InvitationController::class, 'destroy'])->name('invitations.destroy');
 
     // Trang cá nhân quản trị viên
     Route::get('/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'index'])->name('profile.index');
@@ -281,6 +431,15 @@ $portalRoutes = function () {
     Route::post('/comments/{id}/restore', [\App\Http\Controllers\Admin\PostController::class, 'restoreComment'])->name('comments.restore');
     Route::post('/users/{id}/ban-posting', [\App\Http\Controllers\Admin\PostController::class, 'banPosting'])->name('users.ban-posting');
     Route::post('/users/{id}/ban-commenting', [\App\Http\Controllers\Admin\PostController::class, 'banCommenting'])->name('users.ban-commenting');
+
+    // Quản lý vệ sinh (Admin & Manager)
+    Route::get('/cleaning-tasks', [\App\Http\Controllers\Admin\CleaningTaskController::class, 'index'])->name('cleaning-tasks.index');
+    Route::get('/cleaning-tasks/create', [\App\Http\Controllers\Admin\CleaningTaskController::class, 'create'])->name('cleaning-tasks.create');
+    Route::post('/cleaning-tasks', [\App\Http\Controllers\Admin\CleaningTaskController::class, 'store'])->name('cleaning-tasks.store');
+    Route::delete('/cleaning-tasks/{id}', [\App\Http\Controllers\Admin\CleaningTaskController::class, 'destroy'])->name('cleaning-tasks.destroy');
+
+    Route::get('/cleaning-reports', [\App\Http\Controllers\Admin\CleaningReportController::class, 'index'])->name('cleaning-reports.index');
+    Route::patch('/cleaning-reports/{id}/status', [\App\Http\Controllers\Admin\CleaningReportController::class, 'updateStatus'])->name('cleaning-reports.update-status');
 
 };
 
@@ -335,6 +494,23 @@ Route::middleware(['security'])->group(function () {
     // Xem lịch sử xe và khách cho bảo vệ
     Route::get('/security/vehicle-logs', [\App\Http\Controllers\Admin\VehicleLogController::class, 'index'])->name('security.vehicle-logs.index');
     Route::get('/security/visitor-logs', [\App\Http\Controllers\Admin\VisitorLogController::class, 'index'])->name('security.visitor-logs.index');
+});
+
+// DASHBOARD CLEANING ROUTES
+Route::middleware(['cleaning'])->group(function () {
+    Route::get('/cleaning/dashboard', [\App\Http\Controllers\Cleaning\DashboardController::class, 'index'])->name('cleaning.dashboard');
+
+    Route::get('/cleaning/profile', [\App\Http\Controllers\Cleaning\ProfileController::class, 'index'])->name('cleaning.profile');
+    Route::put('/cleaning/profile', [\App\Http\Controllers\Cleaning\ProfileController::class, 'update'])->name('cleaning.profile.update');
+    Route::put('/cleaning/profile/change-password', [\App\Http\Controllers\Cleaning\ProfileController::class, 'changePassword'])->name('cleaning.profile.change-password');
+
+    Route::get('/cleaning/report', [\App\Http\Controllers\Cleaning\ReportController::class, 'index'])->name('cleaning.report');
+    Route::post('/cleaning/report', [\App\Http\Controllers\Cleaning\ReportController::class, 'store'])->name('cleaning.report.store');
+
+    Route::get('/cleaning/tasks', [\App\Http\Controllers\Cleaning\TaskController::class, 'index'])->name('cleaning.tasks');
+    Route::get('/cleaning/tasks/{id}', [\App\Http\Controllers\Cleaning\TaskController::class, 'show'])->name('cleaning.tasks.show');
+    Route::patch('/cleaning/tasks/{id}/status', [\App\Http\Controllers\Cleaning\TaskController::class, 'updateStatus'])->name('cleaning.tasks.update-status');
+    Route::patch('/cleaning/tasks/{id}/checklist', [\App\Http\Controllers\Cleaning\TaskController::class, 'updateChecklist'])->name('cleaning.tasks.update-checklist');
 });
 
 // DASHBOARD RESIDENT ROUTES

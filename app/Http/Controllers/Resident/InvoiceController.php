@@ -511,7 +511,7 @@ class InvoiceController extends Controller
             foreach ($invoices as $invoice) {
                 $hasParkingDetail = $invoice->details()
                     ->whereHas('servicePrice', function ($q) {
-                        $q->where('type', 'parking');
+                        $q->whereIn('type', ['motorbike', 'car', 'bicycle', 'electric_bike']);
                     })
                     ->exists();
 

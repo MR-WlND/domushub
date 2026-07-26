@@ -31,12 +31,13 @@
                             <option value="" disabled {{ old('vehicle_type') ? '' : 'selected' }}>-- Chọn --</option>
                             <option value="car" {{ old('vehicle_type')==='car'?'selected':'' }}>Ô tô</option>
                             <option value="motorbike" {{ old('vehicle_type')==='motorbike'?'selected':'' }}>Xe máy</option>
-                            <option value="electric_bike" {{ old('vehicle_type')==='electric_bike'?'selected':'' }}>Xe đạp / Xe điện</option>
+                            <option value="electric_bike" {{ old('vehicle_type')==='electric_bike'?'selected':'' }}>Xe điện</option>
+                            <option value="bicycle" {{ old('vehicle_type')==='bicycle'?'selected':'' }}>Xe đạp</option>
                         </select>
                     </div>
-                    <div class="rv-field">
+                    <div class="rv-field" id="license-plate-field">
                         <label>Biển số xe <span>*</span></label>
-                        <input type="text" name="license_plate" class="rv-input" value="{{ old('license_plate') }}" placeholder="VD: 30A-123.45" style="text-transform:uppercase;" required>
+                        <input type="text" name="license_plate" id="license_plate_input" class="rv-input" value="{{ old('license_plate') }}" placeholder="VD: 30A-123.45" style="text-transform:uppercase;">
                     </div>
                 </div>
 
@@ -123,5 +124,30 @@ function rvPreview(input, phId, pvId) {
         reader.readAsDataURL(input.files[0]);
     }
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const typeSelect = document.querySelector('select[name="vehicle_type"]');
+    if(typeSelect) {
+        typeSelect.addEventListener('change', function() {
+            const type = this.value;
+            const licenseField = document.getElementById('license_plate_input');
+            const licenseLabelStar = document.querySelector('#license-plate-field label span');
+            
+            if (type === 'bicycle' || type === 'electric_bike') {
+                licenseField.required = false;
+                licenseField.disabled = true;
+                licenseField.placeholder = "Không yêu cầu đối với xe đạp/xe điện";
+                licenseField.value = "";
+                if(licenseLabelStar) licenseLabelStar.style.display = 'none';
+            } else {
+                licenseField.required = true;
+                licenseField.disabled = false;
+                licenseField.placeholder = "VD: 30A-123.45";
+                if(licenseLabelStar) licenseLabelStar.style.display = 'inline';
+            }
+        });
+        typeSelect.dispatchEvent(new Event('change'));
+    }
+});
 </script>
 @endsection

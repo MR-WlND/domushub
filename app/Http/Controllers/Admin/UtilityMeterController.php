@@ -22,7 +22,7 @@ use Gemini\Enums\MimeType;
 class UtilityMeterController extends Controller
 {
     /**
-     * Danh sách chỉ số điện nước + thống kê tổng quan
+     * Danh sách chỉ số nước + thống kê tổng quan
      */
     public function index(Request $request): View|RedirectResponse
     {
@@ -277,6 +277,12 @@ class UtilityMeterController extends Controller
             $validated['record_month'],
             $validated['record_year']
         ) ?? 0);
+
+        if (!$isReset && $validated['new_value'] < $oldValue) {
+            return back()->withInput()->withErrors([
+                'new_value' => 'Chỉ số mới không được nhỏ hơn chỉ số cũ.',
+            ]);
+        }
 
         $imageProofPath = null;
         $imagePaths = [];
@@ -799,7 +805,7 @@ class UtilityMeterController extends Controller
             $reason = $request->input('reject_reason');
             
             $notificationData = [
-                'title' => '❌ Chỉ số điện nước bị từ chối',
+                'title' => '❌ Chỉ số nước bị từ chối',
                 'message' => "Chỉ số <strong>{$typeName}</strong> mới cho căn hộ <strong>{$apartmentNumber}</strong> (Kỳ {$reading->record_month}/{$reading->record_year}) đã bị từ chối bởi kế toán <strong>{$rejecterName}</strong>. Lý do: <em>{$reason}</em>. Vui lòng kiểm tra và ghi lại.",
                 'url' => route('admin.utility-readings.index', [
                     'month' => $reading->record_month,
@@ -906,7 +912,7 @@ class UtilityMeterController extends Controller
             $existingInvoice = \App\Models\Invoice::where('apartment_id', $apartmentId)
                 ->where('billing_month', $month)
                 ->where('billing_year', $year)
-                ->where('title', 'like', '%Phí điện nước%')
+                ->where('title', 'like', '%Phí nước%')
                 ->first();
             if ($existingInvoice) {
                 $existingInvoice->details()->delete();
@@ -964,7 +970,7 @@ class UtilityMeterController extends Controller
     }
 
     /**
-     * Xuất file Excel mẫu chỉ số điện nước (Dạng Bảng Ngang) có Protect Sheet để BQL điền
+     * Xuất file Excel mẫu chỉ số nước (Dạng Bảng Ngang) có Protect Sheet để BQL điền
      */
     public function downloadTemplate(Request $request)
     {
@@ -1265,138 +1271,7 @@ class UtilityMeterController extends Controller
     }
 
     /**
-     * Nhận diện chỉ số từ ảnh sử dụng Gemini AI
-     */
-    public function ocr(Request $request): JsonResponse
-    {
-        if (!in_array(Auth::user()->role, ['technician', 'admin'])) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn không có quyền sử dụng chức năng này.'
-            ], 403);
-        }
-
-        $request->validate([
-            'image' => 'required|image|max:8192', // tối đa 8MB
-            'type' => 'nullable|string|in:water,electricity',
-        ]);
-
-        if (!$request->hasFile('image')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Không tìm thấy tệp ảnh.'
-            ], 400);
-        }
-
-        $file = $request->file('image');
-        $mime = $file->getMimeType();
-        $mimeTypeEnum = null;
-
-        // Map MIME type string to Gemini MimeType enum
-        switch ($mime) {
-            case 'image/png':
-                $mimeTypeEnum = MimeType::IMAGE_PNG;
-                break;
-            case 'image/jpeg':
-            case 'image/jpg':
-                $mimeTypeEnum = MimeType::IMAGE_JPEG;
-                break;
-            case 'image/webp':
-                $mimeTypeEnum = MimeType::IMAGE_WEBP;
-                break;
-            case 'image/heic':
-                $mimeTypeEnum = MimeType::IMAGE_HEIC;
-                break;
-            case 'image/heif':
-                $mimeTypeEnum = MimeType::IMAGE_HEIF;
-                break;
-            default:
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Định dạng ảnh không được hỗ trợ bởi Gemini (chỉ chấp nhận JPEG, PNG, WEBP, HEIC).'
-                ], 400);
-        }
-
-        try {
-            $imageData = base64_encode(file_get_contents($file->getPathname()));
-            $blob = new Blob(
-                mimeType: $mimeTypeEnum,
-                data: $imageData
-            );
-
-            $type = $request->input('type', 'water');
-            $typeName = $type === 'electricity' ? 'điện' : 'nước';
-
-            $prompt = "Bạn là một hệ thống phân tích hình ảnh chuyên nghiệp để chốt số chỉ số đồng hồ {$typeName}.\n"
-                . "Hãy đọc chỉ số hiện tại hiển thị trên mặt đồng hồ trong bức ảnh này.\n\n"
-                . "YÊU CẦU QUAN TRỌNG:\n"
-                . "1. Chỉ trả về một dãy số nguyên duy nhất đại diện cho chỉ số đọc được trên đồng hồ (ví dụ: 00273 hoặc 273 hoặc 533012). Không bao gồm chữ cái, ký hiệu đơn vị (m3, kWh), dấu chấm, dấu phẩy, khoảng trắng hoặc bất kỳ phần giải thích nào khác.\n"
-                . "2. Nếu đồng hồ có các số màu đỏ (thường là phần số lẻ sau dấu phẩy của đồng hồ nước), chỉ đọc phần số màu đen ở phía trước để chốt chỉ số chính, hoặc nếu không rõ thì hãy đọc toàn bộ dãy số hiển thị rõ nhất.\n"
-                . "3. Nếu không tìm thấy mặt đồng hồ hoặc không thể đọc được chữ số nào một cách đáng tin cậy, hãy trả về từ 'ERROR'.\n\n"
-                . "Dữ liệu trả về:";
-
-            $modelsToTry = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-flash-latest'];
-            $ocrText = '';
-            $lastException = null;
-
-            foreach ($modelsToTry as $modelName) {
-                try {
-                    $response = Gemini::generativeModel(model: $modelName)
-                        ->generateContent([
-                            $prompt,
-                            $blob
-                        ]);
-
-                    $ocrText = trim($response->text());
-                    if ($ocrText) {
-                        break;
-                    }
-                } catch (\Exception $e) {
-                    $lastException = $e;
-                    continue;
-                }
-            }
-
-            if (!$ocrText) {
-                throw $lastException ?? new \Exception("Không thể nhận được phản hồi từ các mô hình Gemini AI.");
-            }
-
-            // Nếu kết quả chứa ERROR hoặc không có số nào
-            if (stripos($ocrText, 'ERROR') !== false) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không thể nhận diện rõ mặt đồng hồ hoặc dãy số. Vui lòng chụp lại ảnh rõ nét và thẳng hơn.'
-                ]);
-            }
-
-            // Tìm chuỗi số trong kết quả
-            preg_match('/\d+/', $ocrText, $matches);
-            if (empty($matches)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'AI không tìm thấy chữ số nào. Vui lòng thử lại.'
-                ]);
-            }
-
-            $readingValue = $matches[0];
-
-            return response()->json([
-                'success' => true,
-                'reading' => $readingValue,
-                'raw_text' => $ocrText
-            ]);
-
-        } catch (\Exception $e) {
-            \Log::error('Gemini OCR Error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Lỗi kết nối máy chủ AI: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Lấy lịch sử từ chối của chỉ số điện nước từ Spatie Activity Log.
+     * Lấy lịch sử từ chối của chỉ số nước từ Spatie Activity Log.
      */
     private function getRejectionHistory(int $id)
     {

@@ -22,6 +22,7 @@ class ApartmentController extends Controller
         $blockId = $request->query('block_id');
         $status = $request->query('status');
         $search = $request->query('search');
+        $apartmentTypeId = $request->query('apartment_type_id');
 
         $floor = null;
         $block = null;
@@ -30,8 +31,16 @@ class ApartmentController extends Controller
             ->with([
                 'floor.block',
                 'residents.user',
+                'apartmentType',
             ])
             ->withCount('residents');
+
+        /**
+         * Filter theo loại căn hộ
+         */
+        if ($apartmentTypeId) {
+            $query->where('apartment_type_id', $apartmentTypeId);
+        }
 
         /**
          * Filter theo block
@@ -96,6 +105,14 @@ class ApartmentController extends Controller
             ->get();
 
         /**
+         * Danh sách loại căn hộ
+         */
+        $apartmentTypes = \App\Models\ApartmentType::orderBy('bedroom_count')
+            ->orderBy('bathroom_count')
+            ->orderBy('base_service_fee')
+            ->get();
+
+        /**
          * Stats
          */
         $stats = [
@@ -125,13 +142,15 @@ class ApartmentController extends Controller
                 'apartments',
                 'floors',
                 'blocks',
+                'apartmentTypes',
                 'floor',
                 'block',
                 'stats',
                 'status',
                 'search',
                 'floorId',
-                'blockId'
+                'blockId',
+                'apartmentTypeId'
             )
         );
     }
@@ -146,10 +165,14 @@ class ApartmentController extends Controller
         $floors = Floor::with('block')
             ->orderBy('floor_number')
             ->get();
+        $apartmentTypes = \App\Models\ApartmentType::orderBy('bedroom_count')
+            ->orderBy('bathroom_count')
+            ->orderBy('base_service_fee')
+            ->get();
 
         return view(
             'admin.apartments.create',
-            compact('floors', 'blocks', 'selectedFloorId')
+            compact('floors', 'blocks', 'selectedFloorId', 'apartmentTypes')
         );
     }
 
@@ -167,12 +190,22 @@ class ApartmentController extends Controller
                 'exists:floors,id',
             ],
 
+            'apartment_type_id' => [
+                'nullable',
+                'exists:apartment_types,id',
+            ],
+
             'apartment_number' => [
                 'required',
                 'string',
                 'max:20',
             ],
 
+            'area' => [
+                'required',
+                'numeric',
+                'min:0',
+            ],
 
             'status' => [
                 'required',
@@ -211,7 +244,6 @@ class ApartmentController extends Controller
                 ]);
         }
 
-        $validated['area'] = 0;
         $apartment = Apartment::create($validated);
 
 
@@ -255,13 +287,18 @@ class ApartmentController extends Controller
         $floors = Floor::with('block')
             ->orderBy('floor_number')
             ->get();
+        $apartmentTypes = \App\Models\ApartmentType::orderBy('bedroom_count')
+            ->orderBy('bathroom_count')
+            ->orderBy('base_service_fee')
+            ->get();
 
         return view(
             'admin.apartments.edit',
             compact(
                 'apartment',
                 'floors',
-                'blocks'
+                'blocks',
+                'apartmentTypes'
             )
         );
     }
@@ -281,12 +318,22 @@ class ApartmentController extends Controller
                 'exists:floors,id',
             ],
 
+            'apartment_type_id' => [
+                'nullable',
+                'exists:apartment_types,id',
+            ],
+
             'apartment_number' => [
                 'required',
                 'string',
                 'max:20',
             ],
 
+            'area' => [
+                'required',
+                'numeric',
+                'min:0',
+            ],
 
             'status' => [
                 'required',
@@ -330,7 +377,6 @@ class ApartmentController extends Controller
                 ]);
         }
 
-        $validated['area'] = 0;
         $apartment->update($validated);
 
 

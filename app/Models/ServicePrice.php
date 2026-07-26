@@ -11,6 +11,7 @@ class ServicePrice extends Model
     protected $fillable = [
         'name',
         'type',
+        'vehicle_type',
         'unit_price',
         'status',
         'description',

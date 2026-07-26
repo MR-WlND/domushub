@@ -50,7 +50,6 @@ class Floor extends Model
     }
 
     /**
-     * Tên hiển thị: ưu tiên name, fallback về "Tầng {floor_number}"
      */
     public function getDisplayNameAttribute(): string
     {

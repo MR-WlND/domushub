@@ -11,8 +11,8 @@
 {{-- ── Page Header ─────────────────────────────────── --}}
 <div class="util-page-header">
     <div>
-        <h1>Lịch sử ghi số Điện Nước</h1>
-        <p>Theo dõi và đối soát hoạt động ghi nhận, chỉnh sửa, chốt số và từ chối chỉ số điện nước</p>
+        <h1>Lịch sử ghi số Nước</h1>
+        <p>Theo dõi và đối soát hoạt động ghi nhận, chỉnh sửa, chốt số và từ chối chỉ số nước</p>
     </div>
     <div class="util-header-actions">
         <a href="{{ route('admin.utility-readings.index') }}" class="util-btn util-btn--secondary">
@@ -248,7 +248,7 @@
     <svg width="48" height="48" fill="none" stroke="#cbd5e1" stroke-width="1.5" viewBox="0 0 24 24" style="margin: 0 auto 16px;">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
     </svg>
-    <p>Không tìm thấy nhật ký ghi nhận chỉ số điện nước nào khớp với bộ lọc.</p>
+    <p>Không tìm thấy nhật ký ghi nhận chỉ số nước nào khớp với bộ lọc.</p>
     <div class="util-empty-actions">
         <a href="{{ route('admin.utility-readings.logs') }}" class="util-btn util-btn--outline">Đặt lại bộ lọc</a>
     </div>

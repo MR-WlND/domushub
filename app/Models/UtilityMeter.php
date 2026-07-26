@@ -217,9 +217,8 @@ class UtilityMeter extends Model
     public function getTypeLabelAttribute(): string
     {
         return match ($this->type) {
-            'electricity' => 'Điện',
-            'water'       => 'Nước',
-            default       => $this->type,
+            'water' => 'Nước',
+            default => 'Không xác định',
         };
     }
 }
