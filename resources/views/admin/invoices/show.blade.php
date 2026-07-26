@@ -77,27 +77,29 @@
             <table class="items-table">
                 <thead>
                     <tr>
-                        <th>Tên dịch vụ</th>
-                        <th>Loại phí</th>
-                        <th class="text-right">Số lượng</th>
-                        <th class="text-right">Thành tiền</th>
+                        <th width="40%">Tên dịch vụ</th>
+                        <th width="20%" class="text-center">Loại phí</th>
+                        <th width="15%" class="text-center">Số lượng</th>
+                        <th width="25%" class="text-right">Thành tiền</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($invoice->details as $detail)
                         <tr>
                             <td>
-                                <div class="item-name">{{ $detail->servicePrice->name ?? 'Dịch vụ / Phí khác' }}</div>
+                                <div class="item-name">
+                                    {{ $detail->servicePrice->name ?? ($detail->note ?? 'Phí phát sinh khác') }}
+                                </div>
                                 <div class="item-desc">
-                                    Đơn giá: {{ number_format($detail->servicePrice->price ?? $detail->amount) }} đ
+                                    Đơn giá: {{ number_format($detail->amount / max(1, $detail->quantity)) }} đ
                                 </div>
                             </td>
-                            <td>
+                            <td class="text-center">
                                 <span class="badge badge-{{ $detail->servicePrice->type ?? 'other' }}">
                                     {{ \App\Models\Invoice::typeLabel($detail->servicePrice->type ?? 'other') }}
                                 </span>
                             </td>
-                            <td class="text-right val-quantity">
+                            <td class="text-center val-quantity">
                                 {{ $detail->quantity }}
                             </td>
                             <td class="text-right val-subtotal">{{ number_format($detail->amount, 0, ',', '.') }} đ</td>
@@ -253,22 +255,22 @@
         </div>
 
         {{-- Form ghi nhận thanh toán thủ công --}}
-        @if($invoice->status !== 'paid')
-        <div class="detail-card__pay-action" style="flex-direction: column; align-items: stretch; background-color: #f8f9ff; padding: 24px;">
-            <h3 class="section-title" style="margin-bottom: 8px; display: flex; align-items: center; gap: 6px; font-size: 1.05rem;">
-                💵 Ghi nhận Thanh toán Thủ công
+        @if($invoice->status !== 'paid' && $invoice->status !== 'cancelled')
+        <div class="detail-card__pay-action" style="flex-direction: column; align-items: stretch; background-color: #ffffff; border-top: 1px solid var(--color-outline-soft); padding: 32px;">
+            <h3 class="section-title" style="margin-bottom: 8px; font-size: 1.15rem; color: var(--color-text);">
+                Ghi nhận thanh toán thủ công
             </h3>
-            <p style="font-size: 0.85rem; color: var(--color-text-secondary, #444651); margin-bottom: 20px;">
+            <p style="font-size: 0.9rem; color: var(--color-text-secondary); margin-bottom: 24px;">
                 Ghi nhận khi cư dân nộp tiền mặt hoặc chuyển khoản.
                 @if($invoice->status === 'partial_paid')
-                Còn thiếu <strong style="color:var(--color-error, #ba1a1a);">{{ number_format($invoice->remaining_amount) }}đ</strong>.
+                Còn thiếu <strong style="color:var(--color-error);">{{ number_format($invoice->remaining_amount) }}đ</strong>.
                 @endif
             </p>
 
             <form method="POST" action="{{ portal_route('invoices.mark-paid', $invoice) }}" enctype="multipart/form-data" onsubmit="return confirmManualPayment(event);">
                 @csrf
                 @method('PATCH')
-                <div class="payment-form-grid">
+                <div class="payment-form-grid" style="gap: 20px; margin-bottom: 20px;">
                     {{-- Số tiền --}}
                     <div class="form-group">
                         <label class="form-label" for="amount">Số tiền thu</label>
@@ -277,6 +279,7 @@
                             name="amount"
                             id="amount"
                             class="form-input"
+                            style="padding: 12px 16px; font-size: 0.95rem; border-color: #cbd5e1; border-radius: 8px;"
                             value="{{ old('amount', $invoice->remaining_amount ?: $invoice->total_amount) }}"
                             min="1"
                             max="{{ $invoice->remaining_amount ?: $invoice->total_amount }}"
@@ -290,25 +293,24 @@
                     {{-- Phương thức --}}
                     <div class="form-group">
                         <label class="form-label" for="payment_method">Phương thức</label>
-                        <select name="payment_method" id="payment_method" class="form-input">
-                            <option value="bank_transfer">🏦 Chuyển khoản ngân hàng</option>
-                            <option value="cash">💵 Tiền mặt</option>
-                            <option value="momo">💜 MoMo</option>
-                            <option value="vnpay">🔵 VNPay</option>
-                            <option value="other">💳 Khác</option>
+                        <select name="payment_method" id="payment_method" class="form-input" style="padding: 12px 16px; font-size: 0.95rem; border-color: #cbd5e1; border-radius: 8px; background-color: #fff;">
+                            <option value="bank_transfer">Chuyển khoản ngân hàng</option>
+                            <option value="cash">Tiền mặt</option>
+                            <option value="momo">MoMo</option>
+                            <option value="vnpay">VNPay</option>
+                            <option value="other">Khác</option>
                         </select>
                     </div>
-                </div>
 
-                <div class="payment-form-grid" style="margin-top: 15px;">
                     {{-- Người nộp tiền --}}
                     <div class="form-group">
-                        <label class="form-label" for="payer_name">Người nộp tiền <span style="font-weight:400;text-transform:none;color:#757682;">(tuỳ chọn)</span></label>
+                        <label class="form-label" for="payer_name">Người nộp tiền <span style="font-weight:400;text-transform:none;color:#94a3b8;">(tuỳ chọn)</span></label>
                         <input
                             type="text"
                             name="payer_name"
                             id="payer_name"
                             class="form-input"
+                            style="padding: 12px 16px; font-size: 0.95rem; border-color: #cbd5e1; border-radius: 8px;"
                             placeholder="Tên người thanh toán..."
                             value="{{ old('payer_name', $invoice->apartment->owner_name ?? '') }}">
                         @error('payer_name')
@@ -318,12 +320,13 @@
 
                     {{-- ID giao dịch --}}
                     <div class="form-group">
-                        <label class="form-label" for="transaction_code">ID giao dịch ngân hàng <span style="font-weight:400;text-transform:none;color:#757682;">(nếu chuyển khoản)</span></label>
+                        <label class="form-label" for="transaction_code">ID giao dịch ngân hàng <span style="font-weight:400;text-transform:none;color:#94a3b8;">(nếu chuyển khoản)</span></label>
                         <input
                             type="text"
                             name="transaction_code"
                             id="transaction_code"
                             class="form-input"
+                            style="padding: 12px 16px; font-size: 0.95rem; border-color: #cbd5e1; border-radius: 8px;"
                             placeholder="Mã giao dịch đối soát..."
                             value="{{ old('transaction_code') }}">
                         @error('transaction_code')
@@ -332,13 +335,14 @@
                     </div>
 
                     {{-- Ghi chú --}}
-                    <div class="form-group">
-                        <label class="form-label" for="note">Ghi chú <span style="font-weight:400;text-transform:none;color:#757682;">(tuỳ chọn)</span></label>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label class="form-label" for="note">Ghi chú <span style="font-weight:400;text-transform:none;color:#94a3b8;">(tuỳ chọn)</span></label>
                         <input
                             type="text"
                             name="note"
                             id="note"
                             class="form-input"
+                            style="padding: 12px 16px; font-size: 0.95rem; border-color: #cbd5e1; border-radius: 8px;"
                             placeholder="VD: Chuyển khoản ngày 15/06..."
                             value="{{ old('note') }}">
                         @error('note')
@@ -347,18 +351,18 @@
                     </div>
                 </div>
 
-                <div style="margin-top: 15px;">
+                <div style="margin-bottom: 24px;">
                     {{-- Ảnh hóa đơn --}}
                     <div class="form-group">
-                        <label class="form-label" for="proof_image">Minh chứng thanh toán <span style="font-weight:400;text-transform:none;color:#757682;">(Ảnh chụp bill / Biên lai)</span></label>
-                        <div class="custom-file-upload-box" style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 12px; background: #fff; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 42px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);">
-                            <span id="file_name_label_proof_image" style="color: #64748b; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 55%; font-weight: 500;">Chưa chọn tệp nào</span>
-                            <div style="display: flex; gap: 6px; flex-shrink: 0;">
-                                <button type="button" onclick="document.getElementById('proof_image').click()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
-                                    📁 Chọn tệp
+                        <label class="form-label" for="proof_image">Minh chứng thanh toán <span style="font-weight:400;text-transform:none;color:#94a3b8;">(Ảnh chụp bill / Biên lai)</span></label>
+                        <div class="custom-file-upload-box" style="border: 1px dashed #cbd5e1; border-radius: 8px; padding: 12px 16px; background: #f8fafc; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; transition: all 0.2s;">
+                            <span id="file_name_label_proof_image" style="color: #64748b; font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">Chưa chọn tệp nào</span>
+                            <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                                <button type="button" onclick="document.getElementById('proof_image').click()" style="background: #ffffff; color: #334155; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.2s;">
+                                    Chọn tệp
                                 </button>
-                                <button type="button" onclick="startCamera('proof_image')" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
-                                    📸 Mở Camera
+                                <button type="button" onclick="startCamera('proof_image')" style="background: #ffffff; color: #0284c7; border: 1px solid #bae6fd; padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.2s;">
+                                    Mở Camera
                                 </button>
                             </div>
                         </div>
@@ -375,25 +379,25 @@
                         <span class="form-error">{{ $message }}</span>
                         @enderror
 
-                        <div class="camera-wrapper" style="margin-top: 10px;">
-                            <div id="camera_container_proof_image" style="display:none; margin-top:10px; position:relative; background:#000; border-radius:8px; overflow:hidden;">
+                        <div class="camera-wrapper" style="margin-top: 12px;">
+                            <div id="camera_container_proof_image" style="display:none; margin-top:12px; position:relative; background:#000; border-radius:8px; overflow:hidden;">
                                 <video id="video_proof_image" autoplay playsinline style="width:100%; max-height:250px; object-fit:cover; display:block;"></video>
-                                <div style="position:absolute; bottom:10px; left:50%; transform:translateX(-50%); display:flex; gap:8px; z-index:10;">
-                                    <button type="button" onclick="captureSnapshot('proof_image')" style="background:#10b981; color:#fff; border:none; padding:6px 14px; border-radius:20px; font-weight:600; cursor:pointer; font-size:0.8rem;">📸 Chụp</button>
-                                    <button type="button" onclick="stopCamera('proof_image')" style="background:#ef4444; color:#fff; border:none; padding:6px 14px; border-radius:20px; font-weight:600; cursor:pointer; font-size:0.8rem;">✕ Đóng</button>
+                                <div style="position:absolute; bottom:12px; left:50%; transform:translateX(-50%); display:flex; gap:12px; z-index:10;">
+                                    <button type="button" onclick="captureSnapshot('proof_image')" style="background:#10b981; color:#fff; border:none; padding:8px 20px; border-radius:24px; font-weight:500; cursor:pointer; font-size:0.9rem; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">Chụp</button>
+                                    <button type="button" onclick="stopCamera('proof_image')" style="background:#ef4444; color:#fff; border:none; padding:8px 20px; border-radius:24px; font-weight:500; cursor:pointer; font-size:0.9rem; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">Đóng</button>
                                 </div>
                             </div>
-                            <div id="preview_container_proof_image" style="display:none; margin-top:10px; position:relative; max-width: 150px;">
-                                <img id="img_preview_proof_image" src="" style="width:100%; border-radius:6px; border:1px solid #cbd5e1; display:block;">
-                                <button type="button" onclick="removeCapturedPhoto('proof_image')" style="position:absolute; top:-5px; right:-5px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; cursor:pointer; padding:0;">×</button>
+                            <div id="preview_container_proof_image" style="display:none; margin-top:12px; position:relative; max-width: 200px;">
+                                <img id="img_preview_proof_image" src="" style="width:100%; border-radius:8px; border:1px solid #cbd5e1; display:block;">
+                                <button type="button" onclick="removeCapturedPhoto('proof_image')" style="position:absolute; top:-8px; right:-8px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:bold; cursor:pointer; padding:0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">×</button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div style="text-align: right; margin-top: 15px;">
-                    <button type="submit" class="btn-pay-now">
-                        ✔ Xác nhận Thanh toán
+                <div style="text-align: right; padding-top: 16px;">
+                    <button type="submit" class="btn-pay-now" style="padding: 12px 28px; font-size: 1rem; border-radius: 8px; background-color: var(--color-primary); color: #fff;">
+                        Xác nhận thanh toán
                     </button>
                 </div>
             </form>
@@ -561,8 +565,8 @@
     .item-desc { font-size: 0.8rem; color: var(--color-text-secondary); }
     .val-quantity { font-size: 0.9rem; color: var(--color-text-secondary); }
     .val-subtotal { font-size: 0.95rem; font-weight: 700; color: var(--color-text); }
-    .text-right { text-align: right; }
-    .text-center { text-align: center; }
+    .text-right { text-align: right !important; }
+    .text-center { text-align: center !important; }
     .text-muted { color: var(--color-outline); }
 
     /* Total block */

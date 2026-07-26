@@ -113,13 +113,15 @@
                             <span class="apt-inv-status apt-inv-status--partial">Một phần</span>
                         @elseif($inv->status === 'overdue')
                             <span class="apt-inv-status apt-inv-status--overdue">Quá hạn</span>
+                        @elseif($inv->status === 'cancelled')
+                            <span class="apt-inv-status" style="background: #e2e3e5; color: #383d41;">Đã hủy</span>
                         @else
                             <span class="apt-inv-status apt-inv-status--unpaid">Chưa TT</span>
                         @endif
                     </td>
                     <td>
                         <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-                            @if($inv->status !== 'paid')
+                            @if(!in_array($inv->status, ['paid', 'cancelled']))
                             <button type="button" class="apt-inv-btn apt-inv-btn--pay"
                                 onclick="event.stopPropagation(); openPayModal({{ $inv->id }}, '{{ $inv->invoice_code }}', '{{ addslashes($inv->title) }}', {{ $inv->remaining_amount ?: $inv->total_amount }}, '{{ addslashes($apartment->owner_name ?? '') }}', 'Tháng {{ $inv->billing_month->format('m/Y') }}')">
                                 Thu tiền

@@ -29,8 +29,8 @@
 
         {{-- Summary Banner --}}
         @php
-            $totalIssued = \App\Models\Invoice::sum('total_amount');
-            $totalPaid = \App\Models\Invoice::sum('paid_amount');
+            $totalIssued = \App\Models\Invoice::where('status', '!=', 'cancelled')->sum('total_amount');
+            $totalPaid = \App\Models\Invoice::where('status', '!=', 'cancelled')->sum('paid_amount');
             $totalDebt = max(0, $totalIssued - $totalPaid);
             $totalOverdue = \App\Models\Invoice::where('status', 'overdue')->count();
         @endphp
