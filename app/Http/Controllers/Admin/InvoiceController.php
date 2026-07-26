@@ -243,13 +243,20 @@ class InvoiceController extends Controller
         $billingMonth = (int) $monthYear[1];
         $billingYear = (int) $monthYear[0];
 
+        $previousDebt = \App\Models\Invoice::where('apartment_id', $validated['apartment_id'])
+            ->where('status', '!=', 'cancelled')
+            ->sum(\Illuminate\Support\Facades\DB::raw('total_amount - paid_amount'));
+
         $invoice = Invoice::create([
             'apartment_id'  => $validated['apartment_id'],
             'title'         => $validated['title'],
             'billing_month' => $billingMonth,
             'billing_year'  => $billingYear,
             'due_date'      => $validated['due_date'],
-            'total_amount'  => 0,
+            'total_amount'  => 0, // Sẽ cập nhật sau
+            'previous_debt' => $previousDebt,
+            'current_amount' => 0,
+            'total_due_at_issue' => $previousDebt,
             'status'        => 'unpaid',
         ]);
 
@@ -284,7 +291,11 @@ class InvoiceController extends Controller
         }
 
         if ($totalAddedAmount > 0) {
-            $invoice->update(['total_amount' => $totalAddedAmount]);
+            $invoice->update([
+                'total_amount' => $totalAddedAmount,
+                'current_amount' => $totalAddedAmount,
+                'total_due_at_issue' => $previousDebt + $totalAddedAmount
+            ]);
         }
 
         return redirect()->route('admin.invoices.show', $invoice->id)
@@ -318,7 +329,8 @@ class InvoiceController extends Controller
             ->where('status', 'occupied')
             ->whereDoesntHave('invoices', function ($query) use ($selectedYear, $selectedMonthNumber) {
                 $query->where('billing_month', $selectedMonthNumber)
-                    ->where('billing_year', $selectedYear);
+                    ->where('billing_year', $selectedYear)
+                    ->where('status', '!=', 'cancelled');
             })
             ->orderBy('id')
             ->get();
@@ -401,7 +413,17 @@ class InvoiceController extends Controller
             $invoice = Invoice::where('apartment_id', $apartment->id)
                 ->where('billing_month', $month)
                 ->where('billing_year', $year)
+                ->where('status', '!=', 'cancelled')
                 ->first();
+
+            $apartmentPreviousDebt = \App\Models\Invoice::where('apartment_id', $apartment->id)
+                ->where('status', '!=', 'cancelled')
+                ->where(function ($q) use ($month, $year) {
+                    $q->where('billing_year', '<', $year)
+                      ->orWhere(function ($q2) use ($month, $year) {
+                          $q2->where('billing_year', $year)->where('billing_month', '<', $month);
+                      });
+                })->sum(\Illuminate\Support\Facades\DB::raw('total_amount - paid_amount'));
 
             $invoiceExistedBefore = (bool) $invoice;
             $invoiceAmountAdded   = 0;
@@ -523,6 +545,9 @@ class InvoiceController extends Controller
                                 'billing_year'  => $year,
                                 'due_date'      => $request->due_date,
                                 'total_amount'  => 0,
+                                'previous_debt' => $apartmentPreviousDebt,
+                                'current_amount' => 0,
+                                'total_due_at_issue' => $apartmentPreviousDebt,
                                 'status'        => 'unpaid',
                             ]);
                         }
@@ -578,6 +603,9 @@ class InvoiceController extends Controller
                             'billing_year'  => $year,
                             'due_date'      => $request->due_date,
                             'total_amount'  => 0,
+                            'previous_debt' => $apartmentPreviousDebt,
+                            'current_amount' => 0,
+                            'total_due_at_issue' => $apartmentPreviousDebt,
                             'status'        => 'unpaid',
                         ]);
                     }
@@ -603,7 +631,7 @@ class InvoiceController extends Controller
                 // ============================================================
                 // INTERNET, DỊCH VỤ KHÁC — ĐƠN GIÁ CỐ ĐỊNH × 1
                 // ============================================================
-                $servicePrice = $activePrices->get($type);
+                $servicePrice = $activePrices->get($type)?->first();
                 if (!$servicePrice) {
                     $skipped++;
                     continue;
@@ -627,6 +655,9 @@ class InvoiceController extends Controller
                         'billing_year'  => $year,
                         'due_date'      => $request->due_date,
                         'total_amount'  => 0,
+                        'previous_debt' => $apartmentPreviousDebt,
+                        'current_amount' => 0,
+                        'total_due_at_issue' => $apartmentPreviousDebt,
                         'status'        => 'unpaid',
                     ]);
                 }
@@ -645,6 +676,8 @@ class InvoiceController extends Controller
             // --- Cập nhật tổng tiền hóa đơn ---
             if ($invoice && $invoiceAmountAdded > 0) {
                 $invoice->increment('total_amount', $invoiceAmountAdded);
+                $invoice->increment('current_amount', $invoiceAmountAdded);
+                $invoice->increment('total_due_at_issue', $invoiceAmountAdded);
             }
 
             // Đếm số hóa đơn mới tạo trong kỳ này

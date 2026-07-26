@@ -8,7 +8,7 @@ use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\ResidentManageController;
 use App\Http\Controllers\Admin\AdminFacilityController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\AdminInvitationController;
+use App\Http\Controllers\Admin\InvitationController;
 use App\Http\Controllers\Resident\InvoiceController as ResidentInvoiceController;
 use App\Http\Controllers\Resident\ProfileController;
 use App\Http\Controllers\Resident\TicketController as ResidentTicketController;
@@ -406,9 +406,9 @@ $portalRoutes = function () {
     Route::put('/users/{id}/reset-password', [UserController::class, 'resetPassword'])->name('users.resetPassword');
 
     // Quản lý mã mời
-    Route::get('/invitations', [AdminInvitationController::class, 'index'])->name('invitations.index');
-    Route::post('/invitations', [AdminInvitationController::class, 'store'])->name('invitations.store');
-    Route::delete('/invitations/{id}', [AdminInvitationController::class, 'destroy'])->name('invitations.destroy');
+    Route::get('/invitations', [InvitationController::class, 'index'])->name('invitations.index');
+    Route::post('/invitations', [InvitationController::class, 'store'])->name('invitations.store');
+    Route::delete('/invitations/{id}', [InvitationController::class, 'destroy'])->name('invitations.destroy');
 
     // Trang cá nhân quản trị viên
     Route::get('/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'index'])->name('profile.index');

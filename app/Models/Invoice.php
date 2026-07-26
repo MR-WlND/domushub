@@ -22,6 +22,9 @@ class Invoice extends Model
         'paid_amount',
         'status',
         'created_by',
+        'previous_debt',
+        'current_amount',
+        'total_due_at_issue',
     ];
 
     protected $casts = [

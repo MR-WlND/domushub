@@ -114,9 +114,19 @@
         </div>
 
         {{-- Total Row --}}
-        <div class="detail-card__total">
-            <span class="total-label">Tổng cộng</span>
-            <span class="total-val">{{ number_format($invoice->total_amount, 0, ',', '.') }} đ</span>
+        <div class="detail-card__summary">
+            <div class="summary-item">
+                <span class="summary-label">Nợ kỳ trước</span>
+                <span class="summary-val">{{ number_format($invoice->previous_debt, 0, ',', '.') }} đ</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Phát sinh kỳ này</span>
+                <span class="summary-val">{{ number_format($invoice->current_amount, 0, ',', '.') }} đ</span>
+            </div>
+            <div class="summary-item total-due">
+                <span class="summary-label">Tổng phải thanh toán</span>
+                <span class="summary-val">{{ number_format($invoice->total_due_at_issue, 0, ',', '.') }} đ</span>
+            </div>
         </div>
 
         {{-- Lịch sử thanh toán --}}
@@ -569,14 +579,19 @@
     .text-center { text-align: center !important; }
     .text-muted { color: var(--color-outline); }
 
-    /* Total block */
-    .detail-card__total {
+    /* Summary block */
+    .detail-card__summary {
         padding: 20px 24px; background-color: var(--color-surface-low);
         border-bottom: 1px solid var(--color-outline-soft);
-        display: flex; justify-content: space-between; align-items: center;
+        display: flex; flex-direction: column; gap: 12px;
     }
-    .total-label { font-size: 1rem; font-weight: 700; color: var(--color-text); }
-    .total-val { font-size: 1.4rem; font-weight: 800; color: var(--color-primary); }
+    .summary-item { display: flex; justify-content: space-between; align-items: center; }
+    .summary-label { font-size: 0.95rem; font-weight: 600; color: var(--color-text-secondary); }
+    .summary-val { font-size: 1.05rem; font-weight: 700; color: var(--color-text); }
+    
+    .summary-item.total-due { margin-top: 8px; padding-top: 12px; border-top: 1px dashed var(--color-outline-soft); }
+    .summary-item.total-due .summary-label { font-size: 1.05rem; font-weight: 700; color: var(--color-text); text-transform: uppercase; }
+    .summary-item.total-due .summary-val { font-size: 1.4rem; font-weight: 800; color: var(--color-primary); }
 
     /* Progress bar */
     .progress-wrap { background: #e5e7eb; border-radius: 99px; height: 8px; overflow: hidden; margin: 8px 0 4px; }
