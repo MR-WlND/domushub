@@ -269,6 +269,20 @@ class AuthController extends Controller
             ])->onlyInput(['name', 'phone', 'email', 'invite_code']);
         }
 
+        // Kiểm tra ràng buộc Chủ hộ (Owner)
+        if ($invite->intended_relationship === 'owner') {
+            $hasOwner = Resident::where('apartment_id', $invite->apartment_id)
+                ->where('relationship', 'owner')
+                ->whereNull('deleted_at')
+                ->exists();
+
+            if ($hasOwner) {
+                return back()->withErrors([
+                    'invite_code' => 'Căn hộ liên kết với mã mời này đã có chủ hộ đăng ký trong hệ thống.',
+                ])->onlyInput(['name', 'phone', 'email', 'invite_code']);
+            }
+        }
+
         $apartment = Apartment::with(['floor.block'])->findOrFail($invite->apartment_id);
 
         DB::transaction(function () use ($validated, $invite, $apartment) {
