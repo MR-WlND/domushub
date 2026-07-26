@@ -33,7 +33,7 @@ class UtilityMeterLogTest extends TestCase
         $this->actingAs($user);
         $meter = UtilityMeter::create([
             'apartment_id' => $apartment->id,
-            'type'         => 'electricity',
+            'type'         => 'water',
             'record_month' => 6,
             'record_year'  => 2026,
             'old_value'    => 100,

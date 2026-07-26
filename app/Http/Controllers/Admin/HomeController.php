@@ -289,13 +289,14 @@ class HomeController extends Controller
             }
         }
 
-        // 4.5. Xu hướng sản lượng tiêu thụ Điện & Nước theo tháng
+        // 4.5. Xu hướng sản lượng tiêu thụ Nước theo tháng (Bỏ Điện công tơ)
         $utilityConsumptionQuery = DB::table('utility_meters')
             ->select(
                 'utility_meters.record_month',
                 'utility_meters.type',
                 DB::raw('SUM(utility_meters.usage_amount) as total_usage')
             )
+            ->where('utility_meters.type', 'water')
             ->where('utility_meters.status', 'approved')
             ->where('utility_meters.record_year', $selectedYear);
         if ($selectedBlock) {
@@ -310,9 +311,7 @@ class HomeController extends Controller
 
         foreach ($utilityConsumption as $row) {
             $monthIndex = (int)$row->record_month - 1; // 0-indexed for JS array
-            if ($row->type === 'electricity') {
-                $electricityConsumption[$monthIndex] = (float)$row->total_usage;
-            } elseif ($row->type === 'water') {
+            if ($row->type === 'water') {
                 $waterConsumption[$monthIndex] = (float)$row->total_usage;
             }
         }

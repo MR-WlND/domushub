@@ -448,9 +448,9 @@
                 </button>
                 <div class="rh-fb-card__dropdown" id="post-menu-{{ $post->id }}">
                     @if($post->user_id === auth()->id())
-                        <button type="button" class="rh-fb-card__dropdown-item" onclick="openEditPostModal({{ $post->id }}, '{{ addslashes($post->title) }}', '{{ addslashes($post->content) }}', '{{ $post->price }}')">
+                        <a href="{{ route('resident.posts.edit', $post->id) }}" class="rh-fb-card__dropdown-item">
                             <i class="fa-regular fa-pen-to-square"></i> Sửa bài viết
-                        </button>
+                        </a>
                     @endif
                     @if($post->user_id === auth()->id() || auth()->user()->isAdminPortalUser())
                         <form action="{{ route('resident.posts.destroy', $post->id) }}" method="POST" onsubmit="return confirm('Xóa bài đăng này?')" style="margin: 0;">
@@ -480,13 +480,7 @@
             {!! cleanPostContentBlade($post->content) !!}
         </div>
 
-        {{-- Badge giá / loại --}}
-        @if($post->price !== null)
-            <div style="padding: 8px 16px 0; display: flex; gap: 0.5rem; align-items: center;">
-                <span style="background: #dbeafe; color: #1d4ed8; padding: 2px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;">Thanh lý</span>
-                <span class="pc-card__price" style="font-weight: 700; color: #dc2626; font-size: 0.95rem;">{{ number_format($post->price, 0, ',', '.') }}đ</span>
-            </div>
-        @endif
+
 
         {{-- Media đính kèm (FB-style grid) --}}
         @if($post->images->isNotEmpty())
@@ -861,41 +855,6 @@
     </div>
 </div>
 
-{{-- Modal Chỉnh sửa Bài viết --}}
-<div id="editPostModal" class="rep-modal" onclick="handleEditModalClick(event)">
-    <div class="rep-modal__content" style="max-width: 580px;">
-        <div class="rep-modal__header">
-            <h3 class="rep-modal__title"><i class="fa-regular fa-pen-to-square" style="color: var(--color-primary);"></i> Chỉnh sửa bài viết</h3>
-            <button type="button" class="rep-modal__close" onclick="closeEditPostModal()">&times;</button>
-        </div>
-        <form id="edit-post-form" method="POST">
-            @csrf
-            @method('PUT')
-            <div class="rep-modal__body">
-                <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    <input type="hidden" name="title" id="edit-post-title">
-                    <div>
-                        <label class="rep-modal__label">Nội dung bài viết</label>
-                        <textarea name="content" id="edit-post-content" class="pc-composer__body-input" rows="5" placeholder="Bạn đang muốn chia sẻ điều gì..."></textarea>
-                    </div>
-                    <div id="edit-price-input-container">
-                        <label class="rep-modal__label">Giá thanh lý</label>
-                        <div class="pc-composer__price-wrap" style="width: 100%; box-sizing: border-box; display: flex;">
-                            <i class="fa-solid fa-tags pc-composer__price-icon"></i>
-                            <input type="tel" name="price" id="edit-post-price" class="pc-composer__price-input" placeholder="Nhập giá..." style="flex: 1;">
-                            <span style="font-weight: 700; color: var(--color-secondary); font-size: 0.9rem; margin-right: 0.5rem;">đ</span>
-                        </div>
-                        <div id="edit-post-price-preview" style="font-size: 0.825rem; color: var(--color-success); font-weight: 600; margin-top: 0.35rem; margin-left: 1.8rem; display: none;"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="rep-modal__footer">
-                <button type="button" class="pc-btn pc-btn--secondary" onclick="closeEditPostModal()">Hủy bỏ</button>
-                <button type="submit" class="pc-btn">Lưu thay đổi</button>
-            </div>
-        </form>
-    </div>
-</div>
 
 {{-- Modal Cảm xúc --}}
 <div id="reactionsListModal" class="rep-modal" onclick="handleReactionsOutsideClick(event)" style="display: none; align-items: center; justify-content: center; z-index: 10002;">
@@ -1238,21 +1197,7 @@
         else { btn.removeAttribute('disabled'); }
     }
 
-    // === Edit Post Modal ===
-    function openEditPostModal(id, title, content, price) {
-        const form = document.getElementById('edit-post-form');
-        form.action = `/resident/posts/${id}`;
-        document.getElementById('edit-post-title').value = title || '';
-        if (editEditorInstance) editEditorInstance.setData(content || '');
-        else document.getElementById('edit-post-content').value = content || '';
-        const priceInput = document.getElementById('edit-post-price');
-        priceInput.value = (price && parseFloat(price) > 0) ? parseInt(price, 10).toLocaleString('vi-VN') : '';
-        const modal = document.getElementById('editPostModal');
-        modal.style.display = 'flex';
-        setTimeout(() => modal.classList.add('show'), 10);
-    }
-    function closeEditPostModal() { const m = document.getElementById('editPostModal'); m.classList.remove('show'); setTimeout(() => m.style.display = 'none', 300); }
-    function handleEditModalClick(e) { if (e.target === document.getElementById('editPostModal')) closeEditPostModal(); }
+
 </script>
 
 <script>
@@ -1452,32 +1397,6 @@
     function handleReactionsOutsideClick(e) { if (e.target === document.getElementById('reactionsListModal')) closeReactionsModal(); }
 </script>
 
-<script>
-    // === Price Formatter ===
-    function initPriceFormatter(inputId, previewId) {
-        const input = document.getElementById(inputId);
-        const preview = document.getElementById(previewId);
-        if (!input || !preview) return;
-        function updatePreview() {
-            let digits = input.value.replace(/\D/g, '');
-            if (digits) { preview.innerText = `Định dạng: ${parseInt(digits,10).toLocaleString('vi-VN')}đ`; preview.style.display = 'block'; }
-            else preview.style.display = 'none';
-        }
-        input.addEventListener('input', function() {
-            let cursor = this.selectionStart, orig = this.value.length;
-            let clean = this.value.replace(/\D/g, '');
-            this.value = clean;
-            let nc = cursor - (orig - clean.length); if (nc < 0) nc = 0;
-            this.setSelectionRange(nc, nc);
-            updatePreview();
-        });
-        input.addEventListener('blur', function() {
-            let d = this.value.replace(/\D/g, '');
-            this.value = d ? parseInt(d, 10).toLocaleString('vi-VN') : '';
-            preview.style.display = 'none';
-        });
-    }
-
     // Dropdown control
     function togglePostMenu(event, postId) {
         event.stopPropagation();
@@ -1498,7 +1417,6 @@
 
     // === DOMContentLoaded ===
     document.addEventListener("DOMContentLoaded", function() {
-        initPriceFormatter('edit-post-price', 'edit-post-price-preview');
 
         // Report form listeners
         document.querySelectorAll('input[name="reason_preset"]').forEach(r => r.addEventListener('change', checkReportFormStatus));
@@ -1542,40 +1460,7 @@
             .finally(() => { btn.removeAttribute('disabled'); btn.innerText = 'Gửi báo cáo'; });
         });
 
-        // Edit Post submit
-        const epf = document.getElementById('edit-post-form');
-        if (epf) epf.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const btn = this.querySelector('button[type="submit"]');
-            let content = editEditorInstance ? editEditorInstance.getData().trim() : document.getElementById('edit-post-content').value.trim();
-            if (!content) { showToast('Nhập nội dung bài viết.', 'error'); return; }
-            btn.setAttribute('disabled','disabled'); btn.innerText = 'Đang lưu...';
-            let rawPrice = document.getElementById('edit-post-price').value.replace(/[^0-9]/g, '');
-            fetch(this.action, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value, 'X-Requested-With': 'XMLHttpRequest' },
-                body: JSON.stringify({ title: document.getElementById('edit-post-title').value.trim(), content, price: rawPrice || null, _method: 'PUT' })
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    closeEditPostModal();
-                    showToast('Cập nhật thành công!');
-                    const titleEl = document.querySelector('.pc-detail__title'); if (titleEl) titleEl.innerText = data.post.title;
-                    const contentEl = document.querySelector('.pc-detail__content'); if (contentEl) contentEl.innerHTML = cleanHtmlJS(data.post.content);
-                    const priceEl = document.querySelector('.pc-card__price'); if (priceEl && data.post.price !== null) priceEl.innerText = formatNumber(data.post.price) + 'đ';
-                }
-            })
-            .catch(() => showToast('Lỗi cập nhật.', 'error'))
-            .finally(() => { btn.removeAttribute('disabled'); btn.innerText = 'Lưu thay đổi'; });
-        });
 
-        // CKEditor for edit modal
-        const editTA = document.getElementById('edit-post-content');
-        if (editTA) {
-            ClassicEditor.create(editTA, { toolbar: ['bold','italic','underline','bulletedList','numberedList','undo','redo'], placeholder: 'Nội dung bài viết...' })
-            .then(editor => { editEditorInstance = editor; }).catch(err => console.error(err));
-        }
 
         // AJAX comment form
         const commentForm = document.getElementById('comment-form');

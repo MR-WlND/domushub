@@ -3,7 +3,7 @@
 @section('page_title', 'Chi tiết Căn hộ ' . $apartment->apartment_number)
 @section('page_kicker', 'Quản trị hệ thống')
 @section('role_title', 'Admin Portal')
-@section('home_route', route('admin.dashboard'))
+@section('home_route', portal_route('dashboard'))
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role', 'admin')
 
@@ -16,9 +16,9 @@
 
     {{-- Breadcrumb Navigation --}}
     <nav class="breadcrumb-nav">
-        <a href="{{ route('admin.dashboard') }}">Trang chủ</a>
+        <a href="{{ portal_route('dashboard') }}">Trang chủ</a>
         <span class="divider">/</span>
-        <a href="{{ route('admin.apartments.index') }}">Căn hộ</a>
+        <a href="{{ portal_route('apartments.index') }}">Căn hộ</a>
         <span class="divider">/</span>
         <span class="current">Căn hộ {{ $apartment->apartment_number }}</span>
     </nav>
@@ -45,7 +45,7 @@
         </div>
 
         <div class="apartments-page__actions">
-            <a href="{{ route('admin.apartments.edit', $apartment) }}" class="apts-button apts-button--primary">
+            <a href="{{ portal_route('apartments.edit', $apartment) }}" class="apts-button apts-button--primary">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -53,7 +53,7 @@
                 </svg>
                 Chỉnh sửa
             </a>
-            <form action="{{ route('admin.apartments.destroy', $apartment) }}" method="POST"
+            <form action="{{ portal_route('apartments.destroy', $apartment) }}" method="POST"
                 onsubmit="return confirm('Bạn có chắc chắn muốn xóa căn hộ này?')" style="display: inline;">
                 @csrf
                 @method('DELETE')
@@ -66,7 +66,7 @@
                     Xóa căn hộ
                 </button>
             </form>
-            <a href="{{ route('admin.apartments.index') }}" class="apts-button apts-button--edit">
+            <a href="{{ portal_route('apartments.index') }}" class="apts-button apts-button--edit">
                 ← Quay lại
             </a>
         </div>
@@ -108,6 +108,14 @@
                         <div class="detail-item">
                             <span class="item-label">Vị trí tầng</span>
                             <span class="item-value">{{ $apartment->floor->name ?? 'Tầng ' . $apartment->floor->floor_number }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="item-label">Loại căn hộ</span>
+                            <span class="item-value font-semibold text-primary">{{ $apartment->apartmentType->name ?? 'Chưa xác định' }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="item-label">Diện tích</span>
+                            <span class="item-value font-semibold">{{ number_format($apartment->area, 1, ',', '.') }} m²</span>
                         </div>
                         <div class="detail-item">
                             <span class="item-label">Trạng thái</span>
@@ -251,7 +259,7 @@
                             <h4>Chưa có cư dân sinh sống</h4>
                             <p>Căn hộ này hiện đang trống hoặc chưa được liên kết với bất kỳ tài khoản cư dân nào trên hệ thống.</p>
                             <div class="empty-actions">
-                                <a href="{{ route('admin.invitations.index') }}" class="apts-button apts-button--primary">
+                                <a href="{{ portal_route('invitations.index') }}" class="apts-button apts-button--primary">
                                     + Tạo mã mời cư dân
                                 </a>
                             </div>

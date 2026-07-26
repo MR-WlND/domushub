@@ -72,12 +72,13 @@
 @section('content')
 
 {{-- ── Page Header ─────────────────────────────────── --}}
+{{-- ── Page Header ─────────────────────────────────── --}}
 <div class="util-page-header">
     <div>
         <h1>Ghi chỉ số hàng loạt</h1>
-        <p>Chốt cả <strong>điện</strong> và <strong>nước</strong> cho nhiều căn hộ cùng lúc</p>
+        <p>Chốt chỉ số <strong>nước</strong> cho nhiều căn hộ cùng lúc</p>
     </div>
-    <a href="{{ route('admin.utility-readings.index') }}" class="util-btn util-btn--outline">
+    <a href="{{ portal_route('utility-readings.index') }}" class="util-btn util-btn--outline">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
         </svg>
@@ -94,7 +95,7 @@
 
 {{-- ── Filter Panel ────────────────────────────────── --}}
 <div class="util-filter-panel">
-    <form action="{{ route('admin.utility-readings.batch') }}" method="GET" id="filterForm">
+    <form action="{{ portal_route('utility-readings.batch') }}" method="GET" id="filterForm">
         <div class="util-filter-grid">
             <div>
                 <label>Tòa nhà</label>
@@ -144,24 +145,12 @@
 @if (count($apartmentData) > 0)
 @php
     $total      = count($apartmentData);
-    $elecDone   = collect($apartmentData)->where('elec_recorded', true)->count();
     $waterDone  = collect($apartmentData)->where('water_recorded', true)->count();
-    $bothDone   = collect($apartmentData)->where('both_recorded', true)->count();
-    $elecPct    = $total > 0 ? round($elecDone / $total * 100) : 0;
     $waterPct   = $total > 0 ? round($waterDone / $total * 100) : 0;
 @endphp
 
 {{-- ── Progress summary ────────────────────────────── --}}
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 12px; margin-bottom: 20px;">
-
-    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:16px 20px;">
-        <div style="font-size:12px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Điện – Tháng {{ $selectedMonth }}/{{ $selectedYear }}</div>
-        <div style="font-size:26px;font-weight:800;color:#b45309;">{{ $elecDone }}<span style="font-size:16px;font-weight:600;color:#d97706;"> / {{ $total }}</span></div>
-        <div style="margin-top:8px;background:#e2e8f0;border-radius:999px;height:6px;overflow:hidden;">
-            <div style="height:100%;width:{{ $elecPct }}%;background:linear-gradient(90deg,#f59e0b,#d97706);border-radius:999px;"></div>
-        </div>
-        <div style="font-size:12px;color:#92400e;margin-top:4px;">{{ $elecPct }}% hoàn thành</div>
-    </div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 12px; margin-bottom: 20px;">
 
     <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:16px 20px;">
         <div style="font-size:12px;font-weight:700;color:#1e40af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Nước – Tháng {{ $selectedMonth }}/{{ $selectedYear }}</div>
@@ -172,24 +161,14 @@
         <div style="font-size:12px;color:#1e40af;margin-top:4px;">{{ $waterPct }}% hoàn thành</div>
     </div>
 
-    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px 20px;">
-        <div style="font-size:12px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Hoàn tất cả 2</div>
-        <div style="font-size:26px;font-weight:800;color:#15803d;">{{ $bothDone }}<span style="font-size:16px;font-weight:600;color:#22c55e;"> / {{ $total }}</span></div>
-        <div style="margin-top:8px;background:#e2e8f0;border-radius:999px;height:6px;overflow:hidden;">
-            <div style="height:100%;width:{{ $total > 0 ? round($bothDone/$total*100) : 0 }}%;background:linear-gradient(90deg,#10b981,#059669);border-radius:999px;"></div>
-        </div>
-        <div style="font-size:12px;color:#166534;margin-top:4px;">{{ $total > 0 ? round($bothDone/$total*100) : 0 }}% hoàn thành</div>
-    </div>
-
     <div style="background:#f8faff;border:1px solid #e2e8f0;border-radius:12px;padding:16px 20px;display:flex;flex-direction:column;justify-content:center;gap:6px;">
         <div style="font-size:13px;font-weight:600;color:#334155;">Tổng căn hộ: <strong>{{ $total }}</strong></div>
-        <div style="font-size:13px;color:#64748b;">Chưa chốt điện: <strong style="color:#f59e0b;">{{ $total - $elecDone }}</strong></div>
         <div style="font-size:13px;color:#64748b;">Chưa chốt nước: <strong style="color:#3b82f6;">{{ $total - $waterDone }}</strong></div>
     </div>
 </div>
 
 {{-- ── Batch Form ───────────────────────────────────── --}}
-<form action="{{ route('admin.utility-readings.batch.store') }}" method="POST" id="batchForm" enctype="multipart/form-data">
+<form action="{{ portal_route('utility-readings.batch.store') }}" method="POST" id="batchForm" enctype="multipart/form-data">
     @csrf
     <input type="hidden" name="record_month" value="{{ $selectedMonth }}">
     <input type="hidden" name="record_year"  value="{{ $selectedYear }}">
@@ -201,7 +180,6 @@
                 Danh sách căn hộ – Tháng {{ $selectedMonth }}/{{ $selectedYear }}
             </div>
             <div style="display:flex;align-items:center;gap:16px;font-size:13px;color:#64748b;">
-                <span>Cột vàng = Điện &nbsp;|&nbsp; Cột xanh = Nước</span>
                 <label style="display:flex;align-items:center;gap:6px;font-weight:600;cursor:pointer;">
                     <input type="checkbox" id="selectAll" checked style="width:15px;height:15px;accent-color:#00236f;cursor:pointer;">
                     Chọn tất cả
@@ -216,9 +194,6 @@
                         <th rowspan="2" style="width:40px; text-align:center;"></th>
                         <th rowspan="2" style="width:80px; text-align:center;">PHÒNG</th>
                         <th rowspan="2" style="width:150px; text-align:center;">TÒA / TẦNG</th>
-                        <th colspan="{{ auth()->user()->role === 'technician' ? '1' : '3' }}" class="col-elec col-divider-border" style="text-align:center; font-weight:700; color:#92400e;">
-                            ĐIỆN — THÁNG {{ $selectedMonth }}/{{ $selectedYear }}
-                        </th>
  
                         {{-- Water Header Group --}}
                         <th colspan="{{ auth()->user()->role === 'technician' ? '1' : '3' }}" class="col-water" style="text-align:center; font-weight:700; color:#1e40af;">
@@ -230,14 +205,6 @@
                     </tr>
                     <tr>
                         @if(auth()->user()->role !== 'technician')
-                        <th class="col-elec" style="text-align:center; font-size:12px; font-weight:600; color:#92400e;">CS Cũ</th>
-                        @endif
-                        <th class="col-elec {{ auth()->user()->role === 'technician' ? 'col-divider-border' : '' }}" style="text-align:center; font-size:12px; font-weight:600; color:#92400e;">CS Mới</th>
-                        @if(auth()->user()->role !== 'technician')
-                        <th class="col-elec col-divider-border" style="text-align:center; font-size:12px; font-weight:600; color:#92400e;">Tiêu thụ</th>
-                        @endif
- 
-                        @if(auth()->user()->role !== 'technician')
                         <th class="col-water" style="text-align:center; font-size:12px; font-weight:600; color:#1e40af;">CS Cũ</th>
                         @endif
                         <th class="col-water" style="text-align:center; font-size:12px; font-weight:600; color:#1e40af;">CS Mới</th>
@@ -248,11 +215,11 @@
                 </thead>
                 <tbody>
                     @foreach ($apartmentData as $i => $data)
-                    @php $bothDoneRow = $data['elec_recorded'] && $data['water_recorded']; @endphp
-                    <tr id="row-{{ $i }}" class="{{ $bothDoneRow ? 'batch-row--all-done' : '' }}">
+                    @php $isDoneRow = $data['water_recorded']; @endphp
+                    <tr id="row-{{ $i }}" class="{{ $isDoneRow ? 'batch-row--all-done' : '' }}">
                         {{-- Checkbox --}}
                         <td style="text-align:center;">
-                            @if (!$bothDoneRow)
+                            @if (!$isDoneRow)
                                 <input type="checkbox" class="row-check" data-index="{{ $i }}" checked
                                     style="width:15px;height:15px;accent-color:#00236f;cursor:pointer;">
                             @else
@@ -266,57 +233,13 @@
  
                         {{-- Room --}}
                         <td style="text-align:center;"><strong class="text-strong">{{ $data['apartment']->apartment_number }}</strong></td>
- 
+
                         {{-- Block/Floor --}}
                         <td class="text-muted" style="font-size:12px; text-align:center;">
                             {{ $data['apartment']->floor->block->name ?? '—' }}
                             / {{ $data['apartment']->floor->name ?? 'Tầng ' . $data['apartment']->floor->floor_number }}
                         </td>
- 
-                        {{-- ── ELECTRICITY ─────────────────────── --}}
-                        @if(auth()->user()->role !== 'technician')
-                        <td class="col-elec" style="font-weight:600;color:#92400e;text-align:center;">
-                            {{ number_format($data['elec_old']) }}
-                        </td>
-                        @endif
-                        <td class="col-elec {{ auth()->user()->role === 'technician' ? 'col-divider-border' : '' }}" style="text-align:center;">
-                            @if (!$data['elec_recorded'])
-                                <input type="hidden"
-                                    name="readings[{{ $i }}][apartment_id]"
-                                    value="{{ $data['apartment']->id }}"
-                                    class="apt-id-input">
-                                <input type="number"
-                                    name="readings[{{ $i }}][elec_new]"
-                                    class="batch-meter-input elec-input"
-                                    min="{{ $data['elec_old'] }}"
-                                    data-old="{{ $data['elec_old'] }}"
-                                    data-original-old="{{ $data['elec_old'] }}"
-                                    data-type="elec"
-                                    data-index="{{ $i }}"
-                                    placeholder="Chỉ số mới">
-                                <div style="margin-top: 4px;">
-                                    <label style="display:inline-flex; align-items:center; gap:4px; font-size:10px; color:#92400e; cursor:pointer;">
-                                        <input type="checkbox"
-                                            name="readings[{{ $i }}][elec_is_reset]"
-                                            value="1"
-                                            class="elec-reset-cb"
-                                            data-index="{{ $i }}"
-                                            style="width:12px; height:12px; margin:0;">
-                                        Thay mới
-                                    </label>
-                                </div>
-                            @else
-                                <span style="color:#15803d;font-weight:600;font-size:13px;">✓ Đã chốt</span>
-                                <input type="hidden" name="readings[{{ $i }}][apartment_id]" value="{{ $data['apartment']->id }}">
-                            @endif
-                        </td>
-                        @if(auth()->user()->role !== 'technician')
-                        <td class="col-elec col-divider-border" style="text-align:center;">
-                            <span class="usage-chip {{ !$data['elec_recorded'] ? 'usage-chip--zero' : 'usage-chip--elec' }}"
-                                id="elec-usage-{{ $i }}">—</span>
-                        </td>
-                        @endif
- 
+
                         {{-- ── WATER ───────────────────────────── --}}
                         @if(auth()->user()->role !== 'technician')
                         <td class="col-water" style="font-weight:600;color:#1e40af;text-align:center;">
@@ -325,6 +248,10 @@
                         @endif
                         <td class="col-water" style="text-align:center;">
                             @if (!$data['water_recorded'])
+                                <input type="hidden"
+                                    name="readings[{{ $i }}][apartment_id]"
+                                    value="{{ $data['apartment']->id }}"
+                                    class="apt-id-input">
                                 <input type="number"
                                     name="readings[{{ $i }}][water_new]"
                                     class="batch-meter-input water-input"
@@ -347,6 +274,7 @@
                                 </div>
                             @else
                                 <span style="color:#15803d;font-weight:600;font-size:13px;">✓ Đã chốt</span>
+                                <input type="hidden" name="readings[{{ $i }}][apartment_id]" value="{{ $data['apartment']->id }}">
                             @endif
                         </td>
                         @if(auth()->user()->role !== 'technician')
@@ -358,7 +286,7 @@
 
                         {{-- Ảnh công tơ --}}
                         <td style="text-align:center; vertical-align:middle; min-width:140px;">
-                            @if (!$bothDoneRow)
+                            @if (!$isDoneRow)
                                 <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
                                     {{-- Nút chụp camera (WebRTC) --}}
                                     <button type="button"
@@ -378,7 +306,7 @@
                                         <i class="fa-regular fa-image" style="font-size: 12px;"></i>
                                         Chọn ảnh
                                     </button>
-                                    {{-- Gallery input (multiple, không capture) --}}
+                                    {{-- Gallery input --}}
                                     <input type="file" id="gal_{{ $i }}"
                                         accept="image/*" multiple style="display:none;"
                                         data-row="{{ $i }}">
@@ -395,15 +323,10 @@
                             @endif
                         </td>
 
-
                         {{-- Status --}}
                         <td style="text-align:center;">
-                            @if ($bothDoneRow)
+                            @if ($isDoneRow)
                                 <span class="util-badge util-badge--success">Đã chốt</span>
-                            @elseif ($data['elec_recorded'] || $data['water_recorded'])
-                                <span class="util-badge" style="background:#e0f2fe;color:#075985;font-size:11px;">
-                                    {{ $data['elec_recorded'] ? 'Điện ' : '' }}{{ $data['water_recorded'] ? 'Nước' : '' }} Chốt 1 phần
-                                </span>
                             @else
                                 <span class="util-badge util-badge--warning">Chưa chốt</span>
                             @endif
@@ -419,7 +342,7 @@
             <div class="util-batch-footer__info">
                 Tháng <strong>{{ $selectedMonth }}/{{ $selectedYear }}</strong>
                 &nbsp;·&nbsp; Tổng: <strong>{{ $total }}</strong> căn hộ
-                &nbsp;·&nbsp; Đang chọn: <strong id="countNum">{{ $total - $bothDone }}</strong>
+                &nbsp;·&nbsp; Đang chọn: <strong id="countNum">{{ $total - $waterDone }}</strong>
             </div>
             <div style="display:flex;gap:10px;align-items:center;">
                 <span style="font-size:12px;color:#64748b;">Có thể để trống ô không cần ghi</span>

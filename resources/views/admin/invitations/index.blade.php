@@ -1,7 +1,7 @@
 @extends('layouts.admin.master')
 
 @section('page_title', 'Quản lý mã mời Cư dân')
-@section('home_route', route('admin.dashboard'))
+@section('home_route', portal_route('dashboard'))
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role_label', 'ADMIN')
 
@@ -44,7 +44,7 @@
                 <h2 class="invitations-create-card__title">Tạo Mã Đăng Ký Cư Dân Mới</h2>
             </div>
             <div class="invitations-create-card__body">
-                <form action="{{ route('admin.invitations.store') }}" method="POST" class="invitations-form">
+                <form action="{{ portal_route('invitations.store') }}" method="POST" class="invitations-form">
                     @csrf
 
                     <div class="invitations-form__field">
@@ -237,7 +237,7 @@
                                 </td>
 
                                 <td style="text-align:right">
-                                    <form action="{{ route('admin.invitations.destroy', $invite->id) }}" method="POST"
+                                    <form action="{{ portal_route('invitations.destroy', $invite->id) }}" method="POST"
                                         onsubmit="return confirm('Bạn có chắc chắn muốn xóa mã mời này?')"
                                         style="display:inline">
                                         @csrf

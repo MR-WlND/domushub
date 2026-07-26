@@ -16,7 +16,7 @@
                 <h1>Soạn thông báo mới</h1>
             </div>
             <div>
-                <a href="{{ route('admin.announcements.index') }}" class="announcements-btn">
+                <a href="{{ portal_route('announcements.index') }}" class="announcements-btn">
                     <i class="fa-solid fa-arrow-left"></i> Quay lại danh sách
                 </a>
             </div>
@@ -34,7 +34,7 @@
 
         {{-- Form --}}
         <div class="announcement-form-card">
-            <form action="{{ route('admin.announcements.store') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ portal_route('announcements.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="form-grid">
                     {{-- Left column - Main details --}}
@@ -92,7 +92,7 @@
                         </div>
 
                         <div style="margin-top: 30px; display: flex; gap: 12px; justify-content: flex-end;">
-                            <a href="{{ route('admin.announcements.index') }}" class="announcements-btn">Hủy bỏ</a>
+                            <a href="{{ portal_route('announcements.index') }}" class="announcements-btn">Hủy bỏ</a>
                             <button type="submit" class="announcements-btn announcements-btn--primary">
                                 <i class="fa-solid fa-paper-plane"></i> Đăng thông báo
                             </button>

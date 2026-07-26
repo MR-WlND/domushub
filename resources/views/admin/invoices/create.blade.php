@@ -202,10 +202,21 @@
     .batch-btn--primary:hover { background:#1d4ed8; }
     .batch-btn--ghost { background:none; color:#475569; border:1px solid #e2e8f0; }
     .batch-btn--ghost:hover { background:#f8fafc; }
-</style>
-@endsection
+</style>@endsection
 
 @push('scripts')
+@php
+$apartmentsList = $apartments->map(function($apt) {
+    return [
+        'id' => $apt->id,
+        'number' => $apt->apartment_number,
+        'floor_id' => $apt->floor_id,
+        'floor_number' => optional($apt->floor)->floor_number,
+        'block_id' => optional(optional($apt->floor)->block)->id,
+        'block_name' => optional(optional($apt->floor)->block)->name,
+    ];
+});
+@endphp
 <script>
 const typeNames = {
     electricity: 'Tiền điện',
@@ -249,7 +260,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const amountInput = document.getElementById('amountInput');
     if (amountInput && amountInput.value) {
         updatePreview();
-    }
-});
+    }});
 </script>
 @endpush

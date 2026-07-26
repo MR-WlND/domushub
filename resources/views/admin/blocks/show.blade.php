@@ -3,7 +3,7 @@
 @section('page_title', 'Chi tiết Toà nhà')
 @section('page_kicker', 'Quản trị hệ thống')
 @section('role_title', 'Admin Portal')
-@section('home_route', route('admin.dashboard'))
+@section('home_route', portal_route('dashboard'))
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role', 'admin')
 
@@ -21,10 +21,10 @@
             </div>
 
             <div class="page-header-actions">
-                <a href="{{ route('admin.blocks.edit', $block) }}" class="btn btn-light">
+                <a href="{{ portal_route('blocks.edit', $block) }}" class="btn btn-light">
                     Sửa
                 </a>
-                <a href="{{ route('admin.blocks.index') }}" class="btn btn-secondary">
+                <a href="{{ portal_route('blocks.index') }}" class="btn btn-secondary">
                     Quay lại
                 </a>
             </div>
@@ -153,7 +153,7 @@
                                     </td>
                                     <td style="font-weight: 600;">{{ $floor->apartments_count }} căn hộ</td>
                                     <td style="text-align: right; padding-right: 24px;">
-                                        <a href="{{ route('admin.floors.show', $floor->id) }}" class="btn btn-light btn-sm"
+                                        <a href="{{ portal_route('floors.show', $floor->id) }}" class="btn btn-light btn-sm"
                                             style="background: #eff6ff; color: #2563eb; border: none; font-weight: 700;">
                                             Xem chi tiết
                                         </a>

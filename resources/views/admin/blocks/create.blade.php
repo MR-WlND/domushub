@@ -3,7 +3,7 @@
 @section('page_title', 'Tạo Toà nhà')
 @section('page_kicker', 'Quản trị hệ thống')
 @section('role_title', 'Admin Portal')
-@section('home_route', route('admin.dashboard'))
+@section('home_route', portal_route('dashboard'))
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role', 'admin')
 
@@ -16,9 +16,9 @@
 
     {{-- Breadcrumb --}}
     <nav class="breadcrumb-nav">
-        <a href="{{ route('admin.dashboard') }}">Trang chủ</a>
+        <a href="{{ portal_route('dashboard') }}">Trang chủ</a>
         <span class="divider">/</span>
-        <a href="{{ route('admin.blocks.index') }}">Toà nhà</a>
+        <a href="{{ portal_route('blocks.index') }}">Toà nhà</a>
         <span class="divider">/</span>
         <span class="current">Thêm mới</span>
     </nav>
@@ -30,7 +30,7 @@
             <p class="blocks-page__subtitle">Thêm một toà nhà mới vào hệ thống</p>
         </div>
         <div class="blocks-page__actions">
-            <a href="{{ route('admin.blocks.index') }}" class="blocks-button blocks-button--light">
+            <a href="{{ portal_route('blocks.index') }}" class="blocks-button blocks-button--light">
                 ← Quay lại
             </a>
         </div>
@@ -43,7 +43,7 @@
             THÔNG TIN TÒA NHÀ
         </div>
 
-        <form action="{{ route('admin.blocks.store') }}" method="POST">
+        <form action="{{ portal_route('blocks.store') }}" method="POST">
             @csrf
 
             {{-- Phần 1: Thông tin cơ bản --}}
@@ -138,7 +138,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
                     Xác nhận thêm tòa nhà
                 </button>
-                <a href="{{ route('admin.blocks.index') }}" class="blocks-button blocks-button--light">
+                <a href="{{ portal_route('blocks.index') }}" class="blocks-button blocks-button--light">
                     Hủy bỏ
                 </a>
             </div>

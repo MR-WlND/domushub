@@ -51,13 +51,14 @@ class VehicleController extends Controller
 
         // 2. Validate
         $validated = $request->validate([
-            'license_plate' => ['required', 'string', 'max:20', 'regex:/^[A-Za-z0-9\-\.]+$/'],
-            'vehicle_type'  => ['required', 'in:motorbike,electric_bike,car'],
+            'vehicle_type'  => ['required', 'in:motorbike,electric_bike,car,bicycle'],
+            'license_plate' => ['required_if:vehicle_type,motorbike,car', 'nullable', 'string', 'max:20', 'regex:/^[A-Za-z0-9\-\.]+$/'],
             'brand'         => ['nullable', 'string', 'max:50'],
             'image'         => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
-        $licensePlate = strtoupper($validated['license_plate']);
+        $licensePlate = $validated['license_plate'] ?? ('XD-' . strtoupper(\Illuminate\Support\Str::random(6)));
+        $licensePlate = strtoupper($licensePlate);
 
         // Kiểm tra biển số xe đã tồn tại với trạng thái đang dùng (không tính xe đã xóa)
         $existingVehicle = Vehicle::where('license_plate', $licensePlate)
@@ -75,12 +76,12 @@ class VehicleController extends Controller
         $status      = 'active';
         $parkingLotId = null;
 
-        if (in_array($validated['vehicle_type'], ['motorbike', 'electric_bike'])) {
+        if (in_array($validated['vehicle_type'], ['motorbike', 'electric_bike', 'bicycle'])) {
             $limit = \App\Models\SystemSetting::get('max_motorbike_per_apartment', 3);
 
             // Xe máy/điện: Giới hạn theo SystemSetting (đếm cả locked, pending_renewal)
             $currentMotoCount = Vehicle::where('apartment_id', $user->apartment_id)
-                ->whereIn('vehicle_type', ['motorbike', 'electric_bike'])
+                ->whereIn('vehicle_type', ['motorbike', 'electric_bike', 'bicycle'])
                 ->whereIn('status', ['pending', 'active', 'pending_renewal', 'locked'])
                 ->count();
 

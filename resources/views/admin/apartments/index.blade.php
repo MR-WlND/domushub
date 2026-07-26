@@ -3,7 +3,7 @@
 @section('page_title', 'Quản lý Căn hộ')
 @section('page_kicker', 'Quản trị hệ thống')
 @section('role_title', 'Admin Portal')
-@section('home_route', route('admin.dashboard'))
+@section('home_route', portal_route('dashboard'))
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role', 'admin')
 
@@ -27,7 +27,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
                 Nhập từ Excel
             </button>
-            <a href="{{ route('admin.apartments.create') }}" class="apts-button apts-button--primary">
+            <a href="{{ portal_route('apartments.create') }}" class="apts-button apts-button--primary">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                 Thêm căn hộ mới
             </a>
@@ -94,6 +94,19 @@
                 </div>
 
                 <div>
+                    <label>Loại căn hộ</label>
+                    <select name="apartment_type_id">
+                        <option value="">Tất cả</option>
+                        @foreach ($apartmentTypes as $type)
+                            <option value="{{ $type->id }}"
+                                {{ request('apartment_type_id') == $type->id ? 'selected' : '' }}>
+                                {{ $type->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
                     <label>Trạng thái</label>
                     <select name="status">
                         <option value="">Tất cả</option>
@@ -113,8 +126,9 @@
                 <thead>
                     <tr>
                         <th>Mã căn hộ</th>
+                        <th>Loại</th>
                         <th>Tòa / Tầng</th>
-
+                        <th>Diện tích</th>
                         <th>Chủ hộ</th>
                         <th>Trạng thái</th>
                         <th class="text-right">Thao tác</th>
@@ -125,9 +139,14 @@
                         <tr>
                             {{-- Mã căn hộ --}}
                             <td>
-                                <a href="{{ route('admin.apartments.show', $apartment->id) }}" class="apt-code-link">
+                                <a href="{{ portal_route('apartments.show', $apartment->id) }}" class="apt-code-link">
                                     <span class="apt-code">{{ $apartment->apartment_number }}</span>
                                 </a>
+                            </td>
+
+                            {{-- Loại --}}
+                            <td>
+                                <span style="font-weight: 600; color: #475569;">{{ $apartment->apartmentType->name ?? '—' }}</span>
                             </td>
 
                             {{-- Tòa / Tầng --}}
@@ -138,7 +157,10 @@
                                 </div>
                             </td>
 
-
+                            {{-- Diện tích --}}
+                            <td>
+                                <span class="apt-area">{{ number_format($apartment->area, 1, ',', '.') }} m²</span>
+                            </td>
 
                             {{-- Chủ hộ --}}
                             <td>
@@ -169,17 +191,16 @@
                             {{-- Thao tác --}}
                             <td class="text-right">
                                 <div class="apt-table-actions">
-                                    <a href="{{ route('admin.apartments.show', $apartment->id) }}" class="apt-table-btn apt-table-btn--view" title="Xem chi tiết">
+                                    <a href="{{ portal_route('apartments.show', $apartment->id) }}" class="apt-table-btn apt-table-btn--view" title="Xem chi tiết">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                     </a>
-                                    <a href="{{ route('admin.apartments.edit', $apartment->id) }}" class="apt-table-btn apt-table-btn--edit" title="Chỉnh sửa">
+                                    <a href="{{ portal_route('apartments.edit', $apartment->id) }}" class="apt-table-btn apt-table-btn--edit" title="Chỉnh sửa">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                                     </a>
-                                    <form action="{{ route('admin.apartments.destroy', $apartment->id) }}" method="POST"
-                                          style="display:contents;"
-                                          onsubmit="return confirm('Bạn có chắc chắn muốn xóa căn hộ này?')">
+                                    <form action="{{ portal_route('apartments.destroy', $apartment->id) }}" method="POST"
+                                           style="display:contents;">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="apt-table-btn apt-table-btn--delete" title="Xóa">
+                                        <button type="button" class="apt-table-btn apt-table-btn--delete delete-apt-btn" title="Xóa">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                         </button>
                                     </form>
@@ -188,7 +209,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center text-muted" style="padding: 40px;">
+                            <td colspan="7" class="text-center text-muted" style="padding: 40px;">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="#cbd5e1" stroke-width="1.5" style="margin-bottom: 10px;">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                                 </svg>
@@ -213,10 +234,12 @@
 @endsection
 
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const blockFilter = document.querySelector('select[name="block_id"]');
             const floorFilter = document.querySelector('select[name="floor_id"]');
+            const typeFilter = document.querySelector('select[name="apartment_type_id"]');
             const statusFilter = document.querySelector('select[name="status"]');
 
             const floorOptions = Array.from(floorFilter.querySelectorAll('option[data-block-id]'));
@@ -242,6 +265,7 @@
             }
 
             if (statusFilter) statusFilter.addEventListener('change', function() { this.form.submit(); });
+            if (typeFilter) typeFilter.addEventListener('change', function() { this.form.submit(); });
             if (floorFilter) floorFilter.addEventListener('change', function() { this.form.submit(); });
             if (blockFilter) {
                 blockFilter.addEventListener('change', function() {
@@ -252,6 +276,29 @@
             }
 
             updateFloors(false);
+
+            // SweetAlert2 confirm for delete apartment
+            const deleteButtons = document.querySelectorAll('.delete-apt-btn');
+            deleteButtons.forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    const form = this.closest('form');
+                    Swal.fire({
+                        title: 'Xác nhận xóa?',
+                        text: "Bạn có chắc chắn muốn xóa căn hộ này không? Thao tác này không thể hoàn tác!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc2626',
+                        cancelButtonColor: '#64748b',
+                        confirmButtonText: 'Đồng ý xóa',
+                        cancelButtonText: 'Hủy bỏ',
+                        heightAuto: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+            });
         });
     </script>
 @endpush

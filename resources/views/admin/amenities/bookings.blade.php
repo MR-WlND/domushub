@@ -11,7 +11,7 @@
             <p class="amb-eyebrow">Tiện ích chung cư</p>
             <h1 class="amb-title">Quản lý lịch đặt</h1>
         </div>
-        <a href="{{ route('admin.amenities.index') }}" class="amb-btn amb-btn--outline">
+        <a href="{{ portal_route('amenities.index') }}" class="amb-btn amb-btn--outline">
             Danh sách tiện ích
         </a>
     </div>
@@ -26,25 +26,25 @@
 
     {{-- Stats --}}
     <div class="amb-stats">
-        <a href="{{ route('admin.amenities.bookings', ['status' => 'pending']) }}" class="amb-stat amb-stat--pending {{ request('status') === 'pending' ? 'amb-stat--active' : '' }}">
+        <a href="{{ portal_route('amenities.bookings', ['status' => 'pending']) }}" class="amb-stat amb-stat--pending {{ request('status') === 'pending' ? 'amb-stat--active' : '' }}">
             <div>
                 <div class="amb-stat-num">{{ $stats['pending'] }}</div>
                 <div class="amb-stat-label">Chờ duyệt</div>
             </div>
         </a>
-        <a href="{{ route('admin.amenities.bookings', ['status' => 'approved']) }}" class="amb-stat amb-stat--approved {{ request('status') === 'approved' ? 'amb-stat--active' : '' }}">
+        <a href="{{ portal_route('amenities.bookings', ['status' => 'approved']) }}" class="amb-stat amb-stat--approved {{ request('status') === 'approved' ? 'amb-stat--active' : '' }}">
             <div>
                 <div class="amb-stat-num">{{ $stats['approved'] }}</div>
                 <div class="amb-stat-label">Đã duyệt</div>
             </div>
         </a>
-        <a href="{{ route('admin.amenities.bookings', ['status' => 'used']) }}" class="amb-stat amb-stat--used {{ request('status') === 'used' ? 'amb-stat--active' : '' }}">
+        <a href="{{ portal_route('amenities.bookings', ['status' => 'used']) }}" class="amb-stat amb-stat--used {{ request('status') === 'used' ? 'amb-stat--active' : '' }}">
             <div>
                 <div class="amb-stat-num">{{ $stats['used'] }}</div>
                 <div class="amb-stat-label">Đã sử dụng</div>
             </div>
         </a>
-        <a href="{{ route('admin.amenities.bookings', ['status' => 'cancelled']) }}" class="amb-stat amb-stat--cancelled {{ request('status') === 'cancelled' ? 'amb-stat--active' : '' }}">
+        <a href="{{ portal_route('amenities.bookings', ['status' => 'cancelled']) }}" class="amb-stat amb-stat--cancelled {{ request('status') === 'cancelled' ? 'amb-stat--active' : '' }}">
             <div>
                 <div class="amb-stat-num">{{ $stats['cancelled'] }}</div>
                 <div class="amb-stat-label">Đã hủy</div>
@@ -72,7 +72,7 @@
         </select>
         <input type="date" name="date" value="{{ request('date') }}" onchange="this.form.submit()" class="amb-filter-date" placeholder="Lọc ngày">
         @if(request('facility_id') || request('status') || request('date'))
-            <a href="{{ route('admin.amenities.bookings') }}" class="amb-btn amb-btn--ghost amb-btn--sm">Xóa bộ lọc</a>
+            <a href="{{ portal_route('amenities.bookings') }}" class="amb-btn amb-btn--ghost amb-btn--sm">Xóa bộ lọc</a>
         @endif
     </form>
 
@@ -118,7 +118,7 @@
                         </div>
                     </td>
                     <td>
-                        <a href="{{ route('admin.amenities.show', $booking->facility) }}" class="amb-facility-link">
+                        <a href="{{ portal_route('amenities.show', $booking->facility) }}" class="amb-facility-link">
                             {{ $booking->facility->name ?? '—' }}
                         </a>
                     </td>
@@ -151,11 +151,11 @@
                     <td>
                         <div class="amb-actions">
                             @if($booking->status === 'pending')
-                                <form method="POST" action="{{ route('admin.amenities.bookings.approve', $booking) }}">
+                                <form method="POST" action="{{ portal_route('amenities.bookings.approve', $booking) }}">
                                     @csrf
                                     <button type="submit" class="amb-btn amb-btn--xs amb-btn--approve" title="Duyệt lịch">✓ Duyệt</button>
                                 </form>
-                                <form method="POST" action="{{ route('admin.amenities.bookings.reject', $booking) }}">
+                                <form method="POST" action="{{ portal_route('amenities.bookings.reject', $booking) }}">
                                     @csrf
                                     <button type="submit" class="amb-btn amb-btn--xs amb-btn--reject" onclick="return confirm('Từ chối lịch đặt #{{ $booking->id }}?')" title="Từ chối">✕ Từ chối</button>
                                 </form>
@@ -168,7 +168,7 @@
                             @endif
 
                             @if(!in_array($booking->status, ['used', 'cancelled', 'rejected']))
-                                <form method="POST" action="{{ route('admin.amenities.bookings.cancel', $booking) }}" onsubmit="return confirm('Hủy lịch đặt #{{ $booking->id }}?')">
+                                <form method="POST" action="{{ portal_route('amenities.bookings.cancel', $booking) }}" onsubmit="return confirm('Hủy lịch đặt #{{ $booking->id }}?')">
                                     @csrf
                                     <button type="submit" class="amb-btn amb-btn--xs amb-btn--cancel" title="Hủy lịch">Hủy</button>
                                 </form>

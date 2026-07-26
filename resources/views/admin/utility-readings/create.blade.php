@@ -14,7 +14,7 @@
         <h1>Ghi chỉ số đơn lẻ</h1>
         <p>Nhập chỉ số mới cho một căn hộ</p>
     </div>
-    <a href="{{ route('admin.utility-readings.index') }}" class="util-btn util-btn--outline">
+    <a href="{{ portal_route('utility-readings.index') }}" class="util-btn util-btn--outline">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
         </svg>
@@ -41,7 +41,7 @@
         <h4>Thông tin căn hộ</h4>
     </div>
 
-    <form action="{{ route('admin.utility-readings.store') }}" method="POST" id="createForm" enctype="multipart/form-data">
+    <form action="{{ portal_route('utility-readings.store') }}" method="POST" id="createForm" enctype="multipart/form-data">
         @csrf
 
         <div class="util-form-grid-2">
@@ -82,34 +82,19 @@
             <h4>Thông tin chỉ số</h4>
         </div>
 
-        <div class="util-form-grid-2">
-            {{-- Loại --}}
-            <div class="util-form-group">
-                <label class="util-form-label">Loại <span style="color:#ef4444">*</span></label>
-                <select name="type" id="type"
-                    class="util-form-input {{ $errors->has('type') ? 'util-form-input--error' : '' }}" required>
-                    <option value="">— Chọn loại —</option>
-                    <option value="electricity" {{ old('type') == 'electricity' ? 'selected' : '' }}>Điện</option>
-                    <option value="water" {{ old('type') == 'water' ? 'selected' : '' }}>Nước</option>
-                </select>
-                @error('type')
-                    <p class="util-form-error">{{ $message }}</p>
-                @enderror
-            </div>
+        <input type="hidden" name="type" id="type" value="water">
 
-            {{-- Tháng/Năm --}}
-            <div class="util-form-group">
-                <label class="util-form-label">Kỳ ghi <span style="color:#ef4444">*</span></label>
-                <div style="display: flex; gap: 8px;">
-                    <input type="number" name="record_month" id="record_month"
-                        value="{{ old('record_month', now()->month) }}" min="1" max="12"
-                        class="util-form-input {{ $errors->has('record_month') ? 'util-form-input--error' : '' }}"
-                        placeholder="Tháng" required style="flex: 1;">
-                    <input type="number" name="record_year" id="record_year"
-                        value="{{ old('record_year', now()->year) }}" min="2020" max="2100"
-                        class="util-form-input {{ $errors->has('record_year') ? 'util-form-input--error' : '' }}"
-                        placeholder="Năm" required style="flex: 1.5;">
-                </div>
+        <div class="util-form-group">
+            <label class="util-form-label">Kỳ ghi <span style="color:#ef4444">*</span></label>
+            <div style="display: flex; gap: 8px;">
+                <input type="number" name="record_month" id="record_month"
+                    value="{{ old('record_month', now()->month) }}" min="1" max="12"
+                    class="util-form-input {{ $errors->has('record_month') ? 'util-form-input--error' : '' }}"
+                    placeholder="Tháng" required style="flex: 1;">
+                <input type="number" name="record_year" id="record_year"
+                    value="{{ old('record_year', now()->year) }}" min="2020" max="2100"
+                    class="util-form-input {{ $errors->has('record_year') ? 'util-form-input--error' : '' }}"
+                    placeholder="Năm" required style="flex: 1.5;">
             </div>
         </div>
 
@@ -274,7 +259,7 @@
                 </svg>
                 Lưu chỉ số
             </button>
-            <a href="{{ route('admin.utility-readings.index') }}" class="util-btn util-btn--outline">Hủy</a>
+            <a href="{{ portal_route('utility-readings.index') }}" class="util-btn util-btn--outline">Hủy</a>
         </div>
 
     </form>
@@ -362,7 +347,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (!aptId || !t || !m || !y) return;
 
-        fetch(`{{ route('admin.utility-readings.get-old-value') }}?apartment_id=${aptId}&type=${t}&month=${m}&year=${y}`)
+        fetch(`{{ portal_route('utility-readings.get-old-value') }}?apartment_id=${aptId}&type=${t}&month=${m}&year=${y}`)
             .then(res => res.json())
             .then(data => {
                 fetchedOldValue = data.old_value ?? 0;

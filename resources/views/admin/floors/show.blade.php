@@ -3,7 +3,7 @@
 @section('page_title', 'Chi tiết Tầng')
 @section('page_kicker', 'Quản trị hệ thống')
 @section('role_title', 'Admin Portal')
-@section('home_route', route('admin.dashboard'))
+@section('home_route', portal_route('dashboard'))
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role', 'admin')
 
@@ -21,10 +21,10 @@
             </div>
 
             <div class="page-header-actions">
-                <a href="{{ route('admin.floors.edit', $floor) }}" class="btn btn-light">
+                <a href="{{ portal_route('floors.edit', $floor) }}" class="btn btn-light">
                     Sửa tầng
                 </a>
-                <a href="{{ route('admin.blocks.show', $floor->block_id) }}" class="btn btn-secondary">
+                <a href="{{ portal_route('blocks.show', $floor->block_id) }}" class="btn btn-secondary">
                     ← Tòa nhà
                 </a>
             </div>
@@ -87,31 +87,9 @@
                         </span>
                     </div>
 
-                    {{-- Tiến độ khai báo phòng --}}
-                    <div class="detail-row" style="flex-direction: column; align-items: flex-start; gap: 8px;">
-                        <div style="display: flex; justify-content: space-between; width: 100%;">
-                            <span class="detail-label">Căn hộ đã khai báo</span>
-                            <span class="detail-value" style="font-weight: 700;">{{ $floor->apartments->count() }} /
-                                {{ $floor->expected_apartments ?? '?' }} căn</span>
-                        </div>
-                        @if (($floor->expected_apartments ?? 0) > 0)
-                            @php
-                                $progress = min(
-                                    100,
-                                    round(($floor->apartments->count() / $floor->expected_apartments) * 100),
-                                );
-                            @endphp
-                            <div class="progress-bar-container"
-                                style="width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-top: 4px;">
-                                <div class="progress-bar-fill"
-                                    style="width: {{ $progress }}%; height: 100%; background: linear-gradient(90deg, #3b82f6, #1d4ed8); border-radius: 4px;">
-                                </div>
-                            </div>
-                            <div
-                                style="font-size: 12px; color: #64748b; font-weight: 600; text-align: right; width: 100%; margin-top: 2px;">
-                                Đã hoàn thành {{ $progress }}% kế hoạch khai báo phòng
-                            </div>
-                        @endif
+                    <div class="detail-row">
+                        <span class="detail-label">Căn hộ đã khai báo</span>
+                        <span class="detail-value" style="font-weight: 700;">{{ $floor->apartments->count() }} căn</span>
                     </div>
 
                     <div class="detail-row" style="flex-direction: column; align-items: flex-start; gap: 8px;">
@@ -161,7 +139,7 @@
                 <div>
                     <h2>Danh sách căn hộ</h2>
                 </div>
-                <a href="{{ route('admin.apartments.create', ['floor_id' => $floor->id]) }}" class="btn btn-primary">
+                <a href="{{ portal_route('apartments.create', ['floor_id' => $floor->id]) }}" class="btn btn-primary">
                     + Thêm căn hộ mới
                 </a>
             </div>
@@ -183,16 +161,7 @@
                         <tbody>
                             @forelse ($floor->apartments as $apartment)
                                 @php
-                                    $area = $apartment->area;
-                                    if ($area >= 100) {
-                                        $type = '3BR Deluxe';
-                                    } elseif ($area >= 70) {
-                                        $type = '2BR Classic';
-                                    } elseif ($area >= 50) {
-                                        $type = '1BR Standard';
-                                    } else {
-                                        $type = 'Studio Plus';
-                                    }
+                                    $type = $apartment->apartmentType->name ?? 'Chưa xác định';
 
                                     $owner = $apartment->residents()->where('relationship', 'owner')->first() ?? $apartment->residents()->first();
                                     $ownerName = $owner ? ($owner->user->name ?? '-') : '-';
@@ -200,7 +169,7 @@
                                 @endphp
                                 <tr>
                                     <td style="font-weight: 700; color: #082b7a;">
-                                        <a href="{{ route('admin.apartments.show', $apartment->id) }}" style="text-decoration: none; color: inherit;">
+                                        <a href="{{ portal_route('apartments.show', $apartment->id) }}" style="text-decoration: none; color: inherit;">
                                             {{ $apartment->apartment_number }}
                                         </a>
                                     </td>
@@ -221,10 +190,10 @@
                                     </td>
                                     <td>
                                         <div class="action-buttons" style="justify-content: flex-end;">
-                                            <a href="{{ route('admin.apartments.show', $apartment->id) }}" class="btn-action btn-action--view" title="Chi tiết">
+                                            <a href="{{ portal_route('apartments.show', $apartment->id) }}" class="btn-action btn-action--view" title="Chi tiết">
                                                 <i class="fa-regular fa-eye"></i>
                                             </a>
-                                            <a href="{{ route('admin.apartments.edit', $apartment->id) }}" class="btn-action btn-action--edit" title="Sửa">
+                                            <a href="{{ portal_route('apartments.edit', $apartment->id) }}" class="btn-action btn-action--edit" title="Sửa">
                                                 <i class="fa-regular fa-pen-to-square"></i>
                                             </a>
                                         </div>

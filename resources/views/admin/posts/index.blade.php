@@ -1,7 +1,7 @@
 @extends('layouts.admin.master')
 
 @section('page_title', 'Quản lý bài viết cư dân')
-@section('home_route', route('admin.dashboard'))
+@section('home_route', portal_route('dashboard'))
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role_label', 'ADMIN')
 
@@ -39,20 +39,20 @@
 
         {{-- TABS ĐIỀU HƯỚNG LỚN --}}
         <div class="posts-page__tabs">
-            <a href="{{ route('admin.posts.index', ['tab' => 'posts']) }}" class="posts-page__tab {{ $activeTab === 'posts' ? 'posts-page__tab--active' : '' }}">
+            <a href="{{ portal_route('posts.index', ['tab' => 'posts']) }}" class="posts-page__tab {{ $activeTab === 'posts' ? 'posts-page__tab--active' : '' }}">
                 <i class="fa-regular fa-file-lines"></i> Bài viết bị báo cáo
             </a>
-            <a href="{{ route('admin.posts.index', ['tab' => 'comments']) }}" class="posts-page__tab {{ $activeTab === 'comments' ? 'posts-page__tab--active' : '' }}">
+            <a href="{{ portal_route('posts.index', ['tab' => 'comments']) }}" class="posts-page__tab {{ $activeTab === 'comments' ? 'posts-page__tab--active' : '' }}">
                 <i class="fa-regular fa-comment-dots"></i> Bình luận bị báo cáo
             </a>
-            <a href="{{ route('admin.posts.index', ['tab' => 'banned_users']) }}" class="posts-page__tab {{ $activeTab === 'banned_users' ? 'posts-page__tab--active' : '' }}">
+            <a href="{{ portal_route('posts.index', ['tab' => 'banned_users']) }}" class="posts-page__tab {{ $activeTab === 'banned_users' ? 'posts-page__tab--active' : '' }}">
                 <i class="fa-solid fa-user-slash"></i> Cư dân bị khóa
             </a>
         </div>
 
         @if($activeTab === 'posts')
             {{-- BỘ LỌC TÌM KIẾM BÀI VIẾT --}}
-            <form class="posts-filter" method="GET" action="{{ route('admin.posts.index') }}">
+            <form class="posts-filter" method="GET" action="{{ portal_route('posts.index') }}">
                 <input type="hidden" name="tab" value="posts">
                 <label class="posts-filter__field">
                     <span>Tìm kiếm bài đăng</span>
@@ -90,7 +90,7 @@
 
                 <div class="posts-filter__actions">
                     <button type="submit" class="posts-button posts-button--primary">Lọc</button>
-                    <a href="{{ route('admin.posts.index', ['tab' => 'posts']) }}" class="posts-button posts-button--secondary">Xóa lọc</a>
+                    <a href="{{ portal_route('posts.index', ['tab' => 'posts']) }}" class="posts-button posts-button--secondary">Xóa lọc</a>
                 </div>
             </form>
 
@@ -131,7 +131,7 @@
                                             @if($post->user && $post->user->role === 'resident')
                                                 <div class="ban-controls" style="display: flex; gap: 0.5rem; margin-top: 0.4rem; flex-wrap: wrap;">
                                                     {{-- Form khóa/mở đăng bài --}}
-                                                    <form action="{{ route('admin.users.ban-posting', $post->user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
+                                                    <form action="{{ portal_route('users.ban-posting', $post->user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
                                                         @csrf
                                                         <div class="ban-select-wrapper">
                                                             <i class="fa-regular fa-lock"></i>
@@ -151,7 +151,7 @@
                                                     </form>
 
                                                     {{-- Form khóa/mở bình luận --}}
-                                                    <form action="{{ route('admin.users.ban-commenting', $post->user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
+                                                    <form action="{{ portal_route('users.ban-commenting', $post->user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
                                                         @csrf
                                                         <div class="ban-select-wrapper">
                                                             <i class="fa-regular fa-comment"></i>
@@ -198,7 +198,7 @@
                                         <div class="admin-actions">
                                             @if($post->trashed())
                                                 {{-- Nút Khôi phục bài viết --}}
-                                                <form action="{{ route('admin.posts.restore', $post->id) }}" method="POST" style="display: inline;">
+                                                <form action="{{ portal_route('posts.restore', $post->id) }}" method="POST" style="display: inline;">
                                                     @csrf
                                                     <button type="submit" class="admin-action-btn admin-action-btn--toggle admin-action-btn--blue">
                                                         <i class="fa-solid fa-rotate-left"></i> Khôi phục bài viết
@@ -206,7 +206,7 @@
                                                 </form>
                                             @else
                                                 {{-- Nút Ẩn/Hiện bài viết --}}
-                                                <form action="{{ route('admin.posts.toggle-status', $post->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn thay đổi trạng thái hiển thị của bài đăng này?')">
+                                                <form action="{{ portal_route('posts.toggle-status', $post->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn thay đổi trạng thái hiển thị của bài đăng này?')">
                                                     @csrf
                                                     @if ($post->status === 'published')
                                                         <button type="submit" class="admin-action-btn admin-action-btn--toggle">
@@ -221,7 +221,7 @@
 
                                                 {{-- Nút Bỏ qua báo cáo (chỉ hiện khi có lượt báo cáo) --}}
                                                 @if($post->reports_count > 0)
-                                                    <form action="{{ route('admin.posts.dismiss-reports', $post->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn bỏ qua và gỡ bỏ toàn bộ lượt báo cáo của bài viết này?')">
+                                                    <form action="{{ portal_route('posts.dismiss-reports', $post->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn bỏ qua và gỡ bỏ toàn bộ lượt báo cáo của bài viết này?')">
                                                         @csrf
                                                         <button type="submit" class="admin-action-btn admin-action-btn--dismiss">
                                                             <i class="fa-solid fa-shield-halved"></i> Bỏ qua báo cáo
@@ -230,7 +230,7 @@
                                                 @endif
 
                                                 {{-- Nút Xóa bài viết --}}
-                                                <form action="{{ route('admin.posts.destroy', $post->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Hành động này sẽ ẩn bài đăng khỏi phía cư dân nhưng vẫn giữ lại lịch sử báo cáo cho Admin. Bạn có chắc chắn muốn tiếp tục?')">
+                                                <form action="{{ portal_route('posts.destroy', $post->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Hành động này sẽ ẩn bài đăng khỏi phía cư dân nhưng vẫn giữ lại lịch sử báo cáo cho Admin. Bạn có chắc chắn muốn tiếp tục?')">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="admin-action-btn admin-action-btn--delete">
@@ -263,7 +263,7 @@
             </div>
         @elseif($activeTab === 'comments')
             {{-- BỘ LỌC TÌM KIẾM BÌNH LUẬN --}}
-            <form class="posts-filter" method="GET" action="{{ route('admin.posts.index') }}">
+            <form class="posts-filter" method="GET" action="{{ portal_route('posts.index') }}">
                 <input type="hidden" name="tab" value="comments">
                 <label class="posts-filter__field" style="flex: 2;">
                     <span>Tìm kiếm bình luận</span>
@@ -271,7 +271,7 @@
                 </label>
                 <div class="posts-filter__actions" style="margin-top: auto; align-self: flex-end;">
                     <button type="submit" class="posts-button posts-button--primary">Lọc</button>
-                    <a href="{{ route('admin.posts.index', ['tab' => 'comments']) }}" class="posts-button posts-button--secondary">Xóa lọc</a>
+                    <a href="{{ portal_route('posts.index', ['tab' => 'comments']) }}" class="posts-button posts-button--secondary">Xóa lọc</a>
                 </div>
             </form>
 
@@ -343,14 +343,14 @@
                         {{-- Action bar (Thao tác nhanh) --}}
                         <div class="comment-card__actions">
                             {{-- Nút Bỏ qua báo cáo --}}
-                            <form action="{{ route('admin.comments.dismiss-reports', $comment->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn bỏ qua và gỡ bỏ toàn bộ lượt báo cáo của bình luận này?')">
+                            <form action="{{ portal_route('comments.dismiss-reports', $comment->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn bỏ qua và gỡ bỏ toàn bộ lượt báo cáo của bình luận này?')">
                                 @csrf
                                 <button type="submit" class="admin-action-btn admin-action-btn--dismiss" style="padding: 0.5rem 1rem;">
                                     <i class="fa-solid fa-shield-halved"></i> Bỏ qua báo cáo
                                 </button>
                             </form>
 
-                            <form action="{{ route('admin.comments.destroy', $comment->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bình luận này?')">
+                            <form action="{{ portal_route('comments.destroy', $comment->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bình luận này?')">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="admin-action-btn admin-action-btn--delete" style="padding: 0.5rem 1rem;">
@@ -360,7 +360,7 @@
 
                             @if($comment->user && $comment->user->role === 'resident')
                                 {{-- Form khóa/mở đăng bài --}}
-                                <form action="{{ route('admin.users.ban-posting', $comment->user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
+                                <form action="{{ portal_route('users.ban-posting', $comment->user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
                                     @csrf
                                     <div class="ban-select-wrapper ban-select-wrapper--md">
                                         <i class="fa-regular fa-lock"></i>
@@ -380,7 +380,7 @@
                                 </form>
 
                                 {{-- Form khóa/mở bình luận --}}
-                                <form action="{{ route('admin.users.ban-commenting', $comment->user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
+                                <form action="{{ portal_route('users.ban-commenting', $comment->user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
                                     @csrf
                                     <div class="ban-select-wrapper ban-select-wrapper--md">
                                         <i class="fa-regular fa-comment"></i>
@@ -419,7 +419,7 @@
             @endif
         @elseif($activeTab === 'banned_users')
             {{-- BỘ LỌC TÌM KIẾM CƯ DÂN BỊ KHÓA --}}
-            <form class="posts-filter" method="GET" action="{{ route('admin.posts.index') }}">
+            <form class="posts-filter" method="GET" action="{{ portal_route('posts.index') }}">
                 <input type="hidden" name="tab" value="banned_users">
                 <label class="posts-filter__field" style="flex: 2;">
                     <span>Tìm kiếm cư dân bị khóa</span>
@@ -427,7 +427,7 @@
                 </label>
                 <div class="posts-filter__actions" style="margin-top: auto; align-self: flex-end;">
                     <button type="submit" class="posts-button posts-button--primary">Lọc</button>
-                    <a href="{{ route('admin.posts.index', ['tab' => 'banned_users']) }}" class="posts-button posts-button--secondary">Xóa lọc</a>
+                    <a href="{{ portal_route('posts.index', ['tab' => 'banned_users']) }}" class="posts-button posts-button--secondary">Xóa lọc</a>
                 </div>
             </form>
 
@@ -551,7 +551,7 @@
                                     <td>
                                         <div class="ban-controls" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                                             {{-- Form thay đổi hoặc mở khóa đăng bài --}}
-                                            <form action="{{ route('admin.users.ban-posting', $user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
+                                            <form action="{{ portal_route('users.ban-posting', $user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
                                                 @csrf
                                                 <div class="ban-select-wrapper ban-select-wrapper--md">
                                                     <i class="fa-regular fa-lock"></i>
@@ -576,7 +576,7 @@
                                             </form>
 
                                             {{-- Form thay đổi hoặc mở khóa bình luận --}}
-                                            <form action="{{ route('admin.users.ban-commenting', $user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
+                                            <form action="{{ portal_route('users.ban-commenting', $user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
                                                 @csrf
                                                 <div class="ban-select-wrapper ban-select-wrapper--md">
                                                     <i class="fa-regular fa-comment"></i>
