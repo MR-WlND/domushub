@@ -80,6 +80,33 @@ class FloorController extends Controller
         // Phân tích số tầng từ tên tầng
         $floorNumber = $this->parseFloorNumber($validated['name'], (int)$validated['block_id']);
 
+        // Lấy thông tin tòa nhà để check giới hạn tầng
+        $block = Block::findOrFail($validated['block_id']);
+
+        if ($floorNumber < 0) {
+            if (!is_null($block->total_basements)) {
+                $currentBasements = Floor::where('block_id', $block->id)
+                    ->where('floor_number', '<', 0)
+                    ->count();
+                if ($currentBasements >= $block->total_basements) {
+                    return back()->withInput()->withErrors([
+                        'name' => 'Tòa nhà này đã đạt giới hạn tối đa ' . $block->total_basements . ' tầng hầm.',
+                    ]);
+                }
+            }
+        } else {
+            if (!is_null($block->total_floors)) {
+                $currentFloors = Floor::where('block_id', $block->id)
+                    ->where('floor_number', '>=', 0)
+                    ->count();
+                if ($currentFloors >= $block->total_floors) {
+                    return back()->withInput()->withErrors([
+                        'name' => 'Tòa nhà này đã đạt giới hạn tối đa ' . $block->total_floors . ' tầng nổi.',
+                    ]);
+                }
+            }
+        }
+
         // Kiểm tra tầng trùng trong tòa
         $exists = Floor::where('block_id', $validated['block_id'])
             ->where('floor_number', $floorNumber)
@@ -224,6 +251,35 @@ class FloorController extends Controller
 
         // Phân tích số tầng từ tên tầng
         $floorNumber = $this->parseFloorNumber($validated['name'], (int)$validated['block_id']);
+
+        // Lấy thông tin tòa nhà để check giới hạn tầng
+        $block = Block::findOrFail($validated['block_id']);
+
+        if ($floorNumber < 0) {
+            if (!is_null($block->total_basements)) {
+                $currentBasements = Floor::where('block_id', $block->id)
+                    ->where('floor_number', '<', 0)
+                    ->where('id', '!=', $floor->id)
+                    ->count();
+                if ($currentBasements >= $block->total_basements) {
+                    return back()->withInput()->withErrors([
+                        'name' => 'Tòa nhà này đã đạt giới hạn tối đa ' . $block->total_basements . ' tầng hầm.',
+                    ]);
+                }
+            }
+        } else {
+            if (!is_null($block->total_floors)) {
+                $currentFloors = Floor::where('block_id', $block->id)
+                    ->where('floor_number', '>=', 0)
+                    ->where('id', '!=', $floor->id)
+                    ->count();
+                if ($currentFloors >= $block->total_floors) {
+                    return back()->withInput()->withErrors([
+                        'name' => 'Tòa nhà này đã đạt giới hạn tối đa ' . $block->total_floors . ' tầng nổi.',
+                    ]);
+                }
+            }
+        }
 
         // Kiểm tra trùng (bỏ qua chính nó)
         $exists = Floor::where('block_id', $validated['block_id'])

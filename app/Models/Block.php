@@ -18,6 +18,8 @@ class Block extends Model
         'description',
         'manager_name',
         'manager_contact',
+        'total_floors',
+        'total_basements',
     ];
 
     /**
