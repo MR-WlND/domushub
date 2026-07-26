@@ -93,6 +93,24 @@ class User extends Authenticatable
         return $this->hasMany(BangLuong::class);
     }
 
+    /**
+     * Hợp đồng lao động của nhân viên
+     */
+    public function contracts()
+    {
+        return $this->hasMany(EmployeeContract::class);
+    }
+
+    /**
+     * Hợp đồng lao động hiện tại (đang hiệu lực hoặc mới nhất)
+     */
+    public function activeContract()
+    {
+        return $this->hasOne(EmployeeContract::class)
+            ->whereIn('trang_thai', ['hieu_luc', 'sap_het_han'])
+            ->latestOfMany('ngay_bat_dau');
+    }
+
 
     /**
      * Căn hộ hiện tại của cư dân

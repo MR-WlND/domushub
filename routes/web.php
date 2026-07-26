@@ -452,8 +452,16 @@ $portalRoutes = function () {
     Route::get('/attendance/create', [\App\Http\Controllers\Admin\AttendanceController::class, 'create'])->name('attendance.create');
     Route::post('/attendance', [\App\Http\Controllers\Admin\AttendanceController::class, 'store'])->name('attendance.store');
     Route::get('/attendance/export', [\App\Http\Controllers\Admin\AttendanceController::class, 'export'])->name('attendance.export');
+
+    // ── Tự Check-in / Check-out (nhân viên tự bấm — khả dụng trên mọi portal) ──
+    Route::get('/attendance/checkin', [\App\Http\Controllers\Admin\AttendanceController::class, 'selfCheckin'])->name('attendance.checkin');
+    Route::post('/attendance/checkin', [\App\Http\Controllers\Admin\AttendanceController::class, 'selfCheckinStore'])->name('attendance.checkin.store');
+    Route::post('/attendance/checkout', [\App\Http\Controllers\Admin\AttendanceController::class, 'selfCheckout'])->name('attendance.checkout');
+
+    Route::put('/attendance/{id}', [\App\Http\Controllers\Admin\AttendanceController::class, 'update'])->name('attendance.update');
     Route::get('/attendance/{id}', [\App\Http\Controllers\Admin\AttendanceController::class, 'show'])->name('attendance.show');
     Route::get('/attendance/{id}/edit', [\App\Http\Controllers\Admin\AttendanceController::class, 'edit'])->name('attendance.edit');
+
     // Quản lý Lương Nhân viên (Admin & Manager)
     Route::get('/payroll', [\App\Http\Controllers\Admin\PayrollController::class, 'index'])->name('payroll.index');
     Route::post('/payroll/generate', [\App\Http\Controllers\Admin\PayrollController::class, 'generate'])->name('payroll.generate');
@@ -477,7 +485,14 @@ $portalRoutes = function () {
     Route::post('/payroll/{id}/add-phu-cap', [\App\Http\Controllers\Admin\PayrollController::class, 'addPhuCap'])->name('payroll.add-phu-cap');
     Route::post('/payroll/{id}/add-thuong', [\App\Http\Controllers\Admin\PayrollController::class, 'addThuong'])->name('payroll.add-thuong');
     Route::post('/payroll/{id}/add-khau-tru', [\App\Http\Controllers\Admin\PayrollController::class, 'addKhauTru'])->name('payroll.add-khau-tru');
+
+    // Quản lý Hợp đồng Lao động nhân sự (Admin & Manager)
+    Route::get('/contracts', [\App\Http\Controllers\Admin\EmployeeContractController::class, 'index'])->name('contracts.index');
+    Route::post('/contracts', [\App\Http\Controllers\Admin\EmployeeContractController::class, 'store'])->name('contracts.store');
+    Route::put('/contracts/{id}', [\App\Http\Controllers\Admin\EmployeeContractController::class, 'update'])->name('contracts.update');
+    Route::delete('/contracts/{id}', [\App\Http\Controllers\Admin\EmployeeContractController::class, 'destroy'])->name('contracts.destroy');
 };
+
 
 
 Route::middleware(['admin'])->prefix('admin')->name('admin.')->group($portalRoutes);

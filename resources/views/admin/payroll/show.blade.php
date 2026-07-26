@@ -123,8 +123,20 @@
                             <td style="text-align:right; font-weight:600;">{{ number_format($bangLuong->tien_luong_theo_cong) }} đ</td>
                         </tr>
                         <tr>
-                            <td>Lương làm thêm giờ ({{ $bangLuong->so_gio_ot }}h OT)</td>
-                            <td style="text-align:right; font-weight:600; color:#16a34a;">+{{ number_format($bangLuong->tien_ot) }} đ</td>
+                            <td>
+                                Lương làm thêm giờ (Tổng {{ $bangLuong->so_gio_ot }}h OT)
+                                @if($bangLuong->canh_bao_ot)
+                                    <span style="font-size:11px; color:#dc2626; font-weight:700; display:block;">⚠ Vượt trần 40h OT/tháng theo Luật Lao động</span>
+                                @endif
+                                @if($bangLuong->so_gio_ot > 0)
+                                    <div style="font-size:11px; color:#64748b; margin-top:2px;">
+                                        • Ngày thường (×1.5): {{ $bangLuong->so_gio_ot_thuong }}h<br>
+                                        • Cuối tuần (×2.0): {{ $bangLuong->so_gio_ot_cuoi_tuan }}h<br>
+                                        • Ngày lễ (×3.0): {{ $bangLuong->so_gio_ot_ngay_le }}h
+                                    </div>
+                                @endif
+                            </td>
+                            <td style="text-align:right; font-weight:600; color:#16a34a; vertical-align:top;">+{{ number_format($bangLuong->tien_ot) }} đ</td>
                         </tr>
                     </tbody>
                 </table>

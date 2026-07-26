@@ -46,6 +46,7 @@ export default defineConfig({
                 'resources/css/pages/admin/announcements/index.css',
                 'resources/css/pages/resident/announcements/index.css',
                 'resources/css/pages/admin/attendance/index.css',
+                'resources/css/pages/admin/attendance/checkin.css',
                 'resources/css/pages/admin/payroll/index.css',
             ],
 

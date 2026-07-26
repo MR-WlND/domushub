@@ -20,6 +20,10 @@ class BangLuong extends Model
         'so_ngay_cong_chuan',
         'so_ngay_cong_thuc_te',
         'so_gio_ot',
+        'so_gio_ot_thuong',      // OT ngày thường (×1.5)
+        'so_gio_ot_cuoi_tuan',   // OT thứ 7/CN (×2.0)
+        'so_gio_ot_ngay_le',     // OT ngày lễ (×3.0)
+        'canh_bao_ot',           // true nếu vượt trần 40h/tháng
         'tien_luong_theo_cong',
         'tien_ot',
         'tong_phu_cap',
@@ -37,6 +41,10 @@ class BangLuong extends Model
         'so_ngay_cong_chuan'   => 'decimal:1',
         'so_ngay_cong_thuc_te'  => 'decimal:1',
         'so_gio_ot'             => 'decimal:2',
+        'so_gio_ot_thuong'      => 'decimal:2',
+        'so_gio_ot_cuoi_tuan'   => 'decimal:2',
+        'so_gio_ot_ngay_le'     => 'decimal:2',
+        'canh_bao_ot'           => 'boolean',
         'tien_luong_theo_cong'  => 'decimal:2',
         'tien_ot'               => 'decimal:2',
         'tong_phu_cap'          => 'decimal:2',
@@ -113,7 +121,12 @@ class BangLuong extends Model
     // ── Business Calculation Logic ─────────────────────────────────
 
     /**
-     * 1. Tổng hợp ngày công thực tế và số giờ OT từ bảng attendance_records.
+     * 1. Tổng hợp ngày công thực tế và phân loại giờ OT theo luật VN:
+     *    - OT ngày thường (Mon–Fri, không phải lễ) → hệ số 1.5
+     *    - OT cuối tuần (Sat, Sun)                 → hệ số 2.0
+     *    - OT ngày lễ quốc gia                     → hệ số 3.0
+     *
+     * Đồng thời kiểm tra cảnh báo nếu tổng OT vượt trần 40h/tháng.
      */
     public function computeCongThucTe(): void
     {
@@ -122,53 +135,91 @@ class BangLuong extends Model
             ->whereMonth('work_date', $this->thang)
             ->get();
 
-        $congThucTe = 0.0;
-        $gioOt      = 0.0;
+        $congThucTe   = 0.0;
+        $gioOtThuong  = 0.0;
+        $gioOtCuoiTuan = 0.0;
+        $gioOtNgayLe  = 0.0;
 
-        $gioChuanCaConfig = config('payroll.gio_chuan_ca', [
-            'full_day'  => 8,
-            'morning'   => 4,
-            'afternoon' => 4,
-        ]);
+        // Danh sách ngày lễ (format: d-m)
+        $ngayLe = config('attendance.ngay_le_vn', []);
+
+        $gioChuanCaConfig = array_merge(
+            ['full_day' => 8, 'morning' => 4, 'afternoon' => 4, 'night' => 8, 'office' => 8],
+            config('payroll.gio_chuan_ca', [])
+        );
 
         foreach ($attendanceRecords as $rec) {
-            // Tính điểm công
+            // ── Tính điểm công ──
             if (in_array($rec->status, ['present', 'late'])) {
                 $congThucTe += 1.0;
             } elseif ($rec->status === 'half_day') {
                 $congThucTe += 0.5;
             }
 
-            // Tính OT (nếu working_hours lớn hơn giờ chuẩn ca)
+            // ── Tính OT phân loại ──
             if ($rec->working_hours > 0) {
                 $standardHours = $gioChuanCaConfig[$rec->shift] ?? 8;
-                if ($rec->working_hours > $standardHours) {
-                    $gioOt += ($rec->working_hours - $standardHours);
+                $gioOtCa = max(0, (float)$rec->working_hours - $standardHours);
+
+                if ($gioOtCa > 0) {
+                    $workDate  = $rec->work_date; // Carbon instance
+                    $dayMonStr = $workDate->format('d-m');
+
+                    if (in_array($dayMonStr, $ngayLe)) {
+                        $gioOtNgayLe  += $gioOtCa;   // Ngày lễ × 3.0
+                    } elseif ($workDate->isWeekend()) {
+                        $gioOtCuoiTuan += $gioOtCa;  // T7/CN × 2.0
+                    } else {
+                        $gioOtThuong  += $gioOtCa;   // Ngày thường × 1.5
+                    }
                 }
             }
         }
 
+        $tongOt = $gioOtThuong + $gioOtCuoiTuan + $gioOtNgayLe;
+        $tranOt = config('attendance.ot_tran_thang', 40);
+
         $this->so_ngay_cong_thuc_te = round($congThucTe, 1);
-        $this->so_gio_ot           = round($gioOt, 2);
+        $this->so_gio_ot            = round($tongOt, 2);
+        $this->so_gio_ot_thuong     = round($gioOtThuong, 2);
+        $this->so_gio_ot_cuoi_tuan  = round($gioOtCuoiTuan, 2);
+        $this->so_gio_ot_ngay_le    = round($gioOtNgayLe, 2);
+        $this->canh_bao_ot          = $tongOt > $tranOt;
     }
 
     /**
-     * 2. Tính tiền lương theo công và tiền OT theo công thức.
+     * 2. Tính tiền lương theo công và tiền OT (phân loại ngày thường/cuối tuần/lễ).
+     *
+     * Công thức OT theo Bộ luật Lao động 2019:
+     *  - Ngày thường  : lương giờ × 1.5
+     *  - Cuối tuần    : lương giờ × 2.0
+     *  - Ngày lễ      : lương giờ × 3.0
      */
     public function computeTienLuong(): void
     {
         $soNgayChuan = $this->so_ngay_cong_chuan > 0 ? $this->so_ngay_cong_chuan : 26;
         $luongNgay   = $this->luong_co_ban / $soNgayChuan;
 
-        // Tiền lương theo công
+        // Tiền lương theo công thực tế
         $this->tien_luong_theo_cong = round($luongNgay * $this->so_ngay_cong_thuc_te, 2);
 
-        // Tiền OT
+        // Lương giờ chuẩn (dùng làm base cho OT)
         $gioChuanFullDay = config('payroll.gio_chuan_ca.full_day', 8);
         $luongGio        = $luongNgay / $gioChuanFullDay;
-        $heSoOt          = config('payroll.he_so_ot.ngay_thuong', 1.5);
 
-        $this->tien_ot   = round($this->so_gio_ot * $luongGio * $heSoOt, 2);
+        // Hệ số OT từ config
+        $heSo = [
+            'ngay_thuong' => config('payroll.he_so_ot.ngay_thuong', 1.5),
+            'cuoi_tuan'   => config('payroll.he_so_ot.cuoi_tuan',   2.0),
+            'ngay_le'     => config('payroll.he_so_ot.ngay_le',     3.0),
+        ];
+
+        // Tính tiền OT từng loại và cộng tổng
+        $tienOtThuong   = ($this->so_gio_ot_thuong   ?? 0) * $luongGio * $heSo['ngay_thuong'];
+        $tienOtCuoiTuan = ($this->so_gio_ot_cuoi_tuan ?? 0) * $luongGio * $heSo['cuoi_tuan'];
+        $tienOtNgayLe   = ($this->so_gio_ot_ngay_le  ?? 0) * $luongGio * $heSo['ngay_le'];
+
+        $this->tien_ot = round($tienOtThuong + $tienOtCuoiTuan + $tienOtNgayLe, 2);
     }
 
     /**

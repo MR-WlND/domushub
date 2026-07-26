@@ -212,7 +212,14 @@
                             <td>
                                 <strong>{{ $pl->so_ngay_cong_thuc_te }}</strong> / {{ $pl->so_ngay_cong_chuan }}
                                 @if($pl->so_gio_ot > 0)
-                                    <span style="font-size:11px; color:#16a34a; font-weight:600; display:block;">+{{ $pl->so_gio_ot }}h OT</span>
+                                    <span style="font-size:11px; color:#16a34a; font-weight:600; display:block;" title="Thường: {{ $pl->so_gio_ot_thuong }}h | T7/CN: {{ $pl->so_gio_ot_cuoi_tuan }}h | Lễ: {{ $pl->so_gio_ot_ngay_le }}h">
+                                        +{{ $pl->so_gio_ot }}h OT
+                                    </span>
+                                @endif
+                                @if($pl->canh_bao_ot)
+                                    <span style="font-size:10px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:4px; padding:1px 5px; font-weight:700; display:inline-block; margin-top:2px;">
+                                        ⚠ Vượt 40h OT
+                                    </span>
                                 @endif
                             </td>
                             <td>{{ number_format($pl->tien_luong_theo_cong + $pl->tien_ot) }} đ</td>

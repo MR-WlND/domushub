@@ -349,4 +349,148 @@ class AttendanceController extends Controller
 
         return view('admin.attendance.export', compact('grouped', 'month', 'year', 'mon', 'staffList', 'userId'));
     }
+
+    // ── Tự check-in / check-out (nhân viên tự thao tác) ────────────
+
+    /**
+     * Trang tự check-in/check-out cho nhân viên.
+     * Hiển thị trạng thái ca hôm nay, đồng hồ thời gian thực, nút Bắt đầu/Kết thúc ca.
+     */
+    public function selfCheckin(Request $request)
+    {
+        $user  = auth()->user();
+        $today = today()->toDateString();
+
+        // Bản ghi chấm công hôm nay (nếu có)
+        $todayRecord = AttendanceRecord::where('user_id', $user->id)
+            ->where('work_date', $today)
+            ->first();
+
+        // Lịch sử 7 ngày gần nhất
+        $recentRecords = AttendanceRecord::where('user_id', $user->id)
+            ->where('work_date', '>=', now()->subDays(6)->toDateString())
+            ->orderByDesc('work_date')
+            ->get();
+
+        // Thống kê tháng hiện tại
+        $monthStats = [
+            'present'  => AttendanceRecord::where('user_id', $user->id)
+                ->whereMonth('work_date', now()->month)
+                ->whereYear('work_date', now()->year)
+                ->whereIn('status', ['present', 'late'])
+                ->count(),
+            'absent'   => AttendanceRecord::where('user_id', $user->id)
+                ->whereMonth('work_date', now()->month)
+                ->whereYear('work_date', now()->year)
+                ->where('status', 'absent')
+                ->count(),
+            'late'     => AttendanceRecord::where('user_id', $user->id)
+                ->whereMonth('work_date', now()->month)
+                ->whereYear('work_date', now()->year)
+                ->where('status', 'late')
+                ->count(),
+            'total_hours' => AttendanceRecord::where('user_id', $user->id)
+                ->whereMonth('work_date', now()->month)
+                ->whereYear('work_date', now()->year)
+                ->sum('working_hours'),
+        ];
+
+        $shifts        = config('attendance.shifts', []);
+        $workLocations = config('attendance.work_locations', []);
+
+        return view('admin.attendance.checkin', compact(
+            'todayRecord', 'recentRecords', 'monthStats', 'shifts', 'workLocations', 'today'
+        ));
+    }
+
+    /**
+     * Xử lý tự Check-in của nhân viên.
+     * Tạo bản ghi mới với check_in_at = now() nếu chưa có bản ghi hôm nay.
+     */
+    public function selfCheckinStore(Request $request)
+    {
+        $user  = auth()->user();
+        $today = today()->toDateString();
+
+        $validated = $request->validate([
+            'shift'         => ['required', Rule::in(array_keys(config('attendance.shifts', ['full_day'])))],
+            'work_location' => 'nullable|string|max:100',
+            'note'          => 'nullable|string|max:300',
+        ]);
+
+        // Kiểm tra đã có bản ghi hôm nay chưa
+        $existing = AttendanceRecord::where('user_id', $user->id)
+            ->where('work_date', $today)
+            ->first();
+
+        if ($existing) {
+            return back()->withErrors(['error' => 'Bạn đã check-in hôm nay rồi. Vui lòng dùng nút "Kết thúc ca" để check-out.']);
+        }
+
+        $record = new AttendanceRecord([
+            'user_id'       => $user->id,
+            'work_date'     => $today,
+            'check_in_at'   => now(),
+            'check_out_at'  => null,
+            'status'        => 'working',
+            'shift'         => $validated['shift'],
+            'work_location' => $validated['work_location'] ?? null,
+            'note'          => $validated['note'] ?? null,
+            'recorded_by'   => $user->id,
+        ]);
+
+        $record->computeLateMinutes();
+        $record->save();
+
+        SystemLogger::log(
+            'Self Check-In',
+            "Nhân viên: {$user->name} — Check-in lúc " . now()->format('H:i') . " ngày {$today}"
+        );
+
+        return redirect()->to(portal_route('attendance.checkin'))
+            ->with('success', 'Đã bắt đầu ca làm việc lúc ' . now()->format('H:i') . '. Chúc bạn làm việc hiệu quả!');
+    }
+
+    /**
+     * Xử lý tự Check-out của nhân viên.
+     * Cập nhật check_out_at = now() và tính working_hours, chốt status.
+     */
+    public function selfCheckout(Request $request)
+    {
+        $user  = auth()->user();
+        $today = today()->toDateString();
+
+        $record = AttendanceRecord::where('user_id', $user->id)
+            ->where('work_date', $today)
+            ->first();
+
+        if (! $record) {
+            return back()->withErrors(['error' => 'Bạn chưa check-in hôm nay. Vui lòng bấm "Bắt đầu ca" trước.']);
+        }
+
+        if ($record->check_out_at) {
+            return back()->withErrors(['error' => 'Bạn đã check-out rồi. Ca làm việc hôm nay đã hoàn tất.']);
+        }
+
+        $record->check_out_at = now();
+        $record->recorded_by  = $user->id;
+
+        $note = $request->input('note');
+        if ($note) {
+            $record->note = ($record->note ? $record->note . ' | ' : '') . 'Check-out: ' . $note;
+        }
+
+        $record->computeFinalStatus();
+        $record->save();
+
+        SystemLogger::log(
+            'Self Check-Out',
+            "Nhân viên: {$user->name} — Check-out lúc " . now()->format('H:i')
+            . " — Giờ công: " . number_format($record->working_hours, 1) . "h"
+        );
+
+        return redirect()->to(portal_route('attendance.checkin'))
+            ->with('success', "Đã kết thúc ca làm việc lúc " . now()->format('H:i')
+                . ". Tổng giờ công: " . number_format($record->working_hours, 1) . "h. Chúc bạn nghỉ ngơi vui vẻ!");
+    }
 }

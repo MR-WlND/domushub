@@ -1,0 +1,555 @@
+/* ================================================================
+   Chấm công tự động – Self Check-in / Check-out
+   DomusHub Premium Property Management
+   ================================================================ */
+
+/* ── Page ── */
+.checkin-page {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-bottom: 40px;
+    max-width: 1200px;
+}
+
+/* ── Header ── */
+.checkin-page__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.checkin-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--color-primary, #2563eb);
+    margin: 0 0 4px;
+}
+
+.checkin-page__header h1 {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--color-text, #0f172a);
+    margin: 0;
+}
+
+/* ── Alerts ── */
+.checkin-alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    animation: slideDown .3s ease;
+}
+.checkin-alert--success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.checkin-alert--danger  { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Main grid ── */
+.checkin-main-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 20px;
+    align-items: start;
+}
+
+/* ── Left column ── */
+.checkin-left {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* ── Clock Hero Card ── */
+.checkin-clock-card {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #1d4ed8 100%);
+    border-radius: 20px;
+    padding: 40px 36px 36px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(30, 58, 138, .35);
+}
+
+.checkin-clock-card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 200px; height: 200px;
+    background: rgba(255,255,255,.04);
+    border-radius: 50%;
+}
+
+.checkin-clock-card::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: -30px;
+    width: 250px; height: 250px;
+    background: rgba(255,255,255,.03);
+    border-radius: 50%;
+}
+
+.checkin-clock-card__date {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255,255,255,.6);
+    letter-spacing: .04em;
+    text-transform: capitalize;
+    margin-bottom: 8px;
+    position: relative; z-index: 1;
+}
+
+.checkin-clock-card__time {
+    font-size: 72px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -.02em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    position: relative; z-index: 1;
+    text-shadow: 0 2px 20px rgba(0,0,0,.3);
+}
+
+/* ── Status ring ── */
+.checkin-status-ring {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 24px;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-size: 15px;
+    font-weight: 700;
+    position: relative; z-index: 1;
+}
+
+.checkin-status-ring--idle {
+    background: rgba(255,255,255,.12);
+    color: rgba(255,255,255,.7);
+    border: 1px solid rgba(255,255,255,.2);
+}
+
+.checkin-status-ring--working {
+    background: rgba(34, 197, 94, .2);
+    color: #86efac;
+    border: 1px solid rgba(34, 197, 94, .3);
+    animation: pulse-green 2s infinite;
+}
+
+.checkin-status-ring--done {
+    background: rgba(255,255,255,.15);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,.3);
+}
+
+@keyframes pulse-green {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,.2); }
+    50% { box-shadow: 0 0 0 10px rgba(34,197,94,0); }
+}
+
+/* ── Action Card ── */
+.checkin-action-card {
+    background: #fff;
+    border: 1px solid #e8edf5;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 4px 16px rgba(30,58,138,.06);
+}
+
+.checkin-action-card--working {
+    border-color: #bfdbfe;
+    background: linear-gradient(135deg, #eff6ff 0%, #fff 50%);
+}
+
+.checkin-action-card--done {
+    text-align: center;
+    border-color: #bbf7d0;
+    background: linear-gradient(135deg, #f0fdf4 0%, #fff 60%);
+}
+
+.checkin-action-card__title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--color-text, #0f172a);
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+/* ── Form controls ── */
+.checkin-form-group {
+    margin-bottom: 16px;
+}
+
+.checkin-form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+}
+.checkin-form-label .req { color: #ef4444; }
+
+.checkin-form-control {
+    width: 100%;
+    height: 44px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0 14px;
+    font-size: 14px;
+    color: var(--color-text, #0f172a);
+    background: #fff;
+    transition: border-color .2s, box-shadow .2s;
+    outline: none;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.checkin-form-control:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,.12);
+}
+
+/* ── Big Action Buttons ── */
+.checkin-btn-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    height: 58px;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .25s;
+    font-family: inherit;
+    margin-top: 8px;
+}
+
+.checkin-btn-action--in {
+    background: linear-gradient(135deg, #16a34a, #15803d);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(22,163,74,.35);
+}
+.checkin-btn-action--in:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(22,163,74,.45);
+}
+.checkin-btn-action--in:disabled {
+    opacity: .6; cursor: not-allowed;
+}
+
+.checkin-btn-action--out {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(220,38,38,.3);
+}
+.checkin-btn-action--out:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(220,38,38,.4);
+}
+
+/* ── Working info box ── */
+.checkin-working-info {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.checkin-working-info__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: #475569;
+}
+
+.checkin-working-info__row span { color: #64748b; }
+.checkin-working-info__row strong { font-weight: 700; color: #0f172a; }
+.checkin-working-info__row--warn { color: #ea580c; }
+.checkin-working-info__row--warn span,
+.checkin-working-info__row--warn strong { color: #ea580c; }
+
+/* ── Done state ── */
+.checkin-done-icon {
+    width: 80px; height: 80px;
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+    color: #16a34a;
+    box-shadow: 0 4px 20px rgba(22,163,74,.2);
+}
+
+.checkin-done-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: #15803d;
+    margin-bottom: 16px;
+}
+
+.checkin-done-meta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.checkin-done-meta div { text-align: center; }
+.checkin-done-meta span { display: block; font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
+.checkin-done-meta strong { font-size: 22px; font-weight: 800; color: #0f172a; }
+.checkin-done-meta__sep { font-size: 20px; color: #94a3b8; }
+
+.checkin-done-message {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+}
+
+/* ── Ghost button ── */
+.checkin-btn--ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 16px;
+    height: 40px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1.5px solid #e2e8f0;
+    color: #475569;
+    background: #fff;
+    transition: all .2s;
+}
+.checkin-btn--ghost:hover {
+    background: #f8faff;
+    border-color: #cbd5e1;
+    color: #0f172a;
+}
+
+/* ── Right column ── */
+.checkin-right {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ── Profile card ── */
+.checkin-profile-card {
+    background: #fff;
+    border: 1px solid #e8edf5;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 2px 8px rgba(30,58,138,.05);
+}
+
+.checkin-profile-card__avatar {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 800; color: #fff;
+    border: 3px solid #e8edf5;
+}
+.checkin-profile-card__avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.checkin-profile-card__name { font-size: 16px; font-weight: 700; color: #0f172a; }
+.checkin-profile-card__role { font-size: 12px; color: #2563eb; font-weight: 600; margin-top: 2px; }
+.checkin-profile-card__email { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+
+/* ── Stats card ── */
+.checkin-stats-card {
+    background: #fff;
+    border: 1px solid #e8edf5;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(30,58,138,.05);
+}
+
+.checkin-stats-card__title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: 14px;
+}
+
+.checkin-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.checkin-stat-item {
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+}
+
+.checkin-stat-item--green  { background: #f0fdf4; }
+.checkin-stat-item--red    { background: #fef2f2; }
+.checkin-stat-item--orange { background: #fff7ed; }
+.checkin-stat-item--blue   { background: #eff6ff; }
+
+.checkin-stat-item__val {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1;
+}
+.checkin-stat-item--green  .checkin-stat-item__val { color: #16a34a; }
+.checkin-stat-item--red    .checkin-stat-item__val { color: #dc2626; }
+.checkin-stat-item--orange .checkin-stat-item__val { color: #ea580c; }
+.checkin-stat-item--blue   .checkin-stat-item__val { color: #2563eb; }
+
+.checkin-stat-item__lbl {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin-top: 4px;
+}
+
+/* ── History card ── */
+.checkin-history-card {
+    background: #fff;
+    border: 1px solid #e8edf5;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(30,58,138,.05);
+}
+
+.checkin-history-card__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: 14px;
+}
+
+.checkin-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.checkin-history-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #f8faff;
+    font-size: 13px;
+    transition: background .2s;
+}
+.checkin-history-item:hover { background: #eff6ff; }
+
+.checkin-history-item__date {
+    min-width: 44px;
+    text-align: center;
+}
+.checkin-history-item__date strong { display: block; font-size: 14px; color: #0f172a; }
+.checkin-history-item__date span { font-size: 10px; color: #94a3b8; text-transform: capitalize; }
+
+.checkin-history-item__times {
+    flex: 1;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    color: #475569;
+    font-variant-numeric: tabular-nums;
+}
+.checkin-history-item__times .muted { color: #cbd5e1; }
+
+.checkin-history-item__hours {
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 13px;
+    min-width: 30px;
+    text-align: right;
+}
+
+.checkin-history-empty {
+    text-align: center;
+    padding: 20px;
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+/* ── Status badges ── */
+.checkin-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.checkin-badge--green  { background: #dcfce7; color: #15803d; }
+.checkin-badge--red    { background: #fee2e2; color: #dc2626; }
+.checkin-badge--orange { background: #fed7aa; color: #c2410c; }
+.checkin-badge--purple { background: #ede9fe; color: #7c3aed; }
+.checkin-badge--blue   { background: #dbeafe; color: #1d4ed8; }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+    .checkin-main-grid {
+        grid-template-columns: 1fr;
+    }
+    .checkin-right {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+    .checkin-history-card {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 600px) {
+    .checkin-clock-card__time { font-size: 52px; }
+    .checkin-right { grid-template-columns: 1fr; }
+    .checkin-stats-grid { grid-template-columns: 1fr 1fr; }
+    .checkin-done-meta { gap: 8px; }
+}
