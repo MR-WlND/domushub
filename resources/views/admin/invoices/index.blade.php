@@ -11,7 +11,14 @@
                 <p class="inv-admin__eyebrow">Tài chính</p>
                 <h1 class="inv-admin__title">Quản lý Hóa đơn</h1>
             </div>
-            <div style="display:flex;gap:10px">
+            <div style="display:flex;gap:10px;align-items:center">
+                <form action="{{ portal_route('invoices.batch-resend-notification') }}" method="POST" onsubmit="return confirm('Bạn có chắc muốn gửi thông báo nhắc nợ tới toàn bộ cư dân chưa thanh toán hóa đơn?')" style="margin:0">
+                    @csrf
+                    <button type="submit" class="inv-admin__btn" style="background:#fee2e2;color:#dc2626;border:1px solid #fca5a5">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                        Nhắc nợ hàng loạt
+                    </button>
+                </form>
                 <a href="{{ portal_route('invoices.batch') }}" class="inv-admin__btn inv-admin__btn--primary">Xuất hàng
                     loạt</a>
                 <a href="{{ portal_route('invoices.create') }}" class="inv-admin__btn"

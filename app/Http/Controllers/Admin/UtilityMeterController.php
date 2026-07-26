@@ -275,6 +275,12 @@ class UtilityMeterController extends Controller
             $validated['record_year']
         ) ?? 0);
 
+        if (!$isReset && $validated['new_value'] < $oldValue) {
+            return back()->withInput()->withErrors([
+                'new_value' => 'Chỉ số mới không được nhỏ hơn chỉ số cũ.',
+            ]);
+        }
+
         $imageProofPath = null;
         $imagePaths = [];
         if ($request->hasFile('images')) {

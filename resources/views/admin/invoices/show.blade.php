@@ -93,6 +93,22 @@
                                 <div class="item-desc">
                                     Đơn giá: {{ number_format($detail->amount / max(1, $detail->quantity)) }} đ
                                 </div>
+                                @if(in_array(optional($detail->servicePrice)->type, ['water', 'electricity']))
+                                    @php
+                                        $meter = \App\Models\UtilityMeter::where('apartment_id', $invoice->apartment_id)
+                                            ->where('type', $detail->servicePrice->type)
+                                            ->where('record_month', $invoice->billing_month->month ?? $invoice->billing_month)
+                                            ->where('record_year', $invoice->billing_year)
+                                            ->first();
+                                    @endphp
+                                    @if($meter)
+                                        <div class="item-meter-info" style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">
+                                            Chỉ số cũ: <strong>{{ $meter->old_value }}</strong> &nbsp;|&nbsp;
+                                            Chỉ số mới: <strong>{{ $meter->new_value }}</strong> &nbsp;|&nbsp;
+                                            Tiêu thụ: <strong>{{ $meter->usage_amount }}</strong> {{ $detail->servicePrice->type === 'water' ? 'm³' : 'kWh' }}
+                                        </div>
+                                    @endif
+                                @endif
                             </td>
                             <td class="text-center">
                                 <span class="badge badge-{{ $detail->servicePrice->type ?? 'other' }}">

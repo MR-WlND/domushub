@@ -334,6 +334,7 @@ $portalRoutes = function () {
     Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
     Route::match(['post', 'patch'], '/invoices/{invoice}/mark-paid', [InvoiceController::class, 'markAsPaid'])->name('invoices.mark-paid');
     Route::post('/invoices/{invoice}/cancel', [InvoiceController::class, 'cancelInvoice'])->name('invoices.cancel');
+    Route::post('/invoices/batch-resend-notification', [InvoiceController::class, 'batchResendNotification'])->name('invoices.batch-resend-notification');
     Route::post('/invoices/{invoice}/resend-notification', [InvoiceController::class, 'resendNotification'])->name('invoices.resend-notification');
     Route::get('/invoices/{invoice}/print', [InvoiceController::class, 'printInvoice'])->name('invoices.print');
     Route::post('/payments/{payment}/refund', [InvoiceController::class, 'refundPayment'])->name('payments.refund');
