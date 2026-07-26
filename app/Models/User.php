@@ -32,10 +32,18 @@ class User extends Authenticatable
         'avatar',
         'apartment_id',
         'base_salary',
-        'banned_posting_until',
-
         'banned_commenting_until',
+        'face_data',
+        'face_registered_at',
     ];
+
+    /**
+     * Kiểm tra nhân viên đã đăng ký Face ID chưa
+     */
+    public function hasFaceId(): bool
+    {
+        return !empty($this->face_data);
+    }
 
     /**
      * The attributes that should be hidden for serialization.

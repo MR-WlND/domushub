@@ -404,6 +404,8 @@ $portalRoutes = function () {
     Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
     Route::put('/users/{id}/update-status', [UserController::class, 'updateStatus'])->name('users.updateStatus');
     Route::put('/users/{id}/reset-password', [UserController::class, 'resetPassword'])->name('users.resetPassword');
+    Route::post('/users/{id}/register-faceid', [UserController::class, 'registerFaceId'])->name('users.register-faceid');
+
 
     // Phân quyền người dùng (Chỉ Admin)
     Route::get('/roles', [\App\Http\Controllers\Admin\RoleController::class, 'index'])->name('roles.index');
@@ -453,10 +455,21 @@ $portalRoutes = function () {
     Route::post('/attendance', [\App\Http\Controllers\Admin\AttendanceController::class, 'store'])->name('attendance.store');
     Route::get('/attendance/export', [\App\Http\Controllers\Admin\AttendanceController::class, 'export'])->name('attendance.export');
 
-    // ── Tự Check-in / Check-out (nhân viên tự bấm — khả dụng trên mọi portal) ──
+    // ── Tự Check-in / Check-out (Bảng Chấm công Tổng & Quét Mã QR) ──
     Route::get('/attendance/checkin', [\App\Http\Controllers\Admin\AttendanceController::class, 'selfCheckin'])->name('attendance.checkin');
     Route::post('/attendance/checkin', [\App\Http\Controllers\Admin\AttendanceController::class, 'selfCheckinStore'])->name('attendance.checkin.store');
     Route::post('/attendance/checkout', [\App\Http\Controllers\Admin\AttendanceController::class, 'selfCheckout'])->name('attendance.checkout');
+
+    // ── Máy Quét Mã QR Chấm Công Tự Động tại BQL / Sảnh ──
+    Route::get('/attendance/qr-scanner', [\App\Http\Controllers\Admin\AttendanceController::class, 'qrScanner'])->name('attendance.qr-scanner');
+    Route::post('/attendance/qr-scan', [\App\Http\Controllers\Admin\AttendanceController::class, 'qrScanStore'])->name('attendance.qr-scan.store');
+    Route::get('/my-qr-card', [\App\Http\Controllers\Admin\AttendanceController::class, 'myQrCard'])->name('my-qr-card');
+
+    // ── Kiosk Chấm Công Thông Minh tại Ban Quản Lý (Face Recognition & Liveness Audit) ──
+    Route::get('/attendance/kiosk', [\App\Http\Controllers\Admin\AttendanceController::class, 'kiosk'])->name('attendance.kiosk');
+    Route::post('/attendance/kiosk-scan', [\App\Http\Controllers\Admin\AttendanceController::class, 'kioskScanStore'])->name('attendance.kiosk-scan.store');
+
+
 
     Route::put('/attendance/{id}', [\App\Http\Controllers\Admin\AttendanceController::class, 'update'])->name('attendance.update');
     Route::get('/attendance/{id}', [\App\Http\Controllers\Admin\AttendanceController::class, 'show'])->name('attendance.show');

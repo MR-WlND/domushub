@@ -193,4 +193,30 @@ class UserController extends Controller
             ->back()
             ->with('success', 'Đã đặt lại mật khẩu cho ' . $user->name . '. Mật khẩu mặc định: ' . self::DEFAULT_PASSWORD);
     }
+
+    /**
+     * Đăng ký dữ liệu khuôn mặt Face ID cho nhân viên.
+     */
+    public function registerFaceId(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        $faceData = $request->input('face_data');
+        if (empty($faceData)) {
+            return response()->json(['success' => false, 'message' => 'Vui lòng cung cấp dữ liệu khuôn mặt Face ID.'], 422);
+        }
+
+        $user->update([
+            'face_data'          => $faceData,
+            'face_registered_at' => now(),
+        ]);
+
+        SystemLogger::log('Đăng ký Face ID', "Đã đăng ký dữ liệu khuôn mặt thành công cho nhân viên {$user->name}");
+
+        return response()->json([
+            'success' => true,
+            'message' => "Đã đăng ký Face ID thành công cho nhân viên {$user->name}!",
+            'face_registered_at' => now()->format('d/m/Y H:i'),
+        ]);
+    }
 }

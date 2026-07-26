@@ -296,6 +296,7 @@
                 <span>Hợp đồng nhân sự</span>
             </a>
 
+            {{-- Lịch sử chấm công (Admin & Manager) --}}
             <a href="{{ portal_route('attendance.index') }}" class="dashboard-nav__item {{ is_portal_route('attendance.index') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -304,8 +305,34 @@
                     <line x1="3" y1="10" x2="21" y2="10"></line>
                     <path d="M9 16l2 2 4-4"></path>
                 </svg>
-                <span>Chấm công</span>
+                <span>Lịch sử Chấm công</span>
             </a>
+
+            {{-- Thao tác chấm công tại sảnh BQL (chỉ Manager được thực hiện) --}}
+            @if($role === 'manager')
+            <a href="{{ portal_route('attendance.checkin') }}" class="dashboard-nav__item {{ is_portal_route('attendance.checkin') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                    <polyline points="10 17 15 12 10 7"/>
+                    <line x1="15" y1="12" x2="3" y2="12"/>
+                </svg>
+                <span>Chấm công tại BQL (Sảnh)</span>
+            </a>
+            <a href="{{ portal_route('attendance.qr-scanner') }}" class="dashboard-nav__item {{ is_portal_route('attendance.qr-scanner') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                    <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                </svg>
+                <span>Quét Mã QR Chấm công</span>
+            </a>
+            <a href="{{ portal_route('attendance.kiosk') }}" class="dashboard-nav__item {{ is_portal_route('attendance.kiosk') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+                </svg>
+                <span>Kiosk Chấm Công AI</span>
+            </a>
+
             <a href="{{ portal_route('attendance.bulk') }}" class="dashboard-nav__item {{ is_portal_route('attendance.bulk') || is_portal_route('attendance.bulk.store') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="9 11 12 14 22 4"></polyline>
@@ -313,6 +340,8 @@
                 </svg>
                 <span>Chấm công nhanh</span>
             </a>
+            @endif
+
             <a href="{{ portal_route('payroll.index') }}" class="dashboard-nav__item {{ is_portal_route('payroll.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="12" y1="1" x2="12" y2="23"></line>
@@ -320,33 +349,32 @@
                 </svg>
                 <span>Bảng lương</span>
             </a>
-
-            {{-- Tự Check-in (admin/manager cũng có thể dùng) --}}
-            <a href="{{ portal_route('attendance.checkin') }}" class="dashboard-nav__item {{ is_portal_route('attendance.checkin') ? 'dashboard-nav__item--active' : '' }}">
-                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-                    <polyline points="10 17 15 12 10 7"/>
-                    <line x1="15" y1="12" x2="3" y2="12"/>
-                </svg>
-                <span>Chấm công của tôi</span>
-            </a>
         </div>
         @endif
 
         {{-- ============================================================== --}}
-        {{-- CHẤM CÔNG CỦA TÔI - Cho nhân viên không phải Admin/Manager --}}
+        {{-- CA LÀM VIỆC - Cho nhân viên (xem lịch sử ca) --}}
         {{-- security, cleaning, technician, staff --}}
         {{-- ============================================================== --}}
         @if(in_array($role, ['technician', 'security', 'cleaning', 'staff']))
         <div class="nav-section">
             <span class="nav-section__label">CA LÀM VIỆC</span>
-            <a href="{{ portal_route('attendance.checkin') }}" class="dashboard-nav__item {{ is_portal_route('attendance.checkin') ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ portal_route('attendance.index') }}" class="dashboard-nav__item {{ is_portal_route('attendance.index') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-                    <polyline points="10 17 15 12 10 7"/>
-                    <line x1="15" y1="12" x2="3" y2="12"/>
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                    <path d="M9 16l2 2 4-4"></path>
                 </svg>
-                <span>Chấm công hôm nay</span>
+                <span>Lịch sử Chấm công</span>
+            </a>
+            <a href="{{ portal_route('my-qr-card') }}" class="dashboard-nav__item {{ is_portal_route('my-qr-card') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                    <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                </svg>
+                <span>Thẻ QR của tôi</span>
             </a>
         </div>
         @endif

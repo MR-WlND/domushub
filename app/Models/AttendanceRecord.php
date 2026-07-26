@@ -37,14 +37,21 @@ class AttendanceRecord extends Model
         'working_hours',
         'late_minutes',
         'note',
+        'snapshot_photo',
+        'ip_address',
+        'device_info',
+        'camera_info',
+        'liveness_verified',
         'recorded_by',
     ];
 
     protected $casts = [
-        'work_date'     => 'date',
-        'check_in_at'   => 'datetime',
-        'check_out_at'  => 'datetime',
-        'working_hours' => 'decimal:2',
+        'work_date'         => 'date',
+        'check_in_at'       => 'datetime',
+        'check_out_at'      => 'datetime',
+        'working_hours'     => 'decimal:2',
+        'late_minutes'      => 'integer',
+        'liveness_verified' => 'boolean',
     ];
 
     // ── Relationships ──────────────────────────────────────────────

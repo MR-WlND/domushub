@@ -254,6 +254,11 @@
                                         <span class="att-identity__role">
                                             {{ $roleLabels[$record->user->role ?? ''] ?? ($record->user->role ?? '—') }}
                                         </span>
+                                        @if($record->snapshot_photo)
+                                            <span style="font-size:10px; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; padding:1px 6px; border-radius:4px; font-weight:700; display:inline-block; margin-top:2px;" title="Ảnh chụp webcam Kiosk & IP {{ $record->ip_address }}">
+                                                📷 Kiosk Proof
+                                            </span>
+                                        @endif
                                     </div>
                                 </div>
                             </td>
