@@ -405,6 +405,11 @@ $portalRoutes = function () {
     Route::put('/users/{id}/update-status', [UserController::class, 'updateStatus'])->name('users.updateStatus');
     Route::put('/users/{id}/reset-password', [UserController::class, 'resetPassword'])->name('users.resetPassword');
 
+    // Phân quyền người dùng (Chỉ Admin)
+    Route::get('/roles', [\App\Http\Controllers\Admin\RoleController::class, 'index'])->name('roles.index');
+    Route::match(['put', 'patch'], '/roles/{id}/status', [\App\Http\Controllers\Admin\RoleController::class, 'updateStatus'])->name('roles.updateStatus');
+
+
     // Quản lý mã mời
     Route::get('/invitations', [AdminInvitationController::class, 'index'])->name('invitations.index');
     Route::post('/invitations', [AdminInvitationController::class, 'store'])->name('invitations.store');
@@ -439,7 +444,41 @@ $portalRoutes = function () {
     Route::get('/cleaning-reports', [\App\Http\Controllers\Admin\CleaningReportController::class, 'index'])->name('cleaning-reports.index');
     Route::patch('/cleaning-reports/{id}/status', [\App\Http\Controllers\Admin\CleaningReportController::class, 'updateStatus'])->name('cleaning-reports.update-status');
 
+    // Chấm công nhân viên (Admin & Manager)
+    // Không có route destroy — dữ liệu chấm công không được phép xoá.
+    Route::get('/attendance', [\App\Http\Controllers\Admin\AttendanceController::class, 'index'])->name('attendance.index');
+    Route::get('/attendance/bulk', [\App\Http\Controllers\Admin\AttendanceController::class, 'bulk'])->name('attendance.bulk');
+    Route::post('/attendance/bulk', [\App\Http\Controllers\Admin\AttendanceController::class, 'bulkStore'])->name('attendance.bulk.store');
+    Route::get('/attendance/create', [\App\Http\Controllers\Admin\AttendanceController::class, 'create'])->name('attendance.create');
+    Route::post('/attendance', [\App\Http\Controllers\Admin\AttendanceController::class, 'store'])->name('attendance.store');
+    Route::get('/attendance/export', [\App\Http\Controllers\Admin\AttendanceController::class, 'export'])->name('attendance.export');
+    Route::get('/attendance/{id}', [\App\Http\Controllers\Admin\AttendanceController::class, 'show'])->name('attendance.show');
+    Route::get('/attendance/{id}/edit', [\App\Http\Controllers\Admin\AttendanceController::class, 'edit'])->name('attendance.edit');
+    // Quản lý Lương Nhân viên (Admin & Manager)
+    Route::get('/payroll', [\App\Http\Controllers\Admin\PayrollController::class, 'index'])->name('payroll.index');
+    Route::post('/payroll/generate', [\App\Http\Controllers\Admin\PayrollController::class, 'generate'])->name('payroll.generate');
+    Route::get('/payroll/report', [\App\Http\Controllers\Admin\PayrollController::class, 'report'])->name('payroll.report');
+    Route::get('/payroll/history/{userId}', [\App\Http\Controllers\Admin\PayrollController::class, 'history'])->name('payroll.history');
+
+    // Cấu hình Danh mục Lương (Admin Only)
+    Route::get('/payroll-config', [\App\Http\Controllers\Admin\PayrollConfigController::class, 'index'])->name('payroll.config.index');
+    Route::post('/payroll-config/phu-cap', [\App\Http\Controllers\Admin\PayrollConfigController::class, 'storePhuCap'])->name('payroll.config.phu-cap.store');
+    Route::put('/payroll-config/phu-cap/{id}', [\App\Http\Controllers\Admin\PayrollConfigController::class, 'updatePhuCap'])->name('payroll.config.phu-cap.update');
+    Route::post('/payroll-config/thuong', [\App\Http\Controllers\Admin\PayrollConfigController::class, 'storeThuong'])->name('payroll.config.thuong.store');
+    Route::put('/payroll-config/thuong/{id}', [\App\Http\Controllers\Admin\PayrollConfigController::class, 'updateThuong'])->name('payroll.config.thuong.update');
+    Route::post('/payroll-config/khau-tru', [\App\Http\Controllers\Admin\PayrollConfigController::class, 'storeKhauTru'])->name('payroll.config.khau-tru.store');
+    Route::put('/payroll-config/khau-tru/{id}', [\App\Http\Controllers\Admin\PayrollConfigController::class, 'updateKhauTru'])->name('payroll.config.khau-tru.update');
+
+    // Chi tiết phiếu lương & Thao tác duyệt/thanh toán (Tĩnh trước động)
+    Route::get('/payroll/{id}', [\App\Http\Controllers\Admin\PayrollController::class, 'show'])->name('payroll.show');
+    Route::post('/payroll/{id}/approve', [\App\Http\Controllers\Admin\PayrollController::class, 'approve'])->name('payroll.approve');
+    Route::post('/payroll/{id}/pay', [\App\Http\Controllers\Admin\PayrollController::class, 'pay'])->name('payroll.pay');
+    Route::get('/payroll/{id}/export', [\App\Http\Controllers\Admin\PayrollController::class, 'exportPayslip'])->name('payroll.export');
+    Route::post('/payroll/{id}/add-phu-cap', [\App\Http\Controllers\Admin\PayrollController::class, 'addPhuCap'])->name('payroll.add-phu-cap');
+    Route::post('/payroll/{id}/add-thuong', [\App\Http\Controllers\Admin\PayrollController::class, 'addThuong'])->name('payroll.add-thuong');
+    Route::post('/payroll/{id}/add-khau-tru', [\App\Http\Controllers\Admin\PayrollController::class, 'addKhauTru'])->name('payroll.add-khau-tru');
 };
+
 
 Route::middleware(['admin'])->prefix('admin')->name('admin.')->group($portalRoutes);
 Route::middleware(['manager'])->prefix('manager')->name('manager.')->group($portalRoutes);
