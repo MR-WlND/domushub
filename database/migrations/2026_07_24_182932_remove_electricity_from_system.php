@@ -18,7 +18,15 @@ return new class extends Migration
         // 2. Change electricity invoices to other to avoid data loss
         DB::table('service_prices')->where('type', 'electricity')->update(['type' => 'other']);
 
-        // 3. Update Enum types to exclude 'electricity'
+        // Also handle invoices table if it has electricity type
+        if (Schema::hasColumn('invoices', 'type')) {
+            DB::table('invoices')->where('type', 'electricity')->update(['type' => 'other']);
+        }
+
+        // 3. Temporarily disable strict mode to allow ALTER without truncation warning treated as error
+        DB::statement("SET SESSION sql_mode = ''");
+
+        // 4. Update Enum types to exclude 'electricity'
         DB::statement("ALTER TABLE service_prices MODIFY COLUMN type ENUM('water', 'management_fee', 'internet', 'service', 'other', 'motorbike', 'car', 'bicycle', 'electric_bike') NOT NULL");
 
         // For utility_meters and utility_meter_logs: previous was ('electricity', 'water')

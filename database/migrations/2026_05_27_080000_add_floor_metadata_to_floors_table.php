@@ -12,23 +12,27 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('floors', function (Blueprint $table) {
-            $table->unsignedInteger('expected_apartments')->nullable()->after('description');
-            $table->enum('floor_type', [
-                'resident',
-                'basement',
-                'commercial',
-                'service',
-            ])->default('resident')->after('expected_apartments');
+            if (!Schema::hasColumn('floors', 'expected_apartments')) {
+                $table->unsignedInteger('expected_apartments')->nullable()->after('description');
+            }
+            if (!Schema::hasColumn('floors', 'floor_type')) {
+                $table->enum('floor_type', [
+                    'resident',
+                    'basement',
+                    'commercial',
+                    'service',
+                ])->default('resident')->after('expected_apartments');
+            }
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('floors', function (Blueprint $table) {
-            $table->dropColumn(['expected_apartments', 'floor_type']);
+            $cols = [];
+            if (Schema::hasColumn('floors', 'expected_apartments')) $cols[] = 'expected_apartments';
+            if (Schema::hasColumn('floors', 'floor_type')) $cols[] = 'floor_type';
+            if (!empty($cols)) $table->dropColumn($cols);
         });
     }
 };

@@ -12,23 +12,38 @@ class ServicePriceSeeder extends Seeder
      */
     public function run(): void
     {
-        // Định nghĩa danh mục phí với type làm key để quản lý độc lập
-        $servicePrices = [
-            'electricity'    => ['name' => 'Giá điện', 'unit_price' => 3000, 'description' => 'Biểu giá điện theo kWh'],
-            'water'          => ['name' => 'Giá nước', 'unit_price' => 15000, 'description' => 'Biểu giá nước theo m³'],
-            'management_fee' => ['name' => 'Phí quản lý', 'unit_price' => 15000, 'description' => 'Phí quản lý hàng tháng (trên m2)'],
-            'motorbike'      => ['name' => 'Phí gửi xe máy',  'unit_price' => 100000,  'description' => 'Phí gửi xe máy (xăng)'],
-            'electric_bike'  => ['name' => 'Phí gửi xe điện', 'unit_price' => 100000,  'description' => 'Phí gửi xe điện / xe đạp điện'],
-            'car'            => ['name' => 'Phí gửi ô tô',    'unit_price' => 1200000, 'description' => 'Phí gửi xe ô tô'],
-            'bicycle'        => ['name' => 'Phí gửi xe đạp',  'unit_price' => 50000,   'description' => 'Phí gửi xe đạp'],
-            'internet'       => ['name' => 'Phí Internet', 'unit_price' => 130000, 'description' => 'Phí Internet hàng tháng'],
-            'service'        => ['name' => 'Phí dịch vụ khác', 'unit_price' => 0, 'description' => 'Các phí dịch vụ phát sinh'],
+        // Phí dịch vụ chung (type đơn thuần)
+        $general = [
+            'water'          => ['name' => 'Giá nước',          'unit_price' => 15000,  'description' => 'Biểu giá nước theo m³'],
+            'management_fee' => ['name' => 'Phí quản lý',       'unit_price' => 15000,  'description' => 'Phí quản lý hàng tháng (trên m2)'],
+            'internet'       => ['name' => 'Phí Internet',      'unit_price' => 130000, 'description' => 'Phí Internet hàng tháng'],
+            'service'        => ['name' => 'Phí dịch vụ khác', 'unit_price' => 0,       'description' => 'Các phí dịch vụ phát sinh'],
+            'other'          => ['name' => 'Phí khác',          'unit_price' => 0,       'description' => 'Các khoản phí khác'],
         ];
 
-        foreach ($servicePrices as $type => $data) {
-            // Sử dụng updateOrCreate với type là khóa duy nhất để đảm bảo tính nhất quán
+        foreach ($general as $type => $data) {
             ServicePrice::updateOrCreate(
-                ['type' => $type],
+                ['type' => $type, 'vehicle_type' => null],
+                [
+                    'name'        => $data['name'],
+                    'unit_price'  => $data['unit_price'],
+                    'description' => $data['description'],
+                    'status'      => 'active',
+                ]
+            );
+        }
+
+        // Phí gửi xe (type = parking_fee, phân biệt qua vehicle_type)
+        $parkingFees = [
+            'motorbike'    => ['name' => 'Phí gửi xe máy',  'unit_price' => 100000,  'description' => 'Phí gửi xe máy (xăng)'],
+            'electric_bike'=> ['name' => 'Phí gửi xe điện', 'unit_price' => 100000,  'description' => 'Phí gửi xe điện / xe đạp điện'],
+            'car'          => ['name' => 'Phí gửi ô tô',    'unit_price' => 1200000, 'description' => 'Phí gửi xe ô tô'],
+            'bicycle'      => ['name' => 'Phí gửi xe đạp',  'unit_price' => 50000,   'description' => 'Phí gửi xe đạp'],
+        ];
+
+        foreach ($parkingFees as $vehicleType => $data) {
+            ServicePrice::updateOrCreate(
+                ['type' => 'parking_fee', 'vehicle_type' => $vehicleType],
                 [
                     'name'        => $data['name'],
                     'unit_price'  => $data['unit_price'],

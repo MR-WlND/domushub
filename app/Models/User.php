@@ -10,6 +10,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
+
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -30,7 +31,9 @@ class User extends Authenticatable
         'status',
         'avatar',
         'apartment_id',
+        'base_salary',
         'banned_posting_until',
+
         'banned_commenting_until',
     ];
 
@@ -73,6 +76,23 @@ class User extends Authenticatable
     {
         return $this->hasMany(Resident::class);
     }
+
+    /**
+     * Bản ghi chấm công của nhân viên
+     */
+    public function attendanceRecords()
+    {
+        return $this->hasMany(AttendanceRecord::class);
+    }
+
+    /**
+     * Bảng lương của nhân viên
+     */
+    public function bangLuongs()
+    {
+        return $this->hasMany(BangLuong::class);
+    }
+
 
     /**
      * Căn hộ hiện tại của cư dân
@@ -136,12 +156,21 @@ class User extends Authenticatable
     }
 
     /**
+     * Scope lọc lấy danh sách nhân sự nội bộ (không bao gồm cư dân)
+     */
+    public function scopeStaff($query)
+    {
+        return $query->whereIn('role', ['admin', 'manager', 'staff', 'technician', 'security', 'cleaning']);
+    }
+
+    /**
      * Kiểm tra user có thuộc nhóm admin portal hay không
      */
     public function isAdminPortalUser(): bool
     {
         return in_array($this->role, ['admin', 'manager', 'staff', 'technician'], true);
     }
+
 
     /**
      * Các bài viết của user

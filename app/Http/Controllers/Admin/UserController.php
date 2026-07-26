@@ -14,8 +14,8 @@ class UserController extends Controller
     // 1. Hàm hiển thị danh sách, xử lý tìm kiếm và phân trang
     public function index(Request $request)
     {
-        // Khởi tạo query từ Model User — chỉ lấy nhân sự nội bộ (không bao gồm cư dân)
-        $query = User::whereIn('role', ['admin', 'manager', 'staff', 'technician', 'security', 'cleaning']);
+        // Khởi tạo query từ Model User — chỉ lấy nhân sự nội bộ (dùng scopeStaff)
+        $query = User::staff();
 
         // Tìm kiếm theo Tên hoặc Email (nếu có nhập)
         if ($request->has('search') && $request->search != '') {

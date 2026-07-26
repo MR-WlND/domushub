@@ -8,23 +8,23 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('blocks', function (Blueprint $table) {
-
-            $table->enum('status', [
-                'active',
-                'inactive',
-                'maintenance'
-            ])->default('active');
-
-        });
+        if (!Schema::hasColumn('blocks', 'status')) {
+            Schema::table('blocks', function (Blueprint $table) {
+                $table->enum('status', [
+                    'active',
+                    'inactive',
+                    'maintenance'
+                ])->default('active');
+            });
+        }
     }
 
     public function down(): void
     {
-        Schema::table('blocks', function (Blueprint $table) {
-
-            $table->dropColumn('status');
-
-        });
+        if (Schema::hasColumn('blocks', 'status')) {
+            Schema::table('blocks', function (Blueprint $table) {
+                $table->dropColumn('status');
+            });
+        }
     }
 };
