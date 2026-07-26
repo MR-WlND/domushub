@@ -11,10 +11,10 @@
             Quay lại danh sách
         </a>
         <div class="detail-actions">
-            <button type="button" class="btn-top-action" onclick="window.print()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-                In hóa đơn
-            </button>
+            <a href="{{ route('resident.invoices.print', $invoice->id) }}" target="_blank" class="btn-top-action" style="text-decoration: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                In hóa đơn (PDF)
+            </a>
         </div>
     </div>
 
@@ -104,10 +104,17 @@
                                             ->first();
                                     @endphp
                                     @if($meter)
-                                        <div class="item-meter-info" style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">
-                                            Chỉ số cũ: <strong>{{ $meter->old_value }}</strong> &nbsp;|&nbsp;
-                                            Chỉ số mới: <strong>{{ $meter->new_value }}</strong> &nbsp;|&nbsp;
-                                            Tiêu thụ: <strong>{{ $meter->usage_amount }}</strong> {{ $detail->servicePrice->type === 'water' ? 'm³' : 'kWh' }}
+                                        <div class="item-meter-info" style="font-size: 0.8rem; color: #64748b; margin-top: 4px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                                            <div>
+                                                Chỉ số cũ: <strong>{{ $meter->old_value }}</strong> &nbsp;|&nbsp;
+                                                Chỉ số mới: <strong>{{ $meter->new_value }}</strong> &nbsp;|&nbsp;
+                                                Tiêu thụ: <strong>{{ $meter->usage_amount }}</strong> {{ $detail->servicePrice->type === 'water' ? 'm³' : 'kWh' }}
+                                            </div>
+                                            @if($detail->servicePrice->type === 'water')
+                                                <button type="button" class="btn-complaint" onclick="sendWaterComplaint(event, '{{ route('resident.invoices.complaint-water', $invoice->id) }}')" style="background: none; border: none; color: #dc2626; font-size: 0.8rem; font-weight: 600; cursor: pointer; text-decoration: underline; padding: 0;">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right: 4px; vertical-align: middle; display: inline-block;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>Khiếu nại chỉ số
+                                                </button>
+                                            @endif
                                         </div>
                                     @endif
                                 @endif
@@ -337,6 +344,46 @@
         // Initialize total
         updateTotal();
     });
+
+    async function sendWaterComplaint(event, url) {
+        event.preventDefault();
+        if (!confirm('Bạn có chắc chắn muốn gửi khiếu nại về chỉ số nước này tới Ban Quản Lý không?')) {
+            return;
+        }
+        
+        const btn = event.currentTarget;
+        const originalContent = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = 'Đang gửi...';
+        
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert(data.message);
+                btn.innerHTML = 'Đã gửi khiếu nại';
+                btn.style.color = '#16a34a';
+                btn.style.textDecoration = 'none';
+                btn.onclick = null;
+            } else {
+                alert(data.message || 'Có lỗi xảy ra, vui lòng thử lại.');
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+            }
+        } catch(err) {
+            console.error(err);
+            alert('Không thể kết nối máy chủ.');
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+        }
+    }
 </script>
 @endpush
 

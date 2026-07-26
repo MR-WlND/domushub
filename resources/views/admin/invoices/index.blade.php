@@ -101,9 +101,16 @@
                     </select>
                 </div>
 
+                <div class="inv-admin__filter-group" style="flex:0; min-width:180px; justify-content:center; align-items:center; border:1px solid #e2e8f0; border-radius:8px; background:#fff;">
+                    <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; color:#475569; font-weight:600; cursor:pointer; padding: 8px 12px; margin:0; user-select:none;">
+                        <input type="checkbox" name="debt_over_2_months" value="1" {{ request('debt_over_2_months') ? 'checked' : '' }} onchange="this.form.submit()" style="width:16px; height:16px; accent-color:#00236f; cursor:pointer; margin:0;">
+                        Nợ quá 2 tháng
+                    </label>
+                </div>
+
                 <div style="display:flex; gap:8px;">
                     <button type="submit" class="inv-admin__btn inv-admin__btn--primary">Lọc</button>
-                    @if (request()->hasAny(['search', 'status', 'month', 'apartment_id']))
+                    @if (request()->hasAny(['search', 'status', 'month', 'apartment_id', 'debt_over_2_months']))
                         <a href="{{ portal_route('invoices.index') }}" class="inv-admin__btn inv-admin__btn--clear">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                             Xóa

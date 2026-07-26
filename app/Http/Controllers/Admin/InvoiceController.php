@@ -173,6 +173,14 @@ class InvoiceController extends Controller
             $query->where('id', $request->apartment_id);
         }
 
+        // Lọc căn hộ nợ tiền quá 2 tháng (quá hạn 60 ngày)
+        if ($request->boolean('debt_over_2_months')) {
+            $query->whereHas('invoices', function($q) {
+                $q->whereIn('status', ['unpaid', 'partial_paid', 'overdue'])
+                  ->where('due_date', '<=', \Carbon\Carbon::now()->subDays(60));
+            });
+        }
+
         // Lọc theo trạng thái
         if ($request->filled('status')) {
             $query->whereHas('invoices', $invoiceFilter);
@@ -342,6 +350,102 @@ class InvoiceController extends Controller
         $invoice->recalculateDetailsStatus();
         $invoice->load(['apartment.floor.block', 'details.servicePrice', 'payments']);
         return view('admin.invoices.show', compact('invoice'));
+    }
+
+    /**
+     * Hiển thị giao diện chỉnh sửa hóa đơn (chỉ cho phép nếu hóa đơn chưa paid/cancelled).
+     */
+    public function edit(Invoice $invoice)
+    {
+        if ($invoice->status === 'paid') {
+            return redirect()->route('admin.invoices.show', $invoice)
+                ->with('error', 'Không thể chỉnh sửa hóa đơn đã được thanh toán đầy đủ.');
+        }
+
+        if ($invoice->status === 'cancelled') {
+            return redirect()->route('admin.invoices.show', $invoice)
+                ->with('error', 'Không thể chỉnh sửa hóa đơn đã bị hủy.');
+        }
+
+        $invoice->load(['apartment.floor.block', 'details.servicePrice']);
+        return view('admin.invoices.edit', compact('invoice'));
+    }
+
+    /**
+     * Cập nhật thông tin hóa đơn.
+     */
+    public function update(Request $request, Invoice $invoice)
+    {
+        // Ràng buộc bảo mật tuyệt đối: chặn chỉnh sửa hóa đơn đã thanh toán/đã hủy
+        if ($invoice->status === 'paid') {
+            return redirect()->route('admin.invoices.show', $invoice)
+                ->with('error', 'Chặn chỉnh sửa: Hóa đơn đã được thanh toán đầy đủ.');
+        }
+
+        if ($invoice->status === 'cancelled') {
+            return redirect()->route('admin.invoices.show', $invoice)
+                ->with('error', 'Chặn chỉnh sửa: Hóa đơn này đã bị hủy.');
+        }
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'due_date' => 'required|date',
+            'details' => 'required|array',
+            'details.*.id' => 'required|exists:bill_details,id',
+            'details.*.amount' => 'required|numeric|min:0',
+            'details.*.quantity' => 'required|numeric|min:0',
+            'details.*.note' => 'nullable|string|max:500',
+        ]);
+
+        DB::transaction(function() use ($invoice, $validated) {
+            $totalAmount = 0;
+
+            foreach ($validated['details'] as $detailData) {
+                $detail = $invoice->details()->findOrFail($detailData['id']);
+                $detail->update([
+                    'amount' => $detailData['amount'],
+                    'quantity' => $detailData['quantity'],
+                    'note' => $detailData['note'] ?? null,
+                ]);
+
+                $totalAmount += $detailData['amount'];
+            }
+
+            // Tính toán lại dư nợ và tổng tiền
+            $invoice->update([
+                'title' => $validated['title'],
+                'due_date' => $validated['due_date'],
+                'total_amount' => $totalAmount,
+                'current_amount' => $totalAmount,
+                'total_due_at_issue' => (float)$invoice->previous_debt + $totalAmount,
+            ]);
+
+            // Cập nhật lại trạng thái thanh toán dựa trên paid_amount mới và total_amount mới
+            $invoice->recalculateDetailsStatus();
+            
+            $paid = (float)$invoice->paid_amount;
+            if ($paid >= $invoice->total_due_at_issue) {
+                $newStatus = 'paid';
+            } elseif ($paid > 0) {
+                $newStatus = 'partial_paid';
+            } else {
+                $newStatus = $invoice->due_date->isPast() ? 'overdue' : 'unpaid';
+            }
+            
+            $invoice->update([
+                'status' => $newStatus
+            ]);
+        });
+
+        // Ghi Activity Log
+        SystemLogger::log(
+            'finance',
+            'Cập nhật thông tin hóa đơn #' . $invoice->id . ' (' . $invoice->invoice_code . ')',
+            ['invoice_id' => $invoice->id]
+        );
+
+        return redirect()->route('admin.invoices.show', $invoice)
+            ->with('success', 'Cập nhật hóa đơn thành công.');
     }
 
     /**
