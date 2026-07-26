@@ -12,9 +12,9 @@
                 <h1 class="inv-admin__title">Quản lý Hóa đơn</h1>
             </div>
             <div style="display:flex;gap:10px;align-items:center">
-                <form action="{{ portal_route('invoices.batch-resend-notification') }}" method="POST" onsubmit="return confirm('Bạn có chắc muốn gửi thông báo nhắc nợ tới toàn bộ cư dân chưa thanh toán hóa đơn?')" style="margin:0">
+                <form id="batch-remind-form" action="{{ portal_route('invoices.batch-resend-notification') }}" method="POST" style="margin:0">
                     @csrf
-                    <button type="submit" class="inv-admin__btn" style="background:#fee2e2;color:#dc2626;border:1px solid #fca5a5">
+                    <button type="button" class="inv-admin__btn" style="background:#fee2e2;color:#dc2626;border:1px solid #fca5a5" onclick="openConfirmModal()">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
                         Nhắc nợ hàng loạt
                     </button>
@@ -199,15 +199,169 @@
         </div>
     </div>
 
+    <!-- Custom Modal Popup -->
+    <div id="confirmModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-card__header">
+                <div class="modal-card__icon-wrap">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                </div>
+                <h3 class="modal-card__title">Xác nhận nhắc nợ hàng loạt</h3>
+            </div>
+            <div class="modal-card__body">
+                Bạn có chắc chắn muốn gửi thông báo nhắc nợ tới toàn bộ cư dân chưa thanh toán hóa đơn kỳ này? Hành động này sẽ gửi thông báo đẩy đến tất cả các căn hộ còn dư nợ.
+            </div>
+            <div class="modal-card__footer">
+                <button type="button" class="modal-btn modal-btn--cancel" onclick="closeConfirmModal()">Hủy bỏ</button>
+                <button type="button" class="modal-btn modal-btn--confirm" onclick="submitBatchRemind()">Xác nhận gửi</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         function confirmCancel(id) {
             if (confirm('Bạn có chắc muốn hủy hóa đơn này? Hành động này không thể hoàn tác.')) {
                 document.getElementById('cancel-form-' + id).submit();
             }
         }
+
+        function openConfirmModal() {
+            document.getElementById('confirmModal').classList.add('active');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.remove('active');
+        }
+
+        function submitBatchRemind() {
+            document.getElementById('batch-remind-form').submit();
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('confirmModal');
+            if (e.target === modal) {
+                closeConfirmModal();
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeConfirmModal();
+            }
+        });
     </script>
 
     <style>
+        /* Custom Confirmation Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            width: 90%;
+            max-width: 460px;
+            padding: 24px;
+            transform: scale(0.95);
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: scale(1);
+        }
+
+        .modal-card__header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .modal-card__icon-wrap {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #fee2e2;
+            color: #ef4444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .modal-card__title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+        }
+
+        .modal-card__body {
+            font-size: 0.95rem;
+            color: #475569;
+            line-height: 1.5;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .modal-card__footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .modal-btn--cancel {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .modal-btn--cancel:hover {
+            background: #e2e8f0;
+        }
+
+        .modal-btn--confirm {
+            background: #dc2626;
+            color: #fff;
+            box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.2);
+        }
+
+        .modal-btn--confirm:hover {
+            background: #b91c1c;
+            transform: translateY(-1px);
+        }
+
         .inv-admin {
             max-width: 1200px;
             margin: 0 auto;

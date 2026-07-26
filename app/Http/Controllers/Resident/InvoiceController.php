@@ -58,7 +58,24 @@ class InvoiceController extends Controller
 
         $invoices = $query->paginate(15)->withQueryString();
 
-        return view('resident.invoices.history', compact('invoices'));
+        // Lấy dữ liệu lượng nước tiêu thụ thật từ database (tối đa 12 tháng gần nhất có dữ liệu chốt)
+        $meters = \App\Models\UtilityMeter::whereIn('apartment_id', $apartmentIds)
+            ->where('type', 'water')
+            ->where('status', 'approved')
+            ->orderBy('record_year', 'asc')
+            ->orderBy('record_month', 'asc')
+            ->take(12)
+            ->get();
+
+        $waterChartLabels = [];
+        $waterChartData = [];
+        
+        foreach ($meters as $meter) {
+            $waterChartLabels[] = 'Tháng ' . str_pad($meter->record_month, 2, '0', STR_PAD_LEFT) . '/' . $meter->record_year;
+            $waterChartData[] = (float)$meter->usage_amount;
+        }
+
+        return view('resident.invoices.history', compact('invoices', 'waterChartLabels', 'waterChartData'));
     }
 
     /**
