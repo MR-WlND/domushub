@@ -64,44 +64,52 @@
                                 động</strong>.</p>
 
                         @php
-                            $typeKeys = [
-                                'electricity',
-                                'water',
-                                'management_fee',
-                                'motorbike',
-                                'car',
-                                'bicycle',
-                                'internet',
-                                'service',
+                            $baseTypes = [
+                                'water' => 'Tiền nước',
+                                'management_fee' => 'Phí quản lý',
+                                'internet' => 'Internet',
+                                'service' => 'Dịch vụ'
                             ];
-                            $activeTypes = $activePrices->keyBy('type');
+                            $activeTypesLookup = $activePrices->pluck('type')->toArray();
                         @endphp
 
                         <div class="batch-price-list">
-                            @foreach ($typeKeys as $type)
-                                @php $price = $activeTypes->get($type); @endphp
-                                <label class="batch-price-item {{ $price ? '' : 'batch-price-item--disabled' }}">
-                                    <input type="checkbox" name="types[]" value="{{ $type }}"
-                                        data-price="{{ $price ? $price->unit_price : 0 }}"
-                                        {{ old('types') && in_array($type, old('types')) ? 'checked' : '' }}
-                                        {{ !$price ? 'disabled' : '' }} class="batch-check"
+                            {{-- Hiển thị tất cả các loại giá đang hoạt động (bao gồm nhiều loại xe của parking_fee) --}}
+                            @foreach ($activePrices as $price)
+                                @php
+                                    $checkboxValue = $price->type === 'parking_fee' && $price->vehicle_type
+                                        ? 'parking_fee_' . $price->vehicle_type
+                                        : $price->type;
+                                @endphp
+                                <label class="batch-price-item">
+                                    <input type="checkbox" name="types[]" value="{{ $checkboxValue }}"
+                                        data-price="{{ $price->unit_price }}"
+                                        {{ old('types') && in_array($checkboxValue, old('types')) ? 'checked' : '' }}
+                                        class="batch-check"
                                         onchange="updateEstimatedCost()">
                                     <div class="batch-price-info">
                                         <div>
-                                            <div class="batch-price-name">
-                                                {{ $price ? $price->name : \App\Models\Invoice::typeLabel($type) }}</div>
-                                            @if ($price)
-                                                <div class="batch-price-val">{{ number_format($price->unit_price) }}đ / đơn
-                                                    vị</div>
-                                            @else
-                                                <div class="batch-price-na">Chưa có đơn giá</div>
-                                            @endif
+                                            <div class="batch-price-name">{{ $price->name }}</div>
+                                            <div class="batch-price-val">{{ number_format($price->unit_price) }}đ / đơn vị</div>
                                         </div>
                                     </div>
-                                    @if ($price)
-                                        <span class="batch-price-active">Hoạt động</span>
-                                    @endif
+                                    <span class="batch-price-active">Hoạt động</span>
                                 </label>
+                            @endforeach
+
+                            {{-- Hiển thị các loại phí cơ bản chưa có cấu hình giá --}}
+                            @foreach ($baseTypes as $type => $label)
+                                @if (!in_array($type, $activeTypesLookup))
+                                <label class="batch-price-item batch-price-item--disabled">
+                                    <input type="checkbox" disabled class="batch-check">
+                                    <div class="batch-price-info">
+                                        <div>
+                                            <div class="batch-price-name">{{ $label }}</div>
+                                            <div class="batch-price-na">Chưa có đơn giá</div>
+                                        </div>
+                                    </div>
+                                </label>
+                                @endif
                             @endforeach
                         </div>
                         @error('types')

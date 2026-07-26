@@ -109,6 +109,14 @@ class Apartment extends Model
         return $this->hasMany(Invoice::class);
     }
 
+    /**
+     * Chỉ số điện nước của căn hộ
+     */
+    public function utilityMeters(): HasMany
+    {
+        return $this->hasMany(UtilityMeter::class);
+    }
+
     /*
     |----------------------------
     | SCOPES

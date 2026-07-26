@@ -7,19 +7,19 @@
 
     {{-- Header --}}
     <div class="apt-inv-header">
-        <div class="apt-inv-header__left">
-            <a href="{{ portal_route('invoices.index') }}" class="btn-back">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-                Quay lại danh sách
-            </a>
-            <div style="margin-top: 12px;">
-                <p class="apt-inv-eyebrow">Tài chính · Hóa đơn căn hộ</p>
-                <h1 class="apt-inv-title">
-                    Căn {{ $apartment->apartment_number }}
-                    <span class="apt-inv-block-tag">{{ optional(optional($apartment->floor)->block)->name ?? '' }}</span>
-                </h1>
-                <p class="apt-inv-sub">{{ optional($apartment->floor)->name ?? '' }} · {{ $apartment->owner_name }}</p>
-            </div>
+        <a href="{{ portal_route('invoices.index') }}" class="btn-back">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Quay lại danh sách
+        </a>
+        <div class="apt-inv-header__content">
+            <p class="apt-inv-eyebrow">Tài chính <span class="dot">·</span> Hóa đơn căn hộ</p>
+            <h1 class="apt-inv-title">
+                Căn {{ $apartment->apartment_number }}
+                @if(optional(optional($apartment->floor)->block)->name)
+                    <span class="apt-inv-block-tag">Tòa {{ $apartment->floor->block->name }}</span>
+                @endif
+            </h1>
+            <p class="apt-inv-sub">Tầng {{ optional($apartment->floor)->name ?? '' }} <span class="dot">·</span> {{ $apartment->owner_name }}</p>
         </div>
     </div>
 
@@ -80,7 +80,6 @@
                 <tr>
                     <th>Mã HD</th>
                     <th>Tiêu đề / Kỳ</th>
-                    <th>Chi tiết phí</th>
                     <th>Tổng tiền</th>
                     <th>Đã thu</th>
                     <th>Hạn TT</th>
@@ -98,18 +97,6 @@
                         <div class="apt-inv-title-cell">{{ $inv->title }}</div>
                         <div class="apt-inv-muted">Tháng {{ $inv->billing_month->format('m/Y') }}</div>
                     </td>
-                    <td>
-                        @foreach($inv->details as $detail)
-                            <div class="apt-inv-detail-item">
-                                <span class="apt-inv-badge apt-inv-badge--{{ $detail->servicePrice->type ?? 'other' }}">
-                                    {{ \App\Models\Invoice::typeLabel($detail->servicePrice->type ?? 'other') }}
-                                </span>
-                                <span style="font-size:0.78rem; color:#475569; margin-left:4px;">
-                                    {{ number_format($detail->amount) }}đ
-                                </span>
-                            </div>
-                        @endforeach
-                    </td>
                     <td class="apt-inv-amount">{{ number_format($inv->total_amount) }}đ</td>
                     <td>
                         @if($inv->paid_amount > 0)
@@ -126,14 +113,15 @@
                             <span class="apt-inv-status apt-inv-status--partial">Một phần</span>
                         @elseif($inv->status === 'overdue')
                             <span class="apt-inv-status apt-inv-status--overdue">Quá hạn</span>
+                        @elseif($inv->status === 'cancelled')
+                            <span class="apt-inv-status" style="background: #e2e3e5; color: #383d41;">Đã hủy</span>
                         @else
                             <span class="apt-inv-status apt-inv-status--unpaid">Chưa TT</span>
                         @endif
                     </td>
                     <td>
                         <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-                            <a href="{{ portal_route('invoices.print', $inv) }}" target="_blank" class="apt-inv-btn apt-inv-btn--print" title="In" onclick="event.stopPropagation()">🖨 In</a>
-                            @if($inv->status !== 'paid')
+                            @if(!in_array($inv->status, ['paid', 'cancelled']))
                             <button type="button" class="apt-inv-btn apt-inv-btn--pay"
                                 onclick="event.stopPropagation(); openPayModal({{ $inv->id }}, '{{ $inv->invoice_code }}', '{{ addslashes($inv->title) }}', {{ $inv->remaining_amount ?: $inv->total_amount }}, '{{ addslashes($apartment->owner_name ?? '') }}', 'Tháng {{ $inv->billing_month->format('m/Y') }}')">
                                 Thu tiền
@@ -143,7 +131,9 @@
                                 <form action="{{ portal_route('invoices.resend-notification', $inv) }}"
                                     method="POST" style="display:inline;" onclick="event.stopPropagation()">
                                     @csrf
-                                    <button type="submit" class="apt-inv-btn apt-inv-btn--notify" title="Gửi lại thông báo">🔔</button>
+                                    <button type="submit" class="apt-inv-btn apt-inv-btn--notify" title="Gửi lại thông báo">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                                    </button>
                                 </form>
                                 <button class="apt-inv-btn apt-inv-btn--cancel" onclick="event.stopPropagation(); confirmCancel({{ $inv->id }})" title="Hủy hóa đơn">✕ Hủy</button>
 
@@ -156,7 +146,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="8">
+                    <td colspan="7">
                         <div class="apt-inv-empty">Không có hóa đơn nào</div>
                     </td>
                 </tr>
@@ -218,14 +208,16 @@
 .apt-inv-page { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
 
 /* Header */
-.apt-inv-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
-.apt-inv-header__left { flex: 1; }
-.btn-back { display: inline-flex; align-items: center; gap: 6px; color: #2563eb; text-decoration: none; font-weight: 600; font-size: 0.88rem; }
-.btn-back:hover { color: #1d4ed8; }
-.apt-inv-eyebrow { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; margin: 0 0 4px; font-weight: 600; }
-.apt-inv-title { font-size: 1.7rem; font-weight: 800; color: #0f172a; margin: 0 0 4px; display: flex; align-items: center; gap: 10px; }
-.apt-inv-block-tag { font-size: 0.9rem; font-weight: 600; padding: 3px 10px; background: #eff6ff; color: #2563eb; border-radius: 20px; }
-.apt-inv-sub { font-size: 0.9rem; color: #64748b; margin: 0; }
+.apt-inv-header { margin-bottom: 32px; display: flex; flex-direction: column; gap: 24px; }
+.btn-back { display: inline-flex; align-items: center; gap: 8px; color: #2563eb; font-weight: 500; font-size: 1rem; text-decoration: none; }
+.btn-back:hover { color: #1d4ed8; text-decoration: underline; }
+.apt-inv-header__content { display: flex; flex-direction: column; gap: 8px; }
+.apt-inv-eyebrow { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin: 0; font-weight: 600; }
+.apt-inv-eyebrow .dot { margin: 0 4px; font-weight: 400; color: #cbd5e1; }
+.apt-inv-title { font-size: 2.6rem; font-weight: 900; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 16px; letter-spacing: -0.02em; line-height: 1; }
+.apt-inv-block-tag { font-size: 1rem; font-weight: 600; padding: 6px 16px; background: #eff6ff; color: #2563eb; border-radius: 20px; letter-spacing: normal; line-height: 1.2; }
+.apt-inv-sub { font-size: 1.1rem; color: #64748b; margin: 0; font-weight: 400; }
+.apt-inv-sub .dot { margin: 0 4px; font-weight: 700; color: #cbd5e1; }
 
 /* Alert */
 .apt-inv-alert { padding: 12px 16px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; margin-bottom: 16px; }
@@ -269,6 +261,10 @@
 .apt-inv-badge--water { background: #dbeafe; color: #1e40af; }
 .apt-inv-badge--management_fee { background: #f3e8ff; color: #6b21a8; }
 .apt-inv-badge--parking { background: #dcfce7; color: #166534; }
+.apt-inv-badge--motorbike { background: #fff7ed; color: #c2410c; }
+.apt-inv-badge--electric_bike { background: #f0fdf4; color: #15803d; }
+.apt-inv-badge--car { background: #fef3c7; color: #92400e; }
+.apt-inv-badge--bicycle { background: #ecfdf5; color: #065f46; }
 .apt-inv-badge--other, .apt-inv-badge--internet, .apt-inv-badge--service { background: #f1f5f9; color: #475569; }
 
 /* Status Pills */
@@ -290,7 +286,7 @@
 .apt-inv-btn--notify { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
 .apt-inv-btn--notify:hover { background: #dbeafe; }
 .apt-inv-btn--cancel { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
-.apt-inv-btn--cancel:hover { background: #fee2e2; }
+.apt-inv-btn--cancel:hover { background: #fee2f2; }
 
 /* Empty */
 .apt-inv-empty { text-align: center; padding: 40px 20px; color: #94a3b8; font-size: 0.95rem; }
@@ -304,7 +300,7 @@
 /* Modal */
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.45); z-index: 1000; align-items: center; justify-content: center; }
 .modal-overlay.active { display: flex; }
-.modal-content { background: #fff; border-radius: 12px; width: 100%; max-width: 420px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); overflow: hidden; }
+.modal-content { background: #fff; border-radius: 12px; width: 100%; max-width: 420px; overflow: hidden; }
 .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #e2e8f0; }
 .modal-title { font-size: 1rem; font-weight: 700; color: #0f172a; margin: 0; }
 .modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #94a3b8; }

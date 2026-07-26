@@ -22,6 +22,9 @@ class Invoice extends Model
         'paid_amount',
         'status',
         'created_by',
+        'previous_debt',
+        'current_amount',
+        'total_due_at_issue',
     ];
 
     protected $casts = [
@@ -119,13 +122,12 @@ class Invoice extends Model
     public static function typeLabel(string $type): string
     {
         return match ($type) {
-            'electricity' => 'Tiền điện',
-            'water' => 'Tiền nước',
-            'parking' => 'Phí gửi xe',
+            'water'          => 'Tiền nước',
+            'parking_fee'    => 'Phí gửi xe',
             'management_fee' => 'Phí quản lý',
-            'internet' => 'Internet',
-            'service' => 'Dịch vụ',
-            default => 'Khác',
+            'internet'       => 'Internet',
+            'service'        => 'Dịch vụ',
+            default          => 'Khác',
         };
     }
 

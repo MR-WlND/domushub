@@ -217,10 +217,22 @@
             @endforelse
         </tbody>
         <tfoot>
+            <tr class="total-row" style="background: #fff;">
+                <td colspan="4" style="text-align:right;">Nợ kỳ trước:</td>
+                <td style="text-align:right; font-size:15px; font-weight:normal;">
+                    {{ number_format($invoice->previous_debt) }} đ
+                </td>
+            </tr>
+            <tr class="total-row" style="background: #fff; border-bottom: 1px dashed #ccc;">
+                <td colspan="4" style="text-align:right;">Phát sinh kỳ này:</td>
+                <td style="text-align:right; font-size:15px; font-weight:normal;">
+                    {{ number_format($invoice->current_amount) }} đ
+                </td>
+            </tr>
             <tr class="total-row">
-                <td colspan="4" style="text-align:right;">Tổng cộng:</td>
-                <td style="text-align:right; font-size:16px;">
-                    {{ number_format($invoice->total_amount) }} đ
+                <td colspan="4" style="text-align:right; font-size: 16px;">TỔNG CỘNG THANH TOÁN:</td>
+                <td style="text-align:right; font-size:18px; color: #00236f;">
+                    {{ number_format($invoice->total_due_at_issue) }} đ
                 </td>
             </tr>
             @if($invoice->paid_amount > 0)

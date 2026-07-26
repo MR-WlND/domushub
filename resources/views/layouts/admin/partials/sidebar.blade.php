@@ -94,7 +94,7 @@
         {{-- ============================================================== --}}
         @if(in_array($role, ['admin', 'manager', 'staff', 'technician']))
         <div class="nav-section">
-            <span class="nav-section__label">ĐIỆN NƯỚC & HOÁ ĐƠN</span>
+            <span class="nav-section__label">NƯỚC & HOÁ ĐƠN</span>
             <a href="{{ portal_route('utility-readings.index') }}" class="dashboard-nav__item {{ is_portal_route('utility-readings.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"></path>
@@ -223,6 +223,31 @@
         @endif
 
 
+
+        {{-- ============================================================== --}}
+        {{-- QUẢN LÝ VỆ SINH - Admin & Manager --}}
+        {{-- ============================================================== --}}
+        @if(in_array($role, ['admin', 'manager']))
+        <div class="nav-section">
+            <span class="nav-section__label">QUẢN LÝ VỆ SINH</span>
+            <a href="{{ portal_route('cleaning-tasks.index') }}" class="dashboard-nav__item {{ is_portal_route('cleaning-tasks.*') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path>
+                    <rect x="9" y="3" width="6" height="4" rx="2"></rect>
+                    <path d="M9 14l2 2 4-4"></path>
+                </svg>
+                <span>Giao việc vệ sinh</span>
+            </a>
+            <a href="{{ portal_route('cleaning-reports.index') }}" class="dashboard-nav__item {{ is_portal_route('cleaning-reports.*') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+                <span>Báo cáo sự cố VS</span>
+            </a>
+        </div>
+        @endif
 
         {{-- ============================================================== --}}
         {{-- TƯƠNG TÁC & BẢNG TIN - Admin & Manager --}}
