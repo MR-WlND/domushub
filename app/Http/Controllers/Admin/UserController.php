@@ -15,7 +15,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         // Khởi tạo query từ Model User — chỉ lấy nhân sự nội bộ (không bao gồm cư dân)
-        $query = User::whereIn('role', ['admin', 'manager', 'staff', 'technician', 'security', 'cleaning']);
+        $query = User::whereIn('role', ['admin', 'manager', 'staff', 'technician', 'security', 'cleaning', 'receptionist']);
 
         // Tìm kiếm theo Tên hoặc Email (nếu có nhập)
         if ($request->has('search') && $request->search != '') {
@@ -46,12 +46,13 @@ class UserController extends Controller
     {
         return view('admin.users.create', [
             'roleLabels' => [
-                'admin' => 'Quản trị viên',
-                'manager' => 'Quản lý',
-                'staff' => 'Nhân viên kế toán',
-                'technician' => 'Kỹ thuật',
-                'security' => 'An ninh',
-                'cleaning' => 'Nhân viên vệ sinh',
+                'admin'        => 'Quản trị viên',
+                'manager'      => 'Quản lý',
+                'staff'        => 'Nhân viên kế toán',
+                'technician'   => 'Kỹ thuật',
+                'security'     => 'An ninh',
+                'cleaning'     => 'Nhân viên vệ sinh',
+                'receptionist' => 'Lễ tân',
             ],
             'statusLabels' => [
                 'pending' => 'Chờ kích hoạt',
@@ -68,12 +69,13 @@ class UserController extends Controller
         return view('admin.users.edit', [
             'user' => $user,
             'roleLabels' => [
-                'admin' => 'Quản trị viên',
-                'manager' => 'Quản lý',
-                'staff' => 'Nhân viên kế toán',
-                'technician' => 'Kỹ thuật',
-                'security' => 'An ninh',
-                'cleaning' => 'Nhân viên vệ sinh',
+                'admin'        => 'Quản trị viên',
+                'manager'      => 'Quản lý',
+                'staff'        => 'Nhân viên kế toán',
+                'technician'   => 'Kỹ thuật',
+                'security'     => 'An ninh',
+                'cleaning'     => 'Nhân viên vệ sinh',
+                'receptionist' => 'Lễ tân',
             ],
             'statusLabels' => [
                 'pending' => 'Chờ kích hoạt',
@@ -89,7 +91,7 @@ class UserController extends Controller
             'name' => 'required|string|max:100',
             'email' => 'required|email|max:150|unique:users,email',
             'phone' => 'required|string|max:20|regex:/^[0-9+]+$/|unique:users,phone',
-            'role' => 'required|in:admin,manager,staff,technician,security,resident,cleaning',
+            'role' => 'required|in:admin,manager,staff,technician,security,resident,cleaning,receptionist',
             'status' => 'required|in:pending,active,banned',
         ], [
             'name.required' => 'Vui lòng nhập họ và tên.',
@@ -129,7 +131,7 @@ class UserController extends Controller
             'name' => 'required|string|max:100',
             'email' => 'required|email|max:150|unique:users,email,' . $id,
             'phone' => 'required|string|max:20|regex:/^[0-9+]+$/|unique:users,phone,' . $id,
-            'role' => 'required|in:admin,manager,staff,technician,security,resident,cleaning',
+            'role' => 'required|in:admin,manager,staff,technician,security,resident,cleaning,receptionist',
             'status' => 'required|in:pending,active,banned',
         ], [
             'name.required' => 'Vui lòng nhập họ và tên.',
@@ -161,7 +163,7 @@ class UserController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
-            'role' => 'required|in:admin,manager,staff,technician,security,resident,cleaning',
+            'role' => 'required|in:admin,manager,staff,technician,security,resident,cleaning,receptionist',
             'status' => 'required|in:pending,active,banned',
         ], [
             'role.required' => 'Vui lòng chọn vai trò.',

@@ -135,6 +135,11 @@ class User extends Authenticatable
         return $this->role === 'cleaning';
     }
 
+    public function isReceptionist(): bool
+    {
+        return $this->role === 'receptionist';
+    }
+
     /**
      * Kiểm tra user có thuộc nhóm admin portal hay không
      */
