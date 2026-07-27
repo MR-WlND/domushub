@@ -13,17 +13,25 @@
 </div>
 
 <!-- Filter -->
-<div class="dashboard-card" style="margin-bottom:24px; padding:16px;">
-    <form method="GET" action="{{ route('receptionist.parcels.index') }}" style="display:flex;gap:12px;flex-wrap:wrap;width:100%;align-items:center;">
-        <input type="text" name="search" value="{{ request('search') }}" placeholder="Tìm mã vận đơn, người gửi, căn hộ...">
-        <select name="status">
+<div class="filter-card">
+    <form method="GET" action="{{ route('receptionist.parcels.index') }}" class="filter-form">
+        <div class="filter-input-wrapper">
+            <i class="fa-solid fa-magnifying-glass filter-input-icon"></i>
+            <input type="text" name="search" value="{{ request('search') }}" class="filter-input" placeholder="Tìm mã vận đơn, người gửi, căn hộ...">
+        </div>
+        <select name="status" class="filter-select">
             <option value="">-- Tất cả trạng thái --</option>
             <option value="pending"  {{ request('status') === 'pending'  ? 'selected' : '' }}>Chờ nhận</option>
             <option value="notified" {{ request('status') === 'notified' ? 'selected' : '' }}>Đã thông báo</option>
             <option value="received" {{ request('status') === 'received' ? 'selected' : '' }}>Đã nhận</option>
             <option value="returned" {{ request('status') === 'returned' ? 'selected' : '' }}>Đã hoàn trả</option>
         </select>
-        <button type="submit" class="btn-new-broadcast" style="width:auto; margin-bottom:0; padding:9px 18px;"><i class="fa-solid fa-filter"></i> Lọc</button>
+        <button type="submit" class="filter-btn-submit"><i class="fa-solid fa-filter"></i> Lọc</button>
+        @if(request('search') || request('status'))
+            <a href="{{ route('receptionist.parcels.index') }}" class="filter-btn-reset">
+                <i class="fa-solid fa-arrows-rotate"></i> Reset
+            </a>
+        @endif
     </form>
 </div>
 
@@ -32,13 +40,13 @@
     <table style="width:100%; border-collapse:collapse; text-align:left;">
         <thead style="background:#f8f9ff; border-bottom:1px solid #e2e8f0;">
             <tr>
-                <th>#</th>
-                <th>Căn hộ</th>
-                <th>Người gửi</th>
-                <th>Mã vận đơn</th>
-                <th>Đơn vị vận chuyển</th>
-                <th>Ngày đến</th>
-                <th>Trạng thái</th>
+                <th style="padding:14px 20px; font-size:12px; font-weight:700; color:#757682; text-transform:uppercase;">ID</th>
+                <th style="padding:14px 20px; font-size:12px; font-weight:700; color:#757682; text-transform:uppercase;">Căn hộ</th>
+                <th style="padding:14px 20px; font-size:12px; font-weight:700; color:#757682; text-transform:uppercase;">Người gửi</th>
+                <th style="padding:14px 20px; font-size:12px; font-weight:700; color:#757682; text-transform:uppercase;">Mã vận đơn</th>
+                <th style="padding:14px 20px; font-size:12px; font-weight:700; color:#757682; text-transform:uppercase;">Đơn vị vận chuyển</th>
+                <th style="padding:14px 20px; font-size:12px; font-weight:700; color:#757682; text-transform:uppercase;">Ngày đến</th>
+                <th style="padding:14px 20px; font-size:12px; font-weight:700; color:#757682; text-transform:uppercase;">Trạng thái</th>
                 <th style="padding:14px 20px; font-size:12px; font-weight:700; color:#757682; text-transform:uppercase;">Thao tác</th>
             </tr>
         </thead>

@@ -10,9 +10,9 @@
 </div>
 
 <!-- Filter -->
-<div class="dashboard-card" style="margin-bottom:24px; padding:16px;">
-    <form method="GET" action="{{ route('receptionist.amenities.index') }}" style="display:flex;gap:12px;flex-wrap:wrap;width:100%;align-items:center;">
-        <select name="facility_id">
+<div class="filter-card">
+    <form method="GET" action="{{ route('receptionist.amenities.index') }}" class="filter-form">
+        <select name="facility_id" class="filter-select">
             <option value="">-- Tất cả tiện ích --</option>
             @foreach($facilities as $facility)
             <option value="{{ $facility->id }}" {{ request('facility_id') == $facility->id ? 'selected' : '' }}>
@@ -20,14 +20,19 @@
             </option>
             @endforeach
         </select>
-        <select name="status">
+        <select name="status" class="filter-select">
             <option value="">-- Tất cả trạng thái --</option>
             <option value="pending"  {{ request('status') === 'pending'  ? 'selected' : '' }}>Chờ duyệt</option>
             <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Đã duyệt</option>
             <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Đã từ chối</option>
             <option value="cancelled"{{ request('status') === 'cancelled'? 'selected' : '' }}>Đã hủy</option>
         </select>
-        <button type="submit" class="btn-new-broadcast" style="width:auto; margin-bottom:0; padding:9px 18px;"><i class="fa-solid fa-filter"></i> Lọc</button>
+        <button type="submit" class="filter-btn-submit"><i class="fa-solid fa-filter"></i> Lọc</button>
+        @if(request('facility_id') || request('status'))
+            <a href="{{ route('receptionist.amenities.index') }}" class="filter-btn-reset">
+                <i class="fa-solid fa-arrows-rotate"></i> Reset
+            </a>
+        @endif
     </form>
 </div>
 
@@ -36,12 +41,12 @@
     <table style="width:100%; border-collapse:collapse; text-align:left;">
         <thead style="background:#f8f9ff; border-bottom:1px solid #e2e8f0;">
             <tr>
-                <th>#</th>
-                <th>Tiện ích</th>
-                <th>Cư dân</th>
-                <th>Thời gian đặt</th>
-                <th>Thời gian sử dụng</th>
-                <th>Trạng thái</th>
+                <th style="padding:14px 20px; font-size:12px; font-weight:700; color:#757682; text-transform:uppercase;">ID</th>
+                <th style="padding:14px 20px; font-size:12px; font-weight:700; color:#757682; text-transform:uppercase;">Tiện ích</th>
+                <th style="padding:14px 20px; font-size:12px; font-weight:700; color:#757682; text-transform:uppercase;">Cư dân</th>
+                <th style="padding:14px 20px; font-size:12px; font-weight:700; color:#757682; text-transform:uppercase;">Thời gian đặt</th>
+                <th style="padding:14px 20px; font-size:12px; font-weight:700; color:#757682; text-transform:uppercase;">Thời gian sử dụng</th>
+                <th style="padding:14px 20px; font-size:12px; font-weight:700; color:#757682; text-transform:uppercase;">Trạng thái</th>
                 <th style="padding:14px 20px; font-size:12px; font-weight:700; color:#757682; text-transform:uppercase;">Thao tác</th>
             </tr>
         </thead>

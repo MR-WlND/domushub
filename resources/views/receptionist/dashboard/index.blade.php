@@ -16,7 +16,7 @@
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
     <div>
         @php $hour = now()->hour; $greet = $hour < 12 ? 'Chào buổi sáng' : ($hour < 18 ? 'Chào buổi chiều' : 'Chào buổi tối'); @endphp
-        <h1 style="font-size:24px;font-weight:700;color:#00236f;margin-bottom:8px;">{{ $greet }}, {{ explode(' ', auth()->user()->name)[0] }} 👋</h1>
+        <h1 style="font-size:24px;font-weight:700;color:#00236f;margin-bottom:8px;">{{ $greet }}, {{ explode(' ', auth()->user()->name)[0] }}</h1>
         <p style="color:#475569;margin:0;">Hôm nay có <strong>{{ $pendingParcels }}</strong> bưu phẩm chờ xử lý và <strong>{{ $pendingTickets }}</strong> phản ánh mới.</p>
     </div>
     <a href="{{ route('receptionist.parcels.create') }}" class="btn-new-broadcast" style="width:auto; margin-bottom:0;">
