@@ -218,6 +218,10 @@ Route::post('/security/login', [AuthController::class, 'loginSecurity'])->name('
 Route::get('/cleaning/login', [AuthController::class, 'showCleaningLogin'])->name('cleaning.login');
 Route::post('/cleaning/login', [AuthController::class, 'loginCleaning'])->name('cleaning.login.submit');
 
+// Receptionist Login Routes
+Route::get('/receptionist/login', [AuthController::class, 'showReceptionistLogin'])->name('receptionist.login');
+Route::post('/receptionist/login', [AuthController::class, 'loginReceptionist'])->name('receptionist.login.submit');
+
 // Logout (accessible from all roles)
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
@@ -679,7 +683,36 @@ Route::middleware(['resident'])->group(function () {
     Route::post('/resident/tickets/{id}/respond-accusation', [ResidentTicketController::class, 'respondAccusation'])->name('resident.tickets.respond-accusation');
 });
 
+// =========================================================================
+// DASHBOARD RECEPTIONIST ROUTES
+// =========================================================================
+Route::middleware(['receptionist'])->prefix('receptionist')->name('receptionist.')->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [\App\Http\Controllers\Receptionist\DashboardController::class, 'index'])->name('dashboard');
 
+    // Bưu phẩm
+    Route::get('/parcels',                          [\App\Http\Controllers\Receptionist\ParcelController::class, 'index'])->name('parcels.index');
+    Route::get('/parcels/create',                   [\App\Http\Controllers\Receptionist\ParcelController::class, 'create'])->name('parcels.create');
+    Route::post('/parcels',                         [\App\Http\Controllers\Receptionist\ParcelController::class, 'store'])->name('parcels.store');
+    Route::post('/parcels/{id}/received',           [\App\Http\Controllers\Receptionist\ParcelController::class, 'markReceived'])->name('parcels.received');
+    Route::post('/parcels/{id}/returned',           [\App\Http\Controllers\Receptionist\ParcelController::class, 'markReturned'])->name('parcels.returned');
+    Route::post('/parcels/{id}/notify',             [\App\Http\Controllers\Receptionist\ParcelController::class, 'markNotified'])->name('parcels.notify');
+
+    // Phản ánh
+    Route::get('/tickets',                          [\App\Http\Controllers\Receptionist\TicketController::class, 'index'])->name('tickets.index');
+    Route::get('/tickets/{id}',                     [\App\Http\Controllers\Receptionist\TicketController::class, 'show'])->name('tickets.show');
+
+    // Đặt lịch tiện ích
+    Route::get('/amenities',                        [\App\Http\Controllers\Receptionist\AmenityController::class, 'index'])->name('amenities.index');
+    Route::post('/amenities/{id}/approve',          [\App\Http\Controllers\Receptionist\AmenityController::class, 'approveBooking'])->name('amenities.approve');
+    Route::post('/amenities/{id}/reject',           [\App\Http\Controllers\Receptionist\AmenityController::class, 'rejectBooking'])->name('amenities.reject');
+});
+
+// Shortcut route
+Route::get('/receptionist', function () {
+    if (! Auth::check()) return redirect()->route('receptionist.login');
+    return redirect()->route('receptionist.dashboard');
+});
 
 // Fallback route to serve uploaded public storage files
 Route::get('/storage/{any}', function ($any) {
