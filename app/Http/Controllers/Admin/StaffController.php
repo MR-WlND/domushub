@@ -64,7 +64,19 @@ class StaffController extends Controller
         $request->validate([
             // Tab 1: Info
             'full_name' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:20',
+            'phone' => [
+                'nullable',
+                'string',
+                'max:20',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->create_account == 1 && $value) {
+                        $exists = \App\Models\User::where('phone', $value)->exists();
+                        if ($exists) {
+                            $fail('Số điện thoại này đã được đăng ký cho một tài khoản khác trong hệ thống.');
+                        }
+                    }
+                }
+            ],
             'cccd' => 'nullable|string|max:20|unique:staffs,cccd',
             'address' => 'nullable|string|max:255',
             'dob' => 'nullable|date',
@@ -126,7 +138,19 @@ class StaffController extends Controller
         $request->validate([
             // Tab 1: Info
             'full_name' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:20',
+            'phone' => [
+                'nullable',
+                'string',
+                'max:20',
+                function ($attribute, $value, $fail) use ($staff) {
+                    if ($staff->user && $value && $value !== $staff->user->phone) {
+                        $exists = \App\Models\User::where('phone', $value)->exists();
+                        if ($exists) {
+                            $fail('Số điện thoại này đã được đăng ký cho một tài khoản khác trong hệ thống.');
+                        }
+                    }
+                }
+            ],
             'cccd' => 'nullable|string|max:20|unique:staffs,cccd,' . $staff->id,
             'address' => 'nullable|string|max:255',
             'dob' => 'nullable|date',
