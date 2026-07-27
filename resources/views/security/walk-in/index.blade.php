@@ -112,7 +112,6 @@
 .wi-owner-details{flex:1;min-width:0}
 .wi-owner-name{font-size:.9rem;font-weight:800;color:#1e40af;margin-bottom:.05rem}
 .wi-owner-phone{font-size:.82rem;color:#3b82f6;font-weight:600;display:flex;align-items:center;gap:.3rem}
-.wi-owner-phone::before{content:'📞';font-size:.75rem}
 /* STEP NAV */
 .wi-step-nav{display:flex;gap:.75rem;margin-top:1.25rem}
 .wi-step-nav .wi-btn-main{flex:1}

@@ -146,7 +146,7 @@
                             <p class="vr-card__name">{{ $v->guest_name }}</p>
                             <div class="vr-card__meta">
                                 @if($v->guest_phone)
-                                    <span>📞 {{ $v->guest_phone }}</span>
+                                    <span>{{ $v->guest_phone }}</span>
                                 @endif
                                 <span class="vr-card__apt">
                                     {{ $v->apartment?->apartment_number ?? '' }}

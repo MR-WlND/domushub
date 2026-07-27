@@ -116,12 +116,12 @@
                 </div>
                 @if($visitor->guest_phone)
                 <div class="vd-row">
-                    <span class="vd-lbl">📞 Điện thoại</span>
+                    <span class="vd-lbl">Điện thoại</span>
                     <span class="vd-val">{{ $visitor->guest_phone }}</span>
                 </div>
                 @endif
                 <div class="vd-row">
-                    <span class="vd-lbl">🏠 Căn hộ</span>
+                    <span class="vd-lbl">Căn hộ</span>
                     <span class="vd-val vd-val--apt">
                         {{ $visitor->apartment?->apartment_number ?? '—' }}
                         @if($visitor->apartment?->floor?->block)
@@ -130,15 +130,15 @@
                     </span>
                 </div>
                 <div class="vd-row">
-                    <span class="vd-lbl">🤝 Gặp cư dân</span>
+                    <span class="vd-lbl">Gặp cư dân</span>
                     <span class="vd-val">{{ $visitor->resident_to_meet ?? '—' }}</span>
                 </div>
                 <div class="vd-row">
-                    <span class="vd-lbl">👮 Bảo vệ đăng ký</span>
+                    <span class="vd-lbl">Bảo vệ đăng ký</span>
                     <span class="vd-val">{{ $visitor->registeredBy?->name ?? '—' }}</span>
                 </div>
                 <div class="vd-row">
-                    <span class="vd-lbl">🕐 Đăng ký lúc</span>
+                    <span class="vd-lbl">Đăng ký lúc</span>
                     <span class="vd-val">{{ $visitor->created_at->format('H:i — d/m/Y') }}</span>
                 </div>
                 @if($visitor->check_in_at)
@@ -183,7 +183,7 @@
         {{-- Note --}}
         @if($visitor->note)
         <div class="vd-note">
-            <strong>📝 Lý do thăm</strong>
+            <strong>Lý do thăm</strong>
             {{ $visitor->note }}
         </div>
         @endif
