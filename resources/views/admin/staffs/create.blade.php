@@ -49,7 +49,6 @@
             <div class="tabs-nav">
                 <button type="button" class="tab-btn active" data-target="tab1">Thông tin cá nhân</button>
                 <button type="button" class="tab-btn" data-target="tab2">Công việc & Phòng ban</button>
-                <button type="button" class="tab-btn" data-target="tab3">Hợp đồng lao động</button>
                 <button type="button" class="tab-btn" data-target="tab4">Tài khoản hệ thống</button>
             </div>
 
@@ -96,38 +95,6 @@
                         <option value="active" @selected(old('status') === 'active')>Đang làm việc</option>
                         <option value="inactive" @selected(old('status') === 'inactive')>Đã nghỉ việc</option>
                     </select>
-                </div>
-            </div>
-
-            <!-- Tab 3 -->
-            <div id="tab3" class="tab-content">
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-                    <div class="form-group">
-                        <label class="form-label">Số hợp đồng</label>
-                        <input type="text" name="contract_number" class="form-input" value="{{ old('contract_number') }}">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Loại hợp đồng</label>
-                        <input type="text" name="contract_type" class="form-input" value="{{ old('contract_type') }}" placeholder="VD: Full-time, Thử việc...">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Mức lương cơ bản (VNĐ)</label>
-                    <input type="number" name="base_salary" class="form-input" value="{{ old('base_salary') }}">
-                </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-                    <div class="form-group">
-                        <label class="form-label">Ngày bắt đầu</label>
-                        <input type="date" name="start_date" class="form-input" value="{{ old('start_date') }}">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Ngày kết thúc (nếu có)</label>
-                        <input type="date" name="end_date" class="form-input" value="{{ old('end_date') }}">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">File đính kèm (PDF/Ảnh bản scan)</label>
-                    <input type="file" name="contract_file" class="form-input" accept=".pdf, .jpg, .jpeg, .png">
                 </div>
             </div>
 

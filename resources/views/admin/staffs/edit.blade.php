@@ -50,7 +50,6 @@
             <div class="tabs-nav">
                 <button type="button" class="tab-btn active" data-target="tab1">Thông tin cá nhân</button>
                 <button type="button" class="tab-btn" data-target="tab2">Công việc & Phòng ban</button>
-                <button type="button" class="tab-btn" data-target="tab3">Hợp đồng lao động</button>
                 <button type="button" class="tab-btn" data-target="tab4">Tài khoản hệ thống</button>
             </div>
 
@@ -100,80 +99,6 @@
                 </div>
             </div>
 
-            <!-- Tab 3 -->
-            <div id="tab3" class="tab-content">
-                @if($staff->contracts->count() > 0)
-                    <div style="margin-bottom:24px;">
-                        <h3 style="font-size:14px; color:#0b1c30; margin-bottom:12px;">Lịch sử hợp đồng hiện tại:</h3>
-                        <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
-                            <thead>
-                                <tr style="background:#f8f9fa;">
-                                    <th style="padding:10px; border:1px solid #e2e8f0;">Số HĐ</th>
-                                    <th style="padding:10px; border:1px solid #e2e8f0;">Loại</th>
-                                    <th style="padding:10px; border:1px solid #e2e8f0;">Thời hạn</th>
-                                    <th style="padding:10px; border:1px solid #e2e8f0;">Lương CB</th>
-                                    <th style="padding:10px; border:1px solid #e2e8f0;">Trạng thái</th>
-                                    <th style="padding:10px; border:1px solid #e2e8f0;">Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($staff->contracts as $contract)
-                                <tr>
-                                    <td style="padding:10px; border:1px solid #e2e8f0;">{{ $contract->contract_number }}</td>
-                                    <td style="padding:10px; border:1px solid #e2e8f0;">{{ $contract->type }}</td>
-                                    <td style="padding:10px; border:1px solid #e2e8f0;">{{ optional($contract->start_date)->format('d/m/Y') }} - {{ optional($contract->end_date)->format('d/m/Y') ?? 'Vô thời hạn' }}</td>
-                                    <td style="padding:10px; border:1px solid #e2e8f0;">{{ number_format($contract->base_salary) }}đ</td>
-                                    <td style="padding:10px; border:1px solid #e2e8f0;">
-                                        @if($contract->is_expired)
-                                            <span style="background:#fee2e2; color:#b91c1c; padding:4px 8px; border-radius:4px; font-weight:600; font-size:12px;">Hết hạn</span>
-                                        @else
-                                            <span style="background:#e6f4ea; color:#137333; padding:4px 8px; border-radius:4px; font-weight:600; font-size:12px;">Còn hiệu lực</span>
-                                        @endif
-                                    </td>
-                                    <td style="padding:10px; border:1px solid #e2e8f0; display:flex; gap:8px;">
-                                        @if($contract->file_path)
-                                            <a href="{{ asset('storage/' . $contract->file_path) }}" target="_blank" style="color:#0b57d0; text-decoration:none; font-weight:600;">Xem file</a>
-                                        @endif
-                                        <button type="button" onclick="document.getElementById('delete-contract-{{ $contract->id }}').submit()" style="background:none; border:none; color:#b91c1c; font-weight:600; cursor:pointer; padding:0;">Xóa</button>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @endif
-                
-                <h3 style="font-size:14px; color:#0b1c30; margin-bottom:12px;">Thêm hợp đồng mới (Để trống nếu không thêm)</h3>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-                    <div class="form-group">
-                        <label class="form-label">Số hợp đồng mới</label>
-                        <input type="text" name="contract_number" class="form-input" value="{{ old('contract_number') }}">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Loại hợp đồng</label>
-                        <input type="text" name="contract_type" class="form-input" value="{{ old('contract_type') }}" placeholder="VD: Full-time, Thử việc...">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Mức lương cơ bản (VNĐ)</label>
-                    <input type="number" name="base_salary" class="form-input" value="{{ old('base_salary') }}">
-                </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-                    <div class="form-group">
-                        <label class="form-label">Ngày bắt đầu</label>
-                        <input type="date" name="start_date" class="form-input" value="{{ old('start_date') }}">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Ngày kết thúc (nếu có)</label>
-                        <input type="date" name="end_date" class="form-input" value="{{ old('end_date') }}">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">File đính kèm (PDF/Ảnh bản scan)</label>
-                    <input type="file" name="contract_file" class="form-input" accept=".pdf, .jpg, .jpeg, .png">
-                </div>
-            </div>
-
             <!-- Tab 4 -->
             <div id="tab4" class="tab-content">
                 @if($staff->user)
@@ -206,13 +131,6 @@
             @method('DELETE')
             <button type="submit" style="background:#fee2e2; color:#b91c1c; border:none; padding:10px 20px; border-radius:8px; font-weight:600; cursor:pointer;"><i class="fa-solid fa-trash-can"></i> Xóa hồ sơ nhân sự</button>
         </form>
-
-        @foreach($staff->contracts as $contract)
-        <form id="delete-contract-{{ $contract->id }}" action="{{ route('admin.contracts.destroy', $contract->id) }}" method="POST" onsubmit="return confirm('Xóa hợp đồng này?');" style="display:none;">
-            @csrf
-            @method('DELETE')
-        </form>
-        @endforeach
     </div>
 </div>
 @endsection

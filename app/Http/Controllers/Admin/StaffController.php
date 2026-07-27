@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Staff;
 use App\Models\Department;
-use App\Models\Contract;
 use App\Models\User;
 use App\Helpers\SystemLogger;
 use Illuminate\Http\Request;
@@ -19,7 +18,7 @@ class StaffController extends Controller
 
     public function index(Request $request)
     {
-        $query = Staff::with(['department', 'contracts', 'user']);
+        $query = Staff::with(['department', 'user']);
 
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
@@ -72,13 +71,6 @@ class StaffController extends Controller
             // Tab 2: Job
             'department_id' => 'nullable|exists:departments,id',
             'status' => 'required|in:active,inactive',
-            // Tab 3: Contract
-            'contract_number' => 'nullable|string|max:255|unique:contracts,contract_number',
-            'contract_type' => 'nullable|string|max:255',
-            'base_salary' => 'nullable|numeric|min:0',
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-            'contract_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             // Tab 4: System Account
             'create_account' => 'nullable|boolean',
             'email' => 'required_if:create_account,1|nullable|email|unique:users,email',
@@ -94,22 +86,6 @@ class StaffController extends Controller
             'department_id' => $request->department_id,
             'status' => $request->status,
         ]);
-
-        if ($request->filled('contract_number')) {
-            $filePath = null;
-            if ($request->hasFile('contract_file')) {
-                $filePath = $request->file('contract_file')->store('contracts', 'public');
-            }
-
-            $staff->contracts()->create([
-                'contract_number' => $request->contract_number,
-                'type' => $request->contract_type,
-                'base_salary' => $request->base_salary ?? 0,
-                'start_date' => $request->start_date ?? Carbon::now(),
-                'end_date' => $request->end_date,
-                'file_path' => $filePath,
-            ]);
-        }
 
         if ($request->create_account == 1) {
             $user = User::create([
@@ -130,7 +106,7 @@ class StaffController extends Controller
 
     public function edit(Staff $staff)
     {
-        $staff->load(['contracts', 'user']);
+        $staff->load(['user']);
         $departments = Department::all();
         $roles = [
             'admin'        => 'Quản trị viên',
@@ -157,13 +133,6 @@ class StaffController extends Controller
             // Tab 2: Job
             'department_id' => 'nullable|exists:departments,id',
             'status' => 'required|in:active,inactive',
-            // Tab 3: Contract (Add new contract)
-            'contract_number' => 'nullable|string|max:255|unique:contracts,contract_number',
-            'contract_type' => 'nullable|string|max:255',
-            'base_salary' => 'nullable|numeric|min:0',
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-            'contract_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
         $staff->update([
@@ -175,22 +144,6 @@ class StaffController extends Controller
             'department_id' => $request->department_id,
             'status' => $request->status,
         ]);
-
-        if ($request->filled('contract_number')) {
-            $filePath = null;
-            if ($request->hasFile('contract_file')) {
-                $filePath = $request->file('contract_file')->store('contracts', 'public');
-            }
-
-            $staff->contracts()->create([
-                'contract_number' => $request->contract_number,
-                'type' => $request->contract_type,
-                'base_salary' => $request->base_salary ?? 0,
-                'start_date' => $request->start_date ?? Carbon::now(),
-                'end_date' => $request->end_date,
-                'file_path' => $filePath,
-            ]);
-        }
 
         // If user already has an account, sync name/phone
         if ($staff->user) {

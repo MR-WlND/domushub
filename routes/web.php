@@ -329,10 +329,6 @@ $portalRoutes = function () {
     Route::resource('departments', \App\Http\Controllers\Admin\DepartmentController::class)->except(['create', 'show', 'edit']);
     Route::resource('staffs', \App\Http\Controllers\Admin\StaffController::class);
     
-    // Hợp đồng
-    Route::post('/contracts', [\App\Http\Controllers\Admin\ContractController::class, 'store'])->name('contracts.store');
-    Route::delete('/contracts/{contract}', [\App\Http\Controllers\Admin\ContractController::class, 'destroy'])->name('contracts.destroy');
-
     // Phân ca làm việc (Khung lịch)
     Route::get('/schedules', [\App\Http\Controllers\Admin\ScheduleController::class, 'index'])->name('schedules.index');
     

@@ -24,11 +24,6 @@ class Staff extends Model
         return $this->belongsTo(Department::class);
     }
 
-    public function contracts()
-    {
-        return $this->hasMany(Contract::class);
-    }
-
     public function user()
     {
         return $this->hasOne(User::class);
