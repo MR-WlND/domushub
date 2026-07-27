@@ -12,8 +12,7 @@ class ParcelController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Parcel::with('apartment')
-            ->latest();
+        $query = Parcel::with('apartment')->latest();
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -28,14 +27,22 @@ class ParcelController extends Controller
             });
         }
 
+        // Thống kê nhanh
+        $stats = [
+            'pending'  => Parcel::where('status', 'pending')->count(),
+            'notified' => Parcel::where('status', 'notified')->count(),
+            'received' => Parcel::where('status', 'received')->count(),
+            'returned' => Parcel::where('status', 'returned')->count(),
+        ];
+
         $parcels = $query->paginate(15)->withQueryString();
 
-        return view('receptionist.parcels.index', compact('parcels'));
+        return view('receptionist.parcels.index', compact('parcels', 'stats'));
     }
 
     public function create()
     {
-        $apartments = Apartment::orderBy('apartment_number')->get();
+        $apartments = Apartment::with('floor')->orderBy('apartment_number')->get();
         return view('receptionist.parcels.create', compact('apartments'));
     }
 
@@ -61,6 +68,12 @@ class ParcelController extends Controller
 
         return redirect()->route('receptionist.parcels.index')
             ->with('success', 'Đã ghi nhận bưu phẩm thành công.');
+    }
+
+    public function show($id)
+    {
+        $parcel = Parcel::with(['apartment.floor.block', 'creator'])->findOrFail($id);
+        return view('receptionist.parcels.show', compact('parcel'));
     }
 
     public function markReceived(Request $request, $id)

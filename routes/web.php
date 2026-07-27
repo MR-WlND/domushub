@@ -694,6 +694,7 @@ Route::middleware(['receptionist'])->prefix('receptionist')->name('receptionist.
     Route::get('/parcels',                          [\App\Http\Controllers\Receptionist\ParcelController::class, 'index'])->name('parcels.index');
     Route::get('/parcels/create',                   [\App\Http\Controllers\Receptionist\ParcelController::class, 'create'])->name('parcels.create');
     Route::post('/parcels',                         [\App\Http\Controllers\Receptionist\ParcelController::class, 'store'])->name('parcels.store');
+    Route::get('/parcels/{id}',                     [\App\Http\Controllers\Receptionist\ParcelController::class, 'show'])->name('parcels.show');
     Route::post('/parcels/{id}/received',           [\App\Http\Controllers\Receptionist\ParcelController::class, 'markReceived'])->name('parcels.received');
     Route::post('/parcels/{id}/returned',           [\App\Http\Controllers\Receptionist\ParcelController::class, 'markReturned'])->name('parcels.returned');
     Route::post('/parcels/{id}/notify',             [\App\Http\Controllers\Receptionist\ParcelController::class, 'markNotified'])->name('parcels.notify');
