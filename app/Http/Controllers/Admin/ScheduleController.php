@@ -43,7 +43,9 @@ class ScheduleController extends Controller
             $scheduleMatrix[$schedule->work_date->format('Y-m-d')][$schedule->shift_id][] = $schedule;
         }
 
-        return view('admin.schedules.index', compact('days', 'shifts', 'departments', 'scheduleMatrix', 'startOfWeek', 'endOfWeek', 'date'));
+        $today = Carbon::today()->format('Y-m-d');
+
+        return view('admin.schedules.index', compact('days', 'shifts', 'departments', 'scheduleMatrix', 'startOfWeek', 'endOfWeek', 'date', 'today'));
     }
 
     public function updateRequirements(Request $request, Shift $shift)

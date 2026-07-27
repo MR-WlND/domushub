@@ -7,6 +7,7 @@ use App\Models\Shift;
 use App\Models\StaffSchedule;
 use App\Models\Staff;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class StaffScheduleController extends Controller
@@ -127,45 +128,100 @@ class StaffScheduleController extends Controller
     }
 
     /**
-     * Sao chép lịch
+     * Sao chép lịch (hỗ trợ copy ngày → nhiều ngày, mode skip/overwrite)
      */
     public function copy(Request $request)
     {
         $request->validate([
             'from_date' => 'required|date',
-            'to_date' => 'required|date',
+            'to_dates' => 'required|array|min:1',
+            'to_dates.*' => 'date|different:from_date',
+            'mode' => 'in:skip,overwrite',
         ]);
 
-        $fromSchedules = StaffSchedule::whereDate('work_date', $request->from_date)->get();
+        $mode = $request->input('mode', 'skip');
+        $fromSchedules = StaffSchedule::with('shift')
+            ->whereDate('work_date', $request->from_date)
+            ->get();
 
         if ($fromSchedules->isEmpty()) {
             return response()->json(['success' => false, 'message' => 'Không có dữ liệu lịch ở ngày nguồn.']);
         }
 
-        $count = 0;
-        foreach ($fromSchedules as $sc) {
-            // Bỏ qua nếu đã tồn tại
-            $exists = StaffSchedule::where('staff_id', $sc->staff_id)
-                ->where('shift_id', $sc->shift_id)
-                ->where('work_date', $request->to_date)
-                ->exists();
-                
-            if (!$exists) {
-                // Ta có thể bỏ qua check overlap ở đây cho đơn giản hoặc check kỹ hơn.
-                // Để đơn giản, cứ sao chép nếu chưa tồn tại đúng ca đó.
-                StaffSchedule::create([
-                    'staff_id' => $sc->staff_id,
-                    'shift_id' => $sc->shift_id,
-                    'work_date' => $request->to_date,
-                    'is_leader' => $sc->is_leader
-                ]);
-                $count++;
+        $totalCreated = 0;
+        $totalSkipped = 0;
+        $totalOverwritten = 0;
+        $targetDays = count($request->to_dates);
+
+        DB::transaction(function () use ($fromSchedules, $request, $mode, &$totalCreated, &$totalSkipped, &$totalOverwritten) {
+            foreach ($request->to_dates as $toDate) {
+                if ($mode === 'overwrite') {
+                    $deleted = StaffSchedule::whereDate('work_date', $toDate)->delete();
+                    $totalOverwritten += $deleted;
+                }
+
+                foreach ($fromSchedules as $sc) {
+                    if ($mode === 'skip') {
+                        $exists = StaffSchedule::where('staff_id', $sc->staff_id)
+                            ->where('shift_id', $sc->shift_id)
+                            ->where('work_date', $toDate)
+                            ->exists();
+
+                        if ($exists) {
+                            $totalSkipped++;
+                            continue;
+                        }
+
+                        $overlapMessage = $this->checkOverlap($sc->staff_id, $sc->shift, $toDate);
+                        if ($overlapMessage) {
+                            $totalSkipped++;
+                            continue;
+                        }
+                    }
+
+                    StaffSchedule::create([
+                        'staff_id' => $sc->staff_id,
+                        'shift_id' => $sc->shift_id,
+                        'work_date' => $toDate,
+                        'is_leader' => $sc->is_leader
+                    ]);
+                    $totalCreated++;
+                }
             }
+        });
+
+        $msg = "Sao chép thành công {$totalCreated} phân công → {$targetDays} ngày.";
+        if ($totalSkipped > 0) {
+            $msg .= " Bỏ qua {$totalSkipped} do trùng.";
+        }
+        if ($totalOverwritten > 0) {
+            $msg .= " Ghi đè {$totalOverwritten} bản ghi cũ.";
         }
 
+        \App\Helpers\SystemLogger::log('Sao chép lịch phân ca', "Từ {$request->from_date} → {$targetDays} ngày: {$totalCreated} bản ghi");
+
+        return response()->json(['success' => true, 'message' => $msg]);
+    }
+
+    /**
+     * Preview: đếm số bản ghi nguồn sẽ copy
+     */
+    public function previewCopy(Request $request)
+    {
+        $request->validate(['from_date' => 'required|date']);
+
+        $schedules = StaffSchedule::with('shift')
+            ->whereDate('work_date', $request->from_date)
+            ->get();
+
+        $breakdown = $schedules->groupBy('shift_id')->map(fn($group) => [
+            'shift_name' => $group->first()->shift->name,
+            'count' => $group->count()
+        ])->values();
+
         return response()->json([
-            'success' => true, 
-            'message' => "Đã sao chép thành công $count bản ghi phân công!"
+            'total' => $schedules->count(),
+            'breakdown' => $breakdown,
         ]);
     }
 }
