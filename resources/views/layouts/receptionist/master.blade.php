@@ -88,6 +88,10 @@
                class="{{ request()->routeIs('receptionist.amenities*') ? 'active' : '' }}">
                 <i class="fa-solid fa-calendar-check"></i> Đặt lịch tiện ích
             </a>
+            <a href="{{ route('receptionist.profile') }}" role="menuitem"
+               class="{{ request()->routeIs('receptionist.profile') ? 'active' : '' }}">
+                <i class="fa-solid fa-user-circle"></i> Trang cá nhân
+            </a>
         </nav>
         <div class="sidebar-footer">
             <form method="POST" action="{{ route('logout') }}">

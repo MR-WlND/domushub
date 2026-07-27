@@ -706,6 +706,11 @@ Route::middleware(['receptionist'])->prefix('receptionist')->name('receptionist.
     Route::get('/amenities',                        [\App\Http\Controllers\Receptionist\AmenityController::class, 'index'])->name('amenities.index');
     Route::post('/amenities/{id}/approve',          [\App\Http\Controllers\Receptionist\AmenityController::class, 'approveBooking'])->name('amenities.approve');
     Route::post('/amenities/{id}/reject',           [\App\Http\Controllers\Receptionist\AmenityController::class, 'rejectBooking'])->name('amenities.reject');
+
+    // Trang cá nhân
+    Route::get('/profile',                          [\App\Http\Controllers\Receptionist\ProfileController::class, 'index'])->name('profile');
+    Route::put('/profile',                          [\App\Http\Controllers\Receptionist\ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/change-password',          [\App\Http\Controllers\Receptionist\ProfileController::class, 'changePassword'])->name('profile.change-password');
 });
 
 // Shortcut route
