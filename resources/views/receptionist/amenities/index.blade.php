@@ -2,7 +2,13 @@
 
 @section('page_title', 'Đặt lịch tiện ích – Lễ tân DomusHub')
 
-
+@section('topbar_left')
+<nav style="font-size:13px;color:#A3AED0;display:flex;align-items:center;gap:6px;">
+    <a href="{{ route('receptionist.dashboard') }}" style="color:#7B3FE4;text-decoration:none;">Dashboard</a>
+    <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i>
+    <span>Đặt lịch tiện ích</span>
+</nav>
+@endsection
 
 @section('content')
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
@@ -81,9 +87,10 @@
                             <i class="fa-solid fa-check"></i> Duyệt
                         </button>
                     </form>
-                    <form method="POST" action="{{ route('receptionist.amenities.reject', $booking->id) }}">
+                    <form method="POST" action="{{ route('receptionist.amenities.reject', $booking->id) }}" onsubmit="return confirmReject(this);">
                         @csrf
-                        <button style="display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:6px; font-size:13px; font-weight:600; border:none; background:#fee2e2; color:#b91c1c; cursor:pointer;">
+                        <input type="hidden" name="reason" value="">
+                        <button type="submit" style="display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:6px; font-size:13px; font-weight:600; border:none; background:#fee2e2; color:#b91c1c; cursor:pointer;">
                             <i class="fa-solid fa-xmark"></i> Từ chối
                         </button>
                     </form>
@@ -110,3 +117,16 @@
 <div style="margin-top:20px;">{{ $bookings->links() }}</div>
 @endif
 @endsection
+
+@push('scripts')
+<script>
+    function confirmReject(form) {
+        const reason = prompt("Nhập lý do từ chối đặt lịch tiện ích này:");
+        if (reason === null) {
+            return false; // Hủy gửi form
+        }
+        form.querySelector('input[name="reason"]').value = reason;
+        return true;
+    }
+</script>
+@endpush

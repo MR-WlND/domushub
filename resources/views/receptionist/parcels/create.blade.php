@@ -2,7 +2,15 @@
 
 @section('page_title', 'Nhận bưu phẩm mới – Lễ tân DomusHub')
 
-
+@section('topbar_left')
+<nav style="font-size:13px;color:#A3AED0;display:flex;align-items:center;gap:6px;">
+    <a href="{{ route('receptionist.dashboard') }}" style="color:#7B3FE4;text-decoration:none;">Dashboard</a>
+    <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i>
+    <a href="{{ route('receptionist.parcels.index') }}" style="color:#7B3FE4;text-decoration:none;">Bưu phẩm</a>
+    <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i>
+    <span>Nhận bưu phẩm mới</span>
+</nav>
+@endsection
 
 @section('content')
 <div style="max-width:700px; margin:0 auto;">

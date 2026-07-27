@@ -83,7 +83,7 @@ class TicketController extends Controller
             'apartment.floor.block',
             'sender',
             'handler',
-            'progresses.user',
+            'progress.updatedBy',
         ])->findOrFail($id);
 
         return view('receptionist.tickets.show', compact('ticket'));

@@ -1,6 +1,16 @@
 @extends('layouts.receptionist.master')
 
-@section('page_title', 'Chi tiết phản ánh #{{ $ticket->id }} – Lễ tân DomusHub')
+@section('page_title', 'Chi tiết phản ánh #' . $ticket->id . ' – Lễ tân DomusHub')
+
+@section('topbar_left')
+<nav style="font-size:13px;color:#A3AED0;display:flex;align-items:center;gap:6px;">
+    <a href="{{ route('receptionist.dashboard') }}" style="color:#7B3FE4;text-decoration:none;">Dashboard</a>
+    <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i>
+    <a href="{{ route('receptionist.tickets.index') }}" style="color:#7B3FE4;text-decoration:none;">Phản ánh</a>
+    <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i>
+    <span>Chi tiết phản ánh #{{ $ticket->id }}</span>
+</nav>
+@endsection
 
 @push('styles')
 <style>
@@ -90,15 +100,15 @@
         </div>
 
         <!-- Tiến trình -->
-        @if($ticket->progresses->count())
+        @if($ticket->progress->count())
         <div class="card-box">
             <h2>Tiến trình xử lý</h2>
-            @foreach($ticket->progresses->sortByDesc('created_at') as $progress)
+            @foreach($ticket->progress->sortByDesc('created_at') as $progress)
             <div class="progress-item">
                 <div class="progress-dot"></div>
                 <div>
-                    <div style="font-size:13px;font-weight:600;color:#1B2559;">{{ $progress->note }}</div>
-                    <div class="progress-meta">{{ $progress->user->name ?? '—' }} · {{ $progress->created_at->format('d/m/Y H:i') }}</div>
+                    <div style="font-size:13px;font-weight:600;color:#1B2559;">{{ $progress->comment }}</div>
+                    <div class="progress-meta">{{ $progress->updatedBy->name ?? '—' }} · {{ $progress->created_at->format('d/m/Y H:i') }}</div>
                 </div>
             </div>
             @endforeach

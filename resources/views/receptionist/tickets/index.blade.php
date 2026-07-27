@@ -2,7 +2,13 @@
 
 @section('page_title', 'Phản ánh – Lễ tân DomusHub')
 
-
+@section('topbar_left')
+<nav style="font-size:13px;color:#A3AED0;display:flex;align-items:center;gap:6px;">
+    <a href="{{ route('receptionist.dashboard') }}" style="color:#7B3FE4;text-decoration:none;">Dashboard</a>
+    <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i>
+    <span>Phản ánh & Sự cố</span>
+</nav>
+@endsection
 
 @section('content')
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">

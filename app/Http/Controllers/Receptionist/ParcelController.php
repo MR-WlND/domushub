@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Receptionist;
 use App\Http\Controllers\Controller;
 use App\Models\Parcel;
 use App\Models\Apartment;
+use App\Notifications\ParcelNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -64,7 +65,12 @@ class ParcelController extends Controller
         $validated['status']     = 'pending';
         $validated['arrived_at'] = now();
 
-        Parcel::create($validated);
+        $parcel = Parcel::create($validated);
+
+        // Thông báo cho tất cả cư dân thuộc căn hộ
+        foreach ($parcel->apartment->users as $user) {
+            $user->notify(new ParcelNotification($parcel, 'arrived'));
+        }
 
         return redirect()->route('receptionist.parcels.index')
             ->with('success', 'Đã ghi nhận bưu phẩm thành công.');
@@ -83,6 +89,11 @@ class ParcelController extends Controller
             'status'      => 'received',
             'received_at' => now(),
         ]);
+
+        // Thông báo cho tất cả cư dân thuộc căn hộ
+        foreach ($parcel->apartment->users as $user) {
+            $user->notify(new ParcelNotification($parcel, 'received'));
+        }
 
         return back()->with('success', 'Đã xác nhận cư dân nhận bưu phẩm.');
     }
@@ -103,6 +114,11 @@ class ParcelController extends Controller
     {
         $parcel = Parcel::findOrFail($id);
         $parcel->update(['status' => 'notified']);
+
+        // Gửi lại thông báo cho tất cả cư dân thuộc căn hộ
+        foreach ($parcel->apartment->users as $user) {
+            $user->notify(new ParcelNotification($parcel, 'arrived'));
+        }
 
         return back()->with('success', 'Đã đánh dấu đã thông báo cư dân.');
     }

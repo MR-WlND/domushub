@@ -2,7 +2,13 @@
 
 @section('page_title', 'Bưu phẩm – Lễ tân DomusHub')
 
-
+@section('topbar_left')
+<nav style="font-size:13px;color:#A3AED0;display:flex;align-items:center;gap:6px;">
+    <a href="{{ route('receptionist.dashboard') }}" style="color:#7B3FE4;text-decoration:none;">Dashboard</a>
+    <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i>
+    <span>Quản lý bưu phẩm</span>
+</nav>
+@endsection
 
 @section('content')
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
@@ -60,7 +66,7 @@
                 <td style="padding:14px 20px; color:#475569; font-size:14px;">{{ $parcel->carrier ?? '—' }}</td>
                 <td style="padding:14px 20px; color:#475569; font-size:14px;">{{ $parcel->arrived_at->format('d/m/Y H:i') }}</td>
                 <td style="padding:14px 20px;">
-                    <span class="dashboard-status-pill dashboard-status-pill--{{ $parcel->status === 'pending' ? 'warning' : 'success' }}">{{ $parcel->status_label }}</span>
+                    <span class="dashboard-status-pill dashboard-status-pill--{{ $parcel->status_color }}">{{ $parcel->status_label }}</span>
                 </td>
                 <td style="padding:14px 20px; display:flex; gap:8px; flex-wrap:wrap;">
                     @if($parcel->status === 'pending')
