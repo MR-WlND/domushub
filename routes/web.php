@@ -6,7 +6,7 @@ use App\Http\Controllers\Admin\UtilityMeterController;
 use App\Http\Controllers\Admin\ServicePriceController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\ResidentManageController;
-use App\Http\Controllers\Admin\AdminFacilityController;
+use App\Http\Controllers\Admin\FacilityController as AdminFacilityController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\InvitationController;
 use App\Http\Controllers\Resident\InvoiceController as ResidentInvoiceController;
