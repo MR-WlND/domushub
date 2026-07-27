@@ -10,7 +10,13 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
             Quay lại danh sách
         </a>
-        <div class="detail-actions">
+        <div class="detail-actions" style="display:flex;gap:10px;">
+            @if($invoice->status !== 'paid' && $invoice->status !== 'cancelled')
+                <a href="{{ portal_route('invoices.edit', $invoice) }}" class="btn-top-action" style="background:#eff6ff;color:#2563eb;border-color:#bfdbfe;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    Chỉnh sửa
+                </a>
+            @endif
             <a href="{{ portal_route('invoices.print', $invoice) }}" target="_blank" class="btn-top-action">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                 In hóa đơn
@@ -93,6 +99,22 @@
                                 <div class="item-desc">
                                     Đơn giá: {{ number_format($detail->amount / max(1, $detail->quantity)) }} đ
                                 </div>
+                                @if(in_array(optional($detail->servicePrice)->type, ['water', 'electricity']))
+                                    @php
+                                        $meter = \App\Models\UtilityMeter::where('apartment_id', $invoice->apartment_id)
+                                            ->where('type', $detail->servicePrice->type)
+                                            ->where('record_month', $invoice->billing_month->month ?? $invoice->billing_month)
+                                            ->where('record_year', $invoice->billing_year)
+                                            ->first();
+                                    @endphp
+                                    @if($meter)
+                                        <div class="item-meter-info" style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">
+                                            Chỉ số cũ: <strong>{{ $meter->old_value }}</strong> &nbsp;|&nbsp;
+                                            Chỉ số mới: <strong>{{ $meter->new_value }}</strong> &nbsp;|&nbsp;
+                                            Tiêu thụ: <strong>{{ $meter->usage_amount }}</strong> {{ $detail->servicePrice->type === 'water' ? 'm³' : 'kWh' }}
+                                        </div>
+                                    @endif
+                                @endif
                             </td>
                             <td class="text-center">
                                 <span class="badge badge-{{ $detail->servicePrice->type ?? 'other' }}">

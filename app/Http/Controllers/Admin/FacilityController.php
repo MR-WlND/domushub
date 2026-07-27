@@ -389,31 +389,53 @@ class FacilityController extends Controller
             }
         };
 
-        $facilities = Facility::withCount([
-            'bookings' => function ($q) use ($applyFilters) {
-                $applyFilters($q);
-            },
-            'bookings as approved_count' => function ($q) use ($applyFilters) {
-                $q->where('status', 'approved');
-                $applyFilters($q);
-            },
-            'bookings as completed_count' => function ($q) use ($applyFilters) {
-                $q->where('status', 'completed');
-                $applyFilters($q);
-            },
-            'bookings as rejected_count' => function ($q) use ($applyFilters) {
-                $q->where('status', 'rejected');
-                $applyFilters($q);
-            },
-            'pendingBookings as pending_bookings_count' => function ($q) use ($applyFilters) {
-                $applyFilters($q);
-            },
-        ])->get();
+        $facilities = Facility::orderBy('name')->get();
 
-        // Tính doanh thu (approved + completed × price_per_slot)
+        // Lấy tất cả bookings thỏa mãn bộ lọc để đếm và tính doanh thu chính xác
+        $bookingsQuery = \App\Models\FacilityBooking::with('facility');
+        $applyFilters($bookingsQuery);
+        $bookings = $bookingsQuery->get();
+
+        $stats = [];
         foreach ($facilities as $f) {
-            $paid = ($f->approved_count + $f->completed_count);
-            $f->revenue = $paid * ($f->price_per_slot ?? 0);
+            $stats[$f->id] = [
+                'bookings_count' => 0,
+                'approved_count' => 0,
+                'completed_count' => 0, // Dùng để hiển thị completed + used
+                'rejected_count' => 0,
+                'pending_count' => 0,
+                'revenue' => 0.0,
+            ];
+        }
+
+        foreach ($bookings as $b) {
+            if (!isset($stats[$b->facility_id])) {
+                continue;
+            }
+            $stats[$b->facility_id]['bookings_count']++;
+            if ($b->status === 'approved') {
+                $stats[$b->facility_id]['approved_count']++;
+            } elseif (in_array($b->status, ['completed', 'used'])) {
+                $stats[$b->facility_id]['completed_count']++;
+            } elseif ($b->status === 'rejected') {
+                $stats[$b->facility_id]['rejected_count']++;
+            } elseif ($b->status === 'pending') {
+                $stats[$b->facility_id]['pending_count']++;
+            }
+
+            // Doanh thu chỉ tính cho các booking đã duyệt/sử dụng/hoàn thành
+            if (in_array($b->status, ['approved', 'completed', 'used'])) {
+                $stats[$b->facility_id]['revenue'] += (float)$b->amount;
+            }
+        }
+
+        foreach ($facilities as $f) {
+            $f->bookings_count = $stats[$f->id]['bookings_count'];
+            $f->approved_count = $stats[$f->id]['approved_count'];
+            $f->completed_count = $stats[$f->id]['completed_count'];
+            $f->rejected_count = $stats[$f->id]['rejected_count'];
+            $f->pending_bookings_count = $stats[$f->id]['pending_count'];
+            $f->revenue = $stats[$f->id]['revenue'];
         }
 
         $summary = [
@@ -480,31 +502,53 @@ class FacilityController extends Controller
             }
         };
 
-        $facilities = Facility::withCount([
-            'bookings' => function ($q) use ($applyFilters) {
-                $applyFilters($q);
-            },
-            'bookings as approved_count' => function ($q) use ($applyFilters) {
-                $q->where('status', 'approved');
-                $applyFilters($q);
-            },
-            'bookings as completed_count' => function ($q) use ($applyFilters) {
-                $q->where('status', 'completed');
-                $applyFilters($q);
-            },
-            'bookings as rejected_count' => function ($q) use ($applyFilters) {
-                $q->where('status', 'rejected');
-                $applyFilters($q);
-            },
-            'pendingBookings as pending_bookings_count' => function ($q) use ($applyFilters) {
-                $applyFilters($q);
-            },
-        ])->get();
+        $facilities = Facility::orderBy('name')->get();
 
-        // Tính doanh thu (approved + completed × price_per_slot)
+        // Lấy tất cả bookings thỏa mãn bộ lọc để đếm và tính doanh thu chính xác
+        $bookingsQuery = \App\Models\FacilityBooking::with('facility');
+        $applyFilters($bookingsQuery);
+        $bookings = $bookingsQuery->get();
+
+        $stats = [];
         foreach ($facilities as $f) {
-            $paid = ($f->approved_count + $f->completed_count);
-            $f->revenue = $paid * ($f->price_per_slot ?? 0);
+            $stats[$f->id] = [
+                'bookings_count' => 0,
+                'approved_count' => 0,
+                'completed_count' => 0, // Dùng để hiển thị completed + used
+                'rejected_count' => 0,
+                'pending_count' => 0,
+                'revenue' => 0.0,
+            ];
+        }
+
+        foreach ($bookings as $b) {
+            if (!isset($stats[$b->facility_id])) {
+                continue;
+            }
+            $stats[$b->facility_id]['bookings_count']++;
+            if ($b->status === 'approved') {
+                $stats[$b->facility_id]['approved_count']++;
+            } elseif (in_array($b->status, ['completed', 'used'])) {
+                $stats[$b->facility_id]['completed_count']++;
+            } elseif ($b->status === 'rejected') {
+                $stats[$b->facility_id]['rejected_count']++;
+            } elseif ($b->status === 'pending') {
+                $stats[$b->facility_id]['pending_count']++;
+            }
+
+            // Doanh thu chỉ tính cho các booking đã duyệt/sử dụng/hoàn thành
+            if (in_array($b->status, ['approved', 'completed', 'used'])) {
+                $stats[$b->facility_id]['revenue'] += (float)$b->amount;
+            }
+        }
+
+        foreach ($facilities as $f) {
+            $f->bookings_count = $stats[$f->id]['bookings_count'];
+            $f->approved_count = $stats[$f->id]['approved_count'];
+            $f->completed_count = $stats[$f->id]['completed_count'];
+            $f->rejected_count = $stats[$f->id]['rejected_count'];
+            $f->pending_bookings_count = $stats[$f->id]['pending_count'];
+            $f->revenue = $stats[$f->id]['revenue'];
         }
 
         try {

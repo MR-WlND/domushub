@@ -118,6 +118,32 @@ class InvoiceController extends Controller
      */
     public function index(Request $request)
     {
+        $search = trim($request->search);
+        $parsedSearchApt = null;
+
+        // Trường hợp 1: Nhập đúng định dạng HD-202607-A502 hoặc tương tự
+        if (preg_match('/^HD-(\d{4})(\d{2})-(.+)$/i', $search, $matches)) {
+            $searchYear = (int) $matches[1];
+            $searchMonth = (int) $matches[2];
+            $parsedSearchApt = trim($matches[3]);
+            
+            // Override or set request month parameter to YYYY-MM
+            $request->merge([
+                'month' => sprintf('%04d-%02d', $searchYear, $searchMonth)
+            ]);
+        }
+        // Trường hợp 2: Định dạng BILL-XXXXX
+        elseif (preg_match('/^BILL-(\d+)$/i', $search, $matches)) {
+            $parsedInvoiceId = (int) $matches[1];
+            $inv = Invoice::find($parsedInvoiceId);
+            if ($inv) {
+                $parsedSearchApt = optional($inv->apartment)->apartment_number;
+                $request->merge([
+                    'month' => sprintf('%04d-%02d', $inv->billing_year, $inv->getRawOriginal('billing_month'))
+                ]);
+            }
+        }
+
         $query = Apartment::with(['floor.block']);
         
         $invoiceFilter = function($q) use ($request) {
@@ -147,6 +173,14 @@ class InvoiceController extends Controller
             $query->where('id', $request->apartment_id);
         }
 
+        // Lọc căn hộ nợ tiền quá 2 tháng (quá hạn 60 ngày)
+        if ($request->boolean('debt_over_2_months')) {
+            $query->whereHas('invoices', function($q) {
+                $q->whereIn('status', ['unpaid', 'partial_paid', 'overdue'])
+                  ->where('due_date', '<=', \Carbon\Carbon::now()->subDays(60));
+            });
+        }
+
         // Lọc theo trạng thái
         if ($request->filled('status')) {
             $query->whereHas('invoices', $invoiceFilter);
@@ -154,12 +188,18 @@ class InvoiceController extends Controller
 
         // Tìm kiếm theo tên/mã căn hộ hoặc tòa
         if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where('apartment_number', 'like', '%' . $search . '%')
-                ->orWhereHas('floor.block', function ($b) use ($search) {
-                    $b->where('name', 'like', '%' . $search . '%')
-                        ->orWhere('code', 'like', '%' . $search . '%');
+            if ($parsedSearchApt) {
+                $query->where('apartment_number', 'like', '%' . $parsedSearchApt . '%');
+            } else {
+                $searchVal = $request->search;
+                $query->where(function($sub) use ($searchVal) {
+                    $sub->where('apartment_number', 'like', '%' . $searchVal . '%')
+                        ->orWhereHas('floor.block', function ($b) use ($searchVal) {
+                            $b->where('name', 'like', '%' . $searchVal . '%')
+                                ->orWhere('code', 'like', '%' . $searchVal . '%');
+                        });
                 });
+            }
         }
 
         $apartmentsPaginated = $query->paginate(20)->withQueryString();
@@ -310,6 +350,102 @@ class InvoiceController extends Controller
         $invoice->recalculateDetailsStatus();
         $invoice->load(['apartment.floor.block', 'details.servicePrice', 'payments']);
         return view('admin.invoices.show', compact('invoice'));
+    }
+
+    /**
+     * Hiển thị giao diện chỉnh sửa hóa đơn (chỉ cho phép nếu hóa đơn chưa paid/cancelled).
+     */
+    public function edit(Invoice $invoice)
+    {
+        if ($invoice->status === 'paid') {
+            return redirect()->route('admin.invoices.show', $invoice)
+                ->with('error', 'Không thể chỉnh sửa hóa đơn đã được thanh toán đầy đủ.');
+        }
+
+        if ($invoice->status === 'cancelled') {
+            return redirect()->route('admin.invoices.show', $invoice)
+                ->with('error', 'Không thể chỉnh sửa hóa đơn đã bị hủy.');
+        }
+
+        $invoice->load(['apartment.floor.block', 'details.servicePrice']);
+        return view('admin.invoices.edit', compact('invoice'));
+    }
+
+    /**
+     * Cập nhật thông tin hóa đơn.
+     */
+    public function update(Request $request, Invoice $invoice)
+    {
+        // Ràng buộc bảo mật tuyệt đối: chặn chỉnh sửa hóa đơn đã thanh toán/đã hủy
+        if ($invoice->status === 'paid') {
+            return redirect()->route('admin.invoices.show', $invoice)
+                ->with('error', 'Chặn chỉnh sửa: Hóa đơn đã được thanh toán đầy đủ.');
+        }
+
+        if ($invoice->status === 'cancelled') {
+            return redirect()->route('admin.invoices.show', $invoice)
+                ->with('error', 'Chặn chỉnh sửa: Hóa đơn này đã bị hủy.');
+        }
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'due_date' => 'required|date',
+            'details' => 'required|array',
+            'details.*.id' => 'required|exists:bill_details,id',
+            'details.*.amount' => 'required|numeric|min:0',
+            'details.*.quantity' => 'required|numeric|min:0',
+            'details.*.note' => 'nullable|string|max:500',
+        ]);
+
+        DB::transaction(function() use ($invoice, $validated) {
+            $totalAmount = 0;
+
+            foreach ($validated['details'] as $detailData) {
+                $detail = $invoice->details()->findOrFail($detailData['id']);
+                $detail->update([
+                    'amount' => $detailData['amount'],
+                    'quantity' => $detailData['quantity'],
+                    'note' => $detailData['note'] ?? null,
+                ]);
+
+                $totalAmount += $detailData['amount'];
+            }
+
+            // Tính toán lại dư nợ và tổng tiền
+            $invoice->update([
+                'title' => $validated['title'],
+                'due_date' => $validated['due_date'],
+                'total_amount' => $totalAmount,
+                'current_amount' => $totalAmount,
+                'total_due_at_issue' => (float)$invoice->previous_debt + $totalAmount,
+            ]);
+
+            // Cập nhật lại trạng thái thanh toán dựa trên paid_amount mới và total_amount mới
+            $invoice->recalculateDetailsStatus();
+            
+            $paid = (float)$invoice->paid_amount;
+            if ($paid >= $invoice->total_due_at_issue) {
+                $newStatus = 'paid';
+            } elseif ($paid > 0) {
+                $newStatus = 'partial_paid';
+            } else {
+                $newStatus = $invoice->due_date->isPast() ? 'overdue' : 'unpaid';
+            }
+            
+            $invoice->update([
+                'status' => $newStatus
+            ]);
+        });
+
+        // Ghi Activity Log
+        SystemLogger::log(
+            'finance',
+            'Cập nhật thông tin hóa đơn #' . $invoice->id . ' (' . $invoice->invoice_code . ')',
+            ['invoice_id' => $invoice->id]
+        );
+
+        return redirect()->route('admin.invoices.show', $invoice)
+            ->with('success', 'Cập nhật hóa đơn thành công.');
     }
 
     /**
@@ -963,5 +1099,50 @@ class InvoiceController extends Controller
         }
 
         return back()->with('success', "Đã gửi lại thông báo cho {$sent} cư dân.");
+    }
+
+    /**
+     * Gửi nhắc nợ hàng loạt cho toàn bộ các hóa đơn chưa thanh toán.
+     */
+    public function batchResendNotification(Request $request)
+    {
+        // Lấy tất cả hóa đơn chưa thanh toán hoặc quá hạn
+        $invoices = Invoice::whereIn('status', ['unpaid', 'partial_paid', 'overdue'])
+            ->with(['apartment.residents.user'])
+            ->get();
+
+        if ($invoices->isEmpty()) {
+            return back()->with('error', 'Không có hóa đơn nợ nào cần nhắc nhở.');
+        }
+
+        $sentCount = 0;
+        $apartmentCount = 0;
+
+        foreach ($invoices as $invoice) {
+            $invoiceSent = 0;
+            foreach ($invoice->apartment->residents as $resident) {
+                $user = $resident->user;
+                if (!$user) continue;
+                try {
+                    $user->notify(new \App\Notifications\NewInvoiceNotification($invoice));
+                    $sentCount++;
+                    $invoiceSent++;
+                } catch (\Throwable $e) {
+                    // Bỏ qua lỗi gửi thông báo để tránh gián đoạn
+                }
+            }
+            if ($invoiceSent > 0) {
+                $apartmentCount++;
+            }
+        }
+
+        // Ghi Activity Log
+        SystemLogger::log(
+            'finance',
+            "Gửi nhắc nợ hàng loạt cho {$apartmentCount} căn hộ ({$sentCount} cư dân).",
+            ['sent_count' => $sentCount, 'apartment_count' => $apartmentCount]
+        );
+
+        return back()->with('success', "Đã gửi thông báo nhắc nợ thành công đến {$apartmentCount} căn hộ ({$sentCount} cư dân).");
     }
 }

@@ -99,6 +99,18 @@ class InvitationApiController extends Controller
             return response()->json(['message' => 'Bạn đã là cư dân của căn hộ này.'], 422);
         }
 
+        // Kiểm tra ràng buộc Chủ hộ (Owner)
+        if ($invite->intended_relationship === 'owner') {
+            $hasOwner = Resident::where('apartment_id', $invite->apartment_id)
+                ->where('relationship', 'owner')
+                ->whereNull('deleted_at')
+                ->exists();
+
+            if ($hasOwner) {
+                return response()->json(['message' => 'Căn hộ liên kết với mã mời này đã có chủ hộ đăng ký trong hệ thống.'], 422);
+            }
+        }
+
         DB::transaction(function () use ($invite, $userId) {
             // Insert vào bảng residents
             Resident::create([

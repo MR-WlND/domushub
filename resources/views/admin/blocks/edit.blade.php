@@ -100,17 +100,48 @@
             </div>
 
             {{-- Trạng thái --}}
-            <div class="form-group-custom">
-                <label class="form-label-custom">Trạng thái hoạt động</label>
-                <div class="input-wrapper-custom">
-                    <span class="input-icon-custom">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                    </span>
-                    <select name="status" class="form-input-custom">
-                        <option value="active"       {{ old('status', $block->status) == 'active'       ? 'selected' : '' }}>Hoạt động</option>
-                        <option value="maintenance"  {{ old('status', $block->status) == 'maintenance'  ? 'selected' : '' }}>Bảo trì</option>
-                        <option value="inactive"     {{ old('status', $block->status) == 'inactive'     ? 'selected' : '' }}>Ngưng hoạt động</option>
-                    </select>
+            <div class="form-grid-2">
+                <div class="form-group-custom">
+                    <label class="form-label-custom">Trạng thái hoạt động</label>
+                    <div class="input-wrapper-custom">
+                        <span class="input-icon-custom">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                        </span>
+                        <select name="status" class="form-input-custom">
+                            <option value="active"       {{ old('status', $block->status) == 'active'       ? 'selected' : '' }}>Hoạt động</option>
+                            <option value="maintenance"  {{ old('status', $block->status) == 'maintenance'  ? 'selected' : '' }}>Bảo trì</option>
+                            <option value="inactive"     {{ old('status', $block->status) == 'inactive'     ? 'selected' : '' }}>Ngưng hoạt động</option>
+                        </select>
+                    </div>
+                </div>
+
+                {{-- Hàng trống để giữ tỷ lệ 2 cột --}}
+                <div></div>
+            </div>
+
+            <div class="form-grid-2" style="margin-top: 15px;">
+                {{-- Số tầng nổi --}}
+                <div class="form-group-custom">
+                    <label class="form-label-custom">Số tầng nổi</label>
+                    <div class="input-wrapper-custom">
+                        <span class="input-icon-custom">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+                        </span>
+                        <input type="number" name="total_floors" value="{{ old('total_floors', $block->total_floors) }}" placeholder="VD: 25" min="0" class="form-input-custom @error('total_floors') input-error @enderror">
+                    </div>
+                    @error('total_floors') <p class="form-error-custom">{{ $message }}</p> @enderror
+                </div>
+
+                {{-- Số tầng hầm --}}
+                <div class="form-group-custom">
+                    <label class="form-label-custom">Số tầng hầm</label>
+                    <div class="input-wrapper-custom">
+                        <span class="input-icon-custom">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+                        </span>
+                        <input type="number" name="total_basements" value="{{ old('total_basements', $block->total_basements) }}" placeholder="VD: 2" min="0" class="form-input-custom @error('total_basements') input-error @enderror">
+                    </div>
+                    @error('total_basements') <p class="form-error-custom">{{ $message }}</p> @enderror
                 </div>
             </div>
 

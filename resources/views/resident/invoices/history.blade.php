@@ -27,7 +27,156 @@
             <div>{{ session('error') }}</div>
         </div>
     @endif
+    @push('styles')
+    <style>
+        .inv-chart-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .inv-chart-card__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        .inv-chart-card__title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0 0 4px 0;
+        }
+        .inv-chart-card__subtitle {
+            font-size: 0.88rem;
+            color: #64748b;
+            margin: 0;
+        }
+        .inv-chart-card__badge {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #0284c7;
+            background: #e0f2fe;
+            padding: 6px 12px;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+        }
+    </style>
+    @endpush
 
+    {{-- WATER CONSUMPTION CHART CARD --}}
+    <div class="inv-chart-card">
+        <div class="inv-chart-card__header">
+            <div>
+                <h3 class="inv-chart-card__title">Biểu đồ tiêu thụ nước</h3>
+                <p class="inv-chart-card__subtitle">Lượng nước tiêu thụ (m³) ghi nhận từ hệ thống</p>
+            </div>
+            <div class="inv-chart-card__badge">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 6px;"><path d="M12 2c-5.33 7.23-8 11.23-8 14a8 8 0 1 0 16 0c0-2.77-2.67-6.77-8-14zm0 15c-1.66 0-3-1.34-3-3 0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5c0 .55.45 1 1 1s1-.45 1-1c0-2.21-1.79-4-4-4-.55 0-1-.45-1-1s.45-1 1-1c3.31 0 6 2.69 6 6 0 1.66-1.34 3-3 3z"/></svg>
+                Đồng hồ Nước
+            </div>
+        </div>
+        <div class="inv-chart-wrap" style="position: relative; height: 260px; width: 100%; display: flex; align-items: center; justify-content: center;">
+            @if(empty($waterChartData))
+                <div style="text-align: center; color: #94a3b8; font-size: 0.95rem; font-weight: 500; padding: 20px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" viewBox="0 0 16 16" style="margin-bottom: 12px; color: #cbd5e1; display: block; margin-left: auto; margin-right: auto;"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M6.271 5.055a.5.5 0 0 1 .52.038l3.5 2.5a.5.5 0 0 1 0 .814l-3.5 2.5a.5.5 0 0 1-.771-.409v-5A.5.5 0 0 1 6.271 5.055z"/></svg>
+                    Chưa có dữ liệu tiêu thụ nước được ghi nhận cho căn hộ của bạn.
+                </div>
+            @else
+                <canvas id="waterUsageChart"></canvas>
+            @endif
+        </div>
+    </div>
+
+    @if(!empty($waterChartData))
+    @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('waterUsageChart').getContext('2d');
+            
+            // Gradient background for chart line
+            const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+            gradient.addColorStop(0, 'rgba(14, 165, 233, 0.3)');
+            gradient.addColorStop(1, 'rgba(14, 165, 233, 0.02)');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: {!! json_encode($waterChartLabels) !!},
+                    datasets: [{
+                        label: 'Nước tiêu thụ (m³)',
+                        data: {!! json_encode($waterChartData) !!},
+                        borderColor: '#0284c7',
+                        borderWidth: 3,
+                        backgroundColor: gradient,
+                        fill: true,
+                        tension: 0.35,
+                        pointBackgroundColor: '#0284c7',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: '#0f172a',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return `Tiêu thụ: ${context.parsed.y} m³`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#f1f5f9'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 11
+                                },
+                                color: '#64748b',
+                                callback: function(value) {
+                                    return value + ' m³';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 11
+                                },
+                                color: '#64748b'
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+    @endpush
+    @endif
 
     {{-- EMPTY STATE --}}
     @if($invoices->isEmpty())
