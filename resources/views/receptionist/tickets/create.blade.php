@@ -2,6 +2,16 @@
 
 @section('page_title', 'Tạo phản ánh mới – Lễ tân DomusHub')
 
+@section('topbar_left')
+<nav style="font-size:13px;color:#A3AED0;display:flex;align-items:center;gap:6px;">
+    <a href="{{ route('receptionist.dashboard') }}" style="color:#7B3FE4;text-decoration:none;">Dashboard</a>
+    <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i>
+    <a href="{{ route('receptionist.tickets.index') }}" style="color:#7B3FE4;text-decoration:none;">Phản ánh</a>
+    <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i>
+    <span>Tạo phản ánh mới</span>
+</nav>
+@endsection
+
 @push('styles')
 <style>
     .form-card{background:white;border-radius:16px;padding:32px;box-shadow:0 2px 8px rgba(123,63,228,.06);max-width:640px;}

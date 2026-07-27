@@ -484,7 +484,6 @@ class SimpleXlsx
     <col min="6" max="6" width="22" customWidth="1"/>
     <col min="7" max="7" width="22" customWidth="1"/>
     <col min="8" max="8" width="22" customWidth="1"/>
-    <col min="9" max="9" width="22" customWidth="1"/>
   </cols>
   <sheetData>';
 
@@ -501,10 +500,9 @@ class SimpleXlsx
         $sheet1 .= '<c r="C3" t="inlineStr" s="1"><is><t>Đã thu (VND)</t></is></c>';
         $sheet1 .= '<c r="D3" t="inlineStr" s="1"><is><t>Chưa thu (VND)</t></is></c>';
         $sheet1 .= '<c r="E3" t="inlineStr" s="1"><is><t>Tỷ lệ thu hồi (%)</t></is></c>';
-        $sheet1 .= '<c r="F3" t="inlineStr" s="1"><is><t>Tiêu thụ Điện (VND)</t></is></c>';
-        $sheet1 .= '<c r="G3" t="inlineStr" s="1"><is><t>Tiêu thụ Nước (VND)</t></is></c>';
-        $sheet1 .= '<c r="H3" t="inlineStr" s="1"><is><t>Phí quản lý (VND)</t></is></c>';
-        $sheet1 .= '<c r="I3" t="inlineStr" s="1"><is><t>Phí khác (VND)</t></is></c>';
+        $sheet1 .= '<c r="F3" t="inlineStr" s="1"><is><t>Tiêu thụ Nước (VND)</t></is></c>';
+        $sheet1 .= '<c r="G3" t="inlineStr" s="1"><is><t>Phí quản lý (VND)</t></is></c>';
+        $sheet1 .= '<c r="H3" t="inlineStr" s="1"><is><t>Phí khác (VND)</t></is></c>';
         $sheet1 .= '</row>';
 
         $rowNum = 4;
@@ -516,7 +514,6 @@ class SimpleXlsx
             $rate = $billed > 0 ? round(($collected / $billed) * 100, 2) : 0;
 
             $m = (int)$row->billing_month;
-            $elec = isset($serviceData[$m]['electricity']) ? (float)$serviceData[$m]['electricity'] : 0.0;
             $water = isset($serviceData[$m]['water']) ? (float)$serviceData[$m]['water'] : 0.0;
             $mgmt = isset($serviceData[$m]['management_fee']) ? (float)$serviceData[$m]['management_fee'] : 0.0;
             $other = isset($serviceData[$m]['other']) ? (float)$serviceData[$m]['other'] : 0.0;
@@ -527,22 +524,19 @@ class SimpleXlsx
             $sheet1 .= sprintf('<c r="C%d" s="2"><v>%.2f</v></c>', $rowNum, $collected);
             $sheet1 .= sprintf('<c r="D%d" s="2"><v>%.2f</v></c>', $rowNum, $unpaid);
             $sheet1 .= sprintf('<c r="E%d"><v>%.2f</v></c>', $rowNum, $rate);
-            $sheet1 .= sprintf('<c r="F%d" s="2"><v>%.2f</v></c>', $rowNum, $elec);
-            $sheet1 .= sprintf('<c r="G%d" s="2"><v>%.2f</v></c>', $rowNum, $water);
-            $sheet1 .= sprintf('<c r="H%d" s="2"><v>%.2f</v></c>', $rowNum, $mgmt);
-            $sheet1 .= sprintf('<c r="I%d" s="2"><v>%.2f</v></c>', $rowNum, $other);
+            $sheet1 .= sprintf('<c r="F%d" s="2"><v>%.2f</v></c>', $rowNum, $water);
+            $sheet1 .= sprintf('<c r="G%d" s="2"><v>%.2f</v></c>', $rowNum, $mgmt);
+            $sheet1 .= sprintf('<c r="H%d" s="2"><v>%.2f</v></c>', $rowNum, $other);
             $sheet1 .= '</row>';
             $rowNum++;
         }
 
         // Tính tổng cộng cho các loại dịch vụ
-        $totalElec = 0.0;
         $totalWater = 0.0;
         $totalMgmt = 0.0;
         $totalOther = 0.0;
         if (!empty($serviceData)) {
             foreach ($serviceData as $m => $s) {
-                $totalElec += $s['electricity'];
                 $totalWater += $s['water'];
                 $totalMgmt += $s['management_fee'];
                 $totalOther += $s['other'];
@@ -556,10 +550,9 @@ class SimpleXlsx
         $sheet1 .= sprintf('<c r="C%d" s="1"><v>%.2f</v></c>', $rowNum, $totalCollected);
         $sheet1 .= sprintf('<c r="D%d" s="1"><v>%.2f</v></c>', $rowNum, $totalUnpaid);
         $sheet1 .= sprintf('<c r="E%d" s="1"><v>%.2f</v></c>', $rowNum, $collectionRate);
-        $sheet1 .= sprintf('<c r="F%d" s="1"><v>%.2f</v></c>', $rowNum, $totalElec);
-        $sheet1 .= sprintf('<c r="G%d" s="1"><v>%.2f</v></c>', $rowNum, $totalWater);
-        $sheet1 .= sprintf('<c r="H%d" s="1"><v>%.2f</v></c>', $rowNum, $totalMgmt);
-        $sheet1 .= sprintf('<c r="I%d" s="1"><v>%.2f</v></c>', $rowNum, $totalOther);
+        $sheet1 .= sprintf('<c r="F%d" s="1"><v>%.2f</v></c>', $rowNum, $totalWater);
+        $sheet1 .= sprintf('<c r="G%d" s="1"><v>%.2f</v></c>', $rowNum, $totalMgmt);
+        $sheet1 .= sprintf('<c r="H%d" s="1"><v>%.2f</v></c>', $rowNum, $totalOther);
         $sheet1 .= '</row>';
 
         $sheet1 .= '  </sheetData>';
@@ -715,7 +708,7 @@ class SimpleXlsx
             $comment = htmlspecialchars($t->feedback_comment ?? '', ENT_XML1, 'UTF-8');
             
             $createdAt = $t->created_at ? \Carbon\Carbon::parse($t->created_at)->format('d/m/Y H:i') : '';
-            $completedAt = ($t->status === 'completed' && $t->updated_at) ? \Carbon\Carbon::parse($t->updated_at)->format('d/m/Y H:i') : '';
+            $completedAt = ($t->status === 'completed' && $t->completed_at) ? \Carbon\Carbon::parse($t->completed_at)->format('d/m/Y H:i') : '';
 
             $sheet1 .= sprintf('<row r="%d">', $rowNum);
             $sheet1 .= sprintf('<c r="A%d"><v>%d</v></c>', $rowNum, $id);
