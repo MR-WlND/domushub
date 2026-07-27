@@ -411,7 +411,25 @@ $portalRoutes = function () {
     Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
 
     // Quản lý nhân sự
+    Route::resource('departments', \App\Http\Controllers\Admin\DepartmentController::class)->except(['create', 'show', 'edit']);
     Route::resource('staffs', \App\Http\Controllers\Admin\StaffController::class);
+    
+    // Hợp đồng
+    Route::post('/contracts', [\App\Http\Controllers\Admin\ContractController::class, 'store'])->name('contracts.store');
+    Route::delete('/contracts/{contract}', [\App\Http\Controllers\Admin\ContractController::class, 'destroy'])->name('contracts.destroy');
+
+    // Phân ca làm việc (Khung lịch)
+    Route::get('/schedules', [\App\Http\Controllers\Admin\ScheduleController::class, 'index'])->name('schedules.index');
+    
+    // Cập nhật định mức ca
+    Route::post('/schedules/{shift}/requirements', [\App\Http\Controllers\Admin\ScheduleController::class, 'updateRequirements'])->name('schedules.requirements');
+    
+    // API & Phân công (RESTful StaffSchedules)
+    Route::get('/api/staffs', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'getStaffs'])->name('api.staffs');
+    Route::post('/staff-schedules', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'store'])->name('staff-schedules.store');
+    Route::delete('/staff-schedules/{staff_schedule}', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'destroy'])->name('staff-schedules.destroy');
+    Route::patch('/staff-schedules/{staff_schedule}/leader', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'toggleLeader'])->name('staff-schedules.leader');
+    Route::post('/staff-schedules/copy', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'copy'])->name('staff-schedules.copy');
 
     // Quản lý mã mời
     Route::get('/invitations', [InvitationController::class, 'index'])->name('invitations.index');
