@@ -82,11 +82,6 @@
                         </div>
                         @error('password')<span class="error-msg">{{ $message }}</span>@enderror
                     </div>
-
-                    <div class="group">
-                        <label for="password_confirmation">Nhập lại mật khẩu mới</label>
-                        <div class="input-box">
-                            <i class="fa-solid fa-shield-halved"></i>
                             <input id="password_confirmation" type="password" name="password_confirmation" placeholder="Nhập lại mật khẩu mới" minlength="8" required>
                         </div>
                     </div>
@@ -100,6 +95,17 @@
                 <div class="bottom">
                     <p><a href="{{ route('resident.forgot-password') }}"><i class="fa-solid fa-paper-plane"></i> Gửi lại mã xác nhận</a></p>
                 </div>
+                        <input id="password_confirmation" type="password" name="password_confirmation" placeholder="••••••••" required>
+                    </div>
+
+                    <button class="login-btn" type="submit">
+                        Đặt lại mật khẩu →
+                    </button>
+                </form>
+
+                <p class="link-row">
+                    <a href="{{ route('resident.login') }}">← Quay lại đăng nhập</a>
+                </p>
             </div>
         </div>
     </div>

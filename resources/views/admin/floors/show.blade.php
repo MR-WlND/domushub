@@ -87,31 +87,9 @@
                         </span>
                     </div>
 
-                    {{-- Tiến độ khai báo phòng --}}
-                    <div class="detail-row" style="flex-direction: column; align-items: flex-start; gap: 8px;">
-                        <div style="display: flex; justify-content: space-between; width: 100%;">
-                            <span class="detail-label">Căn hộ đã khai báo</span>
-                            <span class="detail-value" style="font-weight: 700;">{{ $floor->apartments->count() }} /
-                                {{ $floor->expected_apartments ?? '?' }} căn</span>
-                        </div>
-                        @if (($floor->expected_apartments ?? 0) > 0)
-                            @php
-                                $progress = min(
-                                    100,
-                                    round(($floor->apartments->count() / $floor->expected_apartments) * 100),
-                                );
-                            @endphp
-                            <div class="progress-bar-container"
-                                style="width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-top: 4px;">
-                                <div class="progress-bar-fill"
-                                    style="width: {{ $progress }}%; height: 100%; background: linear-gradient(90deg, #3b82f6, #1d4ed8); border-radius: 4px;">
-                                </div>
-                            </div>
-                            <div
-                                style="font-size: 12px; color: #64748b; font-weight: 600; text-align: right; width: 100%; margin-top: 2px;">
-                                Đã hoàn thành {{ $progress }}% kế hoạch khai báo phòng
-                            </div>
-                        @endif
+                    <div class="detail-row">
+                        <span class="detail-label">Căn hộ đã khai báo</span>
+                        <span class="detail-value" style="font-weight: 700;">{{ $floor->apartments->count() }} căn</span>
                     </div>
 
                     <div class="detail-row" style="flex-direction: column; align-items: flex-start; gap: 8px;">
@@ -183,16 +161,7 @@
                         <tbody>
                             @forelse ($floor->apartments as $apartment)
                                 @php
-                                    $area = $apartment->area;
-                                    if ($area >= 100) {
-                                        $type = '3BR Deluxe';
-                                    } elseif ($area >= 70) {
-                                        $type = '2BR Classic';
-                                    } elseif ($area >= 50) {
-                                        $type = '1BR Standard';
-                                    } else {
-                                        $type = 'Studio Plus';
-                                    }
+                                    $type = $apartment->apartmentType->name ?? 'Chưa xác định';
 
                                     $owner = $apartment->residents()->where('relationship', 'owner')->first() ?? $apartment->residents()->first();
                                     $ownerName = $owner ? ($owner->user->name ?? '-') : '-';

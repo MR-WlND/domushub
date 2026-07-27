@@ -1,6 +1,6 @@
 @extends('layouts.admin.master')
 
-@section('page_title', 'Chi tiết chỉ số điện nước – DomusHub')
+@section('page_title', 'Chi tiết chỉ số nước – DomusHub')
 
 @push('styles')
 @vite(['resources/css/pages/admin/utility-readings/index.css'])
@@ -104,7 +104,7 @@
 @section('content')
 <div class="util-page-header no-print">
     <div>
-        <h1>Chi tiết chỉ số điện nước</h1>
+        <h1>Chi tiết chỉ số nước</h1>
         <p>
             Căn hộ <strong>{{ $reading->apartment->apartment_number }}</strong> – Kỳ {{ $reading->record_month }}/{{ $reading->record_year }}
         </p>

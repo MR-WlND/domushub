@@ -86,6 +86,8 @@ class BlockController extends Controller
             'manager_name'    => 'nullable|string|max:100',
             'manager_contact' => 'nullable|string|max:100',
             'description'     => 'nullable|string',
+            'total_floors'    => 'nullable|integer|min:0',
+            'total_basements' => 'nullable|integer|min:0',
         ]);
 
         Block::create([
@@ -95,6 +97,8 @@ class BlockController extends Controller
             'manager_name'    => $validated['manager_name'] ?? null,
             'manager_contact' => $validated['manager_contact'] ?? null,
             'description'     => $validated['description'] ?? null,
+            'total_floors'    => $validated['total_floors'] ?? null,
+            'total_basements' => $validated['total_basements'] ?? null,
         ]);
 
         return redirect()
@@ -142,6 +146,8 @@ class BlockController extends Controller
             'manager_name'    => 'nullable|string|max:100',
             'manager_contact' => 'nullable|string|max:100',
             'description'     => 'nullable|string',
+            'total_floors'    => 'nullable|integer|min:0',
+            'total_basements' => 'nullable|integer|min:0',
         ]);
 
         $block->update([
@@ -151,6 +157,8 @@ class BlockController extends Controller
             'manager_name'    => $validated['manager_name'] ?? null,
             'manager_contact' => $validated['manager_contact'] ?? null,
             'description'     => $validated['description'] ?? null,
+            'total_floors'    => $validated['total_floors'] ?? null,
+            'total_basements' => $validated['total_basements'] ?? null,
         ]);
 
         return redirect()

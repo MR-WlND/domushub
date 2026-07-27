@@ -28,7 +28,8 @@ class ServicePriceController extends Controller
     {
         $validated = $request->validate([
             'name'        => 'required|string|max:100',
-            'type'        => 'required|in:electricity,water,motorbike,electric_bike,car,bicycle,management_fee,internet,service,other',
+            'type'        => 'required|in:water,management_fee,internet,service,other,parking_fee',
+            'vehicle_type'=> 'nullable|required_if:type,parking_fee|in:motorbike,electric_bike,car,bicycle',
             'unit_price'  => 'required|numeric|min:0',
             'description' => 'nullable|string|max:500',
         ], [
@@ -57,7 +58,8 @@ class ServicePriceController extends Controller
 
         $validated = $request->validate([
             'name'        => 'required|string|max:100',
-            'type'        => 'required|in:electricity,water,motorbike,electric_bike,car,bicycle,management_fee,internet,service,other',
+            'type'        => 'required|in:water,management_fee,internet,service,other,parking_fee',
+            'vehicle_type'=> 'nullable|required_if:type,parking_fee|in:motorbike,electric_bike,car,bicycle',
             'unit_price'  => 'required|numeric|min:0',
             'status'      => 'required|in:active,pending,banned',
             'description' => 'nullable|string|max:500',

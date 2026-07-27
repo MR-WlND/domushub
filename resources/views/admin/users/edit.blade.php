@@ -39,27 +39,24 @@
 
                 <div class="user-edit-page__main">
                     <section class="user-create-form__section user-edit-section">
-                        <h2>Thông tin tài khoản & trạng thái</h2>
+                        <h2>Phân quyền & Trạng thái</h2>
+                        
+                        <div style="background:#f8f9fa; padding:16px; border-radius:8px; margin-bottom:20px; font-size:14px; color:#475569;">
+                            <p style="margin:0 0 8px 0;"><strong>Nhân sự:</strong> {{ $user->name }}</p>
+                            <p style="margin:0 0 8px 0;"><strong>Email:</strong> {{ $user->email }}</p>
+                            <p style="margin:0;"><strong>Điện thoại:</strong> {{ $user->phone }}</p>
+                            <p style="margin-top:12px; font-size:13px; color:#0b57d0;"><i class="fa-solid fa-circle-info"></i> Để sửa đổi các thông tin trên, vui lòng sang trang <strong>Quản lý nhân sự</strong>.</p>
+                        </div>
 
                         <div class="user-create-form__grid">
-                            <label class="user-create-form__field">
-                                <span>Họ và tên</span>
-                                <input type="text" name="name" value="{{ old('name', $user->name) }}" required>
-                                @error('name')
-                                    <small>{{ $message }}</small>
-                                @enderror
-                            </label>
-
-                            <label class="user-create-form__field">
-                                <span>Email</span>
-                                <input type="email" value="{{ $user->email }}" disabled>
-                                <input type="hidden" name="email" value="{{ old('email', $user->email) }}">
-                            </label>
-
-                            <label class="user-create-form__field">
-                                <span>Số điện thoại</span>
-                                <input type="tel" name="phone" value="{{ old('phone', $user->phone) }}" required>
-                                @error('phone')
+                            <label class="user-create-form__field user-edit-form__role">
+                                <span>Vai trò chính</span>
+                                <select name="role" id="roleSelect" required>
+                                    @foreach ($roleLabels as $value => $label)
+                                        <option value="{{ $value }}" @selected(old('role', $user->role) === $value)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                                @error('role')
                                     <small>{{ $message }}</small>
                                 @enderror
                             </label>
@@ -68,8 +65,7 @@
                                 <span>Trạng thái tài khoản</span>
                                 <select name="status" required>
                                     @foreach ($statusLabels as $value => $label)
-                                        <option value="{{ $value }}" @selected(old('status', $user->status) === $value)>
-                                            {{ $label }}</option>
+                                        <option value="{{ $value }}" @selected(old('status', $user->status) === $value)>{{ $label }}</option>
                                     @endforeach
                                 </select>
                                 @error('status')
@@ -78,25 +74,6 @@
                             </label>
                         </div>
                     </section>
-
-                    <section class="user-create-form__section user-edit-section">
-                        <h2>Phân quyền nâng cao</h2>
-
-                        <label class="user-create-form__field user-edit-form__role">
-                            <span>Vai trò chính</span>
-                            <select name="role" id="roleSelect" required>
-                                @foreach ($roleLabels as $value => $label)
-                                    <option value="{{ $value }}" @selected(old('role', $user->role) === $value)>{{ $label }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('role')
-                                <small>{{ $message }}</small>
-                            @enderror
-                        </label>
-                    </section>
-
-
                 </div>
                 <div class="user-edit-form__actions">
                     <a href="{{ portal_route('users.index') }}" class="users-button users-button--secondary">Hủy bản
