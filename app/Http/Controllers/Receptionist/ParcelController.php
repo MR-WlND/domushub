@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Receptionist;
 use App\Http\Controllers\Controller;
 use App\Models\Parcel;
 use App\Models\Apartment;
+use App\Models\Block;
 use App\Notifications\ParcelNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -43,8 +44,8 @@ class ParcelController extends Controller
 
     public function create()
     {
-        $apartments = Apartment::with('floor')->orderBy('apartment_number')->get();
-        return view('receptionist.parcels.create', compact('apartments'));
+        $blocks = Block::with(['floors' => fn($q) => $q->orderBy('floor_number'), 'floors.apartments' => fn($q) => $q->orderBy('apartment_number')])->orderBy('name')->get();
+        return view('receptionist.parcels.create', compact('blocks'));
     }
 
     public function store(Request $request)
