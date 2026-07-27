@@ -701,6 +701,8 @@ Route::middleware(['receptionist'])->prefix('receptionist')->name('receptionist.
 
     // Phản ánh
     Route::get('/tickets',                          [\App\Http\Controllers\Receptionist\TicketController::class, 'index'])->name('tickets.index');
+    Route::get('/tickets/create',                   [\App\Http\Controllers\Receptionist\TicketController::class, 'create'])->name('tickets.create');
+    Route::post('/tickets',                         [\App\Http\Controllers\Receptionist\TicketController::class, 'store'])->name('tickets.store');
     Route::get('/tickets/{id}',                     [\App\Http\Controllers\Receptionist\TicketController::class, 'show'])->name('tickets.show');
 
     // Đặt lịch tiện ích

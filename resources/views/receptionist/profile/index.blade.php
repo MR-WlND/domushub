@@ -101,7 +101,7 @@
     <div>
         {{-- Thông tin cá nhân --}}
         <div class="card">
-            <h2><i class="fa-solid fa-user" style="color:#7B3FE4;"></i> Thông tin cá nhân</h2>
+            <h2>Thông tin cá nhân</h2>
 
             <form method="POST" action="{{ route('receptionist.profile.update') }}" enctype="multipart/form-data">
                 @csrf @method('PUT')
@@ -136,7 +136,7 @@
 
         {{-- Đổi mật khẩu --}}
         <div class="card">
-            <h2><i class="fa-solid fa-lock" style="color:#7B3FE4;"></i> Đổi mật khẩu</h2>
+            <h2>Đổi mật khẩu</h2>
 
             <form method="POST" action="{{ route('receptionist.profile.change-password') }}">
                 @csrf @method('PUT')

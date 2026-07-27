@@ -36,7 +36,7 @@
     <!-- Main -->
     <div>
         <div class="card-box">
-            <h2><i class="fa-solid fa-triangle-exclamation" style="color:#3652D9;"></i> {{ $ticket->title }}</h2>
+            <h2>{{ $ticket->title }}</h2>
             <div class="info-row">
                 <span class="info-label">Trạng thái</span>
                 @php
@@ -85,14 +85,14 @@
 
         <!-- Mô tả -->
         <div class="card-box">
-            <h2><i class="fa-solid fa-align-left" style="color:#7B3FE4;"></i> Mô tả chi tiết</h2>
+            <h2>Mô tả chi tiết</h2>
             <div class="desc-box">{{ $ticket->description ?: 'Không có mô tả.' }}</div>
         </div>
 
         <!-- Tiến trình -->
         @if($ticket->progresses->count())
         <div class="card-box">
-            <h2><i class="fa-solid fa-timeline" style="color:#7B3FE4;"></i> Tiến trình xử lý</h2>
+            <h2>Tiến trình xử lý</h2>
             @foreach($ticket->progresses->sortByDesc('created_at') as $progress)
             <div class="progress-item">
                 <div class="progress-dot"></div>
@@ -109,7 +109,7 @@
     <!-- Sidebar info -->
     <div>
         <div class="card-box">
-            <h2><i class="fa-solid fa-circle-info" style="color:#7B3FE4;"></i> Thông tin thêm</h2>
+            <h2>Thông tin thêm</h2>
             <div class="info-row">
                 <span class="info-label">Mã phản ánh</span>
                 <span class="info-value">#{{ $ticket->id }}</span>

@@ -103,7 +103,7 @@
         {{-- Mô tả --}}
         @if($parcel->description)
         <div class="card">
-            <h2><i class="fa-solid fa-align-left" style="color:#7B3FE4;"></i> Mô tả bưu phẩm</h2>
+            <h2>Mô tả bưu phẩm</h2>
             <div class="desc-box">{{ $parcel->description }}</div>
         </div>
         @endif
@@ -111,7 +111,7 @@
         {{-- Ghi chú --}}
         @if($parcel->note)
         <div class="card">
-            <h2><i class="fa-solid fa-note-sticky" style="color:#FF9B05;"></i> Ghi chú lễ tân</h2>
+            <h2>Ghi chú lễ tân</h2>
             <div class="desc-box" style="background:#FFFBEB;">{{ $parcel->note }}</div>
         </div>
         @endif
@@ -122,7 +122,7 @@
         {{-- Thao tác --}}
         @if(in_array($parcel->status, ['pending', 'notified']))
         <div class="card">
-            <h2><i class="fa-solid fa-wand-magic-sparkles" style="color:#7B3FE4;"></i> Thao tác</h2>
+            <h2>Thao tác</h2>
             <div class="action-area">
                 @if($parcel->status === 'pending')
                 <form method="POST" action="{{ route('receptionist.parcels.notify', $parcel->id) }}">
@@ -150,7 +150,7 @@
 
         {{-- Timeline trạng thái --}}
         <div class="card">
-            <h2><i class="fa-solid fa-timeline" style="color:#7B3FE4;"></i> Tiến trình</h2>
+            <h2>Tiến trình</h2>
             <div class="timeline">
                 <div class="tl-item">
                     <div class="tl-dot"></div>
