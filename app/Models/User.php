@@ -32,6 +32,7 @@ class User extends Authenticatable
         'apartment_id',
         'banned_posting_until',
         'banned_commenting_until',
+        'staff_id',
     ];
 
     /**
@@ -106,6 +107,14 @@ class User extends Authenticatable
     public function handledTickets()
     {
         return $this->hasMany(Ticket::class, 'handler_id');
+    }
+
+    /**
+     * Thông tin nhân sự liên kết
+     */
+    public function staff()
+    {
+        return $this->belongsTo(Staff::class);
     }
 
     // ── Role helpers ────────────────────────────────────────────────

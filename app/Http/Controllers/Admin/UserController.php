@@ -128,19 +128,9 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         $validated = $request->validate([
-            'name' => 'required|string|max:100',
-            'email' => 'required|email|max:150|unique:users,email,' . $id,
-            'phone' => 'required|string|max:20|regex:/^[0-9+]+$/|unique:users,phone,' . $id,
             'role' => 'required|in:admin,manager,staff,technician,security,resident,cleaning,receptionist',
             'status' => 'required|in:pending,active,banned',
         ], [
-            'name.required' => 'Vui lòng nhập họ và tên.',
-            'email.required' => 'Vui lòng nhập email.',
-            'email.email' => 'Email không đúng định dạng.',
-            'email.unique' => 'Email đã tồn tại trong hệ thống.',
-            'phone.required' => 'Vui lòng nhập số điện thoại.',
-            'phone.regex' => 'Số điện thoại chỉ được chứa số và dấu +.',
-            'phone.unique' => 'Số điện thoại đã tồn tại trong hệ thống.',
             'role.required' => 'Vui lòng chọn vai trò.',
             'status.required' => 'Vui lòng chọn trạng thái.',
             'role.in' => 'Vai trò không hợp lệ.',
@@ -148,9 +138,6 @@ class UserController extends Controller
         ]);
 
         $user->update([
-            'name' => $validated['name'],
-            'email' => strtolower(trim($validated['email'])),
-            'phone' => $validated['phone'],
             'role' => $validated['role'],
             'status' => $validated['status'],
         ]);

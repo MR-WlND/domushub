@@ -408,6 +408,10 @@ $portalRoutes = function () {
     Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
     Route::put('/users/{id}/update-status', [UserController::class, 'updateStatus'])->name('users.updateStatus');
     Route::put('/users/{id}/reset-password', [UserController::class, 'resetPassword'])->name('users.resetPassword');
+    Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+
+    // Quản lý nhân sự
+    Route::resource('staffs', \App\Http\Controllers\Admin\StaffController::class);
 
     // Quản lý mã mời
     Route::get('/invitations', [InvitationController::class, 'index'])->name('invitations.index');
