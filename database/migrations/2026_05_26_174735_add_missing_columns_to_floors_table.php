@@ -12,14 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('floors', function (Blueprint $table) {
+            if (!Schema::hasColumn('floors', 'status')) {
+                $table->enum('status', [
+                    'active',
+                    'maintenance',
+                    'inactive'
+                ])->default('active');
+            }
 
-            $table->enum('status', [
-                'active',
-                'maintenance',
-                'inactive'
-            ])->default('active');
-
-            $table->text('description')->nullable();
+            if (!Schema::hasColumn('floors', 'description')) {
+                $table->text('description')->nullable();
+            }
         });
     }
 
