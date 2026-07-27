@@ -7,11 +7,13 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     public function up(): void
-    {
+{
+    if (!Schema::hasColumn('floors', 'name')) {
         Schema::table('floors', function (Blueprint $table) {
             $table->string('name')->nullable()->after('floor_number');
         });
     }
+}
 
     public function down(): void
     {

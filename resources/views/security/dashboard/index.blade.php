@@ -144,13 +144,13 @@
             </div>
         </a>
 
-        <a href="{{ route('security.visitor-check.index') }}" class="sec-action">
+        <a href="{{ route('security.walk-in.index') }}" class="sec-action">
             <div class="sec-action__icon sec-action__icon--visitor">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
             </div>
             <div>
-                <div class="sec-action__text">Quản lý khách</div>
-                <div class="sec-action__desc">Quét QR khách viếng thăm</div>
+                <div class="sec-action__text">Đăng ký khách</div>
+                <div class="sec-action__desc">Đăng ký khách vãng lai tại cổng</div>
             </div>
         </a>
     </div>

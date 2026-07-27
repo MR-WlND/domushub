@@ -6,44 +6,123 @@ use App\Http\Controllers\Controller;
 use App\Models\Apartment;
 use App\Models\User;
 use App\Models\Visitor;
+use App\Notifications\VisitorWalkInNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class WalkInVisitorController extends Controller
 {
+    // -------------------------------------------------------------------------
+    // INDEX — trang đăng ký khách tại cổng
+    // -------------------------------------------------------------------------
     public function index(Request $request)
     {
         $currentVisitors = Visitor::with(['apartment.floor.block', 'registeredBy', 'confirmedByResident'])
-            ->where('status', 'checked_in')
-            ->latest('check_in_at')
+            ->whereIn('status', ['pending', 'checked_in'])
+            ->latest('created_at')
             ->get();
 
         $apartments = Apartment::with('floor.block')
             ->orderBy('apartment_number')
             ->get();
 
-        return view('security.walk-in.index', compact('currentVisitors', 'apartments'));
+        // Pre-load chủ hộ cho mỗi căn hộ
+        $apartmentOwners = [];
+        foreach ($apartments as $apt) {
+            $ownerResident = \App\Models\Resident::with('user')
+                ->where('apartment_id', $apt->id)
+                ->where('relationship', 'owner')
+                ->whereNull('deleted_at')
+                ->get()
+                ->first(fn ($r) => $r->user && $r->user->status === 'active' && is_null($r->user->deleted_at));
+
+            $ownerUser = $ownerResident?->user;
+
+            if (!$ownerUser) {
+                $anyResident = \App\Models\Resident::with('user')
+                    ->where('apartment_id', $apt->id)
+                    ->whereNull('deleted_at')
+                    ->get()
+                    ->first(fn ($r) => $r->user && $r->user->status === 'active' && is_null($r->user->deleted_at));
+                $ownerUser = $anyResident?->user;
+            }
+
+            if (!$ownerUser) {
+                $ownerUser = User::where('apartment_id', $apt->id)
+                    ->where('status', 'active')
+                    ->whereNull('deleted_at')
+                    ->orderBy('id', 'asc')
+                    ->first();
+            }
+
+            if ($ownerUser) {
+                $apartmentOwners[$apt->id] = [
+                    'id'    => $ownerUser->id,
+                    'name'  => $ownerUser->name,
+                    'phone' => $ownerUser->phone ?? null,
+                ];
+            } else {
+                $apartmentOwners[$apt->id] = null;
+            }
+        }
+
+        return view('security.walk-in.index', compact('currentVisitors', 'apartments', 'apartmentOwners'));
     }
 
+    // -------------------------------------------------------------------------
+    // GET RESIDENTS — AJAX: trả danh sách cư dân chủ căn hộ
+    // -------------------------------------------------------------------------
     public function getResidents(Request $request)
     {
         $request->validate(['apartment_id' => ['required', 'integer']]);
 
-        $owners = \App\Models\Resident::with('user')
-            ->where('apartment_id', $request->apartment_id)
-            ->where('relationship', 'owner')
-            ->get()
-            ->filter(fn ($r) => $r->user && $r->user->status === 'active')
-            ->map(fn ($r) => [
-                'id'    => $r->user->id,
-                'name'  => $r->user->name,
-                'phone' => $r->user->phone,
-            ])
-            ->values();
+        $aptId = (int) $request->apartment_id;
 
-        return response()->json(['residents' => $owners]);
+        // 1. Tìm chủ hộ từ bảng Resident (relationship = 'owner')
+        $ownerResident = \App\Models\Resident::with('user')
+            ->where('apartment_id', $aptId)
+            ->where('relationship', 'owner')
+            ->whereNull('deleted_at')
+            ->get()
+            ->first(fn ($r) => $r->user && $r->user->status === 'active' && is_null($r->user->deleted_at));
+
+        $ownerUser = $ownerResident?->user;
+
+        // 2. Nếu không thấy chủ hộ ở bảng Resident, lấy cư dân đầu tiên từ bảng Resident
+        if (!$ownerUser) {
+            $anyResident = \App\Models\Resident::with('user')
+                ->where('apartment_id', $aptId)
+                ->whereNull('deleted_at')
+                ->get()
+                ->first(fn ($r) => $r->user && $r->user->status === 'active' && is_null($r->user->deleted_at));
+            $ownerUser = $anyResident?->user;
+        }
+
+        // 3. Nếu vẫn không có, lấy User đầu tiên có apartment_id
+        if (!$ownerUser) {
+            $ownerUser = User::where('apartment_id', $aptId)
+                ->where('status', 'active')
+                ->whereNull('deleted_at')
+                ->orderBy('id', 'asc')
+                ->first();
+        }
+
+        $residents = [];
+        if ($ownerUser) {
+            $residents[] = [
+                'id'    => $ownerUser->id,
+                'name'  => $ownerUser->name,
+                'phone' => $ownerUser->phone ?? null,
+            ];
+        }
+
+        return response()->json(['residents' => $residents]);
     }
 
+    // -------------------------------------------------------------------------
+    // STORE — lưu khách, tuỳ chọn thông báo cư dân
+    // -------------------------------------------------------------------------
     public function store(Request $request)
     {
         $request->validate([
@@ -55,7 +134,21 @@ class WalkInVisitorController extends Controller
             'note'                  => ['nullable', 'string', 'max:500'],
             'vehicle_plate'         => ['nullable', 'string', 'max:20'],
             'vehicle_type'          => ['nullable', 'in:car,motorbike,electric_bike'],
+            'face_image'            => ['nullable', 'string'], // base64 data-URL
+            'notify_resident'       => ['nullable', 'boolean'],
         ]);
+
+        // --- Lưu ảnh nếu có ---
+        $photoPath = null;
+        if ($request->filled('face_image')) {
+            $dataUrl = $request->face_image;
+            if (preg_match('/^data:image\/(\w+);base64,/', $dataUrl, $m)) {
+                $ext        = $m[1] === 'jpeg' ? 'jpg' : $m[1];
+                $imageData  = base64_decode(substr($dataUrl, strpos($dataUrl, ',') + 1));
+                $photoPath  = 'visitors/photos/' . uniqid('vi_', true) . '.' . $ext;
+                Storage::disk('public')->put($photoPath, $imageData);
+            }
+        }
 
         $visitor = Visitor::create([
             'apartment_id'          => $request->apartment_id,
@@ -64,27 +157,62 @@ class WalkInVisitorController extends Controller
             'guest_phone'           => $request->guest_phone,
             'qr_token'              => Visitor::generateToken(),
             'expired_at'            => now()->addDay(),
-            'status'                => 'checked_in',
-            'check_in_at'           => now(),
-            'check_in_by'           => Auth::id(),
+            // Trạng thái pending — chờ cư dân chấp thuận mới cho vào
+            'status'                => 'pending',
             'note'                  => $request->note,
-            'vehicle_plate'         => $request->vehicle_plate ? strtoupper(trim($request->vehicle_plate)) : null,
+            'vehicle_plate'         => $request->vehicle_plate
+                                        ? strtoupper(trim($request->vehicle_plate)) : null,
             'vehicle_type'          => $request->vehicle_plate ? $request->vehicle_type : null,
             'walk_in'               => true,
             'resident_to_meet'      => $request->resident_to_meet,
-            'confirmed_by_resident' => $request->confirmed_by_resident,
+            'face_image'            => $photoPath,
         ]);
+
+        $visitor->load(['apartment.floor.block', 'confirmedByResident']);
+
+        // --- Thông báo cư dân yêu cầu phê duyệt ---
+        if ($request->boolean('notify_resident')) {
+            $ownerId = $request->filled('confirmed_by_resident')
+                ? $request->confirmed_by_resident
+                : null;
+
+            // Tìm chủ hộ nếu chưa có
+            if (!$ownerId) {
+                $ownerResident = \App\Models\Resident::with('user')
+                    ->where('apartment_id', $request->apartment_id)
+                    ->where('relationship', 'owner')
+                    ->whereNull('deleted_at')
+                    ->get()
+                    ->first(fn ($r) => $r->user && $r->user->status === 'active' && is_null($r->user->deleted_at));
+                $ownerId = $ownerResident?->user?->id;
+            }
+            if (!$ownerId) {
+                $anyUser = User::where('apartment_id', $request->apartment_id)
+                    ->where('status', 'active')
+                    ->whereNull('deleted_at')
+                    ->orderBy('id', 'asc')
+                    ->first();
+                $ownerId = $anyUser?->id;
+            }
+
+            if ($ownerId) {
+                $resident = User::find($ownerId);
+                if ($resident) {
+                    $resident->notify(new VisitorWalkInNotification($visitor));
+                }
+            }
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'Đã ghi nhận khách vào lúc ' . now()->format('H:i d/m/Y') . '.',
-            'visitor' => $this->visitorInfo($visitor->load(['apartment.floor.block', 'confirmedByResident'])),
+            'message' => 'Đã gửi thông báo — cư dân cần phê duyệt trước khi khách vào.',
+            'visitor' => $this->visitorInfo($visitor),
         ]);
     }
 
-    /**
-     * Ghi nhận khách ra (check-out)
-     */
+    // -------------------------------------------------------------------------
+    // CHECKOUT
+    // -------------------------------------------------------------------------
     public function checkout(Request $request)
     {
         $request->validate(['visitor_id' => ['required', 'integer']]);
@@ -108,7 +236,6 @@ class WalkInVisitorController extends Controller
     // =========================================================================
     // PRIVATE
     // =========================================================================
-
     private function visitorInfo(Visitor $visitor): array
     {
         $apartment = $visitor->apartment;
@@ -130,6 +257,9 @@ class WalkInVisitorController extends Controller
             'has_vehicle'           => $visitor->hasVehicle(),
             'vehicle_plate'         => $visitor->vehicle_plate,
             'vehicle_type'          => $visitor->hasVehicle() ? $visitor->vehicleTypeLabel() : null,
+            'face_image_url'        => $visitor->face_image
+                                        ? asset('storage/' . $visitor->face_image)
+                                        : null,
         ];
     }
 }
