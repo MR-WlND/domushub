@@ -544,7 +544,10 @@
     <div class="mob-header">
         <button class="mob-menu-btn" id="mobMenuOpenBtn"><i class="fa-solid fa-bars"></i></button>
         <div class="mob-header-title">Phản ánh</div>
-        <button class="mob-bell-btn"><i class="fa-regular fa-bell"></i></button>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <button class="mob-bell-btn"><i class="fa-regular fa-bell"></i></button>
+            <img src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' }}" alt="Avatar" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;">
+        </div>
     </div>
 
     <!-- Top Filter -->

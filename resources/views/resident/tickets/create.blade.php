@@ -16,6 +16,9 @@
         }
         
         @media (max-width: 992px) {
+            .resident-header { display: none !important; }
+            .resident-content { padding: 0 !important; }
+            .mob-header { display: flex !important; }
             .tk-page-wrapper {
                 flex-direction: column;
                 padding: 16px;
@@ -41,6 +44,34 @@
             gap: 24px;
         }
 
+        .tk-page-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+        .btn-back-header {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 10px;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .btn-back-header:hover {
+            background: #f8fafc;
+            color: #1e3a8a;
+            border-color: #94a3b8;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
         .tk-page-header h1 {
             font-size: 20px;
             font-weight: 700;
@@ -76,9 +107,33 @@
             margin-bottom: 20px;
         }
         @media (max-width: 640px) {
-            .form-grid { grid-template-columns: 1fr; }
+            .tk-page-wrapper {
+                padding: 12px;
+            }
+            .tk-create-card {
+                padding: 16px;
+                border-radius: 8px;
+            }
+            .form-grid { 
+                grid-template-columns: 1fr; 
+                gap: 16px;
+                margin-bottom: 16px;
+            }
+            .form-group {
+                margin-bottom: 16px;
+            }
+            .form-actions {
+                flex-direction: column-reverse;
+                margin-top: 24px;
+                gap: 12px;
+            }
+            .btn-cancel, .btn-submit {
+                width: 100%;
+                text-align: center;
+                justify-content: center;
+                padding: 12px;
+            }
         }
-
         .form-group {
             margin-bottom: 20px;
         }
@@ -366,12 +421,54 @@
 @endpush
 
 @section('content')
+    <!-- Mobile Menu Drawer & Header -->
+    <div id="mobMenuOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:99;"></div>
+    <div id="mobMenuDrawer" style="position:fixed; top:0; left:-300px; width:280px; height:100%; background:#fff; z-index:100; transition:left 0.3s ease; box-shadow: 2px 0 10px rgba(0,0,0,0.1); display:flex; flex-direction:column;">
+        <div style="padding: 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
+            <strong style="color:#1e3a8a; font-size:18px;">DomusHub</strong>
+            <button id="mobMenuClose" style="background:none; border:none; font-size:20px; color:#64748b; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto;">
+            <a href="{{ route('resident.dashboard') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-house" style="width:24px; color:#64748b;"></i> Home</a>
+            <a href="{{ route('resident.posts.index') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-newspaper" style="width:24px; color:#64748b;"></i> Bản tin của tôi</a>
+            <a href="{{ route('resident.members.index') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-users" style="width:24px; color:#64748b;"></i> Thành viên</a>
+            <hr style="border:0; border-bottom:1px solid #f1f5f9; margin: 4px 0;">
+            <span style="color:#94a3b8; font-size:12px; font-weight:700; text-transform:uppercase;">Dịch vụ</span>
+            <a href="{{ route('resident.vehicles.index') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-car" style="width:24px; color:#64748b;"></i> Phương tiện</a>
+            <a href="{{ route('resident.facilities.index') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-swimming-pool" style="width:24px; color:#64748b;"></i> Tiện ích</a>
+            <a href="{{ route('resident.invoices.index') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-file-invoice-dollar" style="width:24px; color:#64748b;"></i> Hóa đơn</a>
+            <hr style="border:0; border-bottom:1px solid #f1f5f9; margin: 4px 0;">
+            <a href="{{ route('resident.tickets.index') }}" style="text-decoration:none; color:#1e3a8a; font-weight:700; font-size:15px;"><i class="fa-solid fa-screwdriver-wrench" style="width:24px; color:#1e3a8a;"></i> Phản ánh</a>
+            <a href="{{ route('resident.contact') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-address-book" style="width:24px; color:#64748b;"></i> Liên hệ</a>
+            <hr style="border:0; border-bottom:1px solid #f1f5f9; margin: 4px 0;">
+            <a href="#" onclick="event.preventDefault(); document.getElementById('resident-logout-form').submit();" style="text-decoration:none; color:#dc2626; font-weight:600; font-size:15px;"><i class="fa-solid fa-right-from-bracket" style="width:24px; color:#dc2626;"></i> Đăng xuất</a>
+        </div>
+    </div>
+    
+    <div class="mob-header" style="display: none; align-items: center; justify-content: space-between; padding: 16px; background: #fff; position: sticky; top: 0; z-index: 90; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <a href="{{ route('resident.tickets.index') }}" style="color:#1e293b; font-size:18px; text-decoration:none;" title="Quay lại"><i class="fa-solid fa-arrow-left"></i></a>
+            <button id="mobMenuOpenBtn" style="background:none; border:none; font-size:20px; color:#1e293b; cursor:pointer;"><i class="fa-solid fa-bars"></i></button>
+        </div>
+        <div style="font-size:16px; font-weight:700; color:#1e293b;">Gửi phản ánh</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <button style="background:none; border:none; font-size:20px; color:#1e293b; cursor:pointer;"><i class="fa-regular fa-bell"></i></button>
+            <img src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' }}" alt="Avatar" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;">
+        </div>
+    </div>
+
 <div class="tk-page-wrapper">
     <!-- CỘT TRÁI (FORM + LỊCH SỬ) -->
     <div class="tk-main-col">
         <div class="tk-page-header">
-            <h1>Phản ánh và Kiến nghị</h1>
-            <p>Gửi yêu cầu bảo trì, phản ánh dịch vụ hoặc kiến nghị ban quản lý.</p>
+            <a href="{{ route('resident.tickets.index') }}" class="btn-back-header" title="Quay lại danh sách phản ánh">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Quay lại</span>
+            </a>
+            <div>
+                <h1>Phản ánh và Kiến nghị</h1>
+                <p>Gửi yêu cầu bảo trì, phản ánh dịch vụ hoặc kiến nghị ban quản lý.</p>
+            </div>
         </div>
 
         <div class="tk-create-card">
@@ -590,6 +687,34 @@ function removeImage(index) {
     document.getElementById('fileInput').files = uploadedFiles.files;
     renderPreviews();
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const mobMenuOpenBtn = document.getElementById('mobMenuOpenBtn');
+    const mobMenuClose = document.getElementById('mobMenuClose');
+    const mobMenuDrawer = document.getElementById('mobMenuDrawer');
+    const mobMenuOverlay = document.getElementById('mobMenuOverlay');
+
+    if (mobMenuOpenBtn) {
+        mobMenuOpenBtn.addEventListener('click', function() {
+            mobMenuOverlay.style.display = 'block';
+            setTimeout(() => { mobMenuDrawer.style.left = '0'; }, 10);
+        });
+    }
+
+    if (mobMenuClose) {
+        mobMenuClose.addEventListener('click', function() {
+            mobMenuDrawer.style.left = '-300px';
+            setTimeout(() => { mobMenuOverlay.style.display = 'none'; }, 300);
+        });
+    }
+
+    if (mobMenuOverlay) {
+        mobMenuOverlay.addEventListener('click', function() {
+            mobMenuDrawer.style.left = '-300px';
+            setTimeout(() => { mobMenuOverlay.style.display = 'none'; }, 300);
+        });
+    }
+});
 </script>
 @endsection
 
