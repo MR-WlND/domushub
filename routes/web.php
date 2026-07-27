@@ -8,7 +8,7 @@ use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\ResidentManageController;
 use App\Http\Controllers\Admin\AdminFacilityController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\AdminInvitationController;
+use App\Http\Controllers\Admin\InvitationController;
 use App\Http\Controllers\Resident\InvoiceController as ResidentInvoiceController;
 use App\Http\Controllers\Resident\ProfileController;
 use App\Http\Controllers\Resident\TicketController as ResidentTicketController;
@@ -218,6 +218,10 @@ Route::post('/security/login', [AuthController::class, 'loginSecurity'])->name('
 Route::get('/cleaning/login', [AuthController::class, 'showCleaningLogin'])->name('cleaning.login');
 Route::post('/cleaning/login', [AuthController::class, 'loginCleaning'])->name('cleaning.login.submit');
 
+// Receptionist Login Routes
+Route::get('/receptionist/login', [AuthController::class, 'showReceptionistLogin'])->name('receptionist.login');
+Route::post('/receptionist/login', [AuthController::class, 'loginReceptionist'])->name('receptionist.login.submit');
+
 // Logout (accessible from all roles)
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
@@ -405,17 +409,19 @@ $portalRoutes = function () {
     Route::put('/users/{id}/update-status', [UserController::class, 'updateStatus'])->name('users.updateStatus');
     Route::put('/users/{id}/reset-password', [UserController::class, 'resetPassword'])->name('users.resetPassword');
     Route::post('/users/{id}/register-faceid', [UserController::class, 'registerFaceId'])->name('users.register-faceid');
-
+    Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
 
     // Phân quyền người dùng (Chỉ Admin)
     Route::get('/roles', [\App\Http\Controllers\Admin\RoleController::class, 'index'])->name('roles.index');
     Route::match(['put', 'patch'], '/roles/{id}/status', [\App\Http\Controllers\Admin\RoleController::class, 'updateStatus'])->name('roles.updateStatus');
 
+    // Quản lý nhân sự
+    Route::resource('staffs', \App\Http\Controllers\Admin\StaffController::class);
 
     // Quản lý mã mời
-    Route::get('/invitations', [AdminInvitationController::class, 'index'])->name('invitations.index');
-    Route::post('/invitations', [AdminInvitationController::class, 'store'])->name('invitations.store');
-    Route::delete('/invitations/{id}', [AdminInvitationController::class, 'destroy'])->name('invitations.destroy');
+    Route::get('/invitations', [InvitationController::class, 'index'])->name('invitations.index');
+    Route::post('/invitations', [InvitationController::class, 'store'])->name('invitations.store');
+    Route::delete('/invitations/{id}', [InvitationController::class, 'destroy'])->name('invitations.destroy');
 
     // Trang cá nhân quản trị viên
     Route::get('/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'index'])->name('profile.index');
@@ -746,7 +752,44 @@ Route::middleware(['resident'])->group(function () {
     Route::post('/resident/tickets/{id}/respond-accusation', [ResidentTicketController::class, 'respondAccusation'])->name('resident.tickets.respond-accusation');
 });
 
+// =========================================================================
+// DASHBOARD RECEPTIONIST ROUTES
+// =========================================================================
+Route::middleware(['receptionist'])->prefix('receptionist')->name('receptionist.')->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [\App\Http\Controllers\Receptionist\DashboardController::class, 'index'])->name('dashboard');
 
+    // Bưu phẩm
+    Route::get('/parcels',                          [\App\Http\Controllers\Receptionist\ParcelController::class, 'index'])->name('parcels.index');
+    Route::get('/parcels/create',                   [\App\Http\Controllers\Receptionist\ParcelController::class, 'create'])->name('parcels.create');
+    Route::post('/parcels',                         [\App\Http\Controllers\Receptionist\ParcelController::class, 'store'])->name('parcels.store');
+    Route::get('/parcels/{id}',                     [\App\Http\Controllers\Receptionist\ParcelController::class, 'show'])->name('parcels.show');
+    Route::post('/parcels/{id}/received',           [\App\Http\Controllers\Receptionist\ParcelController::class, 'markReceived'])->name('parcels.received');
+    Route::post('/parcels/{id}/returned',           [\App\Http\Controllers\Receptionist\ParcelController::class, 'markReturned'])->name('parcels.returned');
+    Route::post('/parcels/{id}/notify',             [\App\Http\Controllers\Receptionist\ParcelController::class, 'markNotified'])->name('parcels.notify');
+
+    // Phản ánh
+    Route::get('/tickets',                          [\App\Http\Controllers\Receptionist\TicketController::class, 'index'])->name('tickets.index');
+    Route::get('/tickets/create',                   [\App\Http\Controllers\Receptionist\TicketController::class, 'create'])->name('tickets.create');
+    Route::post('/tickets',                         [\App\Http\Controllers\Receptionist\TicketController::class, 'store'])->name('tickets.store');
+    Route::get('/tickets/{id}',                     [\App\Http\Controllers\Receptionist\TicketController::class, 'show'])->name('tickets.show');
+
+    // Đặt lịch tiện ích
+    Route::get('/amenities',                        [\App\Http\Controllers\Receptionist\AmenityController::class, 'index'])->name('amenities.index');
+    Route::post('/amenities/{id}/approve',          [\App\Http\Controllers\Receptionist\AmenityController::class, 'approveBooking'])->name('amenities.approve');
+    Route::post('/amenities/{id}/reject',           [\App\Http\Controllers\Receptionist\AmenityController::class, 'rejectBooking'])->name('amenities.reject');
+
+    // Trang cá nhân
+    Route::get('/profile',                          [\App\Http\Controllers\Receptionist\ProfileController::class, 'index'])->name('profile');
+    Route::put('/profile',                          [\App\Http\Controllers\Receptionist\ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/change-password',          [\App\Http\Controllers\Receptionist\ProfileController::class, 'changePassword'])->name('profile.change-password');
+});
+
+// Shortcut route
+Route::get('/receptionist', function () {
+    if (! Auth::check()) return redirect()->route('receptionist.login');
+    return redirect()->route('receptionist.dashboard');
+});
 
 // Fallback route to serve uploaded public storage files
 Route::get('/storage/{any}', function ($any) {

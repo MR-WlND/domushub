@@ -57,6 +57,30 @@ class InvitationController extends Controller
             if ($apartment->floor->block_id != $validated['block_id']) {
                 return back()->withErrors(['apartment_id' => 'Căn hộ phải thuộc tòa nhà đã chọn.'])->withInput();
             }
+
+            // Kiểm tra ràng buộc Chủ hộ (Owner)
+            if ($validated['intended_relationship'] === 'owner') {
+                $hasOwner = \App\Models\Resident::where('apartment_id', $validated['apartment_id'])
+                    ->where('relationship', 'owner')
+                    ->whereNull('deleted_at')
+                    ->exists();
+
+                if ($hasOwner) {
+                    return back()->withErrors(['apartment_id' => 'Căn hộ này đã có chủ hộ đăng ký trong hệ thống.'])->withInput();
+                }
+
+                $hasActiveOwnerInvite = ApartmentInvite::where('apartment_id', $validated['apartment_id'])
+                    ->where('intended_relationship', 'owner')
+                    ->where('status', 'active')
+                    ->where(function ($q) {
+                        $q->whereNull('expired_at')->orWhere('expired_at', '>', now());
+                    })
+                    ->exists();
+
+                if ($hasActiveOwnerInvite) {
+                    return back()->withErrors(['apartment_id' => 'Căn hộ này đang có một mã mời chủ hộ khác ở trạng thái hoạt động.'])->withInput();
+                }
+            }
         }
 
         do {

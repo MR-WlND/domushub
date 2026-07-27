@@ -11,12 +11,13 @@
 
 @php
     $roleLabels = [
-        'admin'      => 'Quản trị viên',
-        'manager'    => 'Quản lý BQL',
-        'staff'      => 'Kế toán',
+        'admin' => 'Quản trị viên',
+        'manager' => 'Quản lý BQL',
+        'staff' => 'Kế toán',
         'technician' => 'Kỹ thuật viên',
-        'security'   => 'Bảo vệ',
-        'cleaning'   => 'Vệ sinh',
+        'security' => 'Bảo vệ',
+        'cleaning' => 'Vệ sinh',
+        'receptionist' => 'Lễ tân',
     ];
 
     $statusLabels = [

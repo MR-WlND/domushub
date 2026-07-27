@@ -32,7 +32,9 @@ class User extends Authenticatable
         'avatar',
         'apartment_id',
         'base_salary',
+        'banned_posting_until',
         'banned_commenting_until',
+        'staff_id',
         'face_data',
         'face_registered_at',
     ];
@@ -154,6 +156,14 @@ class User extends Authenticatable
         return $this->hasMany(Ticket::class, 'handler_id');
     }
 
+    /**
+     * Thông tin nhân sự liên kết
+     */
+    public function staff()
+    {
+        return $this->belongsTo(Staff::class);
+    }
+
     // ── Role helpers ────────────────────────────────────────────────
 
     public function isAdmin(): bool
@@ -181,12 +191,17 @@ class User extends Authenticatable
         return $this->role === 'cleaning';
     }
 
+    public function isReceptionist(): bool
+    {
+        return $this->role === 'receptionist';
+    }
+
     /**
      * Scope lọc lấy danh sách nhân sự nội bộ (không bao gồm cư dân)
      */
     public function scopeStaff($query)
     {
-        return $query->whereIn('role', ['admin', 'manager', 'staff', 'technician', 'security', 'cleaning']);
+        return $query->whereIn('role', ['admin', 'manager', 'staff', 'technician', 'security', 'cleaning', 'receptionist']);
     }
 
     /**
