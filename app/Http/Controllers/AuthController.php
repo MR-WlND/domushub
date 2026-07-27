@@ -51,6 +51,11 @@ class AuthController extends Controller
         return view('auth.cleaning.login');
     }
 
+    public function showReceptionistLogin(): View
+    {
+        return view('auth.receptionist.login');
+    }
+
     public function showResidentLogin(): View
     {
         return view('auth.resident.login');
@@ -189,6 +194,36 @@ class AuthController extends Controller
         \App\Helpers\SystemLogger::log('Đăng nhập', 'Hệ thống');
 
         return redirect()->route('cleaning.dashboard');
+    }
+
+    public function loginReceptionist(Request $request): RedirectResponse
+    {
+        $credentials = $request->validate([
+            'email'    => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+            return back()->withErrors([
+                'email' => 'Email hoặc mật khẩu không đúng.',
+            ])->onlyInput('email');
+        }
+
+        $user = Auth::user();
+
+        if ($user->role !== 'receptionist') {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản này không có quyền truy cập vào cổng Lễ tân.',
+            ])->onlyInput('email');
+        }
+
+        $request->session()->regenerate();
+
+        \App\Helpers\SystemLogger::log('Đăng nhập', 'Hệ thống');
+
+        return redirect()->route('receptionist.dashboard');
     }
 
     public function loginResident(Request $request): RedirectResponse
@@ -412,16 +447,20 @@ class AuthController extends Controller
             return redirect()->route('cleaning.login');
         }
 
+        if ($role === 'receptionist') {
+            return redirect()->route('receptionist.login');
+        }
+
         return redirect()->route('resident.login');
     }
 
     private function adminHomeRouteFor(string $role): string
     {
         return match ($role) {
-            'manager' => 'manager.dashboard',
-            'staff' => 'staff.utility-readings.index',
-            'technician' => 'technician.tickets.my-tasks',
-            default => 'admin.dashboard',
+            'manager'      => 'manager.dashboard',
+            'staff'        => 'staff.utility-readings.index',
+            'technician'   => 'technician.tickets.my-tasks',
+            default        => 'admin.dashboard',
         };
     }
 }
