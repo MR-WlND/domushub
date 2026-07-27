@@ -90,7 +90,7 @@ class PayrollController extends Controller
         $mon  = (int) $mon;
 
         // Lấy tất cả nhân sự nội bộ (dùng scopeStaff)
-        $staffUsers = User::staff()->where('status', 'active')->get();
+        $staffUsers = User::internalStaff()->where('status', 'active')->get();
 
         $generatedCount = 0;
         $skippedCount   = 0;

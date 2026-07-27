@@ -363,7 +363,7 @@ class AttendanceController extends Controller
         $currentUser = auth()->user();
 
         // Danh sách nhân viên nội bộ
-        $query = User::staff()->where('status', 'active');
+        $query = User::internalStaff()->where('status', 'active');
 
         if ($role = $request->get('role')) {
             $query->where('role', $role);
@@ -705,7 +705,12 @@ class AttendanceController extends Controller
         $workLocations = config('attendance.work_locations', []);
         $today         = today()->toDateString();
 
-        $staffList = User::staff()->where('status', 'active')->orderBy('name')->get();
+        $staffList = User::internalStaff()->where('status', 'active')->orderBy('name')->get();
+        $staffs = \App\Models\Staff::whereNotNull('face_descriptor')
+            ->where('status', 'active')
+            ->select(['id', 'full_name', 'face_descriptor', 'department_id'])
+            ->with('department')
+            ->get();
 
         // Danh sách 15 bản ghi chấm công Kiosk gần nhất hôm nay có ảnh chụp đối soát
         $recentKioskScans = AttendanceRecord::with('user')
@@ -714,7 +719,7 @@ class AttendanceController extends Controller
             ->take(15)
             ->get();
 
-        return view('admin.attendance.kiosk', compact('shifts', 'workLocations', 'today', 'staffList', 'recentKioskScans'));
+        return view('admin.attendance.kiosk', compact('shifts', 'workLocations', 'today', 'staffList', 'recentKioskScans', 'staffs'));
     }
 
     /**
@@ -915,6 +920,94 @@ class AttendanceController extends Controller
             'success' => false,
             'message' => "ℹ️ Nhân viên {$user->name} đã hoàn thành chốt ca ngày hôm nay (Vào: " . $record->check_in_at->format('H:i') . " - Ra: " . $record->check_out_at->format('H:i') . ").",
         ], 400);
+    }
+
+    public function faceCheckin(Request $request)
+    {
+        $request->validate([
+            'staff_id' => 'required|exists:staffs,id',
+        ]);
+
+        $staff = \App\Models\Staff::findOrFail($request->staff_id);
+        $today = Carbon::today()->toDateString();
+        $now = Carbon::now();
+
+        // Tìm lịch trực hôm nay
+        $roster = \App\Models\ShiftRoster::with('shift')
+            ->where('staff_id', $staff->id)
+            ->where('date', $today)
+            ->where('status', 'scheduled')
+            ->first();
+
+        // Tìm user tương ứng nếu có
+        $user = $staff->user;
+        $userId = $user ? $user->id : 1; // Fallback admin if staff hasn't user account
+
+        $record = AttendanceRecord::where('staff_id', $staff->id)
+            ->whereDate('work_date', $today)
+            ->first();
+
+        if (!$record) {
+            $record = AttendanceRecord::where('user_id', $userId)
+                ->whereDate('work_date', $today)
+                ->first();
+        }
+
+        if (!$record) {
+            // Check-in
+            $isLate = false;
+            $lateMinutes = 0;
+
+            if ($roster && $roster->shift) {
+                $shiftStart = Carbon::parse($today . ' ' . $roster->shift->start_time);
+                $graceEnd = $shiftStart->copy()->addMinutes($roster->shift->grace_period_minutes);
+                if ($now->greaterThan($graceEnd)) {
+                    $isLate = true;
+                    $lateMinutes = (int) $now->diffInMinutes($shiftStart);
+                }
+            }
+
+            $record = AttendanceRecord::create([
+                'user_id' => $userId,
+                'staff_id' => $staff->id,
+                'work_date' => $today,
+                'check_in_at' => $now,
+                'status' => $isLate ? 'late' : 'present',
+                'late_minutes' => $lateMinutes,
+                'recorded_by' => auth()->id() ?? $userId,
+                'notes' => 'Chấm công tự động qua Kiosk FaceID AI',
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'type' => 'check_in',
+                'staff_name' => $staff->full_name,
+                'time' => $now->format('H:i:s'),
+                'status_label' => $isLate ? "Đi muộn {$lateMinutes} phút" : "Đúng giờ",
+                'message' => "CHECK-IN THÀNH CÔNG: {$staff->full_name} lúc {$now->format('H:i:s')}",
+            ]);
+        } elseif (!$record->check_out_at) {
+            // Check-out
+            $record->check_out_at = $now;
+            if ($record->check_in_at) {
+                $record->working_hours = round($now->diffInMinutes(Carbon::parse($record->check_in_at)) / 60, 2);
+            }
+            $record->save();
+
+            return response()->json([
+                'success' => true,
+                'type' => 'check_out',
+                'staff_name' => $staff->full_name,
+                'time' => $now->format('H:i:s'),
+                'working_hours' => $record->working_hours,
+                'message' => "CHECK-OUT THÀNH CÔNG: {$staff->full_name} (Tổng công: {$record->working_hours}h)",
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => "Nhân viên {$staff->full_name} đã hoàn thành check-in và check-out hôm nay!",
+            ], 400);
+        }
     }
 }
 

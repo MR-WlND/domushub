@@ -212,4 +212,25 @@ class StaffController extends Controller
         SystemLogger::log('Xóa nhân sự', 'Nhân sự: ' . $name);
         return redirect()->route('admin.staffs.index')->with('success', 'Đã xóa nhân sự.');
     }
+
+    public function faceId(Staff $staff)
+    {
+        return view('admin.staffs.faceid', compact('staff'));
+    }
+
+    public function saveFaceId(Request $request, Staff $staff)
+    {
+        $request->validate([
+            'face_descriptor' => 'required|string',
+        ]);
+
+        $staff->update([
+            'face_descriptor' => $request->face_descriptor,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã lưu dữ liệu khuôn mặt thành công cho ' . $staff->full_name,
+        ]);
+    }
 }

@@ -50,6 +50,95 @@
             margin: 0;
         }
 
+        /* Action Buttons */
+        .btn-action-edit {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            height: 34px;
+            padding: 0 14px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #2563eb;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 1px 2px rgba(37,99,235,0.05);
+        }
+        .btn-action-edit:hover {
+            background: #2563eb;
+            color: #ffffff;
+            border-color: #2563eb;
+            box-shadow: 0 4px 12px rgba(37,99,235,0.25);
+            transform: translateY(-1px);
+        }
+        .btn-action-edit svg {
+            transition: transform 0.2s ease;
+        }
+        .btn-action-edit:hover svg {
+            transform: scale(1.1);
+        }
+
+        .btn-action-faceid {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            height: 34px;
+            padding: 0 12px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .btn-action-faceid--active {
+            background: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+        .btn-action-faceid--active:hover {
+            background: #10b981;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(16,185,129,0.25);
+            transform: translateY(-1px);
+        }
+        .btn-action-faceid--pending {
+            background: #fffbeb;
+            color: #d97706;
+            border: 1px solid #fde68a;
+        }
+        .btn-action-faceid--pending:hover {
+            background: #f59e0b;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(245,158,11,0.25);
+            transform: translateY(-1px);
+        }
+
+        .btn-action-delete {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            height: 34px;
+            padding: 0 12px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-action-delete:hover {
+            background: #dc2626;
+            color: #ffffff;
+            border-color: #dc2626;
+            box-shadow: 0 4px 12px rgba(220,38,38,0.25);
+            transform: translateY(-1px);
+        }
+
         /* Modal */
         .role-modal-overlay {
             position: fixed;
@@ -180,6 +269,7 @@
                     </svg>
                     Lịch sử hệ thống
                 </a>
+                <a href="{{ portal_route('users.create') }}" class="users-button users-button--primary">+ Thêm nhân sự</a>
             </div>
         </div>
 
@@ -263,15 +353,27 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <button type="button" class="users-button users-button--secondary"
-                                            style="height: 34px; font-size: 13px; padding: 0 12px; border: 1px solid #cbd5e1; background: #fff;"
-                                            onclick="openRoleModal({{ $user->id }}, '{{ $user->name }}', '{{ $user->role }}', '{{ $user->status }}')">
-                                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:4px;">
-                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                        </svg>
-                                        Sửa quyền
-                                    </button>
+                                    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                                        <a href="{{ portal_route('users.edit', $user->id) }}" class="btn-action-edit">
+                                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                <circle cx="12" cy="12" r="3"></circle>
+                                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                                            </svg>
+                                            Sửa hồ sơ
+                                        </a>
+
+
+
+                                        @if((int)$user->id !== (int)auth()->id())
+                                            <form action="{{ portal_route('users.destroy', $user->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa tài khoản {{ $user->name }} không?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn-action-delete">
+                                                    🗑️ Xóa
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                         @empty
@@ -295,11 +397,11 @@
         </div>
     </div>
 
-    {{-- Modal Sửa Quyền --}}
+    {{-- Modal Sửa Hồ Sơ & Phân Quyền --}}
     <div class="role-modal-overlay" id="roleModalOverlay">
-        <div class="role-modal" onclick="event.stopPropagation()">
+        <div class="role-modal" onclick="event.stopPropagation()" style="max-width:480px;">
             <div class="role-modal__header">
-                <h3>Phân quyền: <span id="modalUserName" style="color:#2563eb;"></span></h3>
+                <h3 style="margin:0; font-size:18px; font-weight:800; color:#0f172a;">Sửa Hồ Sơ & Phân Quyền</h3>
                 <button type="button" class="role-modal__close" onclick="closeRoleModal()">
                     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -312,25 +414,50 @@
                 @method('PUT')
                 <div class="role-modal__body">
                     <div class="role-modal__field">
-                        <label>Vai trò hệ thống</label>
-                        <select name="role" id="modalUserRole" required>
-                            @foreach ($roleLabels as $value => $label)
-                                <option value="{{ $value }}">{{ $label }}</option>
-                            @endforeach
-                        </select>
+                        <label style="font-weight:700;">Họ và tên (*)</label>
+                        <input type="text" name="name" id="modalUserName" required style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px;">
                     </div>
-                    <div class="role-modal__field">
-                        <label>Trạng thái truy cập</label>
-                        <select name="status" id="modalUserStatus" required>
-                            @foreach ($statusLabels as $value => $label)
-                                <option value="{{ $value }}">{{ $label }}</option>
-                            @endforeach
-                        </select>
+
+                    <div style="display:flex; gap:12px;" class="role-modal__field">
+                        <div style="flex:1;">
+                            <label style="font-weight:700;">Số điện thoại</label>
+                            <input type="text" name="phone" id="modalUserPhone" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px;">
+                        </div>
+                        <div style="flex:1;">
+                            <label style="font-weight:700;">Email (Tài khoản)</label>
+                            <input type="email" id="modalUserEmail" readonly disabled style="width:100%; padding:8px 12px; border:1px solid #e2e8f0; background:#f8fafc; border-radius:8px; color:#64748b;">
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:12px;" class="role-modal__field">
+                        <div style="flex:1;">
+                            <label style="font-weight:700;">Vai trò hệ thống</label>
+                            <select name="role" id="modalUserRole" required style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px;">
+                                @foreach ($roleLabels as $value => $label)
+                                    <option value="{{ $value }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div style="flex:1;">
+                            <label style="font-weight:700;">Trạng thái tài khoản</label>
+                            <select name="status" id="modalUserStatus" required style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px;">
+                                @foreach ($statusLabels as $value => $label)
+                                    <option value="{{ $value }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:12px; background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0;">
+                        <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; color:#334155; cursor:pointer; margin:0;">
+                            <input type="checkbox" name="reset_password" value="1">
+                            <span>🔑 Đặt lại mật khẩu mặc định (Chungcu@2026)</span>
+                        </label>
                     </div>
                 </div>
                 <div class="role-modal__footer">
                     <button type="button" class="users-button users-button--secondary" onclick="closeRoleModal()">Hủy</button>
-                    <button type="submit" class="users-button users-button--primary">Lưu phân quyền</button>
+                    <button type="submit" class="users-button users-button--primary">Lưu thay đổi</button>
                 </div>
             </form>
         </div>
@@ -340,15 +467,15 @@
     <script>
         const overlay = document.getElementById('roleModalOverlay');
         const form = document.getElementById('roleModalForm');
-        const nameSpan = document.getElementById('modalUserName');
-        const roleSel = document.getElementById('modalUserRole');
-        const statusSel = document.getElementById('modalUserStatus');
 
-        function openRoleModal(id, name, role, status) {
-            nameSpan.innerText = name;
-            roleSel.value = role;
-            statusSel.value = status;
-            form.action = `/admin/roles/${id}/status`;
+        function openRoleModal(user) {
+            document.getElementById('modalUserName').value = user.name || '';
+            document.getElementById('modalUserPhone').value = user.phone || '';
+            document.getElementById('modalUserEmail').value = user.email || '';
+            document.getElementById('modalUserRole').value = user.role || 'staff';
+            document.getElementById('modalUserStatus').value = user.status || 'active';
+            
+            form.action = `/admin/roles/${user.id}/status`;
             overlay.classList.add('active');
         }
 

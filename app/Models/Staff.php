@@ -12,7 +12,7 @@ class Staff extends Model
     protected $table = 'staffs';
 
     protected $fillable = [
-        'full_name', 'phone', 'cccd', 'address', 'dob', 'department_id', 'status'
+        'full_name', 'phone', 'cccd', 'address', 'dob', 'department_id', 'status', 'face_descriptor'
     ];
 
     protected $casts = [
@@ -32,5 +32,10 @@ class Staff extends Model
     public function user()
     {
         return $this->hasOne(User::class);
+    }
+
+    public function shiftRosters()
+    {
+        return $this->hasMany(ShiftRoster::class);
     }
 }

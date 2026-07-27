@@ -28,8 +28,8 @@ class RoleController extends Controller
 
         $roleDescriptions = self::ROLE_DESCRIPTIONS;
 
-        // Đếm số lượng tài khoản theo từng vai trò (dùng scopeStaff từ User model)
-        $roleCounts = User::staff()
+        // Đếm số lượng tài khoản theo từng vai trò (dùng scopeInternalStaff từ User model)
+        $roleCounts = User::internalStaff()
             ->selectRaw('role, count(*) as total')
             ->where('status', 'active')
             ->groupBy('role')
@@ -37,7 +37,7 @@ class RoleController extends Controller
             ->toArray();
 
         // Danh sách nhân sự cho trang phân quyền
-        $query = User::staff();
+        $query = User::internalStaff();
 
         if ($request->filled('role')) {
             $query->where('role', $request->role);
@@ -50,7 +50,7 @@ class RoleController extends Controller
             });
         }
 
-        $users = $query->orderBy('role')->latest()->paginate(20);
+        $users = $query->with('staff')->orderBy('role')->latest()->paginate(20);
 
         return view('admin.roles.index', compact('roleDescriptions', 'roleCounts', 'users'));
     }
@@ -65,19 +65,28 @@ class RoleController extends Controller
         $user = User::findOrFail($id);
 
         $validated = $request->validate([
-            'role'   => ['required', Rule::in(['admin', 'manager', 'staff', 'technician', 'security', 'cleaning'])],
-            'status' => ['required', Rule::in(['pending', 'active', 'banned'])],
+            'name'     => ['required', 'string', 'max:255'],
+            'phone'    => ['nullable', 'string', 'max:20'],
+            'role'     => ['required', Rule::in(['admin', 'manager', 'staff', 'technician', 'security', 'cleaning', 'receptionist'])],
+            'status'   => ['required', Rule::in(['pending', 'active', 'banned'])],
+            'reset_password' => ['nullable', 'boolean'],
         ], [
+            'name.required'   => 'Vui lòng nhập họ và tên.',
             'role.required'   => 'Vui lòng chọn vai trò.',
             'role.in'         => 'Vai trò không hợp lệ.',
             'status.required' => 'Vui lòng chọn trạng thái.',
             'status.in'       => 'Trạng thái không hợp lệ.',
         ]);
 
-        // Chặn tuyệt đối người dùng tự thay đổi vai trò hoặc trạng thái của chính mình
-        if ((int) $user->id === (int) auth()->id()) {
-            return back()->withErrors(['role' => 'Bạn không thể tự thay đổi vai trò hoặc trạng thái tài khoản của chính mình.']);
+        // Chặn người dùng tự khóa hoặc hạ quyền admin của chính mình
+        if ((int) $user->id === (int) auth()->id() && ($validated['role'] !== 'admin' || $validated['status'] !== 'active')) {
+            return back()->withErrors(['role' => 'Bạn không thể tự thay đổi vai trò hoặc khóa tài khoản của chính mình.']);
         }
+
+        if (!empty($request->reset_password)) {
+            $validated['password'] = 'Chungcu@2026';
+        }
+        unset($validated['reset_password']);
 
         $oldRole   = $user->role;
         $oldStatus = $user->status;
@@ -85,10 +94,10 @@ class RoleController extends Controller
         $user->update($validated);
 
         SystemLogger::log(
-            'Đổi phân quyền',
+            'Cập nhật hồ sơ & phân quyền',
             "Tài khoản: {$user->name} ({$user->email}) — Role: {$oldRole} → {$validated['role']}, Status: {$oldStatus} → {$validated['status']}"
         );
 
-        return back()->with('success', "Đã cập nhật phân quyền cho tài khoản {$user->name}.");
+        return back()->with('success', "Đã cập nhật hồ sơ & phân quyền cho tài khoản {$user->name}.");
     }
 }

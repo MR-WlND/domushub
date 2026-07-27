@@ -1,6 +1,6 @@
 @extends('layouts.admin.master')
 
-@section('page_title', 'Sửa quyền nhân sự')
+@section('page_title', 'Sửa hồ sơ & phân quyền nhân sự')
 @section('home_route', portal_route('dashboard'))
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role_label', 'ADMIN')
@@ -14,7 +14,7 @@
         <div class="users-page__header">
             <div>
                 <p class="users-page__eyebrow">Cấu hình hệ thống</p>
-                <h1>Sửa quyền nhân sự</h1>
+                <h1>Sửa hồ sơ & phân quyền nhân sự</h1>
             </div>
         </div>
 
@@ -39,16 +39,35 @@
 
                 <div class="user-edit-page__main">
                     <section class="user-create-form__section user-edit-section">
-                        <h2>Phân quyền & Trạng thái</h2>
+                        <h2>Thông tin tài khoản & Phân quyền</h2>
                         
-                        <div style="background:#f8f9fa; padding:16px; border-radius:8px; margin-bottom:20px; font-size:14px; color:#475569;">
-                            <p style="margin:0 0 8px 0;"><strong>Nhân sự:</strong> {{ $user->name }}</p>
-                            <p style="margin:0 0 8px 0;"><strong>Email:</strong> {{ $user->email }}</p>
-                            <p style="margin:0;"><strong>Điện thoại:</strong> {{ $user->phone }}</p>
-                            <p style="margin-top:12px; font-size:13px; color:#0b57d0;"><i class="fa-solid fa-circle-info"></i> Để sửa đổi các thông tin trên, vui lòng sang trang <strong>Quản lý nhân sự</strong>.</p>
+                        <div class="user-create-form__grid" style="margin-bottom:16px;">
+                            <label class="user-create-form__field">
+                                <span>Họ và tên (*)</span>
+                                <input type="text" name="name" value="{{ old('name', $user->name) }}" required placeholder="Nhập họ và tên">
+                                @error('name')
+                                    <small>{{ $message }}</small>
+                                @enderror
+                            </label>
+
+                            <label class="user-create-form__field">
+                                <span>Số điện thoại</span>
+                                <input type="text" name="phone" value="{{ old('phone', $user->phone) }}" placeholder="Nhập số điện thoại">
+                                @error('phone')
+                                    <small>{{ $message }}</small>
+                                @enderror
+                            </label>
                         </div>
 
-                        <div class="user-create-form__grid">
+                        <div class="user-create-form__grid" style="margin-bottom:16px;">
+                            <label class="user-create-form__field">
+                                <span>Email (Tài khoản đăng nhập)</span>
+                                <input type="email" name="email" value="{{ old('email', $user->email) }}" required placeholder="Nhập email">
+                                @error('email')
+                                    <small>{{ $message }}</small>
+                                @enderror
+                            </label>
+
                             <label class="user-create-form__field user-edit-form__role">
                                 <span>Vai trò chính</span>
                                 <select name="role" id="roleSelect" required>
@@ -60,7 +79,9 @@
                                     <small>{{ $message }}</small>
                                 @enderror
                             </label>
+                        </div>
 
+                        <div class="user-create-form__grid">
                             <label class="user-create-form__field">
                                 <span>Trạng thái tài khoản</span>
                                 <select name="status" required>
@@ -72,12 +93,16 @@
                                     <small>{{ $message }}</small>
                                 @enderror
                             </label>
+
+                            <div class="user-create-form__field">
+                                <span>Liên kết Nhân sự</span>
+                                <input type="text" value="{{ $user->staff ? ($user->staff->staff_code . ' - ' . $user->staff->full_name) : 'Chưa liên kết hồ sơ nhân sự' }}" readonly disabled style="background:#f8fafc; color:#64748b;">
+                            </div>
                         </div>
                     </section>
                 </div>
                 <div class="user-edit-form__actions">
-                    <a href="{{ portal_route('users.index') }}" class="users-button users-button--secondary">Hủy bản
-                        thảo</a>
+                    <a href="{{ portal_route('roles.index') }}" class="users-button users-button--secondary">Hủy bản thảo</a>
                     <button type="submit" class="users-button users-button--primary">Lưu thay đổi</button>
                 </div>
             </form>

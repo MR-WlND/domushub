@@ -72,9 +72,11 @@
                         @endif
                     </td>
                     <td style="padding:16px 20px;">
-                        <a href="{{ route('admin.staffs.edit', $staff->id) }}" style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:6px; background:#f1f5f9; color:#0b57d0; font-size:13px; font-weight:600; text-decoration:none;">
+                        <a href="{{ portal_route('staffs.edit', $staff->id) }}" style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:6px; background:#f1f5f9; color:#0b57d0; font-size:13px; font-weight:600; text-decoration:none; margin-right:6px;">
                             <i class="fa-solid fa-pen-to-square"></i> Chi tiết
                         </a>
+
+
                     </td>
                 </tr>
                 @empty

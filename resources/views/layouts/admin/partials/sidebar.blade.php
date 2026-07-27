@@ -276,15 +276,6 @@
         @if(in_array($role, ['admin', 'manager']))
         <div class="nav-section">
             <span class="nav-section__label">NHÂN SỰ</span>
-            <a href="{{ portal_route('users.index') }}" class="dashboard-nav__item {{ is_portal_route('users.*') ? 'dashboard-nav__item--active' : '' }}">
-                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                </svg>
-                <span>Nhân viên</span>
-            </a>
             <a href="{{ portal_route('contracts.index') }}" class="dashboard-nav__item {{ is_portal_route('contracts.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -296,86 +287,25 @@
                 <span>Hợp đồng nhân sự</span>
             </a>
 
-            {{-- Lịch sử chấm công (Admin & Manager) --}}
-            <a href="{{ portal_route('attendance.index') }}" class="dashboard-nav__item {{ is_portal_route('attendance.index') ? 'dashboard-nav__item--active' : '' }}">
+            {{-- Danh mục ca & Phân ca --}}
+            <a href="{{ portal_route('shifts.index') }}" class="dashboard-nav__item {{ is_portal_route('shifts.*') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span>Danh mục Ca làm việc</span>
+            </a>
+
+            <a href="{{ portal_route('shift-rosters.index') }}" class="dashboard-nav__item {{ is_portal_route('shift-rosters.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                     <line x1="16" y1="2" x2="16" y2="6"></line>
                     <line x1="8" y1="2" x2="8" y2="6"></line>
                     <line x1="3" y1="10" x2="21" y2="10"></line>
-                    <path d="M9 16l2 2 4-4"></path>
                 </svg>
-                <span>Lịch sử Chấm công</span>
+                <span>Lịch Phân Ca (Matrix)</span>
             </a>
 
-            {{-- Thao tác chấm công tại sảnh BQL (chỉ Manager được thực hiện) --}}
-            @if($role === 'manager')
-            <a href="{{ portal_route('attendance.checkin') }}" class="dashboard-nav__item {{ is_portal_route('attendance.checkin') ? 'dashboard-nav__item--active' : '' }}">
-                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-                    <polyline points="10 17 15 12 10 7"/>
-                    <line x1="15" y1="12" x2="3" y2="12"/>
-                </svg>
-                <span>Chấm công tại BQL (Sảnh)</span>
-            </a>
-            <a href="{{ portal_route('attendance.qr-scanner') }}" class="dashboard-nav__item {{ is_portal_route('attendance.qr-scanner') ? 'dashboard-nav__item--active' : '' }}">
-                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-                    <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-                </svg>
-                <span>Quét Mã QR Chấm công</span>
-            </a>
-            <a href="{{ portal_route('attendance.kiosk') }}" class="dashboard-nav__item {{ is_portal_route('attendance.kiosk') ? 'dashboard-nav__item--active' : '' }}">
-                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                    <circle cx="12" cy="13" r="4"/>
-                </svg>
-                <span>Kiosk Chấm Công AI</span>
-            </a>
-
-            <a href="{{ portal_route('attendance.bulk') }}" class="dashboard-nav__item {{ is_portal_route('attendance.bulk') || is_portal_route('attendance.bulk.store') ? 'dashboard-nav__item--active' : '' }}">
-                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="9 11 12 14 22 4"></polyline>
-                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                </svg>
-                <span>Chấm công nhanh</span>
-            </a>
-            @endif
-
-            <a href="{{ portal_route('payroll.index') }}" class="dashboard-nav__item {{ is_portal_route('payroll.*') ? 'dashboard-nav__item--active' : '' }}">
-                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="12" y1="1" x2="12" y2="23"></line>
-                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                </svg>
-                <span>Bảng lương</span>
-            </a>
-        </div>
-        @endif
-
-        {{-- ============================================================== --}}
-        {{-- CA LÀM VIỆC - Cho nhân viên (xem lịch sử ca) --}}
-        {{-- security, cleaning, technician, staff --}}
-        {{-- ============================================================== --}}
-        @if(in_array($role, ['technician', 'security', 'cleaning', 'staff']))
-        <div class="nav-section">
-            <span class="nav-section__label">CA LÀM VIỆC</span>
-            <a href="{{ portal_route('attendance.index') }}" class="dashboard-nav__item {{ is_portal_route('attendance.index') ? 'dashboard-nav__item--active' : '' }}">
-                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                    <path d="M9 16l2 2 4-4"></path>
-                </svg>
-                <span>Lịch sử Chấm công</span>
-            </a>
-            <a href="{{ portal_route('my-qr-card') }}" class="dashboard-nav__item {{ is_portal_route('my-qr-card') ? 'dashboard-nav__item--active' : '' }}">
-                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-                    <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-                </svg>
-                <span>Thẻ QR của tôi</span>
-            </a>
         </div>
         @endif
 

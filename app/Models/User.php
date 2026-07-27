@@ -199,7 +199,7 @@ class User extends Authenticatable
     /**
      * Scope lọc lấy danh sách nhân sự nội bộ (không bao gồm cư dân)
      */
-    public function scopeStaff($query)
+    public function scopeInternalStaff($query)
     {
         return $query->whereIn('role', ['admin', 'manager', 'staff', 'technician', 'security', 'cleaning', 'receptionist']);
     }

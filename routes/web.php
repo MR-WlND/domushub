@@ -6,7 +6,7 @@ use App\Http\Controllers\Admin\UtilityMeterController;
 use App\Http\Controllers\Admin\ServicePriceController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\ResidentManageController;
-use App\Http\Controllers\Admin\AdminFacilityController;
+use App\Http\Controllers\Admin\FacilityController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\InvitationController;
 use App\Http\Controllers\Resident\InvoiceController as ResidentInvoiceController;
@@ -380,23 +380,23 @@ $portalRoutes = function () {
     Route::delete('/parking-lots/{parkingLot}', [App\Http\Controllers\Admin\ParkingLotController::class, 'destroy'])->name('parking-lots.destroy');
 
     // Quản lý tiện ích chung cư (Facilities)
-    Route::get('/amenities', [AdminFacilityController::class, 'index'])->name('amenities.index');
-    Route::get('/amenities/create', [AdminFacilityController::class, 'create'])->name('amenities.create');
-    Route::post('/amenities', [AdminFacilityController::class, 'store'])->name('amenities.store');
-    Route::get('/amenities/statistics', [AdminFacilityController::class, 'statistics'])->name('amenities.statistics');
-    Route::get('/amenities/statistics/export', [AdminFacilityController::class, 'exportExcel'])->name('amenities.statistics.export');
-    Route::get('/amenities/bookings', [AdminFacilityController::class, 'bookings'])->name('amenities.bookings');
-    Route::get('/amenities/{facility}', [AdminFacilityController::class, 'show'])->name('amenities.show');
-    Route::get('/amenities/{facility}/edit', [AdminFacilityController::class, 'edit'])->name('amenities.edit');
-    Route::put('/amenities/{facility}', [AdminFacilityController::class, 'update'])->name('amenities.update');
-    Route::delete('/amenities/{facility}', [AdminFacilityController::class, 'destroy'])->name('amenities.destroy');
-    Route::post('/amenities/{facility}/images', [AdminFacilityController::class, 'storeImage'])->name('amenities.images.store');
-    Route::delete('/amenities/{facility}/images/{index}', [AdminFacilityController::class, 'destroyImage'])->name('amenities.images.destroy');
-    Route::patch('/amenities/{facility}/status', [AdminFacilityController::class, 'updateStatus'])->name('amenities.status');
-    Route::post('/facility-bookings/{booking}/approve', [AdminFacilityController::class, 'approveBooking'])->name('amenities.bookings.approve');
-    Route::post('/facility-bookings/{booking}/reject', [AdminFacilityController::class, 'rejectBooking'])->name('amenities.bookings.reject');
-    Route::post('/facility-bookings/{booking}/cancel', [AdminFacilityController::class, 'cancelBooking'])->name('amenities.bookings.cancel');
-    Route::patch('/facility-bookings/{booking}/status', [AdminFacilityController::class, 'updateBookingStatus'])->name('amenities.bookings.status');
+    Route::get('/amenities', [FacilityController::class, 'index'])->name('amenities.index');
+    Route::get('/amenities/create', [FacilityController::class, 'create'])->name('amenities.create');
+    Route::post('/amenities', [FacilityController::class, 'store'])->name('amenities.store');
+    Route::get('/amenities/statistics', [FacilityController::class, 'statistics'])->name('amenities.statistics');
+    Route::get('/amenities/statistics/export', [FacilityController::class, 'exportExcel'])->name('amenities.statistics.export');
+    Route::get('/amenities/bookings', [FacilityController::class, 'bookings'])->name('amenities.bookings');
+    Route::get('/amenities/{facility}', [FacilityController::class, 'show'])->name('amenities.show');
+    Route::get('/amenities/{facility}/edit', [FacilityController::class, 'edit'])->name('amenities.edit');
+    Route::put('/amenities/{facility}', [FacilityController::class, 'update'])->name('amenities.update');
+    Route::delete('/amenities/{facility}', [FacilityController::class, 'destroy'])->name('amenities.destroy');
+    Route::post('/amenities/{facility}/images', [FacilityController::class, 'storeImage'])->name('amenities.images.store');
+    Route::delete('/amenities/{facility}/images/{index}', [FacilityController::class, 'destroyImage'])->name('amenities.images.destroy');
+    Route::patch('/amenities/{facility}/status', [FacilityController::class, 'updateStatus'])->name('amenities.status');
+    Route::post('/facility-bookings/{booking}/approve', [FacilityController::class, 'approveBooking'])->name('amenities.bookings.approve');
+    Route::post('/facility-bookings/{booking}/reject', [FacilityController::class, 'rejectBooking'])->name('amenities.bookings.reject');
+    Route::post('/facility-bookings/{booking}/cancel', [FacilityController::class, 'cancelBooking'])->name('amenities.bookings.cancel');
+    Route::patch('/facility-bookings/{booking}/status', [FacilityController::class, 'updateBookingStatus'])->name('amenities.bookings.status');
 
     Route::post('/announcements/{id}/toggle-pin', [\App\Http\Controllers\Admin\AnnouncementController::class, 'togglePin'])->name('announcements.toggle-pin');
     Route::resource('/announcements', \App\Http\Controllers\Admin\AnnouncementController::class)->names('announcements');
@@ -416,7 +416,20 @@ $portalRoutes = function () {
     Route::match(['put', 'patch'], '/roles/{id}/status', [\App\Http\Controllers\Admin\RoleController::class, 'updateStatus'])->name('roles.updateStatus');
 
     // Quản lý nhân sự
+    Route::get('/staffs/{staff}/faceid', [\App\Http\Controllers\Admin\StaffController::class, 'faceId'])->name('staffs.faceid');
+    Route::post('/staffs/{staff}/save-faceid', [\App\Http\Controllers\Admin\StaffController::class, 'saveFaceId'])->name('staffs.save-faceid');
     Route::resource('staffs', \App\Http\Controllers\Admin\StaffController::class);
+
+    // Ca làm việc & Phân ca
+    Route::post('/shifts/{shift}/toggle-status', [\App\Http\Controllers\Admin\ShiftController::class, 'toggleStatus'])->name('shifts.toggle-status');
+    Route::resource('shifts', \App\Http\Controllers\Admin\ShiftController::class);
+
+    Route::post('/shift-rosters/copy-week', [\App\Http\Controllers\Admin\ShiftRosterController::class, 'copyWeek'])->name('shift-rosters.copy-week');
+    Route::resource('shift-rosters', \App\Http\Controllers\Admin\ShiftRosterController::class);
+
+    // Kiosk Chấm công FaceID AI
+    Route::get('/attendance/kiosk', [\App\Http\Controllers\Admin\AttendanceController::class, 'kiosk'])->name('attendance.kiosk');
+    Route::post('/attendance/face-checkin', [\App\Http\Controllers\Admin\AttendanceController::class, 'faceCheckin'])->name('attendance.face-checkin');
 
     // Quản lý mã mời
     Route::get('/invitations', [InvitationController::class, 'index'])->name('invitations.index');
