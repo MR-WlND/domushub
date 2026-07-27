@@ -20,17 +20,15 @@
                 <i class="fa-regular fa-copy"></i> <span class="hide-mobile">Sao chép lịch</span>
             </button>
             <a href="{{ route('admin.schedules.index', ['date' => $startOfWeek->copy()->subWeek()->format('Y-m-d')]) }}" class="btn-nav">
-                <i class="fa-solid fa-chevron-left"></i> <span class="hide-mobile">Tuần trước</span>
+                <i class="fa-solid fa-chevron-left"></i>
             </a>
-            <div class="schedule-header__date-picker">
-                <input type="date" id="jumpToDate" value="{{ $date }}" class="schedule-date-input" onchange="jumpToWeek(this.value)" title="Chọn ngày để nhảy đến tuần đó">
-                <span class="schedule-header__week">{{ $startOfWeek->format('d/m') }} – {{ $endOfWeek->format('d/m/Y') }}</span>
+            <div class="schedule-week-picker" onclick="document.getElementById('jumpToDate').showPicker()">
+                <input type="date" id="jumpToDate" value="{{ $date }}" class="schedule-week-picker__input" onchange="jumpToWeek(this.value)">
+                <span class="schedule-week-picker__label">{{ $startOfWeek->format('d/m') }} – {{ $endOfWeek->format('d/m/Y') }}</span>
+                <i class="fa-solid fa-calendar-week schedule-week-picker__icon"></i>
             </div>
             <a href="{{ route('admin.schedules.index', ['date' => $startOfWeek->copy()->addWeek()->format('Y-m-d')]) }}" class="btn-nav">
-                <span class="hide-mobile">Tuần sau</span> <i class="fa-solid fa-chevron-right"></i>
-            </a>
-            <a href="{{ route('admin.schedules.index') }}" class="btn-nav btn-nav--today" title="Về tuần hiện tại">
-                <i class="fa-solid fa-calendar-day"></i> <span class="hide-mobile">Hôm nay</span>
+                <i class="fa-solid fa-chevron-right"></i>
             </a>
         </div>
     </div>

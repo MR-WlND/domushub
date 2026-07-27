@@ -42,36 +42,48 @@
     white-space: nowrap;
 }
 
-.schedule-header__date-picker {
-    display: flex;
+/* Week picker — date input hidden behind label */
+.schedule-week-picker {
+    position: relative;
+    display: inline-flex;
     align-items: center;
     gap: 8px;
-}
-
-.schedule-date-input {
-    padding: 6px 10px;
+    padding: 8px 14px;
+    background: #fff;
     border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    font-size: 13px;
-    color: #334155;
+    border-radius: 8px;
     cursor: pointer;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.schedule-date-input:hover {
+.schedule-week-picker:hover {
     border-color: #0b57d0;
+    box-shadow: 0 0 0 2px rgba(11, 87, 208, 0.08);
 }
 
-.schedule-date-input:focus {
-    outline: none;
-    border-color: #0b57d0;
-    box-shadow: 0 0 0 2px rgba(11, 87, 208, 0.1);
+.schedule-week-picker__input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 1;
 }
 
-.btn-nav--today {
-    background: #eff6ff;
-    color: #0b57d0;
-    border-color: #bfdbfe;
+.schedule-week-picker__label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0b1c30;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.schedule-week-picker__icon {
+    font-size: 13px;
+    color: #64748b;
+    pointer-events: none;
 }
 
 .btn-nav {
