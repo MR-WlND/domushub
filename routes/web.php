@@ -341,6 +341,7 @@ $portalRoutes = function () {
     Route::delete('/staff-schedules/{staff_schedule}', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'destroy'])->name('staff-schedules.destroy');
     Route::patch('/staff-schedules/{staff_schedule}/leader', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'toggleLeader'])->name('staff-schedules.leader');
     Route::post('/staff-schedules/copy', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'copy'])->name('staff-schedules.copy');
+    Route::post('/staff-schedules/preview-copy', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'previewCopy'])->name('staff-schedules.preview-copy');
 
     // Quản lý mã mời
     Route::get('/invitations', [InvitationController::class, 'index'])->name('invitations.index');

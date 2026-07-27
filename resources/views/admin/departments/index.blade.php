@@ -105,15 +105,15 @@
                         <td style="padding:14px; border-bottom:1px solid #e2e8f0;">
                             <div style="display:flex; flex-direction:column; gap:4px; font-size:12px;">
                                 @if($dept->is_shift)
-                                    <span style="color:#059669; font-weight:600;">✅ Có phân ca</span>
+                                    <span style="color:#059669; font-weight:600;">Có phân ca</span>
                                 @else
-                                    <span style="color:#64748b;">❌ Không phân ca</span>
+                                    <span style="color:#64748b;">Không phân ca</span>
                                 @endif
                                 
                                 @if($dept->status === 'active')
-                                    <span style="color:#059669; font-weight:600;">🟢 Hoạt động</span>
+                                    <span style="color:#059669; font-weight:600;">Hoạt động</span>
                                 @else
-                                    <span style="color:#b91c1c; font-weight:600;">🔴 Ngừng sử dụng</span>
+                                    <span style="color:#b91c1c; font-weight:600;">Ngừng sử dụng</span>
                                 @endif
                             </div>
                         </td>
