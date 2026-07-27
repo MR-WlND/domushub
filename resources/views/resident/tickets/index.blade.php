@@ -602,10 +602,10 @@
             <div class="mob-card-desc">
                 {{ Str::limit($ticket->description, 80) }}
             </div>
-            @if($ticket->images && count(json_decode($ticket->images, true) ?? []) > 0)
+            @if($ticket->images && count($ticket->images) > 0)
             <div class="mob-card-img">
                 @php
-                    $imgs = json_decode($ticket->images, true);
+                    $imgs = $ticket->images;
                 @endphp
                 <img src="{{ asset('storage/'.$imgs[0]) }}">
             </div>

@@ -4,362 +4,592 @@
 
 @push('styles')
     @vite(['resources/css/resident/tickets.css'])
+    <style>
+        .tk-page-wrapper {
+            display: flex;
+            gap: 24px;
+            padding: 24px;
+            background: #f8fafc;
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            align-items: flex-start;
+        }
+        
+        @media (max-width: 992px) {
+            .tk-page-wrapper {
+                flex-direction: column;
+                padding: 16px;
+            }
+            .tk-sidebar {
+                width: 100% !important;
+            }
+        }
+
+        .tk-main-col {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .tk-sidebar {
+            width: 320px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .tk-page-header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0 0 4px 0;
+        }
+        .tk-page-header p {
+            font-size: 13px;
+            color: #64748b;
+            margin: 0;
+        }
+
+        .tk-create-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+            display: block;
+        }
+
+        .form-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0 0 20px 0;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 640px) {
+            .form-grid { grid-template-columns: 1fr; }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 8px;
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #0f172a;
+            transition: all 0.2s;
+            background: #fff;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 40px;
+        }
+
+        .upload-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 32px 20px;
+            text-align: center;
+            background: #f8fafc;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .upload-zone:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        .upload-zone i {
+            font-size: 28px;
+            color: #94a3b8;
+            margin-bottom: 12px;
+        }
+        .upload-zone p {
+            margin: 0 0 4px 0;
+            font-size: 14px;
+            color: #475569;
+        }
+        .upload-zone p strong { color: #2563eb; }
+        .upload-zone span {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        .upload-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .upload-preview-item {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            position: relative;
+        }
+        .upload-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .upload-preview-remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            border: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 32px;
+        }
+        .btn-cancel {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #475569;
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .btn-cancel:hover { background: #f8fafc; }
+        .btn-submit {
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            background: #001e71;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-submit:hover { background: #001552; }
+
+        .history-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0 0 16px 0;
+        }
+        .history-item {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+        .history-info h4 {
+            margin: 0 0 4px 0;
+            font-size: 15px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .history-info span {
+            font-size: 12px;
+            color: #64748b;
+        }
+        .history-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            background: #eff6ff;
+            color: #2563eb;
+        }
+        .history-status.completed {
+            background: #ecfdf5;
+            color: #059669;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 20px;
+            margin: 0;
+            list-style: none;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 6px;
+            bottom: 0;
+            width: 2px;
+            background: #e2e8f0;
+        }
+        .timeline li {
+            position: relative;
+            margin-bottom: 16px;
+        }
+        .timeline li:last-child { margin-bottom: 0; }
+        .timeline li::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 4px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #cbd5e1;
+            border: 2px solid #fff;
+        }
+        .timeline li.active::before { background: #2563eb; }
+        .timeline-content p {
+            margin: 0 0 2px 0;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        .timeline-content span {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .sidebar-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .sidebar-box.danger {
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+        .sidebar-box-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+        }
+        .sidebar-box-title i { font-size: 16px; }
+        .sidebar-box.primary .sidebar-box-title { color: #1e3a8a; }
+        .sidebar-box.danger .sidebar-box-title { color: #b91c1c; }
+        .sidebar-box p {
+            font-size: 13px;
+            color: #475569;
+            margin: 0 0 16px 0;
+            line-height: 1.5;
+        }
+        .sidebar-box.danger p { color: #7f1d1d; }
+
+        .tips-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .tip-item {
+            display: flex;
+            gap: 12px;
+            background: #fff;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #bfdbfe;
+        }
+        .tip-img {
+            width: 60px;
+            height: 48px;
+            border-radius: 4px;
+            background: #e2e8f0;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .tip-img img { width: 100%; height: 100%; object-fit: cover; }
+        .tip-text h5 { margin: 0 0 2px 0; font-size: 12px; font-weight: 700; color: #0f172a; }
+        .tip-text span { font-size: 10px; color: #64748b; line-height: 1.3; display: block; }
+
+        .hotline-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 12px;
+            background: #b91c1c;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .hotline-btn:hover { background: #991b1b; }
+    </style>
 @endpush
 
 @section('content')
-<div class="tk">
-
-    {{-- HEADER --}}
-    <div class="tk__header">
-        <div>
-            <p class="tk__eyebrow">Hệ thống phản ánh</p>
-            <h1 class="tk__title">Gửi phản ánh mới</h1>
+<div class="tk-page-wrapper">
+    <!-- CỘT TRÁI (FORM + LỊCH SỬ) -->
+    <div class="tk-main-col">
+        <div class="tk-page-header">
+            <h1>Phản ánh và Kiến nghị</h1>
+            <p>Gửi yêu cầu bảo trì, phản ánh dịch vụ hoặc kiến nghị ban quản lý.</p>
         </div>
 
-        <a href="{{ route('resident.tickets.index') }}"
-           class="tk-btn tk-btn--outline" style="display: inline-flex; align-items: center; gap: 6px;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-            Quay lại
-        </a>
+        <div class="tk-create-card">
+            <h2 class="form-title">Gửi phản ánh mới</h2>
+
+            <form method="POST" action="{{ route('resident.tickets.store') }}" enctype="multipart/form-data">
+                @csrf
+                
+                @if($errors->any())
+                    <div style="background: #fef2f2; color: #b91c1c; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 13px;">
+                        <ul style="margin:0; padding-left:20px;">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <div class="form-grid">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>Loại vấn đề</label>
+                        <select name="ticket_type" class="form-control" required>
+                            <option value="complaint" {{ old('ticket_type') == 'complaint' ? 'selected' : '' }}>Phản ánh sự cố</option>
+                            <option value="report" {{ old('ticket_type') == 'report' ? 'selected' : '' }}>Tố cáo</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>Mức độ khẩn cấp</label>
+                        <select name="priority" class="form-control" required>
+                            <option value="" disabled {{ old('priority') ? '' : 'selected' }}>-- Chọn --</option>
+                            <option value="low" {{ old('priority') == 'low' ? 'selected' : '' }}>Bình thường</option>
+                            <option value="medium" {{ old('priority') == 'medium' ? 'selected' : '' }}>Trung bình</option>
+                            <option value="high" {{ old('priority') == 'high' ? 'selected' : '' }}>Cao</option>
+                            <option value="urgent" {{ old('priority') == 'urgent' ? 'selected' : '' }}>Khẩn cấp</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Tiêu đề phản ánh</label>
+                    <input type="text" name="title" class="form-control" placeholder="Ví dụ: Ống nước rò rỉ tại phòng bếp" value="{{ old('title') }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Mô tả chi tiết</label>
+                    <textarea name="description" class="form-control" rows="4" placeholder="Vui lòng mô tả rõ sự cố bạn đang gặp phải..." required>{{ old('description') }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Hình ảnh đính kèm</label>
+                    <input type="file" id="fileInput" name="images[]" multiple accept="image/*" style="display:none;" onchange="previewImages(event)">
+                    <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+                        <i class="fa-solid fa-camera"></i>
+                        <p>Kéo thả hình ảnh hoặc <strong>Bấm để tải lên</strong></p>
+                        <span>Tối đa 5 ảnh, dung lượng dưới 5MB/ảnh</span>
+                    </div>
+                    <div class="upload-preview" id="imagePreview"></div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{{ route('resident.tickets.index') }}" class="btn-cancel">Hủy</a>
+                    <button type="submit" class="btn-submit">Gửi phản ánh</button>
+                </div>
+            </form>
+        </div>
+
+        <h3 class="history-title">Lịch sử yêu cầu</h3>
+        @php
+            $recentTickets = \App\Models\Ticket::where('sender_id', auth()->id())->latest()->take(2)->get();
+        @endphp
+        
+        @forelse($recentTickets as $ticket)
+            <div class="history-item">
+                <div class="history-header">
+                    <div class="history-info">
+                        <h4>{{ $ticket->title }}</h4>
+                        <span>Mã YC: #RQ-{{ $ticket->id }} • {{ $ticket->created_at->format('d/m/Y') }}</span>
+                    </div>
+                    @php
+                        $statusText = 'Chờ duyệt';
+                        $statusClass = '';
+                        if(in_array($ticket->status, ['in_progress', 'assigned'])) { $statusText = 'Đang xử lý'; $statusClass = ''; }
+                        elseif($ticket->status === 'completed') { $statusText = 'Hoàn thành'; $statusClass = 'completed'; }
+                    @endphp
+                    <div class="history-status {{ $statusClass }}">
+                        {{ $statusText }}
+                    </div>
+                </div>
+                
+                <ul class="timeline">
+                    <li class="active">
+                        <div class="timeline-content">
+                            <p>Gửi yêu cầu thành công</p>
+                            <span>{{ $ticket->created_at->format('H:i, d/m/Y') }}</span>
+                        </div>
+                    </li>
+                    @if($ticket->status != 'pending')
+                    <li class="active">
+                        <div class="timeline-content">
+                            <p>Đã tiếp nhận & phân công</p>
+                            <span>{{ $ticket->updated_at->format('H:i, d/m/Y') }}</span>
+                        </div>
+                    </li>
+                    @endif
+                </ul>
+            </div>
+        @empty
+            <div style="text-align: center; padding: 20px; color: #64748b; font-size: 14px;">
+                Chưa có phản ánh nào gần đây.
+            </div>
+        @endforelse
+        
     </div>
 
-    {{-- FORM PANEL --}}
-    <div class="tk-panel">
-        <div class="tk-panel__body">
-
-            {{-- VALIDATION ERRORS --}}
-            @if($errors->any())
-                <div class="tk-alert tk-alert--error" style="margin-bottom:1.5rem; display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
-                    <div style="display: flex; align-items: center; gap: 8px; font-weight: 700;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                        <span>Vui lòng hoàn thiện đúng các thông tin sau:</span>
-                    </div>
-                    <ul style="margin: 4px 0 0 24px; padding: 0; font-size: 0.9rem; line-height: 1.5;">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            {{-- INFO BOX --}}
-            <div id="infoBoxComplaint" style="background: #f5f3ff; border-left: 4px solid #7c3aed; padding: 16px; margin-bottom: 24px; border-radius: 4px; font-size: 0.9rem; color: #4c1d95;">
-                <strong>Hướng dẫn:</strong>
-                <ul style="margin: 8px 0 0 20px; padding: 0;">
-                    <li>Mô tả chi tiết sự cố để Ban quản lý xử lý nhanh chóng hơn.</li>
-                    <li>Đính kèm ảnh sự cố (nếu có) để minh chứng rõ ràng.</li>
-                    <li>Phản ánh sẽ được xử lý trong vòng <strong>24-48 giờ</strong> làm việc.</li>
-                </ul>
+    <!-- CỘT PHẢI (SIDEBAR) -->
+    <div class="tk-sidebar">
+        <div class="sidebar-box primary">
+            <div class="sidebar-box-title">
+                <i class="fa-solid fa-wrench"></i> Gợi ý tự khắc phục
             </div>
-            <div id="infoBoxReport" style="display: none; background: #fef2f2; border-left: 4px solid #dc2626; padding: 16px; margin-bottom: 24px; border-radius: 4px; font-size: 0.9rem; color: #991b1b;">
-                <strong>Lưu ý khi tố cáo:</strong>
-                <ul style="margin: 8px 0 0 20px; padding: 0;">
-                    <li><strong>Bắt buộc đính kèm ảnh/video</strong> làm bằng chứng.</li>
-                    <li>Nhập tên người bị tố cáo nếu biết (không bắt buộc).</li>
-                    <li>Nếu không biết ai gây ra, Ban quản lý sẽ điều tra qua camera.</li>
-                    <li>Người gây ra sẽ phải chịu <strong>chi phí đền bù</strong> nếu xác minh đúng.</li>
-                </ul>
+            <p>Các mẹo nhỏ giúp bạn xử lý nhanh các sự cố thông thường trước khi thợ đến.</p>
+            <div class="tips-list">
+                <div class="tip-item">
+                    <div class="tip-img"><img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=200" alt="Tip 1"></div>
+                    <div class="tip-text">
+                        <h5>Cách khóa van nước tạm thời</h5>
+                        <span>Hướng dẫn xử lý khi ống nước rò rỉ...</span>
+                    </div>
+                </div>
+                <div class="tip-item">
+                    <div class="tip-img"><img src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&q=80&w=200" alt="Tip 2"></div>
+                    <div class="tip-text">
+                        <h5>Kiểm tra aptomat khi mất điện</h5>
+                        <span>Các bước an toàn để kiểm tra nguồn...</span>
+                    </div>
+                </div>
             </div>
+        </div>
 
-            <form method="POST"
-                  action="{{ route('resident.tickets.store') }}"
-                  enctype="multipart/form-data"
-                  style="display: flex; flex-direction: column; gap: 1.25rem;">
-
-                @csrf
-
-                {{-- LOẠI PHẢN ÁNH --}}
-                <div>
-                    <label class="tk-label">
-                        Loại phản ánh <span style="color: #ef4444;">*</span>
-                    </label>
-                    <div style="position: relative; display: flex; align-items: center;">
-                        <select name="ticket_type"
-                                id="ticketTypeSelect"
-                                class="tk-select"
-                                required
-                                onchange="toggleTicketType()">
-                            <option value="complaint" {{ old('ticket_type', 'complaint') === 'complaint' ? 'selected' : '' }}>Phản ánh sự cố</option>
-                            <option value="report" {{ old('ticket_type') === 'report' ? 'selected' : '' }}>Tố cáo</option>
-                        </select>
-                        <div class="tk-chevron">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- NGƯỜI BỊ TỐ CÁO (chỉ hiện khi chọn Tố cáo, không bắt buộc) --}}
-                <div id="reportedPersonGroup" style="display: {{ old('ticket_type') === 'report' ? 'block' : 'none' }};">
-                    <label class="tk-label">
-                        Tên người bị tố cáo <span style="color: #94a3b8; font-weight: 400; font-size: 0.8rem;">(nếu biết)</span>
-                    </label>
-                    <input type="text"
-                           name="reported_person"
-                           id="reportedPersonInput"
-                           class="tk-input @error('reported_person') tk-input--err @enderror"
-                           value="{{ old('reported_person') }}"
-                           placeholder="Nhập họ tên người gây ra (bỏ trống nếu không biết)">
-                </div>
-
-                {{-- TIÊU ĐỀ --}}
-                <div>
-                    <label class="tk-label">
-                        Tiêu đề phản ánh <span style="color: #ef4444;">*</span>
-                    </label>
-                    <input type="text"
-                           name="title"
-                           class="tk-input @error('title') tk-input--err @enderror"
-                           value="{{ old('title') }}"
-                           placeholder="Ví dụ: Ống nước bị rò rỉ tại phòng ngủ"
-                           required>
-                </div>
-
-                {{-- MÔ TẢ --}}
-                <div>
-                    <label class="tk-label">
-                        Mô tả chi tiết <span style="color: #ef4444;">*</span>
-                    </label>
-                    <textarea name="description"
-                              class="tk-textarea @error('description') tk-textarea--err @enderror"
-                              placeholder="Mô tả chi tiết sự cố: vị trí, thời gian phát hiện, mức độ ảnh hưởng..."
-                              rows="5"
-                              required>{{ old('description') }}</textarea>
-                </div>
-
-                {{-- MỨC ĐỘ ƯU TIÊN --}}
-                <div>
-                    <label class="tk-label">
-                        Mức độ ưu tiên <span style="color: #ef4444;">*</span>
-                    </label>
-                    <div style="position: relative; display: flex; align-items: center;">
-                        <select name="priority"
-                                class="tk-select @error('priority') tk-input--err @enderror"
-                                required>
-                            <option value="" disabled {{ old('priority') ? '' : 'selected' }}>-- Chọn mức độ --</option>
-                            <option value="low" {{ old('priority') === 'low' ? 'selected' : '' }}>Thấp – Không gấp</option>
-                            <option value="medium" {{ old('priority') === 'medium' ? 'selected' : '' }}>Trung bình – Cần xử lý sớm</option>
-                            <option value="high" {{ old('priority') === 'high' ? 'selected' : '' }}>Cao – Ảnh hưởng sinh hoạt</option>
-                            <option value="urgent" {{ old('priority') === 'urgent' ? 'selected' : '' }}>Khẩn cấp – Cần xử lý ngay</option>
-                        </select>
-                        <div class="tk-chevron">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- ẢNH / VIDEO ĐÍNH KÈM --}}
-                <div>
-                    <label class="tk-label">
-                        Ảnh / Video đính kèm (tùy chọn, tối đa 5 file)
-                    </label>
-
-                    <input type="file"
-                           name="images[]"
-                           id="ticket-images"
-                           style="display: none;"
-                           accept="image/*,video/mp4,video/quicktime,video/x-msvideo,video/webm"
-                           multiple
-                           onchange="previewTicketImages(this)">
-
-                    <div class="tk-upload" id="upload-box" onclick="document.getElementById('ticket-images').click()">
-
-                        <div id="upload-placeholder" class="tk-upload__placeholder">
-                            <div style="background: #f5f3ff; color: #7c3aed; padding: 12px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 4px;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                            </div>
-                            <p>Nhấp vào đây để tải ảnh hoặc video sự cố lên</p>
-                            <span>Ảnh: JPG, PNG, WEBP (tối đa 20MB) · Video: MP4, MOV, AVI, WEBM (tối đa 20MB) · Tối đa 5 file</span>
-                        </div>
-
-                        <div id="upload-preview" class="tk-upload__preview-grid" style="display: none;" onclick="event.stopPropagation();">
-                        </div>
-                    </div>
-                </div>
-
-                {{-- ACTION FOOTER --}}
-                <div style="margin-top: 0.5rem; display: flex; justify-content: flex-end; gap: 12px;">
-                    <a href="{{ route('resident.tickets.index') }}" class="tk-btn tk-btn--outline">
-                        Hủy bỏ
-                    </a>
-
-                    <button type="submit" id="submitBtn" class="tk-btn tk-btn--primary" style="display: inline-flex; align-items: center; gap: 6px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-                        <span id="submitBtnText">Gửi phản ánh</span>
-                    </button>
-                </div>
-
-            </form>
-
+        <div class="sidebar-box danger">
+            <div class="sidebar-box-title">
+                Hotline Khẩn cấp
+            </div>
+            <p>Chỉ dành cho các sự cố đe dọa tính mạng, hỏa hoạn, hoặc ngập lụt nghiêm trọng.</p>
+            <a href="tel:19001234" class="hotline-btn">
+                <i class="fa-solid fa-phone"></i> 1900 1234 (Ext 9)
+            </a>
         </div>
     </div>
 </div>
 
 <script>
-// Biến toàn cục lưu trữ DataTransfer để quản lý danh sách file được chọn
-let ticketFilesTransfer = new DataTransfer();
+let uploadedFiles = new DataTransfer();
 
-const VIDEO_EXTS = ['mp4', 'mov', 'avi', 'webm'];
-
-function isVideoFile(file) {
-    const ext = file.name.split('.').pop().toLowerCase();
-    return VIDEO_EXTS.includes(ext) || file.type.startsWith('video/');
-}
-
-function previewTicketImages(input) {
-    const files = input.files;
-    if (!files || files.length === 0) return;
-
-    // Duyệt và thêm các file mới vào DataTransfer (giới hạn tối đa 5)
-    for (let i = 0; i < files.length; i++) {
-        if (ticketFilesTransfer.files.length >= 5) {
-            alert('Chỉ được chọn tối đa 5 file.');
+function previewImages(event) {
+    const files = event.target.files;
+    
+    for(let i=0; i<files.length; i++) {
+        if(uploadedFiles.files.length >= 5) {
+            alert('Tối đa 5 ảnh!');
             break;
         }
-        ticketFilesTransfer.items.add(files[i]);
+        uploadedFiles.items.add(files[i]);
     }
-
-    // Cập nhật lại danh sách file cho input để form submit gửi đi đầy đủ
-    input.files = ticketFilesTransfer.files;
-
-    // Render giao diện preview
-    renderTicketPreviews();
+    
+    document.getElementById('fileInput').files = uploadedFiles.files;
+    renderPreviews();
 }
 
-function renderTicketPreviews() {
-    const previewContainer = document.getElementById('upload-preview');
-    const placeholder = document.getElementById('upload-placeholder');
-
-    // Xóa preview cũ trước khi render lại
+function renderPreviews() {
+    const previewContainer = document.getElementById('imagePreview');
+    const uploadZone = document.querySelector('.upload-zone');
     previewContainer.innerHTML = '';
-
-    if (ticketFilesTransfer.files.length === 0) {
-        placeholder.style.display = 'flex';
-        previewContainer.style.display = 'none';
-        return;
-    }
-
-    placeholder.style.display = 'none';
-    previewContainer.style.display = 'grid';
-
-    Array.from(ticketFilesTransfer.files).forEach((file, index) => {
-        const div = document.createElement('div');
-        div.className = 'tk-upload__preview-item';
-
-        if (isVideoFile(file)) {
-            // Video preview
-            const url = URL.createObjectURL(file);
-            div.innerHTML = `
-                <div style="position: relative; width: 100%; height: 120px; background: #0f172a; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                    <video src="${url}#t=0.5" style="width: 100%; height: 100%; object-fit: cover;" muted playsinline preload="auto"></video>
-                    <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none;">
-                        <div style="background: rgba(124, 58, 237, 0.85); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#fff" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                        </div>
-                    </div>
-                </div>
-                <span class="tk-upload__preview-label">Video ${index + 1}</span>
-                <button type="button" class="tk-upload__preview-item-remove" onclick="removeTicketImage(event, ${index})" title="Xóa file này">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            `;
-            previewContainer.appendChild(div);
-
-            // Đảm bảo video hiển thị thumbnail
-            const videoEl = div.querySelector('video');
-            videoEl.addEventListener('loadeddata', function() {
-                this.currentTime = 0.5;
-            });
-        } else {
-            // Image preview
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                div.innerHTML = `
-                    <img src="${e.target.result}" alt="Ảnh ${index + 1}">
-                    <span class="tk-upload__preview-label">Ảnh ${index + 1}</span>
-                    <button type="button" class="tk-upload__preview-item-remove" onclick="removeTicketImage(event, ${index})" title="Xóa file này">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                `;
-                previewContainer.appendChild(div);
-            }
-            reader.readAsDataURL(file);
-        }
-    });
-
-    // Nút thêm file mới
-    if (ticketFilesTransfer.files.length < 5) {
-        const changeBtn = document.createElement('div');
-        changeBtn.className = 'tk-upload__change-btn';
-        changeBtn.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            Thêm file
-        `;
-        changeBtn.onclick = function(e) {
-            e.stopPropagation();
-            document.getElementById('ticket-images').click();
-        };
-        previewContainer.appendChild(changeBtn);
-    }
-}
-
-function removeTicketImage(event, index) {
-    event.stopPropagation();
-    event.preventDefault();
-
-    // Tạo DataTransfer mới, bỏ file tại index
-    const newTransfer = new DataTransfer();
-    Array.from(ticketFilesTransfer.files).forEach((file, i) => {
-        if (i !== index) {
-            newTransfer.items.add(file);
-        }
-    });
-    ticketFilesTransfer = newTransfer;
-
-    // Cập nhật lại input file
-    document.getElementById('ticket-images').files = ticketFilesTransfer.files;
-
-    // Render lại preview
-    renderTicketPreviews();
-}
-
-function removeTicketPreviews() {
-    ticketFilesTransfer = new DataTransfer();
-    document.getElementById('ticket-images').files = ticketFilesTransfer.files;
-    document.getElementById('upload-preview').style.display = 'none';
-    document.getElementById('upload-preview').innerHTML = '';
-    document.getElementById('upload-placeholder').style.display = 'flex';
-}
-
-function toggleTicketType() {
-    const type = document.getElementById('ticketTypeSelect').value;
-    const reportGroup = document.getElementById('reportedPersonGroup');
-    const reportInput = document.getElementById('reportedPersonInput');
-    const infoComplaint = document.getElementById('infoBoxComplaint');
-    const infoReport = document.getElementById('infoBoxReport');
-    const submitText = document.getElementById('submitBtnText');
-    const submitBtn = document.getElementById('submitBtn');
-
-    if (type === 'report') {
-        reportGroup.style.display = 'block';
-        infoComplaint.style.display = 'none';
-        infoReport.style.display = 'block';
-        submitText.textContent = 'Gửi tố cáo';
-        submitBtn.style.background = '#dc2626';
+    
+    if (uploadedFiles.files.length > 0) {
+        uploadZone.style.display = 'none';
     } else {
-        reportGroup.style.display = 'none';
-        reportInput.value = '';
-        infoComplaint.style.display = 'block';
-        infoReport.style.display = 'none';
-        submitText.textContent = 'Gửi phản ánh';
-        submitBtn.style.background = '';
+        uploadZone.style.display = 'block';
+    }
+    
+    Array.from(uploadedFiles.files).forEach((file, index) => {
+        const div = document.createElement('div');
+        div.className = 'upload-preview-item';
+        div.innerHTML = `
+            <img src="${URL.createObjectURL(file)}" alt="Preview">
+            <button type="button" class="upload-preview-remove" onclick="removeImage(${index})"><i class="fa-solid fa-xmark"></i></button>
+        `;
+        previewContainer.appendChild(div);
+    });
+
+    if (uploadedFiles.files.length > 0 && uploadedFiles.files.length < 5) {
+        const addBtn = document.createElement('div');
+        addBtn.className = 'upload-preview-item add-more-btn';
+        addBtn.style.display = 'flex';
+        addBtn.style.alignItems = 'center';
+        addBtn.style.justifyContent = 'center';
+        addBtn.style.background = '#f8fafc';
+        addBtn.style.border = '2px dashed #cbd5e1';
+        addBtn.style.cursor = 'pointer';
+        addBtn.innerHTML = '<i class="fa-solid fa-plus" style="font-size: 24px; color: #94a3b8;"></i>';
+        addBtn.onclick = function() { document.getElementById('fileInput').click(); };
+        previewContainer.appendChild(addBtn);
     }
 }
 
-// Khởi tạo trạng thái khi load trang (cho trường hợp old() input)
-document.addEventListener('DOMContentLoaded', function() {
-    toggleTicketType();
-});
+function removeImage(index) {
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+    const newFiles = new DataTransfer();
+    Array.from(uploadedFiles.files).forEach((file, i) => {
+        if(i !== index) newFiles.items.add(file);
+    });
+    uploadedFiles = newFiles;
+    document.getElementById('fileInput').files = uploadedFiles.files;
+    renderPreviews();
+}
 </script>
-
 @endsection
 
