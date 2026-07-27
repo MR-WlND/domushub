@@ -112,7 +112,12 @@
             @endif
 
             <div class="util-form-group" style="{{ auth()->user()->role === 'technician' ? 'grid-column: span 3;' : '' }}">
-                <label class="util-form-label">Chỉ số mới <span style="color:#ef4444">*</span></label>
+                <label class="util-form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>Chỉ số mới <span style="color:#ef4444">*</span></span>
+                    <span id="ocr_status" style="font-size: 11px; color: #3b82f6; font-weight: 600; display: none; align-items: center; gap: 4px;">
+                        <i class="fa-solid fa-circle-notch fa-spin"></i> Đang nhận diện...
+                    </span>
+                </label>
                 <input type="number" name="new_value" id="new_value"
                     value="{{ old('new_value') }}" min="0"
                     class="util-form-input {{ $errors->has('new_value') ? 'util-form-input--error' : '' }}"
@@ -183,6 +188,8 @@
             {{-- Gallery preview --}}
             <div id="image_preview_gallery" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:6px;"></div>
 
+
+
             <p class="util-form-hint" style="margin-top:8px; display: flex; align-items: center; gap: 6px;">
                 <i class="fa-regular fa-lightbulb" style="color: #eab308; font-size: 13px;"></i>
                 <span>Nhấn <strong>Chụp ảnh</strong> để mở camera (laptop & điện thoại), hoặc <strong>Chọn từ thư viện</strong> để upload ảnh có sẵn.</span>
@@ -220,11 +227,12 @@
                 <video id="cameraVideo" autoplay playsinline muted
                     style="width:100%;height:100%;object-fit:cover;display:block;"></video>
                 {{-- Khung ngắm --}}
-                <div style="position:absolute;inset:0;pointer-events:none;">
-                    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:70%;height:70%;border:2px dashed rgba(255,255,255,0.5);border-radius:8px;"></div>
+                <div style="position:absolute;inset:0;pointer-events:none;z-index:10;">
+                    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80%;height:25%;border:2px dashed #10b981;border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,0.5);box-sizing:border-box;"></div>
+                    <div style="position:absolute;top:calc(50% - 12.5% - 20px);left:50%;transform:translateX(-50%);color:#10b981;font-size:11px;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,0.8);white-space:nowrap;">CĂN DÃY SỐ VÀO KHUNG NÀY</div>
                 </div>
                 {{-- Loading text --}}
-                <div id="cameraLoading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;background:rgba(0,0,0,0.5);">
+                <div id="cameraLoading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;background:rgba(0,0,0,0.5);z-index:20;">
                     Đang khởi động camera...
                 </div>
             </div>
@@ -269,6 +277,84 @@
 
 @push('scripts')
 <script>
+window.addEventListener('error', function(e) {
+    console.error("Global JS Error caught:", e);
+    const statusEl = document.getElementById('ocr_status');
+    if (statusEl) {
+        statusEl.innerHTML = "❌ Lỗi JS: " + e.message;
+        statusEl.style.color = '#ef4444';
+        statusEl.style.display = 'inline-flex';
+    }
+});
+window.addEventListener('unhandledrejection', function(e) {
+    console.error("Global Promise Rejection caught:", e.reason);
+    const statusEl = document.getElementById('ocr_status');
+    if (statusEl) {
+        statusEl.innerHTML = "❌ Lỗi Rejection: " + (e.reason ? (e.reason.message || e.reason) : "Unhandled Rejection");
+        statusEl.style.color = '#ef4444';
+        statusEl.style.display = 'inline-flex';
+    }
+});
+
+function showOCRStatus(text, isError = false) {
+    const statusEl = document.getElementById('ocr_status');
+    if (statusEl) {
+        statusEl.innerHTML = (isError ? '' : '<i class="fa-solid fa-circle-notch fa-spin"></i> ') + text;
+        statusEl.style.color = isError ? '#ef4444' : '#3b82f6';
+        statusEl.style.display = 'inline-flex';
+    }
+}
+
+function hideOCRStatus() {
+    const statusEl = document.getElementById('ocr_status');
+    if (statusEl) {
+        statusEl.style.display = 'none';
+    }
+}
+
+async function runAIOCR(file) {
+    showOCRStatus("AI đang nhận diện...");
+
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('type', document.getElementById('type')?.value || 'water');
+    formData.append('_token', document.querySelector('input[name="_token"]')?.value || '{{ csrf_token() }}');
+
+    try {
+        const response = await fetch('{{ portal_route('utility-readings.ocr') }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        
+        if (!response.ok) {
+            const errData = await response.json();
+            throw new Error(errData.message || 'Lỗi nhận diện');
+        }
+
+        const res = await response.json();
+
+        if (res.success && res.reading) {
+            const newValueInp = document.getElementById('new_value');
+            if (newValueInp) {
+                newValueInp.value = parseInt(res.reading, 10);
+                newValueInp.dispatchEvent(new Event('input'));
+                showOCRStatus("✅ AI nhận diện thành công: " + res.reading);
+                setTimeout(hideOCRStatus, 5000);
+            }
+        } else {
+            showOCRStatus("⚠️ AI phản hồi: " + (res.message || "Không nhận diện được số"), true);
+            setTimeout(hideOCRStatus, 6000);
+        }
+    } catch (err) {
+        console.error("AI OCR Error:", err);
+        showOCRStatus("❌ Lỗi AI: " + err.message, true);
+        setTimeout(hideOCRStatus, 6000);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     const blockSelect  = document.getElementById('block_select');
     const floorSelect  = document.getElementById('floor_select');
@@ -413,6 +499,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         syncProxy();
         renderGallery();
+
+        // Tự động quét số từ ảnh đầu tiên được tải lên
+        if (fileList.length > 0) {
+            runAIOCR(fileList[0]);
+        }
     }
 
     function renderGallery() {
@@ -545,19 +636,27 @@ async function startCamera(facing) {
         let msg = 'Không thể mở camera.';
         if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
             msg = 'Trình duyệt đã chặn quyền camera.\n\nHãy cho phép quyền camera trong thanh địa chỉ và thử lại.';
-        } else if (err.name === 'NotFoundError') {
-            msg = 'Không tìm thấy camera. Kiểm tra kết nối webcam.';
-        } else if (err.name === 'NotReadableError') {
-            msg = 'Camera đang được dùng bởi ứng dụng khác. Đóng ứng dụng đó và thử lại.';
-        } else if (err.name === 'OverconstrainedError') {
-            // Thử lại không ràng buộc facingMode
+        } else {
             try {
-                cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
                 video.srcObject = cameraStream;
                 video.onloadedmetadata = () => { loading.style.display = 'none'; };
                 return;
             } catch (e2) {
-                msg = '❌ Không thể mở camera: ' + e2.message;
+                try {
+                    cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    video.srcObject = cameraStream;
+                    video.onloadedmetadata = () => { loading.style.display = 'none'; };
+                    return;
+                } catch (e3) {
+                    if (err.name === 'NotFoundError') {
+                        msg = 'Không tìm thấy camera. Kiểm tra kết nối webcam.';
+                    } else if (err.name === 'NotReadableError') {
+                        msg = 'Camera đang được dùng bởi ứng dụng khác. Đóng ứng dụng đó và thử lại.';
+                    } else {
+                        msg = 'Không thể mở camera: ' + (err.message || err.name);
+                    }
+                }
             }
         }
         loading.innerHTML = `<div style="text-align:center;padding:20px;color:#fff;">${msg}<br><br><button onclick="closeCameraModal()" style="padding:8px 16px;background:#fff;color:#1e293b;border:none;border-radius:8px;cursor:pointer;font-weight:600;">Đóng</button></div>`;
@@ -581,6 +680,7 @@ function capturePhoto() {
         return;
     }
 
+    // Lưu ảnh gốc làm minh chứng
     canvas.width  = video.videoWidth;
     canvas.height = video.videoHeight;
     canvas.getContext('2d').drawImage(video, 0, 0);
@@ -655,6 +755,9 @@ document.addEventListener('camera-captured', function(e) {
 
     // Re-render preview
     renderPreviewFromProxy();
+
+    // Chạy AI OCR trên ảnh vừa chụp
+    runAIOCR(e.capturedFile);
 });
 
 function renderPreviewFromProxy() {

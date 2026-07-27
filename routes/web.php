@@ -224,6 +224,7 @@ $portalRoutes = function () {
     Route::get('/utility-readings/batch', [UtilityMeterController::class, 'batchCreate'])->name('utility-readings.batch');
     Route::post('/utility-readings/batch', [UtilityMeterController::class, 'batchStore'])->name('utility-readings.batch.store');
     Route::get('/utility-readings/get-old-value', [UtilityMeterController::class, 'getOldValue'])->name('utility-readings.get-old-value');
+    Route::post('/utility-readings/ocr', [UtilityMeterController::class, 'ocr'])->name('utility-readings.ocr');
     Route::get('/utility-readings/import-template', [UtilityMeterController::class, 'downloadTemplate'])->name('utility-readings.import-template');
     Route::post('/utility-readings/import', [UtilityMeterController::class, 'import'])->name('utility-readings.import');
     Route::get('/utility-readings/{id}', [UtilityMeterController::class, 'show'])->name('utility-readings.show');
@@ -251,8 +252,11 @@ $portalRoutes = function () {
     Route::post('/invoices/generate', [InvoiceController::class, 'generate'])->name('invoices.generate');
     Route::get('/invoices/apartment/{apartment}', [InvoiceController::class, 'apartmentInvoices'])->name('invoices.apartment');
     Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
+    Route::get('/invoices/{invoice}/edit', [InvoiceController::class, 'edit'])->name('invoices.edit');
+    Route::put('/invoices/{invoice}', [InvoiceController::class, 'update'])->name('invoices.update');
     Route::match(['post', 'patch'], '/invoices/{invoice}/mark-paid', [InvoiceController::class, 'markAsPaid'])->name('invoices.mark-paid');
     Route::post('/invoices/{invoice}/cancel', [InvoiceController::class, 'cancelInvoice'])->name('invoices.cancel');
+    Route::post('/invoices/batch-resend-notification', [InvoiceController::class, 'batchResendNotification'])->name('invoices.batch-resend-notification');
     Route::post('/invoices/{invoice}/resend-notification', [InvoiceController::class, 'resendNotification'])->name('invoices.resend-notification');
     Route::get('/invoices/{invoice}/print', [InvoiceController::class, 'printInvoice'])->name('invoices.print');
     Route::post('/payments/{payment}/refund', [InvoiceController::class, 'refundPayment'])->name('payments.refund');
@@ -513,6 +517,8 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/invoices/history', [ResidentInvoiceController::class, 'history'])->name('resident.invoices.history');
     Route::get('/resident/invoices/vnpay-return', [ResidentInvoiceController::class, 'vnpayReturn'])->name('resident.invoices.vnpay-return');
     Route::get('/resident/invoices/{id}', [ResidentInvoiceController::class, 'show'])->name('resident.invoices.show');
+    Route::get('/resident/invoices/{id}/print', [ResidentInvoiceController::class, 'printInvoice'])->name('resident.invoices.print');
+    Route::post('/resident/invoices/{invoice}/complaint-water', [ResidentInvoiceController::class, 'complaintWater'])->name('resident.invoices.complaint-water');
     Route::post('/resident/invoices/pay', [ResidentInvoiceController::class, 'pay'])->name('resident.invoices.pay');
     Route::post('/resident/invoices/pay-details', [ResidentInvoiceController::class, 'payDetails'])->name('resident.invoices.pay-details');
     Route::get('/resident/payments/{payment}/receipt', [ResidentInvoiceController::class, 'printReceipt'])->name('resident.payments.receipt');
