@@ -38,8 +38,40 @@
     font-weight: 600;
     font-size: 14px;
     color: #0b1c30;
-    padding: 0 12px;
+    padding: 0 4px;
     white-space: nowrap;
+}
+
+.schedule-header__date-picker {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.schedule-date-input {
+    padding: 6px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #334155;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.schedule-date-input:hover {
+    border-color: #0b57d0;
+}
+
+.schedule-date-input:focus {
+    outline: none;
+    border-color: #0b57d0;
+    box-shadow: 0 0 0 2px rgba(11, 87, 208, 0.1);
+}
+
+.btn-nav--today {
+    background: #eff6ff;
+    color: #0b57d0;
+    border-color: #bfdbfe;
 }
 
 .btn-nav {

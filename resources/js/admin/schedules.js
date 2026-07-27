@@ -81,6 +81,16 @@
     }
 
     // ═══════════════════════════════════════════════════════
+    // JUMP TO WEEK (Date Picker)
+    // ═══════════════════════════════════════════════════════
+    window.jumpToWeek = function (dateStr) {
+        if (!dateStr) return;
+        const url = new URL(window.location.href);
+        url.searchParams.set('date', dateStr);
+        window.location.href = url.toString();
+    };
+
+    // ═══════════════════════════════════════════════════════
     // TOM SELECT
     // ═══════════════════════════════════════════════════════
     document.addEventListener('DOMContentLoaded', function () {

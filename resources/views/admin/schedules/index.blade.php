@@ -22,9 +22,15 @@
             <a href="{{ route('admin.schedules.index', ['date' => $startOfWeek->copy()->subWeek()->format('Y-m-d')]) }}" class="btn-nav">
                 <i class="fa-solid fa-chevron-left"></i> <span class="hide-mobile">Tuần trước</span>
             </a>
-            <span class="schedule-header__week">{{ $startOfWeek->format('d/m') }} – {{ $endOfWeek->format('d/m/Y') }}</span>
+            <div class="schedule-header__date-picker">
+                <input type="date" id="jumpToDate" value="{{ $date }}" class="schedule-date-input" onchange="jumpToWeek(this.value)" title="Chọn ngày để nhảy đến tuần đó">
+                <span class="schedule-header__week">{{ $startOfWeek->format('d/m') }} – {{ $endOfWeek->format('d/m/Y') }}</span>
+            </div>
             <a href="{{ route('admin.schedules.index', ['date' => $startOfWeek->copy()->addWeek()->format('Y-m-d')]) }}" class="btn-nav">
                 <span class="hide-mobile">Tuần sau</span> <i class="fa-solid fa-chevron-right"></i>
+            </a>
+            <a href="{{ route('admin.schedules.index') }}" class="btn-nav btn-nav--today" title="Về tuần hiện tại">
+                <i class="fa-solid fa-calendar-day"></i> <span class="hide-mobile">Hôm nay</span>
             </a>
         </div>
     </div>
