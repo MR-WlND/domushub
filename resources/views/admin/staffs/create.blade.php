@@ -86,7 +86,7 @@
                     <select name="department_id" class="form-input">
                         <option value="">-- Chọn phòng ban --</option>
                         @foreach($departments as $dept)
-                            <option value="{{ $dept->id }}" @selected(old('department_id') == $dept->id)>{{ $dept->name }}</option>
+                            <option value="{{ $dept->id }}" @selected(old('department_id') == $dept->id)>{{ $dept->code ? $dept->code . ' - ' : '' }}{{ $dept->name }}</option>
                         @endforeach
                     </select>
                 </div>

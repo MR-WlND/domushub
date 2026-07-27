@@ -87,7 +87,7 @@
                     <select name="department_id" class="form-input">
                         <option value="">-- Chọn phòng ban --</option>
                         @foreach($departments as $dept)
-                            <option value="{{ $dept->id }}" @selected(old('department_id', $staff->department_id) == $dept->id)>{{ $dept->name }}</option>
+                            <option value="{{ $dept->id }}" @selected(old('department_id', $staff->department_id) == $dept->id)>{{ $dept->code ? $dept->code . ' - ' : '' }}{{ $dept->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -112,7 +112,8 @@
                                     <th style="padding:10px; border:1px solid #e2e8f0;">Loại</th>
                                     <th style="padding:10px; border:1px solid #e2e8f0;">Thời hạn</th>
                                     <th style="padding:10px; border:1px solid #e2e8f0;">Lương CB</th>
-                                    <th style="padding:10px; border:1px solid #e2e8f0;">File</th>
+                                    <th style="padding:10px; border:1px solid #e2e8f0;">Trạng thái</th>
+                                    <th style="padding:10px; border:1px solid #e2e8f0;">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -123,11 +124,17 @@
                                     <td style="padding:10px; border:1px solid #e2e8f0;">{{ optional($contract->start_date)->format('d/m/Y') }} - {{ optional($contract->end_date)->format('d/m/Y') ?? 'Vô thời hạn' }}</td>
                                     <td style="padding:10px; border:1px solid #e2e8f0;">{{ number_format($contract->base_salary) }}đ</td>
                                     <td style="padding:10px; border:1px solid #e2e8f0;">
-                                        @if($contract->file_path)
-                                            <a href="{{ asset('storage/' . $contract->file_path) }}" target="_blank" style="color:#0b57d0;">Xem file</a>
+                                        @if($contract->is_expired)
+                                            <span style="background:#fee2e2; color:#b91c1c; padding:4px 8px; border-radius:4px; font-weight:600; font-size:12px;">Hết hạn</span>
                                         @else
-                                            N/A
+                                            <span style="background:#e6f4ea; color:#137333; padding:4px 8px; border-radius:4px; font-weight:600; font-size:12px;">Còn hiệu lực</span>
                                         @endif
+                                    </td>
+                                    <td style="padding:10px; border:1px solid #e2e8f0; display:flex; gap:8px;">
+                                        @if($contract->file_path)
+                                            <a href="{{ asset('storage/' . $contract->file_path) }}" target="_blank" style="color:#0b57d0; text-decoration:none; font-weight:600;">Xem file</a>
+                                        @endif
+                                        <button type="button" onclick="document.getElementById('delete-contract-{{ $contract->id }}').submit()" style="background:none; border:none; color:#b91c1c; font-weight:600; cursor:pointer; padding:0;">Xóa</button>
                                     </td>
                                 </tr>
                                 @endforeach
@@ -199,6 +206,13 @@
             @method('DELETE')
             <button type="submit" style="background:#fee2e2; color:#b91c1c; border:none; padding:10px 20px; border-radius:8px; font-weight:600; cursor:pointer;"><i class="fa-solid fa-trash-can"></i> Xóa hồ sơ nhân sự</button>
         </form>
+
+        @foreach($staff->contracts as $contract)
+        <form id="delete-contract-{{ $contract->id }}" action="{{ route('admin.contracts.destroy', $contract->id) }}" method="POST" onsubmit="return confirm('Xóa hợp đồng này?');" style="display:none;">
+            @csrf
+            @method('DELETE')
+        </form>
+        @endforeach
     </div>
 </div>
 @endsection

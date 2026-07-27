@@ -2,7 +2,13 @@
 
 @section('page_title', 'Phản ánh – Lễ tân DomusHub')
 
-
+@section('topbar_left')
+<nav style="font-size:13px;color:#A3AED0;display:flex;align-items:center;gap:6px;">
+    <a href="{{ route('receptionist.dashboard') }}" style="color:#7B3FE4;text-decoration:none;">Dashboard</a>
+    <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i>
+    <span>Phản ánh & Sự cố</span>
+</nav>
+@endsection
 
 @section('content')
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
@@ -13,10 +19,13 @@
 </div>
 
 <!-- Filter -->
-<div class="dashboard-card" style="margin-bottom:24px; padding:16px;">
-    <form method="GET" action="{{ route('receptionist.tickets.index') }}" style="display:flex;gap:12px;flex-wrap:wrap;width:100%;align-items:center;">
-        <input type="text" name="search" value="{{ request('search') }}" placeholder="Tìm tiêu đề, tên cư dân...">
-        <select name="status">
+<div class="filter-card">
+    <form method="GET" action="{{ route('receptionist.tickets.index') }}" class="filter-form">
+        <div class="filter-input-wrapper">
+            <i class="fa-solid fa-magnifying-glass filter-input-icon"></i>
+            <input type="text" name="search" value="{{ request('search') }}" class="filter-input" placeholder="Tìm tiêu đề, tên cư dân...">
+        </div>
+        <select name="status" class="filter-select">
             <option value="">-- Tất cả trạng thái --</option>
             <option value="pending"     {{ request('status') === 'pending'     ? 'selected' : '' }}>Chờ xử lý</option>
             <option value="assigned"    {{ request('status') === 'assigned'    ? 'selected' : '' }}>Đã phân công</option>
@@ -24,7 +33,12 @@
             <option value="completed"   {{ request('status') === 'completed'   ? 'selected' : '' }}>Hoàn thành</option>
             <option value="cancelled"   {{ request('status') === 'cancelled'   ? 'selected' : '' }}>Đã hủy</option>
         </select>
-        <button type="submit" class="btn-new-broadcast" style="width:auto; margin-bottom:0; padding:9px 18px;"><i class="fa-solid fa-filter"></i> Lọc</button>
+        <button type="submit" class="filter-btn-submit"><i class="fa-solid fa-filter"></i> Lọc</button>
+        @if(request('search') || request('status'))
+            <a href="{{ route('receptionist.tickets.index') }}" class="filter-btn-reset">
+                <i class="fa-solid fa-arrows-rotate"></i> Reset
+            </a>
+        @endif
     </form>
 </div>
 
@@ -33,13 +47,13 @@
     <table style="width:100%; border-collapse:collapse; text-align:left;">
         <thead style="background:#f8f9ff; border-bottom:1px solid #e2e8f0;">
             <tr>
-                <th>#</th>
-                <th>Tiêu đề</th>
-                <th>Cư dân</th>
-                <th>Căn hộ</th>
-                <th>Ưu tiên</th>
-                <th>Trạng thái</th>
-                <th>Ngày gửi</th>
+                <th style="padding:14px 20px; font-size:12px; font-weight:700; color:#757682; text-transform:uppercase;">ID</th>
+                <th style="padding:14px 20px; font-size:12px; font-weight:700; color:#757682; text-transform:uppercase;">Tiêu đề</th>
+                <th style="padding:14px 20px; font-size:12px; font-weight:700; color:#757682; text-transform:uppercase;">Cư dân</th>
+                <th style="padding:14px 20px; font-size:12px; font-weight:700; color:#757682; text-transform:uppercase;">Căn hộ</th>
+                <th style="padding:14px 20px; font-size:12px; font-weight:700; color:#757682; text-transform:uppercase;">Ưu tiên</th>
+                <th style="padding:14px 20px; font-size:12px; font-weight:700; color:#757682; text-transform:uppercase;">Trạng thái</th>
+                <th style="padding:14px 20px; font-size:12px; font-weight:700; color:#757682; text-transform:uppercase;">Ngày gửi</th>
                 <th style="padding:14px 20px; font-size:12px; font-weight:700; color:#757682; text-transform:uppercase;">Chi tiết</th>
             </tr>
         </thead>

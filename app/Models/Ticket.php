@@ -27,11 +27,13 @@ class Ticket extends Model
         'rating',
         'feedback_comment',
         'reopened_count',
+        'completed_at',
     ];
 
     protected $casts = [
         'images'              => 'array',
         'accused_responded_at' => 'datetime',
+        'completed_at'        => 'datetime',
     ];
 
     // ── Relationships ───────────────────────────────────────────

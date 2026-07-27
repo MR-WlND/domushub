@@ -23,4 +23,12 @@ class Contract extends Model
     {
         return $this->belongsTo(Staff::class);
     }
+
+    public function getIsExpiredAttribute()
+    {
+        if (!$this->end_date) {
+            return false; // Vô thời hạn
+        }
+        return \Carbon\Carbon::parse($this->end_date)->isPast();
+    }
 }

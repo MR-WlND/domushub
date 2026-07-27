@@ -334,10 +334,10 @@ class TicketController extends Controller
                 'message' => 'Ticket không ở trạng thái chờ nghiệm thu.',
             ], 422);
         }
-
         $ticket->update([
             'status'         => 'in_progress',
             'reopened_count' => $ticket->reopened_count + 1,
+            'completed_at'   => null,
         ]);
 
         TicketProgress::create([
@@ -565,10 +565,13 @@ class TicketController extends Controller
 
         $updateData = ['status' => $validated['status']];
 
-        // Nếu KTV hoàn thành lại sau khi bị reopen → reset rating cũ để cư dân đánh giá lại
-        if ($validated['status'] === 'completed' && $ticket->reopened_count > 0) {
-            $updateData['rating']           = null;
-            $updateData['feedback_comment'] = null;
+        if ($validated['status'] === 'completed') {
+            $updateData['completed_at'] = now();
+            // Nếu KTV hoàn thành lại sau khi bị reopen → reset rating cũ để cư dân đánh giá lại
+            if ($ticket->reopened_count > 0) {
+                $updateData['rating']           = null;
+                $updateData['feedback_comment'] = null;
+            }
         }
 
         $ticket->update($updateData);
