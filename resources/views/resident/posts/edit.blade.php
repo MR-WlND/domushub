@@ -1,53 +1,10 @@
 @extends('layouts.resident.master')
 @section('title', 'Chỉnh sửa bài viết – DomusHub')
 @push('styles')
+    @vite(['resources/css/pages/resident/posts/edit.css'])
+
     @vite(['resources/css/pages/resident/home/index.css'])
-    <style>
-        .ck-editor__editable_inline {
-            min-height: 180px;
-            color: #0f172a;
-        }
-        .media-preview-card {
-            position: relative;
-            width: 80px;
-            height: 80px;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid #e2e8f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .media-preview-card img, .media-preview-card video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .media-preview-card .delete-btn {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            background: rgba(220, 38, 38, 0.9);
-            color: #fff;
-            border: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            font-size: 0.75rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 1;
-            padding: 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-            transition: background 0.15s;
-        }
-        .media-preview-card .delete-btn:hover {
-            background: #b91c1c;
-        }
-    </style>
-@endpush
+    @endpush
 
 @section('content')
 <div class="rh" style="max-width:680px;">
@@ -134,72 +91,8 @@
     </div>
 </div>
 
-<script src="https://cdn.ckeditor.com/ckeditor5/36.0.1/classic/ckeditor.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const editTA = document.getElementById('editor-post-content');
-    if (editTA && typeof ClassicEditor !== 'undefined') {
-        ClassicEditor.create(editTA, {
-            toolbar: ['bold', 'italic', 'underline', 'bulletedList', 'numberedList', 'undo', 'redo'],
-            placeholder: 'Bạn đang muốn chia sẻ điều gì với cư dân hôm nay...'
-        }).catch(err => console.error(err));
-    }
-});
-
-// Mark existing media for deletion
-const deletedMediaIds = new Set();
-function markMediaForDeletion(mediaId) {
-    deletedMediaIds.add(mediaId);
-    
-    // Hide visual card
-    const card = document.getElementById(`existing-media-${mediaId}`);
-    if (card) {
-        card.style.display = 'none';
-    }
-
-    // Add hidden input to form
-    const container = document.getElementById('deleted-media-inputs');
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = 'delete_media[]';
-    input.value = mediaId;
-    input.id = `delete-media-input-${mediaId}`;
-    container.appendChild(input);
-}
-
-// Preview new media uploads
-function previewMedia(input) {
-    const container = document.getElementById('new-media-previews');
-    container.innerHTML = '';
-    if (!input.files) return;
-
-    // Validate total count
-    const existingCount = document.querySelectorAll('#existing-media-container .media-preview-card').length - deletedMediaIds.size;
-    const newCount = input.files.length;
-    if (existingCount + newCount > 5) {
-        alert('Tổng số hình ảnh và video cho mỗi bài đăng không được vượt quá 5.');
-        input.value = '';
-        return;
-    }
-
-    Array.from(input.files).forEach(file => {
-        if (file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const wrap = document.createElement('div');
-                wrap.className = 'media-preview-card';
-                wrap.innerHTML = `<img src="${e.target.result}" alt="">`;
-                container.appendChild(wrap);
-            };
-            reader.readAsDataURL(file);
-        } else if (file.type.startsWith('video/')) {
-            const wrap = document.createElement('div');
-            wrap.className = 'media-preview-card';
-            wrap.style.background = '#0f172a';
-            wrap.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg><span style="position:absolute;bottom:2px;right:4px;font-size:0.6rem;color:#fff;background:rgba(0,0,0,0.6);padding:1px 4px;border-radius:3px;">Video</span>';
-            container.appendChild(wrap);
-        }
-    });
-}
-</script>
 @endsection
+
+@push('scripts')
+    @vite(['resources/js/pages/resident/posts/edit.js'])
+@endpush

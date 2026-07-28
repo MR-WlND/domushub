@@ -20,53 +20,7 @@ Route::get('/', function () {
     return redirect()->route('resident.login');
 });
 
-// Admin Login Routes
-Route::get('/admin/login', [AuthController::class, 'showAdminLogin'])->name('admin.login');
-Route::post('/admin/login', [AuthController::class, 'loginAdmin'])->name('admin.login.submit');
 
-// Resident Routes
-Route::get('/resident/login', [AuthController::class, 'showResidentLogin'])->name('resident.login');
-Route::post('/resident/login', [AuthController::class, 'loginResident'])->name('resident.login.submit');
-Route::get('/resident/register', [AuthController::class, 'showResidentRegister'])->name('resident.register');
-Route::post('/resident/register', [AuthController::class, 'registerResident'])->name('resident.register.submit');
-Route::get('/resident/forgot-password', [AuthController::class, 'showForgotPassword'])->name('resident.forgot-password');
-Route::post('/resident/forgot-password', [AuthController::class, 'sendResetCode'])->name('resident.forgot-password.submit');
-Route::get('/resident/reset-password', [AuthController::class, 'showResetPassword'])->name('resident.reset-password');
-Route::post('/resident/reset-password', [AuthController::class, 'resetPassword'])->name('resident.reset-password.submit');
-
-// Security Login Routes
-Route::get('/security/login', [AuthController::class, 'showSecurityLogin'])->name('security.login');
-Route::post('/security/login', [AuthController::class, 'loginSecurity'])->name('security.login.submit');
-
-// Logout (accessible from all roles)
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
-
-
-Route::middleware(['security'])->group(function () {
-    Route::get('/security/dashboard', function () {
-        return view('security.dashboard.index');
-    })->name('security.dashboard');
-
-    Route::get('/security/vehicle-checkin', function () {
-        return view('security.vehicle-checkin.index');
-    })->name('security.vehicle-checkin.index');
-
-    Route::get('/security/vehicle-checkout', function () {
-        return view('security.vehicle-checkout.index');
-    })->name('security.vehicle-checkout.index');
-
-    Route::get('/security/visitor-check', function () {
-        return view('security.visitor-check.index');
-    })->name('security.visitor-check.index');
-});
-
-
-Route::middleware(['resident'])->group(function () {
-    Route::get('/resident/dashboard', function () {
-        return view('resident.home.index');
-    })->name('resident.dashboard');
-});
 
 // Shortcut routes
 Route::get('/resident', function () {
@@ -224,6 +178,7 @@ $portalRoutes = function () {
     Route::get('/utility-readings/batch', [UtilityMeterController::class, 'batchCreate'])->name('utility-readings.batch');
     Route::post('/utility-readings/batch', [UtilityMeterController::class, 'batchStore'])->name('utility-readings.batch.store');
     Route::get('/utility-readings/get-old-value', [UtilityMeterController::class, 'getOldValue'])->name('utility-readings.get-old-value');
+    Route::post('/utility-readings/ocr', [UtilityMeterController::class, 'ocr'])->name('utility-readings.ocr');
     Route::get('/utility-readings/import-template', [UtilityMeterController::class, 'downloadTemplate'])->name('utility-readings.import-template');
     Route::post('/utility-readings/import', [UtilityMeterController::class, 'import'])->name('utility-readings.import');
     Route::get('/utility-readings/{id}', [UtilityMeterController::class, 'show'])->name('utility-readings.show');
@@ -251,8 +206,11 @@ $portalRoutes = function () {
     Route::post('/invoices/generate', [InvoiceController::class, 'generate'])->name('invoices.generate');
     Route::get('/invoices/apartment/{apartment}', [InvoiceController::class, 'apartmentInvoices'])->name('invoices.apartment');
     Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
+    Route::get('/invoices/{invoice}/edit', [InvoiceController::class, 'edit'])->name('invoices.edit');
+    Route::put('/invoices/{invoice}', [InvoiceController::class, 'update'])->name('invoices.update');
     Route::match(['post', 'patch'], '/invoices/{invoice}/mark-paid', [InvoiceController::class, 'markAsPaid'])->name('invoices.mark-paid');
     Route::post('/invoices/{invoice}/cancel', [InvoiceController::class, 'cancelInvoice'])->name('invoices.cancel');
+    Route::post('/invoices/batch-resend-notification', [InvoiceController::class, 'batchResendNotification'])->name('invoices.batch-resend-notification');
     Route::post('/invoices/{invoice}/resend-notification', [InvoiceController::class, 'resendNotification'])->name('invoices.resend-notification');
     Route::get('/invoices/{invoice}/print', [InvoiceController::class, 'printInvoice'])->name('invoices.print');
     Route::post('/payments/{payment}/refund', [InvoiceController::class, 'refundPayment'])->name('payments.refund');
@@ -329,10 +287,6 @@ $portalRoutes = function () {
     Route::resource('departments', \App\Http\Controllers\Admin\DepartmentController::class)->except(['create', 'show', 'edit']);
     Route::resource('staffs', \App\Http\Controllers\Admin\StaffController::class);
     
-    // Hợp đồng
-    Route::post('/contracts', [\App\Http\Controllers\Admin\ContractController::class, 'store'])->name('contracts.store');
-    Route::delete('/contracts/{contract}', [\App\Http\Controllers\Admin\ContractController::class, 'destroy'])->name('contracts.destroy');
-
     // Phân ca làm việc (Khung lịch)
     Route::get('/schedules', [\App\Http\Controllers\Admin\ScheduleController::class, 'index'])->name('schedules.index');
     
@@ -345,6 +299,7 @@ $portalRoutes = function () {
     Route::delete('/staff-schedules/{staff_schedule}', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'destroy'])->name('staff-schedules.destroy');
     Route::patch('/staff-schedules/{staff_schedule}/leader', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'toggleLeader'])->name('staff-schedules.leader');
     Route::post('/staff-schedules/copy', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'copy'])->name('staff-schedules.copy');
+    Route::post('/staff-schedules/preview-copy', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'previewCopy'])->name('staff-schedules.preview-copy');
 
     // Quản lý mã mời
     Route::get('/invitations', [InvitationController::class, 'index'])->name('invitations.index');
@@ -516,6 +471,8 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/invoices/history', [ResidentInvoiceController::class, 'history'])->name('resident.invoices.history');
     Route::get('/resident/invoices/vnpay-return', [ResidentInvoiceController::class, 'vnpayReturn'])->name('resident.invoices.vnpay-return');
     Route::get('/resident/invoices/{id}', [ResidentInvoiceController::class, 'show'])->name('resident.invoices.show');
+    Route::get('/resident/invoices/{id}/print', [ResidentInvoiceController::class, 'printInvoice'])->name('resident.invoices.print');
+    Route::post('/resident/invoices/{invoice}/complaint-water', [ResidentInvoiceController::class, 'complaintWater'])->name('resident.invoices.complaint-water');
     Route::post('/resident/invoices/pay', [ResidentInvoiceController::class, 'pay'])->name('resident.invoices.pay');
     Route::post('/resident/invoices/pay-details', [ResidentInvoiceController::class, 'payDetails'])->name('resident.invoices.pay-details');
     Route::get('/resident/payments/{payment}/receipt', [ResidentInvoiceController::class, 'printReceipt'])->name('resident.payments.receipt');
@@ -557,6 +514,13 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/tickets/{id}', [ResidentTicketController::class, 'show'])->name('resident.tickets.show');
     Route::post('/resident/tickets/{id}/cancel', [ResidentTicketController::class, 'cancel'])->name('resident.tickets.cancel');
     Route::post('/resident/tickets/{id}/feedback', [ResidentTicketController::class, 'feedback'])->name('resident.tickets.feedback');
+
+    // GỢI Ý KHẮC PHỤC
+    Route::get('/resident/tips/water-valve', function() { return view('resident.tips.water-valve'); })->name('resident.tips.water-valve');
+    Route::get('/resident/tips/circuit-breaker', function() { return view('resident.tips.circuit-breaker'); })->name('resident.tips.circuit-breaker');
+
+    // HƯỚNG DẪN SỬ DỤNG
+    Route::get('/resident/guide', function() { return view('resident.guide.index'); })->name('resident.guide');
 
     // BẢNG TIN & BÌNH LUẬN PHÍA CƯ DÂN
     Route::get('/resident/posts', function (\Illuminate\Http\Request $request) {

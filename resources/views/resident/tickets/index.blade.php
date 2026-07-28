@@ -5,6 +5,9 @@
 @push('styles')
     @vite(['resources/css/resident/tickets.css'])
     <style>
+        .tk {
+            font-family: 'Inter', sans-serif;
+        }
         .tk-new-header {
             display: flex;
             justify-content: space-between;
@@ -12,10 +15,10 @@
             margin-bottom: 24px;
         }
         .tk-new-title {
-            font-size: 24px;
-            font-weight: 800;
-            color: #1e3a8a; /* dark blue */
-            margin: 0 0 8px 0;
+            font-size: 22px;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0 0 4px 0;
         }
         .tk-new-subtitle {
             font-size: 14px;
@@ -178,6 +181,7 @@
             text-align: center;
             padding: 40px 0;
             position: relative;
+            font-family: 'Inter', sans-serif;
         }
         
         @keyframes floatUpDown {
@@ -212,8 +216,8 @@
             z-index: 1;
             opacity: 0.5;
         }
-        .tk-new-support p { font-size: 14px; color: #475569; margin: 0 0 4px 0; }
-        .tk-new-support strong { color: #1e3a8a; font-size: 15px; font-weight: 800; }
+        .tk-new-support p { font-size: 14px; color: #475569; margin: 0 0 4px 0; font-family: 'Inter', sans-serif; }
+        .tk-new-support strong { color: #1e3a8a; font-size: 16px; font-weight: 700; font-family: 'Inter', sans-serif; }
         
         .desktop-view { display: block; }
         .mobile-view { display: none; }
@@ -647,26 +651,8 @@
     </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const openBtn = document.getElementById('mobMenuOpenBtn');
-        const closeBtn = document.getElementById('mobMenuClose');
-        const drawer = document.getElementById('mobMenuDrawer');
-        const overlay = document.getElementById('mobMenuOverlay');
-
-        function openMenu() {
-            drawer.style.left = '0';
-            overlay.style.display = 'block';
-        }
-
-        function closeMenu() {
-            drawer.style.left = '-300px';
-            overlay.style.display = 'none';
-        }
-
-        if(openBtn) openBtn.addEventListener('click', openMenu);
-        if(closeBtn) closeBtn.addEventListener('click', closeMenu);
-        if(overlay) overlay.addEventListener('click', closeMenu);
-    });
-</script>
 @endsection
+
+@push('scripts')
+    @vite(['resources/js/pages/resident/tickets/index.js'])
+@endpush

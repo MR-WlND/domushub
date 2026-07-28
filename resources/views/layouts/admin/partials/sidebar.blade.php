@@ -271,12 +271,11 @@
         @endif
 
         {{-- ============================================================== --}}
-        {{-- CẤU HÌNH HỆ THỐNG - Chỉ Admin --}}
-        {{-- Manager, Staff, Technician KHÔNG thấy mục này --}}
+        {{-- QUẢN TRỊ NHÂN SỰ - Chỉ Admin --}}
         {{-- ============================================================== --}}
         @if($role === 'admin')
         <div class="nav-section">
-            <span class="nav-section__label">CẤU HÌNH HỆ THỐNG</span>
+            <span class="nav-section__label">QUẢN TRỊ NHÂN SỰ</span>
             
             <a href="{{ portal_route('departments.index') }}" class="dashboard-nav__item {{ is_portal_route('departments.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -307,6 +306,16 @@
                 </svg>
                 <span>Bảng phân ca</span>
             </a>
+        </div>
+        @endif
+
+        {{-- ============================================================== --}}
+        {{-- CẤU HÌNH HỆ THỐNG - Chỉ Admin --}}
+        {{-- Manager, Staff, Technician KHÔNG thấy mục này --}}
+        {{-- ============================================================== --}}
+        @if($role === 'admin')
+        <div class="nav-section">
+            <span class="nav-section__label">CẤU HÌNH HỆ THỐNG</span>
 
             <a href="{{ portal_route('users.index') }}" class="dashboard-nav__item {{ is_portal_route('users.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

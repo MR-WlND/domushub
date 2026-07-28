@@ -104,6 +104,9 @@
     @endif
 </div>
 
+@endsection
+
+@push('scripts')
 <script>
 document.querySelectorAll('.rv-item').forEach((item, index) => {
     item.style.cursor = 'pointer';
@@ -124,4 +127,4 @@ document.querySelectorAll('.rv-item').forEach((item, index) => {
     });
 });
 </script>
-@endsection
+@endpush

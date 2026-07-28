@@ -25,6 +25,7 @@
             }
             .tk-sidebar {
                 width: 100% !important;
+                margin-top: 0 !important;
             }
         }
 
@@ -42,6 +43,7 @@
             display: flex;
             flex-direction: column;
             gap: 24px;
+            margin-top: 0;
         }
 
         .tk-page-header {
@@ -457,264 +459,171 @@
         </div>
     </div>
 
-<div class="tk-page-wrapper">
-    <!-- CỘT TRÁI (FORM + LỊCH SỬ) -->
-    <div class="tk-main-col">
-        <div class="tk-page-header">
-            <a href="{{ route('resident.tickets.index') }}" class="btn-back-header" title="Quay lại danh sách phản ánh">
-                <i class="fa-solid fa-arrow-left"></i>
-                <span>Quay lại</span>
-            </a>
-            <div>
-                <h1>Phản ánh và Kiến nghị</h1>
-                <p>Gửi yêu cầu bảo trì, phản ánh dịch vụ hoặc kiến nghị ban quản lý.</p>
-            </div>
+<div class="tk-page-wrapper" style="flex-direction: column;">
+    
+    <div class="tk-page-header">
+        <div>
+            <h1>Phản ánh và Kiến nghị</h1>
+            <p>Gửi yêu cầu bảo trì, phản ánh dịch vụ hoặc kiến nghị ban quản lý.</p>
         </div>
-
-        <div class="tk-create-card">
-            <h2 class="form-title">Gửi phản ánh mới</h2>
-
-            <form method="POST" action="{{ route('resident.tickets.store') }}" enctype="multipart/form-data">
-                @csrf
-                
-                @if($errors->any())
-                    <div style="background: #fef2f2; color: #b91c1c; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 13px;">
-                        <ul style="margin:0; padding-left:20px;">
-                            @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
-                <div class="form-grid">
-                    <div class="form-group" style="margin-bottom:0;">
-                        <label>Loại vấn đề</label>
-                        <select name="ticket_type" class="form-control" required>
-                            <option value="complaint" {{ old('ticket_type') == 'complaint' ? 'selected' : '' }}>Phản ánh sự cố</option>
-                            <option value="report" {{ old('ticket_type') == 'report' ? 'selected' : '' }}>Tố cáo</option>
-                        </select>
-                    </div>
-                    <div class="form-group" style="margin-bottom:0;">
-                        <label>Mức độ khẩn cấp</label>
-                        <select name="priority" class="form-control" required>
-                            <option value="" disabled {{ old('priority') ? '' : 'selected' }}>-- Chọn --</option>
-                            <option value="low" {{ old('priority') == 'low' ? 'selected' : '' }}>Bình thường</option>
-                            <option value="medium" {{ old('priority') == 'medium' ? 'selected' : '' }}>Trung bình</option>
-                            <option value="high" {{ old('priority') == 'high' ? 'selected' : '' }}>Cao</option>
-                            <option value="urgent" {{ old('priority') == 'urgent' ? 'selected' : '' }}>Khẩn cấp</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label>Tiêu đề phản ánh</label>
-                    <input type="text" name="title" class="form-control" placeholder="Ví dụ: Ống nước rò rỉ tại phòng bếp" value="{{ old('title') }}" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Mô tả chi tiết</label>
-                    <textarea name="description" class="form-control" rows="4" placeholder="Vui lòng mô tả rõ sự cố bạn đang gặp phải..." required>{{ old('description') }}</textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>Hình ảnh đính kèm</label>
-                    <input type="file" id="fileInput" name="images[]" multiple accept="image/*" style="display:none;" onchange="previewImages(event)">
-                    <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
-                        <i class="fa-solid fa-camera"></i>
-                        <p>Kéo thả hình ảnh hoặc <strong>Bấm để tải lên</strong></p>
-                        <span>Tối đa 5 ảnh, dung lượng dưới 5MB/ảnh</span>
-                    </div>
-                    <div class="upload-preview" id="imagePreview"></div>
-                </div>
-
-                <div class="form-actions">
-                    <a href="{{ route('resident.tickets.index') }}" class="btn-cancel">Hủy</a>
-                    <button type="submit" class="btn-submit">Gửi phản ánh</button>
-                </div>
-            </form>
-        </div>
-
-        <h3 class="history-title">Lịch sử yêu cầu</h3>
-        @php
-            $recentTickets = \App\Models\Ticket::where('sender_id', auth()->id())->latest()->take(2)->get();
-        @endphp
-        
-        @forelse($recentTickets as $ticket)
-            <div class="history-item">
-                <div class="history-header">
-                    <div class="history-info">
-                        <h4>{{ $ticket->title }}</h4>
-                        <span>Mã YC: #RQ-{{ $ticket->id }} • {{ $ticket->created_at->format('d/m/Y') }}</span>
-                    </div>
-                    @php
-                        $statusText = 'Chờ duyệt';
-                        $statusClass = '';
-                        if(in_array($ticket->status, ['in_progress', 'assigned'])) { $statusText = 'Đang xử lý'; $statusClass = ''; }
-                        elseif($ticket->status === 'completed') { $statusText = 'Hoàn thành'; $statusClass = 'completed'; }
-                    @endphp
-                    <div class="history-status {{ $statusClass }}">
-                        {{ $statusText }}
-                    </div>
-                </div>
-                
-                <ul class="timeline">
-                    <li class="active">
-                        <div class="timeline-content">
-                            <p>Gửi yêu cầu thành công</p>
-                            <span>{{ $ticket->created_at->format('H:i, d/m/Y') }}</span>
-                        </div>
-                    </li>
-                    @if($ticket->status != 'pending')
-                    <li class="active">
-                        <div class="timeline-content">
-                            <p>Đã tiếp nhận & phân công</p>
-                            <span>{{ $ticket->updated_at->format('H:i, d/m/Y') }}</span>
-                        </div>
-                    </li>
-                    @endif
-                </ul>
-            </div>
-        @empty
-            <div style="text-align: center; padding: 20px; color: #64748b; font-size: 14px;">
-                Chưa có phản ánh nào gần đây.
-            </div>
-        @endforelse
-        
     </div>
 
-    <!-- CỘT PHẢI (SIDEBAR) -->
-    <div class="tk-sidebar">
-        <div class="sidebar-box primary">
-            <div class="sidebar-box-title">
-                <i class="fa-solid fa-wrench"></i> Gợi ý tự khắc phục
-            </div>
-            <p>Các mẹo nhỏ giúp bạn xử lý nhanh các sự cố thông thường trước khi thợ đến.</p>
-            <div class="tips-list">
-                <div class="tip-item">
-                    <div class="tip-img"><img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=200" alt="Tip 1"></div>
-                    <div class="tip-text">
-                        <h5>Cách khóa van nước tạm thời</h5>
-                        <span>Hướng dẫn xử lý khi ống nước rò rỉ...</span>
+    <div class="tk-layout-row" style="display: flex; gap: 24px; align-items: flex-start; width: 100%;">
+        <!-- CỘT TRÁI (FORM + LỊCH SỬ) -->
+        <div class="tk-main-col">
+            
+            <div class="tk-create-card">
+                <h2 class="form-title">Gửi phản ánh mới</h2>
+
+                <form method="POST" action="{{ route('resident.tickets.store') }}" enctype="multipart/form-data">
+                    @csrf
+                    
+                    @if($errors->any())
+                        <div style="background: #fef2f2; color: #b91c1c; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 13px;">
+                            <ul style="margin:0; padding-left:20px;">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    <div class="form-grid">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Loại vấn đề</label>
+                            <select name="ticket_type" class="form-control" required>
+                                <option value="complaint" {{ old('ticket_type') == 'complaint' ? 'selected' : '' }}>Phản ánh sự cố</option>
+                                <option value="report" {{ old('ticket_type') == 'report' ? 'selected' : '' }}>Tố cáo</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Mức độ khẩn cấp</label>
+                            <select name="priority" class="form-control" required>
+                                <option value="" disabled {{ old('priority') ? '' : 'selected' }}>-- Chọn --</option>
+                                <option value="low" {{ old('priority') == 'low' ? 'selected' : '' }}>Bình thường</option>
+                                <option value="medium" {{ old('priority') == 'medium' ? 'selected' : '' }}>Trung bình</option>
+                                <option value="high" {{ old('priority') == 'high' ? 'selected' : '' }}>Cao</option>
+                                <option value="urgent" {{ old('priority') == 'urgent' ? 'selected' : '' }}>Khẩn cấp</option>
+                            </select>
+                        </div>
                     </div>
-                </div>
-                <div class="tip-item">
-                    <div class="tip-img"><img src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&q=80&w=200" alt="Tip 2"></div>
-                    <div class="tip-text">
-                        <h5>Kiểm tra aptomat khi mất điện</h5>
-                        <span>Các bước an toàn để kiểm tra nguồn...</span>
+                    
+                    <div class="form-group">
+                        <label>Tiêu đề phản ánh</label>
+                        <input type="text" name="title" class="form-control" placeholder="Ví dụ: Ống nước rò rỉ tại phòng bếp" value="{{ old('title') }}" required>
                     </div>
-                </div>
+
+                    <div class="form-group">
+                        <label>Mô tả chi tiết</label>
+                        <textarea name="description" class="form-control" rows="4" placeholder="Vui lòng mô tả rõ sự cố bạn đang gặp phải..." required>{{ old('description') }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Hình ảnh đính kèm</label>
+                        <input type="file" id="fileInput" name="images[]" multiple accept="image/*" style="display:none;" onchange="previewImages(event)">
+                        <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+                            <i class="fa-solid fa-camera"></i>
+                            <p>Kéo thả hình ảnh hoặc <strong>Bấm để tải lên</strong></p>
+                            <span>Tối đa 5 ảnh, dung lượng dưới 5MB/ảnh</span>
+                        </div>
+                        <div class="upload-preview" id="imagePreview"></div>
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="{{ route('resident.tickets.index') }}" class="btn-cancel">Hủy</a>
+                        <button type="submit" class="btn-submit">Gửi phản ánh</button>
+                    </div>
+                </form>
             </div>
+
+            <h3 class="history-title">Lịch sử yêu cầu</h3>
+            @php
+                $recentTickets = \App\Models\Ticket::where('sender_id', auth()->id())->latest()->take(2)->get();
+            @endphp
+            
+            @forelse($recentTickets as $ticket)
+                <div class="history-item">
+                    <div class="history-header">
+                        <div class="history-info">
+                            <h4>{{ $ticket->title }}</h4>
+                            <span>Mã YC: #RQ-{{ $ticket->id }} • {{ $ticket->created_at->format('d/m/Y') }}</span>
+                        </div>
+                        @php
+                            $statusText = 'Chờ duyệt';
+                            $statusClass = '';
+                            if(in_array($ticket->status, ['in_progress', 'assigned'])) { $statusText = 'Đang xử lý'; $statusClass = ''; }
+                            elseif($ticket->status === 'completed') { $statusText = 'Hoàn thành'; $statusClass = 'completed'; }
+                        @endphp
+                        <div class="history-status {{ $statusClass }}">
+                            {{ $statusText }}
+                        </div>
+                    </div>
+                    
+                    <ul class="timeline">
+                        <li class="active">
+                            <div class="timeline-content">
+                                <p>Gửi yêu cầu thành công</p>
+                                <span>{{ $ticket->created_at->format('H:i, d/m/Y') }}</span>
+                            </div>
+                        </li>
+                        @if($ticket->status != 'pending')
+                        <li class="active">
+                            <div class="timeline-content">
+                                <p>Đã tiếp nhận & phân công</p>
+                                <span>{{ $ticket->updated_at->format('H:i, d/m/Y') }}</span>
+                            </div>
+                        </li>
+                        @endif
+                    </ul>
+                </div>
+            @empty
+                <div style="text-align: center; padding: 20px; color: #64748b; font-size: 14px;">
+                    Chưa có phản ánh nào gần đây.
+                </div>
+            @endforelse
+            
         </div>
 
-        <div class="sidebar-box danger">
-            <div class="sidebar-box-title">
-                Hotline Khẩn cấp
+        <!-- CỘT PHẢI (SIDEBAR) -->
+        <div class="tk-sidebar">
+            <div class="sidebar-box primary">
+                <div class="sidebar-box-title">
+                    <i class="fa-solid fa-wrench"></i> Gợi ý tự khắc phục
+                </div>
+                <p>Các mẹo nhỏ giúp bạn xử lý nhanh các sự cố thông thường trước khi thợ đến.</p>
+                <div class="tips-list">
+                    <a href="{{ route('resident.tips.water-valve') }}" class="tip-item" style="text-decoration: none; color: inherit; cursor: pointer;">
+                        <div class="tip-img"><img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=200" alt="Tip 1"></div>
+                        <div class="tip-text">
+                            <h5>Cách khóa van nước tạm thời</h5>
+                            <span>Hướng dẫn xử lý khi ống nước rò rỉ...</span>
+                        </div>
+                    </a>
+                    <a href="{{ route('resident.tips.circuit-breaker') }}" class="tip-item" style="text-decoration: none; color: inherit; cursor: pointer;">
+                        <div class="tip-img"><img src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&q=80&w=200" alt="Tip 2"></div>
+                        <div class="tip-text">
+                            <h5>Kiểm tra aptomat khi mất điện</h5>
+                            <span>Các bước an toàn để kiểm tra nguồn...</span>
+                        </div>
+                    </a>
+                </div>
             </div>
-            <p>Chỉ dành cho các sự cố đe dọa tính mạng, hỏa hoạn, hoặc ngập lụt nghiêm trọng.</p>
-            <a href="tel:19001234" class="hotline-btn">
-                <i class="fa-solid fa-phone"></i> 1900 1234 (Ext 9)
-            </a>
+
+            <div class="sidebar-box danger">
+                <div class="sidebar-box-title">
+                    Hotline Khẩn cấp
+                </div>
+                <p>Chỉ dành cho các sự cố đe dọa tính mạng, hỏa hoạn, hoặc ngập lụt nghiêm trọng.</p>
+                <a href="tel:19001234" class="hotline-btn">
+                    <i class="fa-solid fa-phone"></i> 1900 1234 (Ext 9)
+                </a>
+            </div>
         </div>
     </div>
 </div>
 
-<script>
-let uploadedFiles = new DataTransfer();
-
-function previewImages(event) {
-    const files = event.target.files;
-    
-    for(let i=0; i<files.length; i++) {
-        if(uploadedFiles.files.length >= 5) {
-            alert('Tối đa 5 ảnh!');
-            break;
-        }
-        uploadedFiles.items.add(files[i]);
-    }
-    
-    document.getElementById('fileInput').files = uploadedFiles.files;
-    renderPreviews();
-}
-
-function renderPreviews() {
-    const previewContainer = document.getElementById('imagePreview');
-    const uploadZone = document.querySelector('.upload-zone');
-    previewContainer.innerHTML = '';
-    
-    if (uploadedFiles.files.length > 0) {
-        uploadZone.style.display = 'none';
-    } else {
-        uploadZone.style.display = 'block';
-    }
-    
-    Array.from(uploadedFiles.files).forEach((file, index) => {
-        const div = document.createElement('div');
-        div.className = 'upload-preview-item';
-        div.innerHTML = `
-            <img src="${URL.createObjectURL(file)}" alt="Preview">
-            <button type="button" class="upload-preview-remove" onclick="removeImage(${index})"><i class="fa-solid fa-xmark"></i></button>
-        `;
-        previewContainer.appendChild(div);
-    });
-
-    if (uploadedFiles.files.length > 0 && uploadedFiles.files.length < 5) {
-        const addBtn = document.createElement('div');
-        addBtn.className = 'upload-preview-item add-more-btn';
-        addBtn.style.display = 'flex';
-        addBtn.style.alignItems = 'center';
-        addBtn.style.justifyContent = 'center';
-        addBtn.style.background = '#f8fafc';
-        addBtn.style.border = '2px dashed #cbd5e1';
-        addBtn.style.cursor = 'pointer';
-        addBtn.innerHTML = '<i class="fa-solid fa-plus" style="font-size: 24px; color: #94a3b8;"></i>';
-        addBtn.onclick = function() { document.getElementById('fileInput').click(); };
-        previewContainer.appendChild(addBtn);
-    }
-}
-
-function removeImage(index) {
-    if (event) {
-        event.stopPropagation();
-        event.preventDefault();
-    }
-    const newFiles = new DataTransfer();
-    Array.from(uploadedFiles.files).forEach((file, i) => {
-        if(i !== index) newFiles.items.add(file);
-    });
-    uploadedFiles = newFiles;
-    document.getElementById('fileInput').files = uploadedFiles.files;
-    renderPreviews();
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    const mobMenuOpenBtn = document.getElementById('mobMenuOpenBtn');
-    const mobMenuClose = document.getElementById('mobMenuClose');
-    const mobMenuDrawer = document.getElementById('mobMenuDrawer');
-    const mobMenuOverlay = document.getElementById('mobMenuOverlay');
-
-    if (mobMenuOpenBtn) {
-        mobMenuOpenBtn.addEventListener('click', function() {
-            mobMenuOverlay.style.display = 'block';
-            setTimeout(() => { mobMenuDrawer.style.left = '0'; }, 10);
-        });
-    }
-
-    if (mobMenuClose) {
-        mobMenuClose.addEventListener('click', function() {
-            mobMenuDrawer.style.left = '-300px';
-            setTimeout(() => { mobMenuOverlay.style.display = 'none'; }, 300);
-        });
-    }
-
-    if (mobMenuOverlay) {
-        mobMenuOverlay.addEventListener('click', function() {
-            mobMenuDrawer.style.left = '-300px';
-            setTimeout(() => { mobMenuOverlay.style.display = 'none'; }, 300);
-        });
-    }
-});
-</script>
 @endsection
 
+@push('scripts')
+    @vite(['resources/js/pages/resident/tickets/create.js'])
+@endpush

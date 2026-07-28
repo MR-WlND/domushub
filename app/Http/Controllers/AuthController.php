@@ -382,6 +382,7 @@ class AuthController extends Controller
         if ($user) {
             $mailer = (string) config('mail.default');
 
+            if ($mailer === 'log' || empty($mailer)) {
                 return back()->with('error', 'Chức năng gửi email chưa được cấu hình. Vui lòng liên hệ quản trị viên để được hỗ trợ.');
             }
 
@@ -391,6 +392,9 @@ class AuthController extends Controller
                 report($exception);
                 return back()->with('error', 'Không thể gửi mã xác nhận lúc này. Vui lòng thử lại sau ít phút.');
             }
+        }
+
+        return redirect()->route('resident.reset-password')->with('status', 'Mã xác nhận đã được gửi đến email của bạn nếu email hợp lệ.');
     }
 
     public function resetPassword(Request $request): RedirectResponse
