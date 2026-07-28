@@ -28,44 +28,9 @@
         </div>
     @endif
     @push('styles')
-    <style>
-        .inv-chart-card {
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
-        .inv-chart-card__header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 20px;
-        }
-        .inv-chart-card__title {
-            font-size: 1.15rem;
-            font-weight: 700;
-            color: #0f172a;
-            margin: 0 0 4px 0;
-        }
-        .inv-chart-card__subtitle {
-            font-size: 0.88rem;
-            color: #64748b;
-            margin: 0;
-        }
-        .inv-chart-card__badge {
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: #0284c7;
-            background: #e0f2fe;
-            padding: 6px 12px;
-            border-radius: 9999px;
-            display: flex;
-            align-items: center;
-        }
-    </style>
-    @endpush
+    @vite(['resources/css/pages/resident/invoices/history.css'])
+
+        @endpush
 
     {{-- WATER CONSUMPTION CHART CARD --}}
     <div class="inv-chart-card">
@@ -93,8 +58,7 @@
 
     @if(!empty($waterChartData))
     @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
+<script>
         document.addEventListener('DOMContentLoaded', function() {
             const ctx = document.getElementById('waterUsageChart').getContext('2d');
             
@@ -175,6 +139,7 @@
             });
         });
     </script>
+
     @endpush
     @endif
 
@@ -193,8 +158,6 @@
             @foreach($invoices as $invoice)
                 <div class="inv-card inv-card--paid">
                     <div class="inv-card__accent"></div>
-
-
 
                     {{-- Body info --}}
                     <div class="inv-card__body">

@@ -683,11 +683,13 @@
     z-index: 99;
     backdrop-filter: blur(2px);
     opacity: 0;
+    pointer-events: none;
     transition: opacity 0.25s ease;
 }
 
 .sidebar-overlay--visible {
     opacity: 1;
+    pointer-events: auto;
 }
 
 /* ===================== */

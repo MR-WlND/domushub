@@ -1,3 +1,5 @@
+
+@push('styles')
 <style>
 .pay-page {
         max-width: 900px;
@@ -23,8 +25,6 @@
         margin: 0;
         line-height: 1.5;
     }
-
-
 
     /* Alerts */
     .pay-alert {
@@ -1010,8 +1010,6 @@
 .inv-card--unpaid .inv-card__accent { background-color: #f59e0b; }
 .inv-card--overdue .inv-card__accent { background-color: #ef4444; }
 
-
-
 .inv-card__body {
     flex: 1;
     min-width: 0;
@@ -1136,3 +1134,4 @@
 }
 
 </style>
+@endpush

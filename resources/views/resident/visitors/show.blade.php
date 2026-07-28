@@ -237,6 +237,9 @@
 
 <div class="vd-toast" id="vd-toast"><span id="vd-icon"></span><span id="vd-msg"></span></div>
 
+@endsection
+
+@push('scripts')
 <script>
 const CSRF         = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
 const URL_APPROVE  = '{{ route("resident.visitors.approve", $visitor->id) }}';
@@ -312,4 +315,4 @@ function showToast(msg, type) {
     t._t = setTimeout(() => t.classList.remove('show'), 4000);
 }
 </script>
-@endsection
+@endpush

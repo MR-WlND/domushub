@@ -259,6 +259,7 @@
     </div>
 @endif
 
+@push('scripts')
 <script>
     // ── Lọc căn hộ theo tòa nhà ──────────────────────────────────────
     function filterApartmentsByBlock(blockId) {
@@ -342,3 +343,4 @@
         }
     });
 </script>
+@endpush
