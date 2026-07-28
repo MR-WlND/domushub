@@ -506,6 +506,8 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/visitors/create', [\App\Http\Controllers\Resident\VisitorController::class, 'create'])->name('resident.visitors.create');
     Route::post('/resident/visitors', [\App\Http\Controllers\Resident\VisitorController::class, 'store'])->name('resident.visitors.store');
     Route::get('/resident/visitors/{id}', [\App\Http\Controllers\Resident\VisitorController::class, 'show'])->name('resident.visitors.show');
+    Route::post('/resident/visitors/{id}/approve', [\App\Http\Controllers\Resident\VisitorController::class, 'approve'])->name('resident.visitors.approve');
+    Route::post('/resident/visitors/{id}/reject', [\App\Http\Controllers\Resident\VisitorController::class, 'reject'])->name('resident.visitors.reject');
     Route::delete('/resident/visitors/{id}', [\App\Http\Controllers\Resident\VisitorController::class, 'destroy'])->name('resident.visitors.destroy');
     // PHẢN ÁNH SỰ CỐ PHÍA CƯ DÂN
     Route::get('/resident/tickets', [ResidentTicketController::class, 'index'])->name('resident.tickets.index');
