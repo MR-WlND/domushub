@@ -96,13 +96,13 @@
                             </svg>
                         </span>
                         <input
-                            type="number"
+                            type="text"
                             name="base_service_fee"
+                            id="base_service_fee"
                             value="{{ old('base_service_fee', 0) }}"
-                            placeholder="VD: 15000"
+                            placeholder="VD: 15.000"
                             class="form-input-custom @error('base_service_fee') input-error @enderror"
                             required
-                            min="0"
                         >
                     </div>
                     @error('base_service_fee')
@@ -207,3 +207,44 @@
 
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const feeInput = document.getElementById('base_service_fee');
+    if (feeInput) {
+        function formatNumber(value) {
+            value = value.toString();
+            if (value.endsWith('.00') || value.endsWith(',00')) {
+                value = value.substring(0, value.length - 3);
+            }
+            value = value.replace(/\D/g, '');
+            return value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        if (feeInput.value) {
+            feeInput.value = formatNumber(feeInput.value);
+        }
+
+        feeInput.addEventListener('input', function (e) {
+            const cursorPosition = e.target.selectionStart;
+            const originalLength = e.target.value.length;
+            
+            const formatted = formatNumber(e.target.value);
+            e.target.value = formatted;
+            
+            const newLength = formatted.length;
+            const pos = cursorPosition + (newLength - originalLength);
+            e.target.setSelectionRange(pos, pos);
+        });
+
+        const form = feeInput.closest('form');
+        if (form) {
+            form.addEventListener('submit', function () {
+                feeInput.value = feeInput.value.replace(/\./g, '');
+            });
+        }
+    }
+});
+</script>
+@endpush
