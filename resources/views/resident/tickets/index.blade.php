@@ -181,6 +181,7 @@
             text-align: center;
             padding: 40px 0;
             position: relative;
+            font-family: 'Inter', sans-serif;
         }
         
         @keyframes floatUpDown {
@@ -215,8 +216,8 @@
             z-index: 1;
             opacity: 0.5;
         }
-        .tk-new-support p { font-size: 14px; color: #475569; margin: 0 0 4px 0; }
-        .tk-new-support strong { color: #1e3a8a; font-size: 15px; font-weight: 800; }
+        .tk-new-support p { font-size: 14px; color: #475569; margin: 0 0 4px 0; font-family: 'Inter', sans-serif; }
+        .tk-new-support strong { color: #1e3a8a; font-size: 16px; font-weight: 700; font-family: 'Inter', sans-serif; }
         
         .desktop-view { display: block; }
         .mobile-view { display: none; }

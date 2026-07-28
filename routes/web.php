@@ -519,6 +519,9 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/tips/water-valve', function() { return view('resident.tips.water-valve'); })->name('resident.tips.water-valve');
     Route::get('/resident/tips/circuit-breaker', function() { return view('resident.tips.circuit-breaker'); })->name('resident.tips.circuit-breaker');
 
+    // HƯỚNG DẪN SỬ DỤNG
+    Route::get('/resident/guide', function() { return view('resident.guide.index'); })->name('resident.guide');
+
     // BẢNG TIN & BÌNH LUẬN PHÍA CƯ DÂN
     Route::get('/resident/posts', function (\Illuminate\Http\Request $request) {
         $user = auth()->user();
