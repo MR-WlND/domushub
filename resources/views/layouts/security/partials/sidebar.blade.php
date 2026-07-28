@@ -63,9 +63,9 @@
         <div class="nav-section">
             <span class="nav-section__label">QUẢN LÝ KHÁCH</span>
 
-            <div class="dashboard-nav__group {{ request()->routeIs('security.walk-in*') || request()->routeIs('security.visitor-log*') ? 'dashboard-nav__group--open' : '' }}" id="group-visitor">
+            <div class="dashboard-nav__group {{ request()->routeIs('security.walk-in*') || request()->routeIs('security.visitor-logs*') ? 'dashboard-nav__group--open' : '' }}" id="group-visitor">
                 <button type="button"
-                    class="dashboard-nav__item dashboard-nav__item--parent {{ request()->routeIs('security.walk-in*') || request()->routeIs('security.visitor-log*') ? 'dashboard-nav__item--active' : '' }}"
+                    class="dashboard-nav__item dashboard-nav__item--parent {{ request()->routeIs('security.walk-in*') || request()->routeIs('security.visitor-logs*') ? 'dashboard-nav__item--active' : '' }}"
                     onclick="toggleNavGroup('group-visitor')">
                     <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -89,8 +89,8 @@
                         </svg>
                         <span>Đăng ký khách</span>
                     </a>
-                    <a href="{{ route('security.visitor-log.index') }}"
-                        class="dashboard-nav__subitem {{ request()->routeIs('security.visitor-log*') ? 'dashboard-nav__subitem--active' : '' }}">
+                    <a href="{{ route('security.visitor-logs.index') }}"
+                        class="dashboard-nav__subitem {{ request()->routeIs('security.visitor-logs*') ? 'dashboard-nav__subitem--active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                             <polyline points="14 2 14 8 20 8"/>
