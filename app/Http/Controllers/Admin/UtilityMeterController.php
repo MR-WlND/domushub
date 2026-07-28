@@ -214,7 +214,7 @@ class UtilityMeterController extends Controller
      */
     public function create(): View
     {
-        if (!in_array(Auth::user()->role, ['technician', 'admin'])) {
+        if (!in_array(Auth::user()->role, ['technician'])) {
             abort(403, 'Bạn không có quyền ghi chỉ số.');
         }
 
@@ -233,7 +233,7 @@ class UtilityMeterController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        if (!in_array(Auth::user()->role, ['technician', 'admin'])) {
+        if (!in_array(Auth::user()->role, ['technician'])) {
             abort(403, 'Bạn không có quyền ghi chỉ số.');
         }
 
@@ -346,7 +346,7 @@ class UtilityMeterController extends Controller
      */
     public function batchCreate(Request $request): View
     {
-        if (!in_array(Auth::user()->role, ['technician', 'admin'])) {
+        if (!in_array(Auth::user()->role, ['technician'])) {
             abort(403, 'Bạn không có quyền ghi chỉ số.');
         }
 
@@ -404,7 +404,7 @@ class UtilityMeterController extends Controller
      */
     public function batchStore(Request $request): RedirectResponse
     {
-        if (!in_array(Auth::user()->role, ['technician', 'admin'])) {
+        if (!in_array(Auth::user()->role, ['technician'])) {
             abort(403, 'Bạn không có quyền ghi chỉ số.');
         }
 
