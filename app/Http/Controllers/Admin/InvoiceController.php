@@ -570,7 +570,7 @@ class InvoiceController extends Controller
                 // ============================================================
                 // XỬ LÝ ĐIỆN / NƯỚC
                 // ============================================================
-                if (in_array($type, ['internet', 'service', 'other'])) {
+                if (in_array($type, ['water', 'electricity'])) {
                     $servicePrice = $activePrices->get($type)?->first();
                     if (!$servicePrice) {
                         $skipped++;
@@ -597,6 +597,9 @@ class InvoiceController extends Controller
                             'billing_year'  => $year,
                             'due_date'      => $request->due_date,
                             'total_amount'  => 0,
+                            'previous_debt' => $apartmentPreviousDebt,
+                            'current_amount' => 0,
+                            'total_due_at_issue' => $apartmentPreviousDebt,
                             'status'        => 'unpaid',
                         ]);
                     }

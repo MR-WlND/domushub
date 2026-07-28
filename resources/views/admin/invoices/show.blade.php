@@ -136,18 +136,34 @@
         </div>
 
         {{-- Total Row --}}
+        @php
+            $realPreviousDebt = \App\Models\Invoice::where('apartment_id', $invoice->apartment_id)
+                ->where('status', '!=', 'cancelled')
+                ->where(function ($q) use ($invoice) {
+                    $q->where('billing_year', '<', $invoice->billing_year)
+                      ->orWhere(function ($q2) use ($invoice) {
+                          $q2->where('billing_year', $invoice->billing_year)
+                             ->where('billing_month', '<', $invoice->getRawOriginal('billing_month'));
+                      });
+                })->get()->sum(function($inv) {
+                    return max(0, $inv->total_amount - $inv->paid_amount);
+                });
+            $displayTotalDue = $invoice->current_amount + $realPreviousDebt;
+        @endphp
         <div class="detail-card__summary">
+            @if($realPreviousDebt > 0)
             <div class="summary-item">
                 <span class="summary-label">Nợ kỳ trước</span>
-                <span class="summary-val">{{ number_format($invoice->previous_debt, 0, ',', '.') }} đ</span>
+                <span class="summary-val">{{ number_format($realPreviousDebt, 0, ',', '.') }} đ</span>
             </div>
+            @endif
             <div class="summary-item">
                 <span class="summary-label">Phát sinh kỳ này</span>
                 <span class="summary-val">{{ number_format($invoice->current_amount, 0, ',', '.') }} đ</span>
             </div>
             <div class="summary-item total-due">
                 <span class="summary-label">Tổng phải thanh toán</span>
-                <span class="summary-val">{{ number_format($invoice->total_due_at_issue, 0, ',', '.') }} đ</span>
+                <span class="summary-val">{{ number_format($displayTotalDue, 0, ',', '.') }} đ</span>
             </div>
         </div>
 
@@ -974,7 +990,7 @@
             if (!blob) return;
 
             // Create File from Blob and put it in input
-            const file = new File([blob], "captured_bill.png", { type: "image/png" });
+            const file = new File([blob], "captured_bill.jpg", { type: "image/jpeg" });
             const dataTransfer = new DataTransfer();
             dataTransfer.items.add(file);
             document.getElementById(inputId).files = dataTransfer.files;
@@ -988,13 +1004,13 @@
             // Update custom file label
             const label = document.getElementById('file_name_label_' + inputId);
             if (label) {
-                label.textContent = 'captured_bill.png (Chụp từ Camera)';
+                label.textContent = 'captured_bill.jpg (Chụp từ Camera)';
                 label.style.color = '#0f172a';
             }
 
             // Stop camera
             stopCamera(inputId);
-        }, 'image/png');
+        }, 'image/jpeg', 0.8);
     }
 
     function removeCapturedPhoto(inputId) {
