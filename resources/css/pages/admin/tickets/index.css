@@ -13,6 +13,11 @@
     padding-bottom: 2rem;
 }
 
+/* Display Utilities */
+.tk-mobile-only {
+    display: none !important;
+}
+
 /* ── Header ─────────────────────────────────────────────── */
 .tickets-page__header {
     display: flex;
@@ -448,6 +453,12 @@
     border-color: #fca5a5;
 }
 
+.tk-pill--assigned {
+    background: #fffbe6;
+    color: #d97706;
+    border-color: #fef08a;
+}
+
 .tk-pill--in-progress {
     background: #edf2fd;
     color: #00236f;
@@ -564,6 +575,68 @@
     overflow: hidden;
 }
 .tk-panel--open { transform: translateX(0); }
+
+/* ── Mobile View ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .tk-desktop-only {
+        display: none !important;
+    }
+    
+    .tk-mobile-only {
+        display: table-row !important;
+    }
+    
+    .tk-mobile-only > td {
+        display: block;
+        padding: 0;
+        border: none;
+        background: transparent;
+    }
+
+    /* Mobile Card Styles */
+    .tk-mb-card {
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        padding: 0.85rem;
+        margin-bottom: 0.65rem;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .tk-mb-card__header { display: flex; justify-content: space-between; align-items: center; }
+    .tk-mb-card__req { font-size: 0.75rem; color: #64748b; font-weight: 600; letter-spacing: 0.02em; }
+    .tk-mb-pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; border: 1px solid transparent; }
+    .tk-mb-pill--urgent { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+    .tk-mb-pill--high { background: #fff7ed; color: #ea580c; border-color: #fed7aa; }
+    .tk-mb-pill--medium { background: #edf2fd; color: #00236f; border-color: #c7d7fe; }
+    .tk-mb-pill--low { background: #f8fafc; color: #64748b; border-color: #e2e8f0; }
+    
+    .tk-mb-card__room { display: flex; align-items: center; gap: 6px; font-size: 1.1rem; font-weight: 800; color: #00236f; margin-top: -2px; }
+    .tk-mb-card__room-icon { color: #00236f; width: 16px; height: 16px; }
+    
+    .tk-mb-card__title { font-size: 0.9rem; font-weight: 600; color: #0f172a; line-height: 1.3; }
+    
+    .tk-mb-card__details { display: flex; align-items: center; gap: 10px; }
+    .tk-mb-card__img-box { width: 56px; height: 56px; border-radius: 6px; overflow: hidden; flex-shrink: 0; background: #f1f5f9; }
+    .tk-mb-card__img-box img { width: 100%; height: 100%; object-fit: cover; }
+    .tk-mb-card__info { display: flex; flex-direction: column; justify-content: center; gap: 6px; flex: 1; }
+    .tk-mb-card__time { display: flex; align-items: center; gap: 4px; font-size: 0.75rem; color: #64748b; font-weight: 500; }
+    
+    .tk-mb-status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; width: fit-content; border: 1px solid transparent; }
+    .tk-mb-status--pending { background: #fce8e6; color: #ef4444; border-color: #fca5a5; }
+    .tk-mb-status--assigned { background: #fffbe6; color: #d97706; border-color: #fef08a; }
+    .tk-mb-status--active { background: #edf2fd; color: #00236f; border-color: #c7d7fe; }
+    .tk-mb-status--completed { background: #dcfce7; color: #16a34a; border-color: #bbf7d0; }
+    .tk-mb-status--cancelled { background: #f1f5f9; color: #64748b; border-color: #e2e8f0; }
+    
+    .tk-mb-card__actions { margin-top: 2px; }
+    .tk-mb-action-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 0.65rem; border-radius: 8px; font-size: 0.9rem; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s; }
+    .tk-mb-action-btn--primary { background: #00236f; color: #ffffff; }
+    .tk-mb-action-btn--warning { background: #d97706; color: #ffffff; }
+    .tk-mb-action-btn--outline { background: #ffffff; color: #00236f; border: 1px solid #00236f; text-decoration: none; }
+}
 
 .tk-panel__header {
     display: flex;

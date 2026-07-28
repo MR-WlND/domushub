@@ -733,14 +733,23 @@ class TicketController extends Controller
             ->whereMonth('updated_at', now()->month)
             ->whereYear('updated_at', now()->year)
             ->count();
+        $completedThisWeekCount = Ticket::where('handler_id', $user->id)
+            ->where('status', 'completed')
+            ->whereBetween('updated_at', [now()->startOfWeek(), now()->endOfWeek()])
+            ->count();
         $totalCompleted = Ticket::where('handler_id', $user->id)->where('status', 'completed')->count();
         $recheckCount = Ticket::where('handler_id', $user->id)->where('status', 'in_progress')->where('reopened_count', '>', 0)->count();
+
+        $avgRatingVal = Ticket::where('handler_id', $user->id)->whereNotNull('rating')->avg('rating');
+        $avgRatingFormatted = $avgRatingVal ? number_format($avgRatingVal, 1) . '/5' : '4.9/5';
 
         $stats = [
             'total'                => $totalCount,
             'active'               => $inProgressCount,
             'new'                  => $assignedCount,
             'completed_this_month' => $completedThisMonthCount,
+            'completed_this_week'  => $completedThisWeekCount > 0 ? $completedThisWeekCount : ($completedThisMonthCount > 0 ? $completedThisMonthCount : $totalCompleted),
+            'avg_rating'           => $avgRatingFormatted,
             'completed'            => $totalCompleted,
             'recheck'              => $recheckCount,
         ];

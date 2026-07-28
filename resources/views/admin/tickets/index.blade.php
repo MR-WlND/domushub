@@ -193,7 +193,7 @@
                             $overdue  = $slaOver && $isActive;
                             $blockName = $ticket->apartment?->floor?->block?->name ?? '';
                         @endphp
-                        <tr class="tk-row {{ $overdue ? 'tk-row--overdue' : '' }}" data-id="{{ $ticket->id }}"
+                        <tr class="tk-row tk-desktop-only {{ $overdue ? 'tk-row--overdue' : '' }}" data-id="{{ $ticket->id }}"
                             data-title="{{ $ticket->title }}"
                             data-desc="{{ $ticket->description }}"
                             data-status="{{ $ticket->status }}"
@@ -260,7 +260,9 @@
                             <td>
                                 @if($ticket->status === 'pending')
                                     <span class="tk-pill tk-pill--pending">Chờ tiếp nhận</span>
-                                @elseif($ticket->status === 'in_progress' || $ticket->status === 'assigned')
+                                @elseif($ticket->status === 'assigned')
+                                    <span class="tk-pill tk-pill--assigned">Chờ xử lý</span>
+                                @elseif($ticket->status === 'in_progress')
                                     <span class="tk-pill tk-pill--in-progress">Đang xử lý</span>
                                 @elseif($ticket->status === 'completed')
                                     <span class="tk-pill tk-pill--completed">Hoàn thành</span>
@@ -281,6 +283,105 @@
                                 <a href="{{ portal_route('tickets.show', $ticket->id) }}" class="tk-link-detail">
                                     Chi tiết
                                 </a>
+                            </td>
+                        </tr>
+                        
+                        {{-- GIAO DIỆN MỚI CHO MOBILE --}}
+                        <tr class="tk-mobile-only tk-row" data-id="{{ $ticket->id }}"
+                            data-title="{{ $ticket->title }}"
+                            data-desc="{{ $ticket->description }}"
+                            data-status="{{ $ticket->status }}"
+                            data-status-label="{{ $ticket->statusLabel() }}"
+                            data-priority="{{ $ticket->priority }}"
+                            data-priority-label="{{ $ticket->priorityLabel() }}"
+                            data-apartment="{{ $ticket->apartment->apartment_number ?? 'N/A' }}"
+                            data-block="{{ $blockName }}"
+                            data-floor="{{ $ticket->apartment?->floor?->floor_number ?? '' }}"
+                            data-sender="{{ $ticket->sender->name ?? 'N/A' }}"
+                            data-handler="{{ $ticket->handler->name ?? '' }}"
+                            data-handler-id="{{ $ticket->handler_id ?? '' }}"
+                            data-created="{{ $ticket->created_at->diffForHumans() }}"
+                            data-created-full="{{ $ticket->created_at->format('d/m/Y H:i') }}"
+                            data-assign-url="{{ portal_route('tickets.assign', $ticket->id) }}"
+                            data-progress-url="{{ portal_route('tickets.update-progress', $ticket->id) }}"
+                            data-detail-url="{{ portal_route('tickets.show', $ticket->id) }}"
+                            data-can-assign="{{ in_array($ticket->status, ['pending','assigned']) && in_array(auth()->user()->role, ['admin','manager']) ? '1' : '0' }}"
+                            data-can-progress="{{ in_array($ticket->status, ['assigned','in_progress']) ? '1' : '0' }}"
+                            data-overdue="{{ $overdue ? '1' : '0' }}"
+                            data-ticket-type="{{ $ticket->ticket_type }}"
+                            data-reported-person="{{ $ticket->reported_person ?? '' }}">
+                            <td colspan="7" style="padding: 0; border: none; background: transparent;">
+                                <div class="tk-mb-card">
+                                    {{-- Dòng 1: Mã REQ & Priority --}}
+                                    <div class="tk-mb-card__header">
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            @if($ticket->ticket_type === 'report')
+                                                <span class="tk-badge-report">Tố cáo</span>
+                                            @endif
+                                            <span class="tk-mb-card__req">#REQ-{{ str_pad($ticket->id, 4, '0', STR_PAD_LEFT) }}</span>
+                                        </div>
+                                        @if($ticket->priority === 'urgent')
+                                            <span class="tk-mb-pill tk-mb-pill--urgent">Khẩn cấp</span>
+                                        @elseif($ticket->priority === 'high')
+                                            <span class="tk-mb-pill tk-mb-pill--high">Cao</span>
+                                        @elseif($ticket->priority === 'medium')
+                                            <span class="tk-mb-pill tk-mb-pill--medium">Bình thường</span>
+                                        @else
+                                            <span class="tk-mb-pill tk-mb-pill--low">Thấp</span>
+                                        @endif
+                                    </div>
+
+                                    {{-- Dòng 2: Icon Tòa nhà & Phòng --}}
+                                    <div class="tk-mb-card__room">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tk-mb-card__room-icon"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><path d="M9 22v-4h6v4"></path><path d="M8 6h.01"></path><path d="M16 6h.01"></path><path d="M12 6h.01"></path><path d="M12 10h.01"></path><path d="M12 14h.01"></path><path d="M16 10h.01"></path><path d="M16 14h.01"></path><path d="M8 10h.01"></path><path d="M8 14h.01"></path></svg>
+                                        Phòng {{ str_pad($ticket->apartment->apartment_number ?? '', 4, '0', STR_PAD_LEFT) }}
+                                    </div>
+
+                                    {{-- Dòng 3: Tiêu đề --}}
+                                    <div class="tk-mb-card__title">
+                                        {{ $ticket->title }}
+                                    </div>
+
+                                    {{-- Dòng 4: Hình ảnh & Thời gian + Trạng thái --}}
+                                    <div class="tk-mb-card__details">
+                                        @if(!empty($ticket->images) && is_array($ticket->images) && count($ticket->images) > 0)
+                                            <div class="tk-mb-card__img-box">
+                                                <img src="{{ asset('storage/' . $ticket->images[0]) }}" alt="Thumbnail">
+                                            </div>
+                                        @elseif(!empty($ticket->image))
+                                            <div class="tk-mb-card__img-box">
+                                                <img src="{{ asset('storage/' . $ticket->image) }}" alt="Thumbnail">
+                                            </div>
+                                        @endif
+                                        <div class="tk-mb-card__info">
+                                            <div class="tk-mb-card__time">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                                Báo cáo: {{ $ticket->created_at ? $ticket->created_at->diffForHumans() : '-' }}
+                                            </div>
+                                            
+                                            @if($ticket->status === 'pending')
+                                                <span class="tk-mb-status tk-mb-status--pending">Chờ tiếp nhận</span>
+                                            @elseif($ticket->status === 'assigned')
+                                                <span class="tk-mb-status tk-mb-status--assigned">Chờ xử lý</span>
+                                            @elseif($ticket->status === 'in_progress')
+                                                <span class="tk-mb-status tk-mb-status--active">Đang xử lý</span>
+                                            @elseif($ticket->status === 'completed')
+                                                <span class="tk-mb-status tk-mb-status--completed">Hoàn thành</span>
+                                            @elseif($ticket->status === 'cancelled')
+                                                <span class="tk-mb-status tk-mb-status--cancelled">Đã hủy</span>
+                                            @else
+                                                <span class="tk-mb-status tk-mb-status--pending">{{ $ticket->statusLabel() }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    {{-- Dòng 5: Nút thao tác (Full width) --}}
+                                    <div class="tk-mb-card__actions">
+                                        <a href="{{ portal_route('tickets.show', $ticket->id) }}" class="tk-mb-action-btn tk-mb-action-btn--outline">
+                                            Chi tiết
+                                        </a>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     @empty
