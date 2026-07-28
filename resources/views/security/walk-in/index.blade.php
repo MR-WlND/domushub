@@ -106,6 +106,7 @@
 .wi-footer-links{display:flex;align-items:center;justify-content:center;gap:1.5rem;margin-top:.85rem}
 .wi-footer-link{font-size:.8rem;font-weight:700;color:#64748b;text-decoration:none;display:flex;align-items:center;gap:.35rem}
 .wi-footer-link:hover{color:#1d4ed8}
+
 /* UTILS */
 .wi-spin{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:wspin .7s linear infinite;flex-shrink:0}
 .wi-spin-sm{width:13px;height:13px;border:2px solid #e2e8f0;border-top-color:#2563eb;border-radius:50%;animation:wspin .7s linear infinite;display:inline-block;vertical-align:middle}
