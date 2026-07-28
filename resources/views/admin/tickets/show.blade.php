@@ -45,11 +45,29 @@
             
             {{-- Issue Card --}}
             <div class="tk-card">
-                <div class="tk-card-header tk-card-header--icon">
-                    <div class="tk-card-icon-box">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2.25c-5.385 4.362-8.25 8.92-8.25 12.375 0 4.5 3.75 8.25 8.25 8.25s8.25-3.75 8.25-8.25c0-3.455-2.865-8.013-8.25-12.375z"/></svg>
+                <div class="tk-card-header tk-card-header--icon" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="tk-card-icon-box">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2.25c-5.385 4.362-8.25 8.92-8.25 12.375 0 4.5 3.75 8.25 8.25 8.25s8.25-3.75 8.25-8.25c0-3.455-2.865-8.013-8.25-12.375z"/></svg>
+                        </div>
+                        <h2 class="tk-card-title" style="margin: 0;">{{ $ticket->title }}</h2>
                     </div>
-                    <h2 class="tk-card-title">{{ $ticket->title }}</h2>
+                    
+                    @if(auth()->user()->role === 'technician')
+                    <div class="tk-action-list" style="margin: 0; display: flex; gap: 8px;">
+                        @if($ticket->status === 'pending' || $ticket->status === 'assigned')
+                            <form action="{{ portal_route('tickets.accept', $ticket->id) }}" method="POST" style="margin: 0;">
+                                @csrf
+                                <button type="submit" class="tk-btn-primary" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;">Nhận việc</button>
+                            </form>
+                        @elseif($ticket->status === 'in_progress')
+                            <button type="button" class="tk-btn-outline" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;" onclick="openProgressModal()">Cập nhật tiến độ</button>
+                            <button type="button" class="tk-btn-primary" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px; background: #16a34a; border-color: #16a34a;" onclick="openProgressModal(true)">Hoàn thành</button>
+                        @elseif($ticket->status === 'completed')
+                            <button class="tk-btn-disabled" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;" disabled>Hoàn thành</button>
+                        @endif
+                    </div>
+                    @endif
                 </div>
                 <div class="tk-card-body">
                     <div class="tk-section-title">NỘI DUNG PHẢN ÁNH</div>
@@ -202,32 +220,6 @@
         {{-- RIGHT COLUMN --}}
         <div class="tk-detail-right">
 
-            {{-- Task Actions --}}
-            <div class="tk-card">
-                <div class="tk-card-header">
-                    <h2 class="tk-card-title" style="font-size: 1.1rem;">Thao tác</h2>
-                </div>
-                <div class="tk-card-body">
-                    <div class="tk-action-list">
-                        @if($ticket->status === 'pending' || $ticket->status === 'assigned')
-                            <form action="{{ portal_route('tickets.accept', $ticket->id) }}" method="POST">
-                                @csrf
-                                <button type="submit" class="tk-btn-primary">Nhận việc</button>
-                            </form>
-                        @endif
-
-                        @if($ticket->status === 'in_progress' || $ticket->status === 'assigned')
-                            <button type="button" class="tk-btn-outline" onclick="openProgressModal()">Cập nhật tiến độ</button>
-                        @endif
-
-                        @if($ticket->status === 'completed')
-                            <button class="tk-btn-disabled" disabled>Hoàn thành</button>
-                        @else
-                            <button type="button" class="tk-btn-outline" onclick="openProgressModal(true)">Hoàn thành</button>
-                        @endif
-                    </div>
-                </div>
-            </div>
 
             {{-- Internal Notes (Timeline) --}}
             <div class="tk-card">
@@ -283,6 +275,7 @@
                 </div>
             </div>
             @endif
+
 
         </div>
     </div>
