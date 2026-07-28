@@ -1,0 +1,301 @@
+/* ==========================================================================
+   TICKET DETAIL PAGE (show.blade.php) - MODERN REDESIGN
+   ========================================================================== */
+
+.tk-detail-page {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: #1e293b;
+    padding-bottom: 3rem;
+}
+
+/* --- Header --- */
+.tk-detail-header {
+    margin-bottom: 24px;
+}
+
+.tk-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #64748b;
+    text-decoration: none;
+    margin-bottom: 12px;
+    transition: color 0.2s;
+}
+
+.tk-back-link:hover {
+    color: #0f172a;
+}
+
+.tk-detail-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.tk-detail-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.tk-detail-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.tk-detail-status {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.tk-detail-meta {
+    font-size: 0.9rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+/* Status Colors (Same as index.css) */
+.tk-status--pending { background: #fce8e6; color: #ef4444; border: 1px solid #fca5a5; }
+.tk-status--assigned { background: #fffbe6; color: #d97706; border: 1px solid #fef08a; }
+.tk-status--in_progress { background: #edf2fd; color: #00236f; border: 1px solid #c7d7fe; }
+.tk-status--completed { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
+.tk-status--cancelled { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+
+/* --- Main Layout --- */
+.tk-detail-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+}
+
+@media (max-width: 1024px) {
+    .tk-detail-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* --- Cards --- */
+.tk-card {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    margin-bottom: 24px;
+    overflow: hidden;
+}
+
+.tk-card-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.tk-card-header--icon {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.tk-card-icon-box {
+    width: 40px;
+    height: 40px;
+    background: #eff6ff;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2563eb;
+}
+
+.tk-card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+.tk-card-body {
+    padding: 24px;
+}
+
+/* --- Left Column Elements --- */
+.tk-section-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+}
+
+.tk-description-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #334155;
+    margin-bottom: 24px;
+}
+
+.tk-photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+}
+
+.tk-photo-item {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.tk-photo-item:hover {
+    transform: scale(1.02);
+}
+
+.tk-resident-info {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.tk-resident-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.tk-resident-icon {
+    color: #64748b;
+    margin-top: 2px;
+}
+
+.tk-resident-text label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 2px;
+}
+
+.tk-resident-text span {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #0f172a;
+}
+
+/* --- Right Column Elements --- */
+.tk-action-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.tk-btn-primary {
+    background: #00236f;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    width: 100%;
+    text-align: center;
+}
+
+.tk-btn-primary:hover {
+    background: #001952;
+}
+
+.tk-btn-outline {
+    background: #ffffff;
+    color: #00236f;
+    border: 1px solid #00236f;
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    text-align: center;
+    text-decoration: none;
+}
+
+.tk-btn-outline:hover {
+    background: #edf2fd;
+}
+
+.tk-btn-disabled {
+    background: #f1f5f9;
+    color: #94a3b8;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: not-allowed;
+    width: 100%;
+    text-align: center;
+}
+
+.tk-notes-empty {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 32px 16px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #64748b;
+    font-style: italic;
+    margin-bottom: 16px;
+}
+
+.tk-notes-input-group {
+    display: flex;
+    gap: 8px;
+}
+
+.tk-notes-input {
+    flex: 1;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    outline: none;
+}
+
+.tk-notes-input:focus {
+    border-color: #2563eb;
+}
+
+.tk-notes-send {
+    background: #0052cc;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    width: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.tk-notes-send:hover {
+    background: #0043a6;
+}
