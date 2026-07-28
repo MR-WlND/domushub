@@ -140,7 +140,4 @@
     </script>
 
 </body>
-
-<body>
-<div class="container">
-
+</html>

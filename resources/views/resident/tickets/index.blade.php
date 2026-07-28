@@ -5,6 +5,9 @@
 @push('styles')
     @vite(['resources/css/resident/tickets.css'])
     <style>
+        .tk {
+            font-family: 'Inter', sans-serif;
+        }
         .tk-new-header {
             display: flex;
             justify-content: space-between;
@@ -12,10 +15,10 @@
             margin-bottom: 24px;
         }
         .tk-new-title {
-            font-size: 24px;
-            font-weight: 800;
-            color: #1e3a8a; /* dark blue */
-            margin: 0 0 8px 0;
+            font-size: 22px;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0 0 4px 0;
         }
         .tk-new-subtitle {
             font-size: 14px;
