@@ -1,6 +1,6 @@
 @extends('layouts.admin.master')
 
-@section('page_title', 'Chốt số Điện Nước – DomusHub')
+@section('page_title', auth()->user()->role === 'technician' ? 'Ghi số Điện Nước – DomusHub' : 'Chốt số Điện Nước – DomusHub')
 
 @push('styles')
 @vite(['resources/css/pages/admin/utility-readings/index.css'])
@@ -11,8 +11,8 @@
 {{-- ── Page Header ─────────────────────────────────── --}}
 <div class="util-page-header">
     <div>
-        <h1>Chốt số Nước</h1>
-        <p>Quản lý chỉ số nước theo tháng – Tháng {{ $month }}/{{ $year }}</p>
+        <h1>{{ auth()->user()->role === 'technician' ? 'Ghi số Nước' : 'Chốt số Nước' }}</h1>
+        <p>{{ auth()->user()->role === 'technician' ? 'Ghi nhận chỉ số nước theo tháng' : 'Quản lý chỉ số nước theo tháng' }} – Tháng {{ $month }}/{{ $year }}</p>
     </div>
     <div class="util-header-actions">
         @if(auth()->user()->role === 'admin')

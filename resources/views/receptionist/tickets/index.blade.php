@@ -67,10 +67,10 @@
                 <td style="padding:14px 20px;">
                     <span style="font-weight:700; color: {{ match($ticket->priority) { 'urgent' => '#ba1a1a', 'high' => '#b06000', 'medium' => '#0b57d0', 'low' => '#137333', default => '#475569' } }}">
                         {{ match($ticket->priority) {
-                            'urgent' => '🔴 Khẩn',
-                            'high'   => '🟠 Cao',
-                            'medium' => '🟡 TB',
-                            'low'    => '🟢 Thấp',
+                            'urgent' => 'Khẩn',
+                            'high'   => 'Cao',
+                            'medium' => 'TB',
+                            'low'    => 'Thấp',
                             default  => $ticket->priority,
                         } }}
                     </span>

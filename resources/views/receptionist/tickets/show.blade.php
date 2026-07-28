@@ -64,10 +64,10 @@
             <div class="info-row">
                 <span class="info-label">Ưu tiên</span>
                 <span class="info-value">{{ match($ticket->priority) {
-                    'urgent' => '🔴 Khẩn cấp',
-                    'high'   => '🟠 Cao',
-                    'medium' => '🟡 Trung bình',
-                    'low'    => '🟢 Thấp',
+                    'urgent' => 'Khẩn cấp',
+                    'high'   => 'Cao',
+                    'medium' => 'Trung bình',
+                    'low'    => 'Thấp',
                     default  => $ticket->priority,
                 } }}</span>
             </div>

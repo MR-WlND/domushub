@@ -75,7 +75,7 @@
 <div class="util-page-header">
     <div>
         <h1>Ghi chỉ số hàng loạt</h1>
-        <p>Chốt chỉ số <strong>nước</strong> cho nhiều căn hộ cùng lúc</p>
+        <p>Ghi chỉ số <strong>nước</strong> cho nhiều căn hộ cùng lúc</p>
     </div>
     <a href="{{ portal_route('utility-readings.index') }}" class="util-btn util-btn--outline">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -364,7 +364,7 @@
     <svg width="48" height="48" fill="none" stroke="#cbd5e1" stroke-width="1.5" viewBox="0 0 24 24" style="margin: 0 auto 16px;">
         <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>
     </svg>
-    <p>Không có căn hộ nào chưa chốt số nước trong khu vực đã chọn.</p>
+    <p>Không có căn hộ nào chưa ghi số nước trong khu vực đã chọn.</p>
 </div>
 @else
 <div class="util-empty-state">

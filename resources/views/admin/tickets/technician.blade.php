@@ -632,7 +632,7 @@ function handleFileSelect(input) {
 }
 
 function getPriorityLabel(p) {
-    return { urgent: '🔴 Khẩn cấp', high: '🟠 Cao', medium: '🟡 Trung bình', low: '🟢 Thấp' }[p] || p;
+    return { urgent: 'Khẩn cấp', high: 'Cao', medium: 'Trung bình', low: 'Thấp' }[p] || p;
 }
 
 function showKtvToast(msg, type = 'success') {
