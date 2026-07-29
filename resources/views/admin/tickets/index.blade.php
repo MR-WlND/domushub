@@ -20,12 +20,6 @@
             <h1 class="tickets-page__title">Danh sách Phản ánh & Kiến nghị</h1>
             <p class="tickets-page__subtitle">Quản lý và theo dõi tiến độ xử lý yêu cầu từ cư dân.</p>
         </div>
-        <div class="tickets-page__header-right">
-            <a href="{{ portal_route('tickets.my-tasks') }}" class="tk-btn-back-tasks">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                Nhiệm vụ của tôi
-            </a>
-        </div>
     </div>
 
     {{-- Alerts --}}
