@@ -19,12 +19,11 @@ class InvoiceSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Dọn dẹp dữ liệu hóa đơn, chi tiết hóa đơn, thanh toán và mối quan hệ cư dân cũ
+        // 1. Dọn dẹp dữ liệu hóa đơn, chi tiết hóa đơn, thanh toán (KHÔNG xóa residents)
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         DB::table('payments')->truncate();
         DB::table('bill_details')->truncate();
         DB::table('bills')->truncate();
-        DB::table('residents')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         // 2. Đảm bảo các dữ liệu nền cần thiết đã chạy
@@ -35,7 +34,7 @@ class InvoiceSeeder extends Seeder
             $this->call(ResidentSeeder::class);
         }
         if (DB::table('residents')->count() === 0) {
-            $this->call(ResidentAccountSeeder::class);
+            $this->call(ResidentSeeder::class);
         }
         if (ServicePrice::count() === 0) {
             $this->call(ServicePriceSeeder::class);

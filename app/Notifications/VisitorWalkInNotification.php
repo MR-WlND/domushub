@@ -21,21 +21,23 @@ class VisitorWalkInNotification extends Notification
     {
         $apt   = $this->visitor->apartment;
         $block = $apt?->floor?->block;
+        $msg   = sprintf(
+            'Bảo vệ vừa tạo đăng ký cho khách "%s" đến thăm căn hộ %s%s. Vui lòng xác nhận hoặc từ chối.',
+            $this->visitor->guest_name,
+            $apt?->apartment_number ?? '—',
+            $block ? ' (' . $block->name . ')' : ''
+        );
 
         return [
             'type'         => 'visitor_walk_in',
-            'title'        => 'Khách đến thăm',
-            'body'         => sprintf(
-                'Bảo vệ đã đăng ký khách "%s" vào thăm căn hộ %s%s.',
-                $this->visitor->guest_name,
-                $apt?->apartment_number ?? '—',
-                $block ? ' (' . $block->name . ')' : ''
-            ),
+            'title'        => 'Xác nhận khách ghé thăm',
+            'message'      => $msg,
+            'body'         => $msg,
             'visitor_id'   => $this->visitor->id,
             'guest_name'   => $this->visitor->guest_name,
             'guest_phone'  => $this->visitor->guest_phone,
-            'check_in_at'  => $this->visitor->check_in_at?->format('H:i d/m/Y'),
             'face_image'   => $this->visitor->face_image,
+            'url'          => route('resident.visitors.show', $this->visitor->id),
         ];
     }
 }

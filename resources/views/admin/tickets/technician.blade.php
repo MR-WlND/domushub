@@ -21,12 +21,6 @@
             <p class="ktv-header__sub ktv-desktop-sub">Quản lý và theo dõi tiến độ các yêu cầu kỹ thuật được phân công.</p>
             <p class="ktv-header__sub ktv-mobile-sub">{{ date('d') }} Tháng {{ date('m') }}, {{ date('Y') }}</p>
         </div>
-        <div class="ktv-header__right">
-            <a href="{{ portal_route('tickets.index') }}" class="ktv-btn ktv-btn--ghost">
-                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                Tất cả phản ánh
-            </a>
-        </div>
     </div>
 
     {{-- Alerts --}}
@@ -228,7 +222,7 @@
                                         Bắt đầu
                                     </button>
                                 @elseif($ticket->status === 'in_progress')
-                                    <button type="button" class="ktv-action-btn ktv-action-btn--warning"
+                                    <button type="button" class="ktv-action-btn ktv-action-btn--primary"
                                             onclick="openProgressModal(this)"
                                             data-url="{{ portal_route('tickets.update-progress', $ticket->id) }}"
                                             data-title="{{ $ticket->title }}"
@@ -236,7 +230,7 @@
                                             data-block="{{ $ticket->apartment->floor->block->name ?? '' }}"
                                             data-priority="{{ $ticket->priority }}"
                                             data-status="{{ $ticket->status }}">
-                                        Hoàn tất
+                                        Cập nhật tiến độ
                                     </button>
                                 @endif
                                 <a href="{{ portal_route('tickets.show', $ticket->id) }}" class="ktv-action-btn ktv-action-btn--ghost ktv-desktop-action">
@@ -318,7 +312,7 @@
                                                 Bắt đầu xử lý
                                             </button>
                                         @elseif($ticket->status === 'in_progress')
-                                            <button type="button" class="ktv-mb-action-btn ktv-mb-action-btn--warning"
+                                            <button type="button" class="ktv-mb-action-btn ktv-mb-action-btn--primary"
                                                     onclick="openProgressModal(this)"
                                                     data-url="{{ portal_route('tickets.update-progress', $ticket->id) }}"
                                                     data-title="{{ $ticket->title }}"
@@ -326,8 +320,8 @@
                                                     data-block="{{ $ticket->apartment->floor->block->name ?? '' }}"
                                                     data-priority="{{ $ticket->priority }}"
                                                     data-status="{{ $ticket->status }}">
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
-                                                Hoàn tất
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                Cập nhật tiến độ
                                             </button>
                                         @else
                                             <a href="{{ portal_route('tickets.show', $ticket->id) }}" class="ktv-mb-action-btn ktv-mb-action-btn--outline">
@@ -387,7 +381,7 @@
 
         <div class="ktv-modal__field">
             <label for="progressStatus">Trạng thái mới <span class="required">*</span></label>
-            <select name="status" id="progressStatus" required>
+            <select name="status" id="progressStatus" required onchange="updateProgressModalNotes(this.value)">
                 <option value="" disabled selected>-- Chọn trạng thái --</option>
                 <option value="in_progress">🔄 Đang xử lý (tiếp tục)</option>
                 <option value="completed">✅ Hoàn thành</option>
@@ -395,14 +389,14 @@
         </div>
 
         <div class="ktv-modal__field">
-            <label for="progressComment">Báo cáo hoàn thành <span id="commentFieldNote" class="ktv-field-note">(bắt buộc khi hoàn thành)</span></label>
+            <label for="progressComment">Báo cáo / Ghi chú <span id="commentFieldNote" class="ktv-field-note">(bắt buộc khi hoàn thành)</span></label>
             <textarea name="comment" id="progressComment" placeholder="Mô tả công việc đã thực hiện, vật tư sử dụng, kết quả..."></textarea>
         </div>
 
         <div class="ktv-modal__field">
-            <label>Ảnh nghiệm thu / ảnh tiến trình <span id="proofFieldNote" class="ktv-field-note">(tùy chọn, có thể chụp ảnh khi đang xử lý)</span></label>
+            <label>Ảnh nghiệm thu / Ảnh tiến trình <span id="proofFieldNote" class="ktv-field-note">(tùy chọn khi đang xử lý, bắt buộc khi hoàn thành)</span></label>
             <div class="ktv-modal__upload" id="uploadZone" onclick="openFilePicker()">
-                <input type="file" name="image_proof" id="imgProofInput" accept="image/*" style="display:none" onchange="handleFileSelect(this)">
+                <input type="file" name="image_proof" id="imgProofInput" accept="image/*" capture="environment" style="display:none" onchange="handleFileSelect(this)">
                 <div id="uploadPlaceholder">
                     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#94a3b8" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                     <span>Nhấn để chọn ảnh nghiệm thu</span>

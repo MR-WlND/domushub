@@ -59,11 +59,15 @@ class VisitorController extends Controller
             ], 422);
         }
 
-        $visitor->update(['confirmed_by_resident' => $user->id]);
+        $visitor->update([
+            'status'                => 'checked_in',
+            'check_in_at'           => $visitor->check_in_at ?? now(),
+            'confirmed_by_resident' => $user->id,
+        ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Đã chấp nhận khách. Bảo vệ đã được ghi nhận.',
+            'message' => 'Đã chấp nhận khách vào căn hộ.',
         ]);
     }
 

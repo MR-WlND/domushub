@@ -131,7 +131,7 @@
         @if($role === 'technician')
         <div class="nav-section">
             <span class="nav-section__label">NHIỆM VỤ KỸ THUẬT</span>
-            <a href="{{ portal_route('tickets.my-tasks') }}" class="dashboard-nav__item {{ is_portal_route('tickets.my-tasks') || ($role === 'technician' && is_portal_route('tickets.show')) ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ portal_route('tickets.my-tasks') }}" class="dashboard-nav__item {{ is_portal_route('tickets.my-tasks') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
                 </svg>
@@ -144,6 +144,12 @@
                 @if($myPendingCount > 0)
                     <span style="margin-left:auto; background:#f97316; color:#fff; font-size:.68rem; font-weight:800; padding:1px 7px; border-radius:12px; min-width:20px; text-align:center;">{{ $myPendingCount }}</span>
                 @endif
+            </a>
+            <a href="{{ portal_route('tickets.index') }}" class="dashboard-nav__item {{ is_portal_route('tickets.index') || ($role === 'technician' && is_portal_route('tickets.show')) ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <span>Tất cả phản ánh</span>
             </a>
         </div>
         @endif

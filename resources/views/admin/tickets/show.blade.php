@@ -45,11 +45,28 @@
             
             {{-- Issue Card --}}
             <div class="tk-card">
-                <div class="tk-card-header tk-card-header--icon">
-                    <div class="tk-card-icon-box">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2.25c-5.385 4.362-8.25 8.92-8.25 12.375 0 4.5 3.75 8.25 8.25 8.25s8.25-3.75 8.25-8.25c0-3.455-2.865-8.013-8.25-12.375z"/></svg>
+                <div class="tk-card-header tk-card-header--icon" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="tk-card-icon-box">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2.25c-5.385 4.362-8.25 8.92-8.25 12.375 0 4.5 3.75 8.25 8.25 8.25s8.25-3.75 8.25-8.25c0-3.455-2.865-8.013-8.25-12.375z"/></svg>
+                        </div>
+                        <h2 class="tk-card-title" style="margin: 0;">{{ $ticket->title }}</h2>
                     </div>
-                    <h2 class="tk-card-title">{{ $ticket->title }}</h2>
+                    
+                    @if(auth()->user()->role === 'technician')
+                    <div class="tk-action-list" style="margin: 0; display: flex; gap: 8px;">
+                        @if($ticket->status === 'pending' || $ticket->status === 'assigned')
+                            <form action="{{ portal_route('tickets.accept', $ticket->id) }}" method="POST" style="margin: 0;">
+                                @csrf
+                                <button type="submit" class="tk-btn-primary" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;">Nhận việc</button>
+                            </form>
+                        @elseif($ticket->status === 'in_progress')
+                            <button type="button" class="tk-btn-outline" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;" onclick="openProgressModal()">Cập nhật tiến độ</button>
+                        @elseif($ticket->status === 'completed')
+                            <span style="padding: 6px 14px; font-size: 0.85rem; font-weight: 700; border-radius: 6px; background: #dcfce7; color: #166534;">Đã hoàn thành</span>
+                        @endif
+                    </div>
+                    @endif
                 </div>
                 <div class="tk-card-body">
                     <div class="tk-section-title">NỘI DUNG PHẢN ÁNH</div>
@@ -202,32 +219,6 @@
         {{-- RIGHT COLUMN --}}
         <div class="tk-detail-right">
 
-            {{-- Task Actions --}}
-            <div class="tk-card">
-                <div class="tk-card-header">
-                    <h2 class="tk-card-title" style="font-size: 1.1rem;">Thao tác</h2>
-                </div>
-                <div class="tk-card-body">
-                    <div class="tk-action-list">
-                        @if($ticket->status === 'pending' || $ticket->status === 'assigned')
-                            <form action="{{ portal_route('tickets.accept', $ticket->id) }}" method="POST">
-                                @csrf
-                                <button type="submit" class="tk-btn-primary">Nhận việc</button>
-                            </form>
-                        @endif
-
-                        @if($ticket->status === 'in_progress' || $ticket->status === 'assigned')
-                            <button type="button" class="tk-btn-outline" onclick="openProgressModal()">Cập nhật tiến độ</button>
-                        @endif
-
-                        @if($ticket->status === 'completed')
-                            <button class="tk-btn-disabled" disabled>Hoàn thành</button>
-                        @else
-                            <button type="button" class="tk-btn-outline" onclick="openProgressModal(true)">Hoàn thành</button>
-                        @endif
-                    </div>
-                </div>
-            </div>
 
             {{-- Internal Notes (Timeline) --}}
             <div class="tk-card">
@@ -284,32 +275,70 @@
             </div>
             @endif
 
+
         </div>
     </div>
 </div>
 
-{{-- Progress/Complete Modal --}}
-<div id="progressModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999; align-items:center; justify-content:center;">
-    <div style="background:#fff; width:400px; border-radius:12px; padding:24px; position:relative;">
-        <span style="position:absolute; top:16px; right:20px; font-size:1.5rem; cursor:pointer;" onclick="closeProgressModal()">&times;</span>
-        <h2 style="margin-bottom: 16px; font-size:1.2rem; font-weight:700;" id="modalTitle">Cập nhật tiến độ</h2>
+{{-- Progress Modal --}}
+<div id="progressModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:999; align-items:center; justify-content:center;">
+    <div style="background:#fff; width:92%; max-width:480px; border-radius:16px; padding:24px; position:relative; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
+        <span style="position:absolute; top:18px; right:20px; font-size:1.5rem; font-weight:bold; cursor:pointer; color:#64748b;" onclick="closeProgressModal()">&times;</span>
+        <h2 style="margin-bottom: 20px; font-size:1.25rem; font-weight:700; color:#0f172a;" id="modalTitle">Cập nhật tiến độ</h2>
         
         <form id="progressForm" method="POST" action="{{ portal_route('tickets.update-progress', $ticket->id) }}" enctype="multipart/form-data">
             @csrf
-            <input type="hidden" name="status" id="modalStatus" value="in_progress">
             
             <div style="margin-bottom: 16px;">
-                <label style="display:block; font-size:0.85rem; font-weight:600; color:#475569; margin-bottom:6px;">Ghi chú tiến độ</label>
-                <textarea name="comment" rows="3" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; outline:none; font-family:inherit;"></textarea>
+                <label style="display:block; font-size:0.85rem; font-weight:600; color:#334155; margin-bottom:6px;">Trạng thái mới <span style="color:#dc2626;">*</span></label>
+                <select name="status" id="modalStatus" required onchange="updateShowModalNotes(this.value)" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; outline:none; font-size:0.9rem; background:#fff;">
+                    <option value="in_progress" {{ $ticket->status === 'in_progress' ? 'selected' : '' }}>🔄 Đang xử lý (tiếp tục)</option>
+                    <option value="completed">✅ Hoàn thành</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <label style="display:block; font-size:0.85rem; font-weight:600; color:#334155; margin-bottom:6px;">Báo cáo / Ghi chú <span id="showCommentNote" style="font-weight:normal; color:#64748b; font-size:0.8rem;">(tùy chọn)</span></label>
+                <textarea name="comment" id="showComment" rows="3" placeholder="Mô tả công việc đã thực hiện, kết quả, ghi chú..." style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; outline:none; font-family:inherit; font-size:0.9rem; box-sizing:border-box;"></textarea>
             </div>
             
             <div style="margin-bottom: 24px;">
-                <label style="display:block; font-size:0.85rem; font-weight:600; color:#475569; margin-bottom:6px;">Ảnh chứng minh (Tùy chọn)</label>
-                <input type="file" name="image_proof" accept="image/*" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
+                <label style="display:block; font-size:0.85rem; font-weight:600; color:#334155; margin-bottom:6px;">Chụp ảnh / Tải ảnh lên <span id="showProofNote" style="font-weight:normal; color:#64748b; font-size:0.8rem;">(tùy chọn)</span></label>
+                <div style="border: 2px dashed #cbd5e1; border-radius:8px; padding: 16px; text-align: center; cursor: pointer; background: #f8fafc;" onclick="document.getElementById('showImgInput').click()">
+                    <input type="file" name="image_proof" id="showImgInput" accept="image/*" capture="environment" style="display:none;" onchange="handleShowFileSelect(this)">
+                    <div id="showUploadPlaceholder">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#94a3b8" stroke-width="1.5" style="margin: 0 auto 6px;"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        <span style="display:block; font-size:0.85rem; color:#64748b;">Nhấn để chọn ảnh hoặc chụp ảnh</span>
+                    </div>
+                    <div id="showUploadPreview" style="display:none; align-items:center; gap:10px; justify-content:center;">
+                        <img id="showPreviewImg" src="" style="width:50px; height:50px; object-fit:cover; border-radius:6px;">
+                        <span id="showPreviewName" style="font-size:0.85rem; color:#334155; font-weight:500;"></span>
+                    </div>
+                </div>
+                <button type="button" class="tk-btn-outline" style="margin-top: 10px; padding: 8px 12px; font-size: 0.85rem; width: auto; display: inline-flex; align-items: center; gap: 6px;" onclick="openShowCameraCapture()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 7h-2a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2"/><path d="M9 7l1.5-3h3L15 7"/><circle cx="12" cy="15" r="3"/></svg>
+                    Mở camera máy tính
+                </button>
             </div>
 
-            <button type="submit" class="tk-btn-primary" id="modalSubmitBtn">Xác nhận</button>
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" class="tk-btn-outline" style="width: auto; padding: 10px 20px;" onclick="closeProgressModal()">Hủy</button>
+                <button type="submit" class="tk-btn-primary" id="modalSubmitBtn" style="width: auto; padding: 10px 24px;">Cập nhật tiến độ</button>
+            </div>
         </form>
+    </div>
+</div>
+
+<div id="showCameraModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:10000;cursor:pointer;" onclick="closeShowCameraModal()"></div>
+<div id="showCameraModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%, -50%);width:92vw;max-width:520px;background:#fff;border-radius:16px;box-shadow:0 24px 48px rgba(15,23,42,0.25);z-index:10001;padding:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-weight:700;font-size:0.95rem;color:#0f172a;">Camera máy tính</div>
+        <button type="button" class="tk-btn-outline" style="padding:4px 10px;font-size:0.8rem;width:auto;" onclick="closeShowCameraModal()">Đóng</button>
+    </div>
+    <video id="showCameraVideo" autoplay playsinline style="width:100%;height:auto;border-radius:14px;background:#000;"></video>
+    <div style="display:flex;justify-content:flex-end;gap:0.75rem;margin-top:12px;">
+        <button type="button" class="tk-btn-outline" style="width:auto;padding:8px 16px;" onclick="closeShowCameraModal()">Hủy</button>
+        <button type="button" class="tk-btn-primary" style="width:auto;padding:8px 20px;" onclick="captureShowCameraPhoto()">Chụp ảnh</button>
     </div>
 </div>
 
@@ -329,23 +358,106 @@ function closeAdminImgModal() {
     document.getElementById('adminImgModal').style.display = 'none';
 }
 
-function openProgressModal(isComplete = false) {
+function openProgressModal() {
     document.getElementById('progressModal').style.display = 'flex';
-    if(isComplete) {
-        document.getElementById('modalTitle').innerText = 'Hoàn thành nhiệm vụ';
-        document.getElementById('modalStatus').value = 'completed';
-        document.getElementById('modalSubmitBtn').innerText = 'Xác nhận hoàn thành';
-        document.getElementById('modalSubmitBtn').style.background = '#16a34a';
-    } else {
-        document.getElementById('modalTitle').innerText = 'Cập nhật tiến độ';
-        document.getElementById('modalStatus').value = 'in_progress';
-        document.getElementById('modalSubmitBtn').innerText = 'Cập nhật';
-        document.getElementById('modalSubmitBtn').style.background = '#00236f';
-    }
+    const statusVal = document.getElementById('modalStatus').value;
+    updateShowModalNotes(statusVal);
 }
 
 function closeProgressModal() {
     document.getElementById('progressModal').style.display = 'none';
+}
+
+function updateShowModalNotes(status) {
+    const proofNote = document.getElementById('showProofNote');
+    const commentNote = document.getElementById('showCommentNote');
+    if (status === 'completed') {
+        if (proofNote) proofNote.textContent = '(bắt buộc khi hoàn thành)';
+        if (commentNote) commentNote.textContent = '(bắt buộc khi hoàn thành)';
+    } else {
+        if (proofNote) proofNote.textContent = '(tùy chọn)';
+        if (commentNote) commentNote.textContent = '(tùy chọn)';
+    }
+}
+
+function handleShowFileSelect(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        document.getElementById('showPreviewImg').src = e.target.result;
+        document.getElementById('showPreviewName').textContent = file.name;
+        document.getElementById('showUploadPlaceholder').style.display = 'none';
+        document.getElementById('showUploadPreview').style.display = 'flex';
+    };
+    reader.readAsDataURL(file);
+}
+
+let showCameraStream = null;
+function openShowCameraCapture() {
+    const overlay = document.getElementById('showCameraModalOverlay');
+    const modal   = document.getElementById('showCameraModal');
+    const video   = document.getElementById('showCameraVideo');
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('Trình duyệt của bạn không hỗ trợ mở camera.');
+        return;
+    }
+
+    overlay.style.display = 'block';
+    modal.style.display   = 'block';
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+            showCameraStream = stream;
+            video.srcObject = stream;
+            video.play();
+        })
+        .catch(error => {
+            alert('Không thể kết nối camera. Bạn có thể chọn file ảnh tải lên.');
+            closeShowCameraModal();
+        });
+}
+
+function closeShowCameraModal() {
+    const overlay = document.getElementById('showCameraModalOverlay');
+    const modal   = document.getElementById('showCameraModal');
+    const video   = document.getElementById('showCameraVideo');
+
+    if (overlay) overlay.style.display = 'none';
+    if (modal)   modal.style.display   = 'none';
+
+    if (showCameraStream) {
+        showCameraStream.getTracks().forEach(track => track.stop());
+        showCameraStream = null;
+    }
+    if (video) video.srcObject = null;
+}
+
+function captureShowCameraPhoto() {
+    const video = document.getElementById('showCameraVideo');
+    if (!video || !video.videoWidth) {
+        alert('Camera chưa sẵn sàng.');
+        return;
+    }
+
+    const canvas  = document.createElement('canvas');
+    canvas.width  = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const context = canvas.getContext('2d');
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob(blob => {
+        if (!blob) return;
+        const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        const input = document.getElementById('showImgInput');
+        input.files = dataTransfer.files;
+        handleShowFileSelect(input);
+        closeShowCameraModal();
+    });
 }
 </script>
 @endsection
