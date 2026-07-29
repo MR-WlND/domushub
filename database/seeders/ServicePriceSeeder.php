@@ -14,7 +14,6 @@ class ServicePriceSeeder extends Seeder
     {
         // Định nghĩa danh mục phí với type làm key để quản lý độc lập
         $servicePrices = [
-            'electricity'    => ['name' => 'Giá điện', 'unit_price' => 3000, 'description' => 'Biểu giá điện theo kWh'],
             'water'          => ['name' => 'Giá nước', 'unit_price' => 15000, 'description' => 'Biểu giá nước theo m³'],
             'management_fee' => ['name' => 'Phí quản lý', 'unit_price' => 15000, 'description' => 'Phí quản lý hàng tháng (trên m2)'],
             'motorbike'      => ['type' => 'parking_fee', 'vehicle_type' => 'motorbike', 'name' => 'Phí gửi xe máy', 'unit_price' => 100000, 'description' => 'Phí gửi xe máy (xăng)',],

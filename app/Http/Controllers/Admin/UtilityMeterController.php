@@ -1347,4 +1347,84 @@ class UtilityMeterController extends Controller
         return $rejections;
     }
 
+    /**
+     * AI OCR - Nhận diện chỉ số từ ảnh công tơ bằng Google Gemini
+     */
+    public function ocr(Request $request): \Illuminate\Http\JsonResponse
+    {
+        try {
+            $request->validate([
+                'image' => 'required|image|max:4096',
+                'type' => 'nullable|string',
+            ]);
+
+            $file = $request->file('image');
+            $path = $file->getRealPath();
+            $mimeType = $file->getMimeType();
+
+            // Đọc file ảnh dưới dạng Blob để gửi tới Gemini
+            $data = file_get_contents($path);
+            $mimeEnum = MimeType::tryFrom($mimeType) ?? MimeType::IMAGE_JPEG;
+            $blob = new Blob(
+                mimeType: $mimeEnum,
+                data: base64_encode($data)
+            );
+
+            $typeLabel = ($request->type === 'electricity') ? 'điện' : 'nước';
+            $prompt = "Hãy nhìn kỹ vào hình ảnh đồng hồ đo {$typeLabel} (công tơ) này và trích xuất chỉ số hiện tại hiển thị trên dãy số của đồng hồ.\n"
+                    . "Quy tắc:\n"
+                    . "1. Chỉ lấy dãy số nguyên hiển thị chính (thường là màu đen hoặc trắng trên nền đen).\n"
+                    . "2. Bỏ qua các chữ số thập phân màu đỏ ở cuối (nếu có).\n"
+                    . "3. Chỉ trả về duy nhất các con số kết quả dưới dạng số nguyên (ví dụ: 1245), tuyệt đối không thêm lời giải thích, ký tự đặc biệt, đơn vị đo hoặc chữ viết nào khác.";
+
+            $modelsToTry = ['gemini-2.5-flash', 'gemini-3.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest'];
+            $replyText = '';
+            $lastException = null;
+
+            foreach ($modelsToTry as $modelName) {
+                try {
+                    $response = Gemini::generativeModel(model: $modelName)
+                        ->generateContent([$prompt, $blob]);
+                    $replyText = trim($response->text());
+                    if ($replyText) {
+                        break;
+                    }
+                } catch (\Exception $e) {
+                    $lastException = $e;
+                    continue;
+                }
+            }
+
+            if (!$replyText) {
+                throw $lastException ?? new \Exception("Không thể nhận diện hoặc máy chủ AI đang bận.");
+            }
+
+            // Trích xuất các chữ số từ kết quả phản hồi của AI
+            preg_match_all('/\d+/', $replyText, $matches);
+            $readingValue = null;
+            if (!empty($matches[0])) {
+                // Lấy chuỗi số dài nhất hoặc chuỗi số đầu tiên tìm thấy
+                $readingValue = $matches[0][0];
+            }
+
+            if ($readingValue === null || $readingValue === '') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'AI phản hồi: ' . $replyText . ' (Không xác định rõ con số).'
+                ], 200);
+            }
+
+            return response()->json([
+                'success' => true,
+                'reading' => $readingValue
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi kết nối AI: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
 }
