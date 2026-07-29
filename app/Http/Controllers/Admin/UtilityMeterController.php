@@ -925,7 +925,7 @@ class UtilityMeterController extends Controller
         $waterAmount = $waterReading->usage_amount * $waterService->unit_price;
         $totalAmount = $waterAmount;
 
-        // 4. Tìm hóa đơn hiện có hoặc tạo mới
+        // 4. Tìm hóa đơn hiện có
         $invoice = \App\Models\Invoice::where('apartment_id', $apartmentId)
             ->where('billing_month', $month)
             ->where('billing_year', $year)
@@ -946,26 +946,16 @@ class UtilityMeterController extends Controller
                 // Giữ nguyên trạng thái nếu đã thanh toán, tránh chuyển ngược về unpaid trái phép
                 'status' => $invoice->status === 'paid' ? 'paid' : 'unpaid',
             ]);
-        } else {
-            $invoice = \App\Models\Invoice::create([
-                'apartment_id' => $apartmentId,
-                'billing_month' => $month,
-                'billing_year' => $year,
-                'title' => "Hóa đơn tháng {$month}/{$year}",
-                'due_date' => now()->addDays(10), // Hạn nộp 10 ngày từ ngày chốt
-                'total_amount' => $totalAmount,
-                'status' => 'unpaid',
-            ]);
-        }
 
-        // 5. Đồng bộ chi tiết hóa đơn (bill_details)
-        if ($waterReading && $waterReading->usage_amount > 0) {
-            \App\Models\InvoiceDetail::create([
-                'bill_id' => $invoice->id,
-                'service_price_id' => $waterService->id,
-                'quantity' => $waterReading->usage_amount,
-                'amount' => $waterAmount,
-            ]);
+            // 5. Đồng bộ chi tiết hóa đơn (bill_details)
+            if ($waterReading && $waterReading->usage_amount > 0) {
+                \App\Models\InvoiceDetail::create([
+                    'bill_id' => $invoice->id,
+                    'service_price_id' => $waterService->id,
+                    'quantity' => $waterReading->usage_amount,
+                    'amount' => $waterAmount,
+                ]);
+            }
         }
     }
 
