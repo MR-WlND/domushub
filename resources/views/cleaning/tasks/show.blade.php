@@ -40,11 +40,12 @@
 .section { background:white; border-radius:14px; padding:24px; margin-bottom:16px; box-shadow:0 1px 6px rgba(54,82,217,.04); }
 .section__title { font-size:11px; font-weight:700; color:#A3AED0; text-transform:uppercase; letter-spacing:.5px; margin-bottom:14px; }
 
-/* Info Grid */
-.info-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-.info-item { }
-.info-item__label { font-size:11px; color:#A3AED0; font-weight:600; margin-bottom:2px; }
-.info-item__value { font-size:14px; color:#1B2559; font-weight:700; }
+/* Info List */
+.info-list { list-style:none; padding:0; margin:0; }
+.info-list__item { display:flex; justify-content:space-between; align-items:center; padding:11px 0; border-bottom:1px solid #F4F7FE; font-size:13px; }
+.info-list__item:last-child { border-bottom:none; }
+.info-list__label { color:#A3AED0; font-weight:500; }
+.info-list__value { color:#1B2559; font-weight:700; text-align:right; }
 
 /* Description */
 .desc-text { font-size:14px; color:#4A5568; line-height:1.8; }
@@ -93,7 +94,6 @@
 /* Responsive */
 @media(max-width:768px) {
     .task-page { padding:0; }
-    .info-grid { grid-template-columns:1fr; gap:12px; }
     .section { padding:20px 16px; }
 }
 </style>
@@ -135,30 +135,34 @@
     {{-- Info --}}
     <div class="section">
         <div class="section__title">Thông tin</div>
-        <div class="info-grid">
-            <div class="info-item">
-                <div class="info-item__label">Khu vực</div>
-                <div class="info-item__value">{{ $task->area }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-item__label">Thời gian</div>
-                <div class="info-item__value">{{ \Carbon\Carbon::parse($task->start_time)->format('H:i') }} – {{ \Carbon\Carbon::parse($task->end_time)->format('H:i') }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-item__label">Người giao</div>
-                <div class="info-item__value">{{ $task->assigner?->name ?? 'Quản lý' }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-item__label">Ngày</div>
-                <div class="info-item__value">{{ $task->task_date->format('d/m/Y') }}</div>
-            </div>
+        <ul class="info-list">
+            <li class="info-list__item">
+                <span class="info-list__label">Khu vực</span>
+                <span class="info-list__value">{{ $task->area }}</span>
+            </li>
+            <li class="info-list__item">
+                <span class="info-list__label">Thời gian</span>
+                <span class="info-list__value">{{ \Carbon\Carbon::parse($task->start_time)->format('H:i') }} – {{ \Carbon\Carbon::parse($task->end_time)->format('H:i') }}</span>
+            </li>
+            <li class="info-list__item">
+                <span class="info-list__label">Người giao</span>
+                <span class="info-list__value">{{ $task->assigner?->name ?? 'Quản lý' }}</span>
+            </li>
+            <li class="info-list__item">
+                <span class="info-list__label">Ngày</span>
+                <span class="info-list__value">{{ $task->task_date->format('d/m/Y') }}</span>
+            </li>
+            <li class="info-list__item">
+                <span class="info-list__label">Ưu tiên</span>
+                <span class="info-list__value" style="color:{{ $task->priority === 'high' ? '#EE5D50' : ($task->priority === 'medium' ? '#FF9B05' : '#05CD99') }}">{{ $task->priority === 'high' ? 'Cao' : ($task->priority === 'medium' ? 'Trung bình' : 'Thấp') }}</span>
+            </li>
             @if($task->completed_at)
-            <div class="info-item">
-                <div class="info-item__label">Hoàn thành lúc</div>
-                <div class="info-item__value" style="color:#05CD99;">{{ $task->completed_at->format('H:i') }}</div>
-            </div>
+            <li class="info-list__item">
+                <span class="info-list__label">Hoàn thành lúc</span>
+                <span class="info-list__value" style="color:#05CD99;">{{ $task->completed_at->format('H:i – d/m/Y') }}</span>
+            </li>
             @endif
-        </div>
+        </ul>
     </div>
 
     {{-- Description --}}

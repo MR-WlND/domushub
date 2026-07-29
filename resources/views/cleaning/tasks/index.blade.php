@@ -19,14 +19,14 @@
 .search-inline::placeholder { color:#A3AED0; }
 
 /* Stats Strip */
-.stats-strip { display:flex; gap:6px; background:white; border-radius:12px; padding:6px; margin-bottom:20px; box-shadow:0 2px 8px rgba(54,82,217,.04); }
-.stat-pill { flex:1; text-align:center; padding:12px 8px; border-radius:8px; cursor:pointer; transition:.2s; }
-.stat-pill:hover { background:#F4F7FE; }
-.stat-pill.active { background:#3652D9; }
+.stats-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px; }
+.stat-pill { text-align:center; padding:16px 12px; border-radius:12px; cursor:pointer; transition:.2s; background:white; border:1.5px solid #E9EDF7; box-shadow:0 1px 4px rgba(54,82,217,.04); }
+.stat-pill:hover { border-color:#3652D9; box-shadow:0 2px 8px rgba(54,82,217,.08); }
+.stat-pill.active { background:#3652D9; border-color:#3652D9; box-shadow:0 4px 12px rgba(54,82,217,.2); }
 .stat-pill.active .stat-pill__val,
 .stat-pill.active .stat-pill__label { color:white; }
-.stat-pill__val { font-size:20px; font-weight:800; color:#1B2559; line-height:1; }
-.stat-pill__label { font-size:11px; color:#A3AED0; margin-top:4px; font-weight:600; text-transform:uppercase; letter-spacing:.3px; }
+.stat-pill__val { font-size:24px; font-weight:800; color:#1B2559; line-height:1; }
+.stat-pill__label { font-size:11px; color:#A3AED0; margin-top:6px; font-weight:600; text-transform:uppercase; letter-spacing:.3px; }
 
 /* Progress Bar */
 .progress-slim { background:#E9EDF7; height:6px; border-radius:3px; margin-bottom:28px; overflow:hidden; }
@@ -88,14 +88,10 @@
 .btn-done:hover { border-color:#05CD99; color:#05CD99; background:#E6F9F0; }
 .btn-done--checked { border-color:#05CD99; background:#05CD99; color:white; pointer-events:none; }
 
-/* Done section (collapsed) */
+/* Done section (always visible) */
 .done-section { margin-top:32px; }
-.done-toggle { display:flex; align-items:center; gap:8px; padding:10px 16px; background:white; border-radius:10px; border:1px solid #E9EDF7; cursor:pointer; font-size:13px; font-weight:600; color:#707EAE; transition:.2s; width:fit-content; }
-.done-toggle:hover { border-color:#05CD99; color:#05CD99; }
-.done-toggle__arrow { transition:transform .2s; display:inline-block; }
-.done-toggle__arrow--open { transform:rotate(90deg); }
-.done-list { margin-top:12px; display:none; }
-.done-list--visible { display:block; }
+.done-section__title { font-size:13px; font-weight:700; color:#707EAE; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid #E9EDF7; }
+.done-list { display:flex; flex-direction:column; gap:8px; }
 .done-list .task-card { opacity:.55; }
 .done-list .task-card:hover { opacity:.8; }
 
@@ -115,8 +111,8 @@
     .timeline::before { left:16px; }
     .time-slot__marker { left:-44px; width:36px; }
     .task-card { padding:14px 16px; gap:12px; }
-    .stats-strip { flex-wrap:wrap; }
-    .stat-pill { min-width:calc(50% - 6px); }
+    .stats-strip { grid-template-columns:repeat(2,1fr); }
+    .stat-pill { min-width:auto; }
     .now-indicator::before { left:-44px; }
     .now-indicator__label { left:-44px; }
     .now-indicator__dot { left:-28px; }
@@ -250,14 +246,11 @@
 <div class="empty">Không có công việc nào hôm nay.</div>
 @endif
 
-{{-- Done section (collapsed) --}}
+{{-- Done section (always visible) --}}
 @if($doneTasks->count() > 0)
 <div class="done-section">
-    <button class="done-toggle" id="doneToggle" type="button">
-        <span class="done-toggle__arrow" id="doneArrow">▶</span>
-        Đã hoàn thành ({{ $doneTasks->count() }})
-    </button>
-    <div class="done-list" id="doneList">
+    <div class="done-section__title">Đã hoàn thành ({{ $doneTasks->count() }})</div>
+    <div class="done-list">
         @foreach($doneTasks as $task)
         <div class="task-card task-card--done" tabindex="0"
              onclick="window.location='{{ route('cleaning.tasks.show', $task->id) }}'">
@@ -300,17 +293,6 @@
         setTimeout(() => t.classList.remove('toast-cleaning--visible'), 2500);
     }
 
-    // Done toggle
-    const doneToggle = document.getElementById('doneToggle');
-    if (doneToggle) {
-        doneToggle.addEventListener('click', function() {
-            const list = document.getElementById('doneList');
-            const arrow = document.getElementById('doneArrow');
-            list.classList.toggle('done-list--visible');
-            arrow.classList.toggle('done-toggle__arrow--open');
-        });
-    }
-
     // Filter tabs
     document.querySelectorAll('.stat-pill').forEach(pill => {
         pill.addEventListener('click', function() {
@@ -331,15 +313,7 @@
             // Show/hide done section
             const doneSection = document.querySelector('.done-section');
             if (doneSection) {
-                if (filter === 'done' || filter === 'all') {
-                    doneSection.style.display = '';
-                    if (filter === 'done') {
-                        document.getElementById('doneList').classList.add('done-list--visible');
-                        document.getElementById('doneArrow').classList.add('done-toggle__arrow--open');
-                    }
-                } else {
-                    doneSection.style.display = 'none';
-                }
+                doneSection.style.display = (filter === 'done' || filter === 'all') ? '' : 'none';
             }
 
             // Show timeline only for non-done filters
