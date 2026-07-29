@@ -47,8 +47,6 @@ class StaffController extends Controller
     {
         $departments = Department::all();
         $roles = [
-            'admin'        => 'Quản trị viên',
-            'manager'      => 'Quản lý',
             'staff'        => 'Nhân viên kế toán',
             'technician'   => 'Kỹ thuật',
             'security'     => 'An ninh',
@@ -121,8 +119,6 @@ class StaffController extends Controller
         $staff->load(['user']);
         $departments = Department::all();
         $roles = [
-            'admin'        => 'Quản trị viên',
-            'manager'      => 'Quản lý',
             'staff'        => 'Nhân viên kế toán',
             'technician'   => 'Kỹ thuật',
             'security'     => 'An ninh',
