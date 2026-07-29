@@ -943,6 +943,8 @@ class UtilityMeterController extends Controller
             $invoice->update([
                 'title' => "Hóa đơn tháng {$month}/{$year}",
                 'total_amount' => $newTotalAmount,
+                'current_amount' => $newTotalAmount,
+                'total_due_at_issue' => (float)$invoice->previous_debt + $newTotalAmount,
                 // Giữ nguyên trạng thái nếu đã thanh toán, tránh chuyển ngược về unpaid trái phép
                 'status' => $invoice->status === 'paid' ? 'paid' : 'unpaid',
             ]);

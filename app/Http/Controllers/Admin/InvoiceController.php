@@ -570,7 +570,7 @@ class InvoiceController extends Controller
                 // ============================================================
                 // XỬ LÝ ĐIỆN / NƯỚC
                 // ============================================================
-                if (in_array($type, ['internet', 'service', 'other'])) {
+                if (in_array($type, ['electricity', 'water'])) {
                     $servicePrice = $activePrices->get($type)?->first();
                     if (!$servicePrice) {
                         $skipped++;

@@ -10,7 +10,7 @@
             @elseif($role === 'manager')
                 Quản lý
             @elseif($role === 'staff')
-                Nhân viên
+                Kế toán
             @elseif($role === 'technician')
                 Kỹ thuật viên
             @endif

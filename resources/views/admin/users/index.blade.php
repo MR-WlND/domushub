@@ -43,7 +43,6 @@
                     </svg>
                     Lịch sử hệ thống
                 </a>
-                <a href="{{ portal_route('users.create') }}" class="users-button users-button--primary">Thêm nhân sự</a>
             </div>
         </div>
 
