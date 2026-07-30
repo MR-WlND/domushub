@@ -79,6 +79,13 @@
                         </div>
 
                         <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="is_popup" value="1" @checked(old('is_popup'))>
+                                <span>Hiển thị dạng Popup khẩn cấp</span>
+                            </label>
+                        </div>
+
+                        <div class="form-group">
                             <label>Ảnh đính kèm thông báo</label>
                             <div class="image-upload-wrapper">
                                 <input type="file" name="image" id="image" accept="image/*" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer;" onchange="previewImage(event)">

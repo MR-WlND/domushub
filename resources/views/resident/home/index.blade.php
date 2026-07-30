@@ -584,6 +584,113 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 </div>
 
+@if($popupAnnouncement)
+    {{-- Modal Thông báo Khẩn cấp --}}
+    <div id="emergencyAnnouncementModal" class="rep-modal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); z-index: 20000; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease;">
+        <div class="rep-modal__content" style="background: var(--color-card, #fff); padding: 32px; border-radius: 20px; max-width: 550px; width: 90%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid rgba(220, 38, 38, 0.1); position: relative; transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); text-align: center; box-sizing: border-box;">
+            
+            {{-- Header Icon --}}
+            <div style="width: 72px; height: 72px; background: #fee2e2; color: #dc2626; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 2rem; box-shadow: 0 10px 15px -3px rgba(220, 38, 38, 0.2);">
+                @if($popupAnnouncement->category === 'warning')
+                    <i class="fa-solid fa-triangle-exclamation animate-bounce"></i>
+                @elseif($popupAnnouncement->category === 'maintenance')
+                    <i class="fa-solid fa-wrench"></i>
+                @else
+                    <i class="fa-solid fa-bullhorn"></i>
+                @endif
+            </div>
+
+            {{-- Category badge --}}
+            <span style="display: inline-block; padding: 6px 16px; border-radius: 30px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;
+                @if($popupAnnouncement->category === 'warning')
+                    background: #fee2e2; color: #dc2626;
+                @elseif($popupAnnouncement->category === 'maintenance')
+                    background: #e0f2fe; color: #0369a1;
+                @else
+                    background: #f1f5f9; color: #475569;
+                @endif
+            ">
+                @if($popupAnnouncement->category === 'warning')
+                    Cảnh báo khẩn cấp
+                @elseif($popupAnnouncement->category === 'maintenance')
+                    Thông báo bảo trì
+                @elseif($popupAnnouncement->category === 'event')
+                    Sự kiện chung cư
+                @else
+                    Thông báo chung
+                @endif
+            </span>
+
+            {{-- Title --}}
+            <h2 style="margin: 0 0 12px; font-size: 1.4rem; font-weight: 800; color: #0f172a; line-height: 1.3;">
+                {{ $popupAnnouncement->title }}
+            </h2>
+
+            {{-- Time --}}
+            <p style="margin: 0 0 20px; font-size: 0.8rem; color: #64748b; font-weight: 500;">
+                <i class="fa-regular fa-clock" style="margin-right: 4px;"></i> Đăng {{ $popupAnnouncement->created_at->diffForHumans() }}
+            </p>
+
+            {{-- Announcement Image if exists --}}
+            @if($popupAnnouncement->image_path)
+                <div style="width: 100%; max-height: 200px; border-radius: 12px; overflow: hidden; margin-bottom: 20px; border: 1px solid #f1f5f9;">
+                    <img src="{{ asset('storage/' . $popupAnnouncement->image_path) }}" style="width: 100%; height: 100%; object-fit: cover;" alt="Hình ảnh thông báo">
+                </div>
+            @endif
+
+            {{-- Content --}}
+            <div style="font-size: 0.95rem; color: #334155; line-height: 1.6; margin-bottom: 28px; text-align: left; max-height: 250px; overflow-y: auto; padding: 0 10px; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; padding-top: 16px; padding-bottom: 16px;">
+                {!! $popupAnnouncement->content !!}
+            </div>
+
+            {{-- Actions --}}
+            <div style="display: flex; justify-content: center; gap: 12px;">
+                <button type="button" onclick="dismissEmergencyAnnouncement({{ $popupAnnouncement->id }})" style="background: #0f172a; color: white; border: none; padding: 12px 30px; font-size: 0.9rem; font-weight: 700; border-radius: 12px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.1); width: 100%; max-width: 200px;" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
+                    Đã đọc & Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const popupId = {{ $popupAnnouncement->id }};
+        const dismissed = localStorage.getItem('dismissed_announcement_' + popupId);
+        
+        if (dismissed !== 'true') {
+            const modal = document.getElementById('emergencyAnnouncementModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                // Force reflow
+                modal.offsetHeight;
+                modal.style.opacity = '1';
+                
+                const content = modal.querySelector('.rep-modal__content');
+                if (content) {
+                    content.style.transform = 'scale(1)';
+                }
+            }
+        }
+    });
+
+    function dismissEmergencyAnnouncement(popupId) {
+        const modal = document.getElementById('emergencyAnnouncementModal');
+        if (modal) {
+            modal.style.opacity = '0';
+            const content = modal.querySelector('.rep-modal__content');
+            if (content) {
+                content.style.transform = 'scale(0.9)';
+            }
+            
+            setTimeout(() => {
+                modal.style.display = 'none';
+                localStorage.setItem('dismissed_announcement_' + popupId, 'true');
+            }, 300);
+        }
+    }
+    </script>
+@endif
+
 {{-- Toast Container --}}
 <div id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 10001; display: flex; flex-direction: column; gap: 0.5rem; max-width: 350px;"></div>
 

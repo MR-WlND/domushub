@@ -436,6 +436,12 @@ Route::middleware(['resident'])->group(function () {
             ->limit(5)
             ->get();
 
+        // Lấy thông báo khẩn cấp dạng Popup mới nhất
+        $popupAnnouncement = \App\Models\Announcement::where('status', 'published')
+            ->where('is_popup', true)
+            ->latest()
+            ->first();
+
         // Bài viết cư dân (full feed với filter + pagination)
         $postQuery = \App\Models\Post::with(['user', 'images', 'comments', 'likedByCurrentUser'])
             ->withCount(['likes', 'comments'])
@@ -453,7 +459,7 @@ Route::middleware(['resident'])->group(function () {
 
         return view('resident.home.index', compact(
             'user', 'apartment', 'totalUnpaidAmount', 'dueDate',
-            'announcements', 'posts'
+            'announcements', 'posts', 'popupAnnouncement'
         ));
     })->name('resident.dashboard');
 

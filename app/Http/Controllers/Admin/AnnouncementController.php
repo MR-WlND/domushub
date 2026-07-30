@@ -93,6 +93,7 @@ class AnnouncementController extends Controller
         $data = $request->only(['title', 'content', 'category', 'status']);
         $data['user_id'] = Auth::id();
         $data['pinned'] = $request->has('pinned') ? (bool) $request->pinned : false;
+        $data['is_popup'] = $request->has('is_popup') ? (bool) $request->is_popup : false;
 
         if ($request->hasFile('image')) {
             $data['image_path'] = $request->file('image')->store('announcements', 'public');
@@ -148,6 +149,7 @@ class AnnouncementController extends Controller
 
         $data = $request->only(['title', 'content', 'category', 'status']);
         $data['pinned'] = $request->has('pinned') ? (bool) $request->pinned : false;
+        $data['is_popup'] = $request->has('is_popup') ? (bool) $request->is_popup : false;
 
         if ($request->hasFile('image')) {
             // Delete old image if exists
