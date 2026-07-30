@@ -145,8 +145,9 @@
                 <tbody>
                     @forelse($vehicles as $v)
                     @php
-                        $owner = $v->apartment?->residents?->first()?->user ?? null;
-                        $ownerName = $owner?->name ?? '—';
+                        $ownerName = $v->apartment?->owner_name ?? '—';
+                        $owner = $v->apartment?->residents?->first(fn($r) => $r->relationship === 'owner')?->user 
+                                 ?? $v->apartment?->residents?->first()?->user ?? null;
                         $ownerPhone = $owner?->phone ?? null;
                         $blockName = $v->apartment?->floor?->block?->name ?? '—';
                         $floorName = $v->apartment?->floor?->name ?? '';
@@ -260,6 +261,14 @@
                                         </button>
                                     </form>
                                 @endif
+
+                                    <form action="{{ portal_route('vehicles.destroy', $v) }}" method="POST" style="display:contents;" onsubmit="return confirm('Xóa xe {{ $v->license_plate }} khỏi hệ thống? Hành động này không thể hoàn tác.')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="veh-table-btn veh-table-btn--lock" title="Xóa xe" style="color:#EE5D50;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                                        </button>
+                                    </form>
                             </div>
                         </td>
                     </tr>

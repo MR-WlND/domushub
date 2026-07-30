@@ -241,6 +241,7 @@ $portalRoutes = function () {
     Route::post('/vehicles/{vehicle}/approve',     [App\Http\Controllers\Admin\VehicleController::class, 'approve'])->name('vehicles.approve');
     Route::post('/vehicles/{vehicle}/lock',        [App\Http\Controllers\Admin\VehicleController::class, 'lock'])->name('vehicles.lock');
     Route::post('/vehicles/{vehicle}/unlock',      [App\Http\Controllers\Admin\VehicleController::class, 'unlock'])->name('vehicles.unlock');
+    Route::delete('/vehicles/{vehicle}',           [App\Http\Controllers\Admin\VehicleController::class, 'destroy'])->name('vehicles.destroy');
     
     // LỊCH SỬ RA VÀO (Admin)
     Route::get('/vehicle-logs', [App\Http\Controllers\Admin\VehicleLogController::class, 'index'])->name('vehicle-logs.index');

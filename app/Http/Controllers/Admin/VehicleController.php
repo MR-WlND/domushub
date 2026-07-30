@@ -163,6 +163,33 @@ class VehicleController extends Controller
     }
 
     // =========================================================================
+    // XÓA PHƯƠNG TIỆN
+    // =========================================================================
+
+    public function destroy(Vehicle $vehicle)
+    {
+        if ($vehicle->isInside()) {
+            return back()->withErrors(['vehicle' => 'Không thể xóa xe đang ở trong hầm.']);
+        }
+
+        $plate = $vehicle->license_plate;
+
+        // Giải phóng lốt đỗ nếu có
+        if ($vehicle->parking_lot_id) {
+            $lot = ParkingLot::find($vehicle->parking_lot_id);
+            if ($lot) {
+                $lot->update(['status' => 'available', 'apartment_id' => null]);
+            }
+        }
+
+        $vehicle->delete();
+
+        SystemLogger::log('Xóa phương tiện', 'Biển số: ' . $plate);
+
+        return back()->with('success', 'Đã xóa xe ' . $plate . ' khỏi hệ thống.');
+    }
+
+    // =========================================================================
     // QR GENERATION
     // =========================================================================
 
