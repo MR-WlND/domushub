@@ -50,7 +50,7 @@
                                 </a>
                             @endif
                             @if($post->user_id === auth()->id() || auth()->user()->isAdminPortalUser())
-                                <form action="{{ route('resident.posts.destroy', $post->id) }}" method="POST" onsubmit="return confirm('Xóa bài đăng này?')" style="margin: 0;">
+                                <form action="{{ route('resident.posts.destroy', $post->id) }}" method="POST" onsubmit="return confirmDeletePost(event, this)" style="margin: 0;">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="rh-fb-card__dropdown-item rh-fb-card__dropdown-item--danger">

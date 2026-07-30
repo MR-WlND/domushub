@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Rules\CleanContent;
 
 class PostController extends Controller
 {
@@ -98,8 +99,8 @@ class PostController extends Controller
 
         // 2. Validate dữ liệu đầu vào (hỗ trợ images/video dạng mảng)
         $request->validate([
-            'title' => 'nullable|string|max:200',
-            'content' => 'required|string',
+            'title' => ['nullable', 'string', 'max:200', new CleanContent()],
+            'content' => ['required', 'string', new CleanContent()],
             'price' => 'nullable|numeric|min:0|max:999999999',
             'media' => 'nullable|array|max:5', // Tối đa 5 file ảnh/video
             'media.*' => 'file|mimes:jpeg,png,jpg,gif,webp,mp4,mov,avi,webm|max:20480', // Mỗi file tối đa 20MB
@@ -239,7 +240,7 @@ class PostController extends Controller
         }
 
         $request->validate([
-            'content' => 'required|string',
+            'content' => ['required', 'string', new CleanContent()],
             'parent_id' => 'nullable|exists:comments,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ], [
@@ -546,8 +547,8 @@ class PostController extends Controller
         }
 
         $request->validate([
-            'title' => 'nullable|string|max:200',
-            'content' => 'required|string',
+            'title' => ['nullable', 'string', 'max:200', new CleanContent()],
+            'content' => ['required', 'string', new CleanContent()],
             'price' => 'nullable|numeric|min:0|max:999999999',
             'media' => 'nullable|array|max:5',
             'media.*' => 'file|mimes:jpeg,png,jpg,gif,webp,mp4,mov,avi,webm|max:20480',
