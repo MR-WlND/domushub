@@ -154,6 +154,7 @@ $portalRoutes = function () {
     Route::get('/apartments/{apartment}/edit', [\App\Http\Controllers\Admin\ApartmentController::class, 'edit'])->name('apartments.edit');
     Route::put('/apartments/{apartment}', [\App\Http\Controllers\Admin\ApartmentController::class, 'update'])->name('apartments.update');
     Route::delete('/apartments/{apartment}', [\App\Http\Controllers\Admin\ApartmentController::class, 'destroy'])->name('apartments.destroy');
+    Route::post('/apartments/{apartment}/assign-owner', [\App\Http\Controllers\Admin\ApartmentController::class, 'assignOwner'])->name('apartments.assign-owner');
 
     // Apartment Types (Loại căn hộ)
     Route::get('/apartment-types', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'index'])->name('apartment-types.index');

@@ -273,7 +273,67 @@ class ApartmentController extends Controller
             ->orderBy('created_at')
             ->get();
 
-        return view('admin.apartments.show', compact('apartment', 'declaredMembers'));
+        $allResidents = \App\Models\User::where('role', 'resident')
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.apartments.show', compact('apartment', 'declaredMembers', 'allResidents'));
+    }
+
+    /**
+     * Gán chủ hộ trực tiếp
+     */
+    public function assignOwner(Request $request, Apartment $apartment): RedirectResponse
+    {
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+        ], [
+            'user_id.required' => 'Vui lòng chọn cư dân để gán.',
+            'user_id.exists' => 'Cư dân được chọn không hợp lệ.',
+        ]);
+
+        $user = \App\Models\User::findOrFail($validated['user_id']);
+
+        if ($user->role !== 'resident') {
+            return back()->with('error', 'Người dùng được chọn không phải là cư dân.');
+        }
+
+        // 1. Kiểm tra căn hộ đã có chủ hộ hay chưa
+        $hasOwner = $apartment->residents()
+            ->where('relationship', 'owner')
+            ->whereNull('deleted_at')
+            ->exists();
+
+        if ($hasOwner) {
+            return back()->with('error', 'Căn hộ này đã có chủ hộ đăng ký trong hệ thống.');
+        }
+
+        // 2. Gán cư dân làm chủ hộ
+        \Illuminate\Support\Facades\DB::transaction(function () use ($apartment, $user) {
+            $resident = \App\Models\Resident::where('apartment_id', $apartment->id)
+                ->where('user_id', $user->id)
+                ->first();
+
+            if ($resident) {
+                $resident->update([
+                    'relationship' => 'owner',
+                    'end_date' => null,
+                ]);
+            } else {
+                \App\Models\Resident::create([
+                    'user_id' => $user->id,
+                    'apartment_id' => $apartment->id,
+                    'relationship' => 'owner',
+                    'temporary_status' => 'permanent',
+                    'start_date' => now()->toDateString(),
+                ]);
+            }
+        });
+
+        return redirect()
+            ->route('admin.apartments.show', $apartment->id)
+            ->with('success', 'Đã gán chủ hộ thành công cho cư dân ' . $user->name . '.');
     }
 
     /**

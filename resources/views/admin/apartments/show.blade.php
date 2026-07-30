@@ -78,6 +78,11 @@
             {{ $message }}
         </div>
     @endif
+    @if ($message = Session::get('error'))
+        <div class="apartments-alert apartments-alert--danger">
+            {{ $message }}
+        </div>
+    @endif
 
     {{-- Detail Grid --}}
     <div class="detail-grid">
@@ -162,7 +167,14 @@
                         </div>
                         <h3>Danh sách cư dân sinh sống</h3>
                     </div>
-                    <span class="count-pill">{{ $apartment->residents->count() }} cư dân</span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        @if(!$apartment->residents()->where('relationship', 'owner')->whereNull('deleted_at')->exists())
+                            <button type="button" class="apts-button apts-button--primary" onclick="openAssignOwnerModal()" style="padding: 6px 12px; font-size: 13px;">
+                                + Gán Chủ hộ trực tiếp
+                            </button>
+                        @endif
+                        <span class="count-pill">{{ $apartment->residents->count() }} cư dân</span>
+                    </div>
                 </div>
 
                 <div class="card-body-custom">
@@ -258,8 +270,11 @@
                             </div>
                             <h4>Chưa có cư dân sinh sống</h4>
                             <p>Căn hộ này hiện đang trống hoặc chưa được liên kết với bất kỳ tài khoản cư dân nào trên hệ thống.</p>
-                            <div class="empty-actions">
-                                <a href="{{ portal_route('invitations.index') }}" class="apts-button apts-button--primary">
+                            <div class="empty-actions" style="display: flex; gap: 10px;">
+                                <button type="button" class="apts-button apts-button--primary" onclick="openAssignOwnerModal()">
+                                    Gán Chủ hộ trực tiếp
+                                </button>
+                                <a href="{{ portal_route('invitations.index') }}" class="apts-button apts-button--secondary">
                                     + Tạo mã mời cư dân
                                 </a>
                             </div>
@@ -326,4 +341,59 @@
         </div>
     </div>
 </div>
+
+{{-- Modal Gán Chủ Hộ Trực Tiếp --}}
+<div class="util-modal-backdrop" id="assignOwnerModal">
+    <div class="util-modal">
+        <div class="util-modal-header">
+            <h3>Gán Chủ Hộ Trực Tiếp</h3>
+            <button class="util-modal-close" onclick="closeAssignOwnerModal()">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div class="util-modal-body">
+            <form action="{{ portal_route('apartments.assign-owner', $apartment) }}" method="POST" id="assignOwnerForm">
+                @csrf
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label for="user_id" style="display: block; font-weight: 600; margin-bottom: 8px; color: #334155;">Chọn cư dân có sẵn trong hệ thống:</label>
+                    <select name="user_id" id="user_id" class="form-input" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px;" required>
+                        <option value="">-- Chọn cư dân --</option>
+                        @foreach($allResidents as $res)
+                            <option value="{{ $res->id }}">
+                                {{ $res->name }} (SĐT: {{ $res->phone ?? 'Chưa cập nhật' }} - Email: {{ $res->email }})
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="util-form-actions" style="display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid #e2e8f0; padding-top: 15px; margin-top: 15px;">
+                    <button type="button" class="apts-button apts-button--edit" onclick="closeAssignOwnerModal()">Hủy bỏ</button>
+                    <button type="submit" class="apts-button apts-button--primary">Xác nhận gán</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openAssignOwnerModal() {
+        document.getElementById('assignOwnerModal').classList.add('active');
+    }
+    
+    function closeAssignOwnerModal() {
+        document.getElementById('assignOwnerModal').classList.remove('active');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('assignOwnerModal');
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeAssignOwnerModal();
+                }
+            });
+        }
+    });
+</script>
 @endsection
