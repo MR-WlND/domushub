@@ -167,6 +167,7 @@ $portalRoutes = function () {
 
     // Xoá mềm cư dân khỏi phòng
     Route::delete('/residents/{id}', [ResidentManageController::class, 'destroy'])->name('residents.destroy');
+    Route::patch('/residents/{id}/status', [ResidentManageController::class, 'updateStatus'])->name('residents.update-status');
 
     // Thông báo (Notifications)
     Route::get('/notifications', [\App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('notifications.index');
@@ -473,6 +474,9 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/profile', [ProfileController::class, 'index'])->name('resident.profile.index');
     Route::put('/resident/profile', [ProfileController::class, 'update'])->name('resident.profile.update');
     Route::put('/resident/profile/change-password', [ProfileController::class, 'changePassword'])->name('resident.profile.change-password');
+    Route::post('/resident/profile/leave', [ProfileController::class, 'leaveApartment'])->name('resident.profile.leave');
+    Route::post('/resident/profile/transfer-owner/send-otp', [ProfileController::class, 'sendTransferOtp'])->name('resident.profile.transfer-owner.send-otp');
+    Route::post('/resident/profile/transfer-owner/verify', [ProfileController::class, 'verifyTransferOwner'])->name('resident.profile.transfer-owner.verify');
 
     // Hoá đơn cư dân
     Route::get('/resident/invoices', [ResidentInvoiceController::class, 'index'])->name('resident.invoices.index');
@@ -492,6 +496,8 @@ Route::middleware(['resident'])->group(function () {
     Route::post('/resident/members/invitations', [\App\Http\Controllers\Resident\MemberController::class, 'storeInvite'])->name('resident.members.invitations.store');
     Route::delete('/resident/members/invitations/{id}', [\App\Http\Controllers\Resident\MemberController::class, 'destroyInvite'])->name('resident.members.invitations.destroy');
     Route::delete('/resident/members/registered/{id}', [\App\Http\Controllers\Resident\MemberController::class, 'destroyRegistered'])->name('resident.members.registered.destroy');
+    Route::post('/resident/members/approve/{id}', [\App\Http\Controllers\Resident\MemberController::class, 'approveResident'])->name('resident.members.approve');
+    Route::post('/resident/members/reject/{id}', [\App\Http\Controllers\Resident\MemberController::class, 'rejectResident'])->name('resident.members.reject');
 
     // QUẢN LÝ PHƯƠNG TIỆN PHÍA CƯ DÂN
     Route::get('/resident/vehicles', [App\Http\Controllers\Resident\VehicleController::class, 'index'])

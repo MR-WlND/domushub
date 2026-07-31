@@ -1,5 +1,6 @@
 <?php
 
+namespace App\Mail\ResetPasswordCodeMail;
 namespace App\Http\Controllers;
 
 use App\Mail\ResetPasswordCodeMail;
@@ -320,6 +321,17 @@ class AuthController extends Controller
 
         $apartment = Apartment::with(['floor.block'])->findOrFail($invite->apartment_id);
 
+        // Kiểm tra giới hạn số lượng cư dân tối đa (10 người)
+        $currentCount = Resident::where('apartment_id', $apartment->id)
+            ->whereNull('deleted_at')
+            ->whereIn('status', ['active', 'pending'])
+            ->count();
+        if ($currentCount >= 10) {
+            return back()->withErrors([
+                'invite_code' => 'Căn hộ liên kết với mã mời này đã đạt giới hạn cư dân tối đa (10 người).',
+            ])->onlyInput(['name', 'phone', 'email', 'invite_code']);
+        }
+
         DB::transaction(function () use ($validated, $invite, $apartment) {
             $user = User::create([
                 'name' => $validated['name'],
@@ -340,6 +352,7 @@ class AuthController extends Controller
                 'relationship' => $invite->intended_relationship,
                 'temporary_status' => 'permanent',
                 'start_date' => now()->toDateString(),
+                'status' => $invite->intended_relationship === 'owner' ? 'active' : 'pending',
             ]);
 
             $invite->uses_count += 1;

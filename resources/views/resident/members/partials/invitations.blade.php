@@ -246,6 +246,13 @@
                 </button>
             </div>
 
+            <div class="invite-modal__qr-wrap" style="text-align: center; margin: 15px 0; background: #fff; padding: 12px; border-radius: 8px; box-shadow: inset 0 0 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center;">
+                <div style="margin-bottom: 6px;">
+                    {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(130)->generate(route('resident.register') . '?invite_code=' . urlencode(session('new_invite_code'))) !!}
+                </div>
+                <span class="text-muted" style="font-size: 11px;"><i class="fa-solid fa-qrcode"></i> Quét QR để đăng ký nhanh</span>
+            </div>
+
             <div class="invite-modal__note">
                 <i class="fa-solid fa-triangle-exclamation"></i>
                 Mã này chỉ sử dụng được <strong>1 lần</strong>.

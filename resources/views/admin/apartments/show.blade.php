@@ -187,6 +187,8 @@
                                         <th>Thông tin liên hệ</th>
                                         <th>Vai trò</th>
                                         <th>Trạng thái</th>
+                                        <th>Hình thức cư trú</th>
+                                        <th style="text-align: center;">Hành động</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -253,6 +255,26 @@
                                                         Tạm khóa
                                                     </span>
                                                 @endif
+                                            </td>
+                                            <td>
+                                                <form action="{{ portal_route('residents.update-status', $resident->id) }}" method="POST" style="margin: 0; display: inline-block;">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <select name="temporary_status" onchange="this.form.submit()" style="padding: 4px 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 13px; background-color: #fff; cursor: pointer; color: #334155;">
+                                                        <option value="permanent" {{ $resident->temporary_status === 'permanent' ? 'selected' : '' }}>Thường trú</option>
+                                                        <option value="temporary" {{ $resident->temporary_status === 'temporary' ? 'selected' : '' }}>Tạm trú</option>
+                                                        <option value="absent" {{ $resident->temporary_status === 'absent' ? 'selected' : '' }}>Tạm vắng</option>
+                                                    </select>
+                                                </form>
+                                            </td>
+                                            <td style="text-align: center;">
+                                                <form action="{{ portal_route('residents.destroy', $resident->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn gỡ cư dân này khỏi căn hộ? Lịch sử cư trú của họ sẽ được lưu lại.');" style="margin: 0; display: inline-block;">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="apts-button apts-button--delete" style="padding: 6px 12px; font-size: 12px; background-color: #ef4444; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">
+                                                        Gỡ bỏ
+                                                    </button>
+                                                </form>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -337,6 +359,68 @@
                     </div>
                 </div>
                 @endif
+            </article>
+
+            {{-- Tab Lịch sử cư dân --}}
+            <article class="dashboard-card shadow-sm border-light" style="padding: 24px; margin-top: 24px;">
+                <div class="card-header-custom" style="margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="header-icon" style="background-color: #eff6ff;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#3b82f6" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <h3>Nhật ký biến động cư dân (Lịch sử)</h3>
+                    </div>
+                </div>
+
+                <div class="card-body-custom">
+                    @if(isset($residentsHistory) && $residentsHistory->count() > 0)
+                        <div class="timeline" style="position: relative; padding-left: 20px; border-left: 2px solid #e2e8f0; margin-left: 10px;">
+                            @foreach($residentsHistory as $log)
+                                <div class="timeline-item" style="position: relative; margin-bottom: 20px;">
+                                    <div class="timeline-dot" style="position: absolute; left: -26px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background-color: {{ $log->trashed() ? '#ef4444' : '#22c55e' }}; border: 2px solid #fff;"></div>
+                                    <div class="timeline-content">
+                                        <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap;">
+                                            <strong style="font-size: 14px; color: #1e293b;">{{ $log->user->name ?? 'Cư dân ẩn' }}</strong>
+                                            <span style="font-size: 12px; color: #94a3b8;">
+                                                {{ $log->start_date }} 
+                                                @if($log->deleted_at)
+                                                    đến {{ $log->deleted_at->format('Y-m-d') }}
+                                                @else
+                                                    (Hiện tại)
+                                                @endif
+                                            </span>
+                                        </div>
+                                        <p style="margin: 4px 0 0 0; font-size: 13px; color: #64748b;">
+                                            Vai trò: 
+                                            @if($log->relationship === 'owner')
+                                                <span class="badge-relationship owner" style="font-size: 10px; padding: 2px 6px;">Chủ hộ</span>
+                                            @elseif($log->relationship === 'tenant')
+                                                <span class="badge-relationship tenant" style="font-size: 10px; padding: 2px 6px;">Người thuê</span>
+                                            @else
+                                                <span class="badge-relationship family" style="font-size: 10px; padding: 2px 6px;">Thành viên gia đình</span>
+                                            @endif
+                                            • Trạng thái: 
+                                            @if($log->trashed())
+                                                <span style="color: #ef4444; font-weight: 500;">Đã chuyển đi / Gỡ bỏ</span>
+                                            @else
+                                                <span style="color: #22c55e; font-weight: 500;">Đang ở</span>
+                                            @endif
+                                        </p>
+                                        @if($log->invite)
+                                            <p style="margin: 2px 0 0 0; font-size: 12px; color: #94a3b8; font-style: italic;">
+                                                Gia nhập qua mã mời: {{ $log->invite->invite_code }} (Ghi chú: {{ $log->invite->note ?? 'Không' }})
+                                            </p>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p style="text-align: center; color: #94a3b8; font-size: 13px; padding: 15px 0; margin: 0;">Chưa ghi nhận lịch sử biến động nhân khẩu cho căn hộ này.</p>
+                    @endif
+                </div>
             </article>
         </div>
     </div>

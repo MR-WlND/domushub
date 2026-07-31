@@ -278,7 +278,13 @@ class ApartmentController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('admin.apartments.show', compact('apartment', 'declaredMembers', 'allResidents'));
+        $residentsHistory = \App\Models\Resident::withTrashed()
+            ->with(['user', 'invite'])
+            ->where('apartment_id', $apartment->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('admin.apartments.show', compact('apartment', 'declaredMembers', 'allResidents', 'residentsHistory'));
     }
 
     /**
@@ -297,6 +303,15 @@ class ApartmentController extends Controller
 
         if ($user->role !== 'resident') {
             return back()->with('error', 'Người dùng được chọn không phải là cư dân.');
+        }
+
+        // Kiểm tra giới hạn số lượng cư dân tối đa (10 người)
+        $currentCount = $apartment->residents()
+            ->whereNull('deleted_at')
+            ->whereIn('status', ['active', 'pending'])
+            ->count();
+        if ($currentCount >= 10) {
+            return back()->with('error', 'Căn hộ đã đạt giới hạn cư dân tối đa (10 người).');
         }
 
         // 1. Kiểm tra căn hộ đã có chủ hộ hay chưa

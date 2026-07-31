@@ -103,7 +103,7 @@
                         <div class="input-box">
                             <i class="fa-solid fa-key"></i>
                             <input type="text" name="invite_code" placeholder="RES-XXXXXXXX"
-                                value="{{ old('invite_code') }}" required>
+                                value="{{ old('invite_code', request('invite_code')) }}" required>
                         </div>
                         @error('invite_code')
                             <span class="error-msg">{{ $message }}</span>

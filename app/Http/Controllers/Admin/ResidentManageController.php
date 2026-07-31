@@ -93,4 +93,24 @@ class ResidentManageController extends Controller
             ->route('admin.apartments.show', $apartmentId)
             ->with('success', 'Đã gỡ cư dân khỏi phòng thành công. Lịch sử vẫn được giữ lại trong hệ thống.');
     }
+
+    /**
+     * Cập nhật hình thức cư trú (Thường trú / Tạm trú / Tạm vắng).
+     */
+    public function updateStatus(Request $request, $id): RedirectResponse
+    {
+        $validated = $request->validate([
+            'temporary_status' => 'required|in:permanent,temporary,absent',
+        ], [
+            'temporary_status.required' => 'Vui lòng chọn hình thức cư trú.',
+            'temporary_status.in' => 'Hình thức cư trú không hợp lệ.',
+        ]);
+
+        $resident = Resident::findOrFail($id);
+        $resident->update([
+            'temporary_status' => $validated['temporary_status'],
+        ]);
+
+        return back()->with('success', 'Trạng thái cư trú được cập nhật thành công.');
+    }
 }
