@@ -54,7 +54,7 @@ class VehicleController extends Controller
             'vehicle_type'  => ['required', 'in:motorbike,electric_bike,car,bicycle'],
             'license_plate' => ['required_if:vehicle_type,motorbike,car', 'nullable', 'string', 'max:20', 'regex:/^[A-Za-z0-9\-\.]+$/'],
             'brand'         => ['nullable', 'string', 'max:50'],
-            'image'         => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'image'         => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp'],
         ]);
 
         $licensePlate = $validated['license_plate'] ?? ('XD-' . strtoupper(\Illuminate\Support\Str::random(6)));
