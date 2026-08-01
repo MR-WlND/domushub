@@ -87,30 +87,76 @@
             font-size: 13px;
             opacity: 0.9;
         }
-        .apt-system-ready {
+
+        .apt-image-upload-wrapper {
+            margin-bottom: 24px;
+        }
+        .upload-area {
+            position: relative;
+            width: 100%;
+            height: 220px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            background-color: #f8fafc;
             display: flex;
             align-items: center;
-            gap: 10px;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            padding: 16px;
-            border-radius: 8px;
-            font-size: 13px;
-            color: #475569;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+        .upload-area:hover, .upload-area.dragover {
+            border-color: #0b57d0;
+            background-color: #eff6ff;
+        }
+        .upload-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none;
+        }
+        .upload-text {
+            margin: 12px 0 4px;
             font-weight: 600;
+            color: #475569;
+            font-size: 15px;
         }
-        .pulse-dot {
-            width: 8px;
-            height: 8px;
-            background: #22c55e;
+        .upload-subtext {
+            margin: 0;
+            color: #94a3b8;
+            font-size: 13px;
+        }
+        .upload-area img#image_preview {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+            z-index: 10;
+        }
+        .remove-image-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
             border-radius: 50%;
-            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
-            animation: pulse-green 2s infinite;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 20;
+            color: #ef4444;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.2s;
         }
-        @keyframes pulse-green {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        .remove-image-btn:hover {
+            background: #ef4444;
+            color: white;
         }
     </style>
 @endpush
@@ -119,15 +165,15 @@
 <div class="apartments-page">
 
     {{-- Breadcrumb Navigation --}}
-    <nav class="breadcrumb-nav" style="margin-bottom: 8px;">
-        <a href="{{ portal_route('dashboard') }}">Quản lý hạ tầng</a>
-        <span class="divider">›</span>
-        <a href="{{ portal_route('apartments.index') }}">Danh sách tòa nhà</a>
-        <span class="divider">›</span>
-        <span class="current">Thêm căn hộ mới</span>
+    <nav class="breadcrumb-nav">
+        <a href="{{ portal_route('dashboard') }}">Trang chủ</a>
+        <span class="divider">/</span>
+        <a href="{{ portal_route('apartments.index') }}">Căn hộ</a>
+        <span class="divider">/</span>
+        <span class="current">Thêm mới</span>
     </nav>
 
-    <form action="{{ portal_route('apartments.store') }}" method="POST" id="apartment_create_form">
+    <form action="{{ portal_route('apartments.store') }}" method="POST" id="apartment_create_form" enctype="multipart/form-data">
         @csrf
 
         @php
@@ -243,11 +289,26 @@
 
             {{-- Cột phải --}}
             <div class="apt-create-sidebar">
-                <div class="apt-reference-card">
-                    <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=2070&auto=format&fit=crop" alt="Mẫu tham khảo">
-                    <div class="apt-reference-overlay">
-                        <h4>Mẫu tham khảo</h4>
-                        <p>Căn hộ 2 phòng ngủ - Hiện đại</p>
+                <div class="apt-image-upload-wrapper">
+                    <div class="form-section-header" style="border-bottom: none; margin-bottom: 12px; padding: 0;">
+                        <span class="section-icon-custom">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        </span>
+                        <h4>Ảnh đại diện (Tùy chọn)</h4>
+                    </div>
+                    <div class="upload-area" id="upload-area">
+                        <input type="file" name="image" id="apartment_image" class="file-input" accept="image/*" hidden>
+                        <div class="upload-placeholder" id="upload-placeholder">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="#94a3b8" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <p class="upload-text">Nhấn để tải ảnh lên</p>
+                            <p class="upload-subtext">hoặc kéo thả ảnh vào đây</p>
+                        </div>
+                        <img id="image_preview" src="" alt="Preview">
+                        <button type="button" class="remove-image-btn" id="remove_image" title="Xóa ảnh">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
                     </div>
                 </div>
 
@@ -266,10 +327,7 @@
                     </div>
                 </article>
 
-                <div class="apt-system-ready">
-                    <span class="pulse-dot"></span>
-                    Hệ thống sẵn sàng tiếp nhận dữ liệu
-                </div>
+
             </div>
         </div>
 
@@ -315,6 +373,69 @@
                 floorSelect.value = currentFloorValue;
             }
         }
+
+        // Image upload logic
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('apartment_image');
+        const imagePreview = document.getElementById('image_preview');
+        const uploadPlaceholder = document.getElementById('upload-placeholder');
+        const removeImageBtn = document.getElementById('remove_image');
+
+        uploadArea.addEventListener('click', () => {
+            if (!imagePreview.src || imagePreview.style.display === 'none') {
+                fileInput.click();
+            }
+        });
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                fileInput.files = e.dataTransfer.files;
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                handleFile(this.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                    uploadPlaceholder.style.display = 'none';
+                    removeImageBtn.style.display = 'flex';
+                }
+                reader.readAsDataURL(file);
+            } else {
+                alert('Vui lòng chọn file hình ảnh hợp lệ.');
+                fileInput.value = '';
+            }
+        }
+
+        removeImageBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            fileInput.value = '';
+            imagePreview.src = '';
+            imagePreview.style.display = 'none';
+            uploadPlaceholder.style.display = 'flex';
+            removeImageBtn.style.display = 'none';
+        });
     });
 </script>
 @endpush
