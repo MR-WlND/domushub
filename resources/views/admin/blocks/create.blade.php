@@ -161,14 +161,16 @@
                     Ảnh phối cảnh
                 </h4>
                 
-                <div style="border: 2px dashed #cbd5e1; border-radius: 8px; padding: 30px 20px; text-align: center; cursor: pointer; background: #f8fafc; margin-bottom: 16px;">
+                <div onclick="document.getElementById('blockImage').click()" style="border: 2px dashed #cbd5e1; border-radius: 8px; padding: 30px 20px; text-align: center; cursor: pointer; background: #f8fafc; margin-bottom: 16px;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="#64748b" stroke-width="2" style="margin-bottom: 8px; margin-left: auto; margin-right: auto;"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
                     <div style="font-size: 13px; font-weight: 600; color: #334155;">Click để tải ảnh lên</div>
                     <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">PNG, JPG TỐI ĐA 5MB (16:9 KHUYÊN DÙNG)</div>
                 </div>
+                
+                <input type="file" name="image" id="blockImage" style="display: none;" accept="image/png, image/jpeg" onchange="previewImage(event)">
 
                 <div style="font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 8px;">Xem trước (Nếu có):</div>
-                <div style="border-radius: 6px; overflow: hidden; background: #f1f5f9; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center;">
+                <div id="imagePreviewContainer" style="border-radius: 6px; overflow: hidden; background: #f1f5f9; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center;">
                     <span style="color: #94a3b8; font-size: 12px;">Chưa có ảnh</span>
                 </div>
             </article>
@@ -242,6 +244,21 @@
             calculateTotals();
         }
     });
+
+    function previewImage(event) {
+        const file = event.target.files[0];
+        const container = document.getElementById('imagePreviewContainer');
+        
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                container.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;">`;
+            }
+            reader.readAsDataURL(file);
+        } else {
+            container.innerHTML = '<span style="color: #94a3b8; font-size: 12px;">Chưa có ảnh</span>';
+        }
+    }
 </script>
 @endpush
 @endsection
