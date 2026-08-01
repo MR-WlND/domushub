@@ -71,7 +71,7 @@ class FloorController extends Controller
         $validated = $request->validate([
             'block_id'             => 'required|exists:blocks,id',
             'name'                 => 'required|string|max:50',
-            'floor_type'           => 'required|in:residential,commercial,technical,amenity',
+            'floor_type'           => 'required|in:above_ground,basement',
             'status'               => 'required|in:active,maintenance,inactive',
             'description'          => 'nullable|string',
             'number_of_apartments' => 'nullable|integer|min:0|max:100',
@@ -241,7 +241,7 @@ class FloorController extends Controller
         $validated = $request->validate([
             'block_id'             => 'required|exists:blocks,id',
             'name'                 => 'required|string|max:50',
-            'floor_type'           => 'required|in:residential,commercial,technical,amenity',
+            'floor_type'           => 'required|in:above_ground,basement',
             'status'               => 'required|in:active,maintenance,inactive',
             'description'          => 'nullable|string',
             'number_of_apartments' => 'nullable|integer|min:' . $currentApartmentsCount . '|max:100',

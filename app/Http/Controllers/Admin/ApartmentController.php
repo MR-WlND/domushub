@@ -207,11 +207,6 @@ class ApartmentController extends Controller
                 'min:0',
             ],
 
-            'status' => [
-                'required',
-                'in:vacant,occupied,maintenance',
-            ],
-
             'description' => [
                 'nullable',
                 'string',
@@ -220,27 +215,28 @@ class ApartmentController extends Controller
         ]);
 
         /**
-         * Check unique căn hộ trong tầng
+         * Check unique căn hộ trong tầng (bao gồm cả căn hộ đã xóa)
          */
-        $exists = Apartment::where(
-            'floor_id',
-            $validated['floor_id']
-        )
-            ->where(
-                'apartment_number',
-                $validated['apartment_number']
-            )
-            ->exists();
+        $existing = Apartment::withTrashed()
+            ->where('floor_id', $validated['floor_id'])
+            ->where('apartment_number', $validated['apartment_number'])
+            ->first();
 
-        if ($exists) {
+        if ($existing) {
+            if ($existing->trashed()) {
+                // Khôi phục và cập nhật
+                $existing->restore();
+                $existing->update($validated);
+                
+                return redirect()
+                    ->route('admin.apartments.index', ['floor_id' => $validated['floor_id']])
+                    ->with('success', 'Căn hộ (đã xóa trước đó) đã được khôi phục và cập nhật thành công.');
+            }
 
             return back()
                 ->withInput()
                 ->withErrors([
-
-                    'apartment_number' =>
-                    'Số căn hộ đã tồn tại trong tầng này.'
-
+                    'apartment_number' => 'Số căn hộ đã tồn tại trong tầng này.'
                 ]);
         }
 
@@ -423,21 +419,12 @@ class ApartmentController extends Controller
         ]);
 
         /**
-         * Check duplicate
+         * Check duplicate (bao gồm cả căn hộ đã xóa)
          */
-        $exists = Apartment::where(
-            'floor_id',
-            $validated['floor_id']
-        )
-            ->where(
-                'apartment_number',
-                $validated['apartment_number']
-            )
-            ->where(
-                'id',
-                '!=',
-                $apartment->id
-            )
+        $exists = Apartment::withTrashed()
+            ->where('floor_id', $validated['floor_id'])
+            ->where('apartment_number', $validated['apartment_number'])
+            ->where('id', '!=', $apartment->id)
             ->exists();
 
         if ($exists) {
@@ -445,10 +432,7 @@ class ApartmentController extends Controller
             return back()
                 ->withInput()
                 ->withErrors([
-
-                    'apartment_number' =>
-                    'Số căn hộ đã tồn tại trong tầng này.'
-
+                    'apartment_number' => 'Số căn hộ đã tồn tại (hoặc đã bị xóa) trong tầng này.'
                 ]);
         }
 

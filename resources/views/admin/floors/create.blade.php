@@ -60,10 +60,10 @@
                         <span class="input-icon-custom">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                         </span>
-                        <select name="block_id" class="form-input-custom @error('block_id') input-error @enderror" required>
+                        <select name="block_id" id="block_select" class="form-input-custom @error('block_id') input-error @enderror" required>
                             <option value="">-- Chọn tòa nhà --</option>
                             @foreach($blocks as $block)
-                                <option value="{{ $block->id }}" {{ old('block_id', $selectedBlockId ?? '') == $block->id ? 'selected' : '' }}>
+                                <option value="{{ $block->id }}" data-apartments="{{ $block->apartments_per_floor }}" {{ old('block_id', $selectedBlockId ?? '') == $block->id ? 'selected' : '' }}>
                                     {{ $block->name }}
                                 </option>
                             @endforeach
@@ -79,11 +79,9 @@
                         <span class="input-icon-custom">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7" /></svg>
                         </span>
-                        <select name="floor_type" class="form-input-custom @error('floor_type') input-error @enderror" required>
-                            <option value="residential" {{ old('floor_type', 'residential') == 'residential' ? 'selected' : '' }}>Cư dân</option>
-                            <option value="commercial"  {{ old('floor_type') == 'commercial'  ? 'selected' : '' }}>Thương mại</option>
-                            <option value="technical"   {{ old('floor_type') == 'technical'   ? 'selected' : '' }}>Kỹ thuật</option>
-                            <option value="amenity"     {{ old('floor_type') == 'amenity'     ? 'selected' : '' }}>Tiện ích</option>
+                        <select name="floor_type" id="floor_type_select" class="form-input-custom @error('floor_type') input-error @enderror" required>
+                            <option value="above_ground" {{ old('floor_type', 'above_ground') == 'above_ground' ? 'selected' : '' }}>Tầng nổi</option>
+                            <option value="basement"     {{ old('floor_type') == 'basement' ? 'selected' : '' }}>Tầng hầm</option>
                         </select>
                     </div>
                     @error('floor_type') <p class="form-error-custom">{{ $message }}</p> @enderror
@@ -110,7 +108,7 @@
                 </div>
 
                 {{-- Số lượng căn hộ --}}
-                <div class="form-group-custom">
+                <div class="form-group-custom" id="apartments_count_group">
                     <label class="form-label-custom">Số lượng căn hộ <small style="color:#94a3b8">(tuỳ chọn)</small></label>
                     <div class="input-wrapper-custom">
                         <span class="input-icon-custom">
@@ -122,27 +120,10 @@
                 </div>
             </div>
 
-            {{-- Phần 3: Trạng thái & Ghi chú --}}
+            {{-- Phần 3: Ghi chú bổ sung --}}
             <div class="form-section-header" style="margin-top: 15px;">
                 <span class="section-number">03</span>
-                <h4>Trạng thái & Ghi chú</h4>
-            </div>
-
-            <div class="form-grid-2">
-                {{-- Trạng thái --}}
-                <div class="form-group-custom">
-                    <label class="form-label-custom">Trạng thái <span class="required">*</span></label>
-                    <div class="input-wrapper-custom">
-                        <span class="input-icon-custom">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                        </span>
-                        <select name="status" class="form-input-custom" required>
-                            <option value="active"      {{ old('status', 'active') == 'active' ? 'selected' : '' }}>Hoạt động</option>
-                            <option value="maintenance" {{ old('status') == 'maintenance' ? 'selected' : '' }}>Bảo trì</option>
-                            <option value="inactive"    {{ old('status') == 'inactive'    ? 'selected' : '' }}>Ngưng hoạt động</option>
-                        </select>
-                    </div>
-                </div>
+                <h4>Ghi chú bổ sung</h4>
             </div>
 
             {{-- Ghi chú --}}
@@ -150,6 +131,8 @@
                 <label class="form-label-custom">Ghi chú</label>
                 <textarea name="description" placeholder="Nhập ghi chú chi tiết về tầng này..." class="form-textarea-custom" rows="3">{{ old('description') }}</textarea>
             </div>
+
+            <input type="hidden" name="status" value="active">
 
             {{-- Actions --}}
             <div class="floors-page__actions" style="justify-content: flex-start; margin-top: 24px;">
@@ -167,3 +150,49 @@
 
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const floorTypeSelect = document.getElementById('floor_type_select');
+        const apartmentsCountGroup = document.getElementById('apartments_count_group');
+        const apartmentsCountInput = apartmentsCountGroup.querySelector('input');
+        const blockSelect = document.getElementById('block_select');
+
+        function toggleApartmentsCount() {
+            if (floorTypeSelect.value === 'basement') {
+                apartmentsCountGroup.style.display = 'none';
+                if (apartmentsCountInput) {
+                    apartmentsCountInput.value = '';
+                }
+            } else {
+                apartmentsCountGroup.style.display = 'block';
+                // Auto-fill if empty
+                if (apartmentsCountInput && !apartmentsCountInput.value && blockSelect.selectedIndex > 0) {
+                    const defaultApts = blockSelect.options[blockSelect.selectedIndex].getAttribute('data-apartments');
+                    if (defaultApts) {
+                        apartmentsCountInput.value = defaultApts;
+                    }
+                }
+            }
+        }
+
+        function handleBlockChange() {
+            if (floorTypeSelect.value !== 'basement' && blockSelect.selectedIndex > 0) {
+                const defaultApts = blockSelect.options[blockSelect.selectedIndex].getAttribute('data-apartments');
+                if (defaultApts) {
+                    apartmentsCountInput.value = defaultApts;
+                }
+            }
+        }
+
+        toggleApartmentsCount();
+        if(floorTypeSelect) {
+            floorTypeSelect.addEventListener('change', toggleApartmentsCount);
+        }
+        if(blockSelect) {
+            blockSelect.addEventListener('change', handleBlockChange);
+        }
+    });
+</script>
+@endpush

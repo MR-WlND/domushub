@@ -82,11 +82,9 @@
                         <span class="input-icon-custom">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7" /></svg>
                         </span>
-                        <select name="floor_type" class="form-input-custom @error('floor_type') input-error @enderror" required>
-                            <option value="residential" {{ old('floor_type', $floor->floor_type) == 'residential' ? 'selected' : '' }}>Cư dân</option>
-                            <option value="commercial"  {{ old('floor_type', $floor->floor_type) == 'commercial'  ? 'selected' : '' }}>Thương mại</option>
-                            <option value="technical"   {{ old('floor_type', $floor->floor_type) == 'technical'   ? 'selected' : '' }}>Kỹ thuật</option>
-                            <option value="amenity"     {{ old('floor_type', $floor->floor_type) == 'amenity'     ? 'selected' : '' }}>Tiện ích</option>
+                        <select name="floor_type" id="floor_type_select" class="form-input-custom @error('floor_type') input-error @enderror" required>
+                            <option value="above_ground" {{ old('floor_type', $floor->floor_type) == 'above_ground' ? 'selected' : '' }}>Tầng nổi</option>
+                            <option value="basement"     {{ old('floor_type', $floor->floor_type) == 'basement' ? 'selected' : '' }}>Tầng hầm</option>
                         </select>
                     </div>
                     @error('floor_type') <p class="form-error-custom">{{ $message }}</p> @enderror
@@ -113,7 +111,7 @@
                 </div>
 
                 {{-- Số lượng căn hộ --}}
-                <div class="form-group-custom">
+                <div class="form-group-custom" id="apartments_count_group">
                     <label class="form-label-custom">Số lượng căn hộ <small style="color:#94a3b8">(hiện tại: {{ $floor->apartments_count }} căn)</small></label>
                     <div class="input-wrapper-custom">
                         <span class="input-icon-custom">
@@ -170,3 +168,25 @@
 
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const floorTypeSelect = document.getElementById('floor_type_select');
+        const apartmentsCountGroup = document.getElementById('apartments_count_group');
+
+        function toggleApartmentsCount() {
+            if (floorTypeSelect.value === 'basement') {
+                apartmentsCountGroup.style.display = 'none';
+            } else {
+                apartmentsCountGroup.style.display = 'block';
+            }
+        }
+
+        toggleApartmentsCount();
+        if(floorTypeSelect) {
+            floorTypeSelect.addEventListener('change', toggleApartmentsCount);
+        }
+    });
+</script>
+@endpush
