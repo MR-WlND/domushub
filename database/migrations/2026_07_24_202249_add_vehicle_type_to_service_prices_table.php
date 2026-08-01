@@ -11,12 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('service_prices', function (Blueprint $table) {
-            $table->string('vehicle_type')->nullable()->after('type')->comment('Áp dụng cho loại xe: car, motorbike, bicycle, electric_bike');
-        });
+        if (!Schema::hasColumn('service_prices', 'vehicle_type')) {
+            Schema::table('service_prices', function (Blueprint $table) {
+                $table->string('vehicle_type')->nullable()->after('type')->comment('Áp dụng cho loại xe: car, motorbike, bicycle, electric_bike');
+            });
+        }
+
+        // 0. Chuẩn hóa: đổi 'parking' cũ thành 'other' trước khi alter
+        \Illuminate\Support\Facades\DB::table('service_prices')
+            ->where('type', 'parking')
+            ->update(['type' => 'other']);
 
         // 1. Thêm parking_fee vào enum
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE service_prices MODIFY COLUMN type ENUM('electricity', 'water', 'management_fee', 'internet', 'service', 'other', 'motorbike', 'car', 'bicycle', 'electric_bike', 'parking_fee') NOT NULL DEFAULT 'other'");
+        \Illuminate\Support\Facades\DB::statement("ALTER TABLE service_prices MODIFY COLUMN type ENUM('water', 'management_fee', 'internet', 'service', 'other', 'motorbike', 'car', 'bicycle', 'electric_bike', 'parking_fee') NOT NULL DEFAULT 'other'");
 
         // 2. Chuyển đổi dữ liệu cũ: type cũ (motorbike...) thành parking_fee và gán vehicle_type = type cũ
         \Illuminate\Support\Facades\DB::table('service_prices')
@@ -27,7 +34,7 @@ return new class extends Migration
             ]);
 
         // 3. Rút gọn enum type (xóa các loại xe cũ khỏi enum)
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE service_prices MODIFY COLUMN type ENUM('electricity', 'water', 'management_fee', 'internet', 'service', 'other', 'parking_fee') NOT NULL DEFAULT 'other'");
+        \Illuminate\Support\Facades\DB::statement("ALTER TABLE service_prices MODIFY COLUMN type ENUM('water', 'management_fee', 'internet', 'service', 'other', 'parking_fee') NOT NULL DEFAULT 'other'");
     }
 
     /**

@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasColumn('staff_schedules', 'is_leader')) return;
         Schema::table('staff_schedules', function (Blueprint $table) {
             $table->boolean('is_leader')->default(false)->after('work_date');
         });
