@@ -20,6 +20,12 @@ class Block extends Model
         'manager_contact',
         'total_floors',
         'total_basements',
+        'apartments_per_floor',
+        'amenities',
+    ];
+
+    protected $casts = [
+        'amenities' => 'array',
     ];
 
     /**

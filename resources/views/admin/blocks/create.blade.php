@@ -101,8 +101,8 @@
 
                 {{-- Phần 2: Cấu trúc tầng mặc định --}}
                 <article class="dashboard-card form-card-custom shadow-sm border-light" style="margin-bottom: 24px;">
-                    <div class="card-badge-custom">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-size: 13px; font-weight: 700; color: #00236f; text-transform: uppercase; letter-spacing: 0.5px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" /></svg>
                         CẤU TRÚC TẦNG MẶC ĐỊNH
                     </div>
                     <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">Thiết lập này sẽ được áp dụng cho toàn bộ các tầng chưa được định nghĩa riêng biệt.</p>
@@ -115,19 +115,15 @@
                         <input type="number" id="input-apts-per-floor" name="apartments_per_floor" value="12" style="width: 80px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; font-weight: 700; color: #0b57d0;">
                     </div>
                     
-                    <div style="display: flex; justify-content: space-between; margin-top: 16px; font-size: 12px; color: #94a3b8;">
+                    <div style="margin-top: 16px; font-size: 12px; color: #94a3b8;">
                         <span>* Có thể tùy chỉnh chi tiết từng tầng sau khi lưu tòa nhà.</span>
-                        <a href="#" style="color: #0b57d0; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 4px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
-                            Cấu hình nâng cao
-                        </a>
                     </div>
                 </article>
 
                 {{-- Phần 3: Tiện ích tòa nhà --}}
                 <article class="dashboard-card form-card-custom shadow-sm border-light" style="margin-bottom: 24px;">
-                    <div class="card-badge-custom">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-size: 13px; font-weight: 700; color: #00236f; text-transform: uppercase; letter-spacing: 0.5px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
                         TIỆN ÍCH TÒA NHÀ
                     </div>
                     
@@ -145,7 +141,7 @@
                         
                         @foreach($amenities as $item)
                         <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 1px solid {{ $item['checked'] ? '#0b57d0' : '#e2e8f0' }}; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                            <input type="checkbox" name="amenities[]" value="{{ $item['id'] }}" {{ $item['checked'] ? 'checked' : '' }} style="width: 16px; height: 16px; accent-color: #0b57d0;">
+                            <input type="checkbox" name="amenities[]" value="{{ $item['id'] }}" {{ $item['checked'] ? 'checked' : '' }} style="width: 16px; height: 16px; accent-color: #0b57d0;" onchange="this.parentElement.style.borderColor = this.checked ? '#0b57d0' : '#e2e8f0'">
                             <span style="font-weight: 600; font-size: 14px; color: #334155;">{{ $item['label'] }}</span>
                         </label>
                         @endforeach
@@ -177,18 +173,7 @@
                 </div>
             </article>
 
-            {{-- Support Banner --}}
-            <div style="background: #00236f; color: #fff; border-radius: 10px; padding: 20px; position: relative; overflow: hidden;">
-                <div style="position: relative; z-index: 2;">
-                    <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 700;">Bạn cần hỗ trợ?</h4>
-                    <p style="font-size: 13px; color: rgba(255,255,255,0.8); margin: 0 0 16px 0; line-height: 1.5;">Mọi thay đổi cấu trúc tòa nhà sẽ ảnh hưởng đến việc phân bổ cư dân và quản lý phí dịch vụ.</p>
-                    <a href="#" style="display: inline-block; background: rgba(255,255,255,0.2); color: #fff; text-decoration: none; font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 20px; backdrop-filter: blur(4px);">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px; margin-top: -2px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-                        Xem hướng dẫn
-                    </a>
-                </div>
-                <div style="position: absolute; right: -10px; bottom: -20px; font-size: 100px; font-weight: 900; color: rgba(255,255,255,0.05); z-index: 1; line-height: 1;">?</div>
-            </div>
+
 
             {{-- Thông tin tóm tắt --}}
             <article class="dashboard-card shadow-sm border-light" style="background: #eef2ff; border-color: #c7d2fe; padding: 20px; border-radius: 10px;">
