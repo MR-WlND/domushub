@@ -145,12 +145,13 @@ class Vehicle extends Model
     public function statusLabel(): string
     {
         return match ($this->status) {
-            'pending'          => 'Chờ duyệt',
-            'active'           => 'Đang hoạt động',
-            'pending_renewal'  => 'Chờ gia hạn phí',
-            'locked'           => 'Đã khóa',
-            'inactive'         => 'Ngừng sử dụng',
-            default            => ucfirst($this->status),
+            'pending'            => 'Chờ duyệt',
+            'awaiting_payment'   => 'Chờ thanh toán',
+            'active'             => 'Đang hoạt động',
+            'pending_renewal'    => 'Chờ gia hạn phí',
+            'locked'             => 'Đã khóa',
+            'inactive'           => 'Ngừng sử dụng',
+            default              => ucfirst($this->status),
         };
     }
 
