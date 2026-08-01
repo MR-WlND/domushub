@@ -36,146 +36,227 @@
         </div>
     </div>
 
-    {{-- Form --}}
-    <article class="dashboard-card form-card-custom shadow-sm border-light">
-        <div class="card-badge-custom">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-            THÔNG TIN TÒA NHÀ
+    {{-- Main Layout --}}
+    <div class="infra-layout">
+        {{-- Cột trái (Main Form) --}}
+        <div class="infra-layout__main">
+            <form action="{{ portal_route('blocks.store') }}" method="POST" enctype="multipart/form-data" id="createBlockForm">
+                @csrf
+
+                {{-- Phần 1: Thông tin cơ bản --}}
+                <article class="dashboard-card form-card-custom shadow-sm border-light" style="margin-bottom: 24px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px; font-size: 13px; font-weight: 700; color: #00236f; text-transform: uppercase; letter-spacing: 0.5px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                        THÔNG TIN CƠ BẢN
+                    </div>
+
+                    <div class="form-grid-2">
+                        {{-- Tên Toà --}}
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Tên tòa nhà <span class="required">*</span></label>
+                            <div class="input-wrapper-custom">
+                                <input type="text" name="name" value="{{ old('name') }}" placeholder="Ví dụ: Tòa A1, Block B..." class="form-input-custom @error('name') input-error @enderror" style="padding-left: 16px !important;" required>
+                            </div>
+                            @error('name') <p class="form-error-custom">{{ $message }}</p> @enderror
+                        </div>
+
+                        {{-- Mã Toà --}}
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Mã tòa nhà <span class="required">*</span></label>
+                            <div class="input-wrapper-custom">
+                                <input type="text" name="code" value="{{ old('code') }}" placeholder="VÍ DỤ: BUILDING-A1" class="form-input-custom @error('code') input-error @enderror" style="padding-left: 16px !important;" required>
+                            </div>
+                            @error('code') <p class="form-error-custom">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2" style="margin-top: 15px;">
+                        {{-- Số tầng nổi (Giữ theo yc) --}}
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Số tầng nổi</label>
+                            <div class="input-wrapper-custom">
+                                <span class="input-icon-custom">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+                                </span>
+                                <input type="number" name="total_floors" value="{{ old('total_floors') }}" placeholder="VD: 25" min="0" class="form-input-custom @error('total_floors') input-error @enderror">
+                            </div>
+                            @error('total_floors') <p class="form-error-custom">{{ $message }}</p> @enderror
+                        </div>
+
+                        {{-- Số tầng hầm (Giữ theo yc) --}}
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Số tầng hầm</label>
+                            <div class="input-wrapper-custom">
+                                <span class="input-icon-custom">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+                                </span>
+                                <input type="number" name="total_basements" value="{{ old('total_basements') }}" placeholder="VD: 2" min="0" class="form-input-custom @error('total_basements') input-error @enderror">
+                            </div>
+                            @error('total_basements') <p class="form-error-custom">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+
+
+                </article>
+
+                {{-- Phần 2: Cấu trúc tầng mặc định --}}
+                <article class="dashboard-card form-card-custom shadow-sm border-light" style="margin-bottom: 24px;">
+                    <div class="card-badge-custom">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                        CẤU TRÚC TẦNG MẶC ĐỊNH
+                    </div>
+                    <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">Thiết lập này sẽ được áp dụng cho toàn bộ các tầng chưa được định nghĩa riêng biệt.</p>
+                    
+                    <div style="background: #f1f5f9; padding: 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: 600; font-size: 14px; color: #0f172a;">Số căn hộ mỗi tầng</div>
+                            <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Hệ thống sẽ tự tạo số phòng dựa trên con số này (101, 102...)</div>
+                        </div>
+                        <input type="number" id="input-apts-per-floor" name="apartments_per_floor" value="12" style="width: 80px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; font-weight: 700; color: #0b57d0;">
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; margin-top: 16px; font-size: 12px; color: #94a3b8;">
+                        <span>* Có thể tùy chỉnh chi tiết từng tầng sau khi lưu tòa nhà.</span>
+                        <a href="#" style="color: #0b57d0; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                            Cấu hình nâng cao
+                        </a>
+                    </div>
+                </article>
+
+                {{-- Phần 3: Tiện ích tòa nhà --}}
+                <article class="dashboard-card form-card-custom shadow-sm border-light" style="margin-bottom: 24px;">
+                    <div class="card-badge-custom">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+                        TIỆN ÍCH TÒA NHÀ
+                    </div>
+                    
+                    <div class="amenities-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px;">
+                        @php
+                            $amenities = [
+                                ['id' => 'elevator', 'icon' => '🛗', 'label' => 'Thang máy', 'checked' => true],
+                                ['id' => 'parking', 'icon' => 'P', 'label' => 'Hầm gửi xe', 'checked' => true],
+                                ['id' => 'gym', 'icon' => '🏋️‍♂️', 'label' => 'Phòng Gym', 'checked' => false],
+                                ['id' => 'playground', 'icon' => '😀', 'label' => 'Sân chơi trẻ em', 'checked' => true],
+                                ['id' => 'pool', 'icon' => '🏊', 'label' => 'Bể bơi', 'checked' => false],
+                                ['id' => 'security', 'icon' => '🛡️', 'label' => 'An ninh 24/7', 'checked' => true],
+                            ];
+                        @endphp
+                        
+                        @foreach($amenities as $item)
+                        <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 1px solid {{ $item['checked'] ? '#0b57d0' : '#e2e8f0' }}; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                            <input type="checkbox" name="amenities[]" value="{{ $item['id'] }}" {{ $item['checked'] ? 'checked' : '' }} style="width: 16px; height: 16px; accent-color: #0b57d0;">
+                            <span style="font-weight: 600; font-size: 14px; color: #334155;">{{ $item['label'] }}</span>
+                        </label>
+                        @endforeach
+                    </div>
+                </article>
+
+            </form>
         </div>
 
-        <form action="{{ portal_route('blocks.store') }}" method="POST">
-            @csrf
-
-            {{-- Phần 1: Thông tin cơ bản --}}
-            <div class="form-section-header">
-                <span class="section-number">01</span>
-                <h4>Thông tin cơ bản</h4>
-            </div>
-
-            <div class="form-grid-2">
-                {{-- Tên Toà --}}
-                <div class="form-group-custom">
-                    <label class="form-label-custom">Tên Toà nhà <span class="required">*</span></label>
-                    <div class="input-wrapper-custom">
-                        <span class="input-icon-custom">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                        </span>
-                        <input type="text" name="name" value="{{ old('name') }}" placeholder="VD: Toà A, Block B..." class="form-input-custom @error('name') input-error @enderror" required>
-                    </div>
-                    @error('name') <p class="form-error-custom">{{ $message }}</p> @enderror
+        {{-- Cột phải (Sidebar) --}}
+        <div class="infra-layout__sidebar infra-sidebar">
+            
+            {{-- Ảnh phối cảnh --}}
+            <article class="dashboard-card shadow-sm border-light" style="padding: 20px; border-radius: 10px; background: #fff;">
+                <h4 style="font-size: 15px; font-weight: 700; color: #00236f; margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    Ảnh phối cảnh
+                </h4>
+                
+                <div style="border: 2px dashed #cbd5e1; border-radius: 8px; padding: 30px 20px; text-align: center; cursor: pointer; background: #f8fafc; margin-bottom: 16px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="#64748b" stroke-width="2" style="margin-bottom: 8px; margin-left: auto; margin-right: auto;"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+                    <div style="font-size: 13px; font-weight: 600; color: #334155;">Click để tải ảnh lên</div>
+                    <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">PNG, JPG TỐI ĐA 5MB (16:9 KHUYÊN DÙNG)</div>
                 </div>
 
-                {{-- Mã Toà --}}
-                <div class="form-group-custom">
-                    <label class="form-label-custom">Mã Toà nhà <small style="color:#94a3b8">(tuỳ chọn)</small></label>
-                    <div class="input-wrapper-custom">
-                        <span class="input-icon-custom">#</span>
-                        <input type="text" name="code" value="{{ old('code') }}" placeholder="VD: BLOCK_A" class="form-input-custom @error('code') input-error @enderror">
-                    </div>
-                    @error('code') <p class="form-error-custom">{{ $message }}</p> @enderror
+                <div style="font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 8px;">Xem trước (Nếu có):</div>
+                <div style="border-radius: 6px; overflow: hidden; background: #f1f5f9; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center;">
+                    <span style="color: #94a3b8; font-size: 12px;">Chưa có ảnh</span>
                 </div>
-            </div>
+            </article>
 
-            {{-- Trạng thái --}}
-            <div class="form-grid-2">
-                <div class="form-group-custom">
-                    <label class="form-label-custom">Trạng thái hoạt động</label>
-                    <div class="input-wrapper-custom">
-                        <span class="input-icon-custom">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                        </span>
-                        <select name="status" class="form-input-custom">
-                            <option value="active"       {{ old('status', 'active') == 'active'       ? 'selected' : '' }}>Hoạt động</option>
-                            <option value="maintenance"  {{ old('status') == 'maintenance'  ? 'selected' : '' }}>Bảo trì</option>
-                            <option value="inactive"     {{ old('status') == 'inactive'     ? 'selected' : '' }}>Ngưng hoạt động</option>
-                        </select>
-                    </div>
+            {{-- Support Banner --}}
+            <div style="background: #00236f; color: #fff; border-radius: 10px; padding: 20px; position: relative; overflow: hidden;">
+                <div style="position: relative; z-index: 2;">
+                    <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 700;">Bạn cần hỗ trợ?</h4>
+                    <p style="font-size: 13px; color: rgba(255,255,255,0.8); margin: 0 0 16px 0; line-height: 1.5;">Mọi thay đổi cấu trúc tòa nhà sẽ ảnh hưởng đến việc phân bổ cư dân và quản lý phí dịch vụ.</p>
+                    <a href="#" style="display: inline-block; background: rgba(255,255,255,0.2); color: #fff; text-decoration: none; font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 20px; backdrop-filter: blur(4px);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px; margin-top: -2px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                        Xem hướng dẫn
+                    </a>
                 </div>
-
-                {{-- Hàng trống để giữ tỷ lệ 2 cột hoặc có thể thêm thuộc tính khác --}}
-                <div></div>
+                <div style="position: absolute; right: -10px; bottom: -20px; font-size: 100px; font-weight: 900; color: rgba(255,255,255,0.05); z-index: 1; line-height: 1;">?</div>
             </div>
 
-            <div class="form-grid-2" style="margin-top: 15px;">
-                {{-- Số tầng nổi --}}
-                <div class="form-group-custom">
-                    <label class="form-label-custom">Số tầng nổi</label>
-                    <div class="input-wrapper-custom">
-                        <span class="input-icon-custom">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-                        </span>
-                        <input type="number" name="total_floors" value="{{ old('total_floors') }}" placeholder="VD: 25" min="0" class="form-input-custom @error('total_floors') input-error @enderror">
-                    </div>
-                    @error('total_floors') <p class="form-error-custom">{{ $message }}</p> @enderror
+            {{-- Thông tin tóm tắt --}}
+            <article class="dashboard-card shadow-sm border-light" style="background: #eef2ff; border-color: #c7d2fe; padding: 20px; border-radius: 10px;">
+                <h4 style="font-size: 12px; font-weight: 800; color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 16px 0; border-bottom: 1px solid #c7d2fe; padding-bottom: 8px;">Thông tin tóm tắt</h4>
+                
+                <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px; color: #334155;">
+                    <span>Căn hộ / Tầng:</span>
+                    <strong id="summary-apts-per-floor" style="color: #0f172a;">12</strong>
                 </div>
-
-                {{-- Số tầng hầm --}}
-                <div class="form-group-custom">
-                    <label class="form-label-custom">Số tầng hầm</label>
-                    <div class="input-wrapper-custom">
-                        <span class="input-icon-custom">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-                        </span>
-                        <input type="number" name="total_basements" value="{{ old('total_basements') }}" placeholder="VD: 2" min="0" class="form-input-custom @error('total_basements') input-error @enderror">
-                    </div>
-                    @error('total_basements') <p class="form-error-custom">{{ $message }}</p> @enderror
+                <div style="display: flex; justify-content: space-between; margin-bottom: 16px; font-size: 13px; color: #334155;">
+                    <span>Tổng số tầng:</span>
+                    <strong id="summary-floors" style="color: #0f172a;">10</strong>
                 </div>
-            </div>
-
-            {{-- Phần 2: Thông tin người quản lý --}}
-            <div class="form-section-header" style="margin-top: 15px;">
-                <span class="section-number">02</span>
-                <h4>Thông tin người quản lý <small style="color:#94a3b8; font-weight:400">(tuỳ chọn)</small></h4>
-            </div>
-
-            <div class="form-grid-2">
-                <div class="form-group-custom">
-                    <label class="form-label-custom">Họ tên người quản lý</label>
-                    <div class="input-wrapper-custom">
-                        <span class="input-icon-custom">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                        </span>
-                        <input type="text" name="manager_name" value="{{ old('manager_name') }}" placeholder="VD: Nguyễn Văn A" class="form-input-custom @error('manager_name') input-error @enderror">
-                    </div>
-                    @error('manager_name') <p class="form-error-custom">{{ $message }}</p> @enderror
+                
+                <div style="display: flex; justify-content: space-between; padding-top: 16px; border-top: 1px solid #c7d2fe; font-size: 14px;">
+                    <span style="font-weight: 600; color: #475569;">Quy mô căn hộ:</span>
+                    <strong id="summary-total-apts" style="font-size: 16px; color: #00236f;">120</strong>
                 </div>
+            </article>
 
-                <div class="form-group-custom">
-                    <label class="form-label-custom">Số điện thoại / Email liên hệ</label>
-                    <div class="input-wrapper-custom">
-                        <span class="input-icon-custom">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                        </span>
-                        <input type="text" name="manager_contact" value="{{ old('manager_contact') }}" placeholder="VD: 0901234567" class="form-input-custom @error('manager_contact') input-error @enderror">
-                    </div>
-                    @error('manager_contact') <p class="form-error-custom">{{ $message }}</p> @enderror
-                </div>
-            </div>
-
-            {{-- Phần 3: Mô tả --}}
-            <div class="form-section-header" style="margin-top: 15px;">
-                <span class="section-number">03</span>
-                <h4>Ghi chú <small style="color:#94a3b8; font-weight:400">(tuỳ chọn)</small></h4>
-            </div>
-
-            <div class="form-group-custom" style="margin-bottom: 24px;">
-                <label class="form-label-custom">Mô tả toà nhà</label>
-                <textarea name="description" placeholder="Nhập mô tả hoặc lưu ý về tòa nhà..." class="form-textarea-custom" rows="3">{{ old('description') }}</textarea>
-            </div>
-
-            {{-- Actions --}}
-            <div class="blocks-page__actions" style="justify-content: flex-start; margin-top: 24px;">
-                <button type="submit" class="blocks-button blocks-button--primary">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
-                    Xác nhận thêm tòa nhà
-                </button>
-                <a href="{{ portal_route('blocks.index') }}" class="blocks-button blocks-button--light">
-                    Hủy bỏ
-                </a>
-            </div>
-
-        </form>
-    </article>
+        </div>
+    </div>
+    
+    {{-- Actions --}}
+    <div class="blocks-page__actions" style="justify-content: flex-end; margin-top: 24px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+        <a href="{{ portal_route('blocks.index') }}" class="blocks-button blocks-button--light" style="margin-right: 12px;">Hủy</a>
+        <button type="button" onclick="document.getElementById('createBlockForm').submit()" class="blocks-button blocks-button--primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+            Lưu tòa nhà
+        </button>
+    </div>
 
 </div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputTotalFloors = document.querySelector('input[name="total_floors"]');
+        const inputTotalBasements = document.querySelector('input[name="total_basements"]');
+        const inputAptsPerFloor = document.getElementById('input-apts-per-floor');
+        
+        const summaryFloors = document.getElementById('summary-floors');
+        const summaryAptsPerFloor = document.getElementById('summary-apts-per-floor');
+        const summaryTotalApts = document.getElementById('summary-total-apts');
+
+        function calculateTotals() {
+            const above = parseInt(inputTotalFloors?.value) || 0;
+            const below = parseInt(inputTotalBasements?.value) || 0;
+            const totalFloors = above + below;
+            
+            const apts = parseInt(inputAptsPerFloor?.value) || 0;
+            const total = totalFloors * apts;
+
+            // Update summary
+            if(summaryFloors) summaryFloors.textContent = totalFloors;
+            if(summaryAptsPerFloor) summaryAptsPerFloor.textContent = apts;
+            if(summaryTotalApts) summaryTotalApts.textContent = total;
+        }
+
+        if(inputTotalFloors && inputTotalBasements && inputAptsPerFloor) {
+            inputTotalFloors.addEventListener('input', calculateTotals);
+            inputTotalBasements.addEventListener('input', calculateTotals);
+            inputAptsPerFloor.addEventListener('input', calculateTotals);
+            
+            // Initial calculation
+            calculateTotals();
+        }
+    });
+</script>
+@endpush
 @endsection
