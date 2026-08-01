@@ -68,7 +68,7 @@
                             <span class="rv-item__name">{{ $vehicle->brand ?? ($vehicle->vehicle_type === 'car' ? 'Ô tô' : 'Xe máy') }}</span>
                             <div class="rv-item__meta">
                                 <span class="rv-item__plate">{{ $vehicle->license_plate }}</span>
-                                <span class="rv-item__status rv-item__status--{{ $vehicle->status }}">● @switch($vehicle->status)@case('active') Hoạt động @break @case('pending') Chờ duyệt @break @case('locked') Đã khóa @break @case('pending_renewal') Chờ gia hạn @break @default {{ $vehicle->status }} @endswitch</span>
+                                <span class="rv-item__status rv-item__status--{{ $vehicle->status }}">● @switch($vehicle->status)@case('active') Hoạt động @break @case('pending') Chờ duyệt @break @case('awaiting_payment') Chờ thanh toán @break @case('locked') Đã khóa @break @case('pending_renewal') Chờ gia hạn @break @default {{ $vehicle->statusLabel() }} @endswitch</span>
                             </div>
                         </div>
                         @if($vehicle->qr_code && in_array($vehicle->status, ['active','pending_renewal']))

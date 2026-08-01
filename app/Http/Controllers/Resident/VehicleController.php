@@ -19,7 +19,7 @@ class VehicleController extends Controller
 
         $vehicles = Vehicle::with('parkingLot')
             ->where('apartment_id', $user->apartment_id)
-            ->whereIn('status', ['pending', 'active', 'pending_renewal', 'locked'])
+            ->whereIn('status', ['pending', 'awaiting_payment', 'active', 'pending_renewal', 'locked'])
             ->withoutTrashed()
             ->latest()
             ->get();
