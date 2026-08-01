@@ -90,7 +90,7 @@
         @endif
 
         {{-- ============================================================== --}}
-        {{-- ĐIỆN NƯỚC & HOÁ ĐƠN - Admin & Staff --}}
+        {{-- NƯỚC & HOÁ ĐƠN - Admin & Staff --}}
         {{-- ============================================================== --}}
         @if(in_array($role, ['admin', 'manager', 'staff', 'technician']))
         <div class="nav-section">

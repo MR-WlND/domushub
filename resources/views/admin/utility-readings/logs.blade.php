@@ -1,6 +1,6 @@
 @extends('layouts.admin.master')
 
-@section('page_title', 'Lịch sử ghi số Điện Nước – DomusHub')
+@section('page_title', 'Lịch sử ghi số Nước – DomusHub')
 
 @push('styles')
 @vite(['resources/css/pages/admin/utility-readings/index.css'])
@@ -65,7 +65,6 @@
                 <label>Loại</label>
                 <select name="type" class="util-form-input">
                     <option value="">Tất cả loại</option>
-                    <option value="electricity" {{ $type == 'electricity' ? 'selected' : '' }}>Điện</option>
                     <option value="water" {{ $type == 'water' ? 'selected' : '' }}>Nước</option>
                 </select>
             </div>

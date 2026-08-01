@@ -286,7 +286,7 @@
                     @if(auth()->user()->role === 'technician')
                     <a href="{{ portal_route('utility-readings.create') }}" class="db-quick-btn db-quick-btn--amber">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>
-                        <span>Ghi Điện Nước</span>
+                        <span>Ghi số Nước</span>
                     </a>
                     @else
                     <a href="{{ portal_route('utility-readings.index') }}" class="db-quick-btn db-quick-btn--amber">

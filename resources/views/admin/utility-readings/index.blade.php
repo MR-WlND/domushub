@@ -1,6 +1,6 @@
 @extends('layouts.admin.master')
 
-@section('page_title', auth()->user()->role === 'technician' ? 'Ghi số Điện Nước – DomusHub' : 'Chốt số Điện Nước – DomusHub')
+@section('page_title', auth()->user()->role === 'technician' ? 'Ghi số Nước – DomusHub' : 'Chốt số Nước – DomusHub')
 
 @push('styles')
 @vite(['resources/css/pages/admin/utility-readings/index.css'])

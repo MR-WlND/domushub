@@ -99,7 +99,7 @@
                                 <div class="item-desc">
                                     Đơn giá: {{ number_format($detail->amount / max(1, $detail->quantity)) }} đ
                                 </div>
-                                @if(in_array(optional($detail->servicePrice)->type, ['water', 'electricity']))
+                                @if(in_array(optional($detail->servicePrice)->type, ['water']))
                                     @php
                                         $meter = \App\Models\UtilityMeter::where('apartment_id', $invoice->apartment_id)
                                             ->where('type', $detail->servicePrice->type)
