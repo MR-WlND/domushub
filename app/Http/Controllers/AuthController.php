@@ -77,6 +77,14 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
+        if ($user->status !== 'active') {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ BQL.',
+            ])->onlyInput('email');
+        }
+
         if ($user->role !== 'admin') {
             Auth::logout();
 
@@ -122,6 +130,14 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
+        if ($user->status !== 'active') {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ BQL.',
+            ])->onlyInput('email');
+        }
+
         if ($user->role !== $role) {
             Auth::logout();
 
@@ -151,6 +167,14 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
+
+        if ($user->status !== 'active') {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ BQL.',
+            ])->onlyInput('email');
+        }
 
         if ($user->role !== 'security') {
             Auth::logout();
@@ -182,6 +206,14 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
+        if ($user->status !== 'active') {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ BQL.',
+            ])->onlyInput('email');
+        }
+
         if ($user->role !== 'cleaning') {
             Auth::logout();
 
@@ -211,6 +243,14 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
+
+        if ($user->status !== 'active') {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ BQL.',
+            ])->onlyInput('email');
+        }
 
         if ($user->role !== 'receptionist') {
             Auth::logout();
@@ -242,11 +282,31 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
+        if ($user->status !== 'active') {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ BQL.',
+            ])->onlyInput('email');
+        }
+
         if ($user->role !== 'resident') {
             Auth::logout();
 
             return back()->withErrors([
                 'email' => 'Tài khoản này không có quyền truy cập vào resident.',
+            ])->onlyInput('email');
+        }
+
+        // Chặn đăng nhập nếu cư dân chỉ có trạng thái pending
+        $hasActiveResident = \App\Models\Resident::where('user_id', $user->id)->where('status', 'active')->exists();
+        $hasPendingResident = \App\Models\Resident::where('user_id', $user->id)->where('status', 'pending')->exists();
+        
+        if (!$hasActiveResident && $hasPendingResident) {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản đang chờ Ban quản lý phê duyệt.',
             ])->onlyInput('email');
         }
 

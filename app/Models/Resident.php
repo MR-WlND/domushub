@@ -18,6 +18,7 @@ class Resident extends Model
         'temporary_status',
         'start_date',
         'end_date',
+        'status',
     ];
 
     protected static function boot()
