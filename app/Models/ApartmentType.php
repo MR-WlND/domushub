@@ -17,6 +17,14 @@ class ApartmentType extends Model
         'base_service_fee',
         'bedroom_count',
         'bathroom_count',
+        'living_room_count',
+        'balcony_direction',
+        'furniture_status',
+        'furniture_list',
+    ];
+
+    protected $casts = [
+        'furniture_list' => 'array',
     ];
 
     /**
