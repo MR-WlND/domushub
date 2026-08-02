@@ -109,21 +109,6 @@
                 <h3 class="summary-value">{{ sprintf("%02d", $apartment->residents->count() + ($apartment->declaredMembers->count() ?? 0)) }} Người</h3>
             </div>
         </div>
-
-        <div class="summary-card summary-card--debt">
-            <div class="summary-card-header" style="color: #dc2626;">
-                <svg class="summary-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span class="summary-label">Công nợ</span>
-            </div>
-            <div class="summary-value-wrapper">
-                {{-- Giả lập số dư công nợ nếu không có hàm tính tổng hóa đơn --}}
-                @php
-                    $totalDebt = 1250000;
-                @endphp
-                <h3 class="summary-value" style="color: #dc2626;">{{ number_format($totalDebt, 0, ',', '.') }} VNĐ</h3>
-            </div>
         </div>
     </div>
 
@@ -309,21 +294,35 @@
             <div id="tab-vehicles" class="tab-pane" style="display: none;">
                 <div class="vehicles-grid">
                     @forelse($apartment->vehicles ?? [] as $vehicle)
-                        {{-- Real Data would go here --}}
+                        <div class="vehicle-card" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; background: #f8fafc; display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div class="vehicle-icon" style="width: 48px; height: 48px; border-radius: 50%; background: #e0e7ff; color: #4338ca; display: flex; align-items: center; justify-content: center;">
+                                    @if($vehicle->isCar())
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M5 10V8a2 2 0 012-2h10a2 2 0 012 2v2M3 10a2 2 0 00-2 2v5h2a2 2 0 002 2h10a2 2 0 002-2h2v-5a2 2 0 00-2-2" /></svg>
+                                    @elseif($vehicle->isBicycle())
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 12m-3 0a3 3 0 106 0 3 3 0 10-6 0m-9 9a3 3 0 106 0 3 3 0 10-6 0m18 0a3 3 0 106 0 3 3 0 10-6 0M15 12h-3v-3m0 0l-3 3M12 9V5" /></svg>
+                                    @else
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v8l9-11h-7z" /></svg>
+                                    @endif
+                                </div>
+                                <div>
+                                    <h4 style="margin: 0; font-size: 16px; color: #0f172a;">{{ $vehicle->license_plate }}</h4>
+                                    <p style="margin: 4px 0 0; font-size: 13px; color: #64748b;">
+                                        {{ $vehicle->brand ?: 'Không xác định' }} &bull; {{ $vehicle->typeLabel() }}
+                                    </p>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <span class="badge-status-pill badge-status-pill--{{ $vehicle->status == 'active' ? 'success' : ($vehicle->status == 'pending' ? 'warning' : 'secondary') }}">
+                                    {{ $vehicle->statusLabel() }}
+                                </span>
+                            </div>
+                        </div>
                     @empty
                         <div style="grid-column: 1 / -1; text-align: center; padding: 24px; color: #64748b;">
                             Chưa có phương tiện nào được đăng ký.
                         </div>
                     @endforelse
-                    
-                    <div class="vehicle-add-card">
-                        <button class="btn-dashed-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#64748b" stroke-width="2" style="margin-bottom: 8px;">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                            </svg>
-                            Đăng ký xe mới
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -348,6 +347,51 @@
     </div>
 
 </div>
+
+<!-- Vehicle Registration Modal -->
+<div id="vehicleModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+    <div class="modal-content dashboard-card shadow-sm" style="background-color: #fff; margin: 5% auto; padding: 24px; border-radius: 12px; width: 90%; max-width: 500px; position: relative;">
+        <span class="close-modal" onclick="closeVehicleModal()" style="position: absolute; right: 24px; top: 24px; font-size: 24px; font-weight: bold; cursor: pointer; color: #64748b;">&times;</span>
+        <h3 style="margin-bottom: 24px; color: #0f172a;">Đăng ký phương tiện mới</h3>
+        
+        <form action="{{ portal_route('vehicles.store') }}" method="POST">
+            @csrf
+            <input type="hidden" name="apartment_id" value="{{ $apartment->id }}">
+            
+            <div class="form-group-custom" style="margin-bottom: 16px;">
+                <label class="form-label-custom">Loại phương tiện <span class="required">*</span></label>
+                <div class="input-wrapper-custom">
+                    <select name="vehicle_type" class="form-input-custom" required style="width: 100%; border: none; outline: none; background: transparent; padding-left: 8px;">
+                        <option value="motorbike">Xe máy</option>
+                        <option value="electric_bike">Xe máy điện</option>
+                        <option value="car">Ô tô</option>
+                        <option value="bicycle">Xe đạp</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group-custom" style="margin-bottom: 16px;">
+                <label class="form-label-custom">Biển số xe <span class="required">*</span></label>
+                <div class="input-wrapper-custom">
+                    <input type="text" name="license_plate" class="form-input-custom" placeholder="VD: 29A-12345" required style="border: none; padding-left: 8px; width: 100%;">
+                </div>
+            </div>
+
+            <div class="form-group-custom" style="margin-bottom: 24px;">
+                <label class="form-label-custom">Nhãn hiệu (Tùy chọn)</label>
+                <div class="input-wrapper-custom">
+                    <input type="text" name="brand" class="form-input-custom" placeholder="VD: Honda SH, Toyota Vios" style="border: none; padding-left: 8px; width: 100%;">
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                <button type="button" onclick="closeVehicleModal()" class="apts-button apts-button--outline" style="padding: 10px 20px;">Hủy bỏ</button>
+                <button type="submit" class="apts-button apts-button--primary" style="padding: 10px 20px;">Xác nhận tạo</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -373,6 +417,22 @@
             currentPane.classList.add("active");
         }, 10);
         evt.currentTarget.classList.add("active");
+    }
+
+    function openVehicleModal() {
+        document.getElementById('vehicleModal').style.display = 'block';
+    }
+
+    function closeVehicleModal() {
+        document.getElementById('vehicleModal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        var modal = document.getElementById('vehicleModal');
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
     }
 </script>
 @endpush

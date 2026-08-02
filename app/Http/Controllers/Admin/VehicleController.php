@@ -50,6 +50,30 @@ class VehicleController extends Controller
     }
 
     // =========================================================================
+    // THÊM MỚI PHƯƠNG TIỆN (ADMIN)
+    // =========================================================================
+    
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'apartment_id'  => 'required|exists:apartments,id',
+            'vehicle_type'  => 'required|in:car,motorbike,electric_bike,bicycle',
+            'license_plate' => 'required|string|max:20|unique:vehicles,license_plate',
+            'brand'         => 'nullable|string|max:100',
+        ], [
+            'license_plate.unique' => 'Biển số này đã được đăng ký trong hệ thống.',
+        ]);
+
+        $validated['status'] = 'pending'; // Mặc định là chờ duyệt theo chuẩn
+
+        $vehicle = Vehicle::create($validated);
+
+        SystemLogger::log('Tạo phương tiện mới', 'Admin đăng ký xe ' . $vehicle->license_plate . ' cho căn hộ ID: ' . $vehicle->apartment_id);
+
+        return back()->with('success', 'Đã thêm phương tiện mới thành công! Vui lòng bấm "Duyệt" để tạo hóa đơn và cấp mã QR.');
+    }
+
+    // =========================================================================
     // QUẢN LÝ LỐT ĐỖ (chỉ dành cho ô tô)
     // =========================================================================
 

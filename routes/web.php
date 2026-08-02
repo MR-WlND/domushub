@@ -238,6 +238,7 @@ $portalRoutes = function () {
 
     // QUẢN LÝ PHƯƠNG TIỆN PHÍA ADMIN
     Route::get('/vehicles', [App\Http\Controllers\Admin\VehicleController::class, 'index'])->name('vehicles.index');
+    Route::post('/vehicles',                       [App\Http\Controllers\Admin\VehicleController::class, 'store'])->name('vehicles.store');
     Route::post('/vehicles/{vehicle}/assign-lot',  [App\Http\Controllers\Admin\VehicleController::class, 'assignLot'])->name('vehicles.assignLot');
     Route::post('/vehicles/{vehicle}/release-lot', [App\Http\Controllers\Admin\VehicleController::class, 'releaseLot'])->name('vehicles.releaseLot');
     Route::post('/vehicles/{vehicle}/approve',     [App\Http\Controllers\Admin\VehicleController::class, 'approve'])->name('vehicles.approve');

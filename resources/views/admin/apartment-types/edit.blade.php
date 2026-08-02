@@ -243,9 +243,12 @@
                         </div>
                     @endif
                 </div>
-                <button type="button" class="apts-button apts-button--outline" onclick="addFurnitureItem()" style="margin-top: 8px;">
-                    + Thêm nội thất
-                </button>
+                <div style="text-align: center; margin-top: 16px;">
+                    <button type="button" onclick="addFurnitureItem()" style="background: none; border: none; font-weight: 600; color: #0b57d0; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+                        Thêm nội thất
+                    </button>
+                </div>
             </div>
 
             {{-- Phần 4: Ghi chú & mô tả --}}
