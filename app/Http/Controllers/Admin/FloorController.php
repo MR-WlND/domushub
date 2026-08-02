@@ -242,7 +242,23 @@ class FloorController extends Controller
         $blocks = Block::with(['floors' => function($q) {
             $q->orderBy('floor_number', 'desc');
         }])->orderBy('name')->get();
-        return view('admin.floors.edit', compact('floor', 'blocks'));
+        
+        $blocksData = $blocks->map(function ($block) {
+            return [
+                'id' => $block->id,
+                'name' => $block->name,
+                'code' => $block->code,
+                'floors' => $block->floors->map(function ($f) {
+                    return [
+                        'id' => $f->id,
+                        'name' => $f->name,
+                        'floor_number' => $f->floor_number
+                    ];
+                })->toArray()
+            ];
+        })->toArray();
+
+        return view('admin.floors.edit', compact('floor', 'blocks', 'blocksData'));
     }
 
     /**

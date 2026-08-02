@@ -53,12 +53,15 @@
     <div class="floors-create-layout">
         {{-- Form Area (Left) --}}
         <div style="display: flex; flex-direction: column; gap: 24px;">
-            <form action="{{ portal_route('floors.store') }}" method="POST">
+            <form action="{{ portal_route('floors.store') }}" method="POST" id="createFloorForm">
                 @csrf
                 
                 {{-- Card 1: Thông tin cơ bản --}}
-                <article class="dashboard-card shadow-sm border-light" style="padding: 24px; border-radius: 12px; background: #fff; margin: 0;">
-                    <h3 style="font-size: 16px; font-weight: 600; color: #1e293b; margin-bottom: 24px;">Thông tin cơ bản</h3>
+                <article class="dashboard-card form-card-custom shadow-sm border-light" style="margin-bottom: 24px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px; font-size: 13px; font-weight: 700; color: #00236f; text-transform: uppercase; letter-spacing: 0.5px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                        THÔNG TIN CƠ BẢN
+                    </div>
                     
                     <div class="form-grid-2">
                         {{-- Tên tầng --}}
@@ -102,9 +105,12 @@
                 </article>
 
                 {{-- Card 2: Ghi chú bổ sung --}}
-                <article class="dashboard-card shadow-sm border-light" style="padding: 24px; border-radius: 12px; background: #fff; margin: 24px 0;">
-                    <h3 style="font-size: 16px; font-weight: 600; color: #1e293b; margin-bottom: 8px;">Ghi chú bổ sung</h3>
-                    <p style="font-size: 14px; color: #64748b; margin-bottom: 16px;">Thêm các thông tin mô tả chi tiết hoặc tiện ích của tầng này.</p>
+                <article class="dashboard-card form-card-custom shadow-sm border-light" style="margin-bottom: 24px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-size: 13px; font-weight: 700; color: #00236f; text-transform: uppercase; letter-spacing: 0.5px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                        GHI CHÚ BỔ SUNG
+                    </div>
+                    <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">Thêm các thông tin mô tả chi tiết hoặc tiện ích của tầng này.</p>
                     
                     <div class="form-group-custom">
                         <textarea name="description" placeholder="Nhập ghi chú..." class="form-textarea-custom" rows="3" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px;">{{ old('description') }}</textarea>
@@ -112,22 +118,13 @@
                     <input type="hidden" name="status" value="active">
                 </article>
 
-                {{-- Actions --}}
-                <div style="display: flex; justify-content: flex-end; gap: 12px; align-items: center;">
-                    <a href="{{ portal_route('blocks.index') }}" style="padding: 10px 32px; border: 1px solid #cbd5e1; border-radius: 8px; color: #475569; font-weight: 600; text-decoration: none; background: #fff;">
-                        Hủy
-                    </a>
-                    <button type="submit" style="padding: 10px 32px; background: #0f172a; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                        Lưu tầng
-                    </button>
-                </div>
             </form>
         </div>
 
         {{-- Right Column --}}
         <div style="display: flex; flex-direction: column; gap: 24px;">
             {{-- Preview Card (Right) --}}
-            <article class="dashboard-card shadow-sm border-light" style="position: sticky; top: 24px; padding: 24px; border-radius: 12px; background: #fff; margin: 0;">
+            <article class="dashboard-card shadow-sm border-light" style="padding: 24px; border-radius: 12px; background: #fff; margin: 0;">
                 <div class="preview-container">
                     <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 20px; color: #1e293b;">Cấu trúc tòa nhà</h3>
                     
@@ -170,15 +167,16 @@
                 </div>
             </article>
 
-            {{-- 3D Model Card (Right Bottom) --}}
-            <article class="dashboard-card shadow-sm" style="padding: 24px; border-radius: 12px; background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); margin: 0; color: white; overflow: hidden; position: relative;">
-                <div style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; opacity: 0.1; background-image: repeating-linear-gradient(45deg, #fff 25%, transparent 25%, transparent 75%, #fff 75%, #fff), repeating-linear-gradient(45deg, #fff 25%, #0f172a 25%, #0f172a 75%, #fff 75%, #fff); background-position: 0 0, 10px 10px; background-size: 20px 20px;"></div>
-                <div style="position: relative; z-index: 2;">
-                    <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">Mô hình 3D</h3>
-                    <p style="font-size: 13px; color: #cbd5e1; line-height: 1.5; margin: 0;">Cấu trúc mặt bằng sẽ được tự động tạo sau khi lưu.</p>
-                </div>
-            </article>
         </div>
+    </div>
+
+    {{-- Actions --}}
+    <div class="floors-page__actions" style="justify-content: flex-end; margin-top: 24px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+        <a href="{{ portal_route('blocks.index') }}" class="floors-button floors-button--light" style="margin-right: 12px;">Hủy</a>
+        <button type="button" onclick="document.getElementById('createFloorForm').submit()" class="floors-button floors-button--primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+            Lưu tầng
+        </button>
     </div>
 
 </div>
