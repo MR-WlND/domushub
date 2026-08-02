@@ -51,7 +51,18 @@ class ApartmentTypeController extends Controller
             'base_service_fee' => 'required|numeric|min:0',
             'bedroom_count'    => 'required|integer|min:0|max:10',
             'bathroom_count'   => 'required|integer|min:0|max:10',
+            'living_room_count'=> 'nullable|integer|min:0|max:10',
+            'balcony_direction'=> 'nullable|string|max:100',
+            'furniture_status' => 'nullable|string|max:100',
+            'furniture_list'   => 'nullable|array',
+            'furniture_list.*' => 'nullable|string|max:255',
         ]);
+
+        if (isset($validated['furniture_list'])) {
+            $validated['furniture_list'] = array_values(array_filter($validated['furniture_list'], function($value) {
+                return !is_null($value) && trim($value) !== '';
+            }));
+        }
 
         ApartmentType::create($validated);
 
@@ -79,7 +90,18 @@ class ApartmentTypeController extends Controller
             'base_service_fee' => 'required|numeric|min:0',
             'bedroom_count'    => 'required|integer|min:0|max:10',
             'bathroom_count'   => 'required|integer|min:0|max:10',
+            'living_room_count'=> 'nullable|integer|min:0|max:10',
+            'balcony_direction'=> 'nullable|string|max:100',
+            'furniture_status' => 'nullable|string|max:100',
+            'furniture_list'   => 'nullable|array',
+            'furniture_list.*' => 'nullable|string|max:255',
         ]);
+
+        if (isset($validated['furniture_list'])) {
+            $validated['furniture_list'] = array_values(array_filter($validated['furniture_list'], function($value) {
+                return !is_null($value) && trim($value) !== '';
+            }));
+        }
 
         $apartmentType->update($validated);
 

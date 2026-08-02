@@ -172,9 +172,85 @@
                 </div>
             </div>
 
-            {{-- Phần 3: Ghi chú & mô tả --}}
+            </div>
+
+            <div class="form-grid-2" style="margin-top: 24px;">
+                {{-- Số phòng khách --}}
+                <div class="form-group-custom">
+                    <label class="form-label-custom">
+                        Số phòng khách
+                    </label>
+                    <div class="input-wrapper-custom">
+                        <span class="input-icon-custom">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                        </span>
+                        <input type="number" name="living_room_count" value="{{ old('living_room_count', $apartmentType->living_room_count ?? 1) }}" class="form-input-custom @error('living_room_count') input-error @enderror" min="0" max="10">
+                    </div>
+                    @error('living_room_count')<p class="form-error-custom">{{ $message }}</p>@enderror
+                </div>
+
+                {{-- Hướng ban công --}}
+                <div class="form-group-custom">
+                    <label class="form-label-custom">
+                        Hướng ban công
+                    </label>
+                    <div class="input-wrapper-custom">
+                        <span class="input-icon-custom">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14 14.76V3.5a9 9 0 00-8.08 9h8.08zm-7.6 1.5A9 9 0 0014 20.5v-4.24H6.4zm8.6-1.5h6.58A9.004 9.004 0 0015 3.5v11.26zm0 1.5v4.24a9 9 0 006.58-4.24H15z" /></svg>
+                        </span>
+                        <input type="text" name="balcony_direction" value="{{ old('balcony_direction', $apartmentType->balcony_direction) }}" placeholder="VD: Đông Nam..." class="form-input-custom @error('balcony_direction') input-error @enderror">
+                    </div>
+                    @error('balcony_direction')<p class="form-error-custom">{{ $message }}</p>@enderror
+                </div>
+            </div>
+
+            {{-- Phần 3: Nội thất kèm theo --}}
             <div class="form-section-header" style="margin-top: 15px;">
                 <span class="section-number">03</span>
+                <h4>Thông tin Nội thất</h4>
+            </div>
+
+            <div class="form-group-custom" style="margin-bottom: 24px;">
+                <label class="form-label-custom">
+                    Tình trạng nội thất
+                </label>
+                <div class="input-wrapper-custom">
+                    <span class="input-icon-custom">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
+                    </span>
+                    <input type="text" name="furniture_status" value="{{ old('furniture_status', $apartmentType->furniture_status) }}" placeholder="VD: Full nội thất cơ bản..." class="form-input-custom @error('furniture_status') input-error @enderror">
+                </div>
+                @error('furniture_status')<p class="form-error-custom">{{ $message }}</p>@enderror
+            </div>
+
+            <div class="form-group-custom" style="margin-bottom: 24px;">
+                <label class="form-label-custom">Danh sách nội thất chi tiết (Thêm từng món)</label>
+                <div id="furniture_list_container">
+                    @php
+                        $furnitureList = old('furniture_list', $apartmentType->furniture_list ?? []);
+                    @endphp
+                    @if(count($furnitureList) > 0)
+                        @foreach($furnitureList as $item)
+                            <div class="furniture-item" style="display: flex; gap: 8px; margin-bottom: 8px;">
+                                <input type="text" name="furniture_list[]" value="{{ $item }}" class="form-input-custom" placeholder="VD: Hệ thống máy lạnh Daikin (03 cái)">
+                                <button type="button" class="apts-button apts-button--danger" onclick="this.parentElement.remove()" style="padding: 8px 12px; height: 42px;">Xóa</button>
+                            </div>
+                        @endforeach
+                    @else
+                        <div class="furniture-item" style="display: flex; gap: 8px; margin-bottom: 8px;">
+                            <input type="text" name="furniture_list[]" class="form-input-custom" placeholder="VD: Hệ thống máy lạnh Daikin (03 cái)">
+                            <button type="button" class="apts-button apts-button--danger" onclick="this.parentElement.remove()" style="padding: 8px 12px; height: 42px;">Xóa</button>
+                        </div>
+                    @endif
+                </div>
+                <button type="button" class="apts-button apts-button--outline" onclick="addFurnitureItem()" style="margin-top: 8px;">
+                    + Thêm nội thất
+                </button>
+            </div>
+
+            {{-- Phần 4: Ghi chú & mô tả --}}
+            <div class="form-section-header" style="margin-top: 15px;">
+                <span class="section-number">04</span>
                 <h4>Mô tả đặc điểm loại căn hộ</h4>
             </div>
 
@@ -239,7 +315,6 @@ document.addEventListener('DOMContentLoaded', function () {
             e.target.setSelectionRange(pos, pos);
         });
 
-        const form = feeInput.closest('form');
         if (form) {
             form.addEventListener('submit', function () {
                 feeInput.value = feeInput.value.replace(/\./g, '');
@@ -247,5 +322,18 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 });
+
+function addFurnitureItem() {
+    const container = document.getElementById('furniture_list_container');
+    const div = document.createElement('div');
+    div.className = 'furniture-item';
+    div.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px;';
+    div.innerHTML = `
+        <input type="text" name="furniture_list[]" class="form-input-custom" placeholder="VD: Hệ thống máy lạnh Daikin (03 cái)">
+        <button type="button" class="apts-button apts-button--danger" onclick="this.parentElement.remove()" style="padding: 8px 12px; height: 42px;">Xóa</button>
+    `;
+    container.appendChild(div);
+}
 </script>
 @endpush
+

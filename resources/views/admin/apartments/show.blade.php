@@ -149,19 +149,23 @@
                             <div class="tech-detail-list">
                                 <div class="tech-detail-row">
                                     <span class="tech-label">Số phòng khách:</span>
-                                    <span class="tech-value">01</span>
+                                    <span class="tech-value">{{ sprintf('%02d', $apartment->apartmentType->living_room_count ?? 1) }}</span>
                                 </div>
                                 <div class="tech-detail-row">
                                     <span class="tech-label">Số phòng ngủ:</span>
-                                    <span class="tech-value">02</span>
+                                    <span class="tech-value">{{ sprintf('%02d', $apartment->apartmentType->bedroom_count ?? 1) }}</span>
+                                </div>
+                                <div class="tech-detail-row">
+                                    <span class="tech-label">Số phòng tắm:</span>
+                                    <span class="tech-value">{{ sprintf('%02d', $apartment->apartmentType->bathroom_count ?? 1) }}</span>
                                 </div>
                                 <div class="tech-detail-row">
                                     <span class="tech-label">Hướng ban công:</span>
-                                    <span class="tech-value">Hướng Đông Nam</span>
+                                    <span class="tech-value">{{ $apartment->apartmentType->balcony_direction ?: 'Chưa cập nhật' }}</span>
                                 </div>
                                 <div class="tech-detail-row">
                                     <span class="tech-label">Tình trạng nội thất:</span>
-                                    <span class="tech-value">Full nội thất cơ bản</span>
+                                    <span class="tech-value">{{ $apartment->apartmentType->furniture_status ?: 'Chưa cập nhật' }}</span>
                                 </div>
                             </div>
                         </div>
@@ -172,24 +176,20 @@
                                 <h4 class="info-section-title">Nội thất kèm theo</h4>
                             </div>
                             <ul class="furniture-list">
-                                <li>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#059669" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    Hệ thống máy lạnh Daikin (03 cái)
-                                </li>
-                                <li>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#059669" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    Bếp từ và máy hút mùi Hafele
-                                </li>
-                                <li>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#059669" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    Sàn gỗ công nghiệp cao cấp
-                                </li>
+                                @if(!empty($apartment->apartmentType->furniture_list))
+                                    @foreach($apartment->apartmentType->furniture_list as $item)
+                                        <li>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#059669" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            {{ $item }}
+                                        </li>
+                                    @endforeach
+                                @else
+                                    <li>
+                                        <span style="color: #64748b; font-style: italic;">Chưa có thông tin nội thất.</span>
+                                    </li>
+                                @endif
                             </ul>
                         </div>
                     </div>
@@ -201,7 +201,7 @@
                                 <h4 class="info-section-title">Ghi chú quản lý</h4>
                             </div>
                             <div class="management-note">
-                                {{ $apartment->description ?? '"Cư dân có phản hồi về áp lực nước tại nhà vệ sinh phụ vào ngày 15/10. Đã cử kỹ thuật kiểm tra và xử lý xong. Khách thuê hiện tại dự kiến gia hạn hợp đồng vào tháng 12/2023."' }}
+                                {{ $apartment->description ?? 'Chưa có ghi chú quản lý.' }}
                             </div>
                             <button class="btn-dashed-custom">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#64748b" stroke-width="2">
@@ -254,36 +254,8 @@
                                     </td>
                                 </tr>
                             @empty
-                                {{-- Mock Data để hiển thị theo mockup --}}
                                 <tr>
-                                    <td>
-                                        <div class="td-profile">
-                                            <div class="td-avatar" style="background: #1e3a8a; color: white;">NT</div>
-                                            <div class="td-name-info">
-                                                <div class="td-name">Nguyễn Văn Thành</div>
-                                                <div class="td-sub">Chủ hộ</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>Chủ hộ</td>
-                                    <td>0901 234 567</td>
-                                    <td>12/05/2021</td>
-                                    <td style="text-align: right;"><a href="#" class="td-action-link">Chi tiết</a></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="td-profile">
-                                            <div class="td-avatar" style="background: #34d399; color: white;">LH</div>
-                                            <div class="td-name-info">
-                                                <div class="td-name">Lê Thị Hoa</div>
-                                                <div class="td-sub">Vợ</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>Vợ</td>
-                                    <td>0901 888 999</td>
-                                    <td>12/05/2021</td>
-                                    <td style="text-align: right;"><a href="#" class="td-action-link">Chi tiết</a></td>
+                                    <td colspan="5" style="text-align: center; color: #64748b; padding: 24px;">Chưa có cư dân nào.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -324,24 +296,8 @@
                                     </td>
                                 </tr>
                             @empty
-                                {{-- Mock Data --}}
                                 <tr>
-                                    <td style="font-weight: 600; color: #334155;">Tháng 10/2023</td>
-                                    <td style="font-weight: 700; color: #dc2626;">1.250.000 VNĐ</td>
-                                    <td><span class="badge-status-pill badge-status-pill--danger">Chưa thanh toán</span></td>
-                                    <td>--</td>
-                                    <td style="text-align: center;">
-                                        <a href="#" style="color: #0b57d0;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg></a>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="font-weight: 600; color: #334155;">Tháng 09/2023</td>
-                                    <td style="font-weight: 700; color: #0f172a;">1.420.000 VNĐ</td>
-                                    <td><span class="badge-status-pill badge-status-pill--success" style="background: #a7f3d0; color: #047857;">Đã thanh toán</span></td>
-                                    <td>05/10/2023</td>
-                                    <td style="text-align: center;">
-                                        <a href="#" style="color: #0b57d0;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg></a>
-                                    </td>
+                                    <td colspan="5" style="text-align: center; color: #64748b; padding: 24px;">Chưa có hóa đơn nào.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -355,47 +311,8 @@
                     @forelse($apartment->vehicles ?? [] as $vehicle)
                         {{-- Real Data would go here --}}
                     @empty
-                        {{-- Mock Data --}}
-                        <div class="vehicle-card">
-                            <div class="vehicle-card-header">
-                                <div class="vehicle-info-block">
-                                    <div class="vehicle-icon-wrapper">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#0b57d0" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h8l2 4v7a1 1 0 01-1 1h-1a1 1 0 01-1-1v-1H9v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-7l2-4zm0 0v-1a2 2 0 012-2h4a2 2 0 012 2v1m-9 4h10" />
-                                        </svg>
-                                    </div>
-                                    <div class="vehicle-info">
-                                        <h4 class="vehicle-plate">29A-123.45</h4>
-                                        <p class="vehicle-name">VinFast Lux A2.0</p>
-                                    </div>
-                                </div>
-                                <span class="badge-status-pill badge-status-pill--success" style="background: #a7f3d0; color: #047857; margin-top: 4px;">Active</span>
-                            </div>
-                            <div class="vehicle-card-footer">
-                                <span class="vehicle-location">Vị trí đỗ: P1-B12</span>
-                                <span class="vehicle-type">Ô tô</span>
-                            </div>
-                        </div>
-
-                        <div class="vehicle-card">
-                            <div class="vehicle-card-header">
-                                <div class="vehicle-info-block">
-                                    <div class="vehicle-icon-wrapper">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#0b57d0" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 19V6m-7 6h14" />
-                                        </svg>
-                                    </div>
-                                    <div class="vehicle-info">
-                                        <h4 class="vehicle-plate">29B1-999.88</h4>
-                                        <p class="vehicle-name">Honda SH 150i</p>
-                                    </div>
-                                </div>
-                                <span class="badge-status-pill badge-status-pill--success" style="background: #a7f3d0; color: #047857; margin-top: 4px;">Active</span>
-                            </div>
-                            <div class="vehicle-card-footer">
-                                <span class="vehicle-location">Vị trí đỗ: Area C</span>
-                                <span class="vehicle-type">Xe máy</span>
-                            </div>
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 24px; color: #64748b;">
+                            Chưa có phương tiện nào được đăng ký.
                         </div>
                     @endforelse
                     

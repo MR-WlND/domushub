@@ -86,7 +86,7 @@
     gap: 8px;
     padding: 8px 16px;
     border-radius: 8px;
-    background: #0f172a;
+    background: #0b57d0;
     color: #ffffff;
     font-weight: 600;
     font-size: 14px;
@@ -95,7 +95,7 @@
 }
 
 .btn-primary-custom:hover {
-    background: #1e293b;
+    background: #084298;
     color: #ffffff;
 }
 
@@ -191,8 +191,8 @@
 }
 
 .tab-button.active {
-    color: #0f172a;
-    border-bottom-color: #0f172a;
+    color: #0b57d0;
+    border-bottom-color: #0b57d0;
 }
 
 .tabs-content {
@@ -227,7 +227,7 @@
 .section-accent-line {
     width: 4px;
     height: 24px;
-    background: #0f172a;
+    background: #0b57d0;
     border-radius: 4px;
 }
 
@@ -333,8 +333,8 @@
 }
 
 .btn-dashed-full:hover {
-    border-color: #0f172a;
-    color: #0f172a;
+    border-color: #0b57d0;
+    color: #0b57d0;
     background: #f8fafc;
 }
 
@@ -491,7 +491,7 @@
     width: 48px;
     height: 48px;
     border-radius: 12px;
-    background: #0f172a;
+    background: #0b57d0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -511,7 +511,7 @@
 }
 
 .btn-banner-action {
-    background: #0f172a;
+    background: #0b57d0;
     color: #ffffff;
     border: none;
     padding: 10px 24px;
@@ -523,7 +523,7 @@
 }
 
 .btn-banner-action:hover {
-    background: #1e293b;
+    background: #084298;
 }
 
 .dashboard-card {
