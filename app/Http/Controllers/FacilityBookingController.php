@@ -344,6 +344,13 @@ class FacilityBookingController extends Controller
 
         $booking->update(['status' => 'cancelled']);
 
+        if ($booking->bill_id) {
+            $invoice = Invoice::find($booking->bill_id);
+            if ($invoice && !in_array($invoice->status, ['paid', 'cancelled'])) {
+                $invoice->update(['status' => 'cancelled']);
+            }
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Hủy lịch thành công',
