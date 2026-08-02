@@ -29,16 +29,9 @@
 
 .detail-grid {
     display: grid;
-    grid-template-columns: 38% 60%;
-    gap: 2%;
+    grid-template-columns: 1fr;
+    gap: 24px;
     margin-top: 24px;
-}
-
-@media (max-width: 1024px) {
-    .detail-grid {
-        grid-template-columns: 1fr;
-        gap: 24px;
-    }
 }
 
 .card-header-custom {
@@ -103,9 +96,10 @@
 }
 
 .detail-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    column-gap: 40px;
+    row-gap: 0;
 }
 
 .detail-item {

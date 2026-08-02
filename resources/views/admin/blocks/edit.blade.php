@@ -142,38 +142,6 @@
                     </div>
                 </article>
 
-                {{-- Phần 3: Tiện ích tòa nhà --}}
-                <article class="dashboard-card form-card-custom shadow-sm border-light" style="margin-bottom: 24px;">
-                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-size: 13px; font-weight: 700; color: #00236f; text-transform: uppercase; letter-spacing: 0.5px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
-                        TIỆN ÍCH TÒA NHÀ
-                    </div>
-                    
-                    <div class="amenities-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px;">
-                        @php
-                            $blockAmenities = is_array($block->amenities) ? $block->amenities : [];
-                            $amenities = [
-                                ['id' => 'elevator', 'icon' => '🛗', 'label' => 'Thang máy'],
-                                ['id' => 'parking', 'icon' => 'P', 'label' => 'Hầm gửi xe'],
-                                ['id' => 'gym', 'icon' => '🏋️‍♂️', 'label' => 'Phòng Gym'],
-                                ['id' => 'playground', 'icon' => '😀', 'label' => 'Sân chơi trẻ em'],
-                                ['id' => 'pool', 'icon' => '🏊', 'label' => 'Bể bơi'],
-                                ['id' => 'security', 'icon' => '🛡️', 'label' => 'An ninh 24/7'],
-                            ];
-                        @endphp
-                        
-                        @foreach($amenities as $item)
-                        @php 
-                            $isChecked = in_array($item['id'], old('amenities', $blockAmenities));
-                        @endphp
-                        <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 1px solid {{ $isChecked ? '#0b57d0' : '#e2e8f0' }}; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                            <input type="checkbox" name="amenities[]" value="{{ $item['id'] }}" {{ $isChecked ? 'checked' : '' }} style="width: 16px; height: 16px; accent-color: #0b57d0;" onchange="this.parentElement.style.borderColor = this.checked ? '#0b57d0' : '#e2e8f0'">
-                            <span style="font-weight: 600; font-size: 14px; color: #334155;">{{ $item['label'] }}</span>
-                        </label>
-                        @endforeach
-                    </div>
-                </article>
-
             </form>
         </div>
 
