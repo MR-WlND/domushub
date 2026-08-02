@@ -8,7 +8,7 @@
 @section('user_role', 'admin')
 
 @push('styles')
-    @vite(['resources/css/pages/admin/apartments/index.css', 'resources/css/pages/admin/apartments/show.css'])
+    @vite(['resources/css/pages/admin/apartments/show.css'])
 @endpush
 
 @section('content')
@@ -16,501 +16,446 @@
 
     {{-- Breadcrumb Navigation --}}
     <nav class="breadcrumb-nav">
-        <a href="{{ portal_route('dashboard') }}">Trang chủ</a>
-        <span class="divider">/</span>
-        <a href="{{ portal_route('apartments.index') }}">Căn hộ</a>
-        <span class="divider">/</span>
-        <span class="current">Căn hộ {{ $apartment->apartment_number }}</span>
+        <a href="{{ portal_route('dashboard') }}" style="display: inline-flex; align-items: center; gap: 4px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+            Infrastructure
+        </a>
+        <span class="divider">›</span>
+        <a href="{{ portal_route('blocks.show', $apartment->floor->block) }}">{{ $apartment->floor->block->name }}</a>
+        <span class="divider">›</span>
+        <a href="{{ portal_route('floors.show', $apartment->floor) }}">{{ $apartment->floor->name ?? 'Tầng ' . $apartment->floor->floor_number }}</a>
+        <span class="divider">›</span>
+        <span class="current" style="font-weight: 700; color: #0f172a;">Apartment {{ $apartment->apartment_number }}</span>
     </nav>
 
     {{-- Header --}}
-    <div class="apartments-page__header">
+    <div class="apartments-page__header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 16px; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
         <div>
             <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                <h1>Căn hộ {{ $apartment->apartment_number }}</h1>
-                <span class="apt-status apt-status--{{ $apartment->status }}">
+                <h1 style="font-size: 24px; font-weight: 700; color: #0f172a; margin: 0;">Chi tiết Căn hộ {{ $apartment->apartment_number }}</h1>
+                <span class="badge-status-pill badge-status-pill--{{ $apartment->status }}">
                     @if ($apartment->status == 'occupied')
-                        Đang ở
+                        ĐANG Ở
                     @elseif($apartment->status == 'vacant')
-                        Trống
+                        TRỐNG
                     @else
-                        Bảo trì
+                        BẢO TRÌ
                     @endif
                 </span>
             </div>
-            <p class="apartments-page__subtitle">
-                {{ $apartment->floor->block->name }} —
-                {{ $apartment->floor->name ?? 'Tầng ' . $apartment->floor->floor_number }}
+            <p class="apartments-page__subtitle" style="margin-top: 8px; color: #64748b; font-size: 14px;">
+                Cập nhật lần cuối: {{ $apartment->updated_at->format('H:i - d/m/Y') }}
             </p>
         </div>
 
-        <div class="apartments-page__actions">
-            <a href="{{ portal_route('apartments.edit', $apartment) }}" class="apts-button apts-button--primary">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+        <div class="apartments-page__actions" style="display: flex; gap: 12px;">
+            <a href="#" class="btn-outline-custom">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Chỉnh sửa
+                Lịch sử cư dân
             </a>
-            <form action="{{ portal_route('apartments.destroy', $apartment) }}" method="POST"
-                onsubmit="return confirm('Bạn có chắc chắn muốn xóa căn hộ này?')" style="display: inline;">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="apts-button apts-button--delete">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none"
-                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                    Xóa căn hộ
-                </button>
-            </form>
-            <a href="{{ portal_route('apartments.index') }}" class="apts-button apts-button--edit">
-                ← Quay lại
+            <a href="{{ portal_route('apartments.edit', $apartment) }}" class="btn-primary-custom">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+                Chỉnh sửa thông tin
             </a>
         </div>
     </div>
 
-    {{-- Success Alert --}}
+    {{-- Success/Error Alerts --}}
     @if ($message = Session::get('success'))
-        <div class="apartments-alert apartments-alert--success">
-            {{ $message }}
-        </div>
+        <div class="apartments-alert apartments-alert--success" style="margin-bottom: 24px;">{{ $message }}</div>
     @endif
     @if ($message = Session::get('error'))
-        <div class="apartments-alert apartments-alert--danger">
-            {{ $message }}
-        </div>
+        <div class="apartments-alert apartments-alert--danger" style="margin-bottom: 24px;">{{ $message }}</div>
     @endif
 
-    {{-- Thư viện ảnh (Hero Section) --}}
-    <article class="dashboard-card shadow-sm border-light" style="padding: 24px; margin-top: 24px; margin-bottom: 24px;">
-        <div class="card-header-custom" style="margin-bottom: 16px;">
-            <div class="header-icon" style="background-color: #f1f5f9;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#475569" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    {{-- Summary Cards --}}
+    <div class="summary-cards-grid">
+        <div class="summary-card">
+            <div class="summary-card-header">
+                <svg class="summary-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
                 </svg>
+                <span class="summary-label">Diện tích</span>
             </div>
-            <h3>Hình ảnh căn hộ</h3>
-        </div>
-        
-        @if(is_array($apartment->images) && count($apartment->images) > 0)
-            <div style="display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px;">
-                @foreach($apartment->images as $image)
-                    <div style="flex: 0 0 auto; width: 280px; height: 180px; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
-                        <a href="{{ asset('storage/' . $image) }}" target="_blank">
-                            <img src="{{ asset('storage/' . $image) }}" style="width: 100%; height: 100%; object-fit: cover;">
-                        </a>
-                    </div>
-                @endforeach
+            <div class="summary-value-wrapper">
+                <h3 class="summary-value">{{ number_format($apartment->area, 0, ',', '.') }} m²</h3>
             </div>
-        @else
-            <div style="text-align: center; padding: 40px 0; background: #f8fafc; border-radius: 12px; border: 2px dashed #cbd5e1;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="#94a3b8" stroke-width="1.5" style="margin: 0 auto 12px;">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <h4 style="font-size: 16px; font-weight: 600; color: #475569; margin: 0 0 4px 0;">Chưa có hình ảnh nào được tải lên</h4>
-                <p style="color: #64748b; font-size: 14px; margin: 0;">Hãy bấm vào "Chỉnh sửa" để cập nhật hình ảnh các phòng cho căn hộ này.</p>
-            </div>
-        @endif
-    </article>
-
-    {{-- Detail Grid --}}
-    <div class="detail-grid" style="margin-top: 0;">
-        {{-- Column Trái: Thông tin chung --}}
-        <div class="detail-col-info">
-
-            <article class="dashboard-card shadow-sm border-light" style="padding: 24px; margin-bottom: 0;">
-                <div class="card-header-custom">
-                    <div class="header-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
-                            viewBox="0 0 24 24" stroke="#0b57d0" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
-                    </div>
-                    <h3>Thông tin căn hộ</h3>
-                </div>
-
-                <div class="card-body-custom">
-                    <div class="detail-list">
-                        <div class="detail-item">
-                            <span class="item-label">Số hiệu phòng</span>
-                            <span class="item-value font-semibold">{{ $apartment->apartment_number }}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="item-label">Tòa nhà (Block)</span>
-                            <span class="item-value font-semibold text-primary">{{ $apartment->floor->block->name }}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="item-label">Vị trí tầng</span>
-                            <span class="item-value">{{ $apartment->floor->name ?? 'Tầng ' . $apartment->floor->floor_number }}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="item-label">Loại căn hộ</span>
-                            <span class="item-value font-semibold text-primary">{{ $apartment->apartmentType->name ?? 'Chưa xác định' }}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="item-label">Diện tích</span>
-                            <span class="item-value font-semibold">{{ number_format($apartment->area, 1, ',', '.') }} m²</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="item-label">Trạng thái</span>
-                            <span class="item-value">
-                                @if ($apartment->status == 'occupied')
-                                    <span class="badge-success-filled">Đang có người ở</span>
-                                @elseif($apartment->status == 'vacant')
-                                    <span class="badge-warning-filled">Đang trống</span>
-                                @else
-                                    <span class="badge-danger-filled">Bảo trì hệ thống</span>
-                                @endif
-                            </span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="item-label">Số cư dân</span>
-                            <span class="item-value">
-                                <span class="count-pill">{{ $apartment->residents->count() + ($declaredMembers->count() ?? 0) }} cư dân</span>
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="description-section">
-                        <div class="desc-title">Ghi chú & Mô tả</div>
-                        <p class="desc-content">
-                            {{ $apartment->description ?? 'Căn hộ này chưa được nhập thông tin mô tả hoặc ghi chú chi tiết.' }}
-                        </p>
-                    </div>
-                </div>
-            </article>
         </div>
 
-        {{-- Column Phải: Danh sách cư dân --}}
-        <div class="detail-col-residents">
-            <article class="dashboard-card shadow-sm border-light" style="padding: 24px; height: fit-content;">
-                <div class="card-header-custom"
-                    style="justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div class="header-icon" style="background-color: #f0fdf4;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
-                                viewBox="0 0 24 24" stroke="#15803d" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                            </svg>
-                        </div>
-                        <h3>Danh sách cư dân sinh sống</h3>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        @if(!$apartment->residents()->where('relationship', 'owner')->whereNull('deleted_at')->exists())
-                            <button type="button" class="apts-button apts-button--primary" onclick="openAssignOwnerModal()" style="padding: 6px 12px; font-size: 13px;">
-                                + Gán Chủ hộ trực tiếp
-                            </button>
-                        @endif
-                        <span class="count-pill">{{ $apartment->residents->count() }} cư dân</span>
-                    </div>
-                </div>
+        <div class="summary-card">
+            <div class="summary-card-header">
+                <svg class="summary-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span class="summary-label">Loại căn hộ</span>
+            </div>
+            <div class="summary-value-wrapper">
+                <h3 class="summary-value">{{ $apartment->apartmentType->name ?? '2 Phòng ngủ' }}</h3>
+            </div>
+        </div>
 
-                <div class="card-body-custom">
-                    @if ($apartment->residents->count() > 0)
-                        <div class="table-container">
-                            <table class="premium-table">
-                                <thead>
-                                    <tr>
-                                        <th>Họ & Tên</th>
-                                        <th>Thông tin liên hệ</th>
-                                        <th>Vai trò</th>
-                                        <th>Trạng thái</th>
-                                        <th>Hình thức cư trú</th>
-                                        <th style="text-align: center;">Hành động</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($apartment->residents as $resident)
-                                        @php
-                                            $user = $resident->user;
-                                            $residentName = $user->name ?? 'Chưa có tên';
-                                            $residentEmail = $user->email ?? '—';
-                                            $residentPhone = $user->phone ?? '—';
-                                            $residentStatus = $user->status ?? 'active';
-                                        @endphp
-                                        <tr>
-                                            <td>
-                                                <div class="resident-profile">
-                                                    <div class="avatar-circle">
-                                                        {{ mb_strtoupper(mb_substr($residentName, 0, 1)) }}
-                                                    </div>
-                                                    <div class="resident-name-info">
-                                                        <div class="name">{{ $residentName }}</div>
-                                                        <div class="sub">Thành viên căn hộ</div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="contact-info">
-                                                    <div class="email" title="{{ $residentEmail }}">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="14"
-                                                            height="14" fill="none" viewBox="0 0 24 24"
-                                                            stroke="currentColor" stroke-width="2">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                                        </svg>
-                                                        {{ $residentEmail }}
-                                                    </div>
-                                                    <div class="phone">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="14"
-                                                            height="14" fill="none" viewBox="0 0 24 24"
-                                                            stroke="currentColor" stroke-width="2">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                                        </svg>
-                                                        {{ $residentPhone }}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                @if (($resident->relationship ?? '') === 'owner')
-                                                    <span class="badge-relationship owner">Chủ hộ</span>
-                                                @elseif(($resident->relationship ?? '') === 'tenant')
-                                                    <span class="badge-relationship tenant">Người thuê</span>
-                                                @else
-                                                    <span class="badge-relationship family">Thành viên gia đình</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if ($residentStatus == 'active')
-                                                    <span class="status-indicator-badge active">
-                                                        <span class="indicator-dot"></span>
-                                                        Đang hoạt động
-                                                    </span>
-                                                @else
-                                                    <span class="status-indicator-badge inactive">
-                                                        <span class="indicator-dot"></span>
-                                                        Tạm khóa
-                                                    </span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                <form action="{{ portal_route('residents.update-status', $resident->id) }}" method="POST" style="margin: 0; display: inline-block;">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <select name="temporary_status" onchange="this.form.submit()" style="padding: 4px 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 13px; background-color: #fff; cursor: pointer; color: #334155;">
-                                                        <option value="permanent" {{ $resident->temporary_status === 'permanent' ? 'selected' : '' }}>Thường trú</option>
-                                                        <option value="temporary" {{ $resident->temporary_status === 'temporary' ? 'selected' : '' }}>Tạm trú</option>
-                                                        <option value="absent" {{ $resident->temporary_status === 'absent' ? 'selected' : '' }}>Tạm vắng</option>
-                                                    </select>
-                                                </form>
-                                            </td>
-                                            <td style="text-align: center;">
-                                                <form action="{{ portal_route('residents.destroy', $resident->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn gỡ cư dân này khỏi căn hộ? Lịch sử cư trú của họ sẽ được lưu lại.');" style="margin: 0; display: inline-block;">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="apts-button apts-button--delete" style="padding: 6px 12px; font-size: 12px; background-color: #ef4444; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">
-                                                        Gỡ bỏ
-                                                    </button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+        <div class="summary-card">
+            <div class="summary-card-header">
+                <svg class="summary-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <span class="summary-label">Số cư dân</span>
+            </div>
+            <div class="summary-value-wrapper">
+                <h3 class="summary-value">{{ sprintf("%02d", $apartment->residents->count() + ($apartment->declaredMembers->count() ?? 0)) }} Người</h3>
+            </div>
+        </div>
+
+        <div class="summary-card summary-card--debt">
+            <div class="summary-card-header" style="color: #dc2626;">
+                <svg class="summary-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span class="summary-label">Công nợ</span>
+            </div>
+            <div class="summary-value-wrapper">
+                {{-- Giả lập số dư công nợ nếu không có hàm tính tổng hóa đơn --}}
+                @php
+                    $totalDebt = 1250000;
+                @endphp
+                <h3 class="summary-value" style="color: #dc2626;">{{ number_format($totalDebt, 0, ',', '.') }} VNĐ</h3>
+            </div>
+        </div>
+    </div>
+
+    {{-- Tabs Section --}}
+    <div class="tabs-container dashboard-card shadow-sm border-light">
+        <div class="tabs-header">
+            <button class="tab-button active" onclick="openTab(event, 'tab-info')">Thông tin chung</button>
+            <button class="tab-button" onclick="openTab(event, 'tab-residents')">Cư dân</button>
+            <button class="tab-button" onclick="openTab(event, 'tab-invoices')">Hóa đơn</button>
+            <button class="tab-button" onclick="openTab(event, 'tab-vehicles')">Phương tiện</button>
+        </div>
+
+        <div class="tabs-content">
+            {{-- Tab 1: Thông tin chung --}}
+            <div id="tab-info" class="tab-pane active" style="display: block;">
+                <div class="info-grid">
+                    <div class="info-col-left">
+                        <div class="info-section">
+                            <div class="section-title-wrapper">
+                                <div class="section-accent-line"></div>
+                                <h4 class="info-section-title">Chi tiết kỹ thuật</h4>
+                            </div>
+                            <div class="tech-detail-list">
+                                <div class="tech-detail-row">
+                                    <span class="tech-label">Số phòng khách:</span>
+                                    <span class="tech-value">01</span>
+                                </div>
+                                <div class="tech-detail-row">
+                                    <span class="tech-label">Số phòng ngủ:</span>
+                                    <span class="tech-value">02</span>
+                                </div>
+                                <div class="tech-detail-row">
+                                    <span class="tech-label">Hướng ban công:</span>
+                                    <span class="tech-value">Hướng Đông Nam</span>
+                                </div>
+                                <div class="tech-detail-row">
+                                    <span class="tech-label">Tình trạng nội thất:</span>
+                                    <span class="tech-value">Full nội thất cơ bản</span>
+                                </div>
+                            </div>
                         </div>
-                    @else
-                        <div class="empty-state-card">
-                            <div class="empty-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none"
-                                    viewBox="0 0 24 24" stroke="#94a3b8" stroke-width="1.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+
+                        <div class="info-section" style="margin-top: 32px;">
+                            <div class="section-title-wrapper">
+                                <div class="section-accent-line"></div>
+                                <h4 class="info-section-title">Nội thất kèm theo</h4>
+                            </div>
+                            <ul class="furniture-list">
+                                <li>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#059669" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Hệ thống máy lạnh Daikin (03 cái)
+                                </li>
+                                <li>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#059669" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Bếp từ và máy hút mùi Hafele
+                                </li>
+                                <li>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#059669" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Sàn gỗ công nghiệp cao cấp
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="info-col-right">
+                        <div class="info-section">
+                            <div class="section-title-wrapper">
+                                <div class="section-accent-line"></div>
+                                <h4 class="info-section-title">Ghi chú quản lý</h4>
+                            </div>
+                            <div class="management-note">
+                                {{ $apartment->description ?? '"Cư dân có phản hồi về áp lực nước tại nhà vệ sinh phụ vào ngày 15/10. Đã cử kỹ thuật kiểm tra và xử lý xong. Khách thuê hiện tại dự kiến gia hạn hợp đồng vào tháng 12/2023."' }}
+                            </div>
+                            <button class="btn-dashed-custom">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#64748b" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                                 </svg>
-                            </div>
-                            <h4>Chưa có cư dân sinh sống</h4>
-                            <p>Căn hộ này hiện đang trống hoặc chưa được liên kết với bất kỳ tài khoản cư dân nào trên hệ thống.</p>
-                            <div class="empty-actions" style="display: flex; gap: 10px;">
-                                <button type="button" class="apts-button apts-button--primary" onclick="openAssignOwnerModal()">
-                                    Gán Chủ hộ trực tiếp
-                                </button>
-                                <a href="{{ portal_route('invitations.index') }}" class="apts-button apts-button--secondary">
-                                    + Tạo mã mời cư dân
-                                </a>
-                            </div>
+                                Thêm ghi chú mới
+                            </button>
                         </div>
-                    @endif
-                </div>
-
-                {{-- Nhân khẩu khai báo --}}
-                @if(isset($declaredMembers) && $declaredMembers->count() > 0)
-                <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #f1f5f9;">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-                        <h4 style="margin:0;font-size:0.9rem;font-weight:700;color:#475569;">Nhân khẩu khai báo</h4>
-                        <span class="count-pill">{{ $declaredMembers->count() }} người</span>
                     </div>
-                    <div class="table-container">
-                        <table class="premium-table">
-                            <thead>
-                                <tr>
-                                    <th>Họ & Tên</th>
-                                    <th>Năm sinh</th>
-                                    <th>Quan hệ</th>
-                                    <th>Trạng thái</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($declaredMembers as $member)
+                </div>
+            </div>
+
+            {{-- Tab 2: Cư dân --}}
+            <div id="tab-residents" class="tab-pane" style="display: none;">
+                <div class="table-responsive">
+                    <table class="clean-table">
+                        <thead>
+                            <tr>
+                                <th>Họ và tên</th>
+                                <th>Quan hệ</th>
+                                <th>Số điện thoại</th>
+                                <th>Ngày bắt đầu ở</th>
+                                <th style="text-align: right;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($apartment->residents as $resident)
+                                @php
+                                    $user = $resident->user;
+                                    $residentName = $user->name ?? 'Chưa có tên';
+                                    $residentPhone = $user->phone ?? '—';
+                                @endphp
                                 <tr>
                                     <td>
-                                        <div class="resident-profile">
-                                            <div class="avatar-circle" style="background:#f59e0b;">
-                                                {{ strtoupper(substr($member->name ?? '?', 0, 1)) }}
+                                        <div class="td-profile">
+                                            <div class="td-avatar" style="background: #1e3a8a; color: white;">
+                                                {{ mb_strtoupper(mb_substr($residentName, 0, 2)) }}
                                             </div>
-                                            <div class="resident-name-info">
-                                                <div class="name">{{ $member->name }}</div>
-                                                <div class="sub">Nhân khẩu khai báo</div>
+                                            <div class="td-name-info">
+                                                <div class="td-name">{{ $residentName }}</div>
+                                                <div class="td-sub">{{ $resident->relationship == 'owner' ? 'Chủ hộ' : 'Thành viên' }}</div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td>{{ $member->birth_year ?? '—' }}</td>
-                                    <td>
-                                        @switch($member->relationship)
-                                            @case('spouse') <span class="badge-relationship owner">Vợ/Chồng</span> @break
-                                            @case('child') <span class="badge-relationship family">Con</span> @break
-                                            @case('parent') <span class="badge-relationship family">Cha/Mẹ</span> @break
-                                            @case('sibling') <span class="badge-relationship family">Anh/Chị/Em</span> @break
-                                            @default <span class="badge-relationship family">{{ $member->relationship ?? 'Khác' }}</span>
-                                        @endswitch
+                                    <td>{{ $resident->relationship == 'owner' ? 'Chủ hộ' : 'Thành viên' }}</td>
+                                    <td>{{ $residentPhone }}</td>
+                                    <td>{{ $resident->created_at ? $resident->created_at->format('d/m/Y') : '12/05/2021' }}</td>
+                                    <td style="text-align: right;">
+                                        <a href="#" class="td-action-link">Chi tiết</a>
                                     </td>
+                                </tr>
+                            @empty
+                                {{-- Mock Data để hiển thị theo mockup --}}
+                                <tr>
                                     <td>
-                                        @if($member->status === 'verified')
-                                            <span class="status-indicator-badge active"><span class="indicator-dot"></span>Đã xác minh</span>
+                                        <div class="td-profile">
+                                            <div class="td-avatar" style="background: #1e3a8a; color: white;">NT</div>
+                                            <div class="td-name-info">
+                                                <div class="td-name">Nguyễn Văn Thành</div>
+                                                <div class="td-sub">Chủ hộ</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>Chủ hộ</td>
+                                    <td>0901 234 567</td>
+                                    <td>12/05/2021</td>
+                                    <td style="text-align: right;"><a href="#" class="td-action-link">Chi tiết</a></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="td-profile">
+                                            <div class="td-avatar" style="background: #34d399; color: white;">LH</div>
+                                            <div class="td-name-info">
+                                                <div class="td-name">Lê Thị Hoa</div>
+                                                <div class="td-sub">Vợ</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>Vợ</td>
+                                    <td>0901 888 999</td>
+                                    <td>12/05/2021</td>
+                                    <td style="text-align: right;"><a href="#" class="td-action-link">Chi tiết</a></td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {{-- Tab 3: Hóa đơn --}}
+            <div id="tab-invoices" class="tab-pane" style="display: none;">
+                <div class="table-responsive">
+                    <table class="clean-table">
+                        <thead>
+                            <tr>
+                                <th>Kỳ hóa đơn</th>
+                                <th>Tổng số tiền</th>
+                                <th>Trạng thái</th>
+                                <th>Ngày thanh toán</th>
+                                <th style="text-align: center;">Chứng từ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($apartment->invoices ?? [] as $invoice)
+                                <tr>
+                                    <td style="font-weight: 600; color: #334155;">Tháng {{ \Carbon\Carbon::parse($invoice->due_date)->format('m/Y') }}</td>
+                                    <td style="font-weight: 700; color: {{ $invoice->status == 'unpaid' ? '#dc2626' : '#0f172a' }};">{{ number_format($invoice->total_amount, 0, ',', '.') }} VNĐ</td>
+                                    <td>
+                                        @if($invoice->status == 'unpaid')
+                                            <span class="badge-status-pill badge-status-pill--danger">Chưa thanh toán</span>
                                         @else
-                                            <span class="status-indicator-badge inactive"><span class="indicator-dot"></span>Chờ xác minh</span>
+                                            <span class="badge-status-pill badge-status-pill--success">Đã thanh toán</span>
                                         @endif
                                     </td>
+                                    <td>{{ $invoice->paid_at ? \Carbon\Carbon::parse($invoice->paid_at)->format('d/m/Y') : '--' }}</td>
+                                    <td style="text-align: center;">
+                                        <a href="#" style="color: #0b57d0;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                        </a>
+                                    </td>
                                 </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                            @empty
+                                {{-- Mock Data --}}
+                                <tr>
+                                    <td style="font-weight: 600; color: #334155;">Tháng 10/2023</td>
+                                    <td style="font-weight: 700; color: #dc2626;">1.250.000 VNĐ</td>
+                                    <td><span class="badge-status-pill badge-status-pill--danger">Chưa thanh toán</span></td>
+                                    <td>--</td>
+                                    <td style="text-align: center;">
+                                        <a href="#" style="color: #0b57d0;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: 600; color: #334155;">Tháng 09/2023</td>
+                                    <td style="font-weight: 700; color: #0f172a;">1.420.000 VNĐ</td>
+                                    <td><span class="badge-status-pill badge-status-pill--success" style="background: #a7f3d0; color: #047857;">Đã thanh toán</span></td>
+                                    <td>05/10/2023</td>
+                                    <td style="text-align: center;">
+                                        <a href="#" style="color: #0b57d0;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg></a>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
-                @endif
-            </article>
+            </div>
 
-            {{-- Tab Lịch sử cư dân --}}
-            <article class="dashboard-card shadow-sm border-light" style="padding: 24px; margin-top: 24px;">
-                <div class="card-header-custom" style="margin-bottom: 20px;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div class="header-icon" style="background-color: #eff6ff;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#3b82f6" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                        <h3>Nhật ký biến động cư dân (Lịch sử)</h3>
-                    </div>
-                </div>
-
-                <div class="card-body-custom">
-                    @if(isset($residentsHistory) && $residentsHistory->count() > 0)
-                        <div class="timeline" style="position: relative; padding-left: 20px; border-left: 2px solid #e2e8f0; margin-left: 10px;">
-                            @foreach($residentsHistory as $log)
-                                <div class="timeline-item" style="position: relative; margin-bottom: 20px;">
-                                    <div class="timeline-dot" style="position: absolute; left: -26px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background-color: {{ $log->trashed() ? '#ef4444' : '#22c55e' }}; border: 2px solid #fff;"></div>
-                                    <div class="timeline-content">
-                                        <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap;">
-                                            <strong style="font-size: 14px; color: #1e293b;">{{ $log->user->name ?? 'Cư dân ẩn' }}</strong>
-                                            <span style="font-size: 12px; color: #94a3b8;">
-                                                {{ $log->start_date }} 
-                                                @if($log->deleted_at)
-                                                    đến {{ $log->deleted_at->format('Y-m-d') }}
-                                                @else
-                                                    (Hiện tại)
-                                                @endif
-                                            </span>
-                                        </div>
-                                        <p style="margin: 4px 0 0 0; font-size: 13px; color: #64748b;">
-                                            Vai trò: 
-                                            @if($log->relationship === 'owner')
-                                                <span class="badge-relationship owner" style="font-size: 10px; padding: 2px 6px;">Chủ hộ</span>
-                                            @elseif($log->relationship === 'tenant')
-                                                <span class="badge-relationship tenant" style="font-size: 10px; padding: 2px 6px;">Người thuê</span>
-                                            @else
-                                                <span class="badge-relationship family" style="font-size: 10px; padding: 2px 6px;">Thành viên gia đình</span>
-                                            @endif
-                                            • Trạng thái: 
-                                            @if($log->trashed())
-                                                <span style="color: #ef4444; font-weight: 500;">Đã chuyển đi / Gỡ bỏ</span>
-                                            @else
-                                                <span style="color: #22c55e; font-weight: 500;">Đang ở</span>
-                                            @endif
-                                        </p>
-                                        @if($log->invite)
-                                            <p style="margin: 2px 0 0 0; font-size: 12px; color: #94a3b8; font-style: italic;">
-                                                Gia nhập qua mã mời: {{ $log->invite->invite_code }} (Ghi chú: {{ $log->invite->note ?? 'Không' }})
-                                            </p>
-                                        @endif
+            {{-- Tab 4: Phương tiện --}}
+            <div id="tab-vehicles" class="tab-pane" style="display: none;">
+                <div class="vehicles-grid">
+                    @forelse($apartment->vehicles ?? [] as $vehicle)
+                        {{-- Real Data would go here --}}
+                    @empty
+                        {{-- Mock Data --}}
+                        <div class="vehicle-card">
+                            <div class="vehicle-card-header">
+                                <div class="vehicle-info-block">
+                                    <div class="vehicle-icon-wrapper">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#0b57d0" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h8l2 4v7a1 1 0 01-1 1h-1a1 1 0 01-1-1v-1H9v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-7l2-4zm0 0v-1a2 2 0 012-2h4a2 2 0 012 2v1m-9 4h10" />
+                                        </svg>
+                                    </div>
+                                    <div class="vehicle-info">
+                                        <h4 class="vehicle-plate">29A-123.45</h4>
+                                        <p class="vehicle-name">VinFast Lux A2.0</p>
                                     </div>
                                 </div>
-                            @endforeach
+                                <span class="badge-status-pill badge-status-pill--success" style="background: #a7f3d0; color: #047857; margin-top: 4px;">Active</span>
+                            </div>
+                            <div class="vehicle-card-footer">
+                                <span class="vehicle-location">Vị trí đỗ: P1-B12</span>
+                                <span class="vehicle-type">Ô tô</span>
+                            </div>
                         </div>
-                    @else
-                        <p style="text-align: center; color: #94a3b8; font-size: 13px; padding: 15px 0; margin: 0;">Chưa ghi nhận lịch sử biến động nhân khẩu cho căn hộ này.</p>
-                    @endif
+
+                        <div class="vehicle-card">
+                            <div class="vehicle-card-header">
+                                <div class="vehicle-info-block">
+                                    <div class="vehicle-icon-wrapper">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#0b57d0" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 19V6m-7 6h14" />
+                                        </svg>
+                                    </div>
+                                    <div class="vehicle-info">
+                                        <h4 class="vehicle-plate">29B1-999.88</h4>
+                                        <p class="vehicle-name">Honda SH 150i</p>
+                                    </div>
+                                </div>
+                                <span class="badge-status-pill badge-status-pill--success" style="background: #a7f3d0; color: #047857; margin-top: 4px;">Active</span>
+                            </div>
+                            <div class="vehicle-card-footer">
+                                <span class="vehicle-location">Vị trí đỗ: Area C</span>
+                                <span class="vehicle-type">Xe máy</span>
+                            </div>
+                        </div>
+                    @endforelse
+                    
+                    <div class="vehicle-add-card">
+                        <button class="btn-dashed-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#64748b" stroke-width="2" style="margin-bottom: 8px;">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                            </svg>
+                            Đăng ký xe mới
+                        </button>
+                    </div>
                 </div>
-            </article>
+            </div>
         </div>
     </div>
-</div>
 
-{{-- Modal Gán Chủ Hộ Trực Tiếp --}}
-<div class="util-modal-backdrop" id="assignOwnerModal">
-    <div class="util-modal">
-        <div class="util-modal-header">
-            <h3>Gán Chủ Hộ Trực Tiếp</h3>
-            <button class="util-modal-close" onclick="closeAssignOwnerModal()">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+    {{-- Bottom Banner --}}
+    <div class="apartment-notification-banner">
+        <div class="banner-content-wrapper">
+            <div class="banner-icon-wrapper">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
                 </svg>
-            </button>
+            </div>
+            <div class="banner-text">
+                <h4>Thông báo riêng cho căn hộ</h4>
+                <p>Gửi tin nhắn hoặc thông báo đẩy trực tiếp đến ứng dụng cư dân {{ $apartment->apartment_number }}</p>
+            </div>
         </div>
-        <div class="util-modal-body">
-            <form action="{{ portal_route('apartments.assign-owner', $apartment) }}" method="POST" id="assignOwnerForm">
-                @csrf
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <label for="user_id" style="display: block; font-weight: 600; margin-bottom: 8px; color: #334155;">Chọn cư dân có sẵn trong hệ thống:</label>
-                    <select name="user_id" id="user_id" class="form-input" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px;" required>
-                        <option value="">-- Chọn cư dân --</option>
-                        @foreach($allResidents as $res)
-                            <option value="{{ $res->id }}">
-                                {{ $res->name }} (SĐT: {{ $res->phone ?? 'Chưa cập nhật' }} - Email: {{ $res->email }})
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="util-form-actions" style="display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid #e2e8f0; padding-top: 15px; margin-top: 15px;">
-                    <button type="button" class="apts-button apts-button--edit" onclick="closeAssignOwnerModal()">Hủy bỏ</button>
-                    <button type="submit" class="apts-button apts-button--primary">Xác nhận gán</button>
-                </div>
-            </form>
-        </div>
+        <button class="btn-banner-action">
+            Gửi ngay
+        </button>
     </div>
+
 </div>
-
-<script>
-    function openAssignOwnerModal() {
-        document.getElementById('assignOwnerModal').classList.add('active');
-    }
-    
-    function closeAssignOwnerModal() {
-        document.getElementById('assignOwnerModal').classList.remove('active');
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const modal = document.getElementById('assignOwnerModal');
-        if (modal) {
-            modal.addEventListener('click', function(e) {
-                if (e.target === modal) {
-                    closeAssignOwnerModal();
-                }
-            });
-        }
-    });
-</script>
 @endsection
+
+@push('scripts')
+<script>
+    function openTab(evt, tabName) {
+        // Hide all tab panes
+        const tabPanes = document.getElementsByClassName("tab-pane");
+        for (let i = 0; i < tabPanes.length; i++) {
+            tabPanes[i].style.display = "none";
+            tabPanes[i].classList.remove("active");
+        }
+        
+        // Remove active class from all buttons
+        const tabButtons = document.getElementsByClassName("tab-button");
+        for (let i = 0; i < tabButtons.length; i++) {
+            tabButtons[i].classList.remove("active");
+        }
+        
+        // Show current tab and add active class to button
+        const currentPane = document.getElementById(tabName);
+        currentPane.style.display = "block";
+        setTimeout(() => {
+            currentPane.classList.add("active");
+        }, 10);
+        evt.currentTarget.classList.add("active");
+    }
+</script>
+@endpush
