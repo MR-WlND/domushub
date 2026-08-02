@@ -52,8 +52,27 @@ class FloorController extends Controller
         }
 
         $selectedBlockId = $request->query('block_id');
-        $blocks = Block::orderBy('name')->get();
-        return view('admin.floors.create', compact('blocks', 'selectedBlockId'));
+        $blocks = Block::with(['floors' => function($q) {
+            $q->orderBy('floor_number', 'desc');
+        }])->orderBy('name')->get();
+
+        $blocksData = $blocks->map(function($block) {
+            return [
+                'id' => $block->id,
+                'name' => $block->name,
+                'code' => $block->code ?? 'BLK',
+                'apartments_per_floor' => $block->apartments_per_floor,
+                'floors' => $block->floors->map(function($floor) {
+                    return [
+                        'id' => $floor->id,
+                        'name' => $floor->name,
+                        'floor_number' => $floor->floor_number
+                    ];
+                })
+            ];
+        });
+
+        return view('admin.floors.create', compact('blocks', 'selectedBlockId', 'blocksData'));
     }
 
     /**
@@ -220,7 +239,9 @@ class FloorController extends Controller
         }
 
         $floor->loadCount('apartments');
-        $blocks = Block::orderBy('name')->get();
+        $blocks = Block::with(['floors' => function($q) {
+            $q->orderBy('floor_number', 'desc');
+        }])->orderBy('name')->get();
         return view('admin.floors.edit', compact('floor', 'blocks'));
     }
 
