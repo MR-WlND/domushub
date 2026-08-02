@@ -221,27 +221,31 @@
             </div>
 
             <div class="form-group-custom" style="margin-bottom: 24px;">
-                <label class="form-label-custom">Danh sách nội thất chi tiết (Thêm từng món)</label>
-                <div id="furniture_list_container">
-                    @if(old('furniture_list'))
-                        @foreach(old('furniture_list') as $item)
-                            <div class="furniture-item" style="display: flex; gap: 8px; margin-bottom: 8px;">
-                                <input type="text" name="furniture_list[]" value="{{ $item }}" class="form-input-custom" placeholder="VD: Hệ thống máy lạnh Daikin (03 cái)">
-                                <button type="button" class="apts-button apts-button--danger" onclick="this.parentElement.remove()" style="padding: 8px 12px; height: 42px;">Xóa</button>
-                            </div>
-                        @endforeach
-                    @else
-                        <div class="furniture-item" style="display: flex; gap: 8px; margin-bottom: 8px;">
-                            <input type="text" name="furniture_list[]" class="form-input-custom" placeholder="VD: Hệ thống máy lạnh Daikin (03 cái)">
-                            <button type="button" class="apts-button apts-button--danger" onclick="this.parentElement.remove()" style="padding: 8px 12px; height: 42px;">Xóa</button>
-                        </div>
-                    @endif
-                </div>
-                <div style="text-align: center; margin-top: 16px;">
-                    <button type="button" onclick="addFurnitureItem()" style="background: none; border: none; font-weight: 600; color: #0b57d0; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
-                        Thêm nội thất
-                    </button>
+                <label class="form-label-custom">Tiêu chuẩn bàn giao (Nội thất chi tiết)</label>
+                <p style="font-size: 13px; color: #64748b; margin-top: 0; margin-bottom: 12px;">Chọn các tiện ích tiêu chuẩn đi kèm với loại căn hộ này.</p>
+                
+                @php
+                    $defaultFurnitures = [
+                        'Sàn gỗ cao cấp',
+                        'Điều hòa âm trần',
+                        'Thiết bị vệ sinh cao cấp',
+                        'Tủ bếp trên dưới',
+                        'Hệ thống Smarthome',
+                        'Khóa cửa từ',
+                        'Giường, tủ áo',
+                        'Bếp từ & Hút mùi',
+                        'Sofa & Bàn trà'
+                    ];
+                @endphp
+                <div class="checkbox-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px;">
+                    @foreach($defaultFurnitures as $item)
+                        <label class="checkbox-item" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" name="furniture_list[]" value="{{ $item }}" 
+                                {{ in_array($item, old('furniture_list', [])) ? 'checked' : '' }}
+                                style="width: 18px; height: 18px; accent-color: #0b57d0; cursor: pointer; border-radius: 4px; border: 1px solid #cbd5e1;">
+                            <span style="font-size: 14px; color: #475569; user-select: none;">{{ $item }}</span>
+                        </label>
+                    @endforeach
                 </div>
             </div>
 
@@ -319,17 +323,5 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 });
-
-function addFurnitureItem() {
-    const container = document.getElementById('furniture_list_container');
-    const div = document.createElement('div');
-    div.className = 'furniture-item';
-    div.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px;';
-    div.innerHTML = `
-        <input type="text" name="furniture_list[]" class="form-input-custom" placeholder="VD: Máy giặt Electrolux">
-        <button type="button" class="apts-button apts-button--danger" onclick="this.parentElement.remove()" style="padding: 8px 12px; height: 42px;">Xóa</button>
-    `;
-    container.appendChild(div);
-}
 </script>
 @endpush
