@@ -128,59 +128,7 @@
                 </div>
             </div>
 
-            {{-- Admin Only - Costs (if any) --}}
-            @if(in_array(auth()->user()->role, ['admin', 'manager']))
-            <div class="tk-card">
-                <div class="tk-card-header">
-                    <h2 class="tk-card-title" style="font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                        Chi phí phát sinh
-                    </h2>
-                </div>
-                <div class="tk-card-body" style="padding: 16px;">
-                    <form method="POST" action="{{ portal_route('tickets.add-cost', $ticket->id) }}">
-                        @csrf
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
-                            <input type="text" name="description" placeholder="Mô tả chi phí..." required style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
-                            <input type="number" name="amount" placeholder="Số tiền (VNĐ)" min="1000" step="1000" required style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
-                        </div>
-                        <input type="hidden" name="cost_type" value="repair">
-                        <button type="submit" class="tk-btn-outline" style="width: auto; padding: 8px 16px; font-size: 0.85rem;">+ Thêm chi phí sửa chữa</button>
-                    </form>
 
-                    @if($ticket->costs->count() > 0)
-                        <div style="margin-top: 24px;">
-                            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
-                                <thead>
-                                    <tr style="border-bottom: 1px solid #e2e8f0; color: #64748b; text-align: left;">
-                                        <th style="padding: 8px;">Mô tả</th>
-                                        <th style="padding: 8px;">Số tiền</th>
-                                        <th style="padding: 8px;">Xóa</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($ticket->costs as $cost)
-                                    <tr style="border-bottom: 1px solid #f1f5f9;">
-                                        <td style="padding: 8px;">{{ $cost->description }}</td>
-                                        <td style="padding: 8px; color: #0f172a; font-weight: 600;">{{ number_format($cost->amount, 0, ',', '.') }}đ</td>
-                                        <td style="padding: 8px;">
-                                            <form method="POST" action="{{ portal_route('tickets.delete-cost', [$ticket->id, $cost->id]) }}" onsubmit="return confirm('Xóa?')">
-                                                @csrf @method('DELETE')
-                                                <button type="submit" style="color: #dc2626; background: none; border: none; cursor: pointer;">X</button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                            <div style="text-align: right; margin-top: 12px; font-weight: 800; font-size: 1.1rem; color: #dc2626;">
-                                Tổng: {{ number_format($ticket->costs->sum('amount'), 0, ',', '.') }}đ
-                            </div>
-                        </div>
-                    @endif
-                </div>
-            </div>
-            @endif
 
             {{-- Reported Person (if report) --}}
             @if($ticket->ticket_type === 'report')

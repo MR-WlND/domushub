@@ -263,7 +263,7 @@ class InvoiceController extends Controller
             'due_date'       => 'required|date',
             'custom_fees'    => 'required|array|min:1',
             'custom_fees.*.name' => 'required|string|max:255',
-            'custom_fees.*.type' => 'required|in:other,service,parking_fee',
+            'custom_fees.*.type' => 'required|in:other,service,parking_fee,compensation,penalty,card_reissue',
             'custom_fees.*.amount' => 'required|numeric|min:0',
             'custom_fees.*.note' => 'nullable|string|max:255',
         ], [

@@ -517,24 +517,7 @@
                 </div>
             @endif
 
-            {{-- CHI PHÍ PHÁT SINH (NẾU CÓ) --}}
-            @if($ticket->costs && $ticket->costs->count() > 0)
-                <div class="tk-box-card">
-                    <h3 class="tk-box-title"><i class="fa-solid fa-receipt"></i> Chi phí phát sinh</h3>
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        @foreach($ticket->costs as $cost)
-                            <div style="display: flex; justify-content: space-between; padding: 10px 14px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 13.5px;">
-                                <span>{{ $cost->description }}</span>
-                                <strong style="color: #0f172a;">{{ number_format($cost->amount, 0, ',', '.') }}đ</strong>
-                            </div>
-                        @endforeach
-                        <div style="display: flex; justify-content: space-between; padding: 12px 14px; background: #eff6ff; border-radius: 8px; font-weight: 700; color: #1e3a8a; font-size: 14px;">
-                            <span>Tổng chi phí</span>
-                            <span style="color: #dc2626;">{{ number_format($ticket->costs->sum('amount'), 0, ',', '.') }}đ</span>
-                        </div>
-                    </div>
-                </div>
-            @endif
+
 
             {{-- FORM ĐÁNH GIÁ (KHI XONG & CHƯA ĐÁNH GIÁ) --}}
             @if($ticket->canFeedback())
