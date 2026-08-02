@@ -204,6 +204,13 @@ class FacilityController extends Controller
 
         $booking->update(['status' => 'cancelled']);
 
+        if ($booking->bill_id) {
+            $invoice = \App\Models\Invoice::find($booking->bill_id);
+            if ($invoice && !in_array($invoice->status, ['paid', 'cancelled'])) {
+                $invoice->update(['status' => 'cancelled']);
+            }
+        }
+
         return back()->with('success', 'Đã hủy lịch đặt thành công.');
     }
 

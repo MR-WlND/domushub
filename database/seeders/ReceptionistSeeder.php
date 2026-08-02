@@ -18,14 +18,14 @@ class ReceptionistSeeder extends Seeder
             [
                 'name'   => 'Nguyễn Thị Lan',
                 'email'  => 'letan01@domushub.vn',
-                'phone'  => '0901111001',
+                'phone'  => '0901111091',
                 'role'   => 'receptionist',
                 'status' => 'active',
             ],
             [
                 'name'   => 'Trần Văn Minh',
                 'email'  => 'letan02@domushub.vn',
-                'phone'  => '0901111002',
+                'phone'  => '0901111092',
                 'role'   => 'receptionist',
                 'status' => 'active',
             ],
