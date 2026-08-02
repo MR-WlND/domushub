@@ -212,7 +212,23 @@ class ApartmentController extends Controller
                 'string',
             ],
 
+            'images.*' => [
+                'nullable',
+                'image',
+                'mimes:jpeg,png,jpg,gif,svg',
+                'max:5120'
+            ],
+
         ]);
+
+        $imagesPaths = [];
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('apartments', 'public');
+                $imagesPaths[] = $path;
+            }
+        }
+        $validated['images'] = $imagesPaths;
 
         /**
          * Check unique căn hộ trong tầng (bao gồm cả căn hộ đã xóa)
@@ -275,7 +291,7 @@ class ApartmentController extends Controller
             ->get();
 
         $residentsHistory = \App\Models\Resident::withTrashed()
-            ->with(['user', 'invite'])
+            ->with(['user'])
             ->where('apartment_id', $apartment->id)
             ->orderBy('created_at', 'desc')
             ->get();
@@ -416,7 +432,37 @@ class ApartmentController extends Controller
                 'string',
             ],
 
+            'images.*' => [
+                'nullable',
+                'image',
+                'mimes:jpeg,png,jpg,gif,svg',
+                'max:5120'
+            ],
+            
+            'old_images' => [
+                'nullable',
+                'array'
+            ],
+
         ]);
+
+        $imagesPaths = $request->input('old_images', []);
+        
+        // Find deleted images to delete from storage
+        $currentImages = $apartment->images ?? [];
+        $deletedImages = array_diff($currentImages, $imagesPaths);
+        foreach ($deletedImages as $deletedImage) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($deletedImage);
+        }
+
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('apartments', 'public');
+                $imagesPaths[] = $path;
+            }
+        }
+        
+        $validated['images'] = $imagesPaths;
 
         /**
          * Check duplicate (bao gồm cả căn hộ đã xóa)

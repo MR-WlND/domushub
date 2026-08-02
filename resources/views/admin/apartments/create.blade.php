@@ -126,35 +126,41 @@
             color: #94a3b8;
             font-size: 13px;
         }
-        .upload-area img#image_preview {
-            position: absolute;
-            top: 0;
-            left: 0;
+        .image-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .image-preview-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            aspect-ratio: 1;
+            border: 1px solid #e2e8f0;
+        }
+        .image-preview-item img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            display: none;
-            z-index: 10;
         }
-        .remove-image-btn {
+        .image-preview-item .remove-btn {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 30px;
-            height: 30px;
+            top: 4px;
+            right: 4px;
+            width: 24px;
+            height: 24px;
             background: rgba(255, 255, 255, 0.9);
             border: none;
             border-radius: 50%;
-            display: none;
+            display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            z-index: 20;
             color: #ef4444;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: all 0.2s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
-        .remove-image-btn:hover {
+        .image-preview-item .remove-btn:hover {
             background: #ef4444;
             color: white;
         }
@@ -296,20 +302,17 @@
                         </span>
                         <h4>Ảnh đại diện (Tùy chọn)</h4>
                     </div>
-                    <div class="upload-area" id="upload-area">
-                        <input type="file" name="image" id="apartment_image" class="file-input" accept="image/*" hidden>
+                    <div class="upload-area" id="upload-area" style="height: 140px;">
+                        <input type="file" name="images[]" id="apartment_images" class="file-input" accept="image/*" multiple hidden>
                         <div class="upload-placeholder" id="upload-placeholder">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="#94a3b8" stroke-width="1.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="#94a3b8" stroke-width="1.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            <p class="upload-text">Nhấn để tải ảnh lên</p>
+                            <p class="upload-text" style="font-size: 14px; margin-top: 8px;">Nhấn để tải nhiều ảnh lên</p>
                             <p class="upload-subtext">hoặc kéo thả ảnh vào đây</p>
                         </div>
-                        <img id="image_preview" src="" alt="Preview">
-                        <button type="button" class="remove-image-btn" id="remove_image" title="Xóa ảnh">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
                     </div>
+                    <div class="image-preview-grid" id="image_preview_grid"></div>
                 </div>
 
                 <article class="dashboard-card form-card-custom shadow-sm border-light" style="padding: 24px;">
@@ -376,15 +379,13 @@
 
         // Image upload logic
         const uploadArea = document.getElementById('upload-area');
-        const fileInput = document.getElementById('apartment_image');
-        const imagePreview = document.getElementById('image_preview');
-        const uploadPlaceholder = document.getElementById('upload-placeholder');
-        const removeImageBtn = document.getElementById('remove_image');
+        const fileInput = document.getElementById('apartment_images');
+        const imagePreviewGrid = document.getElementById('image_preview_grid');
+        
+        let selectedFiles = [];
 
         uploadArea.addEventListener('click', () => {
-            if (!imagePreview.src || imagePreview.style.display === 'none') {
-                fileInput.click();
-            }
+            fileInput.click();
         });
 
         uploadArea.addEventListener('dragover', (e) => {
@@ -400,42 +401,60 @@
             e.preventDefault();
             uploadArea.classList.remove('dragover');
             
-            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                fileInput.files = e.dataTransfer.files;
-                handleFile(e.dataTransfer.files[0]);
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                handleFiles(e.dataTransfer.files);
             }
         });
 
         fileInput.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-                handleFile(this.files[0]);
+            if (this.files && this.files.length > 0) {
+                handleFiles(this.files);
             }
         });
 
-        function handleFile(file) {
-            if (file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imagePreview.src = e.target.result;
-                    imagePreview.style.display = 'block';
-                    uploadPlaceholder.style.display = 'none';
-                    removeImageBtn.style.display = 'flex';
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    selectedFiles.push(file);
                 }
-                reader.readAsDataURL(file);
-            } else {
-                alert('Vui lòng chọn file hình ảnh hợp lệ.');
-                fileInput.value = '';
-            }
+            });
+            updateFileInput();
+            renderPreviews();
         }
 
-        removeImageBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            fileInput.value = '';
-            imagePreview.src = '';
-            imagePreview.style.display = 'none';
-            uploadPlaceholder.style.display = 'flex';
-            removeImageBtn.style.display = 'none';
-        });
+        function updateFileInput() {
+            const dataTransfer = new DataTransfer();
+            selectedFiles.forEach(file => {
+                dataTransfer.items.add(file);
+            });
+            fileInput.files = dataTransfer.files;
+        }
+
+        function renderPreviews() {
+            imagePreviewGrid.innerHTML = '';
+            selectedFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const div = document.createElement('div');
+                    div.className = 'image-preview-item';
+                    div.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview">
+                        <button type="button" class="remove-btn" onclick="removeImage(${index}, event)" title="Xóa ảnh">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    `;
+                    imagePreviewGrid.appendChild(div);
+                }
+                reader.readAsDataURL(file);
+            });
+        }
+
+        window.removeImage = function(index, event) {
+            event.stopPropagation();
+            selectedFiles.splice(index, 1);
+            updateFileInput();
+            renderPreviews();
+        }
     });
 </script>
 @endpush

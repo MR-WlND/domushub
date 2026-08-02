@@ -23,6 +23,9 @@
                 </nav>
                 <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 12px;">
                     {{ $block->name }}
+                    @if($block->code)
+                        <span style="font-size: 18px; color: #64748b; font-weight: 600;">- {{ $block->code }}</span>
+                    @endif
                     @if (($block->status ?? 'active') === 'active')
                         <span style="background: #dcfce7; color: #166534; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 600;">Đang vận hành</span>
                     @elseif(($block->status ?? 'active') === 'maintenance')

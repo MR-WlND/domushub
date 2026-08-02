@@ -84,10 +84,43 @@
         </div>
     @endif
 
+    {{-- Thư viện ảnh (Hero Section) --}}
+    <article class="dashboard-card shadow-sm border-light" style="padding: 24px; margin-top: 24px; margin-bottom: 24px;">
+        <div class="card-header-custom" style="margin-bottom: 16px;">
+            <div class="header-icon" style="background-color: #f1f5f9;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#475569" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </div>
+            <h3>Hình ảnh căn hộ</h3>
+        </div>
+        
+        @if(is_array($apartment->images) && count($apartment->images) > 0)
+            <div style="display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px;">
+                @foreach($apartment->images as $image)
+                    <div style="flex: 0 0 auto; width: 280px; height: 180px; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                        <a href="{{ asset('storage/' . $image) }}" target="_blank">
+                            <img src="{{ asset('storage/' . $image) }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        </a>
+                    </div>
+                @endforeach
+            </div>
+        @else
+            <div style="text-align: center; padding: 40px 0; background: #f8fafc; border-radius: 12px; border: 2px dashed #cbd5e1;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="#94a3b8" stroke-width="1.5" style="margin: 0 auto 12px;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <h4 style="font-size: 16px; font-weight: 600; color: #475569; margin: 0 0 4px 0;">Chưa có hình ảnh nào được tải lên</h4>
+                <p style="color: #64748b; font-size: 14px; margin: 0;">Hãy bấm vào "Chỉnh sửa" để cập nhật hình ảnh các phòng cho căn hộ này.</p>
+            </div>
+        @endif
+    </article>
+
     {{-- Detail Grid --}}
-    <div class="detail-grid">
+    <div class="detail-grid" style="margin-top: 0;">
         {{-- Column Trái: Thông tin chung --}}
         <div class="detail-col-info">
+
             <article class="dashboard-card shadow-sm border-light" style="padding: 24px; margin-bottom: 0;">
                 <div class="card-header-custom">
                     <div class="header-icon">
@@ -154,7 +187,7 @@
 
         {{-- Column Phải: Danh sách cư dân --}}
         <div class="detail-col-residents">
-            <article class="dashboard-card shadow-sm border-light" style="padding: 24px; min-height: 100%;">
+            <article class="dashboard-card shadow-sm border-light" style="padding: 24px; height: fit-content;">
                 <div class="card-header-custom"
                     style="justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
                     <div style="display: flex; align-items: center; gap: 10px;">

@@ -286,17 +286,18 @@
                 item.style.position = 'relative';
                 
                 if (f.is_editing) {
-                    item.style.background = '#fef3c7';
+                    item.style.background = '#dbeafe';
                     item.style.borderRadius = '8px';
-                    item.style.border = '1px solid #fde68a';
-                    item.style.color = '#92400e';
+                    item.style.border = '1px solid #bfdbfe';
+                    item.style.color = '#1e3a8a';
                     item.style.fontWeight = '600';
                     item.style.zIndex = '10';
                     item.innerHTML = `
-                        <div style="background: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: absolute; left: -12px; border: 2px solid #d97706; color: #d97706;">
+                        <div style="background: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: absolute; left: -12px; border: 2px solid #2563eb; color: #2563eb;">
                             <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
                         </div>
-                        <span style="flex: 1; padding-left: 16px;">${f.name} (Đang sửa)</span>
+                        <span style="flex: 1; padding-left: 16px;">${f.name}</span>
+                        <span style="background: #166534; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 8px;">ĐANG SỬA</span>
                     `;
                 } else {
                     item.style.color = '#64748b';

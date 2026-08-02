@@ -47,7 +47,7 @@
             APARTMENT UPDATE
         </div>
 
-        <form action="{{ portal_route('apartments.update', $apartment) }}" method="POST">
+        <form action="{{ portal_route('apartments.update', $apartment) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
 
@@ -238,6 +238,43 @@
                 @enderror
             </div>
 
+            {{-- Phần 4: Hình ảnh căn hộ --}}
+            <div class="form-section-header" style="margin-top: 15px;">
+                <span class="section-number">04</span>
+                <h4>Hình ảnh Căn hộ</h4>
+            </div>
+            
+            <div class="form-group-custom" style="margin-bottom: 24px;">
+                <div class="upload-area" id="upload-area" style="height: 140px; border: 2px dashed #cbd5e1; border-radius: 12px; background-color: #f8fafc; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease;">
+                    <input type="file" name="images[]" id="apartment_images" class="file-input" accept="image/*" multiple hidden>
+                    <div class="upload-placeholder" id="upload-placeholder" style="display: flex; flex-direction: column; align-items: center; pointer-events: none;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="#94a3b8" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <p class="upload-text" style="font-size: 14px; margin-top: 8px; font-weight: 600; color: #475569;">Nhấn để tải nhiều ảnh lên</p>
+                        <p class="upload-subtext" style="margin: 0; color: #94a3b8; font-size: 13px;">hoặc kéo thả ảnh vào đây</p>
+                    </div>
+                </div>
+                
+                {{-- Existing images from DB --}}
+                <div class="image-preview-grid" id="existing_image_preview_grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 12px; margin-top: 16px;">
+                    @if(is_array($apartment->images))
+                        @foreach($apartment->images as $index => $image)
+                            <div class="image-preview-item" id="existing_image_{{ $index }}" style="position: relative; border-radius: 8px; overflow: hidden; aspect-ratio: 1; border: 1px solid #e2e8f0;">
+                                <img src="{{ asset('storage/' . $image) }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                <input type="hidden" name="old_images[]" value="{{ $image }}">
+                                <button type="button" class="remove-btn" onclick="removeExistingImage('existing_image_{{ $index }}')" style="position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; background: rgba(255, 255, 255, 0.9); border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ef4444; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                                </button>
+                            </div>
+                        @endforeach
+                    @endif
+                </div>
+                
+                {{-- New images to upload --}}
+                <div class="image-preview-grid" id="image_preview_grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 12px; margin-top: 16px;"></div>
+            </div>
+
             {{-- Actions --}}
             <div class="apartments-page__actions" style="justify-content: flex-start; margin-top: 24px;">
                 <button type="submit" class="apts-button apts-button--primary">
@@ -297,6 +334,99 @@
             updateFloors();
             if (currentFloorValue) {
                 floorSelect.value = currentFloorValue;
+            }
+        }
+
+        // Image upload logic
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('apartment_images');
+        const imagePreviewGrid = document.getElementById('image_preview_grid');
+        
+        let selectedFiles = [];
+
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#0b57d0';
+            uploadArea.style.backgroundColor = '#eff6ff';
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = '#cbd5e1';
+            uploadArea.style.backgroundColor = '#f8fafc';
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#cbd5e1';
+            uploadArea.style.backgroundColor = '#f8fafc';
+            
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                handleFiles(e.dataTransfer.files);
+            }
+        });
+
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                handleFiles(this.files);
+            }
+        });
+
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    selectedFiles.push(file);
+                }
+            });
+            updateFileInput();
+            renderPreviews();
+        }
+
+        function updateFileInput() {
+            const dataTransfer = new DataTransfer();
+            selectedFiles.forEach(file => {
+                dataTransfer.items.add(file);
+            });
+            fileInput.files = dataTransfer.files;
+        }
+
+        function renderPreviews() {
+            imagePreviewGrid.innerHTML = '';
+            selectedFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const div = document.createElement('div');
+                    div.style.position = 'relative';
+                    div.style.borderRadius = '8px';
+                    div.style.overflow = 'hidden';
+                    div.style.aspectRatio = '1';
+                    div.style.border = '1px solid #e2e8f0';
+                    div.innerHTML = `
+                        <img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;">
+                        <button type="button" onclick="removeImage(${index}, event)" title="Xóa ảnh" style="position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; background: rgba(255, 255, 255, 0.9); border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ef4444; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    `;
+                    imagePreviewGrid.appendChild(div);
+                }
+                reader.readAsDataURL(file);
+            });
+        }
+
+        window.removeImage = function(index, event) {
+            event.stopPropagation();
+            selectedFiles.splice(index, 1);
+            updateFileInput();
+            renderPreviews();
+        }
+
+        window.removeExistingImage = function(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.remove();
             }
         }
     });

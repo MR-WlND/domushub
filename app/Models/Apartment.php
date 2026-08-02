@@ -20,6 +20,11 @@ class Apartment extends Model
         'area',
         'status',
         'description',
+        'images',
+    ];
+
+    protected $casts = [
+        'images' => 'array',
     ];
 
     /**
