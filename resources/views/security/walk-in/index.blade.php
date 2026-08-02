@@ -929,7 +929,7 @@ function updateReview() {
     const noticeText = document.getElementById('rv-notice-text');
     if (selResId) {
         noticeEl.className = 'wi-notice wi-notice--ok';
-        noticeText.innerHTML = '📲 Sẵn sàng gửi thông báo đến cư dân <strong>' + selResName + '</strong>. Nhấn nút bên dưới để hoàn tất.';
+        noticeText.innerHTML = 'Sẵn sàng gửi thông báo đến cư dân <strong>' + selResName + '</strong>. Nhấn nút bên dưới để hoàn tất.';
     } else {
         noticeEl.className = 'wi-notice';
         noticeText.innerHTML = 'Thông tin đã đầy đủ. Nhấn nút bên dưới để ghi nhận khách vào.';
