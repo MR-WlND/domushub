@@ -65,7 +65,7 @@ class StaffController extends Controller
             'phone' => [
                 'nullable',
                 'string',
-                'max:20',
+                'regex:/^[0-9]{10,12}$/',
                 function ($attribute, $value, $fail) use ($request) {
                     if ($request->create_account == 1 && $value) {
                         $exists = \App\Models\User::where('phone', $value)->exists();
@@ -75,16 +75,31 @@ class StaffController extends Controller
                     }
                 }
             ],
-            'cccd' => 'nullable|string|max:20|unique:staffs,cccd',
+            'cccd' => 'nullable|string|regex:/^[0-9]{9,12}$/|unique:staffs,cccd',
             'address' => 'nullable|string|max:255',
-            'dob' => 'nullable|date',
+            'dob' => 'nullable|date|before:today',
             // Tab 2: Job
             'department_id' => 'nullable|exists:departments,id',
             'status' => 'required|in:active,inactive',
-            // Tab 4: System Account
+            // Tab 3: System Account
             'create_account' => 'nullable|boolean',
             'email' => 'required_if:create_account,1|nullable|email|unique:users,email',
-            'role' => 'required_if:create_account,1|nullable|string',
+            'role' => 'required_if:create_account,1|nullable|in:staff,technician,security,cleaning,receptionist',
+        ], [
+            'full_name.required' => 'Vui lòng nhập họ và tên nhân sự.',
+            'full_name.max' => 'Họ và tên không được vượt quá 255 ký tự.',
+            'phone.regex' => 'Số điện thoại không hợp lệ (chỉ chứa 10-12 chữ số).',
+            'cccd.regex' => 'Số CCCD/CMND không hợp lệ (chứa 9-12 chữ số).',
+            'cccd.unique' => 'Số CCCD/CMND này đã được sử dụng cho một nhân sự khác.',
+            'dob.date' => 'Ngày sinh không đúng định dạng.',
+            'dob.before' => 'Ngày sinh phải là một ngày trước hiện tại.',
+            'department_id.exists' => 'Phòng ban được chọn không hợp lệ.',
+            'status.required' => 'Vui lòng chọn trạng thái làm việc.',
+            'email.required_if' => 'Vui lòng nhập email khi tạo tài khoản.',
+            'email.email' => 'Email không đúng định dạng.',
+            'email.unique' => 'Email này đã tồn tại trong hệ thống.',
+            'role.required_if' => 'Vui lòng chọn vai trò hệ thống khi tạo tài khoản.',
+            'role.in' => 'Vai trò được chọn không hợp lệ.',
         ]);
 
         $staff = Staff::create([
@@ -137,7 +152,7 @@ class StaffController extends Controller
             'phone' => [
                 'nullable',
                 'string',
-                'max:20',
+                'regex:/^[0-9]{10,12}$/',
                 function ($attribute, $value, $fail) use ($staff) {
                     if ($staff->user && $value && $value !== $staff->user->phone) {
                         $exists = \App\Models\User::where('phone', $value)->exists();
@@ -147,12 +162,22 @@ class StaffController extends Controller
                     }
                 }
             ],
-            'cccd' => 'nullable|string|max:20|unique:staffs,cccd,' . $staff->id,
+            'cccd' => 'nullable|string|regex:/^[0-9]{9,12}$/|unique:staffs,cccd,' . $staff->id,
             'address' => 'nullable|string|max:255',
-            'dob' => 'nullable|date',
+            'dob' => 'nullable|date|before:today',
             // Tab 2: Job
             'department_id' => 'nullable|exists:departments,id',
             'status' => 'required|in:active,inactive',
+        ], [
+            'full_name.required' => 'Vui lòng nhập họ và tên nhân sự.',
+            'full_name.max' => 'Họ và tên không được vượt quá 255 ký tự.',
+            'phone.regex' => 'Số điện thoại không hợp lệ (chỉ chứa 10-12 chữ số).',
+            'cccd.regex' => 'Số CCCD/CMND không hợp lệ (chứa 9-12 chữ số).',
+            'cccd.unique' => 'Số CCCD/CMND này đã được sử dụng cho một nhân sự khác.',
+            'dob.date' => 'Ngày sinh không đúng định dạng.',
+            'dob.before' => 'Ngày sinh phải là một ngày trước hiện tại.',
+            'department_id.exists' => 'Phòng ban được chọn không hợp lệ.',
+            'status.required' => 'Vui lòng chọn trạng thái làm việc.',
         ]);
 
         $staff->update([
