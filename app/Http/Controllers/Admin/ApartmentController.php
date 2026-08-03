@@ -575,9 +575,9 @@ class ApartmentController extends Controller
             // Dòng đầu tiên là header
             $header = $rows[0];
             
-            // Validate sơ bộ số cột (ít nhất phải có 13 cột cho cấu trúc mẫu đầy đủ)
-            if (count($header) < 13) {
-                return back()->with('error', 'Tệp Excel không đúng số cột quy định của file mẫu (yêu cầu 13 cột).');
+            // Validate sơ bộ số cột (ít nhất phải có 15 cột cho cấu trúc mẫu đầy đủ)
+            if (count($header) < 15) {
+                return back()->with('error', 'Tệp Excel không đúng số cột quy định của file mẫu (yêu cầu 15 cột mới).');
             }
 
             $successCount = 0;
@@ -602,17 +602,19 @@ class ApartmentController extends Controller
 
                     $blockName = trim($row[0] ?? '');
                     $blockCode = trim($row[1] ?? '');
-                    $blockManagerName = trim($row[2] ?? '');
-                    $blockManagerContact = trim($row[3] ?? '');
-                    $blockDescription = trim($row[4] ?? '');
-                    $floorNumberStr = trim($row[5] ?? '');
-                    $floorName = trim($row[6] ?? '');
-                    $floorTypeStr = trim($row[7] ?? '');
-                    $floorDescription = trim($row[8] ?? '');
-                    $apartmentNumber = trim($row[9] ?? '');
-                    $areaStr = trim($row[10] ?? '');
-                    $statusStr = trim($row[11] ?? '');
-                    $apartmentDescription = trim($row[12] ?? '');
+                    $blockTotalFloors = trim($row[2] ?? '');
+                    $blockTotalBasements = trim($row[3] ?? '');
+                    $blockAptsPerFloor = trim($row[4] ?? '');
+                    $blockAmenities = trim($row[5] ?? '');
+                    $floorNumberStr = trim($row[6] ?? '');
+                    $floorName = trim($row[7] ?? '');
+                    $floorTypeStr = trim($row[8] ?? '');
+                    $floorDescription = trim($row[9] ?? '');
+                    $apartmentNumber = trim($row[10] ?? '');
+                    $apartmentTypeName = trim($row[11] ?? '');
+                    $areaStr = trim($row[12] ?? '');
+                    $statusStr = trim($row[13] ?? '');
+                    $apartmentDescription = trim($row[14] ?? '');
 
                     $rowNum = $i + 1; // Số hàng trong Excel (1-indexed)
 
@@ -641,36 +643,37 @@ class ApartmentController extends Controller
 
                     // 1. Tìm hoặc tạo Block
                     $block = Block::whereRaw('LOWER(name) = ?', [strtolower($blockName)])->first();
+                    $amenitiesArray = $blockAmenities ? array_map('trim', explode(',', $blockAmenities)) : null;
+
                     if (!$block) {
                         $block = Block::create([
                             'name' => $blockName,
                             'code' => $blockCode ?: \Illuminate\Support\Str::slug($blockName),
                             'status' => 'active',
-                            'manager_name' => $blockManagerName ?: null,
-                            'manager_contact' => $blockManagerContact ?: null,
-                            'description' => $blockDescription ?: null,
+                            'total_floors' => $blockTotalFloors !== '' ? (int)$blockTotalFloors : null,
+                            'total_basements' => $blockTotalBasements !== '' ? (int)$blockTotalBasements : null,
+                            'apartments_per_floor' => $blockAptsPerFloor !== '' ? (int)$blockAptsPerFloor : null,
+                            'amenities' => $amenitiesArray,
                         ]);
                     } else {
                         // Cập nhật thông tin block nếu có giá trị mới
                         $updateData = [];
                         if ($blockCode !== '') $updateData['code'] = $blockCode;
-                        if ($blockManagerName !== '') $updateData['manager_name'] = $blockManagerName;
-                        if ($blockManagerContact !== '') $updateData['manager_contact'] = $blockManagerContact;
-                        if ($blockDescription !== '') $updateData['description'] = $blockDescription;
+                        if ($blockTotalFloors !== '') $updateData['total_floors'] = (int)$blockTotalFloors;
+                        if ($blockTotalBasements !== '') $updateData['total_basements'] = (int)$blockTotalBasements;
+                        if ($blockAptsPerFloor !== '') $updateData['apartments_per_floor'] = (int)$blockAptsPerFloor;
+                        if ($blockAmenities !== '') $updateData['amenities'] = $amenitiesArray;
+                        
                         if (!empty($updateData)) {
                             $block->update($updateData);
                         }
                     }
 
                     // Phân loại tầng từ tiếng Việt sang enum
-                    $floorType = 'residential';
+                    $floorType = 'above_ground';
                     $floorTypeLower = mb_strtolower($floorTypeStr, 'UTF-8');
-                    if (str_contains($floorTypeLower, 'thương mại') || str_contains($floorTypeLower, 'commercial')) {
-                        $floorType = 'commercial';
-                    } elseif (str_contains($floorTypeLower, 'kỹ thuật') || str_contains($floorTypeLower, 'technical')) {
-                        $floorType = 'technical';
-                    } elseif (str_contains($floorTypeLower, 'tiện ích') || str_contains($floorTypeLower, 'amenity')) {
-                        $floorType = 'amenity';
+                    if (str_contains($floorTypeLower, 'hầm') || str_contains($floorTypeLower, 'basement')) {
+                        $floorType = 'basement';
                     }
 
                     // 2. Tìm hoặc tạo Floor
@@ -706,7 +709,16 @@ class ApartmentController extends Controller
                         $status = 'maintenance';
                     }
 
-                    // 4. Tìm hoặc tạo/cập nhật Apartment (tìm cả căn hộ đã xóa mềm)
+                    // 4. Tìm loại căn hộ (nếu có nhập Tên Loại Căn Hộ)
+                    $apartmentTypeId = null;
+                    if ($apartmentTypeName !== '') {
+                        $aptType = \App\Models\ApartmentType::whereRaw('LOWER(name) = ?', [strtolower($apartmentTypeName)])->first();
+                        if ($aptType) {
+                            $apartmentTypeId = $aptType->id;
+                        }
+                    }
+
+                    // 5. Tìm hoặc tạo/cập nhật Apartment (tìm cả căn hộ đã xóa mềm)
                     $apartment = Apartment::withTrashed()
                         ->where('floor_id', $floor->id)
                         ->where('apartment_number', $apartmentNumber)
@@ -716,15 +728,24 @@ class ApartmentController extends Controller
                         if ($apartment->trashed()) {
                             $apartment->restore();
                         }
-                        $apartment->update([
+                        
+                        $updateData = [
                             'area' => $area,
                             'status' => $status,
-                            'description' => $apartmentDescription ?: $apartment->description,
-                        ]);
+                        ];
+                        if ($apartmentDescription !== '') {
+                            $updateData['description'] = $apartmentDescription;
+                        }
+                        if ($apartmentTypeId !== null) {
+                            $updateData['apartment_type_id'] = $apartmentTypeId;
+                        }
+                        
+                        $apartment->update($updateData);
                         $updatedCount++;
                     } else {
                         Apartment::create([
                             'floor_id' => $floor->id,
+                            'apartment_type_id' => $apartmentTypeId,
                             'apartment_number' => $apartmentNumber,
                             'area' => $area,
                             'status' => $status,
