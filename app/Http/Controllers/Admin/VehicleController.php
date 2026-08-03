@@ -57,7 +57,7 @@ class VehicleController extends Controller
     {
         $validated = $request->validate([
             'apartment_id'  => 'required|exists:apartments,id',
-            'vehicle_type'  => 'required|in:car,motorbike,electric_bike,bicycle',
+            'vehicle_type'  => 'required|in:car,motorbike,electric_bike',
             'license_plate' => 'required|string|max:20|unique:vehicles,license_plate',
             'brand'         => 'nullable|string|max:100',
         ], [
