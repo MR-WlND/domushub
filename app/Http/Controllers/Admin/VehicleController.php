@@ -96,13 +96,12 @@ class VehicleController extends Controller
 
         DB::transaction(function () use ($lot, $vehicle) {
             $lot->update(['status' => 'occupied', 'apartment_id' => $vehicle->apartment_id]);
-            $vehicle->update(['parking_lot_id' => $lot->id, 'status' => 'awaiting_payment']);
+            $vehicle->update(['parking_lot_id' => $lot->id, 'status' => 'active']);
         });
 
-        // Tạo hóa đơn phí gửi xe ô tô
-        $this->createParkingFeeInvoice($vehicle);
+        $this->generateVehicleQr($vehicle);
 
-        return back()->with('success', 'Đã gán lốt ' . $lot->lot_number . ' cho xe ' . $vehicle->license_plate . '. Hóa đơn phí gửi xe đã gửi cho cư dân.');
+        return back()->with('success', 'Đã gán lốt ' . $lot->lot_number . ' cho xe ' . $vehicle->license_plate . '. Phương tiện đang hoạt động.');
     }
 
     public function releaseLot(Vehicle $vehicle)
@@ -142,13 +141,10 @@ class VehicleController extends Controller
             return back()->withErrors(['vehicle' => 'Ô tô cần được gán lốt đỗ trước khi duyệt.']);
         }
 
-        // Duyệt xe → chuyển sang "Chờ thanh toán" (chưa có QR)
-        $vehicle->update(['status' => 'awaiting_payment']);
+        $vehicle->update(['status' => 'active']);
+        $this->generateVehicleQr($vehicle);
 
-        // Tạo hóa đơn phí gửi xe cho cư dân
-        $this->createParkingFeeInvoice($vehicle);
-
-        return back()->with('success', 'Đã duyệt xe ' . $vehicle->license_plate . '. Hóa đơn phí gửi xe đã được gửi cho cư dân. Xe sẽ có QR khi cư dân thanh toán.');
+        return back()->with('success', 'Đã duyệt xe ' . $vehicle->license_plate . '. Phương tiện đang hoạt động.');
     }
 
     // =========================================================================
