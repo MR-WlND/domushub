@@ -489,7 +489,9 @@ document.addEventListener('DOMContentLoaded', function() {
         floorSelect.disabled = true;
         floorSelect.innerHTML = '<option value="">Đang tải...</option>';
 
-        fetch(`/amenities/floors/${blockId}`)
+        let url = '{{ portal_route("amenities.floors", "BLOCK_ID") }}';
+        url = url.replace('BLOCK_ID', blockId);
+        fetch(url)
             .then(response => response.json())
             .then(data => {
                 floorSelect.innerHTML = '<option value="">Chọn tầng (Tùy chọn)</option>';

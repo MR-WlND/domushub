@@ -781,7 +781,9 @@ document.addEventListener('DOMContentLoaded', function() {
         floorSelect.disabled = true;
         floorSelect.innerHTML = '<option value="">Đang tải...</option>';
 
-        fetch(`/amenities/floors/${blockId}`)
+        let url = '{{ portal_route("amenities.floors", "BLOCK_ID") }}';
+        url = url.replace('BLOCK_ID', blockId);
+        fetch(url)
             .then(response => response.json())
             .then(data => {
                 floorSelect.innerHTML = '<option value="">Chọn tầng (Tùy chọn)</option>';
@@ -813,6 +815,120 @@ document.addEventListener('DOMContentLoaded', function() {
     bookingRadios.forEach(radio => {
         radio.addEventListener('change', updateBookingState);
     });
+
+    // Image upload preview
+    const fileInput = document.querySelector('input[name="images[]"]');
+    const previewContainer = document.getElementById('imagePreviewContainer');
+    const uploadZone = document.getElementById('uploadZone');
+    
+    if (fileInput && previewContainer) {
+        let selectedFiles = new DataTransfer();
+
+        fileInput.addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            
+            files.forEach(file => {
+                if (selectedFiles.items.length < 5) {
+                    selectedFiles.items.add(file);
+                } else {
+                    alert('Bạn chỉ được chọn tối đa 5 ảnh.');
+                }
+            });
+            
+            updateFileInputAndPreview();
+        });
+
+        // Visual feedback for drag and drop
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.style.borderColor = 'var(--primary)';
+            uploadZone.style.background = '#eff6ff';
+        });
+
+        uploadZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadZone.style.borderColor = '#bfdbfe';
+            uploadZone.style.background = '#f8fafc';
+        });
+        
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.style.borderColor = '#bfdbfe';
+            uploadZone.style.background = '#f8fafc';
+            
+            if (e.dataTransfer.files.length) {
+                Array.from(e.dataTransfer.files).forEach(file => {
+                    if (file.type.startsWith('image/')) {
+                        if (selectedFiles.items.length < 5) {
+                            selectedFiles.items.add(file);
+                        }
+                    }
+                });
+                updateFileInputAndPreview();
+            }
+        });
+
+        function updateFileInputAndPreview() {
+            fileInput.files = selectedFiles.files;
+            previewContainer.innerHTML = '';
+            
+            Array.from(selectedFiles.files).forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const div = document.createElement('div');
+                    div.style.position = 'relative';
+                    div.style.width = '80px';
+                    div.style.height = '80px';
+                    div.style.borderRadius = '6px';
+                    div.style.overflow = 'hidden';
+                    div.style.border = '1px solid var(--border)';
+                    
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.objectFit = 'cover';
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.innerHTML = '&times;';
+                    removeBtn.style.position = 'absolute';
+                    removeBtn.style.top = '2px';
+                    removeBtn.style.right = '2px';
+                    removeBtn.style.background = 'rgba(0,0,0,0.6)';
+                    removeBtn.style.color = 'white';
+                    removeBtn.style.border = 'none';
+                    removeBtn.style.borderRadius = '50%';
+                    removeBtn.style.width = '20px';
+                    removeBtn.style.height = '20px';
+                    removeBtn.style.cursor = 'pointer';
+                    removeBtn.style.display = 'flex';
+                    removeBtn.style.alignItems = 'center';
+                    removeBtn.style.justifyContent = 'center';
+                    removeBtn.style.fontSize = '14px';
+                    removeBtn.style.lineHeight = '1';
+                    
+                    removeBtn.onclick = function(ev) {
+                        ev.preventDefault();
+                        ev.stopPropagation();
+                        
+                        // Remove from DataTransfer
+                        const dt = new DataTransfer();
+                        const currentFiles = Array.from(selectedFiles.files);
+                        currentFiles.splice(index, 1);
+                        currentFiles.forEach(f => dt.items.add(f));
+                        selectedFiles = dt;
+                        
+                        updateFileInputAndPreview();
+                    };
+                    
+                    div.appendChild(img);
+                    div.appendChild(removeBtn);
+                    previewContainer.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    }
 
     // Initialize states
     updatePriceState();
