@@ -93,7 +93,6 @@ class FloorController extends Controller
             'floor_type'           => 'required|in:above_ground,basement',
             'status'               => 'required|in:active,maintenance,inactive',
             'description'          => 'nullable|string',
-            'number_of_apartments' => 'nullable|integer|min:0|max:100',
         ]);
 
         // Phân tích số tầng từ tên tầng
@@ -146,27 +145,6 @@ class FloorController extends Controller
                 'status'       => $validated['status'],
                 'description'  => $validated['description'],
             ]);
-
-            $numberOfApartments = isset($validated['number_of_apartments']) ? (int)$validated['number_of_apartments'] : 0;
-
-            if ($numberOfApartments > 0) {
-                for ($i = 1; $i <= $numberOfApartments; $i++) {
-                    if ($floorNumber > 0) {
-                        $apartmentNumber = $floorNumber . str_pad($i, 2, '0', STR_PAD_LEFT);
-                    } elseif ($floorNumber === 0) {
-                        $apartmentNumber = '0' . str_pad($i, 2, '0', STR_PAD_LEFT);
-                    } else {
-                        $apartmentNumber = 'B' . abs($floorNumber) . str_pad($i, 2, '0', STR_PAD_LEFT);
-                    }
-
-                    Apartment::create([
-                        'floor_id'         => $floor->id,
-                        'apartment_number' => $apartmentNumber,
-                        'area'             => 0,
-                        'status'           => 'vacant',
-                    ]);
-                }
-            }
         });
 
         return redirect()
@@ -281,9 +259,6 @@ class FloorController extends Controller
             'floor_type'           => 'required|in:above_ground,basement',
             'status'               => 'required|in:active,maintenance,inactive',
             'description'          => 'nullable|string',
-            'number_of_apartments' => 'nullable|integer|min:' . $currentApartmentsCount . '|max:100',
-        ], [
-            'number_of_apartments.min' => 'Không thể giảm số lượng căn hộ thấp hơn số lượng hiện tại (' . $currentApartmentsCount . ') để tránh mất mát dữ liệu.',
         ]);
 
         // Phân tích số tầng từ tên tầng
@@ -330,7 +305,7 @@ class FloorController extends Controller
             ]);
         }
 
-        DB::transaction(function () use ($floor, $validated, $floorNumber, $currentApartmentsCount) {
+        DB::transaction(function () use ($floor, $validated, $floorNumber) {
             $floor->update([
                 'block_id'     => $validated['block_id'],
                 'floor_number' => $floorNumber,
@@ -339,38 +314,6 @@ class FloorController extends Controller
                 'status'       => $validated['status'],
                 'description'  => $validated['description'],
             ]);
-
-            $numberOfApartments = isset($validated['number_of_apartments']) ? (int)$validated['number_of_apartments'] : $currentApartmentsCount;
-
-            if ($numberOfApartments > $currentApartmentsCount) {
-                $diff = $numberOfApartments - $currentApartmentsCount;
-                $added = 0;
-                $i = 1;
-                while ($added < $diff) {
-                    if ($floorNumber > 0) {
-                        $apartmentNumber = $floorNumber . str_pad($i, 2, '0', STR_PAD_LEFT);
-                    } elseif ($floorNumber === 0) {
-                        $apartmentNumber = '0' . str_pad($i, 2, '0', STR_PAD_LEFT);
-                    } else {
-                        $apartmentNumber = 'B' . abs($floorNumber) . str_pad($i, 2, '0', STR_PAD_LEFT);
-                    }
-
-                    $existsApartment = Apartment::where('floor_id', $floor->id)
-                        ->where('apartment_number', $apartmentNumber)
-                        ->exists();
-
-                    if (!$existsApartment) {
-                        Apartment::create([
-                            'floor_id'         => $floor->id,
-                            'apartment_number' => $apartmentNumber,
-                            'area'             => 0,
-                            'status'           => 'vacant',
-                        ]);
-                        $added++;
-                    }
-                    $i++;
-                }
-            }
         });
 
         return redirect()

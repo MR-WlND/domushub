@@ -88,12 +88,7 @@
                             @error('block_id') <p class="form-error-custom">{{ $message }}</p> @enderror
                         </div>
 
-                        {{-- Số lượng căn hộ --}}
-                        <div class="form-group-custom" id="apartments_count_group">
-                            <label class="form-label-custom">Số lượng căn hộ</label>
-                            <input type="number" name="number_of_apartments" value="{{ old('number_of_apartments', $floor->apartments_count) }}" placeholder="VD: 10, 5..." min="{{ $floor->apartments_count }}" max="100" class="form-input-custom @error('number_of_apartments') input-error @enderror" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 16px;">
-                            @error('number_of_apartments') <p class="form-error-custom">{{ $message }}</p> @enderror
-                        </div>
+
 
                         {{-- Loại tầng --}}
                         <div class="form-group-custom">
@@ -196,8 +191,6 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const floorTypeSelect = document.getElementById('floor_type_select');
-        const apartmentsCountGroup = document.getElementById('apartments_count_group');
-        const apartmentsCountInput = apartmentsCountGroup.querySelector('input');
         const blockSelect = document.getElementById('block_select');
         const floorNameInput = document.querySelector('input[name="name"]');
         
@@ -222,7 +215,7 @@
         function updatePreview() {
             const blockId = parseInt(blockSelect.value);
             const floorName = floorNameInput ? floorNameInput.value.trim() : '';
-            const aptCount = parseInt(apartmentsCountInput ? apartmentsCountInput.value : 0) || 0;
+            const aptCount = 0;
             
             const wrapper = document.getElementById('preview_building_wrapper');
             const emptyState = document.getElementById('preview_empty_state');
@@ -313,23 +306,9 @@
             });
         }
 
-        function toggleApartmentsCount() {
-            if (floorTypeSelect.value === 'basement') {
-                apartmentsCountGroup.style.display = 'none';
-            } else {
-                apartmentsCountGroup.style.display = 'block';
-            }
-        }
-
-        if(floorTypeSelect) {
-            floorTypeSelect.addEventListener('change', toggleApartmentsCount);
-        }
-        
         if (blockSelect) blockSelect.addEventListener('change', updatePreview);
         if (floorNameInput) floorNameInput.addEventListener('input', updatePreview);
-        if (apartmentsCountInput) apartmentsCountInput.addEventListener('input', updatePreview);
 
-        toggleApartmentsCount();
         updatePreview();
     });
 </script>
