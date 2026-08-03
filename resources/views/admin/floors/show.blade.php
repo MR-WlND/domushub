@@ -204,6 +204,12 @@
                                             <a href="{{ portal_route('apartments.edit', $apartment->id) }}" class="btn-action btn-action--edit" title="Sửa">
                                                 <i class="fa-regular fa-pen-to-square"></i>
                                             </a>
+                                            <form action="{{ portal_route('apartments.destroy', $apartment->id) }}" method="POST" style="display:contents;">
+                                                @csrf @method('DELETE')
+                                                <button type="button" class="btn-action btn-action--delete delete-apt-btn" title="Xóa" style="border:none; background:none;">
+                                                    <i class="fa-regular fa-trash-can" style="color: #ef4444;"></i>
+                                                </button>
+                                            </form>
                                         </div>
                                     </td>
                                 </tr>
@@ -231,4 +237,33 @@
 
 @push('styles')
     @vite(['resources/css/pages/admin/floors/show.css'])
+@endpush
+
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const deleteButtons = document.querySelectorAll('.delete-apt-btn');
+            deleteButtons.forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    const form = this.closest('form');
+                    Swal.fire({
+                        title: 'Xác nhận xóa?',
+                        text: "Bạn có chắc chắn muốn xóa căn hộ này không? Thao tác này không thể hoàn tác!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc2626',
+                        cancelButtonColor: '#64748b',
+                        confirmButtonText: 'Đồng ý xóa',
+                        cancelButtonText: 'Hủy bỏ',
+                        heightAuto: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+            });
+        });
+    </script>
 @endpush
