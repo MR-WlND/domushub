@@ -13,6 +13,9 @@
 @section('content')
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
     <h1 style="font-size:24px;font-weight:700;color:#00236f;margin:0;">Đặt lịch tiện ích</h1>
+    <a href="{{ route('receptionist.amenities.scan-qr') }}" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;background:linear-gradient(135deg,#7B3FE4,#5B24B7);color:#fff;border-radius:10px;font-weight:600;font-size:14px;text-decoration:none;box-shadow:0 4px 12px rgba(123,63,228,0.25);">
+        <i class="fa-solid fa-qrcode"></i> Quét QR Check-in
+    </a>
 </div>
 
 <!-- Filter -->
@@ -72,10 +75,12 @@
                         $map = [
                             'pending'   => ['Chờ duyệt', 'warning'],
                             'approved'  => ['Đã duyệt',  'success'],
+                            'used'      => ['Đã sử dụng', 'info'],
+                            'completed' => ['Đã hoàn thành', 'info'],
                             'rejected'  => ['Từ chối',   'danger'],
                             'cancelled' => ['Đã hủy',    'secondary'],
                         ];
-                        [$label, $cls] = $map[$booking->status] ?? [$booking->status, 'secondary'];
+                        [$label, $cls] = $map[$booking->status] ?? [$booking->status_label ?? $booking->status, 'secondary'];
                     @endphp
                     <span class="dashboard-status-pill dashboard-status-pill--{{ $cls }}">{{ $label }}</span>
                 </td>

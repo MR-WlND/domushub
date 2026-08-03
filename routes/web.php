@@ -260,6 +260,7 @@ $portalRoutes = function () {
     // Quản lý tiện ích chung cư (Facilities)
     Route::get('/amenities', [AdminFacilityController::class, 'index'])->name('amenities.index');
     Route::get('/amenities/create', [AdminFacilityController::class, 'create'])->name('amenities.create');
+    Route::get('/amenities/floors/{block}', [AdminFacilityController::class, 'getFloorsByBlock'])->name('amenities.floors');
     Route::post('/amenities', [AdminFacilityController::class, 'store'])->name('amenities.store');
     Route::get('/amenities/statistics', [AdminFacilityController::class, 'statistics'])->name('amenities.statistics');
     Route::get('/amenities/statistics/export', [AdminFacilityController::class, 'exportExcel'])->name('amenities.statistics.export');
@@ -626,6 +627,9 @@ Route::middleware(['receptionist'])->prefix('receptionist')->name('receptionist.
 
     // Đặt lịch tiện ích
     Route::get('/amenities',                        [\App\Http\Controllers\Receptionist\AmenityController::class, 'index'])->name('amenities.index');
+    Route::get('/amenities/scan-qr',                [\App\Http\Controllers\Receptionist\AmenityController::class, 'scanQr'])->name('amenities.scan-qr');
+    Route::post('/amenities/scan-qr/scan',          [\App\Http\Controllers\Receptionist\AmenityController::class, 'processQrScan'])->name('amenities.scan-qr.scan');
+    Route::post('/amenities/scan-qr/checkin',       [\App\Http\Controllers\Receptionist\AmenityController::class, 'checkin'])->name('amenities.scan-qr.checkin');
     Route::post('/amenities/{id}/approve',          [\App\Http\Controllers\Receptionist\AmenityController::class, 'approveBooking'])->name('amenities.approve');
     Route::post('/amenities/{id}/reject',           [\App\Http\Controllers\Receptionist\AmenityController::class, 'rejectBooking'])->name('amenities.reject');
 

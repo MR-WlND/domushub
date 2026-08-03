@@ -52,7 +52,7 @@
 .rfb-slot-btn:hover:not(.booked) { border-color: #3b82f6; color: #2563eb; background: #eff6ff; }
 .rfb-slot-btn.selected { border-color: #2563eb; background: #3b82f6; color: #fff; box-shadow: 0 2px 8px rgba(59,130,246,0.35); }
 .rfb-slot-btn.range { border-color: #93c5fd; background: #dbeafe; color: #1d4ed8; }
-.rfb-slot-btn.booked { border-color: #f1f5f9; background: #f8fafc; color: #cbd5e1; cursor: not-allowed; text-decoration: line-through; }
+.rfb-slot-btn.booked { border-color: #fecaca; background: #fef2f2; color: #ef4444; cursor: not-allowed; }
 
 .rfb-slots-loading { font-size: 0.82rem; color: #64748b; display: flex; align-items: center; gap: 6px; }
 .rfb-slots-loading::before { content: ''; width: 14px; height: 14px; border: 2px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
@@ -172,7 +172,7 @@
                     </div>
 
                     {{-- Bước 2: Chọn khung giờ (chỉ hiện khi đặt theo giờ) --}}
-                    @if(($facility->booking_type ?? 'slot') === 'slot')
+                    @if(in_array($facility->booking_type ?? 'time_slot', ['time_slot', 'slot']))
                     <div class="rfb-step">
                         <div class="rfb-step-label">
                             <span class="rfb-step-num">2</span>
@@ -195,10 +195,10 @@
                     <input type="hidden" name="end_time"   id="end_time"   value="{{ $facility->close_time ? substr($facility->close_time, 0, 5) : '23:59' }}">
                     @endif
 
-                    {{-- Bước {{ ($facility->booking_type ?? 'slot') === 'person' ? '2' : '3' }}: Số người --}}
+                    {{-- Bước {{ in_array($facility->booking_type ?? 'time_slot', ['time_slot', 'slot']) ? '3' : '2' }}: Số người --}}
                     <div class="rfb-step">
                         <div class="rfb-step-label">
-                            <span class="rfb-step-num">{{ ($facility->booking_type ?? 'slot') === 'person' ? '2' : '3' }}</span>
+                            <span class="rfb-step-num">{{ in_array($facility->booking_type ?? 'time_slot', ['time_slot', 'slot']) ? '3' : '2' }}</span>
                             Số người sử dụng
                         </div>
                         <div class="rfb-people-wrap">
@@ -214,23 +214,21 @@
 
                     {{-- Tổng tiền preview --}}
                     @php
-                        $bookingType   = $facility->booking_type ?? 'slot';
-                        $hasFee        = $bookingType === 'person'
-                            ? ($facility->price_per_person && $facility->price_per_person > 0)
-                            : ($facility->price_per_slot   && $facility->price_per_slot   > 0);
+                        $hasFee = $facility->fee_type !== 'free' && $facility->price > 0;
+                        $feeType = $facility->fee_type;
                     @endphp
                     @if($hasFee)
                     <div class="rfb-price-preview" id="price-preview">
                         <div class="rfb-price-row">
-                            @if($bookingType === 'person')
+                            @if($feeType === 'per_person')
                                 <span>Giá mỗi người (vé / lượt)</span>
-                                <span class="rfb-price-unit">{{ number_format($facility->price_per_person) }}đ</span>
-                            @elseif($facility->slot_duration == 0)
-                                <span>Giá mỗi lượt (cả ngày)</span>
-                                <span class="rfb-price-unit">{{ number_format($facility->price_per_slot) }}đ</span>
+                                <span class="rfb-price-unit">{{ number_format($facility->price) }}đ</span>
+                            @elseif($feeType === 'per_use')
+                                <span>Giá mỗi lượt</span>
+                                <span class="rfb-price-unit">{{ number_format($facility->price) }}đ</span>
                             @else
-                                <span>Giá mỗi slot ({{ $facility->slot_duration }} phút)</span>
-                                <span class="rfb-price-unit">{{ number_format($facility->price_per_slot) }}đ</span>
+                                <span>Giá mỗi giờ</span>
+                                <span class="rfb-price-unit">{{ number_format($facility->price) }}đ</span>
                             @endif
                         </div>
                         <div class="rfb-price-row" id="price-row-slots" style="display:none">
@@ -312,9 +310,7 @@
                     <div>
                         <p class="rfb-info-label">Giá sử dụng</p>
                         @php
-                            $isPaid = ($facility->booking_type ?? 'slot') === 'person'
-                                ? ($facility->price_per_person && $facility->price_per_person > 0)
-                                : ($facility->price_per_slot   && $facility->price_per_slot   > 0);
+                            $isPaid = $facility->fee_type !== 'free' && $facility->price > 0;
                         @endphp
                         <p class="rfb-info-value {{ !$isPaid ? 'rfb-free' : 'rfb-paid' }}">
                             {{ $facility->price_label }}
@@ -342,9 +338,9 @@
 
 @push('scripts')
 <script>
-const pricePerSlot   = {{ (($facility->booking_type ?? 'slot') === 'slot') ? ($facility->price_per_slot ?? 0) : 0 }};
-const pricePerPerson = {{ (($facility->booking_type ?? 'slot') === 'person') ? ($facility->price_per_person ?? 0) : 0 }};
-const bookingType    = '{{ $facility->booking_type ?? 'slot' }}';
+const bookingType    = '{{ $facility->booking_type ?? 'time_slot' }}';
+const feeType        = '{{ $facility->fee_type ?? 'free' }}';
+const price          = {{ $facility->price ?? 0 }};
 const slotDuration   = {{ $facility->slot_duration ?? 60 }};
 const facilityId     = {{ $facility->id }};
 const maxCapacity    = {{ $facility->capacity }};
@@ -423,7 +419,7 @@ function renderSlots() {
             <span class="rfb-legend-dot" style="background:#dbeafe;border:1.5px solid #93c5fd"></span>Trong khoảng
         </div>
         <div class="rfb-legend-item">
-            <span class="rfb-legend-dot" style="background:#f8fafc;border:1.5px solid #e2e8f0;text-decoration:line-through"></span>Đã đặt
+            <span class="rfb-legend-dot" style="background:#fef2f2;border:1.5px solid #fecaca"></span>Đã đặt (Khóa)
         </div>
     </div>`;
 
@@ -531,10 +527,10 @@ function updateFormAndPrice() {
 function updatePrice(numSlots) {
     const people = Math.max(1, parseInt(document.getElementById('number_of_people')?.value || 1));
 
-    if (bookingType === 'person') {
-        // Đặt theo người: giá/người × số người
-        if (!pricePerPerson || pricePerPerson <= 0) return;
-        const total = pricePerPerson * people;
+    if (!price || price <= 0 || feeType === 'free') return;
+
+    if (feeType === 'per_person') {
+        const total = price * people;
 
         const rowSlots = document.getElementById('price-row-slots');
         if (rowSlots) rowSlots.style.display = 'none';
@@ -543,20 +539,30 @@ function updatePrice(numSlots) {
         const fmla      = document.getElementById('price-formula');
         if (rowPeople && fmla) {
             rowPeople.style.display = 'flex';
-            fmla.textContent = people + ' người × ' + Number(pricePerPerson).toLocaleString('vi-VN') + 'đ';
+            fmla.textContent = people + ' người × ' + Number(price).toLocaleString('vi-VN') + 'đ';
         }
 
         document.getElementById('total-price').textContent = total.toLocaleString('vi-VN') + 'đ';
     } else {
-        // Đặt theo tiếng (slot): giá/slot × số slot
-        if (!pricePerSlot || pricePerSlot <= 0) return;
-        const total = numSlots * pricePerSlot;
+        let total = 0;
+        let formulaText = '';
+        
+        if (feeType === 'per_use') {
+            total = price;
+            formulaText = '1 lượt × ' + Number(price).toLocaleString('vi-VN') + 'đ';
+        } else {
+            // per_hour
+            let hours = (numSlots * slotDuration) / 60;
+            if (hours === 0 || isNaN(hours)) hours = 1;
+            total = hours * price;
+            formulaText = hours + ' giờ × ' + Number(price).toLocaleString('vi-VN') + 'đ';
+        }
 
         const rowSlots = document.getElementById('price-row-slots');
         const valSlots = document.getElementById('price-slots-val');
         if (rowSlots && valSlots) {
             rowSlots.style.display = 'flex';
-            valSlots.textContent = numSlots + ' slot × ' + Number(pricePerSlot).toLocaleString('vi-VN') + 'đ = ' + (numSlots * pricePerSlot).toLocaleString('vi-VN') + 'đ';
+            valSlots.textContent = formulaText + ' = ' + total.toLocaleString('vi-VN') + 'đ';
         }
 
         const rowPeople = document.getElementById('price-row-people');
@@ -573,12 +579,12 @@ function changePeople(delta) {
     if (val < 1) val = 1;
     if (val > max) val = max;
     input.value = val;
-    // Khi đặt theo người: cập nhật ngay khi đổi số người
-    if (bookingType === 'person' || selectedIndices.length > 0) updatePrice(selectedIndices.length);
+    // Cập nhật giá nếu có
+    if (feeType === 'per_person' || selectedIndices.length > 0) updatePrice(selectedIndices.length);
 }
 
 document.getElementById('number_of_people')?.addEventListener('input', function() {
-    if (bookingType === 'person' || selectedIndices.length > 0) updatePrice(selectedIndices.length);
+    if (feeType === 'per_person' || selectedIndices.length > 0) updatePrice(selectedIndices.length);
 });
 
 function validateAndSubmit() {
@@ -596,8 +602,8 @@ function validateAndSubmit() {
         return;
     }
 
-    // Chỉ kiểm tra khung giờ khi đặt theo slot (không phải theo người)
-    if (bookingType !== 'person') {
+    // Chỉ kiểm tra khung giờ khi đặt theo khung giờ
+    if (['time_slot', 'slot'].includes(bookingType)) {
         const startVal = document.getElementById('start_time').value;
         const endVal   = document.getElementById('end_time').value;
         if (!startVal || !endVal) {
@@ -615,8 +621,8 @@ function validateAndSubmit() {
 document.addEventListener('DOMContentLoaded', () => {
     const dateInput = document.getElementById('booking_date');
     if (dateInput && dateInput.value) loadSlots(dateInput.value);
-    // Nếu đặt theo người: hiển thị giá ngay khi load
-    if (bookingType === 'person') updatePrice(0);
+    // Nếu phí theo người: hiển thị giá ngay khi load
+    if (feeType === 'per_person' || feeType === 'per_use') updatePrice(0);
 });
 </script>
 @endpush

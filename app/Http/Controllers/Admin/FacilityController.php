@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Facility;
 use App\Models\FacilityBooking;
+use App\Models\Block;
+use App\Models\Floor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -17,7 +19,7 @@ class FacilityController extends Controller
      */
     public function index(): View
     {
-        $facilities = Facility::withCount([
+        $facilities = Facility::with(['block', 'floor'])->withCount([
             'bookings',
             'pendingBookings',
         ])->orderBy('name')->get();
@@ -26,11 +28,21 @@ class FacilityController extends Controller
     }
 
     /**
+     * Lấy danh sách tầng theo tòa (AJAX)
+     */
+    public function getFloorsByBlock($blockId)
+    {
+        $floors = Floor::where('block_id', $blockId)->orderBy('floor_number')->get(['id', 'name']);
+        return response()->json($floors);
+    }
+
+    /**
      * Form tạo tiện ích mới
      */
     public function create(): View
     {
-        return view('admin.amenities.create');
+        $blocks = Block::orderBy('name')->get();
+        return view('admin.amenities.create', compact('blocks'));
     }
 
     /**
@@ -39,34 +51,45 @@ class FacilityController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name'             => 'required|string|max:100|unique:facilities,name',
-            'capacity'         => 'required|integer|min:1',
-            'description'      => 'nullable|string|max:500',
-            'status'           => 'required|in:available,maintenance,closed',
-            'open_time'        => 'nullable|date_format:H:i',
-            'close_time'       => 'nullable|date_format:H:i|after:open_time',
-            'slot_duration'    => 'required|integer|in:0,30,60,90,120',
-            'booking_type'     => 'required|in:slot,person',
-            'price_per_slot'   => 'required|numeric|min:0',
-            'price_per_person' => 'required|numeric|min:0',
-            'rules'            => 'nullable|string|max:1000',
-            'images'           => 'nullable|array|max:5',
-            'images.*'         => 'image|mimes:jpeg,png,jpg,webp|max:3072',
+            'name'                      => 'required|string|max:100|unique:facilities,name',
+            'facility_type'             => 'nullable|string|max:100',
+            'block_id'                  => 'nullable|exists:blocks,id',
+            'floor_id'                  => 'nullable|exists:floors,id',
+            'capacity'                  => 'required|integer|min:1',
+            'description'               => 'nullable|string|max:500',
+            'status'                    => 'required|in:available,maintenance,closed',
+            'open_time'                 => 'nullable|date_format:H:i',
+            'close_time'                => 'nullable|date_format:H:i|after:open_time',
+            'operating_days'            => 'nullable|array',
+            'operating_days.*'          => 'string|in:T2,T3,T4,T5,T6,T7,CN',
+            'slot_duration'             => 'required|integer|min:0',
+            'booking_type'              => 'required|in:none,time_slot,slot',
+            'fee_type'                  => 'required|in:free,per_hour,per_use,per_person',
+            'price'                     => 'required_unless:fee_type,free|numeric|min:0',
+            'min_advance_booking_hours' => 'nullable|integer|min:0',
+            'max_advance_booking_days'  => 'nullable|integer|min:0',
+            'rules'                     => 'nullable|string|max:1000',
+            'images'                    => 'nullable|array|max:5',
+            'images.*'                  => 'image|mimes:jpeg,png,jpg,webp|max:3072',
         ], [
-            'name.required'           => 'Vui lòng nhập tên tiện ích.',
-            'name.unique'             => 'Tên tiện ích đã tồn tại.',
-            'capacity.required'       => 'Vui lòng nhập sức chứa.',
-            'capacity.min'            => 'Sức chứa phải ít nhất 1 người.',
-            'status.required'         => 'Vui lòng chọn trạng thái.',
-            'close_time.after'        => 'Giờ đóng cửa phải sau giờ mở cửa.',
-            'slot_duration.in'        => 'Thời lượng slot không hợp lệ.',
-            'booking_type.required'   => 'Vui lòng chọn kiểu đặt chỗ.',
-            'price_per_slot.min'      => 'Giá phải lớn hơn hoặc bằng 0.',
-            'price_per_person.min'    => 'Giá theo người phải lớn hơn hoặc bằng 0.',
-            'images.max'              => 'Tải tối đa 5 ảnh.',
-            'images.*.image'          => 'File phải là ảnh.',
-            'images.*.max'            => 'Mỗi ảnh tối đa 3MB.',
+            'name.required'             => 'Vui lòng nhập tên tiện ích.',
+            'name.unique'               => 'Tên tiện ích đã tồn tại.',
+            'capacity.required'         => 'Vui lòng nhập sức chứa.',
+            'capacity.min'              => 'Sức chứa phải ít nhất 1 người.',
+            'status.required'           => 'Vui lòng chọn trạng thái.',
+            'close_time.after'          => 'Giờ đóng cửa phải sau giờ mở cửa.',
+            'slot_duration.in'          => 'Thời lượng slot không hợp lệ.',
+            'booking_type.required'     => 'Vui lòng chọn hình thức đặt chỗ.',
+            'fee_type.required'         => 'Vui lòng chọn loại phí.',
+            'price.required_unless'     => 'Vui lòng nhập đơn giá.',
+            'images.max'                => 'Tải tối đa 5 ảnh.',
+            'images.*.image'            => 'File phải là ảnh.',
+            'images.*.max'              => 'Mỗi ảnh tối đa 3MB.',
         ]);
+
+        if ($validated['fee_type'] === 'free') {
+            $validated['price'] = 0;
+        }
 
         $uploadedImages = [];
         if ($request->hasFile('images')) {
@@ -120,28 +143,36 @@ class FacilityController extends Controller
     public function update(Request $request, Facility $facility): RedirectResponse
     {
         $validated = $request->validate([
-            'name'             => 'required|string|max:100|unique:facilities,name,' . $facility->id,
-            'capacity'         => 'required|integer|min:1',
-            'description'      => 'nullable|string|max:500',
-            'status'           => 'required|in:available,maintenance,closed',
-            'open_time'        => 'nullable|date_format:H:i',
-            'close_time'       => 'nullable|date_format:H:i|after:open_time',
-            'slot_duration'    => 'required|integer|in:0,30,60,90,120',
-            'booking_type'     => 'required|in:slot,person',
-            'price_per_slot'   => 'required|numeric|min:0',
-            'price_per_person' => 'required|numeric|min:0',
-            'rules'            => 'nullable|string|max:1000',
+            'name'                      => 'required|string|max:100|unique:facilities,name,' . $facility->id,
+            'facility_type'             => 'nullable|string|max:100',
+            'location'                  => 'nullable|string|max:255',
+            'capacity'                  => 'required|integer|min:1',
+            'description'               => 'nullable|string|max:500',
+            'status'                    => 'required|in:available,maintenance,closed',
+            'open_time'                 => 'nullable|date_format:H:i',
+            'close_time'                => 'nullable|date_format:H:i|after:open_time',
+            'slot_duration'             => 'required|integer|in:0,30,60,90,120',
+            'booking_type'              => 'required|in:none,time_slot',
+            'fee_type'                  => 'required|in:free,per_hour,per_use,per_person',
+            'price'                     => 'required_unless:fee_type,free|numeric|min:0',
+            'min_advance_booking_hours' => 'nullable|integer|min:0',
+            'max_advance_booking_days'  => 'nullable|integer|min:0',
+            'rules'                     => 'nullable|string|max:1000',
         ], [
-            'name.required'           => 'Vui lòng nhập tên tiện ích.',
-            'name.unique'             => 'Tên tiện ích đã tồn tại.',
-            'capacity.required'       => 'Vui lòng nhập sức chứa.',
-            'status.required'         => 'Vui lòng chọn trạng thái.',
-            'close_time.after'        => 'Giờ đóng cửa phải sau giờ mở cửa.',
-            'slot_duration.in'        => 'Thời lượng slot không hợp lệ.',
-            'booking_type.required'   => 'Vui lòng chọn kiểu đặt chỗ.',
-            'price_per_slot.min'      => 'Giá phải lớn hơn hoặc bằng 0.',
-            'price_per_person.min'    => 'Giá theo người phải lớn hơn hoặc bằng 0.',
+            'name.required'             => 'Vui lòng nhập tên tiện ích.',
+            'name.unique'               => 'Tên tiện ích đã tồn tại.',
+            'capacity.required'         => 'Vui lòng nhập sức chứa.',
+            'status.required'           => 'Vui lòng chọn trạng thái.',
+            'close_time.after'          => 'Giờ đóng cửa phải sau giờ mở cửa.',
+            'slot_duration.in'          => 'Thời lượng slot không hợp lệ.',
+            'booking_type.required'     => 'Vui lòng chọn hình thức đặt chỗ.',
+            'fee_type.required'         => 'Vui lòng chọn loại phí.',
+            'price.required_unless'     => 'Vui lòng nhập đơn giá.',
         ]);
+
+        if ($validated['fee_type'] === 'free') {
+            $validated['price'] = 0;
+        }
 
         $facility->update($validated);
 
