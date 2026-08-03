@@ -77,21 +77,7 @@ class VehicleController extends Controller
         $parkingLotId = null;
 
         if (in_array($validated['vehicle_type'], ['motorbike', 'electric_bike', 'bicycle'])) {
-            $limit = \App\Models\SystemSetting::get('max_motorbike_per_apartment', 3);
-
-            // Xe máy/điện: Giới hạn theo SystemSetting (đếm cả locked, pending_renewal)
-            $currentMotoCount = Vehicle::where('apartment_id', $user->apartment_id)
-                ->whereIn('vehicle_type', ['motorbike', 'electric_bike', 'bicycle'])
-                ->whereIn('status', ['pending', 'active', 'pending_renewal', 'locked'])
-                ->count();
-
-            if ($currentMotoCount >= $limit) {
-                return back()->withInput()->withErrors([
-                    'vehicle_type' => "Căn hộ của bạn đã đăng ký tối đa {$limit} xe máy/xe điện."
-                ]);
-            }
-
-            // Xe máy mới đăng ký → chờ admin duyệt
+            // Xe máy/điện/đạp: không giới hạn số lượng, chờ admin duyệt
             $status = 'pending';
 
         } elseif ($validated['vehicle_type'] === 'car') {
