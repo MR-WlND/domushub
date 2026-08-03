@@ -51,7 +51,7 @@ class VehicleController extends Controller
 
         // 2. Validate
         $validated = $request->validate([
-            'vehicle_type'  => ['required', 'in:motorbike,electric_bike,car,bicycle'],
+            'vehicle_type'  => ['required', 'in:motorbike,electric_bike,car'],
             'license_plate' => ['required_if:vehicle_type,motorbike,car', 'nullable', 'string', 'max:20', 'regex:/^[A-Za-z0-9\-\.]+$/'],
             'brand'         => ['nullable', 'string', 'max:50'],
             'image'         => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp'],
@@ -76,8 +76,8 @@ class VehicleController extends Controller
         $status      = 'active';
         $parkingLotId = null;
 
-        if (in_array($validated['vehicle_type'], ['motorbike', 'electric_bike', 'bicycle'])) {
-            // Xe máy/điện/đạp: không giới hạn số lượng, chờ admin duyệt
+        if (in_array($validated['vehicle_type'], ['motorbike', 'electric_bike'])) {
+            // Xe máy/điện: chờ admin duyệt
             $status = 'pending';
 
         } elseif ($validated['vehicle_type'] === 'car') {
@@ -133,7 +133,9 @@ class VehicleController extends Controller
             'qr_code'        => null,
         ]);
 
-        $message = 'Đăng ký phương tiện thành công. Vui lòng chờ Ban quản lý duyệt.';
+        $message = $status === 'active' 
+            ? 'Đăng ký xe đạp thành công! Xe đã được kích hoạt.'
+            : 'Đăng ký phương tiện thành công. Vui lòng chờ Ban quản lý duyệt.';
 
         return redirect()->route('resident.vehicles.index')->with('success', $message);
     }

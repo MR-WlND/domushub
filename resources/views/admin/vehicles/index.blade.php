@@ -223,8 +223,8 @@
                                     </form>
                                 @endif
 
-                                {{-- Xe máy/điện chờ duyệt → duyệt --}}
-                                @if($v->status === 'pending' && $v->isMotorbike())
+                                {{-- Xe máy/điện/đạp chờ duyệt → duyệt --}}
+                                @if($v->status === 'pending' && !$v->isCar())
                                     <form action="{{ portal_route('vehicles.approve', $v) }}" method="POST" style="display:contents;">
                                         @csrf
                                         <button type="submit" class="veh-table-btn veh-table-btn--approve" title="Duyệt xe">
