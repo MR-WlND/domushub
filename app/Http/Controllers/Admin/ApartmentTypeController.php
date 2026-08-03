@@ -72,6 +72,14 @@ class ApartmentTypeController extends Controller
     }
 
     /**
+     * Xem chi tiết loại căn hộ
+     */
+    public function show(ApartmentType $apartmentType): View
+    {
+        return view('admin.apartment-types.show', compact('apartmentType'));
+    }
+
+    /**
      * Form sửa loại căn hộ
      */
     public function edit(ApartmentType $apartmentType): View

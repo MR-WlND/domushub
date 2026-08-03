@@ -128,6 +128,10 @@
                             <span class="infra-stat-label">SỐ CĂN HỘ</span>
                             <span class="infra-stat-value">{{ $featuredBlock->apartments_count }}</span>
                         </div>
+                        <div class="infra-stat-item">
+                            <span class="infra-stat-label">CĂN ĐANG Ở</span>
+                            <span class="infra-stat-value">{{ $featuredBlock->occupied_apartments_count }}</span>
+                        </div>
                     </div>
 
                     {{-- Featured Floors List --}}
@@ -226,6 +230,10 @@
                         <div class="infra-block-stat">
                             <span class="infra-block-stat-label">Căn hộ</span>
                             <span class="infra-block-stat-value">{{ $block->apartments_count }}</span>
+                        </div>
+                        <div class="infra-block-stat">
+                            <span class="infra-block-stat-label">Đang ở</span>
+                            <span class="infra-block-stat-value">{{ $block->occupied_apartments_count }}</span>
                         </div>
                     </div>
 

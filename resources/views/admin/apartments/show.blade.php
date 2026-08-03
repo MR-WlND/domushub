@@ -133,10 +133,6 @@
                             </div>
                             <div class="tech-detail-list">
                                 <div class="tech-detail-row">
-                                    <span class="tech-label">Số phòng khách:</span>
-                                    <span class="tech-value">{{ sprintf('%02d', $apartment->apartmentType->living_room_count ?? 1) }}</span>
-                                </div>
-                                <div class="tech-detail-row">
                                     <span class="tech-label">Số phòng ngủ:</span>
                                     <span class="tech-value">{{ sprintf('%02d', $apartment->apartmentType->bedroom_count ?? 1) }}</span>
                                 </div>
@@ -144,14 +140,7 @@
                                     <span class="tech-label">Số phòng tắm:</span>
                                     <span class="tech-value">{{ sprintf('%02d', $apartment->apartmentType->bathroom_count ?? 1) }}</span>
                                 </div>
-                                <div class="tech-detail-row">
-                                    <span class="tech-label">Hướng ban công:</span>
-                                    <span class="tech-value">{{ $apartment->apartmentType->balcony_direction ?: 'Chưa cập nhật' }}</span>
-                                </div>
-                                <div class="tech-detail-row">
-                                    <span class="tech-label">Tình trạng nội thất:</span>
-                                    <span class="tech-value">{{ $apartment->apartmentType->furniture_status ?: 'Chưa cập nhật' }}</span>
-                                </div>
+
                             </div>
                         </div>
 

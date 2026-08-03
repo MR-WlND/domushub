@@ -160,6 +160,7 @@ $portalRoutes = function () {
     Route::get('/apartment-types', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'index'])->name('apartment-types.index');
     Route::get('/apartment-types/create', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'create'])->name('apartment-types.create');
     Route::post('/apartment-types', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'store'])->name('apartment-types.store');
+    Route::get('/apartment-types/{apartmentType}', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'show'])->name('apartment-types.show');
     Route::get('/apartment-types/{apartmentType}/edit', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'edit'])->name('apartment-types.edit');
     Route::put('/apartment-types/{apartmentType}', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'update'])->name('apartment-types.update');
     Route::delete('/apartment-types/{apartmentType}', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'destroy'])->name('apartment-types.destroy');

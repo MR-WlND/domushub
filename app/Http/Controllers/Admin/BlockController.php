@@ -30,6 +30,9 @@ class BlockController extends Controller
         // Base query for blocks
         $blockQuery = Block::query()
             ->withCount(['floors', 'apartments'])
+            ->withCount(['apartments as occupied_apartments_count' => function ($query) {
+                $query->where('apartments.status', 'occupied');
+            }])
             ->when($search, fn($q) => $q->where('name', 'like', "%{$search}%"))
             ->when($status,  fn($q) => $q->where('status', $status))
             ->orderBy('name');

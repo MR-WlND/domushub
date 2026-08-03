@@ -174,54 +174,13 @@
 
             </div>
 
-            <div class="form-grid-2" style="margin-top: 24px;">
-                {{-- Số phòng khách --}}
-                <div class="form-group-custom">
-                    <label class="form-label-custom">
-                        Số phòng khách
-                    </label>
-                    <div class="input-wrapper-custom">
-                        <span class="input-icon-custom">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
-                        </span>
-                        <input type="number" name="living_room_count" value="{{ old('living_room_count', $apartmentType->living_room_count ?? 1) }}" class="form-input-custom @error('living_room_count') input-error @enderror" min="0" max="10">
-                    </div>
-                    @error('living_room_count')<p class="form-error-custom">{{ $message }}</p>@enderror
-                </div>
-
-                {{-- Hướng ban công --}}
-                <div class="form-group-custom">
-                    <label class="form-label-custom">
-                        Hướng ban công
-                    </label>
-                    <div class="input-wrapper-custom">
-                        <span class="input-icon-custom">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14 14.76V3.5a9 9 0 00-8.08 9h8.08zm-7.6 1.5A9 9 0 0014 20.5v-4.24H6.4zm8.6-1.5h6.58A9.004 9.004 0 0015 3.5v11.26zm0 1.5v4.24a9 9 0 006.58-4.24H15z" /></svg>
-                        </span>
-                        <input type="text" name="balcony_direction" value="{{ old('balcony_direction', $apartmentType->balcony_direction) }}" placeholder="VD: Đông Nam..." class="form-input-custom @error('balcony_direction') input-error @enderror">
-                    </div>
-                    @error('balcony_direction')<p class="form-error-custom">{{ $message }}</p>@enderror
-                </div>
-            </div>
-
             {{-- Phần 3: Nội thất kèm theo --}}
             <div class="form-section-header" style="margin-top: 15px;">
                 <span class="section-number">03</span>
                 <h4>Thông tin Nội thất</h4>
             </div>
 
-            <div class="form-group-custom" style="margin-bottom: 24px;">
-                <label class="form-label-custom">
-                    Tình trạng nội thất
-                </label>
-                <div class="input-wrapper-custom">
-                    <span class="input-icon-custom">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
-                    </span>
-                    <input type="text" name="furniture_status" value="{{ old('furniture_status', $apartmentType->furniture_status) }}" placeholder="VD: Full nội thất cơ bản..." class="form-input-custom @error('furniture_status') input-error @enderror">
-                </div>
-                @error('furniture_status')<p class="form-error-custom">{{ $message }}</p>@enderror
-            </div>
+
 
             <div class="form-group-custom" style="margin-bottom: 24px;">
                 <label class="form-label-custom">Tiêu chuẩn bàn giao (Nội thất chi tiết)</label>
@@ -240,15 +199,34 @@
                         'Sofa & Bàn trà'
                     ];
                 @endphp
-                <div class="checkbox-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px;">
-                    @foreach($defaultFurnitures as $item)
-                        <label class="checkbox-item" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                            <input type="checkbox" name="furniture_list[]" value="{{ $item }}" 
-                                {{ in_array($item, old('furniture_list', $apartmentType->furniture_list ?? [])) ? 'checked' : '' }}
-                                style="width: 18px; height: 18px; accent-color: #0b57d0; cursor: pointer; border-radius: 4px; border: 1px solid #cbd5e1;">
-                            <span style="font-size: 14px; color: #475569; user-select: none;">{{ $item }}</span>
-                        </label>
+                <div class="checkbox-grid" id="furniture-checkbox-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
+                    @php
+                        $savedFurnitures = old('furniture_list', $apartmentType->furniture_list ?? []);
+                        $allFurnitures = array_unique(array_merge($defaultFurnitures, $savedFurnitures));
+                    @endphp
+                    @foreach($allFurnitures as $item)
+                        <div class="checkbox-item-wrapper" style="display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 0; flex: 1;">
+                                <input type="checkbox" name="furniture_list[]" value="{{ $item }}" 
+                                    {{ in_array($item, $savedFurnitures) ? 'checked' : '' }}
+                                    style="width: 16px; height: 16px; accent-color: #0b57d0; cursor: pointer; border-radius: 4px; border: 1px solid #cbd5e1;">
+                                <span style="font-size: 14px; color: #475569; user-select: none;">{{ $item }}</span>
+                            </label>
+                            @if(!in_array($item, $defaultFurnitures))
+                                <button type="button" onclick="this.parentElement.remove()" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 4px; margin-left: 4px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: all 0.2s;" onmouseover="this.style.color='#ef4444'; this.style.background='#fee2e2'" onmouseout="this.style.color='#94a3b8'; this.style.background='transparent'" title="Xóa">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                                </button>
+                            @endif
+                        </div>
                     @endforeach
+                </div>
+                
+                {{-- Add custom furniture --}}
+                <div style="margin-top: 16px; display: flex; gap: 8px; align-items: center;">
+                    <input type="text" id="new_furniture_input" placeholder="Nhập tên tiện ích..." style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; width: 250px;">
+                    <button type="button" id="btn_add_furniture" style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
+                        Thêm
+                    </button>
                 </div>
             </div>
 
@@ -324,6 +302,55 @@ document.addEventListener('DOMContentLoaded', function () {
                 feeInput.value = feeInput.value.replace(/\./g, '');
             });
         }
+    }
+
+    // Add custom furniture logic
+    const btnAddFurniture = document.getElementById('btn_add_furniture');
+    const inputNewFurniture = document.getElementById('new_furniture_input');
+    const checkboxGrid = document.getElementById('furniture-checkbox-grid');
+
+    if (btnAddFurniture && inputNewFurniture && checkboxGrid) {
+        function addFurniture() {
+            const val = inputNewFurniture.value.trim();
+            if (!val) return;
+
+            // Check if already exists
+            const existingInputs = checkboxGrid.querySelectorAll('input[type="checkbox"]');
+            for (let input of existingInputs) {
+                if (input.value.toLowerCase() === val.toLowerCase()) {
+                    input.checked = true;
+                    inputNewFurniture.value = '';
+                    return;
+                }
+            }
+
+            // Create new checkbox item
+            const wrapper = document.createElement('div');
+            wrapper.className = 'checkbox-item-wrapper';
+            wrapper.style.cssText = 'display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0;';
+            
+            wrapper.innerHTML = `
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 0; flex: 1;">
+                    <input type="checkbox" name="furniture_list[]" value="${val}" checked
+                        style="width: 16px; height: 16px; accent-color: #0b57d0; cursor: pointer; border-radius: 4px; border: 1px solid #cbd5e1;">
+                    <span style="font-size: 14px; color: #475569; user-select: none;">${val}</span>
+                </label>
+                <button type="button" onclick="this.parentElement.remove()" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 4px; margin-left: 4px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: all 0.2s;" onmouseover="this.style.color='#ef4444'; this.style.background='#fee2e2'" onmouseout="this.style.color='#94a3b8'; this.style.background='transparent'" title="Xóa">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            `;
+            
+            checkboxGrid.appendChild(wrapper);
+            inputNewFurniture.value = '';
+        }
+
+        btnAddFurniture.addEventListener('click', addFurniture);
+        inputNewFurniture.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addFurniture();
+            }
+        });
     }
 });
 </script>

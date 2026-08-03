@@ -279,7 +279,7 @@ class ApartmentController extends Controller
      */
     public function show(Apartment $apartment): View
     {
-        $apartment->load(['floor.block', 'residents.user']);
+        $apartment->load(['floor.block', 'residents.user', 'invoices', 'vehicles']);
 
         $declaredMembers = \App\Models\ApartmentMember::where('apartment_id', $apartment->id)
             ->orderBy('created_at')

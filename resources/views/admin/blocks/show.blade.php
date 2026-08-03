@@ -9,7 +9,7 @@
 
 @section('content')
 
-    <div class="blocks-page" style="padding: 24px; max-width: 1400px; margin: 0 auto; background: #f8fafc; min-height: calc(100vh - 64px);">
+    <div class="blocks-page" style="padding: 24px; max-width: 1400px; margin: 0 auto; min-height: calc(100vh - 64px);">
         
         {{-- Breadcrumb & Actions --}}
         <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px;">
@@ -129,39 +129,7 @@
                     </div>
                 </article>
 
-                {{-- Amenities Section --}}
-                <article style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
-                    <h2 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#64748b" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" /></svg>
-                        Tiện ích tòa nhà
-                    </h2>
-                    
-                    @php
-                        $amenityMap = [
-                            'elevator' => ['icon' => '🛗', 'label' => 'Thang máy'],
-                            'parking' => ['icon' => 'P', 'label' => 'Hầm gửi xe'],
-                            'gym' => ['icon' => '🏋️‍♂️', 'label' => 'Phòng Gym'],
-                            'playground' => ['icon' => '😀', 'label' => 'Sân chơi trẻ em'],
-                            'pool' => ['icon' => '🏊', 'label' => 'Bể bơi'],
-                            'security' => ['icon' => '🛡️', 'label' => 'An ninh 24/7'],
-                        ];
-                    @endphp
-                    
-                    <div style="display: flex; flex-wrap: wrap; gap: 12px;">
-                        @if(is_array($block->amenities) && count($block->amenities) > 0)
-                            @foreach($block->amenities as $amenity)
-                                @php
-                                    $mapped = $amenityMap[$amenity] ?? ['icon' => '✨', 'label' => ucfirst($amenity)];
-                                @endphp
-                                <span style="background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500;">
-                                    {{ $mapped['label'] }}
-                                </span>
-                            @endforeach
-                        @else
-                            <span style="color: #94a3b8; font-size: 14px;">Tòa nhà chưa cấu hình tiện ích.</span>
-                        @endif
-                    </div>
-                </article>
+
 
             </div>
         </div>
