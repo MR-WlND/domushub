@@ -141,7 +141,7 @@
                                     <span style="font-size:.75rem;color:#64748b;background:#f1f5f9;padding:.1rem .45rem;border-radius:6px;">{{ $guestPhone }}</span>
                                 @endif
                             </div>
-                            <p style="margin:0;font-size:.8rem;color:#64748b;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ $msgText }}</p>
+                            <p style="margin:0;font-size:.95rem;font-weight:400;color:#64748b;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ $msgText }}</p>
                             <p style="margin:.4rem 0 0;font-size:.72rem;color:#94a3b8;">{{ $notif->created_at->diffForHumans() }}</p>
                         </div>
                     </div>
