@@ -746,18 +746,21 @@ class InvoiceController extends Controller
                         ]);
                     }
 
-                    $area = $apartment->area ?? 0;
+                    $area = (float) ($apartment->area ?? 0);
+                    $typeName = $apartment->apartmentType ? $apartment->apartmentType->name : 'Căn hộ';
                     $unitPrice = ($apartment->apartmentType && $apartment->apartmentType->base_service_fee > 0)
-                        ? $apartment->apartmentType->base_service_fee
-                        : $servicePrice->unit_price;
+                        ? (float) $apartment->apartmentType->base_service_fee
+                        : (float) $servicePrice->unit_price;
                     $detailAmount = $area * $unitPrice;
+
+                    $note = "Phí quản lý [{$typeName}]: " . number_format($unitPrice, 0, ',', '.') . "đ/m² × {$area} m²";
 
                     InvoiceDetail::create([
                         'bill_id'          => $invoice->id,
                         'service_price_id' => $servicePrice->id,
                         'quantity'         => $area,
                         'amount'           => $detailAmount,
-                        'note'             => "Phí quản lý: " . number_format($unitPrice, 0, ',', '.') . "đ/m2 x {$area} m2",
+                        'note'             => $note,
                     ]);
 
                     $invoiceAmountAdded += $detailAmount;

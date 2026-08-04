@@ -66,7 +66,6 @@
                         @php
                             $baseTypes = [
                                 'water' => 'Tiền nước',
-                                'management_fee' => 'Phí quản lý',
                                 'internet' => 'Internet',
                                 'service' => 'Dịch vụ'
                             ];
@@ -74,8 +73,9 @@
                         @endphp
 
                         <div class="batch-price-list">
-                            {{-- Hiển thị tất cả các loại giá đang hoạt động (bao gồm nhiều loại xe của parking_fee) --}}
+                            {{-- Hiển thị tất cả các loại giá đang hoạt động (bao gồm nhiều loại xe của parking_fee, bỏ qua xe đạp) --}}
                             @foreach ($activePrices as $price)
+                                @if($price->vehicle_type === 'bicycle') @continue @endif
                                 @php
                                     $checkboxValue = $price->type === 'parking_fee' && $price->vehicle_type
                                         ? 'parking_fee_' . $price->vehicle_type

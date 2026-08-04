@@ -288,8 +288,6 @@
                                 <div class="vehicle-icon" style="width: 48px; height: 48px; border-radius: 50%; background: #e0e7ff; color: #4338ca; display: flex; align-items: center; justify-content: center;">
                                     @if($vehicle->isCar())
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M5 10V8a2 2 0 012-2h10a2 2 0 012 2v2M3 10a2 2 0 00-2 2v5h2a2 2 0 002 2h10a2 2 0 002-2h2v-5a2 2 0 00-2-2" /></svg>
-                                    @elseif($vehicle->isBicycle())
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 12m-3 0a3 3 0 106 0 3 3 0 10-6 0m-9 9a3 3 0 106 0 3 3 0 10-6 0m18 0a3 3 0 106 0 3 3 0 10-6 0M15 12h-3v-3m0 0l-3 3M12 9V5" /></svg>
                                     @else
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v8l9-11h-7z" /></svg>
                                     @endif
@@ -354,7 +352,6 @@
                         <option value="motorbike">Xe máy</option>
                         <option value="electric_bike">Xe máy điện</option>
                         <option value="car">Ô tô</option>
-                        <option value="bicycle">Xe đạp</option>
                     </select>
                 </div>
             </div>

@@ -124,7 +124,7 @@
             <p class="rf-subtitle">Khám phá và đăng ký các dịch vụ cao cấp dành riêng cho cư dân ResiCare. Tận hưởng không gian sống đẳng cấp và hiện đại ngay tại nơi bạn ở.</p>
         </div>
         <a href="{{ route('resident.facility-bookings.index') }}" class="rf-btn rf-btn-outline" style="white-space: nowrap; padding: 10px 20px;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right: 6px;"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right: 6px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             Lịch sử đặt tiện ích
         </a>
     </div>
