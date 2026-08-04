@@ -256,12 +256,16 @@
 @if (session('new_invite_code'))
     <div class="invite-modal-overlay" id="inviteModal">
         <div class="invite-modal">
+            <button type="button" class="invite-modal__close-corner" onclick="closeInviteModal()" title="Đóng">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
             <div class="invite-modal__header">
                 <div class="invite-modal__icon-wrap">
-                    <i class="fa-solid fa-circle-check"></i>
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
                 </div>
                 <h3 class="invite-modal__title">Mã mời đã được tạo!</h3>
-                <p class="invite-modal__subtitle">Sao chép và gửi mã này cho người thân hoặc người thuê để họ dùng khi đăng ký tài khoản.</p>
+                <p class="invite-modal__subtitle">Sao chép mã hoặc gửi mã QR bên dưới cho người thân / người thuê để họ dùng khi đăng ký tài khoản.</p>
             </div>
 
             <div class="invite-modal__code-block">
@@ -273,21 +277,22 @@
                 </button>
             </div>
 
-            <div class="invite-modal__qr-wrap" style="text-align: center; margin: 15px 0; background: #fff; padding: 12px; border-radius: 8px; box-shadow: inset 0 0 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center;">
-                <div style="margin-bottom: 6px;">
-                    {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(130)->generate(route('resident.register') . '?invite_code=' . urlencode(session('new_invite_code'))) !!}
+            <div class="invite-modal__qr-card">
+                <div class="invite-modal__qr-img">
+                    {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(140)->generate(route('resident.register') . '?invite_code=' . urlencode(session('new_invite_code'))) !!}
                 </div>
-                <span class="text-muted" style="font-size: 11px;"><i class="fa-solid fa-qrcode"></i> Quét QR để đăng ký nhanh</span>
+                <p class="invite-modal__qr-text"><i class="fa-solid fa-qrcode"></i> Quét QR để đăng ký tài khoản nhanh</p>
             </div>
 
             <div class="invite-modal__note">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                Mã này chỉ sử dụng được <strong>1 lần</strong>.
-                Sau khi có người đăng ký bằng mã này, mã sẽ tự động vô hiệu.
+                <i class="fa-solid fa-circle-info"></i>
+                <div>
+                    Mã này chỉ sử dụng được <strong>1 lần</strong>. Sau khi có người đăng ký bằng mã này, hệ thống sẽ tự động vô hiệu hóa mã.
+                </div>
             </div>
 
             <button type="button" class="btn btn-secondary w-100" onclick="closeInviteModal()">
-                <i class="fa-solid fa-xmark"></i> Đóng
+                Đóng cửa sổ
             </button>
         </div>
     </div>
