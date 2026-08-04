@@ -155,6 +155,9 @@ class UtilityMeterController extends Controller
             ];
         }
 
+        $userIds = $oldLogs->pluck('user_id')->unique()->filter()->toArray();
+        $users = \App\Models\User::whereIn('id', $userIds)->get()->keyBy('id');
+
         foreach ($oldLogs as $log) {
             $meterId = $log->utility_meter_id;
             if (!isset($readingHistory[$meterId])) {
@@ -165,7 +168,7 @@ class UtilityMeterController extends Controller
             $exists = collect($readingHistory[$meterId])->contains(fn($item) => $item['time'] === $time);
             if ($exists) continue;
 
-            $user = \App\Models\User::find($log->user_id);
+            $user = clone $users->get($log->user_id) ?? new \App\Models\User();
             $readingHistory[$meterId][] = [
                 'action' => $log->action,
                 'user_name' => $user->name ?? 'Kế toán viên',
@@ -961,305 +964,7 @@ class UtilityMeterController extends Controller
         }
     }
 
-    /**
-     * Xuất file Excel mẫu chỉ số nước (Dạng Bảng Ngang) có Protect Sheet để BQL điền
-     */
-    public function downloadTemplate(Request $request)
-    {
-        if (!in_array(Auth::user()->role, ['technician', 'admin'])) {
-            abort(403, 'Bạn không có quyền tải mẫu nhập chỉ số.');
-        }
 
-        $month = (int) $request->query('month', now()->month);
-        $year  = (int) $request->query('year', now()->year);
-
-        // Lấy tất cả căn hộ không ở trạng thái bảo trì
-        $apartments = Apartment::with('floor.block')
-            ->where('status', '!=', 'maintenance')
-            ->get();
-
-        // Sắp xếp tự nhiên trên PHP collection để bảo đảm thứ tự chính xác tuyệt đối (Tòa nhà -> Tầng -> Số phòng)
-        $apartments = $apartments->sort(function ($a, $b) {
-            // 1. So sánh Tòa nhà (Block)
-            $blockA = $a->floor->block->name ?? '';
-            $blockB = $b->floor->block->name ?? '';
-            $cmpBlock = strcasecmp($blockA, $blockB);
-            if ($cmpBlock !== 0) {
-                return $cmpBlock;
-            }
-
-            // 2. So sánh Tầng (Floor)
-            // Lấy floor_number, nếu null hoặc không hợp lệ thì cố gắng tách số từ tên tầng (ví dụ "Tầng 3" -> 3)
-            $floorNumA = $a->floor->floor_number ?? null;
-            if (is_null($floorNumA) && isset($a->floor->name)) {
-                preg_match('/\d+/', $a->floor->name, $matches);
-                $floorNumA = isset($matches[0]) ? (int)$matches[0] : 0;
-            }
-            $floorNumA = (int)$floorNumA;
-
-            $floorNumB = $b->floor->floor_number ?? null;
-            if (is_null($floorNumB) && isset($b->floor->name)) {
-                preg_match('/\d+/', $b->floor->name, $matches);
-                $floorNumB = isset($matches[0]) ? (int)$matches[0] : 0;
-            }
-            $floorNumB = (int)$floorNumB;
-
-            if ($floorNumA !== $floorNumB) {
-                return $floorNumA <=> $floorNumB;
-            }
-
-            // 3. So sánh Số phòng (Apartment Number) - Sắp xếp tự nhiên (Natural Sort)
-            // Ví dụ: 101, 102, 102B, 1001...
-            return strnatcasecmp($a->apartment_number, $b->apartment_number);
-        });
-
-        $filename = "Mau_Chot_So_Nuoc_Thang_{$month}_{$year}.xlsx";
-
-        try {
-            $tempFilePath = \App\Helpers\SimpleXlsx::exportUtilityTemplate($apartments, $month, $year);
-
-            return response()->download($tempFilePath, $filename, [
-                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            ])->deleteFileAfterSend(true);
-        } catch (\Exception $e) {
-            return back()->with('error', 'Lỗi khi xuất file Excel mẫu: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Nhận file Excel hoặc CSV chỉ số nước dạng bảng ngang và import vào hệ thống
-     */
-    public function import(Request $request): RedirectResponse
-    {
-        if (!in_array(Auth::user()->role, ['technician', 'admin'])) {
-            abort(403, 'Bạn không có quyền import chỉ số.');
-        }
-
-        $request->validate([
-            'import_month' => 'required|integer|min:1|max:12',
-            'import_year'  => 'required|integer|min:2020|max:2100',
-            'csv_file'     => 'required|file|mimes:xlsx,xls,csv,txt|max:4096',
-        ], [
-            'import_month.required' => 'Vui lòng chọn tháng áp dụng.',
-            'import_year.required'  => 'Vui lòng chọn năm áp dụng.',
-            'csv_file.required'     => 'Vui lòng chọn file Excel/CSV để tải lên.',
-            'csv_file.file'         => 'File tải lên không hợp lệ.',
-            'csv_file.mimes'        => 'Hệ thống chỉ chấp nhận file Excel (.xlsx, .xls) hoặc CSV.',
-            'csv_file.max'          => 'Kích thước file tối đa là 4MB.',
-        ]);
-
-        $month = (int)$request->import_month;
-        $year  = (int)$request->import_year;
-
-        $file = $request->file('csv_file');
-        $filePath = $file->getRealPath();
-        $extension = strtolower($file->getClientOriginalExtension());
-
-        $rows = [];
-
-        if (in_array($extension, ['xlsx', 'xls'])) {
-            try {
-                $rows = \App\Helpers\SimpleXlsx::parse($filePath);
-            } catch (\Exception $e) {
-                return back()->with('error', 'Lỗi khi đọc file Excel: ' . $e->getMessage());
-            }
-        } else {
-            // Đọc file CSV
-            $handle = fopen($filePath, 'r');
-            if (!$handle) {
-                return back()->with('error', 'Không thể mở file CSV vừa tải lên.');
-            }
-
-            // Đọc dòng đầu tiên để kiểm tra sep= hoặc lấy BOM
-            $firstLine = fgets($handle);
-            if ($firstLine === false) {
-                fclose($handle);
-                return back()->with('error', 'File CSV trống.');
-            }
-
-            $cleanFirstLine = $firstLine;
-            $bom = chr(0xEF) . chr(0xBB) . chr(0xBF);
-            if (str_starts_with($cleanFirstLine, $bom)) {
-                $cleanFirstLine = substr($cleanFirstLine, 3);
-            }
-
-            // Tự động phát hiện dấu phân cách (dấu phẩy , hoặc dấu chấm phẩy ;)
-            $commaCount = substr_count($cleanFirstLine, ',');
-            $semicolonCount = substr_count($cleanFirstLine, ';');
-            $delimiter = ($semicolonCount > $commaCount) ? ';' : ',';
-
-            if (str_starts_with(trim($cleanFirstLine), 'sep=')) {
-                $declaredSep = trim(str_replace('sep=', '', $cleanFirstLine));
-                if (!empty($declaredSep)) {
-                    $delimiter = $declaredSep;
-                }
-                // Đọc tiếp dòng thứ 2 làm headers
-                $headersRow = fgetcsv($handle, 0, $delimiter);
-                if ($headersRow) {
-                    $rows[] = $headersRow;
-                }
-            } else {
-                // Parse dòng đầu tiên làm headers
-                $rows[] = str_getcsv($cleanFirstLine, $delimiter);
-            }
-
-            while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
-                $rows[] = $row;
-            }
-            fclose($handle);
-        }
-
-        if (count($rows) < 2) {
-            return back()->with('error', 'File tải lên không có dữ liệu chốt số.');
-        }
-
-        $headers = $rows[0];
-        $hasIdColumn = false;
-        if ($headers && count($headers) >= 5 && str_contains(strtolower($headers[0]), 'id')) {
-            $hasIdColumn = true;
-        }
-
-        $minColumns = $hasIdColumn ? 5 : 4;
-        if (!$headers || count($headers) < $minColumns) {
-            return back()->with('error', "Cấu trúc file không đúng mẫu. Yêu cầu tối thiểu {$minColumns} cột.");
-        }
-
-        $successCount = 0;
-        $errors = [];
-        $affectedApartments = [];
-
-        // DB transaction để bảo đảm an toàn dữ liệu
-        DB::beginTransaction();
-
-        try {
-            for ($i = 1; $i < count($rows); $i++) {
-                $row = $rows[$i];
-                $rowNum = $i + 1; // Số dòng thực tế (1-indexed)
-
-                // Bỏ qua dòng trống
-                if (count($row) < $minColumns || empty(array_filter($row))) {
-                    continue;
-                }
-
-                // Cấu trúc mẫu cũ (7/6 cột) hoặc mẫu mới (5/4 cột)
-                if (count($headers) >= 6) {
-                    if ($hasIdColumn) {
-                        $aptId       = trim($row[0]);
-                        $location    = trim($row[1]);
-                        $aptNumber   = trim($row[2]);
-                        $waterOld    = isset($row[5]) && $row[5] !== '' ? (int)$row[5] : 0;
-                        $waterNewStr = trim($row[6]);
-                    } else {
-                        $aptId       = null;
-                        $location    = trim($row[0]);
-                        $aptNumber   = trim($row[1]);
-                        $waterOld    = isset($row[4]) && $row[4] !== '' ? (int)$row[4] : 0;
-                        $waterNewStr = trim($row[5]);
-                    }
-                } else {
-                    if ($hasIdColumn) {
-                        $aptId       = trim($row[0]);
-                        $location    = trim($row[1]);
-                        $aptNumber   = trim($row[2]);
-                        $waterOld    = isset($row[3]) && $row[3] !== '' ? (int)$row[3] : 0;
-                        $waterNewStr = trim($row[4]);
-                    } else {
-                        $aptId       = null;
-                        $location    = trim($row[0]);
-                        $aptNumber   = trim($row[1]);
-                        $waterOld    = isset($row[2]) && $row[2] !== '' ? (int)$row[2] : 0;
-                        $waterNewStr = trim($row[3]);
-                    }
-                }
-
-                // Nếu không có chỉ số nước mới, bỏ qua
-                if ($waterNewStr === '') {
-                    continue;
-                }
-
-                // Định danh Căn hộ
-                $apartment = null;
-                if (is_numeric($aptId)) {
-                    $apartment = Apartment::find((int)$aptId);
-                }
-
-                if (!$apartment) {
-                    $parts = explode('/', $location);
-                    if (count($parts) === 2) {
-                        $blockName = trim($parts[0]);
-                        $floorName = trim($parts[1]);
-                        
-                        $block = Block::where('name', $blockName)->first();
-                        if ($block) {
-                            $floor = Floor::where('block_id', $block->id)->where('name', $floorName)->first();
-                            if ($floor) {
-                                $apartment = Apartment::where('floor_id', $floor->id)
-                                    ->where('apartment_number', $aptNumber)
-                                    ->first();
-                            }
-                        }
-                    }
-                }
-
-                if (!$apartment) {
-                    $errors[] = "Dòng {$rowNum}: Không thể xác định căn hộ '{$aptNumber}' thuộc vị trí '{$location}' (ID: {$aptId}).";
-                    continue;
-                }
-
-                $updated = false;
-
-                // ── Xử lý Nước ──────────────────────────────
-                if ($waterNewStr !== '') {
-                    $waterNew = (int)$waterNewStr;
-                    if ($waterNew < $waterOld) {
-                        $errors[] = "Dòng {$rowNum}: Căn hộ {$apartment->apartment_number} - Chỉ số NƯỚC mới ({$waterNew}) phải lớn hơn hoặc bằng chỉ số cũ ({$waterOld}).";
-                        continue;
-                    }
-
-                    UtilityMeter::updateOrCreate(
-                        [
-                            'apartment_id' => $apartment->id,
-                            'type'         => 'water',
-                            'record_month' => $month,
-                            'record_year'  => $year,
-                        ],
-                        [
-                            'old_value'   => $waterOld,
-                            'new_value'   => $waterNew,
-                            'recorded_by' => Auth::id(),
-                            'status'      => 'pending',
-                        ]
-                    );
-                    $successCount++;
-                    $updated = true;
-                }
-
-                if ($updated) {
-                    $key = "{$apartment->id}-{$month}-{$year}";
-                    $affectedApartments[$key] = [
-                        'apartment_id' => $apartment->id,
-                        'month'        => $month,
-                        'year'         => $year,
-                    ];
-                }
-            }
-
-            if (count($errors) > 0) {
-                DB::rollBack();
-                return back()->with('error', 'Import thất bại do có dữ liệu lỗi. Vui lòng kiểm tra lại file mẫu.')->withErrors($errors);
-            }
-
-            DB::commit();
-
-            return redirect()->route('admin.utility-readings.index', [
-                'month' => $month,
-                'year'  => $year,
-            ])->with('success', "Nhập thành công {$successCount} chỉ số điện/nước từ file Excel/CSV ở trạng thái Chờ chốt.");
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Đã xảy ra lỗi hệ thống trong quá trình import: ' . $e->getMessage());
-        }
     }
 
     /**
@@ -1313,8 +1018,11 @@ class UtilityMeterController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
 
+            $userIds = $oldLogs->pluck('user_id')->unique()->filter()->toArray();
+            $users = \App\Models\User::whereIn('id', $userIds)->get()->keyBy('id');
+
             foreach ($oldLogs as $log) {
-                $user = \App\Models\User::find($log->user_id);
+                $user = $users->get($log->user_id);
                 $rejections->push([
                     'action' => $log->action,
                     'reason' => $log->reject_reason ?? '',
