@@ -306,7 +306,7 @@ class AuthController extends Controller
             Auth::logout();
 
             return back()->withErrors([
-                'email' => 'Tài khoản đang chờ Ban quản lý phê duyệt.',
+                'email' => 'Tài khoản đang chờ Chủ căn hộ phê duyệt.',
             ])->onlyInput('email');
         }
 
