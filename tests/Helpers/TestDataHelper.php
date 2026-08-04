@@ -17,16 +17,16 @@ trait TestDataHelper
      */
     protected function makeApartment(array $overrides = []): Apartment
     {
-        $block = Block::create(['name' => 'Tòa A']);
+        $block = Block::create(['name' => 'Tòa ' . strtoupper(\Illuminate\Support\Str::random(5))]);
         $floor = Floor::create([
             'block_id'     => $block->id,
             'name'         => 'Tầng 1',
-            'floor_number' => 1,
+            'floor_number' => rand(1, 30),
         ]);
 
         return Apartment::create(array_merge([
             'floor_id'         => $floor->id,
-            'apartment_number' => 'A101',
+            'apartment_number' => 'APT-' . rand(100, 999),
             'area'             => 65.0,
             'status'           => 'vacant',
         ], $overrides));
@@ -39,7 +39,7 @@ trait TestDataHelper
     {
         return User::factory()->create(array_merge([
             'role'         => 'resident',
-            'phone'        => '0912345678',
+            'phone'        => '09' . rand(10000000, 99999999),
             'status'       => 'active',
             'apartment_id' => $apartment->id,
         ], $overrides));
@@ -52,7 +52,7 @@ trait TestDataHelper
     {
         return User::factory()->create(array_merge([
             'role'   => 'admin',
-            'phone'  => '0987654321',
+            'phone'  => '09' . rand(10000000, 99999999),
             'status' => 'active',
         ], $overrides));
     }
@@ -64,7 +64,7 @@ trait TestDataHelper
     {
         return User::factory()->create(array_merge([
             'role'   => 'technician',
-            'phone'  => '0987654399',
+            'phone'  => '09' . rand(10000000, 99999999),
             'status' => 'active',
         ], $overrides));
     }
