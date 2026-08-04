@@ -109,23 +109,24 @@ class VisitorController extends Controller
             'guest_phone'           => $request->guest_phone,
             'qr_token'              => Visitor::generateToken(),
             'expired_at'            => now()->addDay(),
-            'status'                => 'checked_in',
-            'check_in_at'           => now(),
-            'check_in_by'           => Auth::id(),
+            'status'                => 'pending',
+            'check_in_at'           => null,
+            'check_in_by'           => null,
             'note'                  => $request->note,
             'vehicle_plate'         => $request->vehicle_plate
                                         ? strtoupper(trim($request->vehicle_plate)) : null,
             'vehicle_type'          => $request->vehicle_plate ? $request->vehicle_type : null,
             'walk_in'               => true,
             'resident_to_meet'      => $request->resident_to_meet,
-            'confirmed_by_resident' => $request->confirmed_by_resident,
+            'confirmed_by_resident' => null,
             'face_image'            => $photoPath,
         ]);
 
-        $visitor->load(['apartment.floor.block', 'confirmedByResident']);
+        $visitor->load(['apartment.floor.block']);
 
-        if ($request->boolean('notify_resident') && $request->filled('confirmed_by_resident')) {
-            $resident = User::find($request->confirmed_by_resident);
+        $targetResidentId = $request->confirmed_by_resident;
+        if ($targetResidentId) {
+            $resident = User::find($targetResidentId);
             if ($resident) {
                 $resident->notify(new VisitorWalkInNotification($visitor));
             }
@@ -133,7 +134,7 @@ class VisitorController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Đã ghi nhận khách vào lúc ' . now()->format('H:i d/m/Y') . '.',
+            'message' => 'Đã gửi thông báo cho cư dân (' . $request->resident_to_meet . '). Vui lòng chờ cư dân duyệt.',
             'visitor' => $this->visitorInfo($visitor),
         ]);
     }

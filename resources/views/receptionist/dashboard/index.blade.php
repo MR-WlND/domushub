@@ -13,15 +13,20 @@
 @endsection
 
 @section('content')
-<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
     <div>
         @php $hour = now()->hour; $greet = $hour < 12 ? 'Chào buổi sáng' : ($hour < 18 ? 'Chào buổi chiều' : 'Chào buổi tối'); @endphp
         <h1 style="font-size:24px;font-weight:700;color:#00236f;margin-bottom:8px;">{{ $greet }}, {{ explode(' ', auth()->user()->name)[0] }}</h1>
-        <p style="color:#475569;margin:0;">Hôm nay có <strong>{{ $pendingParcels }}</strong> bưu phẩm chờ xử lý và <strong>{{ $pendingTickets }}</strong> phản ánh mới.</p>
+        <p style="color:#475569;margin:0;">Hôm nay có <strong>{{ $pendingParcels }}</strong> bưu phẩm chờ xử lý, <strong>{{ $pendingTickets }}</strong> phản ánh mới và <strong>{{ $visitorsInside }}</strong> khách đang ở trong tòa nhà.</p>
     </div>
-    <a href="{{ route('receptionist.parcels.create') }}" class="btn-new-broadcast" style="width:auto; margin-bottom:0;">
-        <i class="fa-solid fa-plus"></i> Nhận bưu phẩm
-    </a>
+    <div style="display:flex; gap:10px;">
+        <a href="{{ route('receptionist.walk-in.index') }}" class="btn-new-broadcast" style="width:auto; margin-bottom:0; background:#16a34a;">
+            <i class="fa-solid fa-user-plus"></i> Đăng ký khách
+        </a>
+        <a href="{{ route('receptionist.parcels.create') }}" class="btn-new-broadcast" style="width:auto; margin-bottom:0;">
+            <i class="fa-solid fa-plus"></i> Nhận bưu phẩm
+        </a>
+    </div>
 </div>
 
 <!-- KPI -->
@@ -39,8 +44,12 @@
         <h2 style="font-size:32px;margin:0;">{{ $pendingTickets }}</h2>
     </div>
     <div class="dashboard-card dashboard-card--primary">
-        <div class="dashboard-card__label">Đặt lịch chờ duyệt</div>
-        <h2 style="font-size:32px;margin:0;">{{ $pendingBookings }}</h2>
+        <div class="dashboard-card__label">Khách đang ở</div>
+        <h2 style="font-size:32px;margin:0;color:#16a34a;">{{ $visitorsInside }}</h2>
+    </div>
+    <div class="dashboard-card dashboard-card--primary">
+        <div class="dashboard-card__label">Lượt khách hôm nay</div>
+        <h2 style="font-size:32px;margin:0;">{{ $todayVisitors }}</h2>
     </div>
 </div>
 

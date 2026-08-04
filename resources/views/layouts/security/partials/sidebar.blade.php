@@ -59,50 +59,7 @@
             </div>
         </div>
 
-        {{-- QUẢN LÝ KHÁCH --}}
-        <div class="nav-section">
-            <span class="nav-section__label">QUẢN LÝ KHÁCH</span>
 
-            <div class="dashboard-nav__group {{ request()->routeIs('security.walk-in*') || request()->routeIs('security.visitor-logs*') ? 'dashboard-nav__group--open' : '' }}" id="group-visitor">
-                <button type="button"
-                    class="dashboard-nav__item dashboard-nav__item--parent {{ request()->routeIs('security.walk-in*') || request()->routeIs('security.visitor-logs*') ? 'dashboard-nav__item--active' : '' }}"
-                    onclick="toggleNavGroup('group-visitor')">
-                    <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                    <span>Quản lý khách</span>
-                    <svg class="dashboard-nav__chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
-                </button>
-                <div class="dashboard-nav__submenu">
-                    <a href="{{ route('security.walk-in.index') }}"
-                        class="dashboard-nav__subitem {{ request()->routeIs('security.walk-in*') ? 'dashboard-nav__subitem--active' : '' }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-                            <circle cx="9" cy="7" r="4"/>
-                            <line x1="19" y1="8" x2="19" y2="14"/>
-                            <line x1="22" y1="11" x2="16" y2="11"/>
-                        </svg>
-                        <span>Đăng ký khách</span>
-                    </a>
-                    <a href="{{ route('security.visitor-logs.index') }}"
-                        class="dashboard-nav__subitem {{ request()->routeIs('security.visitor-logs*') ? 'dashboard-nav__subitem--active' : '' }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                            <polyline points="14 2 14 8 20 8"/>
-                            <line x1="16" y1="13" x2="8" y2="13"/>
-                            <line x1="16" y1="17" x2="8" y2="17"/>
-                            <polyline points="10 9 9 9 8 9"/>
-                        </svg>
-                        <span>Lịch sử ra vào</span>
-                    </a>
-                </div>
-            </div>
-        </div>
 
     </nav>
 

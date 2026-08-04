@@ -15,6 +15,8 @@ class DashboardController extends Controller
         $todayParcels     = Parcel::whereDate('arrived_at', today())->count();
         $pendingTickets   = Ticket::whereIn('status', ['pending', 'assigned'])->count();
         $pendingBookings  = FacilityBooking::where('status', 'pending')->count();
+        $visitorsInside   = \App\Models\Visitor::where('status', 'checked_in')->count();
+        $todayVisitors    = \App\Models\Visitor::whereDate('check_in_at', today())->count();
 
         $recentParcels = Parcel::with('apartment')
             ->latest()
@@ -30,6 +32,7 @@ class DashboardController extends Controller
         return view('receptionist.dashboard.index', compact(
             'pendingParcels', 'todayParcels',
             'pendingTickets', 'pendingBookings',
+            'visitorsInside', 'todayVisitors',
             'recentParcels', 'recentTickets'
         ));
     }

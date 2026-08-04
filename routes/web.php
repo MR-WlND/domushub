@@ -349,14 +349,11 @@ Route::middleware(['staff'])->prefix('staff')->name('staff.')->group($portalRout
 Route::middleware(['technician'])->prefix('technician')->name('technician.')->group($portalRoutes);
 
 
-// DASHBOARD SECURITY ROUTES
 Route::middleware(['security'])->group(function () {
     Route::get('/security/dashboard', function () {
         $vehiclesInside = \App\Models\VehicleLog::where('status', 'inside')->count();
-        $visitorsInside = \App\Models\Visitor::where('status', 'checked_in')->count();
         $todayCheckins = \App\Models\VehicleLog::whereDate('check_in_at', today())->count();
         $todayCheckouts = \App\Models\VehicleLog::whereDate('check_out_at', today())->count();
-        $todayVisitors = \App\Models\Visitor::whereDate('check_in_at', today())->count();
 
         $recentLogs = \App\Models\VehicleLog::with('vehicle')
             ->latest()
@@ -364,7 +361,7 @@ Route::middleware(['security'])->group(function () {
             ->get();
 
         return view('security.dashboard.index', compact(
-            'vehiclesInside', 'visitorsInside', 'todayCheckins', 'todayCheckouts', 'todayVisitors', 'recentLogs'
+            'vehiclesInside', 'todayCheckins', 'todayCheckouts', 'recentLogs'
         ));
     })->name('security.dashboard');
 
@@ -379,21 +376,8 @@ Route::middleware(['security'])->group(function () {
     Route::post('/security/vehicle-checkout/scan', [\App\Http\Controllers\Security\VehicleCheckoutController::class, 'scan'])->name('security.vehicle-checkout.scan');
     Route::post('/security/vehicle-checkout/confirm', [\App\Http\Controllers\Security\VehicleCheckoutController::class, 'checkout'])->name('security.vehicle-checkout.confirm');
 
-    // Quét QR khách
-    Route::get('/security/visitor-check', [\App\Http\Controllers\Security\VisitorCheckinController::class, 'index'])->name('security.visitor-check.index');
-    Route::post('/security/visitor-check/scan', [\App\Http\Controllers\Security\VisitorCheckinController::class, 'scan'])->name('security.visitor-check.scan');
-    Route::post('/security/visitor-check/checkin', [\App\Http\Controllers\Security\VisitorCheckinController::class, 'checkin'])->name('security.visitor-check.checkin');
-    Route::post('/security/visitor-check/checkout', [\App\Http\Controllers\Security\VisitorCheckinController::class, 'checkout'])->name('security.visitor-check.checkout');
-
-    // Đăng ký khách vãng lai tại cổng (walk-in)
-    Route::get('/security/walk-in', [\App\Http\Controllers\Security\WalkInVisitorController::class, 'index'])->name('security.walk-in.index');
-    Route::get('/security/walk-in/residents', [\App\Http\Controllers\Security\WalkInVisitorController::class, 'getResidents'])->name('security.walk-in.residents');
-    Route::post('/security/walk-in', [\App\Http\Controllers\Security\WalkInVisitorController::class, 'store'])->name('security.walk-in.store');
-    Route::post('/security/walk-in/checkout', [\App\Http\Controllers\Security\WalkInVisitorController::class, 'checkout'])->name('security.walk-in.checkout');
-
-    // Xem lịch sử xe và khách cho bảo vệ
+    // Xem lịch sử xe cho bảo vệ
     Route::get('/security/vehicle-logs', [\App\Http\Controllers\Admin\VehicleLogController::class, 'index'])->name('security.vehicle-logs.index');
-    Route::get('/security/visitor-logs', [\App\Http\Controllers\Admin\VisitorLogController::class, 'index'])->name('security.visitor-logs.index');
 });
 
 // DASHBOARD CLEANING ROUTES
