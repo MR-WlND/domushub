@@ -632,6 +632,13 @@ Route::middleware(['receptionist'])->prefix('receptionist')->name('receptionist.
     Route::post('/amenities/{id}/approve',          [\App\Http\Controllers\Receptionist\AmenityController::class, 'approveBooking'])->name('amenities.approve');
     Route::post('/amenities/{id}/reject',           [\App\Http\Controllers\Receptionist\AmenityController::class, 'rejectBooking'])->name('amenities.reject');
 
+    // Quản lý khách
+    Route::get('/walk-in',                          [\App\Http\Controllers\Receptionist\VisitorController::class, 'walkIn'])->name('walk-in.index');
+    Route::get('/walk-in/residents',                [\App\Http\Controllers\Receptionist\VisitorController::class, 'getResidents'])->name('walk-in.residents');
+    Route::post('/walk-in',                         [\App\Http\Controllers\Receptionist\VisitorController::class, 'store'])->name('walk-in.store');
+    Route::post('/walk-in/checkout',                [\App\Http\Controllers\Receptionist\VisitorController::class, 'checkout'])->name('walk-in.checkout');
+    Route::get('/visitor-log',                      [\App\Http\Controllers\Receptionist\VisitorController::class, 'log'])->name('visitor-log.index');
+
     // Trang cá nhân
     Route::get('/profile',                          [\App\Http\Controllers\Receptionist\ProfileController::class, 'index'])->name('profile');
     Route::put('/profile',                          [\App\Http\Controllers\Receptionist\ProfileController::class, 'update'])->name('profile.update');
