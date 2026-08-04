@@ -221,7 +221,7 @@ $portalRoutes = function () {
 
     // Danh sách cư dân
     Route::get('/residents', [ResidentManageController::class, 'index'])->name('residents.index');
-
+    Route::get('/residents/{id}', [ResidentManageController::class, 'show'])->name('residents.show');
     // Quản lý phản ánh & điều phối kỹ thuật (admin / manager)
     Route::get('/tickets', [App\Http\Controllers\Admin\TicketController::class, 'index'])->name('tickets.index');
     Route::get('/tickets/report', [App\Http\Controllers\Admin\TicketController::class, 'report'])->name('tickets.report');
