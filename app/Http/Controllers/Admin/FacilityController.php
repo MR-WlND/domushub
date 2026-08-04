@@ -62,15 +62,15 @@ class FacilityController extends Controller
             'close_time'                => 'nullable|date_format:H:i|after:open_time',
             'operating_days'            => 'nullable|array',
             'operating_days.*'          => 'string|in:T2,T3,T4,T5,T6,T7,CN',
-            'slot_duration'             => 'required|integer|min:0',
+            'slot_duration'             => 'required_if:booking_type,time_slot,slot|integer|min:0',
             'booking_type'              => 'required|in:none,time_slot,slot',
             'fee_type'                  => 'required|in:free,per_hour,per_use,per_person',
             'price'                     => 'required_unless:fee_type,free|numeric|min:0',
             'min_advance_booking_hours' => 'nullable|integer|min:0',
             'max_advance_booking_days'  => 'nullable|integer|min:0',
             'rules'                     => 'nullable|string|max:1000',
-            'images'                    => 'nullable|array|max:5',
-            'images.*'                  => 'image|mimes:jpeg,png,jpg,webp|max:3072',
+            'images' => 'nullable|array|max:5',
+            'images.*'                  => 'image|mimes:jpeg,png,jpg,webp|max:5120',
         ], [
             'name.required'             => 'Vui lòng nhập tên tiện ích.',
             'name.unique'               => 'Tên tiện ích đã tồn tại.',
@@ -152,8 +152,8 @@ class FacilityController extends Controller
             'status'                    => 'required|in:available,maintenance,closed',
             'open_time'                 => 'nullable|date_format:H:i',
             'close_time'                => 'nullable|date_format:H:i|after:open_time',
-            'slot_duration'             => 'required|integer|in:0,30,60,90,120',
-            'booking_type'              => 'required|in:none,time_slot',
+            'slot_duration'             => 'required_if:booking_type,time_slot,slot|integer|min:0',
+            'booking_type'              => 'required|in:none,time_slot,slot',
             'fee_type'                  => 'required|in:free,per_hour,per_use,per_person',
             'price'                     => 'required_unless:fee_type,free|numeric|min:0',
             'min_advance_booking_hours' => 'nullable|integer|min:0',
@@ -322,8 +322,8 @@ class FacilityController extends Controller
     public function storeImage(Request $request, Facility $facility): RedirectResponse
     {
         $request->validate([
-            'images'   => 'required|array|max:5',
-            'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:3072',
+            'images' => 'required|array|max:5',
+            'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
         ], [
             'images.required'   => 'Vui lòng chọn ít nhất một ảnh.',
             'images.*.image'    => 'File phải là ảnh.',
