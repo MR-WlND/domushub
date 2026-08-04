@@ -29,7 +29,7 @@
 .rf-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.06); }
 
 /* Image */
-.rf-card-img-wrap { width: 100%; height: 130px; position: relative; overflow: hidden; background: #f1f5f9; }
+.rf-card-img-wrap { width: 100%; height: 130px; position: relative; overflow: hidden; background: #f1f5f9; cursor:pointer; }
 .rf-card-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
 .rf-card-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 12px; }
 
@@ -160,6 +160,7 @@
             $priceClass = ($priceText === 'Miễn phí') ? 'rf-info-val--free' : '';
         @endphp
         <div class="rf-card">
+            <a href="{{ route('resident.facilities.show', $facility) }}" style="text-decoration:none;color:inherit;display:block;">
             <div class="rf-card-img-wrap">
                 @if($facility->images && count($facility->images) > 0)
                     <img src="{{ asset('storage/' . $facility->images[0]) }}" alt="{{ $facility->name }}">
@@ -172,10 +173,13 @@
                     <span class="rf-badge-dot"></span> {{ $statusText }}
                 </div>
             </div>
+            </a>
             
             <div class="rf-card-body">
                 <div>
+                    <a href="{{ route('resident.facilities.show', $facility) }}" style="text-decoration:none;color:inherit;">
                     <h3 class="rf-card-title" title="{{ $facility->name }}">{{ $facility->name }}</h3>
+                    </a>
                     <div class="rf-card-location">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                         {{ $facility->floor?->name ? $facility->floor->name . ', ' : '' }}{{ $facility->block?->name ?: 'Khu vực chung' }}
