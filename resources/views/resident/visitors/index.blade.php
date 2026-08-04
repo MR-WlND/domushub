@@ -1,5 +1,5 @@
 @extends('layouts.resident.master')
-@section('title', 'Khách viếng thăm – DomusHub')
+@section('title', 'Khách ghé thăm – DomusHub')
 @push('styles')
     @vite(['resources/css/resident/visitors.css'])
     <style>
@@ -74,7 +74,7 @@
     <div class="vr-header">
         <div>
             <p class="vr-eyebrow">Dịch vụ</p>
-            <h1 class="vr-title">Khách viếng thăm</h1>
+            <h1 class="vr-title">Khách ghé thăm</h1>
         </div>
     </div>
 

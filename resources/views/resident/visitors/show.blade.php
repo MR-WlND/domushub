@@ -90,7 +90,7 @@
     {{-- HEADER --}}
     <div class="vd-header">
         <div>
-            <p class="vd-eyebrow">Khách viếng thăm</p>
+            <p class="vd-eyebrow">Khách ghé thăm</p>
             <h1 class="vd-title">Chi tiết khách</h1>
         </div>
         <a href="{{ route('resident.visitors.index') }}" class="vd-back">
