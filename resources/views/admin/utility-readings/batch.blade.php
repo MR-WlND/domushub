@@ -75,9 +75,9 @@
 <div class="util-page-header">
     <div>
         <h1>Ghi chỉ số hàng loạt</h1>
-        <p>Chốt cả <strong>điện</strong> và <strong>nước</strong> cho nhiều căn hộ cùng lúc</p>
+        <p>Ghi chỉ số <strong>nước</strong> cho nhiều căn hộ cùng lúc</p>
     </div>
-    <a href="{{ route('admin.utility-readings.index') }}" class="util-btn util-btn--outline">
+    <a href="{{ portal_route('utility-readings.index') }}" class="util-btn util-btn--outline">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
         </svg>
@@ -94,7 +94,7 @@
 
 {{-- ── Filter Panel ────────────────────────────────── --}}
 <div class="util-filter-panel">
-    <form action="{{ route('admin.utility-readings.batch') }}" method="GET" id="filterForm">
+    <form action="{{ portal_route('utility-readings.batch') }}" method="GET" id="filterForm">
         <div class="util-filter-grid">
             <div>
                 <label>Tòa nhà</label>
@@ -144,24 +144,12 @@
 @if (count($apartmentData) > 0)
 @php
     $total      = count($apartmentData);
-    $elecDone   = collect($apartmentData)->where('elec_recorded', true)->count();
     $waterDone  = collect($apartmentData)->where('water_recorded', true)->count();
-    $bothDone   = collect($apartmentData)->where('both_recorded', true)->count();
-    $elecPct    = $total > 0 ? round($elecDone / $total * 100) : 0;
     $waterPct   = $total > 0 ? round($waterDone / $total * 100) : 0;
 @endphp
 
 {{-- ── Progress summary ────────────────────────────── --}}
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 12px; margin-bottom: 20px;">
-
-    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:16px 20px;">
-        <div style="font-size:12px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Điện – Tháng {{ $selectedMonth }}/{{ $selectedYear }}</div>
-        <div style="font-size:26px;font-weight:800;color:#b45309;">{{ $elecDone }}<span style="font-size:16px;font-weight:600;color:#d97706;"> / {{ $total }}</span></div>
-        <div style="margin-top:8px;background:#e2e8f0;border-radius:999px;height:6px;overflow:hidden;">
-            <div style="height:100%;width:{{ $elecPct }}%;background:linear-gradient(90deg,#f59e0b,#d97706);border-radius:999px;"></div>
-        </div>
-        <div style="font-size:12px;color:#92400e;margin-top:4px;">{{ $elecPct }}% hoàn thành</div>
-    </div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 12px; margin-bottom: 20px;">
 
     <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:16px 20px;">
         <div style="font-size:12px;font-weight:700;color:#1e40af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Nước – Tháng {{ $selectedMonth }}/{{ $selectedYear }}</div>
@@ -172,24 +160,14 @@
         <div style="font-size:12px;color:#1e40af;margin-top:4px;">{{ $waterPct }}% hoàn thành</div>
     </div>
 
-    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px 20px;">
-        <div style="font-size:12px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Hoàn tất cả 2</div>
-        <div style="font-size:26px;font-weight:800;color:#15803d;">{{ $bothDone }}<span style="font-size:16px;font-weight:600;color:#22c55e;"> / {{ $total }}</span></div>
-        <div style="margin-top:8px;background:#e2e8f0;border-radius:999px;height:6px;overflow:hidden;">
-            <div style="height:100%;width:{{ $total > 0 ? round($bothDone/$total*100) : 0 }}%;background:linear-gradient(90deg,#10b981,#059669);border-radius:999px;"></div>
-        </div>
-        <div style="font-size:12px;color:#166534;margin-top:4px;">{{ $total > 0 ? round($bothDone/$total*100) : 0 }}% hoàn thành</div>
-    </div>
-
     <div style="background:#f8faff;border:1px solid #e2e8f0;border-radius:12px;padding:16px 20px;display:flex;flex-direction:column;justify-content:center;gap:6px;">
         <div style="font-size:13px;font-weight:600;color:#334155;">Tổng căn hộ: <strong>{{ $total }}</strong></div>
-        <div style="font-size:13px;color:#64748b;">Chưa chốt điện: <strong style="color:#f59e0b;">{{ $total - $elecDone }}</strong></div>
         <div style="font-size:13px;color:#64748b;">Chưa chốt nước: <strong style="color:#3b82f6;">{{ $total - $waterDone }}</strong></div>
     </div>
 </div>
 
 {{-- ── Batch Form ───────────────────────────────────── --}}
-<form action="{{ route('admin.utility-readings.batch.store') }}" method="POST" id="batchForm" enctype="multipart/form-data">
+<form action="{{ portal_route('utility-readings.batch.store') }}" method="POST" id="batchForm" enctype="multipart/form-data">
     @csrf
     <input type="hidden" name="record_month" value="{{ $selectedMonth }}">
     <input type="hidden" name="record_year"  value="{{ $selectedYear }}">
@@ -201,7 +179,6 @@
                 Danh sách căn hộ – Tháng {{ $selectedMonth }}/{{ $selectedYear }}
             </div>
             <div style="display:flex;align-items:center;gap:16px;font-size:13px;color:#64748b;">
-                <span>Cột vàng = Điện &nbsp;|&nbsp; Cột xanh = Nước</span>
                 <label style="display:flex;align-items:center;gap:6px;font-weight:600;cursor:pointer;">
                     <input type="checkbox" id="selectAll" checked style="width:15px;height:15px;accent-color:#00236f;cursor:pointer;">
                     Chọn tất cả
@@ -216,9 +193,6 @@
                         <th rowspan="2" style="width:40px; text-align:center;"></th>
                         <th rowspan="2" style="width:80px; text-align:center;">PHÒNG</th>
                         <th rowspan="2" style="width:150px; text-align:center;">TÒA / TẦNG</th>
-                        <th colspan="{{ auth()->user()->role === 'technician' ? '1' : '3' }}" class="col-elec col-divider-border" style="text-align:center; font-weight:700; color:#92400e;">
-                            ĐIỆN — THÁNG {{ $selectedMonth }}/{{ $selectedYear }}
-                        </th>
  
                         {{-- Water Header Group --}}
                         <th colspan="{{ auth()->user()->role === 'technician' ? '1' : '3' }}" class="col-water" style="text-align:center; font-weight:700; color:#1e40af;">
@@ -230,14 +204,6 @@
                     </tr>
                     <tr>
                         @if(auth()->user()->role !== 'technician')
-                        <th class="col-elec" style="text-align:center; font-size:12px; font-weight:600; color:#92400e;">CS Cũ</th>
-                        @endif
-                        <th class="col-elec {{ auth()->user()->role === 'technician' ? 'col-divider-border' : '' }}" style="text-align:center; font-size:12px; font-weight:600; color:#92400e;">CS Mới</th>
-                        @if(auth()->user()->role !== 'technician')
-                        <th class="col-elec col-divider-border" style="text-align:center; font-size:12px; font-weight:600; color:#92400e;">Tiêu thụ</th>
-                        @endif
- 
-                        @if(auth()->user()->role !== 'technician')
                         <th class="col-water" style="text-align:center; font-size:12px; font-weight:600; color:#1e40af;">CS Cũ</th>
                         @endif
                         <th class="col-water" style="text-align:center; font-size:12px; font-weight:600; color:#1e40af;">CS Mới</th>
@@ -248,11 +214,11 @@
                 </thead>
                 <tbody>
                     @foreach ($apartmentData as $i => $data)
-                    @php $bothDoneRow = $data['elec_recorded'] && $data['water_recorded']; @endphp
-                    <tr id="row-{{ $i }}" class="{{ $bothDoneRow ? 'batch-row--all-done' : '' }}">
+                    @php $isDoneRow = $data['water_recorded']; @endphp
+                    <tr id="row-{{ $i }}" class="{{ $isDoneRow ? 'batch-row--all-done' : '' }}">
                         {{-- Checkbox --}}
                         <td style="text-align:center;">
-                            @if (!$bothDoneRow)
+                            @if (!$isDoneRow)
                                 <input type="checkbox" class="row-check" data-index="{{ $i }}" checked
                                     style="width:15px;height:15px;accent-color:#00236f;cursor:pointer;">
                             @else
@@ -266,57 +232,13 @@
  
                         {{-- Room --}}
                         <td style="text-align:center;"><strong class="text-strong">{{ $data['apartment']->apartment_number }}</strong></td>
- 
+
                         {{-- Block/Floor --}}
                         <td class="text-muted" style="font-size:12px; text-align:center;">
                             {{ $data['apartment']->floor->block->name ?? '—' }}
                             / {{ $data['apartment']->floor->name ?? 'Tầng ' . $data['apartment']->floor->floor_number }}
                         </td>
- 
-                        {{-- ── ELECTRICITY ─────────────────────── --}}
-                        @if(auth()->user()->role !== 'technician')
-                        <td class="col-elec" style="font-weight:600;color:#92400e;text-align:center;">
-                            {{ number_format($data['elec_old']) }}
-                        </td>
-                        @endif
-                        <td class="col-elec {{ auth()->user()->role === 'technician' ? 'col-divider-border' : '' }}" style="text-align:center;">
-                            @if (!$data['elec_recorded'])
-                                <input type="hidden"
-                                    name="readings[{{ $i }}][apartment_id]"
-                                    value="{{ $data['apartment']->id }}"
-                                    class="apt-id-input">
-                                <input type="number"
-                                    name="readings[{{ $i }}][elec_new]"
-                                    class="batch-meter-input elec-input"
-                                    min="{{ $data['elec_old'] }}"
-                                    data-old="{{ $data['elec_old'] }}"
-                                    data-original-old="{{ $data['elec_old'] }}"
-                                    data-type="elec"
-                                    data-index="{{ $i }}"
-                                    placeholder="Chỉ số mới">
-                                <div style="margin-top: 4px;">
-                                    <label style="display:inline-flex; align-items:center; gap:4px; font-size:10px; color:#92400e; cursor:pointer;">
-                                        <input type="checkbox"
-                                            name="readings[{{ $i }}][elec_is_reset]"
-                                            value="1"
-                                            class="elec-reset-cb"
-                                            data-index="{{ $i }}"
-                                            style="width:12px; height:12px; margin:0;">
-                                        Thay mới
-                                    </label>
-                                </div>
-                            @else
-                                <span style="color:#15803d;font-weight:600;font-size:13px;">✓ Đã chốt</span>
-                                <input type="hidden" name="readings[{{ $i }}][apartment_id]" value="{{ $data['apartment']->id }}">
-                            @endif
-                        </td>
-                        @if(auth()->user()->role !== 'technician')
-                        <td class="col-elec col-divider-border" style="text-align:center;">
-                            <span class="usage-chip {{ !$data['elec_recorded'] ? 'usage-chip--zero' : 'usage-chip--elec' }}"
-                                id="elec-usage-{{ $i }}">—</span>
-                        </td>
-                        @endif
- 
+
                         {{-- ── WATER ───────────────────────────── --}}
                         @if(auth()->user()->role !== 'technician')
                         <td class="col-water" style="font-weight:600;color:#1e40af;text-align:center;">
@@ -325,6 +247,10 @@
                         @endif
                         <td class="col-water" style="text-align:center;">
                             @if (!$data['water_recorded'])
+                                <input type="hidden"
+                                    name="readings[{{ $i }}][apartment_id]"
+                                    value="{{ $data['apartment']->id }}"
+                                    class="apt-id-input">
                                 <input type="number"
                                     name="readings[{{ $i }}][water_new]"
                                     class="batch-meter-input water-input"
@@ -347,6 +273,7 @@
                                 </div>
                             @else
                                 <span style="color:#15803d;font-weight:600;font-size:13px;">✓ Đã chốt</span>
+                                <input type="hidden" name="readings[{{ $i }}][apartment_id]" value="{{ $data['apartment']->id }}">
                             @endif
                         </td>
                         @if(auth()->user()->role !== 'technician')
@@ -358,7 +285,7 @@
 
                         {{-- Ảnh công tơ --}}
                         <td style="text-align:center; vertical-align:middle; min-width:140px;">
-                            @if (!$bothDoneRow)
+                            @if (!$isDoneRow)
                                 <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
                                     {{-- Nút chụp camera (WebRTC) --}}
                                     <button type="button"
@@ -378,7 +305,7 @@
                                         <i class="fa-regular fa-image" style="font-size: 12px;"></i>
                                         Chọn ảnh
                                     </button>
-                                    {{-- Gallery input (multiple, không capture) --}}
+                                    {{-- Gallery input --}}
                                     <input type="file" id="gal_{{ $i }}"
                                         accept="image/*" multiple style="display:none;"
                                         data-row="{{ $i }}">
@@ -389,21 +316,18 @@
                                     {{-- Preview thumbnails --}}
                                     <div id="preview_{{ $i }}"
                                         style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:4px;"></div>
+
+                                    <div id="ocr_status_{{ $i }}" style="font-size: 10px; color: #3b82f6; font-weight: 600; display: none; margin-top: 4px; text-align: center; max-width: 130px; word-break: break-word;"></div>
                                 </div>
                             @else
                                 <span style="color:#64748b; font-size:12px;">—</span>
                             @endif
                         </td>
 
-
                         {{-- Status --}}
                         <td style="text-align:center;">
-                            @if ($bothDoneRow)
+                            @if ($isDoneRow)
                                 <span class="util-badge util-badge--success">Đã chốt</span>
-                            @elseif ($data['elec_recorded'] || $data['water_recorded'])
-                                <span class="util-badge" style="background:#e0f2fe;color:#075985;font-size:11px;">
-                                    {{ $data['elec_recorded'] ? 'Điện ' : '' }}{{ $data['water_recorded'] ? 'Nước' : '' }} Chốt 1 phần
-                                </span>
                             @else
                                 <span class="util-badge util-badge--warning">Chưa chốt</span>
                             @endif
@@ -419,7 +343,7 @@
             <div class="util-batch-footer__info">
                 Tháng <strong>{{ $selectedMonth }}/{{ $selectedYear }}</strong>
                 &nbsp;·&nbsp; Tổng: <strong>{{ $total }}</strong> căn hộ
-                &nbsp;·&nbsp; Đang chọn: <strong id="countNum">{{ $total - $bothDone }}</strong>
+                &nbsp;·&nbsp; Đang chọn: <strong id="countNum">{{ $total - $waterDone }}</strong>
             </div>
             <div style="display:flex;gap:10px;align-items:center;">
                 <span style="font-size:12px;color:#64748b;">Có thể để trống ô không cần ghi</span>
@@ -437,19 +361,17 @@
 
 @elseif ($selectedBlockId || $selectedFloorId)
 <div class="util-empty-state">
-    <svg width="48" height="48" fill="none" stroke="#cbd5e1" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 16px;">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-        <polyline points="9 22 9 12 15 12 15 22"/>
+    <svg width="48" height="48" fill="none" stroke="#cbd5e1" stroke-width="1.5" viewBox="0 0 24 24" style="margin: 0 auto 16px;">
+        <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>
     </svg>
-    <p>Không tìm thấy căn hộ nào trong khu vực đã chọn.</p>
+    <p>Không có căn hộ nào chưa ghi số nước trong khu vực đã chọn.</p>
 </div>
 @else
 <div class="util-empty-state">
-    <svg width="52" height="52" fill="none" stroke="#cbd5e1" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 16px;">
-        <rect x="2" y="3" width="20" height="18" rx="1"/>
-        <path d="M9 3v18"/><path d="M15 3v18"/><path d="M2 9h20"/><path d="M2 15h20"/>
+    <svg width="48" height="48" fill="none" stroke="#cbd5e1" stroke-width="1.5" viewBox="0 0 24 24" style="margin: 0 auto 16px;">
+        <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>
     </svg>
-    <p>Vui lòng chọn <strong>Tòa nhà</strong> để hiển thị danh sách căn hộ cần chốt.</p>
+    <p>Vui lòng chọn Tòa nhà hoặc Tầng để hiển thị danh sách ghi chỉ số nước hàng loạt.</p>
 </div>
 @endif
 
@@ -457,6 +379,71 @@
 
 @push('scripts')
 <script>
+function showOCRStatusBatch(text, rowId, isError = false) {
+    const statusEl = document.getElementById('ocr_status_' + rowId);
+    if (statusEl) {
+        statusEl.innerHTML = (isError ? '' : '<i class="fa-solid fa-circle-notch fa-spin"></i> ') + text;
+        statusEl.style.color = isError ? '#ef4444' : '#3b82f6';
+        statusEl.style.display = 'block';
+    }
+}
+
+function hideOCRStatusBatch(rowId) {
+    const statusEl = document.getElementById('ocr_status_' + rowId);
+    if (statusEl) {
+        statusEl.style.display = 'none';
+    }
+}
+
+async function runAIOCRBatch(file, rowId) {
+    showOCRStatusBatch("AI đang quét...", rowId);
+    
+
+
+    const rowEl = document.getElementById('row-' + rowId);
+    const inp = rowEl ? rowEl.querySelector('.water-input') : null;
+    const typeVal = inp ? (inp.dataset.type || 'water') : 'water';
+
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('type', typeVal);
+    formData.append('_token', document.querySelector('input[name="_token"]')?.value || '{{ csrf_token() }}');
+
+    try {
+        const response = await fetch('{{ portal_route('utility-readings.ocr') }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        if (!response.ok) {
+            const errData = await response.json();
+            throw new Error(errData.message || 'Lỗi nhận diện');
+        }
+
+        const res = await response.json();
+
+        if (res.success && res.reading) {
+            const inputVal = parseInt(res.reading, 10);
+            if (inp) {
+                inp.value = inputVal;
+                inp.dispatchEvent(new Event('input'));
+                showOCRStatusBatch("✅ AI nhận diện: " + res.reading, rowId);
+                setTimeout(() => hideOCRStatusBatch(rowId), 5000);
+            }
+        } else {
+            showOCRStatusBatch("⚠️ AI: " + (res.message || "Không rõ số"), rowId, true);
+            setTimeout(() => hideOCRStatusBatch(rowId), 6000);
+        }
+    } catch (err) {
+        console.error("AI OCR Batch Error:", err);
+        showOCRStatusBatch("❌ Lỗi AI: " + err.message, rowId, true);
+        setTimeout(() => hideOCRStatusBatch(rowId), 6000);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
 
     // ── Tính tiêu thụ realtime ─────────────────────────
@@ -630,6 +617,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 syncBatchProxy(rowId);
                 renderBatchPreview(rowId);
+
+                // Chạy AI OCR trên ảnh đầu tiên được chọn
+                if (files.length > 0) {
+                    runAIOCRBatch(files[0], rowId);
+                }
             }
             this.value = '';
         });
@@ -756,10 +748,11 @@ function createBatchCameraModal() {
         </div>
         <div style="background:#000;position:relative;aspect-ratio:4/3;max-height:320px;overflow:hidden;">
             <video id="batchCameraVideo" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover;display:block;"></video>
-            <div style="position:absolute;inset:0;pointer-events:none;">
-                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:70%;height:70%;border:2px dashed rgba(255,255,255,0.5);border-radius:8px;"></div>
+            <div style="position:absolute;inset:0;pointer-events:none;z-index:10;">
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80%;height:25%;border:2px dashed #10b981;border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,0.5);box-sizing:border-box;"></div>
+                <div style="position:absolute;top:calc(50% - 12.5% - 18px);left:50%;transform:translateX(-50%);color:#10b981;font-size:10px;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,0.8);white-space:nowrap;">CĂN DÃY SỐ VÀO KHUNG NÀY</div>
             </div>
-            <div id="batchCameraLoading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;background:rgba(0,0,0,0.5);">Đang khởi động camera...</div>
+            <div id="batchCameraLoading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;background:rgba(0,0,0,0.5);z-index:20;">Đang khởi động camera...</div>
         </div>
         <div style="padding:14px;display:flex;gap:10px;justify-content:center;background:#f8fafc;">
             <button type="button" onclick="captureBatchPhoto()" style="display:inline-flex;align-items:center;gap:8px;padding:11px 24px;background:#00236f;color:#fff;border:none;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(0,35,111,0.25);">
@@ -795,16 +788,30 @@ async function startBatchCamera(facing) {
         video.onloadedmetadata = () => { loading.style.display = 'none'; };
     } catch (err) {
         let msg = 'Không thể mở camera.';
-        if (err.name === 'NotAllowedError')  msg = 'Quyền camera bị chặn. Cho phép trong thanh địa chỉ và thử lại.';
-        if (err.name === 'NotFoundError')    msg = 'Không tìm thấy camera. Kiểm tra webcam.';
-        if (err.name === 'NotReadableError') msg = 'Camera đang dùng bởi ứng dụng khác.';
-        if (err.name === 'OverconstrainedError') {
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+            msg = 'Quyền camera bị chặn. Cho phép trong thanh địa chỉ và thử lại.';
+        } else {
             try {
-                batchCameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                batchCameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
                 video.srcObject = batchCameraStream;
                 video.onloadedmetadata = () => { loading.style.display = 'none'; };
                 return;
-            } catch(e2) { msg = e2.message; }
+            } catch (e2) {
+                try {
+                    batchCameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    video.srcObject = batchCameraStream;
+                    video.onloadedmetadata = () => { loading.style.display = 'none'; };
+                    return;
+                } catch (e3) {
+                    if (err.name === 'NotFoundError') {
+                        msg = 'Không tìm thấy camera. Kiểm tra webcam.';
+                    } else if (err.name === 'NotReadableError') {
+                        msg = 'Camera đang dùng bởi ứng dụng khác.';
+                    } else {
+                        msg = 'Không thể khởi động camera: ' + (err.message || err.name);
+                    }
+                }
+            }
         }
         loading.innerHTML = `<div style="text-align:center;padding:16px;color:#fff;">${msg}<br><br><button onclick="closeBatchCameraModal()" style="padding:7px 14px;background:#fff;color:#1e293b;border:none;border-radius:7px;cursor:pointer;font-weight:600;">Đóng</button></div>`;
     }
@@ -823,6 +830,9 @@ function captureBatchPhoto() {
     const canvas = document.getElementById('batchCameraCanvas');
     if (!video.videoWidth) { alert('Camera chưa sẵn sàng.'); return; }
 
+    const rowId = batchCameraRowId;
+
+    // Lưu ảnh gốc làm minh chứng
     canvas.width  = video.videoWidth;
     canvas.height = video.videoHeight;
     canvas.getContext('2d').drawImage(video, 0, 0);
@@ -836,7 +846,6 @@ function captureBatchPhoto() {
         document.body.appendChild(flash);
         setTimeout(() => { flash.style.opacity='0'; setTimeout(()=>flash.remove(),300); }, 50);
 
-        const rowId = batchCameraRowId;
         const file  = new File([blob], `cam_${rowId}_${Date.now()}.jpg`, { type: 'image/jpeg' });
         const dt    = getBatchDT(rowId);
 
@@ -849,6 +858,9 @@ function captureBatchPhoto() {
         dt.items.add(file);
         syncBatchProxy(rowId);
         renderBatchPreview(rowId);
+        // Chạy AI OCR trên ảnh vừa chụp
+        runAIOCRBatch(file, rowId);
+        
         closeBatchCameraModal();
     }, 'image/jpeg', 0.92);
 }

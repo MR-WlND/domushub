@@ -19,12 +19,11 @@ class InvoiceSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Dọn dẹp dữ liệu hóa đơn, chi tiết hóa đơn, thanh toán và mối quan hệ cư dân cũ
+        // 1. Dọn dẹp dữ liệu hóa đơn, chi tiết hóa đơn, thanh toán (KHÔNG xóa residents)
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         DB::table('payments')->truncate();
         DB::table('bill_details')->truncate();
         DB::table('bills')->truncate();
-        DB::table('residents')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         // 2. Đảm bảo các dữ liệu nền cần thiết đã chạy
@@ -35,7 +34,7 @@ class InvoiceSeeder extends Seeder
             $this->call(ResidentSeeder::class);
         }
         if (DB::table('residents')->count() === 0) {
-            $this->call(ResidentAccountSeeder::class);
+            $this->call(ResidentSeeder::class);
         }
         if (ServicePrice::count() === 0) {
             $this->call(ServicePriceSeeder::class);
@@ -84,7 +83,6 @@ class InvoiceSeeder extends Seeder
         }
 
         // 5. Lấy các loại giá dịch vụ
-        $electricityPrice = ServicePrice::where('type', 'electricity')->first();
         $waterPrice = ServicePrice::where('type', 'water')->first();
         $managementPrice = ServicePrice::where('type', 'management_fee')->first();
         $parkingPrice = ServicePrice::where('type', 'parking')->first();
@@ -218,7 +216,7 @@ class InvoiceSeeder extends Seeder
             'billing_month' => 5,
             'billing_year'  => 2026,
             'due_date'      => Carbon::create(2026, 5, 25),
-            'total_amount'  => 510000,
+            'total_amount'  => 330000,
             'paid_amount'   => 200000,
             'status'        => 'partial_paid',
         ]);
@@ -230,16 +228,6 @@ class InvoiceSeeder extends Seeder
                 'quantity'         => 1,
                 'amount'           => 200000,
                 'status'           => 'paid',
-            ]);
-        }
-
-        if ($electricityPrice) {
-            InvoiceDetail::create([
-                'bill_id'          => $bill2->id,
-                'service_price_id' => $electricityPrice->id,
-                'quantity'         => 60,
-                'amount'           => 180000,
-                'status'           => 'unpaid',
             ]);
         }
 

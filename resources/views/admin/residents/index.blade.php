@@ -88,7 +88,7 @@
 </div>
 
 <script>
-const RESIDENT_INDEX_URL = '{{ route("admin.residents.index") }}';
+const RESIDENT_INDEX_URL = '{{ portal_route('residents.index') }}';
 let filterTimeout = null;
 
 function getFilterParams() {

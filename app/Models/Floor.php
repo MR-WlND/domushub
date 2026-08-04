@@ -26,10 +26,9 @@ class Floor extends Model
     public function getFloorTypeLabelAttribute(): string
     {
         return match ($this->floor_type) {
-            'commercial' => 'Thương mại',
-            'technical'  => 'Kỹ thuật',
-            'amenity'    => 'Tiện ích',
-            default      => 'Cư dân',
+            'basement'     => 'Tầng hầm',
+            'above_ground' => 'Tầng nổi',
+            default        => 'Tầng nổi',
         };
     }
 
@@ -50,7 +49,6 @@ class Floor extends Model
     }
 
     /**
-     * Tên hiển thị: ưu tiên name, fallback về "Tầng {floor_number}"
      */
     public function getDisplayNameAttribute(): string
     {

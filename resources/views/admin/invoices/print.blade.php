@@ -217,10 +217,39 @@
             @endforelse
         </tbody>
         <tfoot>
+            @php
+                $realPreviousDebt = \App\Models\Invoice::where('apartment_id', $invoice->apartment_id)
+                    ->where('status', '!=', 'cancelled')
+                    ->where(function ($q) use ($invoice) {
+                        $q->where('billing_year', '<', $invoice->billing_year)
+                          ->orWhere(function ($q2) use ($invoice) {
+                              $q2->where('billing_year', $invoice->billing_year)
+                                 ->where('billing_month', '<', $invoice->getRawOriginal('billing_month'));
+                          });
+                    })->get()->sum(function($inv) {
+                        return max(0, $inv->total_amount - $inv->paid_amount);
+                    });
+                $displayTotalDue = $invoice->current_amount + $realPreviousDebt;
+                $displayRemaining = max(0, $displayTotalDue - $invoice->paid_amount);
+            @endphp
+            @if($realPreviousDebt > 0)
+            <tr class="total-row" style="background: #fff;">
+                <td colspan="4" style="text-align:right;">Nợ kỳ trước:</td>
+                <td style="text-align:right; font-size:15px; font-weight:normal;">
+                    {{ number_format($realPreviousDebt) }} đ
+                </td>
+            </tr>
+            @endif
+            <tr class="total-row" style="background: #fff; border-bottom: 1px dashed #ccc;">
+                <td colspan="4" style="text-align:right;">Phát sinh kỳ này:</td>
+                <td style="text-align:right; font-size:15px; font-weight:normal;">
+                    {{ number_format($invoice->current_amount) }} đ
+                </td>
+            </tr>
             <tr class="total-row">
-                <td colspan="4" style="text-align:right;">Tổng cộng:</td>
-                <td style="text-align:right; font-size:16px;">
-                    {{ number_format($invoice->total_amount) }} đ
+                <td colspan="4" style="text-align:right; font-size: 16px;">TỔNG CỘNG THANH TOÁN:</td>
+                <td style="text-align:right; font-size:18px; color: #00236f;">
+                    {{ number_format($displayTotalDue) }} đ
                 </td>
             </tr>
             @if($invoice->paid_amount > 0)
@@ -233,7 +262,7 @@
             <tr>
                 <td colspan="4" style="text-align:right; font-size:13px; font-weight:bold;">Còn lại:</td>
                 <td style="text-align:right; font-size:13px; color:#721c24; font-weight:bold;">
-                    {{ number_format($invoice->remaining_amount) }} đ
+                    {{ number_format($displayRemaining) }} đ
                 </td>
             </tr>
             @endif

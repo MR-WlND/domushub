@@ -1,6 +1,6 @@
 @extends('layouts.admin.master')
 
-@section('page_title', 'Chốt số Điện Nước – DomusHub')
+@section('page_title', auth()->user()->role === 'technician' ? 'Ghi số Nước – DomusHub' : 'Chốt số Nước – DomusHub')
 
 @push('styles')
 @vite(['resources/css/pages/admin/utility-readings/index.css'])
@@ -11,20 +11,20 @@
 {{-- ── Page Header ─────────────────────────────────── --}}
 <div class="util-page-header">
     <div>
-        <h1>Chốt số Điện Nước</h1>
-        <p>Quản lý chỉ số điện nước theo tháng – Tháng {{ $month }}/{{ $year }}</p>
+        <h1>{{ auth()->user()->role === 'technician' ? 'Ghi số Nước' : 'Chốt số Nước' }}</h1>
+        <p>{{ auth()->user()->role === 'technician' ? 'Ghi nhận chỉ số nước theo tháng' : 'Quản lý chỉ số nước theo tháng' }} – Tháng {{ $month }}/{{ $year }}</p>
     </div>
-    @if(in_array(auth()->user()->role, ['technician', 'admin']))
     <div class="util-header-actions">
         @if(auth()->user()->role === 'admin')
-        <a href="{{ route('admin.utility-logs.index') }}" class="util-btn util-btn--outline" style="background:#fff; color:#475569; border:1px solid #cbd5e1; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+        <a href="{{ portal_route('utility-logs.index') }}" class="util-btn util-btn--outline" style="background:#fff; color:#475569; border:1px solid #cbd5e1; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             Lịch sử
         </a>
         @endif
-        <a href="{{ route('admin.utility-readings.batch') }}" class="util-btn util-btn--secondary">
+        @if(auth()->user()->role === 'technician')
+        <a href="{{ portal_route('utility-readings.batch') }}" class="util-btn util-btn--secondary">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
                 <rect x="9" y="3" width="6" height="4" rx="1"/>
@@ -32,14 +32,14 @@
             </svg>
             Ghi hàng loạt
         </a>
-        <a href="{{ route('admin.utility-readings.create') }}" class="util-btn util-btn--primary">
+        <a href="{{ portal_route('utility-readings.create') }}" class="util-btn util-btn--primary">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
             Ghi đơn lẻ
         </a>
+        @endif
     </div>
-    @endif
 </div>
 
 {{-- ── Flash Message ───────────────────────────────── --}}
@@ -55,13 +55,6 @@
     <div class="util-stat-card">
         <div class="util-stat-card__label">Tổng bản ghi</div>
         <div class="util-stat-card__value">{{ number_format($stats['total_records']) }}</div>
-    </div>
-    <div class="util-stat-card" style="border-top: 3px solid #f59e0b;">
-        <div class="util-stat-card__label">Tổng tiêu thụ Điện</div>
-        <div class="util-stat-card__value">
-            {{ number_format($stats['total_electricity']) }}
-            <small>kWh</small>
-        </div>
     </div>
     <div class="util-stat-card" style="border-top: 3px solid #3b82f6;">
         <div class="util-stat-card__label">Tổng tiêu thụ Nước</div>
@@ -86,11 +79,11 @@
 
 {{-- ── Filter Panel ────────────────────────────────── --}}
 <div class="util-filter-panel">
-    <form action="{{ route('admin.utility-readings.index') }}" method="GET">
-        <div class="util-filter-grid">
+    <form action="{{ portal_route('utility-readings.index') }}" method="GET">
+        <div class="util-filter-grid util-filter-grid--index">
             <div>
                 <label>Tòa nhà</label>
-                <select name="block_id">
+                <select name="block_id" class="util-form-input">
                     <option value="">Tất cả tòa</option>
                     @foreach ($blocks as $block)
                         <option value="{{ $block->id }}" {{ $blockId == $block->id ? 'selected' : '' }}>
@@ -101,7 +94,7 @@
             </div>
             <div>
                 <label>Tầng</label>
-                <select name="floor_id">
+                <select name="floor_id" class="util-form-input">
                     <option value="">Tất cả tầng</option>
                     @foreach ($floors as $floor)
                         <option value="{{ $floor->id }}" data-block-id="{{ $floor->block_id }}" {{ $floorId == $floor->id ? 'selected' : '' }}>
@@ -111,29 +104,29 @@
                 </select>
             </div>
             <div>
-                <label>Loại</label>
-                <select name="type">
-                    <option value="">Tất cả</option>
-                    <option value="electricity" {{ $type == 'electricity' ? 'selected' : '' }}>Điện</option>
-                    <option value="water" {{ $type == 'water' ? 'selected' : '' }}>Nước</option>
+                <label>Tháng</label>
+                <select name="month" class="util-form-input">
+                    @for ($m = 1; $m <= 12; $m++)
+                        <option value="{{ $m }}" {{ $month == $m ? 'selected' : '' }}>Tháng {{ $m }}</option>
+                    @endfor
                 </select>
             </div>
             <div>
-                <label>Tháng</label>
-                <input type="number" name="month" value="{{ $month }}" min="1" max="12" placeholder="Tháng">
-            </div>
-            <div>
                 <label>Năm</label>
-                <input type="number" name="year" value="{{ $year }}" min="2020" max="2100" placeholder="Năm">
+                <select name="year" class="util-form-input">
+                    @for ($y = date('Y') + 1; $y >= 2020; $y--)
+                        <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>Năm {{ $y }}</option>
+                    @endfor
+                </select>
             </div>
             <div class="util-filter-actions">
                 <button type="submit" class="util-btn util-btn--primary util-btn--sm">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align: middle;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3H2l4 6.28V17l4 2v-7.72L16 3z" />
                     </svg>
                     Lọc
                 </button>
-                <a href="{{ route('admin.utility-readings.index') }}" class="util-btn util-btn--outline util-btn--sm">Đặt lại</a>
+                <a href="{{ portal_route('utility-readings.index') }}" class="util-btn util-btn--outline util-btn--sm">Đặt lại</a>
             </div>
         </div>
     </form>
@@ -147,7 +140,7 @@
         <span style="font-size:13px; color:#15803d; font-weight:600;">
             Đang chọn <span id="selectedCount">0</span> mục chờ phê duyệt
         </span>
-        <form action="{{ route('admin.utility-readings.batch-approve') }}" method="POST" id="batchApproveForm" style="margin:0; display:flex; gap:10px;">
+        <form action="{{ portal_route('utility-readings.batch-approve') }}" method="POST" id="batchApproveForm" style="margin:0; display:flex; gap:10px;">
             @csrf
             <input type="hidden" name="month" value="{{ $month }}">
             <input type="hidden" name="year" value="{{ $year }}">
@@ -299,7 +292,7 @@
                                     </svg>
                                 </button>
                                 @if($reading->status === 'pending')
-                                <form action="{{ route('admin.utility-readings.approve', $reading->id) }}" method="POST" style="margin:0;">
+                                <form action="{{ portal_route('utility-readings.approve', $reading->id) }}" method="POST" style="margin:0;">
                                     @csrf
                                     <button type="submit" class="util-btn-approve" title="Phê duyệt">
                                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -307,7 +300,7 @@
                                         </svg>
                                     </button>
                                 </form>
-                                <form action="{{ route('admin.utility-readings.reject', $reading->id) }}" method="POST" style="margin:0;" id="reject-form-{{ $reading->id }}">
+                                <form action="{{ portal_route('utility-readings.reject', $reading->id) }}" method="POST" style="margin:0;" id="reject-form-{{ $reading->id }}">
                                     @csrf
                                     <input type="hidden" name="reject_reason" id="reject-reason-{{ $reading->id }}">
                                     <button type="button" class="util-btn-reject" title="Từ chối" onclick="confirmAndReject({{ $reading->id }})">
@@ -319,14 +312,14 @@
                                 </form>
                                 @endif
                                 @if(auth()->user()->role === 'admin')
-                                <a href="{{ route('admin.utility-readings.edit', $reading->id) }}"
+                                <a href="{{ portal_route('utility-readings.edit', $reading->id) }}"
                                     class="util-btn-edit" title="Sửa">
                                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                                     </svg>
                                 </a>
-                                <form action="{{ route('admin.utility-readings.destroy', $reading->id) }}"
+                                <form action="{{ portal_route('utility-readings.destroy', $reading->id) }}"
                                     method="POST" style="margin: 0;"
                                     onsubmit="return confirm('Bạn có chắc muốn xóa chỉ số này?')">
                                     @csrf
@@ -349,7 +342,7 @@
                                     </svg>
                                 </button>
                                 @if(in_array($reading->status, ['pending', 'rejected']) && $reading->recorded_by === auth()->id())
-                                <a href="{{ route('admin.utility-readings.edit', $reading->id) }}"
+                                <a href="{{ portal_route('utility-readings.edit', $reading->id) }}"
                                     class="util-btn-edit" title="Sửa">
                                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -399,9 +392,9 @@
         <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>
     </svg>
     <p>Chưa có chỉ số nào được ghi cho tháng {{ $month }}/{{ $year }}.</p>
-    @if(in_array(auth()->user()->role, ['technician', 'admin']))
+    @if(auth()->user()->role === 'technician')
     <div class="util-empty-actions">
-        <a href="{{ route('admin.utility-readings.batch') }}" class="util-btn util-btn--secondary">
+        <a href="{{ portal_route('utility-readings.batch') }}" class="util-btn util-btn--secondary">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right: 6px;">
                 <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
                 <rect x="9" y="3" width="6" height="4" rx="1"/>
@@ -409,7 +402,7 @@
             </svg>
             Ghi hàng loạt
         </a>
-        <a href="{{ route('admin.utility-readings.create') }}" class="util-btn util-btn--primary">+ Ghi đơn lẻ</a>
+        <a href="{{ portal_route('utility-readings.create') }}" class="util-btn util-btn--primary">+ Ghi đơn lẻ</a>
     </div>
     @endif
 </div>
@@ -449,7 +442,7 @@
                     <line x1="12" y1="16" x2="12" y2="12" />
                     <line x1="12" y1="8" x2="12.01" y2="8" />
                 </svg>
-                Chi tiết chỉ số điện nước
+                Chi tiết chỉ số nước
             </h3>
             <button class="util-modal-close" onclick="closeDetailModal()">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -530,33 +523,35 @@
     </div>
 </div>
 
-{{-- ── Reject Reason Modal ────────────────────────────────── --}}
-<div class="util-modal-backdrop" id="rejectReasonModal">
-    <div class="util-modal" style="max-width: 450px;">
-        <div class="util-modal-header" style="border-bottom: 1px solid #f1f5f9; padding: 16px 20px;">
-            <h3 style="display:flex; align-items:center; gap:8px; margin:0; font-size:1.1rem; font-weight:700; color:#b91c1c;">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:#dc2626; display:inline-block; vertical-align:middle;">
+{{-- ── Reject Reason Modal ─────────────────────────────── --}}
+<div class="util-modal-backdrop" id="rejectModal">
+    <div class="util-modal" style="max-width: 500px;">
+        <div class="util-modal-header">
+            <h3>
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:inline-block; vertical-align:middle; margin-right:6px; color:#dc2626;">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Từ chối chỉ số điện nước
+                Từ chối chỉ số nước
             </h3>
-            <button class="util-modal-close" type="button" onclick="closeRejectReasonModal()">
+            <button class="util-modal-close" onclick="closeRejectModal()">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
             </button>
         </div>
-        <form id="rejectReasonForm" onsubmit="submitRejectForm(event)">
-            <div class="util-modal-body" style="padding: 20px;">
-                <label for="modal-reject-reason" style="display:block; font-size:13px; font-weight:600; color:#334155; margin-bottom:8px;">Nhập lý do từ chối chỉ số này:</label>
-                <textarea id="modal-reject-reason" placeholder="Vui lòng nhập lý do cụ thể..." required style="width:100%; min-height:90px; padding:10px; border:1.5px solid #cbd5e1; border-radius:8px; font-size:13px; font-family:inherit; outline:none; resize:vertical; box-sizing:border-box; transition:border-color 0.2s;"></textarea>
-                <div id="modal-reject-error" style="display:none; color:#ef4444; font-size:12px; font-weight:600; margin-top:6px;">Vui lòng cung cấp lý do từ chối.</div>
+        <div class="util-modal-body" style="padding: 20px 24px;">
+            <div style="margin-bottom: 16px;">
+                <label for="rejectReasonInput" style="display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 8px;">Nhập lý do từ chối chỉ số này:</label>
+                <textarea id="rejectReasonInput" class="util-form-input" rows="3" style="height: auto; min-height: 90px; resize: vertical; padding: 12px;" placeholder="Ví dụ: Chỉ số nhập không chính xác hoặc ảnh mờ..."></textarea>
+                <div id="rejectReasonError" style="color: #dc2626; font-size: 12px; margin-top: 6px; display: none; font-weight: 500;">
+                    Vui lòng nhập lý do từ chối.
+                </div>
             </div>
-            <div style="display:flex; justify-content:flex-end; gap:10px; padding:12px 20px 20px; border-top:1px solid #f1f5f9;">
-                <button type="button" class="util-btn util-btn--outline" onclick="closeRejectReasonModal()" style="padding: 8px 16px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; background: none; cursor: pointer; color:#475569; display:inline-flex; align-items:center; justify-content:center;">Hủy bỏ</button>
-                <button type="submit" class="util-btn util-btn--primary" style="padding: 8px 16px; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; background: #dc2626; color: #fff; cursor: pointer; display:inline-flex; align-items:center; justify-content:center;">Từ chối</button>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #f3f4f6; padding-top: 16px; margin-top: 20px;">
+                <button type="button" class="util-btn util-btn--outline util-btn--sm" onclick="closeRejectModal()">Hủy</button>
+                <button type="button" class="util-btn util-btn--primary util-btn--sm" style="background:#dc2626; border-color:#dc2626;" onclick="submitRejectForm()">Từ chối</button>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 
@@ -1089,7 +1084,7 @@ function openDetailModal(id) {
             }
 
             // Print / Link tab
-    document.getElementById('detLinkPrint').href = `{{ url('admin/utility-readings') }}/${reading.id}`;
+            document.getElementById('detLinkPrint').href = `{{ url('admin/utility-readings') }}/${reading.id}`;
 
             loading.style.display = 'none';
             content.style.display = 'block';
@@ -1109,33 +1104,41 @@ let pendingRejectReadingId = null;
 
 window.confirmAndReject = function(id) {
     pendingRejectReadingId = id;
-    const modal = document.getElementById('rejectReasonModal');
-    const textarea = document.getElementById('modal-reject-reason');
+    const modal = document.getElementById('rejectModal');
+    const textarea = document.getElementById('rejectReasonInput');
+    if (!modal || !textarea) return;
     textarea.value = '';
-    document.getElementById('modal-reject-error').style.display = 'none';
+    const err = document.getElementById('rejectReasonError');
+    if (err) err.style.display = 'none';
     modal.classList.add('active');
     setTimeout(() => textarea.focus(), 100);
 }
 
-window.closeRejectReasonModal = function() {
-    const modal = document.getElementById('rejectReasonModal');
-    modal.classList.remove('active');
+window.closeRejectModal = function() {
+    const modal = document.getElementById('rejectModal');
+    if (modal) modal.classList.remove('active');
     pendingRejectReadingId = null;
 }
 
 window.submitRejectForm = function(event) {
-    event.preventDefault();
+    if (event) event.preventDefault();
     if (!pendingRejectReadingId) return;
     const id = pendingRejectReadingId;
-    const reason = document.getElementById('modal-reject-reason').value.trim();
+    const textarea = document.getElementById('rejectReasonInput');
+    const reason = textarea ? textarea.value.trim() : '';
     if (reason === "") {
-        document.getElementById('modal-reject-error').style.display = 'block';
+        const err = document.getElementById('rejectReasonError');
+        if (err) err.style.display = 'block';
         return;
     }
     
-    document.getElementById('reject-reason-' + id).value = reason;
-    document.getElementById('reject-form-' + id).submit();
-    closeRejectReasonModal();
+    const hiddenInput = document.getElementById('reject-reason-' + id);
+    const form = document.getElementById('reject-form-' + id);
+    if (hiddenInput && form) {
+        hiddenInput.value = reason;
+        form.submit();
+    }
+    closeRejectModal();
 }
 </script>
 @endpush

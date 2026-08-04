@@ -30,6 +30,9 @@ class BlockController extends Controller
         // Base query for blocks
         $blockQuery = Block::query()
             ->withCount(['floors', 'apartments'])
+            ->withCount(['apartments as occupied_apartments_count' => function ($query) {
+                $query->where('apartments.status', 'occupied');
+            }])
             ->when($search, fn($q) => $q->where('name', 'like', "%{$search}%"))
             ->when($status,  fn($q) => $q->where('status', $status))
             ->orderBy('name');
@@ -80,21 +83,31 @@ class BlockController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name'            => 'required|string|max:50|unique:blocks,name',
-            'code'            => 'nullable|string|max:100|unique:blocks,code',
-            'status'          => 'nullable|in:active,inactive,maintenance',
-            'manager_name'    => 'nullable|string|max:100',
-            'manager_contact' => 'nullable|string|max:100',
-            'description'     => 'nullable|string',
+            'name'                 => 'required|string|max:50|unique:blocks,name',
+            'code'                 => 'nullable|string|max:100|unique:blocks,code',
+            'status'               => 'nullable|in:active,inactive,maintenance',
+            'image'                => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
+            'total_floors'         => 'nullable|integer|min:0',
+            'total_basements'      => 'nullable|integer|min:0',
+            'apartments_per_floor' => 'nullable|integer|min:0',
+            'amenities'            => 'nullable|array',
+            'amenities.*'          => 'string',
         ]);
 
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('blocks', 'public');
+        }
+
         Block::create([
-            'name'            => $validated['name'],
-            'code'            => $validated['code'] ?? null,
-            'status'          => $validated['status'] ?? 'active',
-            'manager_name'    => $validated['manager_name'] ?? null,
-            'manager_contact' => $validated['manager_contact'] ?? null,
-            'description'     => $validated['description'] ?? null,
+            'name'                 => $validated['name'],
+            'code'                 => $validated['code'] ?? null,
+            'status'               => $validated['status'] ?? 'active',
+            'image'                => $imagePath,
+            'total_floors'         => $validated['total_floors'] ?? null,
+            'total_basements'      => $validated['total_basements'] ?? null,
+            'apartments_per_floor' => $validated['apartments_per_floor'] ?? null,
+            'amenities'            => $validated['amenities'] ?? null,
         ]);
 
         return redirect()
@@ -136,21 +149,34 @@ class BlockController extends Controller
     public function update(Request $request, Block $block): RedirectResponse
     {
         $validated = $request->validate([
-            'name'            => 'required|string|max:50|unique:blocks,name,' . $block->id,
-            'code'            => 'nullable|string|max:100|unique:blocks,code,' . $block->id,
-            'status'          => 'nullable|in:active,inactive,maintenance',
-            'manager_name'    => 'nullable|string|max:100',
-            'manager_contact' => 'nullable|string|max:100',
-            'description'     => 'nullable|string',
+            'name'                 => 'required|string|max:50|unique:blocks,name,' . $block->id,
+            'code'                 => 'nullable|string|max:100|unique:blocks,code,' . $block->id,
+            'status'               => 'nullable|in:active,inactive,maintenance',
+            'image'                => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
+            'total_floors'         => 'nullable|integer|min:0',
+            'total_basements'      => 'nullable|integer|min:0',
+            'apartments_per_floor' => 'nullable|integer|min:0',
+            'amenities'            => 'nullable|array',
+            'amenities.*'          => 'string',
         ]);
 
+        $imagePath = $block->image;
+        if ($request->hasFile('image')) {
+            if ($block->image) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($block->image);
+            }
+            $imagePath = $request->file('image')->store('blocks', 'public');
+        }
+
         $block->update([
-            'name'            => $validated['name'],
-            'code'            => $validated['code'] ?? null,
-            'status'          => $validated['status'] ?? 'active',
-            'manager_name'    => $validated['manager_name'] ?? null,
-            'manager_contact' => $validated['manager_contact'] ?? null,
-            'description'     => $validated['description'] ?? null,
+            'name'                 => $validated['name'],
+            'code'                 => $validated['code'] ?? null,
+            'status'               => $validated['status'] ?? 'active',
+            'image'                => $imagePath,
+            'total_floors'         => $validated['total_floors'] ?? null,
+            'total_basements'      => $validated['total_basements'] ?? null,
+            'apartments_per_floor' => $validated['apartments_per_floor'] ?? null,
+            'amenities'            => $validated['amenities'] ?? null,
         ]);
 
         return redirect()

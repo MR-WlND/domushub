@@ -56,6 +56,7 @@
 .rv-item__status { font-size: 0.72rem; font-weight: 600; display: flex; align-items: center; gap: 4px; }
 .rv-item__status--active { color: #16a34a; }
 .rv-item__status--pending { color: #d97706; }
+.rv-item__status--awaiting_payment { color: #ea580c; }
 .rv-item__status--locked { color: #dc2626; }
 .rv-item__qr { width: 34px; height: 34px; border-radius: 8px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #475569; flex-shrink: 0; text-decoration: none; transition: background 0.15s; }
 .rv-item__qr:hover { background: #e2e8f0; }

@@ -19,10 +19,12 @@ class Announcement extends Model
         'status',
         'pinned',
         'image_path',
+        'is_popup',
     ];
 
     protected $casts = [
         'pinned' => 'boolean',
+        'is_popup' => 'boolean',
     ];
 
     /**

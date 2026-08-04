@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,9 +8,9 @@
     @vite(['resources/css/auth/login.css'])
 </head>
 
+
 <body>
     <div class="container">
-
         <!-- LEFT -->
         <div class="left">
             <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=768&h=1024&fit=crop"
@@ -104,7 +103,7 @@
                         <div class="input-box">
                             <i class="fa-solid fa-key"></i>
                             <input type="text" name="invite_code" placeholder="RES-XXXXXXXX"
-                                value="{{ old('invite_code') }}" required>
+                                value="{{ old('invite_code', request('invite_code')) }}" required>
                         </div>
                         @error('invite_code')
                             <span class="error-msg">{{ $message }}</span>
@@ -141,5 +140,4 @@
     </script>
 
 </body>
-
 </html>

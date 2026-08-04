@@ -1,14 +1,10 @@
 @extends('layouts.resident.master')
 @section('title', 'Đăng bài viết – DomusHub')
 @push('styles')
+    @vite(['resources/css/pages/resident/posts/create.css'])
+
     @vite(['resources/css/pages/resident/home/index.css'])
-    <style>
-        .ck-editor__editable_inline {
-            min-height: 180px;
-            color: #0f172a;
-        }
-    </style>
-@endpush
+    @endpush
 
 @section('content')
 <div class="rh" style="max-width:680px;">
@@ -43,7 +39,6 @@
                 </div>
             </div>
 
-
             {{-- Content --}}
             <div style="margin-bottom:20px;">
                 <textarea name="content" id="editor-post-content" rows="5" placeholder="Bạn đang muốn chia sẻ điều gì với cư dân hôm nay..." style="width:100%;border:1px solid #e2e8f0;border-radius:10px;padding:14px;font-size:0.9rem;color:#0f172a;outline:none;resize:vertical;font-family:inherit;box-sizing:border-box;">{{ old('content') }}</textarea>
@@ -67,40 +62,9 @@
         </form>
     </div>
 </div>
-<script src="https://cdn.ckeditor.com/ckeditor5/36.0.1/classic/ckeditor.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const createTA = document.getElementById('editor-post-content');
-    if (createTA) {
-        ClassicEditor.create(createTA, {
-            toolbar: ['bold', 'italic', 'underline', 'bulletedList', 'numberedList', 'undo', 'redo'],
-            placeholder: 'Bạn đang muốn chia sẻ điều gì với cư dân hôm nay...'
-        }).catch(err => console.error(err));
-    }
-});
-</script>
-<script>
-function previewMedia(input) {
-    const container = document.getElementById('media-previews');
-    container.innerHTML = '';
-    if (!input.files) return;
-    Array.from(input.files).forEach(file => {
-        if (file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.style.cssText = 'width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #e2e8f0;';
-                container.appendChild(img);
-            };
-            reader.readAsDataURL(file);
-        } else if (file.type.startsWith('video/')) {
-            const wrap = document.createElement('div');
-            wrap.style.cssText = 'width:64px;height:64px;border-radius:8px;border:1px solid #e2e8f0;background:#0f172a;display:flex;align-items:center;justify-content:center;position:relative;';
-            wrap.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg><span style="position:absolute;bottom:2px;right:4px;font-size:0.6rem;color:#fff;background:rgba(0,0,0,0.6);padding:1px 4px;border-radius:3px;">Video</span>';
-            container.appendChild(wrap);
-        }
-    });
-}
-</script>
+
 @endsection
+
+@push('scripts')
+    @vite(['resources/js/pages/resident/posts/create.js'])
+@endpush

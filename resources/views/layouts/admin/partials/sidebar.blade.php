@@ -10,7 +10,7 @@
             @elseif($role === 'manager')
                 Quản lý
             @elseif($role === 'staff')
-                Nhân viên
+                Kế toán
             @elseif($role === 'technician')
                 Kỹ thuật viên
             @endif
@@ -25,7 +25,7 @@
         @if(in_array($role, ['admin', 'manager']))
         <div class="nav-section">
             <span class="nav-section__label">TỔNG QUAN</span>
-            <a href="{{ route('admin.dashboard') }}" class="dashboard-nav__item {{ request()->routeIs('admin.dashboard') ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ portal_route('dashboard') }}" class="dashboard-nav__item {{ is_portal_route('dashboard') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="3" width="7" height="7"></rect>
                     <rect x="14" y="3" width="7" height="7"></rect>
@@ -34,31 +34,14 @@
                 </svg>
                 <span>Trang tổng quan</span>
             </a>
-            <div class="dashboard-nav__group {{ request()->routeIs('admin.statistics.*') || request()->routeIs('admin.statistics') || request()->routeIs('admin.amenities.statistics') ? 'dashboard-nav__group--open' : '' }}">
-                <a href="{{ route('admin.statistics.finance') }}" class="dashboard-nav__item dashboard-nav__item--parent {{ request()->routeIs('admin.statistics.*') || request()->routeIs('admin.statistics') || request()->routeIs('admin.amenities.statistics') ? 'dashboard-nav__item--active' : '' }}" onclick="toggleSubmenu(event, this)">
-                    <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="20" x2="18" y2="10"></line>
-                        <line x1="12" y1="20" x2="12" y2="4"></line>
-                        <line x1="6" y1="20" x2="6" y2="14"></line>
-                    </svg>
-                    <span>Báo cáo & Thống kê</span>
-                    <svg class="dashboard-nav__chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                </a>
-                <div class="dashboard-nav__submenu">
-                    <a href="{{ route('admin.statistics.finance') }}" class="dashboard-nav__subitem {{ request()->routeIs('admin.statistics.finance') ? 'dashboard-nav__subitem--active' : '' }}">
-                        Thống kê Tài chính
-                    </a>
-                    <a href="{{ route('admin.statistics.operations') }}" class="dashboard-nav__subitem {{ request()->routeIs('admin.statistics.operations') ? 'dashboard-nav__subitem--active' : '' }}">
-                        Thống kê Vận hành
-                    </a>
-                    <a href="{{ route('admin.statistics.residents') }}" class="dashboard-nav__subitem {{ request()->routeIs('admin.statistics.residents') ? 'dashboard-nav__subitem--active' : '' }}">
-                        Cư dân &amp; Hạ tầng
-                    </a>
-                    <a href="{{ route('admin.amenities.statistics') }}" class="dashboard-nav__subitem {{ request()->routeIs('admin.amenities.statistics') ? 'dashboard-nav__subitem--active' : '' }}">
-                        Thống kê Tiện ích
-                    </a>
-                </div>
-            </div>
+            <a href="{{ portal_route('statistics') }}" class="dashboard-nav__item {{ is_portal_route('statistics.*') || is_portal_route('statistics') || is_portal_route('amenities.statistics') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+                <span>Báo cáo & Thống kê</span>
+            </a>
         </div>
         @endif
 
@@ -68,7 +51,7 @@
         @if($role === 'admin')
         <div class="nav-section">
             <span class="nav-section__label">QUẢN LÝ HẠ TẦNG</span>
-            <a href="{{ route('admin.blocks.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.blocks.*') || request()->routeIs('admin.floors.*') ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ portal_route('blocks.index') }}" class="dashboard-nav__item {{ is_portal_route('blocks.*') || is_portal_route('floors.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="2" y="3" width="20" height="18" rx="1"></rect>
                     <path d="M9 3v18"></path>
@@ -78,14 +61,24 @@
                 </svg>
                 <span>Toà nhà & Tầng</span>
             </a>
-            <a href="{{ route('admin.apartments.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.apartments.*') ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ portal_route('apartments.index') }}" class="dashboard-nav__item {{ is_portal_route('apartments.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                     <polyline points="9 22 9 12 15 12 15 22"></polyline>
                 </svg>
                 <span>Căn hộ</span>
             </a>
-            <a href="{{ route('admin.invitations.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.invitations.*') ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ portal_route('apartment-types.index') }}" class="dashboard-nav__item {{ is_portal_route('apartment-types.*') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="9" y1="3" x2="9" y2="21"></line>
+                    <line x1="15" y1="3" x2="15" y2="21"></line>
+                    <line x1="3" y1="9" x2="21" y2="9"></line>
+                    <line x1="3" y1="15" x2="21" y2="15"></line>
+                </svg>
+                <span>Loại căn hộ</span>
+            </a>
+            <a href="{{ portal_route('invitations.index') }}" class="dashboard-nav__item {{ is_portal_route('invitations.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <line x1="12" y1="8" x2="12" y2="16"></line>
@@ -97,20 +90,20 @@
         @endif
 
         {{-- ============================================================== --}}
-        {{-- ĐIỆN NƯỚC & HOÁ ĐƠN - Admin & Staff --}}
+        {{-- NƯỚC & HOÁ ĐƠN - Admin & Staff --}}
         {{-- ============================================================== --}}
         @if(in_array($role, ['admin', 'manager', 'staff', 'technician']))
         <div class="nav-section">
-            <span class="nav-section__label">ĐIỆN NƯỚC & HOÁ ĐƠN</span>
-            <a href="{{ route('admin.utility-readings.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.utility-readings.*') ? 'dashboard-nav__item--active' : '' }}">
+            <span class="nav-section__label">NƯỚC & HOÁ ĐƠN</span>
+            <a href="{{ portal_route('utility-readings.index') }}" class="dashboard-nav__item {{ is_portal_route('utility-readings.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"></path>
                 </svg>
-                <span>Chốt số điện nước</span>
+                <span>{{ $role === 'technician' ? 'Ghi số nước' : 'Chốt số nước' }}</span>
             </a>
 
             @if(in_array($role, ['admin', 'staff']))
-            <a href="{{ route('admin.service-prices.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.service-prices.*') ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ portal_route('service-prices.index') }}" class="dashboard-nav__item {{ is_portal_route('service-prices.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="12" y1="1" x2="12" y2="23"></line>
                     <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
@@ -119,7 +112,7 @@
             </a>
             @endif
             @if(in_array($role, ['admin', 'staff']))
-            <a href="{{ route('admin.invoices.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.invoices.*') ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ portal_route('invoices.index') }}" class="dashboard-nav__item {{ is_portal_route('invoices.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect>
                     <line x1="2" y1="10" x2="22" y2="10"></line>
@@ -138,7 +131,7 @@
         @if($role === 'technician')
         <div class="nav-section">
             <span class="nav-section__label">NHIỆM VỤ KỸ THUẬT</span>
-            <a href="{{ route('admin.tickets.my-tasks') }}" class="dashboard-nav__item {{ request()->routeIs('admin.tickets.my-tasks') || ($role === 'technician' && request()->routeIs('admin.tickets.show')) ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ portal_route('tickets.my-tasks') }}" class="dashboard-nav__item {{ is_portal_route('tickets.my-tasks') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
                 </svg>
@@ -152,6 +145,12 @@
                     <span style="margin-left:auto; background:#f97316; color:#fff; font-size:.68rem; font-weight:800; padding:1px 7px; border-radius:12px; min-width:20px; text-align:center;">{{ $myPendingCount }}</span>
                 @endif
             </a>
+            <a href="{{ portal_route('tickets.index') }}" class="dashboard-nav__item {{ is_portal_route('tickets.index') || ($role === 'technician' && is_portal_route('tickets.show')) ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <span>Tất cả phản ánh</span>
+            </a>
         </div>
         @endif
 
@@ -161,7 +160,7 @@
         @if(in_array($role, ['admin', 'manager']))
         <div class="nav-section">
             <span class="nav-section__label">DỊCH VỤ CƯ DÂN</span>
-            <a href="{{ route('admin.residents.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.residents.*') ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ portal_route('residents.index') }}" class="dashboard-nav__item {{ is_portal_route('residents.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                     <circle cx="9" cy="7" r="4"></circle>
@@ -170,14 +169,14 @@
                 </svg>
                 <span>Danh sách cư dân</span>
             </a>
-            <a href="{{ route('admin.tickets.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.tickets.*') ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ portal_route('tickets.index') }}" class="dashboard-nav__item {{ is_portal_route('tickets.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                 </svg>
                 <span>Quản lý phản ánh</span>
             </a>
             {{-- Duyệt đăng ký xe: admin thấy toàn bộ quản lý xe, manager thấy duyệt xe --}}
-            <a href="{{ route('admin.vehicles.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.vehicles.*') ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ portal_route('vehicles.index') }}" class="dashboard-nav__item {{ is_portal_route('vehicles.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="1" y="3" width="15" height="13" rx="2"></rect>
                     <path d="M16 8h4l3 5v3h-7V8z"></path>
@@ -187,7 +186,7 @@
                 <span>{{ $role === 'manager' ? 'Duyệt đăng ký xe' : 'Quản lý xe' }}</span>
             </a>
             @if($role === 'admin')
-            <a href="{{ route('admin.parking-lots.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.parking-lots.*') ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ portal_route('parking-lots.index') }}" class="dashboard-nav__item {{ is_portal_route('parking-lots.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                     <path d="M9 3v18"></path>
@@ -199,7 +198,7 @@
             </a>
 
             
-            <a href="{{ route('admin.visitor-logs.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.visitor-logs.*') ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ portal_route('visitor-logs.index') }}" class="dashboard-nav__item {{ is_portal_route('visitor-logs.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                     <circle cx="9" cy="7" r="4"></circle>
@@ -210,15 +209,14 @@
             </a>
             @endif
 
-
-            <a href="{{ route('admin.amenities.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.amenities.index') || request()->routeIs('admin.amenities.create') || request()->routeIs('admin.amenities.edit') || request()->routeIs('admin.amenities.show') ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ portal_route('amenities.index') }}" class="dashboard-nav__item {{ is_portal_route('amenities.index') || is_portal_route('amenities.create') || is_portal_route('amenities.edit') || is_portal_route('amenities.show') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                     <polyline points="9 22 9 12 15 12 15 22"></polyline>
                 </svg>
                 <span>Quản lý tiện ích</span>
             </a>
-            <a href="{{ route('admin.amenities.bookings') }}" class="dashboard-nav__item {{ request()->routeIs('admin.amenities.bookings') ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ portal_route('amenities.bookings') }}" class="dashboard-nav__item {{ is_portal_route('amenities.bookings') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                     <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -233,22 +231,86 @@
 
 
         {{-- ============================================================== --}}
+        {{-- QUẢN LÝ VỆ SINH - Admin & Manager --}}
+        {{-- ============================================================== --}}
+        @if(in_array($role, ['admin', 'manager']))
+        <div class="nav-section">
+            <span class="nav-section__label">QUẢN LÝ VỆ SINH</span>
+            <a href="{{ portal_route('cleaning-tasks.index') }}" class="dashboard-nav__item {{ is_portal_route('cleaning-tasks.*') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path>
+                    <rect x="9" y="3" width="6" height="4" rx="2"></rect>
+                    <path d="M9 14l2 2 4-4"></path>
+                </svg>
+                <span>Giao việc vệ sinh</span>
+            </a>
+            <a href="{{ portal_route('cleaning-reports.index') }}" class="dashboard-nav__item {{ is_portal_route('cleaning-reports.*') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+                <span>Báo cáo sự cố VS</span>
+            </a>
+        </div>
+        @endif
+
+        {{-- ============================================================== --}}
         {{-- TƯƠNG TÁC & BẢNG TIN - Admin & Manager --}}
         {{-- ============================================================== --}}
         @if(in_array($role, ['admin', 'manager']))
         <div class="nav-section">
             <span class="nav-section__label">TƯƠNG TÁC & BẢNG TIN</span>
-            <a href="{{ route('admin.announcements.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.announcements.*') ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ portal_route('announcements.index') }}" class="dashboard-nav__item {{ is_portal_route('announcements.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.82a16 16 0 0 0 6.29 6.29l.96-.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path>
                 </svg>
                 <span>Bảng tin chung cư</span>
             </a>
-            <a href="{{ route('admin.posts.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.posts.*') ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ portal_route('posts.index') }}" class="dashboard-nav__item {{ is_portal_route('posts.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                 </svg>
                 <span>Quản lý bài viết</span>
+            </a>
+        </div>
+        @endif
+
+        {{-- ============================================================== --}}
+        {{-- QUẢN TRỊ NHÂN SỰ - Chỉ Admin --}}
+        {{-- ============================================================== --}}
+        @if($role === 'admin')
+        <div class="nav-section">
+            <span class="nav-section__label">QUẢN TRỊ NHÂN SỰ</span>
+            
+            <a href="{{ portal_route('departments.index') }}" class="dashboard-nav__item {{ is_portal_route('departments.*') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                <span>Phòng ban</span>
+            </a>
+
+            <a href="{{ portal_route('staffs.index') }}" class="dashboard-nav__item {{ is_portal_route('staffs.*') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <span>Hồ sơ nhân sự</span>
+            </a>
+
+            <a href="{{ portal_route('schedules.index') }}" class="dashboard-nav__item {{ is_portal_route('schedules.*') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span>Bảng phân ca</span>
             </a>
         </div>
         @endif
@@ -260,14 +322,15 @@
         @if($role === 'admin')
         <div class="nav-section">
             <span class="nav-section__label">CẤU HÌNH HỆ THỐNG</span>
-            <a href="{{ route('admin.users.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.users.*') ? 'dashboard-nav__item--active' : '' }}">
+
+            <a href="{{ portal_route('users.index') }}" class="dashboard-nav__item {{ is_portal_route('users.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                 </svg>
                 <span>Phân quyền</span>
             </a>
 
-            <a href="{{ route('admin.notification-logs.index') }}" class="dashboard-nav__item {{ request()->routeIs('admin.notification-logs.*') ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ portal_route('notification-logs.index') }}" class="dashboard-nav__item {{ is_portal_route('notification-logs.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                     <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>

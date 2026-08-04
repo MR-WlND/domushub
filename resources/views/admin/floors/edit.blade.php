@@ -3,12 +3,25 @@
 @section('page_title', 'Chỉnh sửa Tầng')
 @section('page_kicker', 'Quản trị hệ thống')
 @section('role_title', 'Admin Portal')
-@section('home_route', route('admin.dashboard'))
+@section('home_route', portal_route('dashboard'))
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role', 'admin')
 
 @push('styles')
     @vite(['resources/css/pages/admin/floors/index.css'])
+    <style>
+        .floors-create-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+        @media (min-width: 992px) {
+            .floors-create-layout {
+                grid-template-columns: 2fr 1fr;
+            }
+        }
+    </style>
 @endpush
 
 @section('content')
@@ -16,9 +29,9 @@
 
     {{-- Breadcrumb --}}
     <nav class="breadcrumb-nav">
-        <a href="{{ route('admin.dashboard') }}">Trang chủ</a>
+        <a href="{{ portal_route('dashboard') }}">Trang chủ</a>
         <span class="divider">/</span>
-        <a href="{{ route('admin.blocks.index') }}">Tầng</a>
+        <a href="{{ portal_route('blocks.index') }}">Tầng</a>
         <span class="divider">/</span>
         <span class="current">Cập nhật</span>
     </nav>
@@ -32,141 +45,271 @@
             </p>
         </div>
         <div class="floors-page__actions">
-            <a href="{{ route('admin.blocks.index') }}" class="floors-button floors-button--light">
+            <a href="{{ portal_route('blocks.index') }}" class="floors-button floors-button--light">
                 ← Quay lại
             </a>
         </div>
     </div>
 
-    {{-- Form --}}
-    <article class="dashboard-card form-card-custom shadow-sm border-light">
-        <div class="card-badge-custom">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-            FLOOR UPDATE
-        </div>
-
-        <form action="{{ route('admin.floors.update', $floor) }}" method="POST">
-            @csrf
-            @method('PUT')
-
-            {{-- Phần 1: Vị trí & Phân loại --}}
-            <div class="form-section-header">
-                <span class="section-number">01</span>
-                <h4>Vị trí & Phân loại</h4>
-            </div>
-
-            <div class="form-grid-2">
-                {{-- Chọn Tòa nhà --}}
-                <div class="form-group-custom">
-                    <label class="form-label-custom">Block / Tòa nhà <span class="required">*</span></label>
-                    <div class="input-wrapper-custom">
-                        <span class="input-icon-custom">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                        </span>
-                        <select name="block_id" class="form-input-custom @error('block_id') input-error @enderror" required>
-                            <option value="">-- Chọn tòa nhà --</option>
-                            @foreach($blocks as $block)
-                                <option value="{{ $block->id }}" {{ old('block_id', $floor->block_id) == $block->id ? 'selected' : '' }}>
-                                    {{ $block->name }}
-                                </option>
-                            @endforeach
-                        </select>
+    {{-- Form Layout --}}
+    <div class="floors-create-layout">
+        {{-- Form Area (Left) --}}
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+            <form action="{{ portal_route('floors.update', $floor) }}" method="POST" id="editFloorForm">
+                @csrf
+                @method('PUT')
+                
+                {{-- Card 1: Thông tin cơ bản --}}
+                <article class="dashboard-card form-card-custom shadow-sm border-light" style="margin-bottom: 24px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px; font-size: 13px; font-weight: 700; color: #00236f; text-transform: uppercase; letter-spacing: 0.5px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                        THÔNG TIN CƠ BẢN
                     </div>
-                    @error('block_id') <p class="form-error-custom">{{ $message }}</p> @enderror
-                </div>
+                    
+                    <div class="form-grid-2">
+                        {{-- Tên tầng --}}
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Tên tầng <span class="required">*</span></label>
+                            <input type="text" name="name" value="{{ old('name', $floor->name) }}" placeholder="VD: Tầng 5, Tầng Hầm 1..." class="form-input-custom @error('name') input-error @enderror" required style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 16px;">
+                            @error('name') <p class="form-error-custom">{{ $message }}</p> @enderror
+                        </div>
 
-                {{-- Loại tầng --}}
-                <div class="form-group-custom">
-                    <label class="form-label-custom">Loại tầng <span class="required">*</span></label>
-                    <div class="input-wrapper-custom">
-                        <span class="input-icon-custom">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7" /></svg>
-                        </span>
-                        <select name="floor_type" class="form-input-custom @error('floor_type') input-error @enderror" required>
-                            <option value="residential" {{ old('floor_type', $floor->floor_type) == 'residential' ? 'selected' : '' }}>Cư dân</option>
-                            <option value="commercial"  {{ old('floor_type', $floor->floor_type) == 'commercial'  ? 'selected' : '' }}>Thương mại</option>
-                            <option value="technical"   {{ old('floor_type', $floor->floor_type) == 'technical'   ? 'selected' : '' }}>Kỹ thuật</option>
-                            <option value="amenity"     {{ old('floor_type', $floor->floor_type) == 'amenity'     ? 'selected' : '' }}>Tiện ích</option>
-                        </select>
+                        {{-- Chọn Tòa nhà --}}
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Block / Tòa nhà <span class="required">*</span></label>
+                            <select name="block_id" id="block_select" class="form-input-custom @error('block_id') input-error @enderror" required style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 16px;">
+                                <option value="">-- Chọn tòa nhà --</option>
+                                @foreach($blocks as $block)
+                                    <option value="{{ $block->id }}" data-apartments="{{ $block->apartments_per_floor }}" {{ old('block_id', $floor->block_id) == $block->id ? 'selected' : '' }}>
+                                        {{ $block->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('block_id') <p class="form-error-custom">{{ $message }}</p> @enderror
+                        </div>
+
+
+
+                        {{-- Loại tầng --}}
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Loại tầng <span class="required">*</span></label>
+                            <select name="floor_type" id="floor_type_select" class="form-input-custom @error('floor_type') input-error @enderror" required style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 16px;">
+                                <option value="above_ground" {{ old('floor_type', $floor->floor_type) == 'above_ground' ? 'selected' : '' }}>Tầng nổi</option>
+                                <option value="basement"     {{ old('floor_type', $floor->floor_type) == 'basement' ? 'selected' : '' }}>Tầng hầm</option>
+                            </select>
+                            @error('floor_type') <p class="form-error-custom">{{ $message }}</p> @enderror
+                        </div>
                     </div>
-                    @error('floor_type') <p class="form-error-custom">{{ $message }}</p> @enderror
-                </div>
-            </div>
+                </article>
 
-            {{-- Phần 2: Thông tin cấu trúc tầng --}}
-            <div class="form-section-header" style="margin-top: 15px;">
-                <span class="section-number">02</span>
-                <h4>Thông tin cấu trúc tầng</h4>
-            </div>
-
-            <div class="form-grid-2">
-                {{-- Tên tầng --}}
-                <div class="form-group-custom">
-                    <label class="form-label-custom">Tên tầng <span class="required">*</span></label>
-                    <div class="input-wrapper-custom">
-                        <span class="input-icon-custom">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                        </span>
-                        <input type="text" name="name" value="{{ old('name', $floor->name) }}" placeholder="VD: Tầng 5, Tầng Hầm 1, Tầng Trệt..." class="form-input-custom @error('name') input-error @enderror" required>
+                {{-- Card 2: Trạng thái & Ghi chú --}}
+                <article class="dashboard-card form-card-custom shadow-sm border-light" style="margin-bottom: 24px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-size: 13px; font-weight: 700; color: #00236f; text-transform: uppercase; letter-spacing: 0.5px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                        TRẠNG THÁI & GHI CHÚ
                     </div>
-                    @error('name') <p class="form-error-custom">{{ $message }}</p> @enderror
-                </div>
-
-                {{-- Số lượng căn hộ --}}
-                <div class="form-group-custom">
-                    <label class="form-label-custom">Số lượng căn hộ <small style="color:#94a3b8">(hiện tại: {{ $floor->apartments_count }} căn)</small></label>
-                    <div class="input-wrapper-custom">
-                        <span class="input-icon-custom">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                        </span>
-                        <input type="number" name="number_of_apartments" value="{{ old('number_of_apartments', $floor->apartments_count) }}" placeholder="VD: 10, 5..." min="{{ $floor->apartments_count }}" max="100" class="form-input-custom @error('number_of_apartments') input-error @enderror">
-                    </div>
-                    @error('number_of_apartments') <p class="form-error-custom">{{ $message }}</p> @enderror
-                </div>
-            </div>
-
-            {{-- Phần 3: Trạng thái & Ghi chú --}}
-            <div class="form-section-header" style="margin-top: 15px;">
-                <span class="section-number">03</span>
-                <h4>Trạng thái & Ghi chú</h4>
-            </div>
-
-            <div class="form-grid-2">
-                {{-- Trạng thái --}}
-                <div class="form-group-custom">
-                    <label class="form-label-custom">Trạng thái <span class="required">*</span></label>
-                    <div class="input-wrapper-custom">
-                        <span class="input-icon-custom">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                        </span>
-                        <select name="status" class="form-input-custom" required>
+                    
+                    <div class="form-group-custom" style="margin-bottom: 16px;">
+                        <label class="form-label-custom">Trạng thái <span class="required">*</span></label>
+                        <select name="status" class="form-input-custom" required style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 16px;">
                             <option value="active"      {{ old('status', $floor->status) == 'active'      ? 'selected' : '' }}>Hoạt động</option>
                             <option value="maintenance" {{ old('status', $floor->status) == 'maintenance' ? 'selected' : '' }}>Bảo trì</option>
                             <option value="inactive"    {{ old('status', $floor->status) == 'inactive'    ? 'selected' : '' }}>Ngưng hoạt động</option>
                         </select>
                     </div>
+
+                    <div class="form-group-custom">
+                        <label class="form-label-custom">Ghi chú</label>
+                        <textarea name="description" placeholder="Nhập ghi chú..." class="form-textarea-custom" rows="3" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px;">{{ old('description', $floor->description) }}</textarea>
+                    </div>
+                </article>
+
+            </form>
+        </div>
+
+        {{-- Right Column --}}
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+            {{-- Preview Card (Right) --}}
+            <article class="dashboard-card shadow-sm border-light" style="padding: 24px; border-radius: 12px; background: #fff; margin: 0;">
+                <div class="preview-container">
+                    <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 20px; color: #1e293b;">Cấu trúc tòa nhà</h3>
+                    
+                    <div id="preview_building_wrapper" style="display: none;">
+                        <div style="background: #f1f5f9; padding: 12px 16px; border-radius: 8px; display: flex; align-items: center; gap: 8px; font-weight: 500; color: #0f172a; margin-bottom: 16px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="color: #0f172a;"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                            <span id="preview_building_name">Tòa nhà</span>
+                        </div>
+
+                        <div style="position: relative; padding-left: 16px;">
+                            <!-- Timeline line -->
+                            <div style="position: absolute; left: 24px; top: 10px; bottom: 10px; width: 2px; background: #cbd5e1; z-index: 1;"></div>
+                            
+                            <div id="preview_floors_list" style="position: relative; z-index: 2; display: flex; flex-direction: column; gap: 16px;">
+                                <!-- Floors will be rendered here by JS -->
+                            </div>
+                        </div>
+                        
+                        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 16px; border-radius: 8px; margin-top: 24px;">
+                            <h4 style="font-size: 14px; font-weight: 600; color: #166534; margin-bottom: 12px;">Tóm tắt cấu trúc:</h4>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: #374151;">
+                                <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 4px; height: 4px; border-radius: 50%; background: #166534;"></span> Số lượng căn hộ:</span>
+                                <strong id="preview_apts" style="color: #111827;">0</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: #374151;">
+                                <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 4px; height: 4px; border-radius: 50%; background: #166534;"></span> Dân cư dự kiến:</span>
+                                <strong style="color: #111827;"><span id="preview_residents">0</span> người</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 14px; color: #374151;">
+                                <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 4px; height: 4px; border-radius: 50%; background: #166534;"></span> Mã định danh:</span>
+                                <strong id="preview_code" style="color: #111827;">-</strong>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="preview_empty_state" style="text-align: center; padding: 30px 10px; color: #64748b;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1" style="margin: 0 auto 12px; color: #94a3b8;"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                        <p>Vui lòng chọn tòa nhà và nhập tên tầng để xem trước cấu trúc.</p>
+                    </div>
                 </div>
-            </div>
+            </article>
+        </div>
+    </div>
 
-            {{-- Ghi chú --}}
-            <div class="form-group-custom" style="margin-top: 16px; margin-bottom: 24px;">
-                <label class="form-label-custom">Ghi chú</label>
-                <textarea name="description" placeholder="Nhập ghi chú chi tiết về tầng này..." class="form-textarea-custom" rows="3">{{ old('description', $floor->description) }}</textarea>
-            </div>
-
-            {{-- Actions --}}
-            <div class="floors-page__actions" style="justify-content: flex-start; margin-top: 24px;">
-                <button type="submit" class="floors-button floors-button--primary">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-                    Cập nhật Tầng
-                </button>
-                <a href="{{ route('admin.blocks.index') }}" class="floors-button floors-button--light">
-                    Hủy bỏ
-                </a>
-            </div>
-
-        </form>
-    </article>
+    {{-- Actions --}}
+    <div class="floors-page__actions" style="justify-content: flex-end; margin-top: 24px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+        <a href="{{ portal_route('blocks.index') }}" class="floors-button floors-button--light" style="margin-right: 12px;">Hủy</a>
+        <button type="button" onclick="document.getElementById('editFloorForm').submit()" class="floors-button floors-button--primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+            Cập nhật tầng
+        </button>
+    </div>
 
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const floorTypeSelect = document.getElementById('floor_type_select');
+        const blockSelect = document.getElementById('block_select');
+        const floorNameInput = document.querySelector('input[name="name"]');
+        
+        // This holds the actual floor id being edited so we can style it differently
+        const currentFloorId = {{ $floor->id }};
+
+        const blocksData = {!! json_encode($blocksData) !!};
+
+        function parseFloorNumber(name) {
+            if (!name) return null;
+            let lowerName = name.toLowerCase().trim();
+            if (lowerName.includes('trệt') || lowerName === 'g' || lowerName === 'tầng g') return 0;
+            if (lowerName.includes('hầm') || lowerName.includes('basement') || lowerName.startsWith('b')) {
+                let match = lowerName.match(/\d+/);
+                return match ? -parseInt(match[0]) : -1;
+            }
+            let match = lowerName.match(/\d+/);
+            if (match) return parseInt(match[0]);
+            return null;
+        }
+
+        function updatePreview() {
+            const blockId = parseInt(blockSelect.value);
+            const floorName = floorNameInput ? floorNameInput.value.trim() : '';
+            const aptCount = 0;
+            
+            const wrapper = document.getElementById('preview_building_wrapper');
+            const emptyState = document.getElementById('preview_empty_state');
+            
+            if (!blockId) {
+                wrapper.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            const block = blocksData.find(b => b.id === blockId);
+            if (!block) return;
+            
+            wrapper.style.display = 'block';
+            emptyState.style.display = 'none';
+            
+            document.getElementById('preview_building_name').textContent = block.name + ' (Hiện tại)';
+            document.getElementById('preview_apts').textContent = aptCount;
+            document.getElementById('preview_residents').textContent = '~' + (aptCount * 3);
+            
+            let fNum = parseFloorNumber(floorName);
+            let floorCodePart = 'F' + (fNum !== null ? fNum : 'X');
+            if (fNum < 0) floorCodePart = 'B' + Math.abs(fNum);
+            else if (fNum === 0) floorCodePart = 'G';
+            
+            document.getElementById('preview_code').textContent = (block.code || block.name) + '-' + floorCodePart;
+            
+            let allFloors = [...block.floors];
+            
+            // In Edit mode, the current floor is already in allFloors.
+            // We just update its name and number to simulate the new preview.
+            let editingIndex = allFloors.findIndex(f => f.id === currentFloorId);
+            if (editingIndex !== -1) {
+                allFloors[editingIndex].name = floorName;
+                allFloors[editingIndex].floor_number = (fNum !== null ? fNum : allFloors[editingIndex].floor_number);
+                allFloors[editingIndex].is_editing = true;
+            }
+            
+            allFloors.sort((a, b) => b.floor_number - a.floor_number);
+            
+            let newIndex = allFloors.findIndex(f => f.is_editing);
+            let displayFloors = allFloors;
+            
+            if (allFloors.length > 5 && newIndex !== -1) {
+                let start = Math.max(0, newIndex - 2);
+                let end = Math.min(allFloors.length, newIndex + 3);
+                displayFloors = allFloors.slice(start, end);
+            } else if (allFloors.length > 5) {
+                displayFloors = allFloors.slice(0, 5);
+            }
+            
+            const listEl = document.getElementById('preview_floors_list');
+            listEl.innerHTML = '';
+            
+            displayFloors.forEach(f => {
+                const item = document.createElement('div');
+                item.style.display = 'flex';
+                item.style.alignItems = 'center';
+                item.style.padding = '8px 16px';
+                item.style.marginLeft = '16px';
+                item.style.position = 'relative';
+                
+                if (f.is_editing) {
+                    item.style.background = '#dbeafe';
+                    item.style.borderRadius = '8px';
+                    item.style.border = '1px solid #bfdbfe';
+                    item.style.color = '#1e3a8a';
+                    item.style.fontWeight = '600';
+                    item.style.zIndex = '10';
+                    item.innerHTML = `
+                        <div style="background: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: absolute; left: -12px; border: 2px solid #2563eb; color: #2563eb;">
+                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+                        </div>
+                        <span style="flex: 1; padding-left: 16px;">${f.name}</span>
+                        <span style="background: #166534; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 8px;">ĐANG SỬA</span>
+                    `;
+                } else {
+                    item.style.color = '#64748b';
+                    item.innerHTML = `
+                        <div style="background: #cbd5e1; width: 10px; height: 10px; border-radius: 50%; position: absolute; left: -5px;"></div>
+                        <div style="padding-left: 16px; display: flex; align-items: center; gap: 8px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7" /></svg>
+                            <span>${f.name}</span>
+                        </div>
+                    `;
+                }
+                listEl.appendChild(item);
+            });
+        }
+
+        if (blockSelect) blockSelect.addEventListener('change', updatePreview);
+        if (floorNameInput) floorNameInput.addEventListener('input', updatePreview);
+
+        updatePreview();
+    });
+</script>
+@endpush

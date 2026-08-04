@@ -1,6 +1,6 @@
 @extends('layouts.admin.master')
 
-@section('page_title', 'Lịch sử Ghi số Điện Nước – DomusHub')
+@section('page_title', 'Lịch sử Ghi số Nước – DomusHub')
 @section('user_name', auth()->user()->name ?? 'Admin')
 
 @section('content')
@@ -9,11 +9,11 @@
     {{-- ===================== HEADER ===================== --}}
     <div class="db-header">
         <div>
-            <h1 class="db-header__title">Lịch sử Ghi số Điện Nước</h1>
-            <p class="db-header__sub">Tra cứu toàn bộ lịch sử ghi nhận chỉ số điện và nước trong hệ thống.</p>
+            <h1 class="db-header__title">Lịch sử Ghi số Nước</h1>
+            <p class="db-header__sub">Tra cứu toàn bộ lịch sử ghi nhận chỉ số nước trong hệ thống.</p>
         </div>
         <div>
-            <a href="{{ route('admin.utility-readings.index') }}" class="al-btn-filter" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+            <a href="{{ portal_route('utility-readings.index') }}" class="al-btn-filter" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>
                 Chốt số tháng này
             </a>
@@ -25,10 +25,6 @@
         <div class="chart-card" style="padding:16px 20px; text-align:center; border-top:3px solid #00236f;">
             <div style="font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:.04em;">Tổng bản ghi</div>
             <div style="font-size:26px; font-weight:800; color:#00236f; margin-top:6px;">{{ number_format($stats['total']) }}</div>
-        </div>
-        <div class="chart-card" style="padding:16px 20px; text-align:center; border-top:3px solid #f59e0b;">
-            <div style="font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:.04em;">Ghi điện</div>
-            <div style="font-size:26px; font-weight:800; color:#b45309; margin-top:6px;">{{ number_format($stats['elec']) }}</div>
         </div>
         <div class="chart-card" style="padding:16px 20px; text-align:center; border-top:3px solid #3b82f6;">
             <div style="font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:.04em;">Ghi nước</div>
@@ -56,15 +52,6 @@
                 <label class="al-filter-label">Số căn hộ</label>
                 <input type="text" name="search" value="{{ request('search') }}"
                        class="al-filter-input" placeholder="VD: 101, 202...">
-            </div>
-
-            <div class="al-filter-group">
-                <label class="al-filter-label">Loại</label>
-                <select name="type" class="al-filter-input">
-                    <option value="">Tất cả</option>
-                    <option value="electricity" {{ request('type') == 'electricity' ? 'selected' : '' }}>Điện</option>
-                    <option value="water" {{ request('type') == 'water' ? 'selected' : '' }}>Nước</option>
-                </select>
             </div>
 
             @if($tab !== 'rejected')
@@ -107,7 +94,7 @@
                     Lọc
                 </button>
                 @if(request()->anyFilled(['search', 'type', 'status', 'month', 'year', 'date_from', 'date_to']))
-                <a href="{{ route('admin.utility-logs.index', ['tab' => $tab]) }}" class="al-btn-reset">Xóa lọc</a>
+                <a href="{{ portal_route('utility-logs.index', ['tab' => $tab]) }}" class="al-btn-reset">Xóa lọc</a>
                 @endif
             </div>
         </form>
@@ -115,11 +102,11 @@
 
     {{-- ===================== TABS ===================== --}}
     <div style="display: flex; gap: 4px; margin-top: 24px; border-bottom: 2px solid #e2e8f0; padding-bottom: 0;">
-        <a href="{{ route('admin.utility-logs.index', array_merge(request()->except('page'), ['tab' => 'all'])) }}" 
+        <a href="{{ portal_route('utility-logs.index', array_merge(request()->except('page'), ['tab' => 'all'])) }}" 
            style="text-decoration: none; padding: 10px 20px; font-weight: 700; font-size: 14px; border-radius: 8px 8px 0 0; border: 1px solid transparent; margin-bottom: -2px; transition: all 0.2s; {{ $tab === 'all' ? 'background: #ffffff; border-color: #e2e8f0 #e2e8f0 #ffffff; border-bottom-color: #ffffff; color: #00236f; position: relative; z-index: 1;' : 'color: #64748b; background: transparent;' }}">
             Tất cả lịch sử ({{ number_format($stats['total']) }})
         </a>
-        <a href="{{ route('admin.utility-logs.index', array_merge(request()->except('page'), ['tab' => 'rejected'])) }}" 
+        <a href="{{ portal_route('utility-logs.index', array_merge(request()->except('page'), ['tab' => 'rejected'])) }}" 
            style="text-decoration: none; padding: 10px 20px; font-weight: 700; font-size: 14px; border-radius: 8px 8px 0 0; border: 1px solid transparent; margin-bottom: -2px; transition: all 0.2s; {{ $tab === 'rejected' ? 'background: #ffffff; border-color: #e2e8f0 #e2e8f0 #ffffff; border-bottom-color: #ffffff; color: #dc2626; position: relative; z-index: 1;' : 'color: #64748b; background: transparent;' }}">
             Lý do từ chối ({{ number_format($stats['rejected']) }})
         </a>
@@ -239,7 +226,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="{{ $tab === 'rejected' ? 10 : 11 }}" class="empty-row">Chưa có dữ liệu ghi số điện nước nào.</td></tr>
+                    <tr><td colspan="{{ $tab === 'rejected' ? 10 : 11 }}" class="empty-row">Chưa có dữ liệu ghi số nước nào.</td></tr>
                     @endforelse
                 </tbody>
             </table>

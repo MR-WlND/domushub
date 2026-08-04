@@ -1,5 +1,6 @@
 <?php
 
+namespace App\Mail\ResetPasswordCodeMail;
 namespace App\Http\Controllers;
 
 use App\Mail\ResetPasswordCodeMail;
@@ -26,9 +27,34 @@ class AuthController extends Controller
         return view('auth.admin.login');
     }
 
+    public function showManagerLogin(): View
+    {
+        return view('auth.manager.login');
+    }
+
+    public function showStaffLogin(): View
+    {
+        return view('auth.staff.login');
+    }
+
+    public function showTechnicianLogin(): View
+    {
+        return view('auth.technician.login');
+    }
+
     public function showSecurityLogin(): View
     {
         return view('auth.security.login');
+    }
+
+    public function showCleaningLogin(): View
+    {
+        return view('auth.cleaning.login');
+    }
+
+    public function showReceptionistLogin(): View
+    {
+        return view('auth.receptionist.login');
     }
 
     public function showResidentLogin(): View
@@ -51,14 +77,72 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
-        // Cho phép admin, manager, staff, technician đăng nhập vào admin portal
-        $allowedRoles = ['admin', 'manager', 'staff', 'technician'];
-
-        if (! in_array($user->role, $allowedRoles, true)) {
+        if ($user->status !== 'active') {
             Auth::logout();
 
             return back()->withErrors([
-                'email' => 'Tài khoản này không có quyền truy cập vào hệ thống quản trị.',
+                'email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ BQL.',
+            ])->onlyInput('email');
+        }
+
+        if ($user->role !== 'admin') {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản này không có quyền truy cập vào admin portal.',
+            ])->onlyInput('email');
+        }
+
+        $request->session()->regenerate();
+
+        \App\Helpers\SystemLogger::log('Đăng nhập', 'Hệ thống');
+
+        return redirect()->route($this->adminHomeRouteFor($user->role));
+    }
+
+    public function loginManager(Request $request): RedirectResponse
+    {
+        return $this->processLogin($request, 'manager', 'Quản lý');
+    }
+
+    public function loginStaff(Request $request): RedirectResponse
+    {
+        return $this->processLogin($request, 'staff', 'Kế toán');
+    }
+
+    public function loginTechnician(Request $request): RedirectResponse
+    {
+        return $this->processLogin($request, 'technician', 'Kỹ thuật viên');
+    }
+
+    private function processLogin(Request $request, string $role, string $roleName): RedirectResponse
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+            return back()->withErrors([
+                'email' => 'Email hoặc mật khẩu không đúng.',
+            ])->onlyInput('email');
+        }
+
+        $user = Auth::user();
+
+        if ($user->status !== 'active') {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ BQL.',
+            ])->onlyInput('email');
+        }
+
+        if ($user->role !== $role) {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => "Tài khoản này không có quyền truy cập vào cổng $roleName.",
             ])->onlyInput('email');
         }
 
@@ -84,6 +168,14 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
+        if ($user->status !== 'active') {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ BQL.',
+            ])->onlyInput('email');
+        }
+
         if ($user->role !== 'security') {
             Auth::logout();
 
@@ -97,6 +189,82 @@ class AuthController extends Controller
         \App\Helpers\SystemLogger::log('Đăng nhập', 'Hệ thống');
 
         return redirect()->route('security.dashboard');
+    }
+
+    public function loginCleaning(Request $request): RedirectResponse
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+            return back()->withErrors([
+                'email' => 'Email hoặc mật khẩu không đúng.',
+            ])->onlyInput('email');
+        }
+
+        $user = Auth::user();
+
+        if ($user->status !== 'active') {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ BQL.',
+            ])->onlyInput('email');
+        }
+
+        if ($user->role !== 'cleaning') {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản này không có quyền truy cập vào cổng Vệ sinh.',
+            ])->onlyInput('email');
+        }
+
+        $request->session()->regenerate();
+
+        \App\Helpers\SystemLogger::log('Đăng nhập', 'Hệ thống');
+
+        return redirect()->route('cleaning.dashboard');
+    }
+
+    public function loginReceptionist(Request $request): RedirectResponse
+    {
+        $credentials = $request->validate([
+            'email'    => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+            return back()->withErrors([
+                'email' => 'Email hoặc mật khẩu không đúng.',
+            ])->onlyInput('email');
+        }
+
+        $user = Auth::user();
+
+        if ($user->status !== 'active') {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ BQL.',
+            ])->onlyInput('email');
+        }
+
+        if ($user->role !== 'receptionist') {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản này không có quyền truy cập vào cổng Lễ tân.',
+            ])->onlyInput('email');
+        }
+
+        $request->session()->regenerate();
+
+        \App\Helpers\SystemLogger::log('Đăng nhập', 'Hệ thống');
+
+        return redirect()->route('receptionist.dashboard');
     }
 
     public function loginResident(Request $request): RedirectResponse
@@ -114,11 +282,31 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
+        if ($user->status !== 'active') {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ BQL.',
+            ])->onlyInput('email');
+        }
+
         if ($user->role !== 'resident') {
             Auth::logout();
 
             return back()->withErrors([
                 'email' => 'Tài khoản này không có quyền truy cập vào resident.',
+            ])->onlyInput('email');
+        }
+
+        // Chặn đăng nhập nếu cư dân chỉ có trạng thái pending
+        $hasActiveResident = \App\Models\Resident::where('user_id', $user->id)->where('status', 'active')->exists();
+        $hasPendingResident = \App\Models\Resident::where('user_id', $user->id)->where('status', 'pending')->exists();
+        
+        if (!$hasActiveResident && $hasPendingResident) {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản đang chờ Ban quản lý phê duyệt.',
             ])->onlyInput('email');
         }
 
@@ -177,7 +365,32 @@ class AuthController extends Controller
             ])->onlyInput(['name', 'phone', 'email', 'invite_code']);
         }
 
+        // Kiểm tra ràng buộc Chủ hộ (Owner)
+        if ($invite->intended_relationship === 'owner') {
+            $hasOwner = Resident::where('apartment_id', $invite->apartment_id)
+                ->where('relationship', 'owner')
+                ->whereNull('deleted_at')
+                ->exists();
+
+            if ($hasOwner) {
+                return back()->withErrors([
+                    'invite_code' => 'Căn hộ liên kết với mã mời này đã có chủ hộ đăng ký trong hệ thống.',
+                ])->onlyInput(['name', 'phone', 'email', 'invite_code']);
+            }
+        }
+
         $apartment = Apartment::with(['floor.block'])->findOrFail($invite->apartment_id);
+
+        // Kiểm tra giới hạn số lượng cư dân tối đa (10 người)
+        $currentCount = Resident::where('apartment_id', $apartment->id)
+            ->whereNull('deleted_at')
+            ->whereIn('status', ['active', 'pending'])
+            ->count();
+        if ($currentCount >= 10) {
+            return back()->withErrors([
+                'invite_code' => 'Căn hộ liên kết với mã mời này đã đạt giới hạn cư dân tối đa (10 người).',
+            ])->onlyInput(['name', 'phone', 'email', 'invite_code']);
+        }
 
         DB::transaction(function () use ($validated, $invite, $apartment) {
             $user = User::create([
@@ -199,6 +412,7 @@ class AuthController extends Controller
                 'relationship' => $invite->intended_relationship,
                 'temporary_status' => 'permanent',
                 'start_date' => now()->toDateString(),
+                'status' => $invite->intended_relationship === 'owner' ? 'active' : 'pending',
             ]);
 
             $invite->uses_count += 1;
@@ -241,7 +455,7 @@ class AuthController extends Controller
         if ($user) {
             $mailer = (string) config('mail.default');
 
-            if (in_array($mailer, ['log', 'array'], true)) {
+            if ($mailer === 'log' || empty($mailer)) {
                 return back()->with('error', 'Chức năng gửi email chưa được cấu hình. Vui lòng liên hệ quản trị viên để được hỗ trợ.');
             }
 
@@ -253,7 +467,7 @@ class AuthController extends Controller
             }
         }
 
-        return redirect()->route('resident.reset-password')->with('status', 'Nếu email của bạn tồn tại trong hệ thống, mã xác nhận đã được gửi. Vui lòng kiểm tra hộp thư của bạn.');
+        return redirect()->route('resident.reset-password')->with('status', 'Mã xác nhận đã được gửi đến email của bạn nếu email hợp lệ.');
     }
 
     public function resetPassword(Request $request): RedirectResponse
@@ -265,15 +479,12 @@ class AuthController extends Controller
         ], [
             'email.required' => 'Vui lòng nhập email.',
             'email.email' => 'Email không đúng định dạng.',
-            'code.required' => 'Vui lòng nhập mã xác nhận.',
             'code.digits' => 'Mã xác nhận phải gồm 6 chữ số.',
             'password.required' => 'Vui lòng nhập mật khẩu mới.',
             'password.min' => 'Mật khẩu mới phải có ít nhất 8 ký tự.',
             'password.confirmed' => 'Xác nhận mật khẩu không khớp.',
         ]);
 
-        $email = strtolower(trim($request->email));
-        $user = User::where('email', $email)->first();
         $storedCode = Cache::get("resident_reset_{$email}");
 
         if (! $user || ! is_string($storedCode) || $storedCode !== $request->code) {
@@ -305,13 +516,30 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        // Admin, manager, staff, technician đều về trang login admin
-        if (in_array($role, ['admin', 'manager', 'staff', 'technician'], true)) {
+        // Redirect cho từng role
+        if ($role === 'admin') {
             return redirect()->route('admin.login');
+        }
+        if ($role === 'manager') {
+            return redirect()->route('manager.login');
+        }
+        if ($role === 'staff') {
+            return redirect()->route('staff.login');
+        }
+        if ($role === 'technician') {
+            return redirect()->route('technician.login');
         }
 
         if ($role === 'security') {
             return redirect()->route('security.login');
+        }
+
+        if ($role === 'cleaning') {
+            return redirect()->route('cleaning.login');
+        }
+
+        if ($role === 'receptionist') {
+            return redirect()->route('receptionist.login');
         }
 
         return redirect()->route('resident.login');
@@ -320,9 +548,10 @@ class AuthController extends Controller
     private function adminHomeRouteFor(string $role): string
     {
         return match ($role) {
-            'staff' => 'admin.utility-readings.index',
-            'technician' => 'admin.tickets.my-tasks',
-            default => 'admin.dashboard',
+            'manager'      => 'manager.dashboard',
+            'staff'        => 'staff.utility-readings.index',
+            'technician'   => 'technician.tickets.my-tasks',
+            default        => 'admin.dashboard',
         };
     }
 }

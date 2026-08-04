@@ -87,8 +87,8 @@ class HomeController extends Controller
 
         // Lấy danh sách các năm có dữ liệu để hiện trong bộ lọc
         $availableYearsQuery = DB::table('bills')
-            ->whereNull('deleted_at')
-            ->where('status', '!=', 'cancelled');
+            ->whereNull('bills.deleted_at')
+            ->where('bills.status', '!=', 'cancelled');
         if ($selectedBlock) {
             $availableYearsQuery->join('apartments', 'bills.apartment_id', '=', 'apartments.id')
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
@@ -111,8 +111,8 @@ class HomeController extends Controller
 
         // 1. KPI TỔNG QUAN (Toàn thời gian)
         $totalBilledQuery = DB::table('bills')
-            ->whereNull('deleted_at')
-            ->where('status', '!=', 'cancelled');
+            ->whereNull('bills.deleted_at')
+            ->where('bills.status', '!=', 'cancelled');
         if ($selectedBlock) {
             $totalBilledQuery->join('apartments', 'bills.apartment_id', '=', 'apartments.id')
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
@@ -121,19 +121,19 @@ class HomeController extends Controller
         $totalBilled = $totalBilledQuery->sum('total_amount');
 
         $totalCollectedQuery = DB::table('payments')
-            ->whereNull('deleted_at')
-            ->where('status', 'success');
+            ->whereNull('payments.deleted_at')
+            ->where('payments.status', 'success');
         if ($selectedBlock) {
             $totalCollectedQuery->join('bills', 'payments.bill_id', '=', 'bills.id')
                 ->join('apartments', 'bills.apartment_id', '=', 'apartments.id')
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
                 ->where('floors.block_id', $selectedBlock);
         }
-        $totalCollected = $totalCollectedQuery->sum('amount');
+        $totalCollected = $totalCollectedQuery->sum('payments.amount');
 
         $totalUnpaidQuery = DB::table('bills')
-            ->whereNull('deleted_at')
-            ->where('status', '!=', 'cancelled');
+            ->whereNull('bills.deleted_at')
+            ->where('bills.status', '!=', 'cancelled');
         if ($selectedBlock) {
             $totalUnpaidQuery->join('apartments', 'bills.apartment_id', '=', 'apartments.id')
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
@@ -151,9 +151,9 @@ class HomeController extends Controller
                 DB::raw('SUM(total_amount) as total_billed'),
                 DB::raw("SUM(paid_amount) as total_collected")
             )
-            ->whereNull('deleted_at')
-            ->where('status', '!=', 'cancelled')
-            ->where('billing_year', $selectedYear);
+            ->whereNull('bills.deleted_at')
+            ->where('bills.status', '!=', 'cancelled')
+            ->where('bills.billing_year', $selectedYear);
         if ($selectedBlock) {
             $monthlyRevenueQuery->join('apartments', 'bills.apartment_id', '=', 'apartments.id')
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
@@ -165,9 +165,9 @@ class HomeController extends Controller
 
         // 3. KPI RIÊNG CHO NĂM ĐƯỢC CHỌN
         $yearBilledQuery = DB::table('bills')
-            ->whereNull('deleted_at')
-            ->where('status', '!=', 'cancelled')
-            ->where('billing_year', $selectedYear);
+            ->whereNull('bills.deleted_at')
+            ->where('bills.status', '!=', 'cancelled')
+            ->where('bills.billing_year', $selectedYear);
         if ($selectedBlock) {
             $yearBilledQuery->join('apartments', 'bills.apartment_id', '=', 'apartments.id')
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
@@ -189,9 +189,9 @@ class HomeController extends Controller
         $yearCollected = $yearCollectedQuery->sum('payments.amount');
 
         $yearUnpaidQuery = DB::table('bills')
-            ->whereNull('deleted_at')
-            ->where('status', '!=', 'cancelled')
-            ->where('billing_year', $selectedYear);
+            ->whereNull('bills.deleted_at')
+            ->where('bills.status', '!=', 'cancelled')
+            ->where('bills.billing_year', $selectedYear);
         if ($selectedBlock) {
             $yearUnpaidQuery->join('apartments', 'bills.apartment_id', '=', 'apartments.id')
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
@@ -221,7 +221,6 @@ class HomeController extends Controller
         $monthlyServiceRevenue = $monthlyServiceRevenueQuery->groupBy('bills.billing_month', 'service_prices.type')->get();
 
         $categories = [
-            'electricity' => 'Điện',
             'water' => 'Nước',
             'management_fee' => 'Phí quản lý',
             'other' => 'Khác',
@@ -252,67 +251,72 @@ class HomeController extends Controller
 
         // 5. Tỷ lệ hoàn thành đóng phí của tháng được chọn
         $latestMonthQuery = DB::table('bills')
-            ->whereNull('deleted_at')
-            ->where('status', '!=', 'cancelled')
-            ->where('billing_year', $selectedYear);
+            ->whereNull('bills.deleted_at')
+            ->where('bills.status', '!=', 'cancelled')
+            ->where('bills.billing_year', $selectedYear);
         if ($selectedBlock) {
             $latestMonthQuery->join('apartments', 'bills.apartment_id', '=', 'apartments.id')
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
                 ->where('floors.block_id', $selectedBlock);
         }
-        $latestMonthRow = $latestMonthQuery->select('billing_month')
-            ->orderBy('billing_month', 'desc')
+        $latestMonthRow = $latestMonthQuery->select('bills.billing_month')
+            ->orderBy('bills.billing_month', 'desc')
             ->first();
 
         $latestMonth = $latestMonthRow ? $latestMonthRow->billing_month : null;
-        $selectedMonth = (int) $request->get('month', $latestMonth ?? date('m'));
+        $selectedMonth = $request->get('month');
+        if ($selectedMonth === null) {
+            $selectedMonth = $latestMonth ?? (int)date('m');
+        } elseif ($selectedMonth === '') {
+            $selectedMonth = null;
+        } else {
+            $selectedMonth = (int)$selectedMonth;
+        }
         $paidAmount = 0;
         $unpaidAmount = 0;
 
+        $monthStatsQuery = DB::table('bills')
+            ->whereNull('bills.deleted_at')
+            ->where('bills.status', '!=', 'cancelled')
+            ->where('bills.billing_year', $selectedYear);
         if ($selectedMonth) {
-            $monthStatsQuery = DB::table('bills')
-                ->whereNull('deleted_at')
-                ->where('status', '!=', 'cancelled')
-                ->where('billing_year', $selectedYear)
-                ->where('billing_month', $selectedMonth);
-            if ($selectedBlock) {
-                $monthStatsQuery->join('apartments', 'bills.apartment_id', '=', 'apartments.id')
-                    ->join('floors', 'apartments.floor_id', '=', 'floors.id')
-                    ->where('floors.block_id', $selectedBlock);
-            }
-            $monthStats = $monthStatsQuery->selectRaw('SUM(paid_amount) as paid, SUM(total_amount - paid_amount) as unpaid')
-                ->first();
+            $monthStatsQuery->where('bills.billing_month', $selectedMonth);
+        }
+        if ($selectedBlock) {
+            $monthStatsQuery->join('apartments', 'bills.apartment_id', '=', 'apartments.id')
+                ->join('floors', 'apartments.floor_id', '=', 'floors.id')
+                ->where('floors.block_id', $selectedBlock);
+        }
+        $monthStats = $monthStatsQuery->selectRaw('SUM(paid_amount) as paid, SUM(total_amount - paid_amount) as unpaid')
+            ->first();
 
-            if ($monthStats) {
-                $paidAmount = (float) $monthStats->paid;
-                $unpaidAmount = (float) $monthStats->unpaid;
-            }
+        if ($monthStats) {
+            $paidAmount = (float) $monthStats->paid;
+            $unpaidAmount = (float) $monthStats->unpaid;
         }
 
-        // 4.5. Xu hướng sản lượng tiêu thụ Điện & Nước theo tháng
+        // 4.5. Xu hướng sản lượng tiêu thụ Nước theo tháng (Bỏ Điện công tơ)
         $utilityConsumptionQuery = DB::table('utility_meters')
             ->select(
-                'record_month',
-                'type',
-                DB::raw('SUM(usage_amount) as total_usage')
+                'utility_meters.record_month',
+                'utility_meters.type',
+                DB::raw('SUM(utility_meters.usage_amount) as total_usage')
             )
-            ->where('status', 'approved')
-            ->where('record_year', $selectedYear);
+            ->where('utility_meters.type', 'water')
+            ->where('utility_meters.status', 'approved')
+            ->where('utility_meters.record_year', $selectedYear);
         if ($selectedBlock) {
             $utilityConsumptionQuery->join('apartments', 'utility_meters.apartment_id', '=', 'apartments.id')
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
                 ->where('floors.block_id', $selectedBlock);
         }
-        $utilityConsumption = $utilityConsumptionQuery->groupBy('record_month', 'type')->get();
+        $utilityConsumption = $utilityConsumptionQuery->groupBy('utility_meters.record_month', 'utility_meters.type')->get();
 
-        $electricityConsumption = array_fill(0, 12, 0);
         $waterConsumption = array_fill(0, 12, 0);
 
         foreach ($utilityConsumption as $row) {
             $monthIndex = (int)$row->record_month - 1; // 0-indexed for JS array
-            if ($row->type === 'electricity') {
-                $electricityConsumption[$monthIndex] = (float)$row->total_usage;
-            } elseif ($row->type === 'water') {
+            if ($row->type === 'water') {
                 $waterConsumption[$monthIndex] = (float)$row->total_usage;
             }
         }
@@ -326,7 +330,7 @@ class HomeController extends Controller
             'yearBilled', 'yearCollected', 'yearUnpaid', 'yearCollectionRate',
             'monthlyRevenue', 'monthlyLabels',
             'monthlyStackedData', 'latestMonth', 'paidAmount', 'unpaidAmount',
-            'electricityConsumption', 'waterConsumption'
+            'waterConsumption'
         ));
     }
 
@@ -423,7 +427,6 @@ class HomeController extends Controller
         $serviceData = [];
         for ($m = 1; $m <= 12; $m++) {
             $serviceData[$m] = [
-                'electricity' => 0.0,
                 'water' => 0.0,
                 'management_fee' => 0.0,
                 'other' => 0.0
@@ -432,7 +435,7 @@ class HomeController extends Controller
         foreach ($monthlyService as $row) {
             $m = (int)$row->billing_month;
             $type = $row->type;
-            if (in_array($type, ['electricity', 'water', 'management_fee'])) {
+            if (in_array($type, ['water', 'management_fee'])) {
                 $serviceData[$m][$type] = (float)$row->total_amount;
             } else {
                 $serviceData[$m]['other'] += (float)$row->total_amount;
@@ -463,6 +466,9 @@ class HomeController extends Controller
     {
         $selectedBlock = $request->get('block_id');
 
+        $driver = DB::getDriverName();
+        $yearExpression = $driver === 'sqlite' ? "strftime('%Y', tickets.created_at)" : "YEAR(tickets.created_at)";
+
         $availableYearsQuery = DB::table('tickets')
             ->whereNull('tickets.deleted_at');
         if ($selectedBlock) {
@@ -470,9 +476,11 @@ class HomeController extends Controller
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
                 ->where('floors.block_id', $selectedBlock);
         }
-        $availableYears = $availableYearsQuery->selectRaw('DISTINCT YEAR(tickets.created_at) as ticket_year')
+        $availableYears = $availableYearsQuery->selectRaw("DISTINCT $yearExpression as ticket_year")
             ->orderBy('ticket_year', 'desc')
             ->pluck('ticket_year')
+            ->map(fn($y) => (int)$y)
+            ->filter()
             ->toArray();
 
         if (empty($availableYears)) {
@@ -554,6 +562,9 @@ class HomeController extends Controller
         $blocks = Block::orderBy('name')->get();
         $selectedBlock = $request->get('block_id');
 
+        $driver = DB::getDriverName();
+        $yearExpression = $driver === 'sqlite' ? "strftime('%Y', tickets.created_at)" : "YEAR(tickets.created_at)";
+
         // Lấy danh sách các năm có phản ánh để hiện trong bộ lọc
         $availableYearsQuery = DB::table('tickets')
             ->whereNull('tickets.deleted_at');
@@ -562,9 +573,11 @@ class HomeController extends Controller
                 ->join('floors', 'apartments.floor_id', '=', 'floors.id')
                 ->where('floors.block_id', $selectedBlock);
         }
-        $availableYears = $availableYearsQuery->selectRaw('DISTINCT YEAR(tickets.created_at) as ticket_year')
+        $availableYears = $availableYearsQuery->selectRaw("DISTINCT $yearExpression as ticket_year")
             ->orderBy('ticket_year', 'desc')
             ->pluck('ticket_year')
+            ->map(fn($y) => (int)$y)
+            ->filter()
             ->toArray();
 
         if (empty($availableYears)) {
@@ -661,8 +674,8 @@ class HomeController extends Controller
         // 4. Tính thời gian xử lý sự cố trung bình (SLA) - Tương thích đa CSDL (SQLite/MySQL)
         $driver = DB::getDriverName();
         $slaDiffSelect = $driver === 'sqlite'
-            ? "(strftime('%s', tickets.updated_at) - strftime('%s', tickets.created_at))"
-            : "TIMESTAMPDIFF(SECOND, tickets.created_at, tickets.updated_at)";
+            ? "(strftime('%s', tickets.completed_at) - strftime('%s', tickets.created_at))"
+            : "TIMESTAMPDIFF(SECOND, tickets.created_at, tickets.completed_at)";
 
         $avgSlaQuery = DB::table('tickets')
             ->whereNull('tickets.deleted_at')
@@ -808,19 +821,27 @@ class HomeController extends Controller
         // Lấy danh sách các năm cư dân đăng ký để hiện trong bộ lọc
         $driver = DB::getDriverName();
         $yearExpression = $driver === 'sqlite' ? "strftime('%Y', created_at)" : "YEAR(created_at)";
-        
-        $availableYears = DB::table('residents')
-            ->whereNull('deleted_at')
-            ->selectRaw("DISTINCT $yearExpression as year")
+
+        $availableYearsQuery = DB::table('residents')
+            ->whereNull('deleted_at');
+        if ($selectedBlock) {
+            $availableYearsQuery->whereIn('apartment_id', function($q) use ($selectedBlock) {
+                $q->select('id')->from('apartments')->whereIn('floor_id', function($q2) use ($selectedBlock) {
+                    $q2->select('id')->from('floors')->where('block_id', $selectedBlock);
+                });
+            });
+        }
+        $availableYears = $availableYearsQuery->selectRaw("DISTINCT $yearExpression as year")
             ->orderBy('year', 'desc')
             ->pluck('year')
             ->map(fn($y) => (int)$y)
             ->filter()
             ->toArray();
-            
+
         if (empty($availableYears)) {
             $availableYears = [(int) date('Y')];
         }
+
 
         $selectedYear = $request->get('year', date('Y'));
         if (!in_array($selectedYear, $availableYears) && count($availableYears) > 0) {
@@ -955,22 +976,24 @@ class HomeController extends Controller
             ->pluck('count', 'month')
             ->toArray();
 
-        // Tạo mảng đủ 12 tháng (kể cả tháng = 0)
+        // Tạo mảng đủ 12 tháng của năm được chọn
         $trendLabels = [];
         $trendValues = [];
         for ($i = 11; $i >= 0; $i--) {
             $key = $selectedDate->copy()->subMonths($i)->format('Y-m');
-            $label = $selectedDate->copy()->subMonths($i)->format('T' . $selectedDate->copy()->subMonths($i)->month . '/' . $selectedDate->copy()->subMonths($i)->year);
             $trendLabels[] = 'T' . $selectedDate->copy()->subMonths($i)->month . '/' . $selectedDate->copy()->subMonths($i)->format('y');
             $trendValues[] = $residentTrend[$key] ?? 0;
         }
 
-        // ── 6. TOP CĂN HỘ ĐÔNG NGƯỜI NHẤT ────────────────────────────
         $topApartmentsQuery = DB::table('residents')
             ->join('apartments', 'residents.apartment_id', '=', 'apartments.id')
             ->join('floors', 'apartments.floor_id', '=', 'floors.id')
             ->join('blocks', 'floors.block_id', '=', 'blocks.id')
-            ->whereNull('residents.deleted_at');
+            ->whereNull('residents.deleted_at')
+            ->whereYear('residents.created_at', $selectedYear);
+        if ($selectedMonth) {
+            $topApartmentsQuery->whereMonth('residents.created_at', $selectedMonth);
+        }
         if ($selectedBlock) {
             $topApartmentsQuery->where('blocks.id', $selectedBlock);
         }

@@ -1,214 +1,334 @@
 @extends('layouts.resident.master')
 
+@push('styles')
+<style>
+.rf-page { max-width: 1100px; margin: 0 auto; padding: 32px 20px; font-family: 'Inter', sans-serif; }
+
+.rf-header { margin-bottom: 24px; }
+.rf-title { font-size: 28px; font-weight: 700; color: #1e3a8a; margin: 0 0 8px; }
+.rf-subtitle { font-size: 15px; color: #475569; margin: 0; line-height: 1.6; max-width: 800px; }
+
+/* Toolbar: Search and Filters */
+.rf-toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 28px; }
+
+.rf-search { flex: 1; min-width: 250px; position: relative; }
+.rf-search input { width: 100%; padding: 10px 16px 10px 40px; border: 1px solid #e2e8f0; border-radius: 20px; font-size: 14px; outline: none; background: #f8fafc; transition: border-color 0.2s; box-sizing: border-box; }
+.rf-search input:focus { border-color: #3b82f6; background: #fff; }
+.rf-search svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+
+.rf-filters { display: flex; gap: 10px; flex-wrap: wrap; }
+.rf-filter-btn { padding: 8px 18px; border: 1px solid #e2e8f0; border-radius: 20px; font-size: 14px; font-weight: 500; color: #475569; background: #fff; text-decoration: none; transition: all 0.2s; cursor: pointer; }
+.rf-filter-btn:hover { border-color: #cbd5e1; background: #f1f5f9; }
+.rf-filter-btn.active { background: #1e3a8a; color: #fff; border-color: #1e3a8a; }
+
+/* Grid */
+.rf-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 32px; }
+
+/* Card */
+.rf-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; display: flex; transition: box-shadow 0.2s, transform 0.2s; text-decoration: none; color: inherit; height: 220px; }
+.rf-card:hover { box-shadow: 0 10px 25px rgba(0,0,0,0.06); transform: translateY(-2px); }
+
+/* Left Side: Image */
+.rf-card-img-wrap { width: 45%; position: relative; overflow: hidden; background: linear-gradient(135deg, #e0f2fe, #ede9fe); }
+.rf-card-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+.rf-card-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+
+.rf-badge { position: absolute; top: 12px; right: 12px; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.9); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.rf-badge-dot { width: 8px; height: 8px; border-radius: 50%; }
+.rf-badge--available { color: #16a34a; }
+.rf-badge--available .rf-badge-dot { background: #16a34a; }
+.rf-badge--maintenance { color: #dc2626; }
+.rf-badge--maintenance .rf-badge-dot { background: #dc2626; }
+.rf-badge--closed { color: #ea580c; }
+.rf-badge--closed .rf-badge-dot { background: #ea580c; }
+
+/* Right Side: Info */
+.rf-card-body { width: 55%; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; }
+.rf-card-title { font-size: 18px; font-weight: 700; color: #0f172a; margin: 0 0 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rf-card-location { font-size: 13px; color: #64748b; display: flex; align-items: center; gap: 4px; margin-bottom: 16px; }
+.rf-card-location svg { flex-shrink: 0; }
+
+.rf-info-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; }
+.rf-info-label { color: #475569; }
+.rf-info-val { font-weight: 600; color: #0f172a; }
+.rf-info-val--free { color: #16a34a; }
+
+.rf-card-actions { display: flex; gap: 10px; margin-top: auto; }
+.rf-btn { flex: 1; padding: 8px; border-radius: 6px; font-size: 13px; font-weight: 600; text-align: center; text-decoration: none; transition: all 0.2s; border: 1px solid transparent; display: flex; align-items: center; justify-content: center; }
+.rf-btn-primary { background: #1e3a8a; color: #fff; }
+.rf-btn-primary:hover { background: #1e3a8a; opacity: 0.9; color: #fff; }
+.rf-btn-outline { background: #fff; color: #475569; border-color: #cbd5e1; }
+.rf-btn-outline:hover { background: #f8fafc; color: #0f172a; }
+.rf-btn-disabled { background: #cbd5e1; color: #fff; cursor: not-allowed; }
+
+/* Modal */
+.rf-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.2s; padding: 20px; }
+.rf-modal-overlay.active { opacity: 1; pointer-events: auto; }
+.rf-modal-content { background: #fff; width: 100%; max-width: 500px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); transform: translateY(20px); transition: transform 0.2s; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; }
+.rf-modal-overlay.active .rf-modal-content { transform: translateY(0); }
+.rf-modal-header { padding: 16px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: #fff; z-index: 10; border-radius: 12px 12px 0 0; }
+.rf-modal-title { font-size: 18px; font-weight: 700; color: #0f172a; margin: 0; }
+.rf-modal-close { background: none; border: none; font-size: 24px; color: #64748b; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; transition: all 0.2s; }
+.rf-modal-close:hover { background: #f1f5f9; color: #0f172a; }
+.rf-modal-body { padding: 24px; }
+
+.rfd-form-group { margin-bottom: 16px; }
+.rfd-form-group label { display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px; }
+.rfd-input { width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; color: #0f172a; outline: none; transition: all 0.2s; box-sizing: border-box; }
+.rfd-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+.rfd-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.rfd-slot { padding: 8px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; color: #475569; background: #fff; cursor: pointer; transition: all 0.2s; user-select: none; }
+.rfd-slot:hover { border-color: #94a3b8; }
+.rfd-slot.active { background: #1e3a8a; border-color: #1e3a8a; color: #fff; }
+.rfd-slot.disabled { background: #f1f5f9; color: #cbd5e1; cursor: not-allowed; border-color: #e2e8f0; }
+
+.rfd-people-wrap { display: flex; align-items: center; gap: 12px; }
+.rfd-people-btn { width: 32px; height: 32px; border: 1px solid #cbd5e1; border-radius: 50%; background: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #475569; }
+.rfd-people-val { font-size: 16px; font-weight: 700; color: #0f172a; width: 24px; text-align: center; }
+
+.rfd-price-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; color: #64748b; }
+.rfd-price-val { font-weight: 600; color: #0f172a; }
+.rfd-total-box { background: #eff6ff; border-radius: 8px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.rfd-total-label { font-size: 15px; font-weight: 700; color: #1e3a8a; }
+.rfd-total-val { font-size: 18px; font-weight: 800; color: #1e3a8a; }
+
+.rfd-submit { width: 100%; padding: 14px; background: #059669; color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; }
+.rfd-submit:hover { background: #047857; }
+
+.rfd-alert { padding: 12px 16px; border-radius: 8px; font-size: 14px; margin-bottom: 20px; }
+.rfd-alert--error { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
+.rfd-alert--success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+
+
+@media (max-width: 900px) {
+    .rf-grid { grid-template-columns: 1fr; }
+    .rf-toolbar { flex-direction: column; align-items: stretch; }
+}
+@media (max-width: 500px) {
+    .rf-card { flex-direction: column; height: auto; }
+    .rf-card-img-wrap { width: 100%; height: 180px; }
+    .rf-card-body { width: 100%; box-sizing: border-box; }
+}
+</style>
+@endpush
+
 @section('title', 'Tiện ích chung cư – DomusHub')
 
 @section('content')
 <div class="rf-page">
 
     {{-- Header --}}
-    <div class="rf-header">
+    <div class="rf-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
         <div>
-            <p class="rf-eyebrow">Dịch vụ cư dân</p>
-            <h1 class="rf-title">Tiện ích chung cư</h1>
-            <p class="rf-subtitle">Khám phá các tiện ích và đặt lịch sử dụng tại chung cư.</p>
+            <h1 class="rf-title">Tiện ích Toà nhà</h1>
+            <p class="rf-subtitle">Khám phá và đăng ký các dịch vụ cao cấp dành riêng cho cư dân ResiCare. Tận hưởng không gian sống đẳng cấp và hiện đại ngay tại nơi bạn ở.</p>
         </div>
-    </div>
-
-    {{-- Flash --}}
-    @if(session('success'))
-        <div class="rf-alert rf-alert--success">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            {{ session('success') }}
-        </div>
-    @endif
-
-    {{-- Filter tabs --}}
-    <div class="rf-tabs">
-        <a href="{{ route('resident.facilities.index') }}"
-            class="rf-tab {{ !request('status') ? 'rf-tab--active' : '' }}">
-            <svg class="rf-tab-icon rf-icon-all" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect width="18" height="18" x="3" y="3" rx="2" />
-                <path d="M3 9h18" />
-                <path d="M3 15h18" />
-                <path d="M9 3v18" />
-                <path d="M15 3v18" />
-            </svg>
-            Tất cả ({{ $facilities->count() }})
-        </a>
-        <a href="{{ route('resident.facilities.index', ['status' => 'available']) }}"
-            class="rf-tab {{ request('status') === 'available' ? 'rf-tab--active' : '' }}">
-            <svg class="rf-tab-icon rf-icon-available" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                <polyline points="9 22 9 12 15 12 15 22" />
-            </svg>
-            Đang mở ({{ $facilities->where('status','available')->count() }})
-        </a>
-        <a href="{{ route('resident.facilities.index', ['status' => 'maintenance']) }}"
-            class="rf-tab {{ request('status') === 'maintenance' ? 'rf-tab--active' : '' }}">
-            <svg class="rf-tab-icon rf-icon-maintenance" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-            </svg>
-            Bảo trì ({{ $facilities->where('status','maintenance')->count() }})
-        </a>
-        <a href="{{ route('resident.facilities.index', ['status' => 'closed']) }}"
-            class="rf-tab {{ request('status') === 'closed' ? 'rf-tab--active' : '' }}">
-            <svg class="rf-tab-icon rf-icon-closed" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
-            </svg>
-            Tạm ngưng ({{ $facilities->where('status','closed')->count() }})
+        <a href="{{ route('resident.facility-bookings.index') }}" class="rf-btn rf-btn-outline" style="white-space: nowrap; padding: 10px 20px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right: 6px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Lịch sử đặt tiện ích
         </a>
     </div>
 
-    {{-- Filter by status --}}
-    @php
-        $filtered = request('status')
-            ? $facilities->where('status', request('status'))
-            : $facilities;
-    @endphp
+    {{-- Toolbar --}}
+    <div class="rf-toolbar">
+        <div class="rf-search">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <form action="{{ route('resident.facilities.index') }}" method="GET" style="margin:0;">
+                <input type="text" name="search" placeholder="Tìm kiếm tiện ích..." value="{{ request('search') }}">
+                @if(request('status')) <input type="hidden" name="status" value="{{ request('status') }}"> @endif
+            </form>
+        </div>
+        <div class="rf-filters">
+            <a href="{{ route('resident.facilities.index') }}" class="rf-filter-btn {{ !request('status') ? 'active' : '' }}">Tất cả</a>
+            {{-- Fake category filters for UI demonstration --}}
+            <a href="#" class="rf-filter-btn">Thư giãn</a>
+            <a href="#" class="rf-filter-btn">Thể thao</a>
+            <a href="#" class="rf-filter-btn">Khu vực chung</a>
+        </div>
+    </div>
 
     {{-- Grid --}}
-    @if($filtered->isEmpty())
-    <div class="rf-empty">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" stroke="#cbd5e1" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-        <p>Không có tiện ích nào.</p>
+    @if($facilities->isEmpty())
+    <div style="text-align: center; padding: 40px 0; color: #64748b;">
+        <p>Không tìm thấy tiện ích nào.</p>
     </div>
     @else
     <div class="rf-grid">
-        @foreach($filtered as $facility)
-        <a href="{{ route('resident.facilities.show', $facility) }}" class="rf-card rf-card--{{ $facility->status }}">
-            {{-- Status ribbon --}}
-            @if($facility->status === 'maintenance')
-            <div class="rf-ribbon rf-ribbon--maintenance">Bảo trì</div>
-            @elseif($facility->status === 'closed')
-            <div class="rf-ribbon rf-ribbon--closed">Tạm ngưng</div>
-            @endif
-
-            {{-- Ảnh / icon placeholder --}}
-            <div class="rf-card-img">
+        @foreach($facilities as $facility)
+        @php
+            $isAvailable = $facility->status === 'available';
+            $statusText = $isAvailable ? 'Sẵn sàng' : ($facility->status === 'maintenance' ? 'Bảo trì' : 'Tạm ngưng');
+            $statusClass = $isAvailable ? 'rf-badge--available' : ($facility->status === 'maintenance' ? 'rf-badge--maintenance' : 'rf-badge--closed');
+            $priceText = ($facility->fee_type == 'free' || !$facility->price || $facility->price == 0) ? 'Miễn phí' : $facility->price_label;
+            $priceClass = ($priceText === 'Miễn phí') ? 'rf-info-val--free' : '';
+        @endphp
+        <div class="rf-card">
+            <div class="rf-card-img-wrap">
                 @if($facility->images && count($facility->images) > 0)
                     <img src="{{ asset('storage/' . $facility->images[0]) }}" alt="{{ $facility->name }}">
                 @else
-                    <div class="rf-card-icon-placeholder">
+                    <div class="rf-card-placeholder">
                         @include('partials.facility-placeholder', ['name' => $facility->name])
                     </div>
                 @endif
+                <div class="rf-badge {{ $statusClass }}">
+                    <span class="rf-badge-dot"></span> {{ $statusText }}
+                </div>
             </div>
-
-            {{-- Content --}}
+            
             <div class="rf-card-body">
-                <div class="rf-card-top">
-                    <h3 class="rf-card-name">{{ $facility->name }}</h3>
-                    <span class="rf-status-dot rf-dot--{{ $facility->status }}"></span>
+                <div>
+                    <h3 class="rf-card-title" title="{{ $facility->name }}">{{ $facility->name }}</h3>
+                    <div class="rf-card-location">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        {{ $facility->floor?->name ? $facility->floor->name . ', ' : '' }}{{ $facility->block?->name ?: 'Khu vực chung' }}
+                    </div>
+
+                    <div class="rf-info-row">
+                        <span class="rf-info-label">Giờ mở cửa:</span>
+                        <span class="rf-info-val">{{ $facility->operating_hours }}</span>
+                    </div>
+                    <div class="rf-info-row">
+                        <span class="rf-info-label">Chi phí:</span>
+                        <span class="rf-info-val {{ $priceClass }}">{{ $priceText }}</span>
+                    </div>
                 </div>
 
-                @if($facility->description)
-                <p class="rf-card-desc">{{ Str::limit($facility->description, 70) }}</p>
-                @endif
-
-                <div class="rf-card-meta">
-                    @if($facility->open_time && $facility->close_time)
-                    <span class="rf-meta-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        {{ $facility->operating_hours }}
-                    </span>
+                <div class="rf-card-actions">
+                    @if($isAvailable)
+                    <button type="button" class="rf-btn rf-btn-primary" onclick="event.preventDefault(); openBookingModal('modal-{{ $facility->id }}')">Đăng ký</button>
+                    @else
+                    <button class="rf-btn rf-btn-disabled" disabled>Tạm đóng</button>
                     @endif
-                    <span class="rf-meta-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-                        {{ $facility->capacity }} người
-                    </span>
-                    <span class="rf-meta-item rf-meta-price {{ (!$facility->price_per_slot || $facility->price_per_slot == 0) ? 'rf-meta-price--free' : '' }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                        {{ $facility->price_label }}
-                    </span>
-                </div>
-
-                <div class="rf-card-footer">
-                    <span class="rf-status-badge rf-badge--{{ $facility->status }}">
-                        @if($facility->status === 'available') Đang mở
-                        @elseif($facility->status === 'maintenance') Bảo trì
-                        @else Tạm ngưng
-                        @endif
-                    </span>
-                    <span class="rf-view-more">Xem chi tiết →</span>
+                    <a href="{{ route('resident.facilities.show', $facility) }}" class="rf-btn rf-btn-outline">Chi tiết</a>
                 </div>
             </div>
-        </a>
+        </div>
+
+        {{-- Booking Modal for this Facility --}}
+        @if($isAvailable)
+        @php
+            $bookingType = $facility->booking_type ?? 'time_slot';
+            // Use real slots for today
+            $slots = $facility->getTimeSlots();
+            $hasFee = $facility->fee_type !== 'free' && $facility->price > 0;
+        @endphp
+        <div id="modal-{{ $facility->id }}" class="rf-modal-overlay" onclick="closeBookingModal('modal-{{ $facility->id }}', event)">
+            <div class="rf-modal-content" onclick="event.stopPropagation()">
+                <div class="rf-modal-header">
+                    <h2 class="rf-modal-title">Đăng ký: {{ $facility->name }}</h2>
+                    <button class="rf-modal-close" onclick="closeBookingModal('modal-{{ $facility->id }}')">&times;</button>
+                </div>
+                <div class="rf-modal-body">
+                    <form method="POST" action="{{ route('resident.facilities.book.store', $facility) }}">
+                        @csrf
+                        <div class="rfd-form-group">
+                            <label>Chọn ngày</label>
+                            <input type="date" name="booking_date" class="rfd-input" value="{{ date('Y-m-d') }}" min="{{ date('Y-m-d') }}" required>
+                        </div>
+                        @if(in_array($bookingType, ['time_slot', 'slot']))
+                            <div class="rfd-form-group">
+                                <label>Khung giờ</label>
+                                <input type="hidden" name="time_slot" id="selected_slot_{{ $facility->id }}" value="">
+                                <input type="hidden" name="start_time" id="start_time_{{ $facility->id }}" value="">
+                                <input type="hidden" name="end_time" id="end_time_{{ $facility->id }}" value="">
+                                <div class="rfd-slots">
+                                    @if(empty($slots))
+                                        <div style="font-size:13px; color:#94a3b8; grid-column:1/-1;">Chưa cấu hình khung giờ.</div>
+                                    @endif
+                                    @foreach($slots as $s)
+                                        @php
+                                            $timeLabel = $s['label'];
+                                        @endphp
+                                        <div class="rfd-slot" onclick="selectModalSlot('{{ $facility->id }}', this, '{{ $s['start'] }}', '{{ $s['end'] }}')">
+                                            {{ $timeLabel }}
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @else
+                            <input type="hidden" name="start_time" value="{{ $facility->open_time ? substr($facility->open_time, 0, 5) : '00:00' }}">
+                            <input type="hidden" name="end_time" value="{{ $facility->close_time ? substr($facility->close_time, 0, 5) : '23:59' }}">
+                        @endif
+                        <div class="rfd-form-group">
+                            <label>Số người tham gia</label>
+                                <div class="rfd-people-wrap">
+                                    <button type="button" class="rfd-people-btn" onclick="changeModalPeople('{{ $facility->id }}', -1, {{ $facility->capacity ?? 10 }})">−</button>
+                                    <span class="rfd-people-val" id="people_display_{{ $facility->id }}">1</span>
+                                    <input type="hidden" name="number_of_people" id="number_of_people_{{ $facility->id }}" value="1">
+                                    <button type="button" class="rfd-people-btn" onclick="changeModalPeople('{{ $facility->id }}', 1, {{ $facility->capacity ?? 10 }})">+</button>
+                                </div>
+                            </div>
+                        <div class="rfd-form-group">
+                            <label>Ghi chú (Tùy chọn)</label>
+                            <textarea name="note" class="rfd-input" placeholder="Nhập ghi chú cho BQL..."></textarea>
+                        </div>
+                        @if($hasFee)
+                            <div class="rfd-price-row">
+                                <span>Phí dịch vụ:</span>
+                                <span class="rfd-price-val">{{ $facility->price_label }}</span>
+                            </div>
+                        @endif
+                        <button type="submit" class="rfd-submit">Xác nhận đăng ký</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        @endif
         @endforeach
     </div>
+
+    @if($facilities->count() >= 6)
+    <div class="rf-load-more">
+        <a href="#" class="rf-load-btn">
+            Xem thêm tiện ích
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </a>
+    </div>
+    @endif
     @endif
 
 </div>
-
-<style>
-.rf-page { max-width: 1100px; margin: 0 auto; padding: 32px 20px; }
-
-.rf-header { margin-bottom: 24px; }
-.rf-eyebrow { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; margin: 0 0 6px; font-weight: 600; }
-.rf-title { font-size: 1.8rem; font-weight: 800; color: #0f172a; margin: 0 0 6px; }
-.rf-subtitle { font-size: 0.9rem; color: #64748b; margin: 0; }
-
-.rf-alert { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-radius: 8px; font-size: 0.875rem; font-weight: 500; margin-bottom: 20px; }
-.rf-alert--success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
-
-/* Tabs */
-.rf-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; border-bottom: 2px solid #f1f5f9; padding-bottom: 0; }
-.rf-tab { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 8px 8px 0 0; font-size: 0.83rem; font-weight: 600; color: #64748b; text-decoration: none; transition: all 0.15s; border-bottom: 2px solid transparent; margin-bottom: -2px; }
-.rf-tab:hover { color: #2563eb; background: #f8fafc; }
-.rf-tab--active { color: #2563eb; border-bottom-color: #2563eb; background: #eff6ff; }
-.rf-tab-icon { width: 16px; height: 16px; flex-shrink: 0; }
-
-/* Grid */
-.rf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-
-/* Card */
-.rf-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; text-decoration: none; color: inherit; display: flex; flex-direction: column; transition: box-shadow 0.2s, transform 0.2s; position: relative; }
-.rf-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.1); transform: translateY(-3px); }
-.rf-card--maintenance { opacity: 0.85; }
-.rf-card--closed { opacity: 0.7; filter: grayscale(20%); }
-
-/* Ribbon */
-.rf-ribbon { position: absolute; top: 12px; right: -8px; padding: 4px 14px 4px 10px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; border-radius: 4px 0 0 4px; z-index: 2; }
-.rf-ribbon--maintenance { background: #fef9c3; color: #a16207; }
-.rf-ribbon--closed { background: #fee2e2; color: #b91c1c; }
-
-/* Card image */
-.rf-card-img { height: 160px; background: linear-gradient(135deg, #e0f2fe, #ede9fe); display: flex; align-items: center; justify-content: center; overflow: hidden; }
-.rf-card-img img { width: 100%; height: 100%; object-fit: cover; }
-.rf-card-icon-placeholder { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
-.rf-card-icon-placeholder svg { width: 4.2rem; height: 4.2rem; color: #6366f1; stroke-width: 1.5; opacity: 0.85; }
-
-/* Card body */
-.rf-card-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
-.rf-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.rf-card-name { font-size: 1rem; font-weight: 700; color: #0f172a; margin: 0; }
-
-/* Status dot */
-.rf-status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.rf-dot--available { background: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,0.2); }
-.rf-dot--maintenance { background: #eab308; box-shadow: 0 0 0 3px rgba(234,179,8,0.2); }
-.rf-dot--closed { background: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.2); }
-
-.rf-card-desc { font-size: 0.82rem; color: #64748b; margin: 0; line-height: 1.5; }
-
-/* Meta */
-.rf-card-meta { display: flex; flex-direction: column; gap: 5px; flex: 1; }
-.rf-meta-item { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: #475569; }
-.rf-meta-price { font-weight: 600; color: #2563eb; }
-.rf-meta-price--free { color: #16a34a; }
-
-/* Footer */
-.rf-card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid #f1f5f9; margin-top: 4px; }
-.rf-status-badge { font-size: 0.7rem; font-weight: 700; padding: 3px 9px; border-radius: 20px; }
-.rf-badge--available { background: #dcfce7; color: #15803d; }
-.rf-badge--maintenance { background: #fef9c3; color: #a16207; }
-.rf-badge--closed { background: #fee2e2; color: #b91c1c; }
-.rf-view-more { font-size: 0.78rem; font-weight: 600; color: #2563eb; }
-
-.rf-empty { text-align: center; padding: 60px 20px; color: #94a3b8; display: flex; flex-direction: column; align-items: center; gap: 12px; }
-
-@media (max-width: 640px) {
-    .rf-grid { grid-template-columns: 1fr; }
-}
-</style>
 @endsection
+
+@push('scripts')
+<script>
+function openBookingModal(modalId) {
+    document.getElementById(modalId).classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeBookingModal(modalId, event) {
+    if (event && event.target !== event.currentTarget) return;
+    document.getElementById(modalId).classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+function selectModalSlot(facilityId, element, start, end) {
+    const modal = document.getElementById('modal-' + facilityId);
+    if (!modal) return;
+    modal.querySelectorAll('.rfd-slot').forEach(el => el.classList.remove('active'));
+    element.classList.add('active');
+    document.getElementById('selected_slot_' + facilityId).value = start + ' - ' + end;
+    
+    const startInput = document.getElementById('start_time_' + facilityId);
+    const endInput = document.getElementById('end_time_' + facilityId);
+    if(startInput) startInput.value = start;
+    if(endInput) endInput.value = end;
+}
+
+function changeModalPeople(facilityId, delta, maxCap) {
+    const input = document.getElementById('number_of_people_' + facilityId);
+    const display = document.getElementById('people_display_' + facilityId);
+    if(!input || !display) return;
+    
+    let val = parseInt(input.value) || 1;
+    val += delta;
+    if(val < 1) val = 1;
+    if(val > maxCap) val = maxCap;
+    
+    input.value = val;
+    display.innerText = val;
+}
+</script>
+@endpush

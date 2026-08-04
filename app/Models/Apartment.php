@@ -15,10 +15,16 @@ class Apartment extends Model
 
     protected $fillable = [
         'floor_id',
+        'apartment_type_id',
         'apartment_number',
         'area',
         'status',
         'description',
+        'images',
+    ];
+
+    protected $casts = [
+        'images' => 'array',
     ];
 
     /**
@@ -53,6 +59,14 @@ class Apartment extends Model
     */
 
     /**
+     * Quan hệ loại căn hộ
+     */
+    public function apartmentType(): BelongsTo
+    {
+        return $this->belongsTo(ApartmentType::class);
+    }
+
+    /**
      * Quan hệ tầng
      */
     public function floor(): BelongsTo
@@ -77,6 +91,14 @@ class Apartment extends Model
     }
 
     /**
+     * Nhân khẩu khai báo thuộc căn hộ này
+     */
+    public function declaredMembers(): HasMany
+    {
+        return $this->hasMany(ApartmentMember::class);
+    }
+
+    /**
      * Xe đăng ký thuộc căn hộ này
      */
     public function vehicles(): HasMany
@@ -90,6 +112,14 @@ class Apartment extends Model
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);
+    }
+
+    /**
+     * Chỉ số điện nước của căn hộ
+     */
+    public function utilityMeters(): HasMany
+    {
+        return $this->hasMany(UtilityMeter::class);
     }
 
     /*

@@ -47,7 +47,8 @@
                     <label>Mật khẩu</label>
                     <div class="input-box">
                         <i class="fa-solid fa-lock"></i>
-                        <input type="password" name="password" placeholder="Nhập mật khẩu" required>
+                        <input type="password" name="password" id="password" placeholder="Nhập mật khẩu" required>
+                        <i class="fa-solid fa-eye toggle-pw" id="togglePassword"></i>
                     </div>
                 </div>
 
@@ -89,5 +90,20 @@
     </div>
 
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const togglePassword = document.querySelector('#togglePassword');
+        const password = document.querySelector('#password');
+        
+        if (togglePassword && password) {
+            togglePassword.addEventListener('click', function () {
+                const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                password.setAttribute('type', type);
+                this.classList.toggle('fa-eye');
+                this.classList.toggle('fa-eye-slash');
+            });
+        }
+    });
+</script>
 </body>
 </html>

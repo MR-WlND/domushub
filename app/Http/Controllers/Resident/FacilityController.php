@@ -144,50 +144,34 @@ class FacilityController extends Controller
                 return back()->withInput()->with('error', 'Tiện ích chỉ còn chỗ cho ' . $remaining . ' người nữa trong ngày này.');
             }
         } else {
-            // Đặt theo giờ: kiểm tra overlap từng slot
-            $allSlots = $facility->getTimeSlots();
+            // Đặt theo giờ: người dùng chọn start_time và end_time bất kỳ (trong khoảng open/close)
+            $requestedStart = substr($validated['start_time'], 0, 5);
+            $requestedEnd   = substr($validated['end_time'], 0, 5);
 
-            if ($facility->slot_duration > 0 && !empty($allSlots)) {
-                $requestedStart    = substr($validated['start_time'], 0, 5);
-                $requestedEnd      = substr($validated['end_time'], 0, 5);
-                $overlapSlotsCount = 0;
+            // Kiểm tra giờ hoạt động
+            if ($facility->open_time && $requestedStart < substr($facility->open_time, 0, 5)) {
+                return back()->withInput()->with('error', 'Giờ bắt đầu phải từ ' . substr($facility->open_time, 0, 5) . ' trở đi.');
+            }
+            if ($facility->close_time && $requestedEnd > substr($facility->close_time, 0, 5)) {
+                return back()->withInput()->with('error', 'Giờ kết thúc phải trước ' . substr($facility->close_time, 0, 5) . '.');
+            }
 
-                foreach ($allSlots as $slot) {
-                    if ($slot['start'] < $requestedEnd && $slot['end'] > $requestedStart) {
-                        $overlapSlotsCount++;
-                        $slotBookedPeople = 0;
-                        foreach ($bookedSlots as $booking) {
-                            if ($booking['start_time'] < $slot['end'] && $booking['end_time'] > $slot['start']) {
-                                $slotBookedPeople += $booking['number_of_people'];
-                            }
-                        }
-                        $remaining = $facility->capacity - $slotBookedPeople;
-                        if ($remaining <= 0) {
-                            return back()->withInput()->with('error', 'Khung giờ ' . $slot['label'] . ' đã đạt sức chứa tối đa (' . $facility->capacity . ' người). Vui lòng chọn khung giờ khác.');
-                        }
-                        if ($validated['number_of_people'] > $remaining) {
-                            return back()->withInput()->with('error', 'Khung giờ ' . $slot['label'] . ' chỉ còn chỗ cho ' . $remaining . ' người nữa.');
-                        }
-                    }
+            // Tính số lượng khách đã đặt trong khoảng thời gian người dùng muốn đặt
+            $bookedPeople = 0;
+            foreach ($bookedSlots as $booking) {
+                // Kiểm tra 2 khoảng thời gian có giao nhau không
+                // (StartA < EndB) và (EndA > StartB)
+                if ($requestedStart < $booking['end_time'] && $requestedEnd > $booking['start_time']) {
+                    $bookedPeople += $booking['number_of_people'];
                 }
-                if ($overlapSlotsCount === 0) {
-                    return back()->withInput()->with('error', 'Khung giờ chọn không khớp với bất kỳ slot hoạt động nào.');
-                }
-            } else {
-                // slot_duration = 0 (cả ngày)
-                $bookedPeople = 0;
-                foreach ($bookedSlots as $booking) {
-                    if ($booking['start_time'] < $validated['end_time'] && $booking['end_time'] > $validated['start_time']) {
-                        $bookedPeople += $booking['number_of_people'];
-                    }
-                }
-                $remaining = $facility->capacity - $bookedPeople;
-                if ($remaining <= 0) {
-                    return back()->withInput()->with('error', 'Tiện ích đã đạt sức chứa tối đa trong khung giờ này.');
-                }
-                if ($validated['number_of_people'] > $remaining) {
-                    return back()->withInput()->with('error', 'Tiện ích chỉ còn chỗ cho ' . $remaining . ' người nữa.');
-                }
+            }
+
+            $remaining = $facility->capacity - $bookedPeople;
+            if ($remaining <= 0) {
+                return back()->withInput()->with('error', 'Khung giờ bạn chọn đã đạt sức chứa tối đa. Vui lòng chọn khung giờ khác.');
+            }
+            if ($validated['number_of_people'] > $remaining) {
+                return back()->withInput()->with('error', 'Khung giờ bạn chọn chỉ còn chỗ cho ' . $remaining . ' người nữa.');
             }
         }
 
@@ -245,9 +229,9 @@ class FacilityController extends Controller
 
             $amount = $booking->amount;
 
-            // Tiêu đề hóa đơn theo kiểu đặt
-            $bookingType = $facility->booking_type ?? 'slot';
-            if ($bookingType === 'person') {
+            // Tiêu đề hóa đơn theo kiểu phí
+            $feeType = $facility->fee_type ?? 'free';
+            if ($feeType === 'per_person') {
                 $title = 'Phí sử dụng tiện ích: ' . $facility->name
                     . ' — ' . $booking->number_of_people . ' người'
                     . ' (' . \Carbon\Carbon::parse($booking->booking_date)->format('d/m/Y')
@@ -340,6 +324,14 @@ class FacilityController extends Controller
         }
 
         $booking->update(['status' => 'cancelled']);
+
+        // Hủy hóa đơn nếu chưa thanh toán
+        if ($booking->bill_id) {
+            $invoice = Invoice::find($booking->bill_id);
+            if ($invoice && !in_array($invoice->status, ['paid', 'cancelled'])) {
+                $invoice->update(['status' => 'cancelled']);
+            }
+        }
 
         return back()->with('success', 'Đã hủy lịch đặt thành công.');
     }

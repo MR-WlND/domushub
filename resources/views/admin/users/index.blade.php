@@ -1,7 +1,7 @@
 @extends('layouts.admin.master')
 
 @section('page_title', 'Phân quyền người dùng')
-@section('home_route', route('admin.dashboard'))
+@section('home_route', portal_route('dashboard'))
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role_label', 'ADMIN')
 
@@ -16,6 +16,8 @@
         'staff' => 'Nhân viên kế toán',
         'technician' => 'Kỹ thuật',
         'security' => 'An ninh',
+        'cleaning' => 'Nhân viên vệ sinh',
+        'receptionist' => 'Lễ tân',
     ];
 
     $statusLabels = [
@@ -33,7 +35,7 @@
                 <h1>Phân quyền người dùng</h1>
             </div>
             <div class="users-page__actions">
-                <a href="{{ route('admin.system-logs.index') }}" class="users-button users-button--secondary" style="background:#fff; color:#475569; border:1px solid #cbd5e1; display:inline-flex; align-items:center; gap:6px;">
+                <a href="{{ portal_route('system-logs.index') }}" class="users-button users-button--secondary" style="background:#fff; color:#475569; border:1px solid #cbd5e1; display:inline-flex; align-items:center; gap:6px;">
                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <polyline points="23 4 23 10 17 10"></polyline>
                         <polyline points="1 20 1 14 7 14"></polyline>
@@ -41,7 +43,6 @@
                     </svg>
                     Lịch sử hệ thống
                 </a>
-                <a href="{{ route('admin.users.create') }}" class="users-button users-button--primary">Thêm nhân sự</a>
             </div>
         </div>
 
@@ -53,7 +54,7 @@
             <div class="users-alert users-alert--danger">{{ $errors->first() }}</div>
         @endif
 
-        <form class="users-filter" method="GET" action="{{ route('admin.users.index') }}">
+        <form class="users-filter" method="GET" action="{{ portal_route('users.index') }}">
             <label class="users-filter__field">
                 <span>Tìm kiếm</span>
                 <input type="search" name="search" value="{{ request('search') }}" placeholder="Tên hoặc email">
@@ -81,7 +82,7 @@
 
             <div class="users-filter__actions">
                 <button type="submit" class="users-button users-button--primary">Lọc</button>
-                <a href="{{ route('admin.users.index') }}" class="users-button users-button--secondary">Xóa lọc</a>
+                <a href="{{ portal_route('users.index') }}" class="users-button users-button--secondary">Xóa lọc</a>
             </div>
         </form>
 
@@ -130,7 +131,7 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <a href="{{ route('admin.users.edit', $user) }}" class="btn-edit-permissions">
+                                    <a href="{{ portal_route('users.edit', $user) }}" class="btn-edit-permissions">
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                             stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                                             <circle cx="12" cy="12" r="3"></circle>

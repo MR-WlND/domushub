@@ -55,16 +55,6 @@
                         </svg>
                         <span>Quét QR xe ra</span>
                     </a>
-                    <a href="{{ route('security.vehicle-logs.index') }}"
-                        class="dashboard-nav__subitem {{ request()->routeIs('security.vehicle-logs*') ? 'dashboard-nav__subitem--active' : '' }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                            <line x1="16" y1="2" x2="16" y2="6"></line>
-                            <line x1="8" y1="2" x2="8" y2="6"></line>
-                            <line x1="3" y1="10" x2="21" y2="10"></line>
-                        </svg>
-                        <span>Lịch sử xe ra vào</span>
-                    </a>
                 </div>
             </div>
         </div>
@@ -72,9 +62,10 @@
         {{-- QUẢN LÝ KHÁCH --}}
         <div class="nav-section">
             <span class="nav-section__label">QUẢN LÝ KHÁCH</span>
-            <div class="dashboard-nav__group {{ request()->routeIs('security.visitor*') || request()->routeIs('security.visitor-logs*') || request()->routeIs('security.walk-in*') ? 'dashboard-nav__group--open' : '' }}" id="group-visitor">
+
+            <div class="dashboard-nav__group {{ request()->routeIs('security.walk-in*') || request()->routeIs('security.visitor-logs*') ? 'dashboard-nav__group--open' : '' }}" id="group-visitor">
                 <button type="button"
-                    class="dashboard-nav__item dashboard-nav__item--parent {{ request()->routeIs('security.visitor*') || request()->routeIs('security.visitor-logs*') || request()->routeIs('security.walk-in*') ? 'dashboard-nav__item--active' : '' }}"
+                    class="dashboard-nav__item dashboard-nav__item--parent {{ request()->routeIs('security.walk-in*') || request()->routeIs('security.visitor-logs*') ? 'dashboard-nav__item--active' : '' }}"
                     onclick="toggleNavGroup('group-visitor')">
                     <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -88,7 +79,6 @@
                     </svg>
                 </button>
                 <div class="dashboard-nav__submenu">
-                    {{-- Walk-in: Đăng ký tại cổng (phổ biến nhất) --}}
                     <a href="{{ route('security.walk-in.index') }}"
                         class="dashboard-nav__subitem {{ request()->routeIs('security.walk-in*') ? 'dashboard-nav__subitem--active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -97,17 +87,18 @@
                             <line x1="19" y1="8" x2="19" y2="14"/>
                             <line x1="22" y1="11" x2="16" y2="11"/>
                         </svg>
-                        <span>Đăng ký tại cổng</span>
+                        <span>Đăng ký khách</span>
                     </a>
                     <a href="{{ route('security.visitor-logs.index') }}"
                         class="dashboard-nav__subitem {{ request()->routeIs('security.visitor-logs*') ? 'dashboard-nav__subitem--active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                            <line x1="16" y1="2" x2="16" y2="6"></line>
-                            <line x1="8" y1="2" x2="8" y2="6"></line>
-                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
                         </svg>
-                        <span>Lịch sử khách</span>
+                        <span>Lịch sử ra vào</span>
                     </a>
                 </div>
             </div>

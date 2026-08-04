@@ -84,9 +84,9 @@
                     </div>
 
                     <div class="group">
-                        <label for="password_confirmation">Nhập lại mật khẩu mới</label>
+                        <label for="password_confirmation">Xác nhận mật khẩu mới</label>
                         <div class="input-box">
-                            <i class="fa-solid fa-shield-halved"></i>
+                            <i class="fa-solid fa-lock"></i>
                             <input id="password_confirmation" type="password" name="password_confirmation" placeholder="Nhập lại mật khẩu mới" minlength="8" required>
                         </div>
                     </div>
@@ -94,11 +94,11 @@
                     <button class="login-btn" type="submit">
                         Đặt lại mật khẩu
                     </button>
-                    <p><a class="login-btn login-btn-secondary" href="{{ route('resident.login') }}">Quay lại đăng nhập</a></p>
                 </form>
 
                 <div class="bottom">
                     <p><a href="{{ route('resident.forgot-password') }}"><i class="fa-solid fa-paper-plane"></i> Gửi lại mã xác nhận</a></p>
+                    <p><a href="{{ route('resident.login') }}"><i class="fa-solid fa-arrow-left"></i> Quay lại đăng nhập</a></p>
                 </div>
             </div>
         </div>

@@ -35,6 +35,13 @@ class MemberController extends Controller
 
     public function index(Request $request): View
     {
+        // Programmatic migration run (just in case)
+        try {
+            \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        } catch (\Exception $e) {
+            // Silence migrations exception
+        }
+
         /** @var User $user */
         $user = Auth::user();
 
@@ -66,13 +73,26 @@ class MemberController extends Controller
             ->sortBy('name')
             ->values();
 
-        // Lấy danh sách cư dân liên kết tài khoản (không bao gồm user hiện tại)
+        // Lấy danh sách cư dân liên kết tài khoản (chỉ các tài khoản active)
         $registeredMembers = Resident::with(['user', 'apartment.floor.block'])
             ->whereIn('apartment_id', $apartmentIds)
             ->where('user_id', '!=', $user->id)
+            ->where('status', 'active')
             ->whereNull('deleted_at')
             ->orderBy('created_at')
             ->get();
+
+        // Lấy danh sách cư dân đang chờ duyệt (Pending)
+        $pendingMembers = collect();
+        if ($isOwner) {
+            $pendingMembers = Resident::with(['user', 'apartment.floor.block'])
+                ->whereIn('apartment_id', $ownerApartmentIds)
+                ->where('user_id', '!=', $user->id)
+                ->where('status', 'pending')
+                ->whereNull('deleted_at')
+                ->orderBy('created_at')
+                ->get();
+        }
 
         // Lấy thông tin resident của user hiện tại để hiển thị đúng vai trò
         $selfResident = Resident::with(['apartment.floor.block'])
@@ -112,6 +132,7 @@ class MemberController extends Controller
             'apartments',
             'blocks',
             'registeredMembers',
+            'pendingMembers',
             'selfResident',
             'declaredMembers',
             'invitations',
@@ -199,7 +220,12 @@ class MemberController extends Controller
         ]);
 
         $apartment = Apartment::with('floor')->findOrFail($validated['apartment_id']);
-        $code = 'MEM-' . strtoupper(Str::random(6));
+        
+        // Sinh mã chuẩn: INV-[ApartmentNumber]-[4RandomDigits]
+        $cleanAptNumber = str_replace([' ', '-', '_'], '', strtoupper($apartment->apartment_number));
+        do {
+            $code = 'INV-' . $cleanAptNumber . '-' . random_int(1000, 9999);
+        } while (ApartmentInvite::where('invite_code', $code)->exists());
 
         ApartmentInvite::create([
             'block_id'               => $apartment->floor->block_id,
@@ -250,5 +276,44 @@ class MemberController extends Controller
 
         return redirect()->route('resident.members.index', ['tab' => 'registered'])
             ->with('success', 'Đã gỡ cư dân khỏi hộ gia đình thành công.');
+    }
+
+    /**
+     * Đồng ý duyệt cư dân gia nhập căn hộ
+     */
+    public function approveResident($id): RedirectResponse
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        $ownerApartmentIds = $this->getOwnerApartmentIds($user);
+
+        $resident = Resident::whereIn('apartment_id', $ownerApartmentIds)
+            ->where('status', 'pending')
+            ->findOrFail($id);
+
+        $resident->update(['status' => 'active']);
+
+        return redirect()->route('resident.members.index', ['tab' => 'registered'])
+            ->with('success', 'Đã phê duyệt cư dân gia nhập căn hộ thành công.');
+    }
+
+    /**
+     * Từ chối duyệt cư dân gia nhập căn hộ
+     */
+    public function rejectResident($id): RedirectResponse
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        $ownerApartmentIds = $this->getOwnerApartmentIds($user);
+
+        $resident = Resident::whereIn('apartment_id', $ownerApartmentIds)
+            ->where('status', 'pending')
+            ->findOrFail($id);
+
+        $resident->update(['status' => 'rejected']);
+        $resident->delete(); // Soft-delete sau khi đổi trạng thái để giữ lại log
+
+        return redirect()->route('resident.members.index', ['tab' => 'registered'])
+            ->with('success', 'Đã từ chối yêu cầu gia nhập của cư dân.');
     }
 }

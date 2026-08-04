@@ -48,7 +48,7 @@
             
             // Tải danh sách thông báo
             function loadNotifications() {
-                fetch('{{ route("admin.notifications.index") }}')
+                fetch('{{ portal_route('notifications.index') }}')
                     .then(res => res.json())
                     .then(data => {
                         // Cập nhật số thông báo chưa đọc
@@ -176,7 +176,7 @@
 
         <div class="header-divider"></div>
 
-        <a href="{{ route('admin.profile.index') }}" class="dashboard-user-pill" style="text-decoration: none; color: inherit;">
+        <a href="{{ portal_route('profile.index') }}" class="dashboard-user-pill" style="text-decoration: none; color: inherit;">
             <div class="user-info">
                 <strong class="user-name">@yield('user_name', auth()->user()->name ?? 'Admin User')</strong>
                 <span class="user-role">

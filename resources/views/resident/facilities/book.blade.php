@@ -1,5 +1,117 @@
 @extends('layouts.resident.master')
 
+@push('styles')
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+.rfb-page { max-width: 1060px; margin: 0 auto; padding: 28px 20px; font-family: 'Inter', sans-serif; }
+
+.rfb-breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: #64748b; margin-bottom: 24px; }
+.rfb-breadcrumb a { color: #2563eb; text-decoration: none; font-weight: 500; }
+.rfb-breadcrumb a:hover { text-decoration: underline; }
+
+.rfb-layout { display: grid; grid-template-columns: 1fr 300px; gap: 24px; align-items: start; }
+
+.rfb-form-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 18px; padding: 32px; box-shadow: 0 2px 20px rgba(0,0,0,0.06); }
+.rfb-form-header { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid #f1f5f9; }
+.rfb-form-header-icon { width: 50px; height: 50px; background: linear-gradient(135deg, #3b82f6, #6366f1); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; }
+.rfb-form-title { font-size: 1.25rem; font-weight: 800; color: #0f172a; margin: 0 0 2px; }
+.rfb-form-subtitle { font-size: 0.85rem; color: #64748b; margin: 0; }
+
+.rfb-alert { display: flex; align-items: flex-start; gap: 10px; padding: 12px 16px; border-radius: 10px; font-size: 0.875rem; margin-bottom: 20px; }
+.rfb-alert--error { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
+.rfb-alert ul { margin: 0; padding-left: 16px; }
+.rfb-alert li { margin-bottom: 2px; }
+
+.rfb-step { margin-bottom: 28px; }
+.rfb-step-label { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; font-weight: 700; color: #0f172a; margin-bottom: 12px; flex-wrap: wrap; }
+.rfb-step-num { width: 26px; height: 26px; background: linear-gradient(135deg, #3b82f6, #6366f1); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; flex-shrink: 0; }
+.rfb-multi-hint { font-size: 0.72rem; font-weight: 500; color: #7c3aed; background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 20px; padding: 3px 12px; }
+
+.rfb-input { width: 100%; padding: 11px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 0.9rem; color: #0f172a; outline: none; transition: border-color 0.15s, box-shadow 0.15s; box-sizing: border-box; }
+.rfb-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+
+/* Slots */
+.rfb-slots-wrap { min-height: 60px; }
+.rfb-slots-hint { font-size: 0.82rem; color: #94a3b8; font-style: italic; }
+.rfb-slots-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.rfb-slot-btn {
+    padding: 9px 18px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    background: #f8fafc;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #475569;
+    transition: all 0.12s;
+    font-family: monospace;
+    user-select: none;
+}
+.rfb-slot-btn:hover:not(.booked) { border-color: #3b82f6; color: #2563eb; background: #eff6ff; }
+.rfb-slot-btn.selected { border-color: #2563eb; background: #3b82f6; color: #fff; box-shadow: 0 2px 8px rgba(59,130,246,0.35); }
+.rfb-slot-btn.range { border-color: #93c5fd; background: #dbeafe; color: #1d4ed8; }
+.rfb-slot-btn.booked { border-color: #fecaca; background: #fef2f2; color: #ef4444; cursor: not-allowed; }
+
+.rfb-slots-loading { font-size: 0.82rem; color: #64748b; display: flex; align-items: center; gap: 6px; }
+.rfb-slots-loading::before { content: ''; width: 14px; height: 14px; border: 2px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.rfb-legend { display: flex; gap: 16px; margin-top: 12px; font-size: 0.75rem; color: #64748b; flex-wrap: wrap; }
+.rfb-legend-item { display: flex; align-items: center; gap: 5px; }
+.rfb-legend-dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+.rfb-selected-slot { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding: 10px 14px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; font-size: 0.85rem; color: #2563eb; font-weight: 500; flex-wrap: wrap; }
+.rfb-slot-count { background: #2563eb; color: #fff; font-size: 0.7rem; font-weight: 700; padding: 2px 9px; border-radius: 20px; }
+
+/* People */
+.rfb-people-wrap { display: flex; align-items: center; gap: 12px; }
+.rfb-people-btn { width: 36px; height: 36px; border: 1.5px solid #e2e8f0; border-radius: 8px; background: #f8fafc; font-size: 1.2rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #475569; transition: all 0.15s; }
+.rfb-people-btn:hover { border-color: #3b82f6; color: #2563eb; background: #eff6ff; }
+.rfb-people-input { width: 70px; text-align: center; padding: 8px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 1rem; font-weight: 700; color: #0f172a; outline: none; }
+.rfb-people-input:focus { border-color: #3b82f6; }
+.rfb-people-max { font-size: 0.78rem; color: #94a3b8; }
+
+/* Price preview */
+.rfb-price-preview { background: linear-gradient(135deg, #f0f9ff 0%, #f8fafc 100%); border: 1px solid #bae6fd; border-radius: 14px; padding: 18px 20px; margin-bottom: 24px; }
+.rfb-price-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.875rem; color: #64748b; margin-bottom: 8px; }
+.rfb-price-row:last-child { margin-bottom: 0; }
+.rfb-price-unit { font-weight: 700; color: #374151; }
+.rfb-price-total { font-size: 1.05rem; font-weight: 800; color: #0f172a; padding-top: 12px; border-top: 1.5px dashed #bae6fd; margin-top: 6px; }
+.rfb-price-total span:last-child { color: #2563eb; font-size: 1.15rem; }
+
+.rfb-free-notice { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; font-size: 0.875rem; color: #15803d; margin-bottom: 24px; }
+
+.rfb-submit { width: 100%; padding: 14px; background: linear-gradient(135deg, #3b82f6, #6366f1); color: #fff; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; box-shadow: 0 4px 14px rgba(59,130,246,0.35); }
+.rfb-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(59,130,246,0.45); }
+.rfb-submit:active { transform: translateY(0); }
+.rfb-note { font-size: 0.75rem; color: #94a3b8; text-align: center; margin-top: 10px; }
+.rfb-note--fee { color: #0369a1; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 8px 12px; font-size: 0.82rem; }
+
+.rfb-sidebar { position: sticky; top: 20px; display: flex; flex-direction: column; gap: 14px; }
+.rfb-info-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.rfb-info-title { font-size: 0.9rem; font-weight: 700; color: #0f172a; margin: 0 0 4px; }
+.rfb-info-row { display: flex; align-items: flex-start; gap: 12px; }
+.rfb-info-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.rfb-info-label { font-size: 0.72rem; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 2px; }
+.rfb-info-value { font-size: 0.9rem; font-weight: 700; color: #0f172a; margin: 0; }
+.rfb-free { color: #16a34a !important; }
+.rfb-paid { color: #2563eb !important; }
+
+.rfb-rules { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 12px; margin-top: 4px; }
+.rfb-rules-title { font-size: 0.78rem; font-weight: 700; color: #92400e; margin: 0 0 6px; }
+.rfb-rules-text { font-size: 0.78rem; color: #78350f; line-height: 1.6; margin: 0; white-space: pre-line; }
+
+.rfb-available-notice { display: flex; align-items: center; gap: 8px; padding: 12px 14px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; font-size: 0.85rem; color: #15803d; }
+
+@media (max-width: 768px) {
+    .rfb-layout { grid-template-columns: 1fr; }
+    .rfb-sidebar { position: static; }
+}
+</style>
+@endpush
+
 @section('title', 'Đặt lịch – ' . $facility->name . ' – DomusHub')
 
 @section('content')
@@ -60,7 +172,7 @@
                     </div>
 
                     {{-- Bước 2: Chọn khung giờ (chỉ hiện khi đặt theo giờ) --}}
-                    @if(($facility->booking_type ?? 'slot') === 'slot')
+                    @if(in_array($facility->booking_type ?? 'time_slot', ['time_slot', 'slot']))
                     <div class="rfb-step">
                         <div class="rfb-step-label">
                             <span class="rfb-step-num">2</span>
@@ -83,10 +195,10 @@
                     <input type="hidden" name="end_time"   id="end_time"   value="{{ $facility->close_time ? substr($facility->close_time, 0, 5) : '23:59' }}">
                     @endif
 
-                    {{-- Bước {{ ($facility->booking_type ?? 'slot') === 'person' ? '2' : '3' }}: Số người --}}
+                    {{-- Bước {{ in_array($facility->booking_type ?? 'time_slot', ['time_slot', 'slot']) ? '3' : '2' }}: Số người --}}
                     <div class="rfb-step">
                         <div class="rfb-step-label">
-                            <span class="rfb-step-num">{{ ($facility->booking_type ?? 'slot') === 'person' ? '2' : '3' }}</span>
+                            <span class="rfb-step-num">{{ in_array($facility->booking_type ?? 'time_slot', ['time_slot', 'slot']) ? '3' : '2' }}</span>
                             Số người sử dụng
                         </div>
                         <div class="rfb-people-wrap">
@@ -102,23 +214,21 @@
 
                     {{-- Tổng tiền preview --}}
                     @php
-                        $bookingType   = $facility->booking_type ?? 'slot';
-                        $hasFee        = $bookingType === 'person'
-                            ? ($facility->price_per_person && $facility->price_per_person > 0)
-                            : ($facility->price_per_slot   && $facility->price_per_slot   > 0);
+                        $hasFee = $facility->fee_type !== 'free' && $facility->price > 0;
+                        $feeType = $facility->fee_type;
                     @endphp
                     @if($hasFee)
                     <div class="rfb-price-preview" id="price-preview">
                         <div class="rfb-price-row">
-                            @if($bookingType === 'person')
+                            @if($feeType === 'per_person')
                                 <span>Giá mỗi người (vé / lượt)</span>
-                                <span class="rfb-price-unit">{{ number_format($facility->price_per_person) }}đ</span>
-                            @elseif($facility->slot_duration == 0)
-                                <span>Giá mỗi lượt (cả ngày)</span>
-                                <span class="rfb-price-unit">{{ number_format($facility->price_per_slot) }}đ</span>
+                                <span class="rfb-price-unit">{{ number_format($facility->price) }}đ</span>
+                            @elseif($feeType === 'per_use')
+                                <span>Giá mỗi lượt</span>
+                                <span class="rfb-price-unit">{{ number_format($facility->price) }}đ</span>
                             @else
-                                <span>Giá mỗi slot ({{ $facility->slot_duration }} phút)</span>
-                                <span class="rfb-price-unit">{{ number_format($facility->price_per_slot) }}đ</span>
+                                <span>Giá mỗi giờ</span>
+                                <span class="rfb-price-unit">{{ number_format($facility->price) }}đ</span>
                             @endif
                         </div>
                         <div class="rfb-price-row" id="price-row-slots" style="display:none">
@@ -200,9 +310,7 @@
                     <div>
                         <p class="rfb-info-label">Giá sử dụng</p>
                         @php
-                            $isPaid = ($facility->booking_type ?? 'slot') === 'person'
-                                ? ($facility->price_per_person && $facility->price_per_person > 0)
-                                : ($facility->price_per_slot   && $facility->price_per_slot   > 0);
+                            $isPaid = $facility->fee_type !== 'free' && $facility->price > 0;
                         @endphp
                         <p class="rfb-info-value {{ !$isPaid ? 'rfb-free' : 'rfb-paid' }}">
                             {{ $facility->price_label }}
@@ -226,120 +334,13 @@
     </div>
 </div>
 
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@endsection
 
-.rfb-page { max-width: 1060px; margin: 0 auto; padding: 28px 20px; font-family: 'Inter', sans-serif; }
-
-.rfb-breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: #64748b; margin-bottom: 24px; }
-.rfb-breadcrumb a { color: #2563eb; text-decoration: none; font-weight: 500; }
-.rfb-breadcrumb a:hover { text-decoration: underline; }
-
-.rfb-layout { display: grid; grid-template-columns: 1fr 300px; gap: 24px; align-items: start; }
-
-.rfb-form-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 18px; padding: 32px; box-shadow: 0 2px 20px rgba(0,0,0,0.06); }
-.rfb-form-header { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid #f1f5f9; }
-.rfb-form-header-icon { width: 50px; height: 50px; background: linear-gradient(135deg, #3b82f6, #6366f1); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; }
-.rfb-form-title { font-size: 1.25rem; font-weight: 800; color: #0f172a; margin: 0 0 2px; }
-.rfb-form-subtitle { font-size: 0.85rem; color: #64748b; margin: 0; }
-
-.rfb-alert { display: flex; align-items: flex-start; gap: 10px; padding: 12px 16px; border-radius: 10px; font-size: 0.875rem; margin-bottom: 20px; }
-.rfb-alert--error { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
-.rfb-alert ul { margin: 0; padding-left: 16px; }
-.rfb-alert li { margin-bottom: 2px; }
-
-.rfb-step { margin-bottom: 28px; }
-.rfb-step-label { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; font-weight: 700; color: #0f172a; margin-bottom: 12px; flex-wrap: wrap; }
-.rfb-step-num { width: 26px; height: 26px; background: linear-gradient(135deg, #3b82f6, #6366f1); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; flex-shrink: 0; }
-.rfb-multi-hint { font-size: 0.72rem; font-weight: 500; color: #7c3aed; background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 20px; padding: 3px 12px; }
-
-.rfb-input { width: 100%; padding: 11px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 0.9rem; color: #0f172a; outline: none; transition: border-color 0.15s, box-shadow 0.15s; box-sizing: border-box; }
-.rfb-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
-
-/* Slots */
-.rfb-slots-wrap { min-height: 60px; }
-.rfb-slots-hint { font-size: 0.82rem; color: #94a3b8; font-style: italic; }
-.rfb-slots-grid { display: flex; flex-wrap: wrap; gap: 10px; }
-
-.rfb-slot-btn {
-    padding: 9px 18px;
-    border: 2px solid #e2e8f0;
-    border-radius: 10px;
-    background: #f8fafc;
-    cursor: pointer;
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: #475569;
-    transition: all 0.12s;
-    font-family: monospace;
-    user-select: none;
-}
-.rfb-slot-btn:hover:not(.booked) { border-color: #3b82f6; color: #2563eb; background: #eff6ff; }
-.rfb-slot-btn.selected { border-color: #2563eb; background: #3b82f6; color: #fff; box-shadow: 0 2px 8px rgba(59,130,246,0.35); }
-.rfb-slot-btn.range { border-color: #93c5fd; background: #dbeafe; color: #1d4ed8; }
-.rfb-slot-btn.booked { border-color: #f1f5f9; background: #f8fafc; color: #cbd5e1; cursor: not-allowed; text-decoration: line-through; }
-
-.rfb-slots-loading { font-size: 0.82rem; color: #64748b; display: flex; align-items: center; gap: 6px; }
-.rfb-slots-loading::before { content: ''; width: 14px; height: 14px; border: 2px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.rfb-legend { display: flex; gap: 16px; margin-top: 12px; font-size: 0.75rem; color: #64748b; flex-wrap: wrap; }
-.rfb-legend-item { display: flex; align-items: center; gap: 5px; }
-.rfb-legend-dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
-
-.rfb-selected-slot { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding: 10px 14px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; font-size: 0.85rem; color: #2563eb; font-weight: 500; flex-wrap: wrap; }
-.rfb-slot-count { background: #2563eb; color: #fff; font-size: 0.7rem; font-weight: 700; padding: 2px 9px; border-radius: 20px; }
-
-/* People */
-.rfb-people-wrap { display: flex; align-items: center; gap: 12px; }
-.rfb-people-btn { width: 36px; height: 36px; border: 1.5px solid #e2e8f0; border-radius: 8px; background: #f8fafc; font-size: 1.2rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #475569; transition: all 0.15s; }
-.rfb-people-btn:hover { border-color: #3b82f6; color: #2563eb; background: #eff6ff; }
-.rfb-people-input { width: 70px; text-align: center; padding: 8px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 1rem; font-weight: 700; color: #0f172a; outline: none; }
-.rfb-people-input:focus { border-color: #3b82f6; }
-.rfb-people-max { font-size: 0.78rem; color: #94a3b8; }
-
-/* Price preview */
-.rfb-price-preview { background: linear-gradient(135deg, #f0f9ff 0%, #f8fafc 100%); border: 1px solid #bae6fd; border-radius: 14px; padding: 18px 20px; margin-bottom: 24px; }
-.rfb-price-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.875rem; color: #64748b; margin-bottom: 8px; }
-.rfb-price-row:last-child { margin-bottom: 0; }
-.rfb-price-unit { font-weight: 700; color: #374151; }
-.rfb-price-total { font-size: 1.05rem; font-weight: 800; color: #0f172a; padding-top: 12px; border-top: 1.5px dashed #bae6fd; margin-top: 6px; }
-.rfb-price-total span:last-child { color: #2563eb; font-size: 1.15rem; }
-
-.rfb-free-notice { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; font-size: 0.875rem; color: #15803d; margin-bottom: 24px; }
-
-.rfb-submit { width: 100%; padding: 14px; background: linear-gradient(135deg, #3b82f6, #6366f1); color: #fff; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; box-shadow: 0 4px 14px rgba(59,130,246,0.35); }
-.rfb-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(59,130,246,0.45); }
-.rfb-submit:active { transform: translateY(0); }
-.rfb-note { font-size: 0.75rem; color: #94a3b8; text-align: center; margin-top: 10px; }
-.rfb-note--fee { color: #0369a1; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 8px 12px; font-size: 0.82rem; }
-
-.rfb-sidebar { position: sticky; top: 20px; display: flex; flex-direction: column; gap: 14px; }
-.rfb-info-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
-.rfb-info-title { font-size: 0.9rem; font-weight: 700; color: #0f172a; margin: 0 0 4px; }
-.rfb-info-row { display: flex; align-items: flex-start; gap: 12px; }
-.rfb-info-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.rfb-info-label { font-size: 0.72rem; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 2px; }
-.rfb-info-value { font-size: 0.9rem; font-weight: 700; color: #0f172a; margin: 0; }
-.rfb-free { color: #16a34a !important; }
-.rfb-paid { color: #2563eb !important; }
-
-.rfb-rules { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 12px; margin-top: 4px; }
-.rfb-rules-title { font-size: 0.78rem; font-weight: 700; color: #92400e; margin: 0 0 6px; }
-.rfb-rules-text { font-size: 0.78rem; color: #78350f; line-height: 1.6; margin: 0; white-space: pre-line; }
-
-.rfb-available-notice { display: flex; align-items: center; gap: 8px; padding: 12px 14px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; font-size: 0.85rem; color: #15803d; }
-
-@media (max-width: 768px) {
-    .rfb-layout { grid-template-columns: 1fr; }
-    .rfb-sidebar { position: static; }
-}
-</style>
-
+@push('scripts')
 <script>
-const pricePerSlot   = {{ (($facility->booking_type ?? 'slot') === 'slot') ? ($facility->price_per_slot ?? 0) : 0 }};
-const pricePerPerson = {{ (($facility->booking_type ?? 'slot') === 'person') ? ($facility->price_per_person ?? 0) : 0 }};
-const bookingType    = '{{ $facility->booking_type ?? 'slot' }}';
+const bookingType    = '{{ $facility->booking_type ?? 'time_slot' }}';
+const feeType        = '{{ $facility->fee_type ?? 'free' }}';
+const price          = {{ $facility->price ?? 0 }};
 const slotDuration   = {{ $facility->slot_duration ?? 60 }};
 const facilityId     = {{ $facility->id }};
 const maxCapacity    = {{ $facility->capacity }};
@@ -418,7 +419,7 @@ function renderSlots() {
             <span class="rfb-legend-dot" style="background:#dbeafe;border:1.5px solid #93c5fd"></span>Trong khoảng
         </div>
         <div class="rfb-legend-item">
-            <span class="rfb-legend-dot" style="background:#f8fafc;border:1.5px solid #e2e8f0;text-decoration:line-through"></span>Đã đặt
+            <span class="rfb-legend-dot" style="background:#fef2f2;border:1.5px solid #fecaca"></span>Đã đặt (Khóa)
         </div>
     </div>`;
 
@@ -526,10 +527,10 @@ function updateFormAndPrice() {
 function updatePrice(numSlots) {
     const people = Math.max(1, parseInt(document.getElementById('number_of_people')?.value || 1));
 
-    if (bookingType === 'person') {
-        // Đặt theo người: giá/người × số người
-        if (!pricePerPerson || pricePerPerson <= 0) return;
-        const total = pricePerPerson * people;
+    if (!price || price <= 0 || feeType === 'free') return;
+
+    if (feeType === 'per_person') {
+        const total = price * people;
 
         const rowSlots = document.getElementById('price-row-slots');
         if (rowSlots) rowSlots.style.display = 'none';
@@ -538,20 +539,30 @@ function updatePrice(numSlots) {
         const fmla      = document.getElementById('price-formula');
         if (rowPeople && fmla) {
             rowPeople.style.display = 'flex';
-            fmla.textContent = people + ' người × ' + Number(pricePerPerson).toLocaleString('vi-VN') + 'đ';
+            fmla.textContent = people + ' người × ' + Number(price).toLocaleString('vi-VN') + 'đ';
         }
 
         document.getElementById('total-price').textContent = total.toLocaleString('vi-VN') + 'đ';
     } else {
-        // Đặt theo tiếng (slot): giá/slot × số slot
-        if (!pricePerSlot || pricePerSlot <= 0) return;
-        const total = numSlots * pricePerSlot;
+        let total = 0;
+        let formulaText = '';
+        
+        if (feeType === 'per_use') {
+            total = price;
+            formulaText = '1 lượt × ' + Number(price).toLocaleString('vi-VN') + 'đ';
+        } else {
+            // per_hour
+            let hours = (numSlots * slotDuration) / 60;
+            if (hours === 0 || isNaN(hours)) hours = 1;
+            total = hours * price;
+            formulaText = hours + ' giờ × ' + Number(price).toLocaleString('vi-VN') + 'đ';
+        }
 
         const rowSlots = document.getElementById('price-row-slots');
         const valSlots = document.getElementById('price-slots-val');
         if (rowSlots && valSlots) {
             rowSlots.style.display = 'flex';
-            valSlots.textContent = numSlots + ' slot × ' + Number(pricePerSlot).toLocaleString('vi-VN') + 'đ = ' + (numSlots * pricePerSlot).toLocaleString('vi-VN') + 'đ';
+            valSlots.textContent = formulaText + ' = ' + total.toLocaleString('vi-VN') + 'đ';
         }
 
         const rowPeople = document.getElementById('price-row-people');
@@ -568,12 +579,12 @@ function changePeople(delta) {
     if (val < 1) val = 1;
     if (val > max) val = max;
     input.value = val;
-    // Khi đặt theo người: cập nhật ngay khi đổi số người
-    if (bookingType === 'person' || selectedIndices.length > 0) updatePrice(selectedIndices.length);
+    // Cập nhật giá nếu có
+    if (feeType === 'per_person' || selectedIndices.length > 0) updatePrice(selectedIndices.length);
 }
 
 document.getElementById('number_of_people')?.addEventListener('input', function() {
-    if (bookingType === 'person' || selectedIndices.length > 0) updatePrice(selectedIndices.length);
+    if (feeType === 'per_person' || selectedIndices.length > 0) updatePrice(selectedIndices.length);
 });
 
 function validateAndSubmit() {
@@ -591,8 +602,8 @@ function validateAndSubmit() {
         return;
     }
 
-    // Chỉ kiểm tra khung giờ khi đặt theo slot (không phải theo người)
-    if (bookingType !== 'person') {
+    // Chỉ kiểm tra khung giờ khi đặt theo khung giờ
+    if (['time_slot', 'slot'].includes(bookingType)) {
         const startVal = document.getElementById('start_time').value;
         const endVal   = document.getElementById('end_time').value;
         if (!startVal || !endVal) {
@@ -610,8 +621,8 @@ function validateAndSubmit() {
 document.addEventListener('DOMContentLoaded', () => {
     const dateInput = document.getElementById('booking_date');
     if (dateInput && dateInput.value) loadSlots(dateInput.value);
-    // Nếu đặt theo người: hiển thị giá ngay khi load
-    if (bookingType === 'person') updatePrice(0);
+    // Nếu phí theo người: hiển thị giá ngay khi load
+    if (feeType === 'per_person' || feeType === 'per_use') updatePrice(0);
 });
 </script>
-@endsection
+@endpush

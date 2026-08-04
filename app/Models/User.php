@@ -32,6 +32,7 @@ class User extends Authenticatable
         'apartment_id',
         'banned_posting_until',
         'banned_commenting_until',
+        'staff_id',
     ];
 
     /**
@@ -83,11 +84,37 @@ class User extends Authenticatable
     }
 
     /**
+     * Lấy danh sách apartment_id mà cư dân này thuộc về.
+     * Fallback: nếu không có record trong bảng residents, dùng apartment_id trên user.
+     */
+    public function getApartmentIds(): array
+    {
+        $ids = $this->residents()
+            ->whereNull('deleted_at')
+            ->pluck('apartment_id')
+            ->toArray();
+
+        if (empty($ids) && $this->apartment_id) {
+            $ids = [$this->apartment_id];
+        }
+
+        return $ids;
+    }
+
+    /**
      * Danh sách phản ánh kỹ thuật viên này phụ trách xử lý
      */
     public function handledTickets()
     {
         return $this->hasMany(Ticket::class, 'handler_id');
+    }
+
+    /**
+     * Thông tin nhân sự liên kết
+     */
+    public function staff()
+    {
+        return $this->belongsTo(Staff::class);
     }
 
     // ── Role helpers ────────────────────────────────────────────────
@@ -110,6 +137,16 @@ class User extends Authenticatable
     public function isTechnician(): bool
     {
         return $this->role === 'technician';
+    }
+
+    public function isCleaning(): bool
+    {
+        return $this->role === 'cleaning';
+    }
+
+    public function isReceptionist(): bool
+    {
+        return $this->role === 'receptionist';
     }
 
     /**

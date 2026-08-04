@@ -7,7 +7,7 @@
 
     {{-- Breadcrumb --}}
     <div class="ams-breadcrumb">
-        <a href="{{ route('admin.amenities.index') }}">Tiện ích chung cư</a>
+        <a href="{{ portal_route('amenities.index') }}">Tiện ích chung cư</a>
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
         <span>{{ $facility->name }}</span>
     </div>
@@ -33,7 +33,7 @@
                 Sức chứa: <strong>{{ $facility->capacity }} người</strong>
             </p>
         </div>
-        <a href="{{ route('admin.amenities.edit', $facility) }}" class="ams-btn ams-btn--outline">
+        <a href="{{ portal_route('amenities.edit', $facility) }}" class="ams-btn ams-btn--outline">
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             Chỉnh sửa
         </a>
@@ -177,11 +177,11 @@
                     <td>
                         @if($booking->status === 'pending')
                         <div class="ams-row-actions">
-                            <form method="POST" action="{{ route('admin.amenities.bookings.approve', $booking) }}">
+                            <form method="POST" action="{{ portal_route('amenities.bookings.approve', $booking) }}">
                                 @csrf
                                 <button type="submit" class="ams-btn ams-btn--xs ams-btn--approve">Duyệt</button>
                             </form>
-                            <form method="POST" action="{{ route('admin.amenities.bookings.reject', $booking) }}">
+                            <form method="POST" action="{{ portal_route('amenities.bookings.reject', $booking) }}">
                                 @csrf
                                 <button type="submit" class="ams-btn ams-btn--xs ams-btn--reject" onclick="return confirm('Từ chối lịch đặt này?')">Từ chối</button>
                             </form>

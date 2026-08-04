@@ -98,7 +98,6 @@
         </div>
     @endif
 
-
     <!-- Bảng danh sách Nhân khẩu khai báo -->
     <div class="card card--table {{ !$isOwner ? 'w-100' : '' }}">
         <div class="card__header">
@@ -166,6 +165,10 @@
 </div>
 
 @if ($isOwner && $blocks->count() > 1)
+
+@endif
+
+@push('scripts')
 <script>
     function filterDeclaredApartments(blockId) {
         const aptSelect   = document.getElementById('apartment_id_declared');
@@ -197,4 +200,4 @@
         }
     });
 </script>
-@endif
+@endpush

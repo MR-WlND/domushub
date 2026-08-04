@@ -11,10 +11,17 @@
                 <p class="inv-admin__eyebrow">Tài chính</p>
                 <h1 class="inv-admin__title">Quản lý Hóa đơn</h1>
             </div>
-            <div style="display:flex;gap:10px">
-                <a href="{{ route('admin.invoices.batch') }}" class="inv-admin__btn inv-admin__btn--primary">Xuất hàng
+            <div style="display:flex;gap:10px;align-items:center">
+                <form id="batch-remind-form" action="{{ portal_route('invoices.batch-resend-notification') }}" method="POST" style="margin:0">
+                    @csrf
+                    <button type="button" class="inv-admin__btn" style="background:#fee2e2;color:#dc2626;border:1px solid #fca5a5" onclick="openConfirmModal()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                        Nhắc nợ hàng loạt
+                    </button>
+                </form>
+                <a href="{{ portal_route('invoices.batch') }}" class="inv-admin__btn inv-admin__btn--primary">Xuất hàng
                     loạt</a>
-                <a href="{{ route('admin.invoices.create') }}" class="inv-admin__btn"
+                <a href="{{ portal_route('invoices.create') }}" class="inv-admin__btn"
                     style="background:#f1f5f9;color:#475569;border:1px solid #e2e8f0">Tạo đơn lẻ</a>
             </div>
         </div>
@@ -29,8 +36,8 @@
 
         {{-- Summary Banner --}}
         @php
-            $totalIssued = \App\Models\Invoice::sum('total_amount');
-            $totalPaid = \App\Models\Invoice::sum('paid_amount');
+            $totalIssued = \App\Models\Invoice::where('status', '!=', 'cancelled')->sum('total_amount');
+            $totalPaid = \App\Models\Invoice::where('status', '!=', 'cancelled')->sum('paid_amount');
             $totalDebt = max(0, $totalIssued - $totalPaid);
             $totalOverdue = \App\Models\Invoice::where('status', 'overdue')->count();
         @endphp
@@ -55,157 +62,166 @@
 
         {{-- Filter Bar --}}
         <div class="inv-admin__filter-bar">
-            <form method="GET" action="{{ route('admin.invoices.index') }}" class="inv-admin__filter-form">
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Tìm căn hộ, tòa..."
-                    class="inv-admin__input">
+            <form method="GET" action="{{ portal_route('invoices.index') }}" class="inv-admin__filter-form">
+                
+                <div class="inv-admin__filter-group">
+                    <svg class="inv-admin__filter-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Tìm căn hộ, tòa..." class="inv-admin__input inv-admin__input--with-icon">
+                </div>
 
-                <input type="month" name="month" value="{{ request('month') }}" class="inv-admin__input"
-                    style="flex:0;min-width:160px;" placeholder="Tháng/Năm">
+                <div class="inv-admin__filter-group">
+                    <svg class="inv-admin__filter-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <input type="month" name="month" value="{{ request('month') }}" class="inv-admin__input inv-admin__input--with-icon" style="flex:0;min-width:160px;" placeholder="Tháng/Năm">
+                </div>
 
-                <select name="apartment_id" class="inv-admin__select">
-                    <option value="">Tất cả căn hộ</option>
-                    @foreach ($apartments as $apt)
-                        <option value="{{ $apt->id }}" {{ request('apartment_id') == $apt->id ? 'selected' : '' }}>
-                            Căn {{ $apt->apartment_number }}
-                            @if (optional(optional($apt->floor)->block)->name)
-                                ({{ $apt->floor->block->name }})
-                            @endif
-                        </option>
-                    @endforeach
-                </select>
+                <div class="inv-admin__filter-group">
+                    <svg class="inv-admin__filter-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    <select name="apartment_id" class="inv-admin__select inv-admin__select--with-icon">
+                        <option value="">Tất cả căn hộ</option>
+                        @foreach ($apartments as $apt)
+                            <option value="{{ $apt->id }}" {{ request('apartment_id') == $apt->id ? 'selected' : '' }}>
+                                Căn {{ $apt->apartment_number }}
+                                @if (optional(optional($apt->floor)->block)->name)
+                                    ({{ $apt->floor->block->name }})
+                                @endif
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
 
-                <select name="status" class="inv-admin__select">
-                    <option value="">Tất cả trạng thái</option>
-                    @foreach ($statuses as $s)
-                        <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>
-                            {{ \App\Models\Invoice::statusLabel($s) }}
-                        </option>
-                    @endforeach
-                </select>
+                <div class="inv-admin__filter-group">
+                    <svg class="inv-admin__filter-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                    <select name="status" class="inv-admin__select inv-admin__select--with-icon">
+                        <option value="">Tất cả trạng thái</option>
+                        @foreach ($statuses as $s)
+                            <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>
+                                {{ \App\Models\Invoice::statusLabel($s) }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
 
-                <button type="submit" class="inv-admin__btn inv-admin__btn--primary">Lọc</button>
-                @if (request()->hasAny(['search', 'status', 'month', 'apartment_id']))
-                    <a href="{{ route('admin.invoices.index') }}" class="inv-admin__btn inv-admin__btn--ghost">Xóa lọc</a>
-                @endif
+                <div class="inv-admin__filter-group" style="flex:0; min-width:180px; justify-content:center; align-items:center; border:1px solid #e2e8f0; border-radius:8px; background:#fff;">
+                    <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; color:#475569; font-weight:600; cursor:pointer; padding: 8px 12px; margin:0; user-select:none;">
+                        <input type="checkbox" name="debt_over_2_months" value="1" {{ request('debt_over_2_months') ? 'checked' : '' }} onchange="this.form.submit()" style="width:16px; height:16px; accent-color:#00236f; cursor:pointer; margin:0;">
+                        Nợ quá 2 tháng
+                    </label>
+                </div>
+
+                <div style="display:flex; gap:8px;">
+                    <button type="submit" class="inv-admin__btn inv-admin__btn--primary">Lọc</button>
+                    @if (request()->hasAny(['search', 'status', 'month', 'apartment_id', 'debt_over_2_months']))
+                        <a href="{{ portal_route('invoices.index') }}" class="inv-admin__btn inv-admin__btn--clear">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            Xóa
+                        </a>
+                    @endif
+                </div>
             </form>
         </div>
 
         {{-- Invoice Table --}}
         <div class="inv-admin__card">
             <div class="inv-admin__card-header">
-                <span>{{ $invoices->total() }} hóa đơn</span>
-                <span class="inv-admin__muted">Trang {{ $invoices->currentPage() }}/{{ $invoices->lastPage() }}</span>
+                <span>{{ $apartmentsPaginated->total() }} căn hộ</span>
+                <span class="inv-admin__muted">Trang {{ $apartmentsPaginated->currentPage() }}/{{ $apartmentsPaginated->lastPage() }}</span>
             </div>
 
             <table class="inv-admin__table">
                 <thead>
                     <tr>
-                        <th>Mã HĐ</th>
                         <th>Căn hộ</th>
-                        <th>Kỳ</th>
-                        <th>Hạn TT</th>
-                        <th>Tổng tiền</th>
+                        <th>Tòa/Tầng</th>
+                        <th>Tình trạng</th>
+                        <th>Số lượng HĐ</th>
+                        <th>Tổng tiền HĐ</th>
                         <th>Đã thu</th>
-                        <th>Trạng thái</th>
-                        <th>Thao tác</th>
+                        <th>Tổng dư nợ</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($invoices as $invoice)
+                    @forelse($apartmentsPaginated as $apt)
                         @php
-                            $apt = $invoice->apartment;
                             $blockName = optional(optional($apt->floor)->block)->name ?? '—';
-                            $isRecentlyCreated = $invoice->created_at && $invoice->created_at->diffInMinutes(now()) < 1;
+                            $floorName = optional($apt->floor)->name ?? '—';
+                            $totalAmount = $apt->invoices_sum_total_amount ?? 0;
+                            $paidAmount = $apt->invoices_sum_paid_amount ?? 0;
+                            $debt = max(0, $totalAmount - $paidAmount);
+                            $highlightIds = session('highlightAptIds', []);
+                            $errorIds = session('errorAptIds', []);
+                            $isFresh = in_array($apt->id, $highlightIds);
+                            $isError = in_array($apt->id, $errorIds);
                         @endphp
-                        <tr class="{{ $isRecentlyCreated ? 'inv-admin__row--fresh' : '' }}">
-                            <td>
-                                <span class="inv-apt-code">{{ $invoice->invoice_code }}</span>
-                            </td>
+                        <tr onclick="window.location='{{ portal_route('invoices.apartment', $apt) }}'" style="cursor:pointer;" class="{{ $isFresh ? 'inv-admin__row--fresh' : '' }} {{ $isError ? 'inv-admin__row--error' : '' }}">
                             <td>
                                 <div style="font-weight:600; color:#0f172a; font-size:0.88rem;">
                                     Căn {{ $apt->apartment_number ?? '—' }}
                                 </div>
-                                <div class="inv-admin__muted">{{ $blockName }}</div>
                             </td>
                             <td>
-                                Tháng {{ $invoice->billing_month->format('m/Y') }}
+                                <div class="inv-admin__muted">{{ $blockName }} - Tầng {{ $floorName }}</div>
                             </td>
                             <td>
-                                @php $isOverdue = $invoice->due_date && $invoice->due_date->isPast() && !in_array($invoice->status, ['paid','cancelled']); @endphp
-                                <span style="{{ $isOverdue ? 'color:#b91c1c;font-weight:700;' : '' }}">
-                                    {{ $invoice->due_date ? $invoice->due_date->format('d/m/Y') : '—' }}
-                                </span>
+                                @if($apt->status === 'occupied')
+                                    <span class="inv-admin__badge inv-admin__badge--paid" style="font-weight:600;font-size:0.75rem;">{{ $apt->status_label }}</span>
+                                @elseif($apt->status === 'vacant')
+                                    <span class="inv-admin__badge inv-admin__badge--unpaid" style="font-weight:600;font-size:0.75rem;">{{ $apt->status_label }}</span>
+                                @else
+                                    <span class="inv-admin__badge inv-admin__badge--cancelled" style="font-weight:600;font-size:0.75rem;">{{ $apt->status_label }}</span>
+                                @endif
                             </td>
-                            <td style="font-weight:600;">{{ number_format($invoice->total_amount) }}đ</td>
-                            <td style="color:#16a34a; font-weight:600;">{{ number_format($invoice->paid_amount) }}đ</td>
-                            <td>
-                                @php
-                                    $badgeMap = [
-                                        'unpaid' => 'inv-admin__badge--unpaid',
-                                        'partial_paid' => 'inv-admin__badge--partial',
-                                        'paid' => 'inv-admin__badge--paid',
-                                        'overdue' => 'inv-admin__badge--overdue',
-                                        'cancelled' => 'inv-admin__badge--cancelled',
-                                    ];
-                                    $badgeClass = $badgeMap[$invoice->status] ?? 'inv-admin__badge--unpaid';
-                                @endphp
-                                <span class="inv-admin__badge {{ $badgeClass }}">
-                                    {{ \App\Models\Invoice::statusLabel($invoice->status) }}
-                                </span>
+                            <td style="font-weight:600;">
+                                {{ $apt->invoices_count ?? 0 }}
                             </td>
-                            <td>
-                                <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                                    <a href="{{ route('admin.invoices.show', $invoice) }}"
-                                        class="inv-admin__btn inv-admin__btn--sm inv-admin__btn--detail">Chi tiết</a>
-                                    <a href="{{ route('admin.invoices.print', $invoice) }}" target="_blank"
-                                        class="inv-admin__btn inv-admin__btn--sm"
-                                        style="background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;">🖨 In</a>
-                                    @if (!in_array($invoice->status, ['paid', 'cancelled']))
-                                        <form action="{{ route('admin.invoices.resend-notification', $invoice) }}"
-                                            method="POST" style="display:inline;">
-                                            @csrf
-                                            <button type="submit" class="inv-admin__btn inv-admin__btn--sm"
-                                                style="background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;"
-                                                title="Gửi lại thông báo">🔔</button>
-                                        </form>
-                                        <button class="inv-admin__btn inv-admin__btn--sm"
-                                            style="background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;"
-                                            onclick="confirmCancel({{ $invoice->id }})" title="Hủy hóa đơn">✕ Hủy</button>
-                                    @endif
-                                </div>
-
-                                {{-- Hidden cancel form --}}
-                                <form id="cancel-form-{{ $invoice->id }}"
-                                    action="{{ route('admin.invoices.cancel', $invoice) }}" method="POST"
-                                    style="display:none;">
-                                    @csrf
-                                </form>
+                            <td style="font-weight:600;">{{ number_format($totalAmount) }}đ</td>
+                            <td style="color:#16a34a; font-weight:600;">{{ number_format($paidAmount) }}đ</td>
+                            <td style="{{ $debt > 0 ? 'color:#b91c1c;font-weight:700;' : 'color:#16a34a;font-weight:600;' }}">
+                                {{ number_format($debt) }}đ
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8">
-                                <div class="inv-admin__empty">Không tìm thấy hóa đơn nào phù hợp</div>
+                            <td colspan="7">
+                                <div class="inv-admin__empty">Không tìm thấy căn hộ nào phù hợp</div>
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
 
-            @if ($invoices->hasPages())
+            @if ($apartmentsPaginated->hasPages())
                 <div class="inv-admin__pagination">
-                    @if (!$invoices->onFirstPage())
-                        <a href="{{ $invoices->previousPageUrl() }}" class="inv-admin__page-btn">‹ Trước</a>
+                    @if (!$apartmentsPaginated->onFirstPage())
+                        <a href="{{ $apartmentsPaginated->previousPageUrl() }}" class="inv-admin__page-btn">‹ Trước</a>
                     @endif
-                    @foreach ($invoices->getUrlRange(max(1, $invoices->currentPage() - 2), min($invoices->lastPage(), $invoices->currentPage() + 2)) as $page => $url)
+                    @foreach ($apartmentsPaginated->getUrlRange(max(1, $apartmentsPaginated->currentPage() - 2), min($apartmentsPaginated->lastPage(), $apartmentsPaginated->currentPage() + 2)) as $page => $url)
                         <a href="{{ $url }}"
-                            class="inv-admin__page-btn {{ $page == $invoices->currentPage() ? 'inv-admin__page-btn--active' : '' }}">{{ $page }}</a>
+                            class="inv-admin__page-btn {{ $page == $apartmentsPaginated->currentPage() ? 'inv-admin__page-btn--active' : '' }}">{{ $page }}</a>
                     @endforeach
-                    @if ($invoices->hasMorePages())
-                        <a href="{{ $invoices->nextPageUrl() }}" class="inv-admin__page-btn">Sau ›</a>
+                    @if ($apartmentsPaginated->hasMorePages())
+                        <a href="{{ $apartmentsPaginated->nextPageUrl() }}" class="inv-admin__page-btn">Sau ›</a>
                     @endif
                 </div>
             @endif
+        </div>
+    </div>
+
+    <!-- Custom Modal Popup -->
+    <div id="confirmModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-card__header">
+                <div class="modal-card__icon-wrap">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                </div>
+                <h3 class="modal-card__title">Xác nhận nhắc nợ hàng loạt</h3>
+            </div>
+            <div class="modal-card__body">
+                Bạn có chắc chắn muốn gửi thông báo nhắc nợ tới toàn bộ cư dân chưa thanh toán hóa đơn kỳ này? Hành động này sẽ gửi thông báo đẩy đến tất cả các căn hộ còn dư nợ.
+            </div>
+            <div class="modal-card__footer">
+                <button type="button" class="modal-btn modal-btn--cancel" onclick="closeConfirmModal()">Hủy bỏ</button>
+                <button type="button" class="modal-btn modal-btn--confirm" onclick="submitBatchRemind()">Xác nhận gửi</button>
+            </div>
         </div>
     </div>
 
@@ -215,9 +231,144 @@
                 document.getElementById('cancel-form-' + id).submit();
             }
         }
+
+        function openConfirmModal() {
+            document.getElementById('confirmModal').classList.add('active');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.remove('active');
+        }
+
+        function submitBatchRemind() {
+            document.getElementById('batch-remind-form').submit();
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('confirmModal');
+            if (e.target === modal) {
+                closeConfirmModal();
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeConfirmModal();
+            }
+        });
     </script>
 
     <style>
+        /* Custom Confirmation Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            width: 90%;
+            max-width: 460px;
+            padding: 24px;
+            transform: scale(0.95);
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: scale(1);
+        }
+
+        .modal-card__header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .modal-card__icon-wrap {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #fee2e2;
+            color: #ef4444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .modal-card__title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+        }
+
+        .modal-card__body {
+            font-size: 0.95rem;
+            color: #475569;
+            line-height: 1.5;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .modal-card__footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .modal-btn--cancel {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .modal-btn--cancel:hover {
+            background: #e2e8f0;
+        }
+
+        .modal-btn--confirm {
+            background: #dc2626;
+            color: #fff;
+            box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.2);
+        }
+
+        .modal-btn--confirm:hover {
+            background: #b91c1c;
+            transform: translateY(-1px);
+        }
+
         .inv-admin {
             max-width: 1200px;
             margin: 0 auto;
@@ -337,51 +488,98 @@
         .inv-admin__filter-bar {
             background: #fff;
             border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 12px 16px;
-            margin-bottom: 16px;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
         }
 
         .inv-admin__filter-form {
             display: flex;
-            gap: 10px;
+            gap: 16px;
             align-items: center;
             flex-wrap: wrap;
         }
 
-        .inv-admin__input {
+        .inv-admin__filter-group {
+            position: relative;
+            display: flex;
+            align-items: center;
             flex: 1;
-            min-width: 180px;
-            padding: 7px 12px;
+            min-width: 200px;
+        }
+
+        .inv-admin__filter-icon {
+            position: absolute;
+            left: 14px;
+            color: #94a3b8;
+            pointer-events: none;
+            transition: color 0.2s ease;
+        }
+
+        .inv-admin__filter-group:focus-within .inv-admin__filter-icon {
+            color: #3b82f6;
+        }
+
+        .inv-admin__input {
+            width: 100%;
+            padding: 10px 14px;
             border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            color: #1e293b;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #0f172a;
             background: #f8fafc;
+            transition: all 0.2s ease;
+        }
+
+        .inv-admin__input:focus, .inv-admin__select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: #fff;
         }
 
         .inv-admin__select {
-            padding: 7px 12px;
+            width: 100%;
+            padding: 10px 14px;
+            padding-right: 36px;
             border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            color: #1e293b;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #0f172a;
             background: #f8fafc;
             cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            background-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .inv-admin__input--with-icon, .inv-admin__select--with-icon {
+            padding-left: 42px;
+        }
+        
+        .inv-admin__select option {
+            padding: 8px;
+            font-size: 0.9rem;
         }
 
         /* Buttons */
         .inv-admin__btn {
-            padding: 7px 14px;
-            border-radius: 6px;
-            font-size: 0.85rem;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 0.88rem;
             font-weight: 600;
             cursor: pointer;
             border: none;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s ease;
         }
 
         .inv-admin__btn--primary {
@@ -391,6 +589,18 @@
 
         .inv-admin__btn--primary:hover {
             background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        .inv-admin__btn--clear {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .inv-admin__btn--clear:hover {
+            background: #fee2e2;
+            border-color: #fca5a5;
         }
 
         .inv-admin__btn--ghost {
@@ -475,6 +685,21 @@
         @keyframes invFreshPulse {
             0% {
                 background: #dcfce7;
+            }
+
+            100% {
+                background: transparent;
+            }
+        }
+
+        .inv-admin__row--error td {
+            background: #fee2e2 !important;
+            animation: invErrorPulse 60s linear 1 forwards;
+        }
+
+        @keyframes invErrorPulse {
+            0% {
+                background: #fee2e2;
             }
 
             100% {

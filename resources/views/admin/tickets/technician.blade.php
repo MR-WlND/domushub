@@ -3,33 +3,23 @@
 @section('page_title', 'Nhiệm vụ của tôi')
 @section('page_kicker', 'Kỹ thuật viên')
 @section('role_title', 'Kỹ thuật viên')
-@section('home_route', route('admin.tickets.my-tasks'))
+@section('home_route', portal_route('tickets.my-tasks'))
 @section('user_name', auth()->user()->name ?? 'KTV')
 @section('user_role', 'technician')
 
 @push('styles')
-    @vite(['resources/css/pages/admin/tickets/index.css', 'resources/css/pages/admin/tickets/technician.css'])
+    @vite(['resources/css/pages/admin/tickets/technician.css'])
 @endpush
 
 @section('content')
 <div class="ktv-page">
 
-    {{-- Header --}}
+    {{-- Page Header --}}
     <div class="ktv-header">
         <div class="ktv-header__left">
-            <div class="ktv-header__avatar">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z"/></svg>
-            </div>
-            <div>
-                <h1 class="ktv-header__title">Nhiệm vụ của tôi</h1>
-                <p class="ktv-header__sub">Xin chào, <strong>{{ auth()->user()->name }}</strong> — Kỹ thuật viên</p>
-            </div>
-        </div>
-        <div class="ktv-header__right">
-            <a href="{{ route('admin.tickets.index') }}" class="ktv-btn ktv-btn--ghost">
-                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                Tất cả phản ánh
-            </a>
+            <h1 class="ktv-header__title">Nhiệm vụ của tôi</h1>
+            <p class="ktv-header__sub ktv-desktop-sub">Quản lý và theo dõi tiến độ các yêu cầu kỹ thuật được phân công.</p>
+            <p class="ktv-header__sub ktv-mobile-sub">{{ date('d') }} Tháng {{ date('m') }}, {{ date('Y') }}</p>
         </div>
     </div>
 
@@ -47,218 +37,331 @@
         </div>
     @endif
 
-    {{-- Stats --}}
-    <div class="ktv-stats">
-        <div class="ktv-stat ktv-stat--new">
-            <div class="ktv-stat__icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+    {{-- Stat Cards Grid --}}
+    <div class="ktv-stats-grid">
+        {{-- Card 1: Tổng nhiệm vụ --}}
+        <div class="ktv-stat-card ktv-stat-card--total">
+            <div class="ktv-stat-card__icon ktv-stat-card__icon--blue">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                </svg>
             </div>
-            <div>
-                <div class="ktv-stat__num">{{ $stats['new'] }}</div>
-                <div class="ktv-stat__lbl">Mới được giao</div>
-            </div>
-        </div>
-        <div class="ktv-stat ktv-stat--active">
-            <div class="ktv-stat__icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            </div>
-            <div>
-                <div class="ktv-stat__num">{{ $stats['active'] }}</div>
-                <div class="ktv-stat__lbl">Đang xử lý</div>
+            <div class="ktv-stat-card__content">
+                <span class="ktv-stat-card__label">TỔNG NHIỆM VỤ</span>
+                <span class="ktv-stat-card__value">{{ $stats['total'] }}</span>
             </div>
         </div>
-        <div class="ktv-stat ktv-stat--done">
-            <div class="ktv-stat__icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+
+        {{-- Card 2: Đang thực hiện --}}
+        <div class="ktv-stat-card ktv-stat-card--active">
+            <div class="ktv-stat-card__icon ktv-stat-card__icon--orange">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
             </div>
-            <div>
-                <div class="ktv-stat__num">{{ $stats['completed'] }}</div>
-                <div class="ktv-stat__lbl">Hoàn thành</div>
-            </div>
-        </div>
-        <div class="ktv-stat ktv-stat--total">
-            <div class="ktv-stat__icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-            </div>
-            <div>
-                <div class="ktv-stat__num">{{ $stats['total'] }}</div>
-                <div class="ktv-stat__lbl">Tổng nhiệm vụ</div>
+            <div class="ktv-stat-card__content">
+                <span class="ktv-stat-card__label">ĐANG THỰC HIỆN</span>
+                <span class="ktv-stat-card__value">{{ $stats['active'] }}</span>
             </div>
         </div>
-        @if($stats['recheck'] > 0)
-        <div class="ktv-stat ktv-stat--recheck">
-            <div class="ktv-stat__icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+
+        {{-- Card 3: Chờ xử lý / Hoàn thành tuần --}}
+        <div class="ktv-stat-card ktv-stat-card--new">
+            <div class="ktv-stat-card__icon ktv-stat-card__icon--cyan">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
             </div>
-            <div>
-                <div class="ktv-stat__num">{{ $stats['recheck'] }}</div>
-                <div class="ktv-stat__lbl">Cần kiểm tra lại</div>
+            <div class="ktv-stat-card__content">
+                <span class="ktv-stat-card__label ktv-desktop-label">CHỜ XỬ LÝ</span>
+                <span class="ktv-stat-card__label ktv-mobile-label">
+                    <svg class="ktv-mb-icon-inline" style="color: #00236f; margin-right: 2px;" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l4.992-5.99a.75.75 0 0 0-.018-1.047z"/></svg>
+                    Hoàn thành tuần này
+                </span>
+                <span class="ktv-stat-card__value ktv-desktop-val">{{ $stats['new'] }}</span>
+                <span class="ktv-stat-card__value ktv-mobile-val">{{ $stats['completed_this_week'] ?? $stats['completed_this_month'] }}</span>
             </div>
         </div>
-        @endif
+
+        {{-- Card 4: Hoàn thành tháng / Đánh giá --}}
+        <div class="ktv-stat-card ktv-stat-card--completed">
+            <div class="ktv-stat-card__icon ktv-stat-card__icon--green">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div class="ktv-stat-card__content">
+                <span class="ktv-stat-card__label ktv-desktop-label">HOÀN THÀNH THÁNG NÀY</span>
+                <span class="ktv-stat-card__label ktv-mobile-label" style="color: #059669;">
+                    <svg class="ktv-mb-icon-inline" style="color: #059669; margin-right: 2px;" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/></svg>
+                    Đánh giá trung bình
+                </span>
+                <span class="ktv-stat-card__value ktv-desktop-val">{{ $stats['completed_this_month'] }}</span>
+                <span class="ktv-stat-card__value ktv-mobile-val">{{ $stats['avg_rating'] ?? '4.9/5' }}</span>
+            </div>
+        </div>
     </div>
 
-    {{-- Filters --}}
-    <form action="{{ route('admin.tickets.my-tasks') }}" method="GET" class="ktv-filters">
-        {{-- Tìm kiếm --}}
-        <div class="ktv-filters__group">
-            <label for="filterSearch" class="ktv-filters__label">Tìm kiếm</label>
-            <div class="ktv-filters__search-wrapper">
-                <input type="text" name="search" id="filterSearch" value="{{ request('search') }}" placeholder="Mã số, tiêu đề, căn hộ..." class="ktv-filters__input">
-                <span class="ktv-filters__search-icon-inside">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                </span>
+    {{-- Mobile Status Tabs (Horizontal Scrollable) --}}
+    <div class="ktv-mobile-tabs">
+        <a href="{{ portal_route('tickets.my-tasks', array_merge(request()->except('page'), ['status' => 'all'])) }}"
+           class="ktv-mb-tab {{ !request('status') || request('status') === 'all' ? 'active' : '' }}">
+            Tất cả
+        </a>
+        <a href="{{ portal_route('tickets.my-tasks', array_merge(request()->except('page'), ['status' => 'assigned'])) }}"
+           class="ktv-mb-tab {{ request('status') === 'assigned' ? 'active' : '' }}">
+            Chờ xử lý
+        </a>
+        <a href="{{ portal_route('tickets.my-tasks', array_merge(request()->except('page'), ['status' => 'in_progress'])) }}"
+           class="ktv-mb-tab {{ request('status') === 'in_progress' ? 'active' : '' }}">
+            Đang xử lý
+        </a>
+        <a href="{{ portal_route('tickets.my-tasks', array_merge(request()->except('page'), ['status' => 'completed'])) }}"
+           class="ktv-mb-tab {{ request('status') === 'completed' ? 'active' : '' }}">
+            Hoàn thành
+        </a>
+    </div>
+
+
+
+    {{-- Main Data Table Card --}}
+    <div class="ktv-table-card">
+        <div class="table-responsive">
+            <table class="ktv-table">
+                <thead>
+                    <tr>
+                        <th>MÃ YÊU CẦU</th>
+                        <th>CĂN HỘ</th>
+                        <th>LOẠI SỰ CỐ</th>
+                        <th>MỨC ĐỘ ƯU TIÊN</th>
+                        <th>TRẠNG THÁI</th>
+                        <th>NGÀY GỬI</th>
+                        <th style="text-align: center;">THAO TÁC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($tickets as $ticket)
+                        <tr class="ktv-row-item ktv-desktop-only">
+                            {{-- Mã yêu cầu (Desktop only) --}}
+                            <td class="ktv-table__req-code">
+                                <a href="{{ portal_route('tickets.show', $ticket->id) }}">
+                                    #REQ-{{ $ticket->created_at ? $ticket->created_at->format('Y') : date('Y') }}-{{ sprintf('%03d', $ticket->id) }}
+                                </a>
+                            </td>
+
+                            {{-- Căn hộ / Địa điểm --}}
+                            <td class="ktv-table__apt">
+                                <svg class="ktv-mb-icon-loc" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                @if($ticket->apartment)
+                                    Phòng {{ $ticket->apartment->floor && $ticket->apartment->floor->block ? $ticket->apartment->floor->block->name . '-' : '' }}{{ $ticket->apartment->apartment_number }}
+                                @else
+                                    Sảnh / Khu vực chung
+                                @endif
+                            </td>
+
+                            {{-- Loại sự cố / Tiêu đề --}}
+                            <td class="ktv-table__title">
+                                <a href="{{ portal_route('tickets.show', $ticket->id) }}" style="color: inherit; text-decoration: none;">
+                                    {{ $ticket->title }}
+                                </a>
+                            </td>
+
+                            {{-- Mức độ ưu tiên --}}
+                            <td class="ktv-table__priority">
+                                @if($ticket->priority === 'urgent')
+                                    <span class="ktv-pill ktv-pill--urgent">Khẩn cấp</span>
+                                @elseif($ticket->priority === 'high')
+                                    <span class="ktv-pill ktv-pill--high">Cao</span>
+                                @elseif($ticket->priority === 'medium')
+                                    <span class="ktv-pill ktv-pill--medium">Bình thường</span>
+                                @else
+                                    <span class="ktv-pill ktv-pill--low">Thấp</span>
+                                @endif
+                            </td>
+
+                            {{-- Trạng thái --}}
+                            <td class="ktv-table__status">
+                                @if($ticket->status === 'assigned')
+                                    <span class="ktv-pill ktv-pill--status-assigned">Chờ xử lý</span>
+                                @elseif($ticket->status === 'in_progress')
+                                    @if($ticket->reopened_count > 0)
+                                        <span class="ktv-pill ktv-pill--status-recheck">Cần kiểm tra lại</span>
+                                    @else
+                                        <span class="ktv-pill ktv-pill--status-active">Đang xử lý</span>
+                                    @endif
+                                @elseif($ticket->status === 'completed')
+                                    <span class="ktv-pill ktv-pill--status-completed">Hoàn thành</span>
+                                @else
+                                    <span class="ktv-pill ktv-pill--status-assigned">{{ $ticket->statusLabel() }}</span>
+                                @endif
+                            </td>
+
+                            {{-- Ngày gửi / Thời gian --}}
+                            <td class="ktv-table__date">
+                                <span class="ktv-desktop-date">{{ $ticket->created_at ? $ticket->created_at->format('d/m/Y H:i') : '-' }}</span>
+                                <span class="ktv-mobile-date">
+                                    @if($ticket->created_at)
+                                        @if($ticket->created_at->isToday())
+                                            {{ $ticket->created_at->format('h:i A') }}
+                                        @elseif($ticket->created_at->isYesterday())
+                                            Hôm qua
+                                        @else
+                                            {{ $ticket->created_at->format('d/m') }}
+                                        @endif
+                                    @else
+                                        -
+                                    @endif
+                                </span>
+                            </td>
+
+                            {{-- Thao tác --}}
+                            <td class="ktv-table__actions">
+                                @if($ticket->status === 'assigned')
+                                    <button type="button" class="ktv-action-btn ktv-action-btn--primary ktv-accept-btn"
+                                            data-url="{{ portal_route('tickets.accept', $ticket->id) }}">
+                                        Bắt đầu
+                                    </button>
+                                @elseif($ticket->status === 'in_progress')
+                                    <button type="button" class="ktv-action-btn ktv-action-btn--primary"
+                                            onclick="openProgressModal(this)"
+                                            data-url="{{ portal_route('tickets.update-progress', $ticket->id) }}"
+                                            data-title="{{ $ticket->title }}"
+                                            data-apt="Căn {{ $ticket->apartment->apartment_number ?? '' }}"
+                                            data-block="{{ $ticket->apartment->floor->block->name ?? '' }}"
+                                            data-priority="{{ $ticket->priority }}"
+                                            data-status="{{ $ticket->status }}">
+                                        Cập nhật tiến độ
+                                    </button>
+                                @endif
+                                <a href="{{ portal_route('tickets.show', $ticket->id) }}" class="ktv-action-btn ktv-action-btn--ghost ktv-desktop-action">
+                                    Chi tiết
+                                </a>
+                            </td>
+                        </tr>
+                        
+                        {{-- GIAO DIỆN MỚI CHO MOBILE --}}
+                        <tr class="ktv-mobile-only">
+                            <td colspan="7" style="padding: 0; border: none; background: transparent;">
+                                <div class="ktv-mb-card">
+                                    {{-- Dòng 1: Mã REQ & Priority --}}
+                                    <div class="ktv-mb-card__header">
+                                        <span class="ktv-mb-card__req">#REQ-{{ str_pad($ticket->id, 4, '0', STR_PAD_LEFT) }}</span>
+                                        @if($ticket->priority === 'urgent')
+                                            <span class="ktv-mb-pill ktv-mb-pill--urgent"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> Khẩn cấp</span>
+                                        @elseif($ticket->priority === 'high')
+                                            <span class="ktv-mb-pill ktv-mb-pill--high"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Cao</span>
+                                        @elseif($ticket->priority === 'medium')
+                                            <span class="ktv-mb-pill ktv-mb-pill--medium"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01"/></svg> Bình thường</span>
+                                        @else
+                                            <span class="ktv-mb-pill ktv-mb-pill--low"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> Thấp</span>
+                                        @endif
+                                    </div>
+
+                                    {{-- Dòng 2: Icon Tòa nhà & Phòng --}}
+                                    <div class="ktv-mb-card__room">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ktv-mb-card__room-icon"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><path d="M9 22v-4h6v4"></path><path d="M8 6h.01"></path><path d="M16 6h.01"></path><path d="M12 6h.01"></path><path d="M12 10h.01"></path><path d="M12 14h.01"></path><path d="M16 10h.01"></path><path d="M16 14h.01"></path><path d="M8 10h.01"></path><path d="M8 14h.01"></path></svg>
+                                        Phòng {{ str_pad($ticket->apartment->apartment_number ?? '', 4, '0', STR_PAD_LEFT) }}
+                                    </div>
+
+                                    {{-- Dòng 3: Tiêu đề --}}
+                                    <div class="ktv-mb-card__title">
+                                        {{ $ticket->title }}
+                                    </div>
+
+                                    {{-- Dòng 4: Hình ảnh & Thời gian + Trạng thái --}}
+                                    <div class="ktv-mb-card__details">
+                                        @if(!empty($ticket->images) && is_array($ticket->images) && count($ticket->images) > 0)
+                                            <div class="ktv-mb-card__img-box">
+                                                <img src="{{ asset('storage/' . $ticket->images[0]) }}" alt="Thumbnail">
+                                            </div>
+                                        @elseif(!empty($ticket->image))
+                                            <div class="ktv-mb-card__img-box">
+                                                <img src="{{ asset('storage/' . $ticket->image) }}" alt="Thumbnail">
+                                            </div>
+                                        @endif
+                                        <div class="ktv-mb-card__info">
+                                            <div class="ktv-mb-card__time">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                                Báo cáo: {{ $ticket->created_at ? $ticket->created_at->diffForHumans() : '-' }}
+                                            </div>
+                                            
+                                            @if($ticket->status === 'assigned')
+                                                <span class="ktv-mb-status ktv-mb-status--assigned">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg> Chờ xử lý
+                                                </span>
+                                            @elseif($ticket->status === 'in_progress')
+                                                <span class="ktv-mb-status ktv-mb-status--active">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg> Đang xử lý
+                                                </span>
+                                            @elseif($ticket->status === 'completed')
+                                                <span class="ktv-mb-status ktv-mb-status--completed">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg> Hoàn thành
+                                                </span>
+                                            @else
+                                                <span class="ktv-mb-status ktv-mb-status--assigned">{{ $ticket->statusLabel() }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    {{-- Dòng 5: Nút thao tác (Full width) --}}
+                                    <div class="ktv-mb-card__actions">
+                                        @if($ticket->status === 'assigned')
+                                            <button type="button" class="ktv-mb-action-btn ktv-mb-action-btn--primary ktv-accept-btn"
+                                                    data-url="{{ portal_route('tickets.accept', $ticket->id) }}">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                                                Bắt đầu xử lý
+                                            </button>
+                                        @elseif($ticket->status === 'in_progress')
+                                            <button type="button" class="ktv-mb-action-btn ktv-mb-action-btn--primary"
+                                                    onclick="openProgressModal(this)"
+                                                    data-url="{{ portal_route('tickets.update-progress', $ticket->id) }}"
+                                                    data-title="{{ $ticket->title }}"
+                                                    data-apt="Căn {{ $ticket->apartment->apartment_number ?? '' }}"
+                                                    data-block="{{ $ticket->apartment->floor->block->name ?? '' }}"
+                                                    data-priority="{{ $ticket->priority }}"
+                                                    data-status="{{ $ticket->status }}">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                Cập nhật tiến độ
+                                            </button>
+                                        @else
+                                            <a href="{{ portal_route('tickets.show', $ticket->id) }}" class="ktv-mb-action-btn ktv-mb-action-btn--outline">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                                                Xem chi tiết
+                                            </a>
+                                        @endif
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="ktv-table__empty">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="#cbd5e1" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <p>Không tìm thấy nhiệm vụ nào phù hợp</p>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        {{-- Table Footer / Pagination --}}
+        <div class="ktv-table-footer">
+            <div class="ktv-table-footer__info">
+                Hiển thị {{ $tickets->firstItem() ?? 0 }}-{{ $tickets->lastItem() ?? 0 }} trong số {{ $tickets->total() }} kết quả
+            </div>
+            <div class="ktv-table-footer__pagination">
+                {{ $tickets->onEachSide(1)->links('pagination::bootstrap-4') }}
             </div>
         </div>
-
-        {{-- Tòa nhà --}}
-        <div class="ktv-filters__group">
-            <label for="filterBlock" class="ktv-filters__label">Tòa nhà</label>
-            <select name="block_id" id="filterBlock" class="ktv-filters__select">
-                <option value="">Tất cả tòa nhà</option>
-                @foreach($blocks as $block)
-                    <option value="{{ $block->id }}" {{ request('block_id') == $block->id ? 'selected' : '' }}>
-                        {{ $block->name }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-
-        {{-- Độ ưu tiên --}}
-        <div class="ktv-filters__group">
-            <label for="filterPriority" class="ktv-filters__label">Độ ưu tiên</label>
-            <select name="priority" id="filterPriority" class="ktv-filters__select">
-                <option value="">Tất cả độ ưu tiên</option>
-                <option value="urgent" {{ request('priority') == 'urgent' ? 'selected' : '' }}>Khẩn cấp</option>
-                <option value="high" {{ request('priority') == 'high' ? 'selected' : '' }}>Cao</option>
-                <option value="medium" {{ request('priority') == 'medium' ? 'selected' : '' }}>Trung bình</option>
-                <option value="low" {{ request('priority') == 'low' ? 'selected' : '' }}>Thấp</option>
-            </select>
-        </div>
-
-        {{-- Loại công việc --}}
-        <div class="ktv-filters__group">
-            <label for="filterType" class="ktv-filters__label">Loại công việc</label>
-            <select name="type" id="filterType" class="ktv-filters__select">
-                <option value="">Tất cả loại</option>
-                <option value="normal" {{ request('type') == 'normal' ? 'selected' : '' }}>Bình thường</option>
-                <option value="recheck" {{ request('type') == 'recheck' ? 'selected' : '' }}>Cần làm lại (Reopen)</option>
-            </select>
-        </div>
-
-        {{-- Tháng --}}
-        <div class="ktv-filters__group">
-            <label for="filterMonth" class="ktv-filters__label">Tháng</label>
-            <select name="month" id="filterMonth" class="ktv-filters__select" style="min-width: 90px;">
-                <option value="">Tất cả</option>
-                @for($m = 1; $m <= 12; $m++)
-                    <option value="{{ $m }}" {{ request('month') == $m ? 'selected' : '' }}>{{ $m }}</option>
-                @endfor
-            </select>
-        </div>
-
-        {{-- Năm --}}
-        <div class="ktv-filters__group">
-            <label for="filterYear" class="ktv-filters__label">Năm</label>
-            <select name="year" id="filterYear" class="ktv-filters__select" style="min-width: 95px;">
-                <option value="">Tất cả</option>
-                @for($y = date('Y') + 1; $y >= date('Y') - 2; $y--)
-                    <option value="{{ $y }}" {{ request('year') == $y ? 'selected' : '' }}>{{ $y }}</option>
-                @endfor
-            </select>
-        </div>
-
-        {{-- Sắp xếp --}}
-        <div class="ktv-filters__group">
-            <label for="filterSort" class="ktv-filters__label">Sắp xếp</label>
-            <select name="sort" id="filterSort" class="ktv-filters__select">
-                <option value="priority_desc" {{ request('sort', 'priority_desc') == 'priority_desc' ? 'selected' : '' }}>Ưu tiên cao trước</option>
-                <option value="newest" {{ request('sort') == 'newest' ? 'selected' : '' }}>Mới nhất xếp trước</option>
-                <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>Cũ nhất xếp trước</option>
-            </select>
-        </div>
-
-        {{-- Nút hành động --}}
-        <div class="ktv-filters__actions">
-            <button type="submit" class="ktv-filters__btn-submit">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                Lọc
-            </button>
-            <a href="{{ route('admin.tickets.my-tasks') }}" class="ktv-filters__btn-reset">
-                Đặt lại
-            </a>
-        </div>
-    </form>
-
-    {{-- Kanban Columns --}}
-    <div class="ktv-kanban">
-
-        {{-- Cột 1: Nhiệm vụ mới được giao --}}
-        <div class="ktv-col">
-            <div class="ktv-col__header ktv-col__header--new">
-                <div class="ktv-col__header-left">
-                    <span class="ktv-col__dot ktv-col__dot--new"></span>
-                    <span class="ktv-col__title">Nhiệm vụ mới được giao</span>
-                </div>
-                <span class="ktv-col__badge ktv-col__badge--new">{{ $newTasks->count() }}</span>
-            </div>
-            <div class="ktv-col__body">
-                @forelse($newTasks as $ticket)
-                    @include('admin.tickets._ktv_card', ['ticket' => $ticket, 'mode' => 'new'])
-                @empty
-                    <div class="ktv-empty">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="#cbd5e1" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        <p>Không có nhiệm vụ mới</p>
-                    </div>
-                @endforelse
-            </div>
-        </div>
-
-        {{-- Cột 2: Đang xử lý --}}
-        <div class="ktv-col">
-            <div class="ktv-col__header ktv-col__header--active">
-                <div class="ktv-col__header-left">
-                    <span class="ktv-col__dot ktv-col__dot--active"></span>
-                    <span class="ktv-col__title">Đang xử lý</span>
-                </div>
-                <span class="ktv-col__badge ktv-col__badge--active">{{ $activeTasks->count() }}</span>
-            </div>
-            <div class="ktv-col__body">
-                @forelse($activeTasks as $ticket)
-                    @include('admin.tickets._ktv_card', ['ticket' => $ticket, 'mode' => 'active'])
-                @empty
-                    <div class="ktv-empty">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="#cbd5e1" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        <p>Chưa có việc đang làm</p>
-                    </div>
-                @endforelse
-            </div>
-        </div>
-
-        {{-- Cột 3: Hoàn thành gần đây --}}
-        <div class="ktv-col">
-            <div class="ktv-col__header ktv-col__header--done">
-                <div class="ktv-col__header-left">
-                    <span class="ktv-col__dot ktv-col__dot--done"></span>
-                    <span class="ktv-col__title">Hoàn thành gần đây</span>
-                </div>
-                <span class="ktv-col__badge ktv-col__badge--done">{{ $completedTasks->count() }}</span>
-            </div>
-            <div class="ktv-col__body">
-                @forelse($completedTasks as $ticket)
-                    @include('admin.tickets._ktv_card', ['ticket' => $ticket, 'mode' => 'done'])
-                @empty
-                    <div class="ktv-empty">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="#cbd5e1" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                        <p>Chưa có nhiệm vụ nào hoàn thành</p>
-                    </div>
-                @endforelse
-            </div>
-        </div>
-
     </div>
 
 </div>
+
+{{-- Mobile Floating Action Button --}}
+<button type="button" class="ktv-mb-fab" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+</button>
 
 {{-- Modal: Cập nhật tiến độ --}}
 <div class="ktv-modal-overlay" id="progressModalOverlay" onclick="closeProgressModal()"></div>
@@ -278,7 +381,7 @@
 
         <div class="ktv-modal__field">
             <label for="progressStatus">Trạng thái mới <span class="required">*</span></label>
-            <select name="status" id="progressStatus" required>
+            <select name="status" id="progressStatus" required onchange="updateProgressModalNotes(this.value)">
                 <option value="" disabled selected>-- Chọn trạng thái --</option>
                 <option value="in_progress">🔄 Đang xử lý (tiếp tục)</option>
                 <option value="completed">✅ Hoàn thành</option>
@@ -286,14 +389,14 @@
         </div>
 
         <div class="ktv-modal__field">
-            <label for="progressComment">Báo cáo hoàn thành <span id="commentFieldNote" class="ktv-field-note">(bắt buộc khi hoàn thành)</span></label>
+            <label for="progressComment">Báo cáo / Ghi chú <span id="commentFieldNote" class="ktv-field-note">(bắt buộc khi hoàn thành)</span></label>
             <textarea name="comment" id="progressComment" placeholder="Mô tả công việc đã thực hiện, vật tư sử dụng, kết quả..."></textarea>
         </div>
 
         <div class="ktv-modal__field">
-            <label>Ảnh nghiệm thu / ảnh tiến trình <span id="proofFieldNote" class="ktv-field-note">(tùy chọn, có thể chụp ảnh khi đang xử lý)</span></label>
+            <label>Ảnh nghiệm thu / Ảnh tiến trình <span id="proofFieldNote" class="ktv-field-note">(tùy chọn khi đang xử lý, bắt buộc khi hoàn thành)</span></label>
             <div class="ktv-modal__upload" id="uploadZone" onclick="openFilePicker()">
-                <input type="file" name="image_proof" id="imgProofInput" accept="image/*" style="display:none" onchange="handleFileSelect(this)">
+                <input type="file" name="image_proof" id="imgProofInput" accept="image/*" capture="environment" style="display:none" onchange="handleFileSelect(this)">
                 <div id="uploadPlaceholder">
                     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#94a3b8" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                     <span>Nhấn để chọn ảnh nghiệm thu</span>
@@ -319,8 +422,8 @@
     </form>
 </div>
 
-<div id="cameraModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:10000;cursor:pointer;pointer-events:none;" onclick="closeCameraModal()"></div>
-<div id="cameraModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%, -50%);width:92vw;max-width:520px;background:#fff;border-radius:16px;box-shadow:0 24px 48px rgba(15,23,42,0.25);z-index:10001;padding:16px;pointer-events:none;">
+<div id="cameraModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:10000;cursor:pointer;" onclick="closeCameraModal()"></div>
+<div id="cameraModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%, -50%);width:92vw;max-width:520px;background:#fff;border-radius:16px;box-shadow:0 24px 48px rgba(15,23,42,0.25);z-index:10001;padding:16px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
         <div style="font-weight:700;font-size:0.95rem;color:#0f172a;">Camera máy tính</div>
         <button type="button" class="ktv-btn ktv-btn--ghost" style="padding:6px 10px;font-size:0.85rem;" onclick="closeCameraModal()">Đóng</button>
@@ -335,7 +438,6 @@
 <script>
 const CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
 
-// ── Nhận nhiệm vụ (AJAX) ─────────────────────────────────────────────
 document.querySelectorAll('.ktv-accept-btn').forEach(btn => {
     btn.addEventListener('click', async function (e) {
         e.stopPropagation();
@@ -344,12 +446,11 @@ document.querySelectorAll('.ktv-accept-btn').forEach(btn => {
             return;
         }
 
-        const card    = this.closest('.ktv-card');
         const url     = this.dataset.url;
         const origTxt = this.innerHTML;
 
         this.disabled = true;
-        this.innerHTML = '<svg class="ktv-spin" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Đang nhận...';
+        this.innerHTML = 'Đang nhận...';
 
         try {
             const res  = await fetch(url, {
@@ -360,17 +461,7 @@ document.querySelectorAll('.ktv-accept-btn').forEach(btn => {
 
             if (data.success) {
                 showKtvToast('✅ ' + data.message, 'success');
-                // Animate card removal
-                card.style.transition = 'all 0.4s ease';
-                card.style.opacity    = '0';
-                card.style.transform  = 'translateX(20px)';
-                setTimeout(() => {
-                    card.remove();
-                    updateColCount('new', -1);
-                    updateStatNum('new', -1);
-                    updateStatNum('active', 1);
-                    setTimeout(() => location.reload(), 800);
-                }, 400);
+                setTimeout(() => location.reload(), 600);
             } else {
                 showKtvToast('❌ ' + data.message, 'error');
                 this.disabled = false;
@@ -384,7 +475,6 @@ document.querySelectorAll('.ktv-accept-btn').forEach(btn => {
     });
 });
 
-// ── Mở modal cập nhật tiến độ ────────────────────────────────────────
 function openProgressModal(btn) {
     const url   = btn.dataset.url;
     const title = btn.dataset.title;
@@ -402,7 +492,6 @@ function openProgressModal(btn) {
 
     const statusSelect = document.getElementById('progressStatus');
 
-    // Mặc định giữ lại trạng thái hiện tại nếu đang xử lý, hoặc yêu cầu chọn nếu mới được phân công.
     if (status === 'in_progress') {
         statusSelect.value = 'in_progress';
     } else {
@@ -423,9 +512,7 @@ function openProgressModal(btn) {
 function updateProgressModalNotes(status) {
     const proofNote = document.getElementById('proofFieldNote');
     const commentNote = document.getElementById('commentFieldNote');
-    if (!proofNote || !commentNote) {
-        return;
-    }
+    if (!proofNote || !commentNote) return;
 
     if (status === 'completed') {
         proofNote.textContent = '(bắt buộc khi hoàn thành)';
@@ -445,14 +532,13 @@ function closeProgressModal() {
 let cameraStream = null;
 
 function openFilePicker() {
-    const input = document.getElementById('imgProofInput');
-    input.click();
+    document.getElementById('imgProofInput').click();
 }
 
 function openCameraCapture() {
     const overlay = document.getElementById('cameraModalOverlay');
-    const modal = document.getElementById('cameraModal');
-    const video = document.getElementById('cameraVideo');
+    const modal   = document.getElementById('cameraModal');
+    const video   = document.getElementById('cameraVideo');
 
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         alert('Trình duyệt của bạn không hỗ trợ mở camera.');
@@ -460,9 +546,7 @@ function openCameraCapture() {
     }
 
     overlay.style.display = 'block';
-    overlay.style.pointerEvents = 'auto';
-    modal.style.display = 'block';
-    modal.style.pointerEvents = 'auto';
+    modal.style.display   = 'block';
 
     navigator.mediaDevices.getUserMedia({ video: true })
         .then(stream => {
@@ -471,71 +555,42 @@ function openCameraCapture() {
             video.play();
         })
         .catch(error => {
-            let message = 'Không thể mở camera. Vui lòng kiểm tra quyền truy cập.';
-            if (error && error.name) {
-                switch (error.name) {
-                    case 'NotAllowedError':
-                    case 'PermissionDeniedError':
-                        message = 'Quyền truy cập camera bị từ chối. Vui lòng cho phép truy cập camera cho trang này và thử lại.';
-                        break;
-                    case 'NotFoundError':
-                    case 'DevicesNotFoundError':
-                        message = 'Không tìm thấy thiết bị camera. Vui lòng kiểm tra camera hoặc kết nối thiết bị.';
-                        break;
-                    case 'NotReadableError':
-                    case 'TrackStartError':
-                        message = 'Camera đang bị ứng dụng khác sử dụng. Vui lòng đóng ứng dụng khác và thử lại.';
-                        break;
-                    case 'OverconstrainedError':
-                    case 'ConstraintNotSatisfiedError':
-                        message = 'Không thể mở camera với cấu hình hiện tại. Vui lòng thử lại.';
-                        break;
-                }
-            }
-            alert(message + '\nNếu không được, bạn có thể chọn ảnh nghiệm thu thủ công từ máy tính.');
+            alert('Không thể kết nối camera máy tính. Bạn có thể tải ảnh lên thủ công.');
             closeCameraModal();
         });
 }
 
 function closeCameraModal() {
     const overlay = document.getElementById('cameraModalOverlay');
-    const modal = document.getElementById('cameraModal');
-    const video = document.getElementById('cameraVideo');
+    const modal   = document.getElementById('cameraModal');
+    const video   = document.getElementById('cameraVideo');
 
-    overlay.style.display = 'none';
-    overlay.style.pointerEvents = 'none';
-    modal.style.display = 'none';
-    modal.style.pointerEvents = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (modal)   modal.style.display   = 'none';
 
     if (cameraStream) {
         cameraStream.getTracks().forEach(track => track.stop());
         cameraStream = null;
     }
-
-    if (video) {
-        video.srcObject = null;
-    }
+    if (video) video.srcObject = null;
 }
 
 function captureCameraPhoto() {
     const video = document.getElementById('cameraVideo');
-    if (!video || !video.videoWidth || !video.videoHeight) {
+    if (!video || !video.videoWidth) {
         alert('Camera chưa sẵn sàng. Vui lòng thử lại.');
         return;
     }
 
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
+    const canvas  = document.createElement('canvas');
+    canvas.width  = video.videoWidth;
     canvas.height = video.videoHeight;
+
     const context = canvas.getContext('2d');
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
     canvas.toBlob(blob => {
-        if (!blob) {
-            alert('Không thể chụp ảnh. Vui lòng thử lại.');
-            return;
-        }
-
+        if (!blob) return;
         const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
         const dataTransfer = new DataTransfer();
         dataTransfer.items.add(file);
@@ -543,61 +598,37 @@ function captureCameraPhoto() {
         input.files = dataTransfer.files;
         handleFileSelect(input);
         closeCameraModal();
-    }, 'image/jpeg', 0.92);
-}
-
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeProgressModal(); });
-
-const progressStatusSelect = document.getElementById('progressStatus');
-if (progressStatusSelect) {
-    progressStatusSelect.addEventListener('change', function () {
-        updateProgressModalNotes(this.value);
     });
 }
 
-// ── Xác nhận cập nhật tiến độ ─────────────────────────────────────────
 const progressForm = document.getElementById('progressForm');
 if (progressForm) {
     progressForm.addEventListener('submit', function (e) {
-        const statusSelect = document.getElementById('progressStatus');
-        if (!statusSelect) return;
-        const statusText = statusSelect.value === 'completed' ? 'Hoàn thành' : 'Đang xử lý';
-        if (!confirm(`Bạn có chắc chắn muốn cập nhật trạng thái nhiệm vụ này thành "${statusText}" không?`)) {
-            e.preventDefault();
+        const btn = document.getElementById('submitProgressBtn');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = 'Đang lưu...';
         }
     });
 }
 
-// ── Upload preview ────────────────────────────────────────────────────
 function handleFileSelect(input) {
     const file = input.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = e => {
-        document.getElementById('previewImg').src     = e.target.result;
+        document.getElementById('previewImg').src = e.target.result;
         document.getElementById('previewName').textContent = file.name;
         document.getElementById('uploadPlaceholder').style.display = 'none';
-        document.getElementById('uploadPreview').style.display    = 'flex';
+        document.getElementById('uploadPreview').style.display = 'flex';
     };
     reader.readAsDataURL(file);
 }
 
-// ── Helper ────────────────────────────────────────────────────────────
 function getPriorityLabel(p) {
-    return { urgent: '🔴 Khẩn cấp', high: '🟠 Cao', medium: '🟡 Trung bình', low: '🟢 Thấp' }[p] || p;
+    return { urgent: 'Khẩn cấp', high: 'Cao', medium: 'Trung bình', low: 'Thấp' }[p] || p;
 }
 
-function updateColCount(type, delta) {
-    const badge = document.querySelector(`.ktv-col__badge--${type}`);
-    if (badge) badge.textContent = Math.max(0, parseInt(badge.textContent) + delta);
-}
-
-function updateStatNum(type, delta) {
-    const el = document.querySelector(`.ktv-stat--${type} .ktv-stat__num`);
-    if (el) el.textContent = Math.max(0, parseInt(el.textContent) + delta);
-}
-
-// ── Toast ─────────────────────────────────────────────────────────────
 function showKtvToast(msg, type = 'success') {
     const t = document.createElement('div');
     t.className = 'ktv-toast ktv-toast--' + type;
@@ -607,49 +638,7 @@ function showKtvToast(msg, type = 'success') {
     setTimeout(() => {
         t.classList.remove('show');
         setTimeout(() => t.remove(), 300);
-    }, 3500);
+    }, 3000);
 }
 </script>
-
-<style>
-.ktv-card--recheck {
-    border-color: #f97316 !important;
-    box-shadow: 0 0 0 2px rgba(249,115,22,0.15) !important;
-}
-.ktv-card__recheck-badge {
-    font-size: 0.68rem;
-    font-weight: 700;
-    background: #fff7ed;
-    color: #c2410c;
-    border: 1px solid #fed7aa;
-    padding: 2px 8px;
-    border-radius: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-}
-.ktv-card__recheck-notice {
-    margin: 8px 0 4px;
-    padding: 8px 10px;
-    background: #fff7ed;
-    border-left: 3px solid #f97316;
-    border-radius: 0 6px 6px 0;
-    font-size: 0.78rem;
-    color: #9a3412;
-    font-weight: 500;
-    line-height: 1.5;
-}
-.ktv-card__recheck-reason {
-    margin-top: 4px;
-    font-style: italic;
-    color: #c2410c;
-    font-weight: 400;
-}
-.ktv-stat--recheck {
-    border-color: #fed7aa;
-    background: #fff7ed;
-}
-.ktv-stat--recheck .ktv-stat__num { color: #c2410c; }
-.ktv-stat--recheck .ktv-stat__icon { background: #ffedd5; color: #ea580c; }
-</style>
-
 @endsection

@@ -7,441 +7,523 @@
 
     {{-- Breadcrumb --}}
     <div class="amf-breadcrumb">
-        <a href="{{ route('admin.amenities.index') }}">Tiện ích chung cư</a>
+        <a href="{{ portal_route('amenities.index') }}">Quản lý tiện ích</a>
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
-        <a href="{{ route('admin.amenities.show', $facility) }}">{{ $facility->name }}</a>
+        <a href="{{ portal_route('amenities.show', $facility) }}">{{ $facility->name }}</a>
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
         <span>Chỉnh sửa</span>
     </div>
 
     <div class="amf-header">
-        <h1 class="amf-title">Chỉnh sửa: {{ $facility->name }}</h1>
-        <p class="amf-subtitle">Cập nhật thông tin và cài đặt cấu hình tiện ích.</p>
-    </div>
-
-    <form method="POST" action="{{ route('admin.amenities.update', $facility) }}">
-        @csrf
-        @method('PUT')
-
-        {{-- Error summary --}}
-        @if($errors->any())
-        <div class="amf-error-summary">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <div>
-                <strong>Vui lòng kiểm tra lại:</strong>
-                <ul>@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-            </div>
+        <div>
+            <h1 class="amf-title">Chỉnh sửa: {{ $facility->name }}</h1>
+            <p class="amf-subtitle">Cập nhật thông tin chi tiết và cài đặt cho tiện ích này.</p>
         </div>
-        @endif
-
-        {{-- ====== PHẦN 1: Thông tin cơ bản ====== --}}
-        <div class="amf-card">
-            <div class="amf-section-label">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                Thông tin cơ bản
-            </div>
-            <div class="amf-grid">
-                <div class="amf-field amf-field--wide">
-                    <label for="name">Tên tiện ích <span class="amf-required">*</span></label>
-                    <input type="text" id="name" name="name" value="{{ old('name', $facility->name) }}"
-                        placeholder="VD: Hồ bơi, Phòng Gym, Sân BBQ..." maxlength="100" required
-                        class="{{ $errors->has('name') ? 'amf-input--error' : '' }}">
-                    @error('name')<span class="amf-error">{{ $message }}</span>@enderror
-                </div>
-
-                <div class="amf-field">
-                    <label for="capacity">Sức chứa tối đa <span class="amf-required">*</span></label>
-                    <div class="amf-input-group">
-                        <input type="number" id="capacity" name="capacity"
-                            value="{{ old('capacity', $facility->capacity) }}"
-                            min="1" max="9999" required class="{{ $errors->has('capacity') ? 'amf-input--error' : '' }}">
-                        <span class="amf-input-suffix">người</span>
-                    </div>
-                    @error('capacity')<span class="amf-error">{{ $message }}</span>@enderror
-                </div>
-
-                <div class="amf-field">
-                    <label for="status">Trạng thái <span class="amf-required">*</span></label>
-                    <select id="status" name="status" required>
-                        <option value="available" {{ old('status', $facility->status) === 'available' ? 'selected' : '' }}>✅ Hoạt động</option>
-                        <option value="maintenance" {{ old('status', $facility->status) === 'maintenance' ? 'selected' : '' }}>🔧 Bảo trì</option>
-                        <option value="closed" {{ old('status', $facility->status) === 'closed' ? 'selected' : '' }}>🚫 Đóng cửa</option>
-                    </select>
-                    @error('status')<span class="amf-error">{{ $message }}</span>@enderror
-                </div>
-
-                <div class="amf-field amf-field--wide">
-                    <label for="description">Mô tả</label>
-                    <textarea id="description" name="description" rows="2"
-                        placeholder="Mô tả ngắn về tiện ích..." maxlength="500">{{ old('description', $facility->description) }}</textarea>
-                    @error('description')<span class="amf-error">{{ $message }}</span>@enderror
-                </div>
-            </div>
-        </div>
-
-        {{-- ====== PHẦN 2: Cấu hình khung giờ ====== --}}
-        <div class="amf-card">
-            <div class="amf-section-label">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                Khung giờ hoạt động
-            </div>
-            <div class="amf-grid">
-                <div class="amf-field">
-                    <label for="open_time">Giờ mở cửa</label>
-                    <input type="time" id="open_time" name="open_time"
-                        value="{{ old('open_time', $facility->open_time ? substr($facility->open_time,0,5) : '06:00') }}"
-                        class="{{ $errors->has('open_time') ? 'amf-input--error' : '' }}">
-                    @error('open_time')<span class="amf-error">{{ $message }}</span>@enderror
-                </div>
-
-                <div class="amf-field">
-                    <label for="close_time">Giờ đóng cửa</label>
-                    <input type="time" id="close_time" name="close_time"
-                        value="{{ old('close_time', $facility->close_time ? substr($facility->close_time,0,5) : '22:00') }}"
-                        class="{{ $errors->has('close_time') ? 'amf-input--error' : '' }}">
-                    @error('close_time')<span class="amf-error">{{ $message }}</span>@enderror
-                    <span class="amf-hint">Phải sau giờ mở cửa</span>
-                </div>
-
-                <div id="slotSettingsWrap" style="display:contents">
-                <div class="amf-field">
-                    <label for="slot_duration">Thời lượng mỗi lần đặt <span class="amf-required">*</span></label>
-                    <select id="slot_duration" name="slot_duration">
-                        @php $dur = old('slot_duration', $facility->slot_duration ?? 60); @endphp
-                        <option value="0"   {{ $dur == 0   ? 'selected' : '' }}>Cả ngày (1 slot duy nhất)</option>
-                        <option value="30"  {{ $dur == 30  ? 'selected' : '' }}>30 phút</option>
-                        <option value="60"  {{ $dur == 60  ? 'selected' : '' }}>1 tiếng</option>
-                        <option value="90"  {{ $dur == 90  ? 'selected' : '' }}>1.5 tiếng</option>
-                        <option value="120" {{ $dur == 120 ? 'selected' : '' }}>2 tiếng</option>
-                    </select>
-                    <span class="amf-hint">Mỗi lần đặt kéo dài bao lâu</span>
-                    @error('slot_duration')<span class="amf-error">{{ $message }}</span>@enderror
-                </div>
-
-                <div class="amf-field amf-field--wide">
-                    <label>Xem trước các khung giờ</label>
-                    <div class="amf-slots-preview" id="slotsPreview">
-                        <span class="amf-hint">Đang tải...</span>
-                    </div>
-                </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- ====== PHẦN 3: Kiểu đặt chỗ & Bảng giá ====== --}}
-        <div class="amf-card">
-            <div class="amf-section-label">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                Kiểu đặt chỗ & Bảng giá
-            </div>
-            <div class="amf-grid">
-
-                {{-- Kiểu đặt chỗ --}}
-                <div class="amf-field amf-field--wide">
-                    <label>Kiểu đặt chỗ <span class="amf-required">*</span></label>
-                    @php $btype = old('booking_type', $facility->booking_type ?? 'slot'); @endphp
-                    <div class="amf-booking-type-wrap">
-                        <label class="amf-type-card {{ $btype === 'slot' ? 'amf-type-card--active' : '' }}" id="typeCardSlot">
-                            <input type="radio" name="booking_type" value="slot" id="typeSlot"
-                                {{ $btype === 'slot' ? 'checked' : '' }}>
-                            <span class="amf-type-icon"></span>
-                            <span class="amf-type-info">
-                                <strong>Đặt theo thời gian (tiếng / ca)</strong>
-                                <span>Thuê trọn không gian theo khung giờ — VD: sân bóng, sân tennis, phòng họp</span>
-                            </span>
-                        </label>
-                        <label class="amf-type-card {{ $btype === 'person' ? 'amf-type-card--active' : '' }}" id="typeCardPerson">
-                            <input type="radio" name="booking_type" value="person" id="typePerson"
-                                {{ $btype === 'person' ? 'checked' : '' }}>
-                            <span class="amf-type-icon"></span>
-                            <span class="amf-type-info">
-                                <strong>Đặt theo người (vé / lượt)</strong>
-                                <span>Tính phí theo số người sử dụng — VD: bể bơi, phòng xông hơi, khu vui chơi</span>
-                            </span>
-                        </label>
-                    </div>
-                    @error('booking_type')<span class="amf-error">{{ $message }}</span>@enderror
-                </div>
-
-                {{-- Giá theo tiếng --}}
-                <div class="amf-field" id="priceSlotWrap">
-                    <label for="price_per_slot">Giá mỗi slot (tiếng) <span class="amf-required">*</span></label>
-                    <div class="amf-input-group">
-                        <input type="number" id="price_per_slot" name="price_per_slot"
-                            value="{{ old('price_per_slot', $facility->price_per_slot ?? 0) }}"
-                            min="0" step="1000"
-                            class="{{ $errors->has('price_per_slot') ? 'amf-input--error' : '' }}">
-                        <span class="amf-input-suffix">đ</span>
-                    </div>
-                    <span class="amf-hint">Nhập 0 nếu miễn phí. Tính theo mỗi khung giờ đặt.</span>
-                    @error('price_per_slot')<span class="amf-error">{{ $message }}</span>@enderror
-                </div>
-
-                {{-- Giá theo người --}}
-                <div class="amf-field" id="pricePersonWrap">
-                    <label for="price_per_person">Giá mỗi người <span class="amf-required">*</span></label>
-                    <div class="amf-input-group">
-                        <input type="number" id="price_per_person" name="price_per_person"
-                            value="{{ old('price_per_person', $facility->price_per_person ?? 0) }}"
-                            min="0" step="1000"
-                            class="{{ $errors->has('price_per_person') ? 'amf-input--error' : '' }}">
-                        <span class="amf-input-suffix">đ</span>
-                    </div>
-                    <span class="amf-hint">Nhập 0 nếu miễn phí. Tính theo số người mỗi lần vào.</span>
-                    @error('price_per_person')<span class="amf-error">{{ $message }}</span>@enderror
-                </div>
-
-                {{-- Preview giá --}}
-                <div class="amf-field amf-price-preview-wrap">
-                    <label>Xem trước hiển thị giá</label>
-                    <div class="amf-price-preview" id="pricePreview">
-                        <span class="amf-hint">Đang tải...</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- ====== PHẦN 4: Nội quy sử dụng ====== --}}
-        <div class="amf-card">
-            <div class="amf-section-label">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                Nội quy & Lưu ý
-            </div>
-            <div class="amf-field">
-                <label for="rules">Quy định sử dụng</label>
-                <textarea id="rules" name="rules" rows="4"
-                    placeholder="VD: Mặc trang phục thể thao. Không mang đồ ăn vào. Trẻ em dưới 12 tuổi cần có người lớn..."
-                    maxlength="1000">{{ old('rules', $facility->rules) }}</textarea>
-                <span class="amf-hint">Tối đa 1000 ký tự. Hiển thị cho cư dân khi đặt lịch.</span>
-                @error('rules')<span class="amf-error">{{ $message }}</span>@enderror
-            </div>
-        </div>
-
-        {{-- Actions --}}
-        <div class="amf-actions">
-            <button type="submit" class="amf-btn amf-btn--primary">
+        <div class="amf-actions-top">
+            <a href="{{ portal_route('amenities.index') }}" class="amf-btn amf-btn-outline">Hủy</a>
+            <button type="submit" form="facilityForm" class="amf-btn amf-btn-primary">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                 Lưu thay đổi
             </button>
-            <a href="{{ route('admin.amenities.index') }}" class="amf-btn amf-btn--ghost">Hủy bỏ</a>
         </div>
-    </form>
+    </div>
 
-    {{-- ====== PHẦN 5: Quản lý hình ảnh ====== --}}
-    <div class="amf-card" style="margin-top: 18px;">
-        <div class="amf-section-label">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-            Hình ảnh tiện ích
+    {{-- Error summary --}}
+    @if($errors->any())
+    <div class="amf-alert amf-alert-danger">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div>
+            <strong>Vui lòng kiểm tra lại:</strong>
+            <ul style="margin:4px 0 0; padding-left:16px; font-size:13px">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
         </div>
+    </div>
+    @endif
 
-        <form method="POST" action="{{ route('admin.amenities.images.store', $facility) }}" enctype="multipart/form-data">
-            @csrf
-            <div class="amf-field amf-field--wide">
-                <label for="images">Chọn thêm ảnh tiện ích (Tối đa 5 ảnh, mỗi ảnh &lt; 3MB)</label>
-                <div class="amf-image-upload-wrapper">
-                    <input type="file" id="images" name="images[]" multiple accept="image/*" class="amf-file-input">
-                    <button type="submit" class="amf-btn amf-btn--secondary">Tải ảnh lên</button>
+    <div class="amf-layout">
+        <div class="amf-col-left">
+            <form method="POST" action="{{ portal_route('amenities.update', $facility) }}" id="facilityForm">
+                @csrf
+                @method('PUT')
+                
+                {{-- 1. Thông tin cơ bản --}}
+                <div class="amf-card mb-4">
+                    <div class="amf-card-header">
+                        <span class="amf-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+                        <h2 class="amf-card-title">1. Thông tin cơ bản</h2>
+                    </div>
+                    <div class="amf-card-body">
+                        <div class="amf-form-group">
+                            <label>Tên tiện ích <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="amf-control" value="{{ old('name', $facility->name) }}" placeholder="VD: Hồ bơi, Phòng Gym, Sân cầu lông..." required>
+                        </div>
+                        <div class="amf-row">
+                            <div class="amf-col">
+                                <div class="amf-form-group">
+                                    <label>Loại tiện ích</label>
+                                    <select name="facility_type" class="amf-control">
+                                        <option value="">Chọn loại tiện ích</option>
+                                        <option value="Thể thao" {{ old('facility_type', $facility->facility_type) == 'Thể thao' ? 'selected' : '' }}>Thể thao</option>
+                                        <option value="Giải trí" {{ old('facility_type', $facility->facility_type) == 'Giải trí' ? 'selected' : '' }}>Giải trí</option>
+                                        <option value="Sinh hoạt chung" {{ old('facility_type', $facility->facility_type) == 'Sinh hoạt chung' ? 'selected' : '' }}>Sinh hoạt chung</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="amf-row">
+                            <div class="amf-col">
+                                <div class="amf-form-group">
+                                    <label>Tòa nhà</label>
+                                    <select name="block_id" id="blockSelect" class="amf-control">
+                                        <option value="">Chọn tòa nhà (Tùy chọn)</option>
+                                        @foreach($blocks as $block)
+                                            <option value="{{ $block->id }}" {{ old('block_id', $facility->block_id) == $block->id ? 'selected' : '' }}>{{ $block->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="amf-col">
+                                <div class="amf-form-group">
+                                    <label>Tầng</label>
+                                    <select name="floor_id" id="floorSelect" class="amf-control" {{ old('block_id', $facility->block_id) ? '' : 'disabled' }}>
+                                        <option value="">Chọn tầng (Tùy chọn)</option>
+                                    </select>
+                                    <input type="hidden" id="oldFloorId" value="{{ old('floor_id', $facility->floor_id) }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="amf-form-group">
+                            <label>Mô tả ngắn</label>
+                            <textarea name="description" class="amf-control" rows="4" placeholder="Mô tả tóm tắt về tiện ích, công dụng, đối tượng sử dụng...">{{ old('description', $facility->description) }}</textarea>
+                            <div class="amf-char-count">0/500</div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- 3. Quy định sử dụng --}}
+                <div class="amf-card mb-4">
+                    <div class="amf-card-header">
+                        <span class="amf-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+                        <h2 class="amf-card-title">3. Quy định sử dụng</h2>
+                    </div>
+                    <div class="amf-card-body">
+                        <div class="amf-row">
+                            <div class="amf-col">
+                                <div class="amf-form-group">
+                                    <label>Giờ mở cửa <span class="text-danger">*</span></label>
+                                    <div class="amf-time-range">
+                                        <input type="time" name="open_time" class="amf-control" value="{{ old('open_time', $facility->open_time ? substr($facility->open_time,0,5) : '06:00') }}" required>
+                                        <span>-</span>
+                                        <input type="time" name="close_time" class="amf-control" value="{{ old('close_time', $facility->close_time ? substr($facility->close_time,0,5) : '22:00') }}" required>
+                                    </div>
+                                </div>
+                                <div class="amf-form-group mt-3">
+                                    <label>Ngày hoạt động</label>
+                                    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                                        @php
+                                            $days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+                                            $selectedDays = old('operating_days', $facility->operating_days ?? $days);
+                                        @endphp
+                                        @foreach($days as $day)
+                                        <label style="display:flex; align-items:center; gap:4px; font-weight:normal; font-size:13px">
+                                            <input type="checkbox" name="operating_days[]" value="{{ $day }}" {{ in_array($day, $selectedDays) ? 'checked' : '' }}> {{ $day }}
+                                        </label>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="amf-col">
+                                <div class="amf-form-group">
+                                    <label>Sức chứa tối đa (người) <span class="text-danger">*</span></label>
+                                    <div class="amf-input-group">
+                                        <input type="number" name="capacity" class="amf-control" value="{{ old('capacity', $facility->capacity) }}" placeholder="VD: 50" min="1" required>
+                                        <span class="amf-input-group-text">người</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="amf-form-group">
+                            <label>Nội quy sử dụng</label>
+                            <div class="amf-editor-toolbar">
+                                <button type="button"><b>B</b></button>
+                                <button type="button"><i>I</i></button>
+                                <button type="button"><u>U</u></button>
+                                <button type="button">⋮¯</button>
+                                <button type="button">1.</button>
+                            </div>
+                            <textarea name="rules" class="amf-control" style="border-top-left-radius:0; border-top-right-radius:0; border-top:0" rows="5" placeholder="Nhập nội quy, quy định khi sử dụng tiện ích...">{{ old('rules', $facility->rules) }}</textarea>
+                            <div class="amf-char-count">0/1000</div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            {{-- 4. Hình ảnh (Nằm ngoài form chính vì upload ảnh dùng API riêng hoặc xử lý form riêng) --}}
+            <div class="amf-card mb-4">
+                <div class="amf-card-header">
+                    <span class="amf-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span>
+                    <h2 class="amf-card-title">4. Hình ảnh</h2>
+                </div>
+                <div class="amf-card-body">
+                    <form method="POST" action="{{ portal_route('amenities.images.store', $facility) }}" enctype="multipart/form-data" class="mb-4">
+                        @csrf
+                        <div class="amf-form-group">
+                            <label>Thêm ảnh mới</label>
+                            <div class="amf-image-upload-wrapper">
+                                <input type="file" id="images" name="images[]" multiple accept="image/*" class="amf-control" style="padding: 6px 12px">
+                                <button type="submit" class="amf-btn amf-btn-primary" style="white-space: nowrap">Tải lên</button>
+                            </div>
+                            <div class="amf-hint">Tối đa 5 ảnh, định dạng PNG/JPG, dung lượng < 3MB mỗi ảnh.</div>
+                        </div>
+                    </form>
+
+                    <label>Ảnh hiện tại</label>
+                    <div class="amf-image-gallery">
+                        @if($facility->images && count($facility->images) > 0)
+                            <div class="amf-gallery-grid">
+                                @foreach($facility->images as $index => $image)
+                                    <div class="amf-gallery-item">
+                                        <img src="{{ asset('storage/' . $image) }}" alt="Ảnh {{ $facility->name }}">
+                                        <form method="POST" action="{{ portal_route('amenities.images.destroy', [$facility, $index]) }}" class="amf-delete-image-form" onsubmit="return confirm('Bạn có chắc chắn muốn xóa ảnh này?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="amf-btn-delete-img" title="Xóa ảnh">×</button>
+                                        </form>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="text-muted text-sm mt-0">Chưa có hình ảnh nào cho tiện ích này.</p>
+                        @endif
+                    </div>
                 </div>
             </div>
-        </form>
+        </div>
 
-        <div class="amf-image-gallery">
-            @if($facility->images && count($facility->images) > 0)
-                <div class="amf-gallery-grid">
-                    @foreach($facility->images as $index => $image)
-                        <div class="amf-gallery-item">
-                            <img src="{{ asset('storage/' . $image) }}" alt="Ảnh {{ $facility->name }}">
-                            <form method="POST" action="{{ route('admin.amenities.images.destroy', [$facility, $index]) }}" class="amf-delete-image-form" onsubmit="return confirm('Bạn có chắc chắn muốn xóa ảnh này?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="amf-btn-delete-img" title="Xóa ảnh">×</button>
-                            </form>
-                        </div>
-                    @endforeach
+        <div class="amf-col-right">
+            {{-- form="facilityForm" is used to bind these inputs to the main form --}}
+            
+            {{-- 2. Biểu giá & Đặt chỗ --}}
+            <div class="amf-card mb-4">
+                <div class="amf-card-header">
+                    <span class="amf-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span>
+                    <h2 class="amf-card-title">2. Biểu giá & Đặt chỗ</h2>
                 </div>
-            @else
-                <p class="amf-no-image">Chưa có hình ảnh nào cho tiện ích này.</p>
-            @endif
+                <div class="amf-card-body">
+                    <div class="amf-form-group">
+                        <label>Loại phí <span class="text-danger">*</span></label>
+                        <div class="amf-radio-list">
+                            <label class="amf-radio">
+                                <input type="radio" form="facilityForm" name="fee_type" value="free" {{ old('fee_type', $facility->fee_type) == 'free' ? 'checked' : '' }}>
+                                <span>Miễn phí</span>
+                            </label>
+                            <label class="amf-radio">
+                                <input type="radio" form="facilityForm" name="fee_type" value="per_hour" {{ old('fee_type', $facility->fee_type) == 'per_hour' ? 'checked' : '' }}>
+                                <span>Theo giờ</span>
+                            </label>
+                            <label class="amf-radio">
+                                <input type="radio" form="facilityForm" name="fee_type" value="per_use" {{ old('fee_type', $facility->fee_type) == 'per_use' ? 'checked' : '' }}>
+                                <span>Theo lượt</span>
+                            </label>
+                            <label class="amf-radio">
+                                <input type="radio" form="facilityForm" name="fee_type" value="per_person" {{ old('fee_type', $facility->fee_type) == 'per_person' ? 'checked' : '' }}>
+                                <span>Theo người</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="amf-form-group" id="priceGroup">
+                        <label>Đơn giá</label>
+                        <div class="amf-input-group">
+                            <input type="number" form="facilityForm" name="price" id="priceInput" class="amf-control" value="{{ old('price', $facility->price) }}" {{ old('fee_type', $facility->fee_type) == 'free' ? 'disabled' : '' }}>
+                            <span class="amf-input-group-text">VND</span>
+                        </div>
+                        <p class="amf-hint">Đơn giá sẽ chỉ áp dụng khi loại phí khác "Miễn phí".</p>
+                    </div>
+
+                    <div class="amf-form-group" style="margin-top:24px">
+                        <label>Hình thức đặt chỗ <span class="text-danger">*</span></label>
+                        <div class="amf-radio-list amf-radio-list-large">
+                            <label class="amf-radio-card">
+                                <input type="radio" form="facilityForm" name="booking_type" value="none" {{ old('booking_type', $facility->booking_type) == 'none' ? 'checked' : '' }}>
+                                <div class="amf-radio-content">
+                                    <div class="amf-radio-title">Không cần đặt trước</div>
+                                    <div class="amf-radio-desc">Cư dân đến sử dụng trực tiếp</div>
+                                </div>
+                            </label>
+                            <label class="amf-radio-card">
+                                <input type="radio" form="facilityForm" name="booking_type" value="time_slot" {{ old('booking_type', $facility->booking_type) == 'time_slot' ? 'checked' : '' }}>
+                                <div class="amf-radio-content">
+                                    <div class="amf-radio-title">Theo khung giờ</div>
+                                    <div class="amf-radio-desc">Cư dân chọn thời gian bắt đầu và thời lượng sử dụng</div>
+                                </div>
+                            </label>
+                            <label class="amf-radio-card">
+                                <input type="radio" form="facilityForm" name="booking_type" value="slot" {{ old('booking_type', $facility->booking_type) == 'slot' ? 'checked' : '' }}>
+                                <div class="amf-radio-content">
+                                    <div class="amf-radio-title">Theo thời gian</div>
+                                    <div class="amf-radio-desc">Cư dân đặt lịch theo thời gian cụ thể</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="timeSlotSettings" class="amf-sub-settings" style="display: {{ in_array(old('booking_type', $facility->booking_type), ['time_slot', 'slot']) ? 'block' : 'none' }}">
+                        <div class="amf-form-group">
+                            <label>Thời lượng 1 lượt (phút) <span class="text-danger">*</span></label>
+                            <div class="amf-input-group">
+                                <input type="number" form="facilityForm" name="slot_duration" class="amf-control" value="{{ old('slot_duration', $facility->slot_duration) }}">
+                                <span class="amf-input-group-text">phút</span>
+                            </div>
+                        </div>
+                        
+                        <div class="amf-row">
+                            <div class="amf-col">
+                                <div class="amf-form-group">
+                                    <label>Đặt trước tối thiểu</label>
+                                    <div class="amf-input-group">
+                                        <input type="number" form="facilityForm" name="min_advance_booking_hours" class="amf-control" value="{{ old('min_advance_booking_hours', $facility->min_advance_booking_hours) }}">
+                                        <span class="amf-input-group-text">giờ</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="amf-col">
+                                <div class="amf-form-group">
+                                    <label>Đặt trước tối đa</label>
+                                    <div class="amf-input-group">
+                                        <input type="number" form="facilityForm" name="max_advance_booking_days" class="amf-control" value="{{ old('max_advance_booking_days', $facility->max_advance_booking_days) }}">
+                                        <span class="amf-input-group-text">ngày</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- 5. Trạng thái --}}
+            <div class="amf-card mb-4">
+                <div class="amf-card-header">
+                    <span class="amf-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+                    <h2 class="amf-card-title">5. Trạng thái</h2>
+                </div>
+                <div class="amf-card-body">
+                    <div class="amf-form-group amf-status-group" style="flex-direction:column; align-items:flex-start">
+                        <label>Trạng thái hiển thị</label>
+                        <div class="amf-radio-list">
+                            <label class="amf-radio">
+                                <input type="radio" form="facilityForm" name="status" value="available" {{ old('status', $facility->status) == 'available' ? 'checked' : '' }}>
+                                <span>Hoạt động</span>
+                            </label>
+                            <label class="amf-radio">
+                                <input type="radio" form="facilityForm" name="status" value="maintenance" {{ old('status', $facility->status) == 'maintenance' ? 'checked' : '' }}>
+                                <span>Bảo trì</span>
+                            </label>
+                            <label class="amf-radio">
+                                <input type="radio" form="facilityForm" name="status" value="closed" {{ old('status', $facility->status) == 'closed' ? 'checked' : '' }}>
+                                <span>Ngừng sử dụng</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <style>
-.amf-page { max-width: 820px; margin: 0 auto; padding: 24px 20px; display: flex; flex-direction: column; gap: 18px; }
-
-.amf-breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: #64748b; }
-.amf-breadcrumb a { color: #2563eb; text-decoration: none; font-weight: 500; }
-.amf-breadcrumb a:hover { text-decoration: underline; }
-
-.amf-header { margin-bottom: 4px; }
-.amf-title { font-size: 1.5rem; font-weight: 700; color: #0f172a; margin: 0 0 6px; }
-.amf-subtitle { font-size: 0.875rem; color: #64748b; margin: 0; }
-
-.amf-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 22px 26px; display: flex; flex-direction: column; gap: 16px; }
-
-.amf-section-label { display: flex; align-items: center; gap: 7px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; }
-
-.amf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.amf-field { display: flex; flex-direction: column; gap: 5px; }
-.amf-field--wide { grid-column: 1 / -1; }
-.amf-field label { font-size: 0.8rem; font-weight: 600; color: #374151; }
-.amf-required { color: #ef4444; }
-
-.amf-field input,
-.amf-field select,
-.amf-field textarea {
-    padding: 9px 13px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.875rem;
-    color: #1e293b; background: #f8fafc; outline: none; transition: border-color 0.15s, background 0.15s;
-    font-family: inherit; resize: vertical; width: 100%; box-sizing: border-box;
+/* Reusing the CSS from create view */
+:root {
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --bg-page: #f8fafc;
+    --card-bg: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --border-focus: #93c5fd;
+    --ring: rgba(59,130,246,0.15);
+    --danger: #ef4444;
 }
-.amf-field input:focus,
-.amf-field select:focus,
-.amf-field textarea:focus { border-color: #3b82f6; background: #fff; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
-.amf-input--error { border-color: #ef4444 !important; background: #fff5f5 !important; }
-.amf-error { font-size: 0.75rem; color: #dc2626; font-weight: 500; }
-.amf-hint { font-size: 0.73rem; color: #94a3b8; }
 
-.amf-input-group { display: flex; align-items: stretch; }
-.amf-input-group input { border-radius: 8px 0 0 8px; border-right: none; flex: 1; }
-.amf-input-suffix { padding: 9px 12px; background: #f1f5f9; border: 1.5px solid #e2e8f0; border-left: none; border-radius: 0 8px 8px 0; font-size: 0.8rem; color: #64748b; font-weight: 600; white-space: nowrap; display: flex; align-items: center; }
+.amf-page { max-width: 1100px; margin: 0 auto; padding: 24px; background: var(--bg-page); min-height: 100vh; font-family: 'Inter', sans-serif; }
+.amf-breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+.amf-breadcrumb a { color: var(--text-muted); text-decoration: none; }
+.amf-breadcrumb a:hover { color: var(--primary); }
+.amf-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+.amf-title { font-size: 24px; font-weight: 700; color: var(--text-main); margin: 0 0 6px 0; }
+.amf-subtitle { font-size: 14px; color: var(--text-muted); margin: 0; }
+.amf-actions-top { display: flex; gap: 12px; }
+.amf-layout { display: grid; grid-template-columns: 1.4fr 1fr; gap: 24px; align-items: start; }
+@media (max-width: 900px) { .amf-layout { grid-template-columns: 1fr; } }
+.amf-col-left, .amf-col-right { display: flex; flex-direction: column; }
+.mb-4 { margin-bottom: 24px; }
+.amf-row { display: flex; gap: 16px; margin-bottom: 16px; }
+.amf-col { flex: 1; }
 
-.amf-slots-preview { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; background: #f8fafc; border: 1px dashed #e2e8f0; border-radius: 8px; min-height: 42px; align-items: center; }
-.amf-slot-chip { background: #eff6ff; color: #2563eb; font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 20px; border: 1px solid #bfdbfe; }
+.amf-card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+.amf-card-header { display: flex; align-items: center; gap: 8px; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+.amf-card-icon { display: flex; align-items: center; justify-content: center; color: var(--primary); background: #eff6ff; width: 28px; height: 28px; border-radius: 50%; }
+.amf-card-title { font-size: 16px; font-weight: 600; margin: 0; color: var(--text-main); }
+.amf-card-body { padding: 20px; }
 
-.amf-price-preview-wrap { justify-content: flex-start; }
-.amf-price-preview { padding: 10px 14px; background: #f8fafc; border: 1px dashed #e2e8f0; border-radius: 8px; font-size: 0.9rem; font-weight: 700; color: #0f172a; min-height: 42px; display: flex; align-items: center; }
-.amf-free-badge { color: #16a34a; }
-.amf-paid-badge { color: #2563eb; }
+.amf-form-group { margin-bottom: 16px; }
+.amf-form-group:last-child { margin-bottom: 0; }
+.amf-form-group label { display: block; font-size: 14px; font-weight: 500; color: var(--text-main); margin-bottom: 8px; }
+.amf-control { width: 100%; padding: 10px 12px; font-size: 14px; line-height: 1.5; color: var(--text-main); background-color: #fff; border: 1px solid var(--border); border-radius: 6px; transition: border-color .15s, box-shadow .15s; box-sizing: border-box; }
+.amf-control:focus { border-color: var(--border-focus); outline: 0; box-shadow: 0 0 0 3px var(--ring); }
+.amf-control:disabled { background-color: #f1f5f9; color: #94a3b8; }
+.text-danger { color: var(--danger); }
+.text-muted { color: var(--text-muted); }
+.mt-0 { margin-top: 0; }
+.mt-3 { margin-top: 16px; }
 
-/* Booking type cards */
-.amf-booking-type-wrap { display: flex; gap: 12px; flex-wrap: wrap; }
-.amf-type-card {
-    display: flex; align-items: center; gap: 12px;
-    padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px;
-    cursor: pointer; flex: 1; min-width: 200px; background: #f8fafc;
-    transition: all 0.18s;
-}
-.amf-type-card input[type="radio"] { display: none; }
-.amf-type-card:hover { border-color: #93c5fd; background: #eff6ff; }
-.amf-type-card--active { border-color: #3b82f6 !important; background: #eff6ff !important; box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
-.amf-type-icon { font-size: 1.6rem; flex-shrink: 0; }
-.amf-type-info { display: flex; flex-direction: column; gap: 2px; }
-.amf-type-info strong { font-size: 0.875rem; font-weight: 700; color: #1e293b; }
-.amf-type-info span { font-size: 0.75rem; color: #64748b; }
-.amf-type-card--active .amf-type-info strong { color: #2563eb; }
+.amf-input-group { display: flex; align-items: center; }
+.amf-input-group .amf-control { border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: 0; }
+.amf-input-group-text { display: flex; align-items: center; padding: 10px 12px; font-size: 14px; color: var(--text-muted); background-color: #f8fafc; border: 1px solid var(--border); border-top-right-radius: 6px; border-bottom-right-radius: 6px; }
 
-.amf-error-summary { display: flex; gap: 10px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px 14px; color: #b91c1c; font-size: 0.85rem; }
-.amf-error-summary svg { flex-shrink: 0; margin-top: 2px; }
-.amf-error-summary strong { display: block; margin-bottom: 4px; }
-.amf-error-summary ul { margin: 0; padding-left: 16px; }
-.amf-error-summary li { margin: 2px 0; }
+.amf-time-range { display: flex; align-items: center; gap: 12px; }
+.amf-time-range .amf-control { flex: 1; }
 
-.amf-actions { display: flex; gap: 10px; align-items: center; }
-.amf-btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 20px; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer; border: none; text-decoration: none; transition: all 0.15s; }
-.amf-btn--primary { background: #2563eb; color: #fff; }
-.amf-btn--primary:hover { background: #1d4ed8; }
-.amf-btn--ghost { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
-.amf-btn--ghost:hover { background: #f1f5f9; }
-.amf-btn--secondary { background: #10b981; color: #fff; }
-.amf-btn--secondary:hover { background: #059669; }
+.amf-editor-toolbar { display: flex; border: 1px solid var(--border); border-bottom: none; border-top-left-radius: 6px; border-top-right-radius: 6px; background: #f8fafc; padding: 4px 8px; gap: 4px; }
+.amf-editor-toolbar button { background: transparent; border: none; padding: 6px 10px; cursor: pointer; color: var(--text-muted); border-radius: 4px; }
+.amf-editor-toolbar button:hover { background: #e2e8f0; }
+.amf-char-count { text-align: right; font-size: 12px; color: var(--text-muted); margin-top: 4px; }
 
-.amf-image-upload-wrapper { display: flex; gap: 12px; align-items: center; margin-top: 6px; }
-.amf-file-input { flex: 1; padding: 8px 12px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.875rem; }
-.amf-image-gallery { margin-top: 10px; }
-.amf-gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; margin-top: 8px; }
-.amf-gallery-item { position: relative; border-radius: 10px; overflow: hidden; aspect-ratio: 4/3; border: 1.5px solid #e2e8f0; background: #f8fafc; display: flex; align-items: center; justify-content: center; }
+.amf-radio-list { display: flex; flex-direction: column; gap: 12px; }
+.amf-radio { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
+.amf-radio input[type="radio"] { width: 18px; height: 18px; accent-color: var(--primary); }
+.amf-hint { font-size: 12px; color: var(--text-muted); margin: 4px 0 0; }
+
+.amf-radio-card { display: flex; align-items: flex-start; gap: 12px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+.amf-radio-card:has(input:checked) { border-color: var(--primary); background: #eff6ff; }
+.amf-radio-card input[type="radio"] { margin-top: 4px; width: 18px; height: 18px; accent-color: var(--primary); }
+.amf-radio-title { font-size: 14px; font-weight: 500; color: var(--text-main); margin-bottom: 2px; }
+.amf-radio-desc { font-size: 12px; color: var(--text-muted); }
+.amf-sub-settings { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-top: 12px; }
+
+.amf-status-group { display: flex; align-items: center; gap: 16px; }
+.amf-toggle-wrap { display: flex; align-items: center; gap: 10px; }
+.amf-toggle { position: relative; display: inline-block; width: 44px; height: 24px; }
+.amf-toggle input[type="checkbox"] { opacity: 0; width: 0; height: 0; }
+.amf-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .3s; border-radius: 24px; }
+.amf-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+.amf-toggle input:checked + .amf-slider { background-color: #16a34a; }
+.amf-toggle input:checked + .amf-slider:before { transform: translateX(20px); }
+.amf-toggle-label { font-size: 14px; font-weight: 500; }
+
+.amf-alert { display: flex; align-items: flex-start; gap: 10px; padding: 12px 16px; border-radius: 8px; font-size: 13px; line-height: 1.5; }
+.amf-alert svg { flex-shrink: 0; margin-top: 1px; }
+.amf-alert-danger { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; margin-bottom: 24px; }
+
+.amf-btn { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; font-size: 14px; font-weight: 500; border-radius: 6px; cursor: pointer; transition: all 0.2s; text-decoration: none; border: 1px solid transparent; }
+.amf-btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
+.amf-btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+.amf-btn-outline { background: white; color: var(--text-main); border-color: var(--border); }
+.amf-btn-outline:hover { background: var(--bg-page); }
+
+.amf-image-upload-wrapper { display: flex; gap: 12px; align-items: center; margin-bottom: 4px; }
+.amf-gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; margin-top: 12px; }
+.amf-gallery-item { position: relative; border-radius: 8px; overflow: hidden; aspect-ratio: 4/3; border: 1px solid var(--border); background: #f8fafc; }
 .amf-gallery-item img { width: 100%; height: 100%; object-fit: cover; }
 .amf-delete-image-form { position: absolute; top: 6px; right: 6px; z-index: 10; margin: 0; padding: 0; }
-.amf-btn-delete-img { width: 22px; height: 22px; border-radius: 50%; background: rgba(239, 68, 68, 0.9); color: #fff; border: none; font-size: 14px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; transition: background 0.15s; padding: 0; }
-.amf-btn-delete-img:hover { background: rgba(220, 38, 38, 1); }
-.amf-no-image { font-size: 0.85rem; color: #64748b; margin: 8px 0 0; }
-
-@media (max-width: 600px) {
-    .amf-grid { grid-template-columns: 1fr; }
-    .amf-card { padding: 16px; }
-    .amf-booking-type-wrap { flex-direction: column; }
-}
+.amf-btn-delete-img { width: 24px; height: 24px; border-radius: 50%; background: rgba(0,0,0,0.6); color: #fff; border: none; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0; transition: background 0.2s; }
+.amf-btn-delete-img:hover { background: rgba(220, 38, 38, 0.9); }
 </style>
 
 @push('scripts')
 <script>
-function generateSlots() {
-    const open     = document.getElementById('open_time').value;
-    const close    = document.getElementById('close_time').value;
-    const durationSelect = document.getElementById('slot_duration').value;
-    const duration = parseInt(durationSelect);
-    const preview  = document.getElementById('slotsPreview');
-    if (!open || !close) {
-        preview.innerHTML = '<span class="amf-hint">Nhập giờ mở/đóng cửa để xem trước</span>';
-        return;
-    }
-    if (duration === 0) {
-        preview.innerHTML = `<span class="amf-slot-chip">${open} – ${close}</span><span class="amf-hint" style="margin-left:4px">Cả ngày (1 slot duy nhất)</span>`;
-        return;
-    }
-    const [oh, om] = open.split(':').map(Number);
-    const [ch, cm] = close.split(':').map(Number);
-    let start = oh * 60 + om;
-    const end = ch * 60 + cm;
-    let chips = ''; let count = 0;
-    while (start + duration <= end) {
-        const s = String(Math.floor(start/60)).padStart(2,'0') + ':' + String(start%60).padStart(2,'0');
-        const e = String(Math.floor((start+duration)/60)).padStart(2,'0') + ':' + String((start+duration)%60).padStart(2,'0');
-        chips += `<span class="amf-slot-chip">${s} – ${e}</span>`;
-        start += duration; count++;
-    }
-    preview.innerHTML = count > 0
-        ? chips + `<span class="amf-hint" style="margin-left:4px">${count} khung giờ</span>`
-        : '<span class="amf-hint" style="color:#ef4444">Không tạo được khung giờ nào</span>';
-}
+document.addEventListener('DOMContentLoaded', function() {
+    // Handling fee type and price input logic
+    const feeRadios = document.querySelectorAll('input[name="fee_type"]');
+    const priceGroup = document.getElementById('priceGroup');
+    const priceInput = document.getElementById('priceInput');
 
-function updatePricePreview() {
-    const isSlot  = document.getElementById('typeSlot').checked;
-    const preview = document.getElementById('pricePreview');
-    const labels  = { '0':'lượt', '30':'30 phút', '60':'1 tiếng', '90':'1.5 tiếng', '120':'2 tiếng' };
-    if (isSlot) {
-        const price    = parseInt(document.getElementById('price_per_slot').value) || 0;
-        const duration = document.getElementById('slot_duration').value;
-        preview.innerHTML = price === 0
-            ? '<span class="amf-free-badge">🎉 Miễn phí</span>'
-            : `<span class="amf-paid-badge">${price.toLocaleString('vi-VN')}đ / ${labels[duration] || duration+' phút'}</span>`;
-    } else {
-        const price = parseInt(document.getElementById('price_per_person').value) || 0;
-        preview.innerHTML = price === 0
-            ? '<span class="amf-free-badge">🎉 Miễn phí</span>'
-            : `<span class="amf-paid-badge">${price.toLocaleString('vi-VN')}đ / người</span>`;
+    function updatePriceState() {
+        const checkedRadio = document.querySelector('input[name="fee_type"]:checked');
+        if (!checkedRadio) return;
+        const selectedFee = checkedRadio.value;
+        if (selectedFee === 'free') {
+            priceInput.disabled = true;
+            priceGroup.style.display = 'none';
+        } else {
+            priceInput.disabled = false;
+            priceGroup.style.display = 'block';
+        }
     }
-}
 
-function syncBookingType() {
-    const isSlot = document.getElementById('typeSlot').checked;
-    document.getElementById('priceSlotWrap').style.display   = isSlot ? '' : 'none';
-    document.getElementById('pricePersonWrap').style.display = isSlot ? 'none' : '';
-    document.getElementById('typeCardSlot').classList.toggle('amf-type-card--active', isSlot);
-    document.getElementById('typeCardPerson').classList.toggle('amf-type-card--active', !isSlot);
-    // Ẩn/hiện thời lượng và khung giờ preview theo loại đặt chỗ
-    const slotSettings = document.getElementById('slotSettingsWrap');
-    if (slotSettings) {
-        slotSettings.querySelectorAll('.amf-field').forEach(el => {
-            el.style.display = isSlot ? '' : 'none';
-        });
+    feeRadios.forEach(radio => {
+        radio.addEventListener('change', updatePriceState);
+    });
+
+    // Handling booking type logic
+    const bookingRadios = document.querySelectorAll('input[name="booking_type"]');
+    const timeSlotSettings = document.getElementById('timeSlotSettings');
+
+    function updateBookingState() {
+        const checkedRadio = document.querySelector('input[name="booking_type"]:checked');
+        if (!checkedRadio) return;
+        const selectedBooking = checkedRadio.value;
+        if (selectedBooking === 'time_slot' || selectedBooking === 'slot') {
+            timeSlotSettings.style.display = 'block';
+        } else {
+            timeSlotSettings.style.display = 'none';
+        }
     }
-    updatePricePreview();
-}
 
-document.getElementById('typeSlot').addEventListener('change', syncBookingType);
-document.getElementById('typePerson').addEventListener('change', syncBookingType);
+    bookingRadios.forEach(radio => {
+        radio.addEventListener('change', updateBookingState);
+    });
 
-['open_time','close_time','slot_duration'].forEach(id =>
-    document.getElementById(id).addEventListener('change', generateSlots)
-);
-document.getElementById('price_per_slot').addEventListener('input', updatePricePreview);
-document.getElementById('price_per_person').addEventListener('input', updatePricePreview);
-document.getElementById('slot_duration').addEventListener('change', updatePricePreview);
+    // AJAX load floors
+    const blockSelect = document.getElementById('blockSelect');
+    const floorSelect = document.getElementById('floorSelect');
+    const oldFloorId = document.getElementById('oldFloorId').value;
 
-// Init on load
-syncBookingType();
-generateSlots();
+    function loadFloors(blockId, selectedFloorId = null) {
+        if (!blockId) {
+            floorSelect.innerHTML = '<option value="">Chọn tầng (Tùy chọn)</option>';
+            floorSelect.disabled = true;
+            return;
+        }
+
+        floorSelect.disabled = true;
+        floorSelect.innerHTML = '<option value="">Đang tải...</option>';
+
+        let url = '{{ portal_route("amenities.floors", "BLOCK_ID") }}';
+        url = url.replace('BLOCK_ID', blockId);
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                floorSelect.innerHTML = '<option value="">Chọn tầng (Tùy chọn)</option>';
+                data.forEach(floor => {
+                    const option = document.createElement('option');
+                    option.value = floor.id;
+                    option.textContent = floor.name;
+                    if (selectedFloorId && selectedFloorId == floor.id) {
+                        option.selected = true;
+                    }
+                    floorSelect.appendChild(option);
+                });
+                floorSelect.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error loading floors:', error);
+                floorSelect.innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
+            });
+    }
+
+    blockSelect.addEventListener('change', function() {
+        loadFloors(this.value);
+    });
+
+    if (blockSelect.value) {
+        loadFloors(blockSelect.value, oldFloorId);
+    }
+
+    // Initialize states
+    updatePriceState();
+    updateBookingState();
+});
 </script>
 @endpush
 

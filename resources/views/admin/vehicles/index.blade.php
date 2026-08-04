@@ -3,7 +3,7 @@
 @section('page_title', 'Quản lý Phương tiện')
 @section('page_kicker', 'Quản trị hệ thống')
 @section('role_title', 'Admin Portal')
-@section('home_route', route('admin.dashboard'))
+@section('home_route', portal_route('dashboard'))
 @section('user_name', auth()->user()->name ?? 'Admin')
 @section('user_role', 'admin')
 
@@ -22,7 +22,7 @@
         </div>
         <div class="vehicles-page__actions">
             @if(auth()->user()->role === 'admin')
-            <a href="{{ route('admin.vehicle-logs.index') }}" class="veh-tab-btn" style="background:#fff; color:#475569; border:1px solid #cbd5e1; display:inline-flex; align-items:center; gap:6px; padding: 8px 16px; text-decoration: none; border-radius: 6px; font-weight: 500; font-size: 14px;">
+            <a href="{{ portal_route('vehicle-logs.index') }}" class="veh-tab-btn" style="background:#fff; color:#475569; border:1px solid #cbd5e1; display:inline-flex; align-items:center; gap:6px; padding: 8px 16px; text-decoration: none; border-radius: 6px; font-weight: 500; font-size: 14px;">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6z"></path>
                     <path d="M14 3v5h5M16 13H8M16 17H8M10 9H8"></path>
@@ -108,19 +108,19 @@
 
     {{-- Tabs --}}
     <div class="veh-tabs-nav">
-        <a href="{{ route('admin.vehicles.index', array_merge(request()->except('status', 'page'), ['status' => ''])) }}"
+        <a href="{{ portal_route('vehicles.index', array_merge(request()->except('status', 'page'), ['status' => ''])) }}"
            class="veh-tab-btn {{ !request('status') ? 'active' : '' }}">
             Tất cả
         </a>
-        <a href="{{ route('admin.vehicles.index', array_merge(request()->except('page'), ['status' => 'pending'])) }}"
+        <a href="{{ portal_route('vehicles.index', array_merge(request()->except('page'), ['status' => 'pending'])) }}"
            class="veh-tab-btn {{ request('status') == 'pending' ? 'active' : '' }}">
             Chờ duyệt
         </a>
-        <a href="{{ route('admin.vehicles.index', array_merge(request()->except('page'), ['status' => 'active'])) }}"
+        <a href="{{ portal_route('vehicles.index', array_merge(request()->except('page'), ['status' => 'active'])) }}"
            class="veh-tab-btn {{ request('status') == 'active' ? 'active' : '' }}">
             Đang hoạt động
         </a>
-        <a href="{{ route('admin.vehicles.index', array_merge(request()->except('page'), ['status' => 'locked'])) }}"
+        <a href="{{ portal_route('vehicles.index', array_merge(request()->except('page'), ['status' => 'locked'])) }}"
            class="veh-tab-btn {{ request('status') == 'locked' ? 'active' : '' }}">
             Đã khóa
         </a>
@@ -145,8 +145,9 @@
                 <tbody>
                     @forelse($vehicles as $v)
                     @php
-                        $owner = $v->apartment?->residents?->first()?->user ?? null;
-                        $ownerName = $owner?->name ?? '—';
+                        $ownerName = $v->apartment?->owner_name ?? '—';
+                        $owner = $v->apartment?->residents?->first(fn($r) => $r->relationship === 'owner')?->user 
+                                 ?? $v->apartment?->residents?->first()?->user ?? null;
                         $ownerPhone = $owner?->phone ?? null;
                         $blockName = $v->apartment?->floor?->block?->name ?? '—';
                         $floorName = $v->apartment?->floor?->name ?? '';
@@ -210,7 +211,7 @@
                             <div class="veh-table-actions">
                                 {{-- Ô tô chờ duyệt → gán lốt --}}
                                 @if($v->status === 'pending' && $v->vehicle_type === 'car')
-                                    <form action="{{ route('admin.vehicles.assignLot', $v) }}" method="POST" style="display:flex; gap:6px; align-items:center;">
+                                    <form action="{{ portal_route('vehicles.assignLot', $v) }}" method="POST" style="display:flex; gap:6px; align-items:center;">
                                         @csrf
                                         <select name="parking_lot_id" required class="veh-lot-select">
                                             <option value="" disabled selected>Chọn lốt</option>
@@ -222,9 +223,9 @@
                                     </form>
                                 @endif
 
-                                {{-- Xe máy/điện chờ duyệt → duyệt --}}
-                                @if($v->status === 'pending' && $v->isMotorbike())
-                                    <form action="{{ route('admin.vehicles.approve', $v) }}" method="POST" style="display:contents;">
+                                {{-- Xe máy/điện/đạp chờ duyệt → duyệt --}}
+                                @if($v->status === 'pending' && !$v->isCar())
+                                    <form action="{{ portal_route('vehicles.approve', $v) }}" method="POST" style="display:contents;">
                                         @csrf
                                         <button type="submit" class="veh-table-btn veh-table-btn--approve" title="Duyệt xe">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
@@ -235,7 +236,7 @@
                                 {{-- Active/Pending Renewal → thu hồi lốt + khóa --}}
                                 @if(in_array($v->status, ['active', 'pending_renewal']))
                                     @if($v->vehicle_type === 'car' && $v->parking_lot_id)
-                                        <form action="{{ route('admin.vehicles.releaseLot', $v) }}" method="POST" style="display:contents;" onsubmit="return confirm('Thu hồi lốt đỗ của xe này?')">
+                                        <form action="{{ portal_route('vehicles.releaseLot', $v) }}" method="POST" style="display:contents;" onsubmit="return confirm('Thu hồi lốt đỗ của xe này?')">
                                             @csrf
                                             <button type="submit" class="veh-table-btn veh-table-btn--release" title="Thu hồi lốt">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -243,7 +244,7 @@
                                         </form>
                                     @endif
 
-                                    <form action="{{ route('admin.vehicles.lock', $v) }}" method="POST" style="display:contents;" onsubmit="return confirm('Khóa xe này?')">
+                                    <form action="{{ portal_route('vehicles.lock', $v) }}" method="POST" style="display:contents;" onsubmit="return confirm('Khóa xe này?')">
                                         @csrf
                                         <button type="submit" class="veh-table-btn veh-table-btn--lock" title="Khóa xe">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
@@ -253,13 +254,21 @@
 
                                 {{-- Locked → mở khóa --}}
                                 @if($v->status === 'locked')
-                                    <form action="{{ route('admin.vehicles.unlock', $v) }}" method="POST" style="display:contents;" onsubmit="return confirm('Mở khóa xe này?')">
+                                    <form action="{{ portal_route('vehicles.unlock', $v) }}" method="POST" style="display:contents;" onsubmit="return confirm('Mở khóa xe này?')">
                                         @csrf
                                         <button type="submit" class="veh-table-btn veh-table-btn--unlock" title="Mở khóa">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 019.9-1"/></svg>
                                         </button>
                                     </form>
                                 @endif
+
+                                    <form action="{{ portal_route('vehicles.destroy', $v) }}" method="POST" style="display:contents;" onsubmit="return confirm('Xóa xe {{ $v->license_plate }} khỏi hệ thống? Hành động này không thể hoàn tác.')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="veh-table-btn veh-table-btn--lock" title="Xóa xe" style="color:#EE5D50;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                                        </button>
+                                    </form>
                             </div>
                         </td>
                     </tr>

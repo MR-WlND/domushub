@@ -99,6 +99,27 @@ class InvitationApiController extends Controller
             return response()->json(['message' => 'Bạn đã là cư dân của căn hộ này.'], 422);
         }
 
+        // Kiểm tra giới hạn số lượng cư dân tối đa (10 người)
+        $currentCount = Resident::where('apartment_id', $invite->apartment_id)
+            ->whereNull('deleted_at')
+            ->whereIn('status', ['active', 'pending'])
+            ->count();
+        if ($currentCount >= 10) {
+            return response()->json(['message' => 'Căn hộ đã đạt giới hạn cư dân tối đa (10 người).'], 422);
+        }
+
+        // Kiểm tra ràng buộc Chủ hộ (Owner)
+        if ($invite->intended_relationship === 'owner') {
+            $hasOwner = Resident::where('apartment_id', $invite->apartment_id)
+                ->where('relationship', 'owner')
+                ->whereNull('deleted_at')
+                ->exists();
+
+            if ($hasOwner) {
+                return response()->json(['message' => 'Căn hộ liên kết với mã mời này đã có chủ hộ đăng ký trong hệ thống.'], 422);
+            }
+        }
+
         DB::transaction(function () use ($invite, $userId) {
             // Insert vào bảng residents
             Resident::create([
@@ -108,6 +129,7 @@ class InvitationApiController extends Controller
                 'relationship' => $invite->intended_relationship,
                 'temporary_status' => 'permanent',
                 'start_date' => now()->toDateString(),
+                'status' => $invite->intended_relationship === 'owner' ? 'active' : 'pending',
             ]);
 
             // Đổi trạng thái mã mời thành used
@@ -115,7 +137,7 @@ class InvitationApiController extends Controller
         });
 
         return response()->json([
-            'message' => 'Đã tham gia căn hộ thành công.',
+            'message' => $invite->intended_relationship === 'owner' ? 'Đã tham gia căn hộ thành công.' : 'Yêu cầu gia nhập đã được gửi đến chủ hộ phê duyệt.',
             'apartment_id' => $invite->apartment_id,
         ]);
     }
