@@ -68,12 +68,32 @@
 
                     <div class="invitations-form__field">
                         <label class="invitations-form__label">
+                            Chọn tầng (tuỳ chọn)
+                        </label>
+                        <select name="floor_id" class="invitations-form__input">
+                            <option value="">-- Không chọn tầng cụ thể --</option>
+                            @foreach ($floors as $floor)
+                                <option value="{{ $floor->id }}" data-block-id="{{ $floor->block_id }}"
+                                    {{ old('floor_id') == $floor->id ? 'selected' : '' }}>
+                                    {{ $floor->display_name }} - {{ $floor->block->name ?? 'Tòa' }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('floor_id')
+                            <small class="invitations-form__hint invitations-form__hint--error">{{ $message }}</small>
+                        @else
+                            <small class="invitations-form__hint">Chọn tầng để lọc danh sách căn hộ dễ dàng hơn.</small>
+                        @enderror
+                    </div>
+
+                    <div class="invitations-form__field">
+                        <label class="invitations-form__label">
                             Chọn căn hộ (tuỳ chọn)
                         </label>
                         <select name="apartment_id" class="invitations-form__input">
                             <option value="">-- Không chọn căn hộ cụ thể --</option>
                             @foreach ($apartments as $apartment)
-                                <option value="{{ $apartment->id }}" data-block-id="{{ $apartment->floor->block_id }}"
+                                <option value="{{ $apartment->id }}" data-block-id="{{ $apartment->floor->block_id ?? '' }}" data-floor-id="{{ $apartment->floor_id }}"
                                     {{ old('apartment_id') == $apartment->id ? 'selected' : '' }}>
                                     {{ $apartment->apartment_number }} -
                                     {{ $apartment->floor->name ?? 'Tầng ' . $apartment->floor->floor_number }} /
@@ -276,31 +296,53 @@
 
             document.addEventListener('DOMContentLoaded', function() {
                 const blockSelect = document.querySelector('select[name="block_id"]');
+                const floorSelect = document.querySelector('select[name="floor_id"]');
                 const apartmentSelect = document.querySelector('select[name="apartment_id"]');
 
                 if (!blockSelect || !apartmentSelect) {
                     return;
                 }
 
-                blockSelect.addEventListener('change', function() {
-                    const selectedBlockId = this.value;
-                    Array.from(apartmentSelect.options).forEach(option => {
+                function filterSelect(selectElement, attribute, matchValue) {
+                    Array.from(selectElement.options).forEach(option => {
                         if (!option.value) {
                             option.hidden = false;
                             return;
                         }
-
-                        const blockId = option.dataset.blockId;
-                        option.hidden = selectedBlockId && blockId !== selectedBlockId;
+                        const dataValue = option.dataset[attribute];
+                        option.hidden = matchValue && dataValue !== matchValue;
                     });
-
-                    if (selectedBlockId && apartmentSelect.value) {
-                        const selectedOption = apartmentSelect.selectedOptions[0];
-                        if (selectedOption && selectedOption.hidden) {
-                            apartmentSelect.value = '';
-                        }
+                    
+                    // Reset value if currently selected option is now hidden
+                    const selectedOption = selectElement.selectedOptions[0];
+                    if (selectedOption && selectedOption.hidden) {
+                        selectElement.value = '';
                     }
+                }
+
+                blockSelect.addEventListener('change', function() {
+                    const selectedBlockId = this.value;
+                    
+                    if (floorSelect) {
+                        filterSelect(floorSelect, 'blockId', selectedBlockId);
+                    }
+                    
+                    filterSelect(apartmentSelect, 'blockId', selectedBlockId);
                 });
+                
+                if (floorSelect) {
+                    floorSelect.addEventListener('change', function() {
+                        const selectedFloorId = this.value;
+                        const selectedBlockId = blockSelect.value;
+                        
+                        if (selectedFloorId) {
+                            filterSelect(apartmentSelect, 'floorId', selectedFloorId);
+                        } else {
+                            // If floor is unselected, fallback to filtering by block
+                            filterSelect(apartmentSelect, 'blockId', selectedBlockId);
+                        }
+                    });
+                }
             });
         </script>
     @endpush
