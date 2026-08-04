@@ -23,7 +23,9 @@ class InvitationController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('admin.invitations.index', compact('blocks', 'apartments', 'invitations'));
+        $floors = \App\Models\Floor::orderBy('floor_number')->get();
+
+        return view('admin.invitations.index', compact('blocks', 'floors', 'apartments', 'invitations'));
     }
 
     public function store(Request $request)

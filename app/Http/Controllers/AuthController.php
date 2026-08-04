@@ -327,17 +327,18 @@ class AuthController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:100'],
-            'phone' => ['required', 'string', 'max:20', 'regex:/^[0-9+]+$/', 'unique:users,phone'],
-            'email' => ['required', 'email', 'max:150', 'unique:users,email'],
+            'phone' => ['required', 'string', 'regex:/^(03|05|07|08|09)[0-9]{8}$/', 'unique:users,phone'],
+            'email' => ['required', 'email', 'max:150', 'regex:/^[a-zA-Z0-9._%+-]+@gmail\.com$/i', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'invite_code' => ['required', 'string', 'max:50'],
         ], [
             'name.required' => 'Vui lòng nhập họ và tên.',
             'phone.required' => 'Vui lòng nhập số điện thoại.',
-            'phone.regex' => 'Số điện thoại chỉ được chứa số và dấu +.',
+            'phone.regex' => 'Số điện thoại phải gồm đúng 10 chữ số, bắt đầu bằng số 0 và thuộc mạng Việt Nam (đầu số 03, 05, 07, 08, 09).',
             'phone.unique' => 'Số điện thoại đã tồn tại trong hệ thống.',
             'email.required' => 'Vui lòng nhập email.',
             'email.email' => 'Email không đúng định dạng.',
+            'email.regex' => 'Email đăng ký phải là tài khoản Gmail hợp lệ (có đuôi @gmail.com).',
             'email.unique' => 'Email đã tồn tại trong hệ thống.',
             'password.required' => 'Vui lòng nhập mật khẩu.',
             'password.min' => 'Mật khẩu phải có ít nhất 8 ký tự.',
