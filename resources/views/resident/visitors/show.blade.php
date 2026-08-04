@@ -143,13 +143,13 @@
                 </div>
                 @if($visitor->check_in_at)
                 <div class="vd-row">
-                    <span class="vd-lbl">✅ Vào lúc</span>
+                    <span class="vd-lbl">Vào lúc</span>
                     <span class="vd-val" style="color:#059669;">{{ $visitor->check_in_at->format('H:i — d/m/Y') }}</span>
                 </div>
                 @endif
                 @if($visitor->check_out_at)
                 <div class="vd-row">
-                    <span class="vd-lbl">🚪 Ra lúc</span>
+                    <span class="vd-lbl">Ra lúc</span>
                     <span class="vd-val" style="color:#64748b;">{{ $visitor->check_out_at->format('H:i — d/m/Y') }}</span>
                 </div>
                 @endif
