@@ -19,14 +19,7 @@ class VisitorWalkInNotification extends Notification
 
     public function toArray(object $notifiable): array
     {
-        $apt   = $this->visitor->apartment;
-        $block = $apt?->floor?->block;
-        $msg   = sprintf(
-            'Bảo vệ vừa tạo đăng ký cho khách "%s" đến thăm căn hộ %s%s. Vui lòng xác nhận hoặc từ chối.',
-            $this->visitor->guest_name,
-            $apt?->apartment_number ?? '—',
-            $block ? ' (' . $block->name . ')' : ''
-        );
+        $msg = $this->visitor->note ?? 'Không có lý do';
 
         return [
             'type'         => 'visitor_walk_in',
