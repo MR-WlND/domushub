@@ -225,7 +225,9 @@ class FacilityController extends Controller
             }
 
             // Tìm ServicePrice loại 'service' để gắn vào chi tiết hóa đơn
-            $servicePrice = ServicePrice::where('status', 'active')->first();
+            $servicePrice = ServicePrice::where('status', 'active')
+                ->where('type', 'service')
+                ->first();
 
             $amount = $booking->amount;
 
