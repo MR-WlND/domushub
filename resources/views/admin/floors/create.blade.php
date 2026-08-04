@@ -75,7 +75,7 @@
                         <div class="form-group-custom">
                             <label class="form-label-custom">Block / Tòa nhà <span class="required">*</span></label>
                             <select name="block_id" id="block_select" class="form-input-custom @error('block_id') input-error @enderror" required style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 16px;">
-                                <option value="">-- Chọn tòa nhà --</option>
+                                <option value="">Chọn Tòa nhà</option>
                                 @foreach($blocks as $block)
                                     <option value="{{ $block->id }}" data-apartments="{{ $block->apartments_per_floor }}" {{ old('block_id', $selectedBlockId ?? '') == $block->id ? 'selected' : '' }}>
                                         {{ $block->name }}
@@ -89,7 +89,7 @@
 
                         {{-- Loại tầng --}}
                         <div class="form-group-custom">
-                            <label class="form-label-custom">Loại tầng <span class="required">*</span></label>
+                            <label class="form-label-custom">Loại tầng</label>
                             <select name="floor_type" id="floor_type_select" class="form-input-custom @error('floor_type') input-error @enderror" required style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 16px;">
                                 <option value="above_ground" {{ old('floor_type', 'above_ground') == 'above_ground' ? 'selected' : '' }}>Tầng nổi</option>
                                 <option value="basement"     {{ old('floor_type') == 'basement' ? 'selected' : '' }}>Tầng hầm</option>
@@ -168,7 +168,7 @@
     {{-- Actions --}}
     <div class="floors-page__actions" style="justify-content: flex-end; margin-top: 24px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
         <a href="{{ portal_route('blocks.index') }}" class="floors-button floors-button--light" style="margin-right: 12px;">Hủy</a>
-        <button type="button" onclick="document.getElementById('createFloorForm').submit()" class="floors-button floors-button--primary">
+        <button type="submit" form="createFloorForm" class="floors-button floors-button--primary">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
             Lưu tầng
         </button>

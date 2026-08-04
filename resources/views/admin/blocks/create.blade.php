@@ -73,7 +73,7 @@
                     <div class="form-grid-2" style="margin-top: 15px;">
                         {{-- Số tầng nổi (Giữ theo yc) --}}
                         <div class="form-group-custom">
-                            <label class="form-label-custom">Số tầng nổi <span class="required">*</span></label>
+                            <label class="form-label-custom">Số tầng nổi</label>
                             <div class="input-wrapper-custom">
                                 <span class="input-icon-custom">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
@@ -85,7 +85,7 @@
 
                         {{-- Số tầng hầm (Giữ theo yc) --}}
                         <div class="form-group-custom">
-                            <label class="form-label-custom">Số tầng hầm <span class="required">*</span></label>
+                            <label class="form-label-custom">Số tầng hầm</label>
                             <div class="input-wrapper-custom">
                                 <span class="input-icon-custom">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>

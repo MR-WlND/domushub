@@ -223,9 +223,9 @@
                     <div class="form-grid-2">
                         {{-- Tòa nhà --}}
                         <div class="form-group-custom">
-                            <label class="form-label-custom">Tòa nhà</label>
+                            <label class="form-label-custom">Tòa nhà <span class="required">*</span></label>
                             <select id="block_select" class="form-input-custom form-input-noicon" required>
-                                <option value="">-- Chọn Tòa nhà --</option>
+                                <option value="">Chọn Tòa nhà</option>
                                 @foreach($blocks as $block)
                                     <option value="{{ $block->id }}" {{ $selectedBlockId == $block->id ? 'selected' : '' }}>
                                         {{ $block->name }}
@@ -236,9 +236,9 @@
 
                         {{-- Tầng --}}
                         <div class="form-group-custom">
-                            <label class="form-label-custom">Tầng</label>
+                            <label class="form-label-custom">Tầng <span class="required">*</span></label>
                             <select name="floor_id" id="floor_select" class="form-input-custom form-input-noicon @error('floor_id') input-error @enderror" required disabled>
-                                <option value="">-- Chọn Tầng --</option>
+                                <option value="">Chọn Tầng</option>
                                 @foreach($floors as $floor)
                                     <option value="{{ $floor->id }}" data-block-id="{{ $floor->block_id }}" {{ old('floor_id', $selectedFloorId ?? '') == $floor->id ? 'selected' : '' }}>
                                         {{ $floor->name ?? 'Tầng ' . $floor->floor_number }}
@@ -252,7 +252,7 @@
 
                         {{-- Mã căn hộ --}}
                         <div class="form-group-custom">
-                            <label class="form-label-custom">Mã căn hộ</label>
+                            <label class="form-label-custom">Mã căn hộ <span class="required">*</span></label>
                             <input type="text" name="apartment_number" value="{{ old('apartment_number') }}" placeholder="VD: A1-1205" class="form-input-custom form-input-noicon @error('apartment_number') input-error @enderror" required>
                             @error('apartment_number')
                                 <p class="form-error-custom">{{ $message }}</p>
@@ -263,7 +263,7 @@
                         <div class="form-group-custom">
                             <label class="form-label-custom">Loại căn hộ</label>
                             <select name="apartment_type_id" class="form-input-custom form-input-noicon @error('apartment_type_id') input-error @enderror">
-                                <option value="">-- Chọn Loại căn hộ --</option>
+                                <option value="">Chọn Loại căn hộ</option>
                                 @foreach($apartmentTypes as $type)
                                     <option value="{{ $type->id }}" {{ old('apartment_type_id') == $type->id ? 'selected' : '' }}>
                                         {{ $type->name }}
@@ -349,7 +349,7 @@
         function updateFloors() {
             const selectedBlockId = blockSelect.value;
             
-            floorSelect.innerHTML = '<option value="">-- Chọn Tầng --</option>';
+            floorSelect.innerHTML = '<option value="">Chọn Tầng</option>';
             
             if (selectedBlockId) {
                 const filteredOptions = floorOptions.filter(opt => opt.getAttribute('data-block-id') === selectedBlockId);
