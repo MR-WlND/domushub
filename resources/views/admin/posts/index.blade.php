@@ -7,6 +7,106 @@
 
 @push('styles')
     @vite(['resources/css/pages/admin/posts/index.css'])
+    <style>
+        /* Generic Modal Styles */
+        .announcement-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 23, 42, 0.6);
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.2s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .announcement-modal-content {
+            background-color: #fff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+            transform: scale(0.95);
+            animation: scaleIn 0.2s ease-out forwards;
+        }
+        @keyframes scaleIn { to { transform: scale(1); } }
+        .announcement-modal-header {
+            padding: 32px 24px 16px;
+            text-align: center;
+        }
+        .modal-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 28px;
+        }
+        .modal-icon.warning {
+            background-color: #fef2f2;
+            color: #ef4444;
+        }
+        .announcement-modal-header h3 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .announcement-modal-body {
+            padding: 0 32px 24px;
+            text-align: center;
+        }
+        .announcement-modal-body p {
+            margin: 0;
+            font-size: 15px;
+            color: #475569;
+            line-height: 1.6;
+        }
+        .announcement-modal-footer {
+            padding: 20px 24px;
+            background-color: #f8fafc;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            border-top: 1px solid #e2e8f0;
+        }
+        .announcement-modal-footer button {
+            flex: 1;
+            justify-content: center;
+            font-size: 14px;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .posts-button--danger {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            transition: all 0.2s ease;
+        }
+        .posts-button--danger:hover {
+            background-color: #dc2626;
+            box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3);
+            transform: translateY(-1px);
+        }
+        .posts-button--secondary {
+            background-color: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            transition: all 0.2s ease;
+        }
+        .posts-button--secondary:hover {
+            background-color: #e2e8f0;
+        }
+    </style>
 @endpush
 
 @php
@@ -167,7 +267,7 @@
                                         @csrf
                                         <div class="ban-select-wrapper ban-select-wrapper--md">
                                             <i class="fa-regular fa-lock"></i>
-                                            <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" class="ban-select ban-select--md" title="Khóa quyền đăng bài viết">
+                                            <select name="duration" onchange="confirmSelectAction(this)" class="ban-select ban-select--md" title="Khóa quyền đăng bài viết">
                                                 <option value="" disabled selected>Đăng bài: {{ $post->user->isBannedPosting() ? 'Bị khóa' : 'Mở' }}</option>
                                                 @if($post->user->isBannedPosting())
                                                     <option value="unban">Mở khóa đăng bài</option>
@@ -187,7 +287,7 @@
                                         @csrf
                                         <div class="ban-select-wrapper ban-select-wrapper--md">
                                             <i class="fa-regular fa-comment"></i>
-                                            <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" class="ban-select ban-select--md" title="Khóa quyền bình luận">
+                                            <select name="duration" onchange="confirmSelectAction(this)" class="ban-select ban-select--md" title="Khóa quyền bình luận">
                                                 <option value="" disabled selected>Bình luận: {{ $post->user->isBannedCommenting() ? 'Bị khóa' : 'Mở' }}</option>
                                                 @if($post->user->isBannedCommenting())
                                                     <option value="unban">Mở khóa bình luận</option>
@@ -214,7 +314,7 @@
                                     </form>
                                 @else
                                     {{-- Nút Ẩn/Hiện bài viết --}}
-                                    <form action="{{ portal_route('posts.toggle-status', $post->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn thay đổi trạng thái hiển thị của bài đăng này?')">
+                                    <form action="{{ portal_route('posts.toggle-status', $post->id) }}" method="POST" style="display: inline;" onsubmit="confirmAction(event, this, 'Bạn có chắc chắn muốn thay đổi trạng thái hiển thị của bài đăng này?')">
                                         @csrf
                                         @if ($post->status === 'published')
                                             <button type="submit" class="admin-action-btn admin-action-btn--toggle" style="padding: 0.5rem 1rem;">
@@ -229,7 +329,7 @@
 
                                     {{-- Nút Bỏ qua báo cáo (chỉ hiện khi có lượt báo cáo) --}}
                                     @if($post->reports_count > 0)
-                                        <form action="{{ portal_route('posts.dismiss-reports', $post->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn bỏ qua và gỡ bỏ toàn bộ lượt báo cáo của bài viết này?')">
+                                        <form action="{{ portal_route('posts.dismiss-reports', $post->id) }}" method="POST" style="display: inline;" onsubmit="confirmAction(event, this, 'Bạn có chắc chắn muốn bỏ qua và gỡ bỏ toàn bộ lượt báo cáo của bài viết này?')">
                                             @csrf
                                             <button type="submit" class="admin-action-btn admin-action-btn--dismiss" style="padding: 0.5rem 1rem;">
                                                 <i class="fa-solid fa-shield-halved"></i> Bỏ qua báo cáo
@@ -238,7 +338,7 @@
                                     @endif
 
                                     {{-- Nút Xóa bài viết --}}
-                                    <form action="{{ portal_route('posts.destroy', $post->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Hành động này sẽ ẩn bài đăng khỏi phía cư dân nhưng vẫn giữ lại lịch sử báo cáo cho Admin. Bạn có chắc chắn muốn tiếp tục?')">
+                                    <form action="{{ portal_route('posts.destroy', $post->id) }}" method="POST" style="display: inline;" onsubmit="confirmAction(event, this, 'Hành động này sẽ ẩn bài đăng khỏi phía cư dân nhưng vẫn giữ lại lịch sử báo cáo cho Admin. Bạn có chắc chắn muốn tiếp tục?')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="admin-action-btn admin-action-btn--delete" style="padding: 0.5rem 1rem;">
@@ -347,14 +447,14 @@
                         {{-- Action bar (Thao tác nhanh) --}}
                         <div class="comment-card__actions">
                             {{-- Nút Bỏ qua báo cáo --}}
-                            <form action="{{ portal_route('comments.dismiss-reports', $comment->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn bỏ qua và gỡ bỏ toàn bộ lượt báo cáo của bình luận này?')">
+                            <form action="{{ portal_route('comments.dismiss-reports', $comment->id) }}" method="POST" style="display: inline;" onsubmit="confirmAction(event, this, 'Bạn có chắc chắn muốn bỏ qua và gỡ bỏ toàn bộ lượt báo cáo của bình luận này?')">
                                 @csrf
                                 <button type="submit" class="admin-action-btn admin-action-btn--dismiss" style="padding: 0.5rem 1rem;">
                                     <i class="fa-solid fa-shield-halved"></i> Bỏ qua báo cáo
                                 </button>
                             </form>
 
-                            <form action="{{ portal_route('comments.destroy', $comment->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bình luận này?')">
+                            <form action="{{ portal_route('comments.destroy', $comment->id) }}" method="POST" style="display: inline;" onsubmit="confirmAction(event, this, 'Bạn có chắc chắn muốn xóa bình luận này?')">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="admin-action-btn admin-action-btn--delete" style="padding: 0.5rem 1rem;">
@@ -559,7 +659,7 @@
                                                 @csrf
                                                 <div class="ban-select-wrapper ban-select-wrapper--md">
                                                     <i class="fa-regular fa-lock"></i>
-                                                    <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" class="ban-select ban-select--md" title="Quản lý quyền đăng bài">
+                                                    <select name="duration" onchange="confirmSelectAction(this)" class="ban-select ban-select--md" title="Quản lý quyền đăng bài">
                                                         <option value="" disabled selected>Đăng bài: {{ $user->isBannedPosting() ? 'Bị khóa' : 'Mở' }}</option>
                                                         @if($user->isBannedPosting())
                                                             <option value="unban">Mở khóa đăng bài</option>
@@ -584,7 +684,7 @@
                                                 @csrf
                                                 <div class="ban-select-wrapper ban-select-wrapper--md">
                                                     <i class="fa-regular fa-comment"></i>
-                                                    <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" class="ban-select ban-select--md" title="Quản lý quyền bình luận">
+                                                    <select name="duration" onchange="confirmSelectAction(this)" class="ban-select ban-select--md" title="Quản lý quyền bình luận">
                                                         <option value="" disabled selected>Bình luận: {{ $user->isBannedCommenting() ? 'Bị khóa' : 'Mở' }}</option>
                                                         @if($user->isBannedCommenting())
                                                             <option value="unban">Mở khóa bình luận</option>
@@ -630,6 +730,25 @@
                 @endif
             </div>
         @endif
+    </div>
+
+    {{-- Generic Confirm Modal --}}
+    <div id="genericConfirmModal" class="announcement-modal">
+        <div class="announcement-modal-content">
+            <div class="announcement-modal-header">
+                <div class="modal-icon warning">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <h3 id="genericConfirmTitle">Xác nhận</h3>
+            </div>
+            <div class="announcement-modal-body">
+                <p id="genericConfirmMessage">Bạn có chắc chắn muốn thực hiện hành động này?</p>
+            </div>
+            <div class="announcement-modal-footer">
+                <button type="button" class="posts-button posts-button--secondary" onclick="closeGenericConfirmModal()">Hủy bỏ</button>
+                <button type="button" class="posts-button posts-button--danger" id="genericConfirmBtn">Đồng ý</button>
+            </div>
+        </div>
     </div>
 
     {{-- Modal xem chi tiết bài viết & báo cáo phía Admin --}}
