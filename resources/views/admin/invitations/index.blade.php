@@ -52,7 +52,7 @@
                             Chọn tòa nhà <span>*</span>
                         </label>
                         <select name="block_id" class="invitations-form__input" required>
-                            <option value="">-- Chọn tòa nhà --</option>
+                            <option value="">Chọn tòa nhà</option>
                             @foreach ($blocks as $block)
                                 <option value="{{ $block->id }}" {{ old('block_id') == $block->id ? 'selected' : '' }}>
                                     {{ $block->name }}
@@ -71,7 +71,7 @@
                             Chọn tầng (tuỳ chọn)
                         </label>
                         <select name="floor_id" class="invitations-form__input">
-                            <option value="">-- Không chọn tầng cụ thể --</option>
+                            <option value="">Không chọn tầng cụ thể</option>
                             @foreach ($floors as $floor)
                                 <option value="{{ $floor->id }}" data-block-id="{{ $floor->block_id }}"
                                     {{ old('floor_id') == $floor->id ? 'selected' : '' }}>
@@ -91,7 +91,7 @@
                             Chọn căn hộ (tuỳ chọn)
                         </label>
                         <select name="apartment_id" class="invitations-form__input">
-                            <option value="">-- Không chọn căn hộ cụ thể --</option>
+                            <option value="">Không chọn căn hộ cụ thể</option>
                             @foreach ($apartments as $apartment)
                                 <option value="{{ $apartment->id }}" data-block-id="{{ $apartment->floor->block_id ?? '' }}" data-floor-id="{{ $apartment->floor_id }}"
                                     {{ old('apartment_id') == $apartment->id ? 'selected' : '' }}>
