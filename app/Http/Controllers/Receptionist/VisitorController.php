@@ -84,13 +84,14 @@ class VisitorController extends Controller
             'apartment_id'          => ['required', 'exists:apartments,id'],
             'resident_to_meet'      => ['required', 'string', 'max:100'],
             'confirmed_by_resident' => ['nullable', 'exists:users,id'],
-            'note'                  => ['nullable', 'string', 'max:500'],
+            'note'                  => ['required', 'string', 'max:500'],
             'vehicle_plate'         => ['nullable', 'string', 'max:20'],
             'vehicle_type'          => ['nullable', 'in:car,motorbike,electric_bike'],
             'face_image'            => ['nullable', 'string'],
             'notify_resident'       => ['nullable', 'boolean'],
         ], [
             'guest_phone.regex' => 'Số điện thoại phải gồm đúng 10 chữ số, bắt đầu bằng đầu số Việt Nam (03, 05, 07, 08, 09).',
+            'note.required'     => 'Vui lòng nhập lý do đến thăm.',
         ]);
 
         $photoPath = null;

@@ -518,7 +518,7 @@
                 <input type="text" id="res_manual" class="wi-inp" style="display:none;margin-top:.4rem" placeholder="Nhập tên cư dân cần gặp" maxlength="100">
             </div>
             <div class="wi-fld wi-span2">
-                <label class="wi-lbl" for="note">Lý do thăm</label>
+                <label class="wi-lbl" for="note">Lý do thăm <em>*</em></label>
                 <textarea id="note" class="wi-ta" placeholder="Ví dụ: Thăm người thân, giao hàng, bảo trì..."></textarea>
             </div>
         </div>
@@ -746,6 +746,11 @@ function confirmStep1() {
     }
     if (!resident) {
         showToast('Vui lòng chọn hoặc nhập tên cư dân cần gặp.', 'error'); return;
+    }
+    const note = document.getElementById('note').value.trim();
+    if (!note) {
+        showToast('Vui lòng nhập lý do đến thăm.', 'error');
+        document.getElementById('note').focus(); return;
     }
 
     document.getElementById('badge-1').classList.add('show');
