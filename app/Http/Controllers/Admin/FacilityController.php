@@ -134,7 +134,8 @@ class FacilityController extends Controller
      */
     public function edit(Facility $facility): View
     {
-        return view('admin.amenities.edit', compact('facility'));
+        $blocks = \App\Models\Block::orderBy('name')->get();
+        return view('admin.amenities.edit', compact('facility', 'blocks'));
     }
 
     /**
