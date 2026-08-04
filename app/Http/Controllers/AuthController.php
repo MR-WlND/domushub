@@ -328,7 +328,7 @@ class AuthController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:100'],
             'phone' => ['required', 'string', 'regex:/^(03|05|07|08|09)[0-9]{8}$/', 'unique:users,phone'],
-            'email' => ['required', 'email', 'max:150', 'unique:users,email'],
+            'email' => ['required', 'email', 'max:150', 'regex:/^[a-zA-Z0-9._%+-]+@gmail\.com$/i', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'invite_code' => ['required', 'string', 'max:50'],
         ], [
@@ -338,6 +338,7 @@ class AuthController extends Controller
             'phone.unique' => 'Số điện thoại đã tồn tại trong hệ thống.',
             'email.required' => 'Vui lòng nhập email.',
             'email.email' => 'Email không đúng định dạng.',
+            'email.regex' => 'Email đăng ký phải là tài khoản Gmail hợp lệ (có đuôi @gmail.com).',
             'email.unique' => 'Email đã tồn tại trong hệ thống.',
             'password.required' => 'Vui lòng nhập mật khẩu.',
             'password.min' => 'Mật khẩu phải có ít nhất 8 ký tự.',

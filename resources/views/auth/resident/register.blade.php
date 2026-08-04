@@ -72,7 +72,9 @@
                         <label>Email</label>
                         <div class="input-box">
                             <i class="fa-regular fa-envelope"></i>
-                            <input type="email" name="email" placeholder="ten@vidu.com" value="{{ old('email') }}"
+                            <input type="email" name="email" placeholder="ten@gmail.com" value="{{ old('email') }}"
+                                pattern="^[a-zA-Z0-9._%+-]+@gmail\.com$"
+                                title="Email phải là tài khoản Gmail hợp lệ (dạng ten@gmail.com)"
                                 required>
                         </div>
                         @error('email')
