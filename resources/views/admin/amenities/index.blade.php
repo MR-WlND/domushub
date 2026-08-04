@@ -40,7 +40,7 @@
 /* Card */
 .af-card { background:#fff; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden; display:flex; flex-direction:column; transition:box-shadow .2s; }
 .af-card:hover { box-shadow:0 4px 16px rgba(0,0,0,.06); }
-.af-card__img { width:100%; height:150px; object-fit:cover; background:#f1f5f9; display:block; }
+.af-card__img { width:100%; height:150px; object-fit:cover; background:#f1f5f9; display:block; cursor:pointer; }
 .af-card__noimg { width:100%; height:150px; background:#f8fafc; display:flex; align-items:center; justify-content:center; color:#cbd5e1; font-size:13px; font-weight:500; }
 .af-card__body { padding:16px; flex:1; }
 .af-card__name { font-size:15px; font-weight:700; color:#0b1c30; margin-bottom:8px; }
@@ -114,14 +114,16 @@
     <div class="af-grid">
         @foreach($query as $facility)
         <div class="af-card">
+            <a href="{{ portal_route('amenities.show', $facility) }}" style="display:block;text-decoration:none;">
             @if($facility->images && count($facility->images) > 0)
                 <img src="{{ asset('storage/' . $facility->images[0]) }}" alt="{{ $facility->name }}" class="af-card__img">
             @else
                 <div class="af-card__noimg">Chưa có ảnh</div>
             @endif
+            </a>
 
             <div class="af-card__body">
-                <div class="af-card__name">{{ $facility->name }}</div>
+                <a href="{{ portal_route('amenities.show', $facility) }}" class="af-card__name" style="text-decoration:none;color:#0b1c30;">{{ $facility->name }}</a>
                 <div class="af-card__meta">
                     <div class="af-card__meta-row">
                         <span>Vị trí: {{ $facility->block?->name ?: '—' }}{{ $facility->floor ? ', '.$facility->floor->name : '' }}</span>
