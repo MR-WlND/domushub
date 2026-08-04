@@ -109,6 +109,11 @@ class User extends Authenticatable
         return $this->hasMany(Ticket::class, 'handler_id');
     }
 
+    public function assignedTickets()
+    {
+        return $this->belongsToMany(Ticket::class, 'ticket_assignments', 'user_id', 'ticket_id')->withTimestamps();
+    }
+
     /**
      * Thông tin nhân sự liên kết
      */
