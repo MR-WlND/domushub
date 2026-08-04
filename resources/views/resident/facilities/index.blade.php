@@ -247,10 +247,28 @@
                                     @endforeach
                                 </div>
                             </div>
+                        @elseif($facility->fee_type === 'per_hour')
+                            <input type="hidden" name="start_time" value="{{ $facility->open_time ? substr($facility->open_time, 0, 5) : '06:00' }}">
+                            <input type="hidden" name="end_time" id="end_time_h_{{ $facility->id }}" value="{{ $facility->close_time ? substr($facility->close_time, 0, 5) : '22:00' }}">
+                            <input type="hidden" name="number_of_people" value="1">
+                            <div class="rfd-form-group">
+                                <label>Số giờ sử dụng</label>
+                                <div class="rfd-people-wrap">
+                                    <button type="button" class="rfd-people-btn" onclick="changeModalHours('{{ $facility->id }}', -1, {{ (int)$facility->price }})">−</button>
+                                    <span class="rfd-people-val" id="hours_display_{{ $facility->id }}">1</span>
+                                    <input type="hidden" id="hours_input_{{ $facility->id }}" value="1">
+                                    <button type="button" class="rfd-people-btn" onclick="changeModalHours('{{ $facility->id }}', 1, {{ (int)$facility->price }})">+</button>
+                                </div>
+                            </div>
+                            <div class="rfd-price-row" style="margin-top:12px;">
+                                <span>Tạm tính:</span>
+                                <span class="rfd-price-val" id="total_h_{{ $facility->id }}">{{ number_format($facility->price) }}đ</span>
+                            </div>
                         @else
                             <input type="hidden" name="start_time" value="{{ $facility->open_time ? substr($facility->open_time, 0, 5) : '00:00' }}">
                             <input type="hidden" name="end_time" value="{{ $facility->close_time ? substr($facility->close_time, 0, 5) : '23:59' }}">
                         @endif
+                        @if($facility->fee_type !== 'per_hour')
                         <div class="rfd-form-group">
                             <label>Số người tham gia</label>
                                 <div class="rfd-people-wrap">
@@ -260,14 +278,17 @@
                                     <button type="button" class="rfd-people-btn" onclick="changeModalPeople('{{ $facility->id }}', 1, {{ $facility->capacity ?? 10 }})">+</button>
                                 </div>
                             </div>
+                        @else
+                        <input type="hidden" name="number_of_people" value="1">
+                        @endif
                         <div class="rfd-form-group">
                             <label>Ghi chú (Tùy chọn)</label>
                             <textarea name="note" class="rfd-input" placeholder="Nhập ghi chú cho BQL..."></textarea>
                         </div>
                         @if($hasFee)
                             <div class="rfd-price-row">
-                                <span>Phí dịch vụ:</span>
-                                <span class="rfd-price-val">{{ $facility->price_label }}</span>
+                                <span>Tạm tính:</span>
+                                <span class="rfd-price-val" id="modal_price_{{ $facility->id }}" data-unit-price="{{ $facility->price }}" data-fee-type="{{ $facility->fee_type }}">{{ number_format($facility->price) }}đ</span>
                             </div>
                         @endif
                         <button type="submit" class="rfd-submit">Xác nhận đăng ký</button>
@@ -330,6 +351,37 @@ function changeModalPeople(facilityId, delta, maxCap) {
     
     input.value = val;
     display.innerText = val;
+}
+
+function changeModalHours(facilityId, delta, unitPrice) {
+    const input = document.getElementById('hours_input_' + facilityId);
+    const display = document.getElementById('hours_display_' + facilityId);
+    const endEl = document.getElementById('end_time_h_' + facilityId);
+    const totalEl = document.getElementById('modal_price_' + facilityId);
+    if(!input || !display) return;
+    
+    let val = parseInt(input.value) || 1;
+    val += delta;
+    if(val < 1) val = 1;
+    if(val > 8) val = 8;
+    
+    input.value = val;
+    display.innerText = val;
+    
+    // Update end_time
+    if(endEl) {
+        const startEl = endEl.previousElementSibling;
+        if(startEl && startEl.value) {
+            const [h] = startEl.value.split(':').map(Number);
+            const endH = Math.min(h + val, 22);
+            endEl.value = String(endH).padStart(2,'0') + ':00';
+        }
+    }
+    
+    // Update total price
+    if(totalEl && unitPrice) {
+        totalEl.innerText = (unitPrice * val).toLocaleString('vi-VN') + 'đ';
+    }
 }
 </script>
 @endpush
