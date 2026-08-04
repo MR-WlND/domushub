@@ -63,7 +63,7 @@
         ">
             {{-- Header gradient --}}
             <div style="
-                background:linear-gradient(135deg,#7c3aed 0%,#4f46e5 100%);
+                background:linear-gradient(135deg,#00236f 0%,#1e3a8a 100%);
                 padding:1.25rem 1.5rem 1rem;
                 position:relative;
             ">
@@ -122,9 +122,9 @@
                         <div style="
                             width:52px;height:52px;flex-shrink:0;
                             border-radius:12px;overflow:hidden;
-                            background:linear-gradient(135deg,#ede9fe,#c7d2fe);
+                            background:linear-gradient(135deg,#dbeafe,#bfdbfe);
                             display:flex;align-items:center;justify-content:center;
-                            font-weight:800;font-size:1.2rem;color:#7c3aed;
+                            font-weight:800;font-size:1.2rem;color:#00236f;
                             border:2px solid #e8ecf4;
                         ">
                             @if($faceImg)
@@ -216,7 +216,7 @@
                 </button>
                 <a href="{{ route('resident.visitors.index') }}" onclick="vpMarkAllRead()" style="
                     display:flex;align-items:center;gap:.35rem;
-                    background:linear-gradient(135deg,#7c3aed,#4f46e5);
+                    background:linear-gradient(135deg,#00236f,#1e3a8a);
                     color:#fff;text-decoration:none;
                     padding:.5rem 1rem;border-radius:10px;
                     font-size:.82rem;font-weight:700;
