@@ -10,57 +10,84 @@
                 <form action="{{ route('resident.members.declared.store') }}" method="POST" class="member-form">
                     @csrf
 
-                    {{-- Bước 1: Chọn tòa --}}
-                    @if ($blocks->count() > 1)
-                    <div class="form-group">
-                        <label for="declared_block_select" class="form-label">
-                            <i class="fa-solid fa-building"></i> Tòa nhà
-                        </label>
-                        <select id="declared_block_select" class="form-input"
-                                onchange="filterDeclaredApartments(this.value)">
-                            <option value="">-- Chọn tòa nhà --</option>
-                            @foreach ($blocks as $block)
-                                <option value="{{ $block->id }}"
-                                    {{ old('block_id') == $block->id ? 'selected' : '' }}>
-                                    {{ $block->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    @endif
+                    {{-- Tòa & Căn hộ: cố định nếu chỉ có 1 căn hộ --}}
+                    @if ($apartments->count() === 1)
+                        @php $apt = $apartments->first(); @endphp
+                        <input type="hidden" name="apartment_id" value="{{ $apt->id }}">
+                        <div class="form-group">
+                            <label class="form-label"><i class="fa-solid fa-building"></i> Tòa nhà</label>
+                            <div class="form-input" style="background:#f8fafc;color:#64748b;cursor:default;display:flex;align-items:center;gap:.5rem;">
+                                <i class="fa-solid fa-lock" style="font-size:.75rem;opacity:.5;"></i>
+                                {{ $apt->floor->block->name ?? '—' }}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label"><i class="fa-solid fa-layer-group"></i> Tầng</label>
+                            <div class="form-input" style="background:#f8fafc;color:#64748b;cursor:default;display:flex;align-items:center;gap:.5rem;">
+                                <i class="fa-solid fa-lock" style="font-size:.75rem;opacity:.5;"></i>
+                                {{ $apt->floor->name ?? ('Tầng ' . ($apt->floor->floor_number ?? '?')) }}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label"><i class="fa-solid fa-door-open"></i> Căn hộ</label>
+                            <div class="form-input" style="background:#f8fafc;color:#64748b;cursor:default;display:flex;align-items:center;gap:.5rem;">
+                                <i class="fa-solid fa-lock" style="font-size:.75rem;opacity:.5;"></i>
+                                {{ $apt->apartment_number }}
+                            </div>
+                        </div>
+                    @else
+                        {{-- Bước 1: Chọn tòa --}}
+                        @if ($blocks->count() > 1)
+                        <div class="form-group">
+                            <label for="declared_block_select" class="form-label">
+                                <i class="fa-solid fa-building"></i> Tòa nhà
+                            </label>
+                            <select id="declared_block_select" class="form-input"
+                                    onchange="filterDeclaredApartments(this.value)">
+                                <option value="">-- Chọn tòa nhà --</option>
+                                @foreach ($blocks as $block)
+                                    <option value="{{ $block->id }}"
+                                        {{ old('block_id') == $block->id ? 'selected' : '' }}>
+                                        {{ $block->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @endif
 
-                    {{-- Bước 2: Chọn căn hộ --}}
-                    <div class="form-group">
-                        <label for="apartment_id" class="form-label">
-                            <i class="fa-solid fa-door-open"></i> Căn hộ
-                        </label>
-                        <select name="apartment_id" id="apartment_id_declared" class="form-input" required>
-                            @if ($blocks->count() > 1)
-                                <option value="">-- Chọn tòa trước --</option>
-                                @foreach ($apartments as $apartment)
-                                    <option value="{{ $apartment->id }}"
-                                            data-block-id="{{ $apartment->floor->block->id ?? '' }}"
-                                            style="display:none;"
-                                            {{ old('apartment_id') == $apartment->id ? 'selected' : '' }}>
-                                        {{ $apartment->apartment_number }}
-                                        – {{ $apartment->floor->name ?? ('Tầng ' . $apartment->floor->floor_number) }}
-                                    </option>
-                                @endforeach
-                            @else
-                                <option value="">-- Chọn căn hộ --</option>
-                                @foreach ($apartments as $apartment)
-                                    <option value="{{ $apartment->id }}"
-                                            {{ old('apartment_id') == $apartment->id ? 'selected' : '' }}>
-                                        {{ $apartment->apartment_number }}
-                                        – {{ $apartment->floor->name ?? ('Tầng ' . $apartment->floor->floor_number) }}
-                                    </option>
-                                @endforeach
-                            @endif
-                        </select>
-                        @error('apartment_id')
-                            <span class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</span>
-                        @enderror
-                    </div>
+                        {{-- Bước 2: Chọn căn hộ --}}
+                        <div class="form-group">
+                            <label for="apartment_id" class="form-label">
+                                <i class="fa-solid fa-door-open"></i> Căn hộ
+                            </label>
+                            <select name="apartment_id" id="apartment_id_declared" class="form-input" required>
+                                @if ($blocks->count() > 1)
+                                    <option value="">-- Chọn tòa trước --</option>
+                                    @foreach ($apartments as $apartment)
+                                        <option value="{{ $apartment->id }}"
+                                                data-block-id="{{ $apartment->floor->block->id ?? '' }}"
+                                                style="display:none;"
+                                                {{ old('apartment_id') == $apartment->id ? 'selected' : '' }}>
+                                            {{ $apartment->apartment_number }}
+                                            – {{ $apartment->floor->name ?? ('Tầng ' . $apartment->floor->floor_number) }}
+                                        </option>
+                                    @endforeach
+                                @else
+                                    <option value="">-- Chọn căn hộ --</option>
+                                    @foreach ($apartments as $apartment)
+                                        <option value="{{ $apartment->id }}"
+                                                {{ old('apartment_id') == $apartment->id ? 'selected' : '' }}>
+                                            {{ $apartment->apartment_number }}
+                                            – {{ $apartment->floor->name ?? ('Tầng ' . $apartment->floor->floor_number) }}
+                                        </option>
+                                    @endforeach
+                                @endif
+                            </select>
+                            @error('apartment_id')
+                                <span class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</span>
+                            @enderror
+                        </div>
+                    @endif
 
                     <div class="form-group">
                         <label for="name" class="form-label">Họ và tên thành viên</label>
