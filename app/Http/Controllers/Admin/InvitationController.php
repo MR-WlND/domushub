@@ -32,19 +32,21 @@ class InvitationController extends Controller
     {
         $validated = $request->validate([
             'block_id' => 'required|exists:blocks,id',
-            'apartment_id' => 'nullable|exists:apartments,id',
+            'apartment_id' => 'required|exists:apartments,id',
             'intended_relationship' => 'required|in:owner,tenant,family_member',
             'max_uses' => 'required|integer|min:1',
-            'expires_at' => 'nullable|date_format:Y-m-d\TH:i|after:now',
+            'expires_at' => 'required|date_format:Y-m-d\TH:i|after:now',
         ], [
             'block_id.required' => 'Vui lòng chọn tòa nhà.',
             'block_id.exists' => 'Tòa nhà chọn không hợp lệ.',
+            'apartment_id.required' => 'Vui lòng chọn căn hộ.',
             'apartment_id.exists' => 'Căn hộ chọn không hợp lệ.',
             'intended_relationship.required' => 'Vui lòng chọn quan hệ cư dân.',
             'intended_relationship.in' => 'Quan hệ cư dân không hợp lệ.',
             'max_uses.required' => 'Vui lòng nhập số lượt sử dụng tối đa.',
             'max_uses.integer' => 'Số lượt sử dụng phải là số nguyên.',
             'max_uses.min' => 'Số lượt sử dụng tối đa phải từ 1 trở lên.',
+            'expires_at.required' => 'Vui lòng chọn ngày hết hạn.',
             'expires_at.date_format' => 'Ngày hết hạn phải đúng định dạng.',
             'expires_at.after' => 'Ngày hết hạn phải sau thời điểm hiện tại.',
         ]);
@@ -91,12 +93,12 @@ class InvitationController extends Controller
 
         ApartmentInvite::create([
             'block_id' => $validated['block_id'],
-            'apartment_id' => $validated['apartment_id'] ?? null,
+            'apartment_id' => $validated['apartment_id'],
             'created_by' => Auth::id(),
             'invite_code' => $code,
             'intended_relationship' => $validated['intended_relationship'],
             'status' => 'active',
-            'expired_at' => $validated['expires_at'] ?? null,
+            'expired_at' => $validated['expires_at'],
             'max_uses' => $validated['max_uses'],
             'uses_count' => 0,
         ]);

@@ -68,10 +68,10 @@
 
                     <div class="invitations-form__field">
                         <label class="invitations-form__label">
-                            Chọn tầng (tuỳ chọn)
+                            Chọn tầng <span>*</span>
                         </label>
-                        <select name="floor_id" class="invitations-form__input">
-                            <option value="">Không chọn tầng cụ thể</option>
+                        <select name="floor_id" class="invitations-form__input" required disabled>
+                            <option value="">Chọn tầng</option>
                             @foreach ($floors as $floor)
                                 <option value="{{ $floor->id }}" data-block-id="{{ $floor->block_id }}"
                                     {{ old('floor_id') == $floor->id ? 'selected' : '' }}>
@@ -82,29 +82,27 @@
                         @error('floor_id')
                             <small class="invitations-form__hint invitations-form__hint--error">{{ $message }}</small>
                         @else
-                            <small class="invitations-form__hint">Chọn tầng để lọc danh sách căn hộ dễ dàng hơn.</small>
+                            <small class="invitations-form__hint">Bắt buộc chọn tầng.</small>
                         @enderror
                     </div>
 
                     <div class="invitations-form__field">
                         <label class="invitations-form__label">
-                            Chọn căn hộ (tuỳ chọn)
+                            Chọn căn hộ <span>*</span>
                         </label>
-                        <select name="apartment_id" class="invitations-form__input">
-                            <option value="">Không chọn căn hộ cụ thể</option>
+                        <select name="apartment_id" class="invitations-form__input" required disabled>
+                            <option value="">Chọn căn hộ</option>
                             @foreach ($apartments as $apartment)
                                 <option value="{{ $apartment->id }}" data-block-id="{{ $apartment->floor->block_id ?? '' }}" data-floor-id="{{ $apartment->floor_id }}"
                                     {{ old('apartment_id') == $apartment->id ? 'selected' : '' }}>
-                                    {{ $apartment->apartment_number }} -
-                                    {{ $apartment->floor->name ?? 'Tầng ' . $apartment->floor->floor_number }} /
-                                    {{ $apartment->floor->block->name ?? 'Tòa' }}
+                                    {{ $apartment->apartment_number }}
                                 </option>
                             @endforeach
                         </select>
                         @error('apartment_id')
                             <small class="invitations-form__hint invitations-form__hint--error">{{ $message }}</small>
                         @else
-                            <small class="invitations-form__hint">Nếu muốn gắn mã vào căn hộ cụ thể, chọn ở đây.</small>
+                            <small class="invitations-form__hint">Bắt buộc chọn căn hộ cụ thể.</small>
                         @enderror
                     </div>
 
@@ -113,10 +111,10 @@
                     <input type="hidden" name="intended_relationship" value="owner">
 
                     <div class="invitations-form__field">
-                        <label class="invitations-form__label">Ngày hết hạn</label>
+                        <label class="invitations-form__label">Ngày hết hạn <span>*</span></label>
                         <input type="datetime-local" name="expires_at" class="invitations-form__input"
-                            value="{{ old('expires_at') }}">
-                        <small class="invitations-form__hint">Bỏ trống nếu mã không giới hạn thời gian.</small>
+                            value="{{ old('expires_at') }}" required>
+                        <small class="invitations-form__hint">Vui lòng chọn ngày hết hạn cho mã mời.</small>
                     </div>
 
                     <div class="invitations-form__action">
@@ -325,23 +323,35 @@
                     
                     if (floorSelect) {
                         filterSelect(floorSelect, 'blockId', selectedBlockId);
+                        floorSelect.disabled = !selectedBlockId;
+                        if (!selectedBlockId) floorSelect.value = '';
                     }
                     
                     filterSelect(apartmentSelect, 'blockId', selectedBlockId);
+                    apartmentSelect.disabled = true;
+                    apartmentSelect.value = '';
                 });
                 
                 if (floorSelect) {
                     floorSelect.addEventListener('change', function() {
                         const selectedFloorId = this.value;
-                        const selectedBlockId = blockSelect.value;
                         
                         if (selectedFloorId) {
                             filterSelect(apartmentSelect, 'floorId', selectedFloorId);
+                            apartmentSelect.disabled = false;
                         } else {
-                            // If floor is unselected, fallback to filtering by block
-                            filterSelect(apartmentSelect, 'blockId', selectedBlockId);
+                            apartmentSelect.disabled = true;
+                            apartmentSelect.value = '';
                         }
                     });
+                }
+
+                // Restore state on validation error
+                if (blockSelect.value && floorSelect) {
+                    floorSelect.disabled = false;
+                }
+                if (floorSelect && floorSelect.value) {
+                    apartmentSelect.disabled = false;
                 }
             });
         </script>
