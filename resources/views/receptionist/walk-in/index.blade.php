@@ -496,8 +496,8 @@
                 <input type="text" id="guest_name" class="wi-inp" placeholder="Nhập đầy đủ họ tên" maxlength="100" autocomplete="off">
             </div>
             <div class="wi-fld">
-                <label class="wi-lbl" for="guest_phone">Số điện thoại</label>
-                <input type="text" id="guest_phone" class="wi-inp" placeholder="090x xxx xxx" maxlength="20" autocomplete="off">
+                <label class="wi-lbl" for="guest_phone">Số điện thoại <span style="font-size:.68rem;font-weight:500;color:#94a3b8">(VD: 0912345678)</span></label>
+                <input type="text" id="guest_phone" class="wi-inp" placeholder="0912 345 678" maxlength="10" pattern="^(03|05|07|08|09)[0-9]{8}$" autocomplete="off" inputmode="numeric">
             </div>
             <div class="wi-fld wi-span2">
                 <label class="wi-lbl">Căn hộ đến thăm <em>*</em> <span id="apt-load" style="display:none"><span class="wi-spin-sm"></span></span></label>
@@ -728,12 +728,17 @@ function editStep(n) {
    ===================================================== */
 function confirmStep1() {
     const name = document.getElementById('guest_name').value.trim();
+    const phone = document.getElementById('guest_phone').value.trim();
     const aptId = document.getElementById('apartment_id').value;
     const resident = selResName || document.getElementById('res_manual').value.trim();
 
     if (!name) {
         showToast('Vui lòng nhập họ tên khách.', 'error');
         document.getElementById('guest_name').focus(); return;
+    }
+    if (phone && !/^(03|05|07|08|09)[0-9]{8}$/.test(phone)) {
+        showToast('Số điện thoại phải gồm đúng 10 chữ số, bắt đầu bằng đầu số Việt Nam (03, 05, 07, 08, 09).', 'error');
+        document.getElementById('guest_phone').focus(); return;
     }
     if (!aptId) {
         showToast('Vui lòng chọn căn hộ đến thăm.', 'error');

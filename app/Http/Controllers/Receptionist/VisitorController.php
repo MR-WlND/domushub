@@ -80,7 +80,7 @@ class VisitorController extends Controller
     {
         $request->validate([
             'guest_name'            => ['required', 'string', 'max:100'],
-            'guest_phone'           => ['nullable', 'string', 'max:20'],
+            'guest_phone'           => ['nullable', 'string', 'regex:/^(03|05|07|08|09)[0-9]{8}$/'],
             'apartment_id'          => ['required', 'exists:apartments,id'],
             'resident_to_meet'      => ['required', 'string', 'max:100'],
             'confirmed_by_resident' => ['nullable', 'exists:users,id'],
@@ -89,6 +89,8 @@ class VisitorController extends Controller
             'vehicle_type'          => ['nullable', 'in:car,motorbike,electric_bike'],
             'face_image'            => ['nullable', 'string'],
             'notify_resident'       => ['nullable', 'boolean'],
+        ], [
+            'guest_phone.regex' => 'Số điện thoại phải gồm đúng 10 chữ số, bắt đầu bằng đầu số Việt Nam (03, 05, 07, 08, 09).',
         ]);
 
         $photoPath = null;
