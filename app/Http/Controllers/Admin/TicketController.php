@@ -37,13 +37,16 @@ class TicketController extends Controller
         ]);
 
         // ── Tab 1: Tickets list ──
-        $query = Ticket::with(['apartment.floor.block', 'sender', 'handler'])
+        $query = Ticket::with(['apartment.floor.block', 'sender', 'handler', 'technicians'])
             ->orderByRaw("FIELD(priority, 'urgent','high','medium','low')")
             ->orderByRaw("FIELD(status, 'pending','assigned','in_progress','completed','cancelled')")
             ->orderBy('created_at', 'asc');
 
         if ($user->role === 'technician') {
-            $query->where('handler_id', $user->id);
+            $query->where(function ($q) use ($user) {
+                $q->where('handler_id', $user->id)
+                  ->orWhereHas('technicians', fn($tq) => $tq->where('users.id', $user->id));
+            });
         }
 
         if ($request->filled('block_id')) {
@@ -86,7 +89,10 @@ class TicketController extends Controller
 
         $baseQuery = Ticket::query();
         if ($user->role === 'technician') {
-            $baseQuery->where('handler_id', $user->id);
+            $baseQuery->where(function ($q) use ($user) {
+                $q->where('handler_id', $user->id)
+                  ->orWhereHas('technicians', fn($tq) => $tq->where('users.id', $user->id));
+            });
         }
 
         $stats = [
@@ -364,7 +370,7 @@ class TicketController extends Controller
 
     public function show($id)
     {
-        $ticket = Ticket::with(['apartment.floor.block', 'sender', 'handler', 'progress.updatedBy', 'costs.createdBy', 'costs.responsibleUser', 'accusedUser.apartment'])
+        $ticket = Ticket::with(['apartment.floor.block', 'sender', 'handler', 'technicians', 'progress.updatedBy', 'costs.createdBy', 'costs.responsibleUser', 'accusedUser.apartment'])
             ->findOrFail($id);
 
         $technicians = User::where('role', 'technician')->where('status', 'active')->orderBy('name')->get();
@@ -492,38 +498,62 @@ class TicketController extends Controller
     {
         $ticket = Ticket::findOrFail($id);
 
+        // Chuẩn hóa input: hỗ trợ cả technician_ids[] lẫn handler_id lẻ
+        if ($request->has('handler_id') && !$request->has('technician_ids')) {
+            $request->merge(['technician_ids' => [$request->input('handler_id')]]);
+        }
+
         $validated = $request->validate([
-            'handler_id' => ['required', 'exists:users,id'],
+            'technician_ids'   => ['required', 'array', 'min:1', 'max:5'],
+            'technician_ids.*' => ['required', 'integer', 'exists:users,id'],
         ], [
-            'handler_id.required' => 'Vui lòng chọn kỹ thuật viên.',
-            'handler_id.exists'   => 'Kỹ thuật viên không tồn tại.',
+            'technician_ids.required' => 'Vui lòng chọn ít nhất 1 kỹ thuật viên.',
+            'technician_ids.array'    => 'Danh sách kỹ thuật viên không hợp lệ.',
+            'technician_ids.min'      => 'Vui lòng chọn ít nhất 1 kỹ thuật viên.',
+            'technician_ids.max'      => 'Mỗi phản ánh chỉ được phân công tối đa 5 kỹ thuật viên.',
+            'technician_ids.*.exists' => 'Kỹ thuật viên chọn không tồn tại trong hệ thống.',
         ]);
 
+        $technicianIds = array_values(array_unique(array_map('intval', $validated['technician_ids'])));
+
+        if (count($technicianIds) > 5) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Mỗi phản ánh chỉ được phân công tối đa 5 kỹ thuật viên.'], 422);
+            }
+            return back()->withErrors(['technician_ids' => 'Mỗi phản ánh chỉ được phân công tối đa 5 kỹ thuật viên.']);
+        }
+
+        // Đồng bộ danh sách KTV vào bảng trung gian
+        $ticket->technicians()->sync($technicianIds);
+
+        // Cập nhật KTV chính (KTV đầu tiên) và đổi trạng thái
+        $primaryHandlerId = $technicianIds[0];
         $ticket->update([
-            'handler_id' => $validated['handler_id'],
+            'handler_id' => $primaryHandlerId,
             'status'     => 'assigned',
         ]);
 
-        $handler = User::find($validated['handler_id']);
+        $handlers = User::whereIn('id', $technicianIds)->get();
+        $handlerNames = $handlers->pluck('name')->implode(', ');
 
         TicketProgress::create([
             'ticket_id'  => $ticket->id,
             'status'     => 'assigned',
-            'comment'    => 'Đã phân công cho kỹ thuật viên: ' . ($handler->name ?? 'N/A'),
+            'comment'    => 'Đã phân công cho ' . count($technicianIds) . ' kỹ thuật viên: ' . $handlerNames,
             'updated_by' => Auth::id(),
         ]);
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
                 'success'      => true,
-                'message'      => 'Đã phân công cho ' . ($handler->name ?? 'N/A'),
-                'handler_name' => $handler->name ?? 'N/A',
+                'message'      => 'Đã phân công thành công cho: ' . $handlerNames,
+                'handler_name' => $handlerNames,
                 'status'       => 'assigned',
                 'status_label' => 'Đã phân công',
             ]);
         }
 
-        return back()->with('success', 'Đã phân công kỹ thuật viên xử lý phản ánh thành công.');
+        return back()->with('success', 'Đã phân công ' . count($technicianIds) . ' kỹ thuật viên xử lý phản ánh thành công.');
     }
 
     /**
@@ -541,7 +571,7 @@ class TicketController extends Controller
             return back()->withErrors(['ticket' => 'Không thể cập nhật tiến độ cho phản ánh đã đóng.']);
         }
 
-        if ($user->role === 'technician' && $ticket->handler_id !== $user->id) {
+        if ($user->role === 'technician' && $ticket->handler_id !== $user->id && !$ticket->technicians->contains('id', $user->id)) {
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json(['success' => false, 'message' => 'Bạn không có quyền cập nhật tiến độ cho phản ánh này.'], 403);
             }
@@ -619,7 +649,7 @@ class TicketController extends Controller
         $user   = Auth::user();
         $ticket = Ticket::findOrFail($id);
 
-        if ($ticket->handler_id !== $user->id) {
+        if ($ticket->handler_id !== $user->id && !$ticket->technicians->contains('id', $user->id)) {
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json(['success' => false, 'message' => 'Bạn không được phân công phản ánh này.'], 403);
             }

@@ -202,22 +202,32 @@
             @if(in_array(auth()->user()->role, ['admin', 'manager']))
             <div class="tk-card">
                 <div class="tk-card-header">
-                    <h2 class="tk-card-title" style="font-size: 1.1rem;">Phân công kỹ thuật viên</h2>
+                    <h2 class="tk-card-title" style="font-size: 1.1rem;">Phân công kỹ thuật viên (Tối đa 5)</h2>
                 </div>
                 <div class="tk-card-body">
                     <form method="POST" action="{{ portal_route('tickets.assign', $ticket->id) }}">
                         @csrf
                         <div style="margin-bottom: 12px;">
-                            <select name="handler_id" required style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none;">
-                                <option value="" disabled {{ $ticket->handler_id ? '' : 'selected' }}>-- Chọn kỹ thuật viên --</option>
+                            <label style="font-size:0.85rem; color:#64748b; margin-bottom:6px; display:block; font-weight:600;">Chọn KTV phụ trách (tối đa 5 người):</label>
+                            <div style="max-height: 180px; overflow-y: auto; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; background: #f8fafc;">
+                                @php
+                                    $assignedIds = $ticket->technicians->pluck('id')->toArray();
+                                    if (empty($assignedIds) && $ticket->handler_id) {
+                                        $assignedIds = [$ticket->handler_id];
+                                    }
+                                @endphp
                                 @foreach($technicians as $tech)
-                                    <option value="{{ $tech->id }}" {{ $ticket->handler_id == $tech->id ? 'selected' : '' }}>
-                                        {{ $tech->name }}
-                                    </option>
+                                    <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 0.9rem; cursor: pointer; color: #1e293b;">
+                                        <input type="checkbox" name="technician_ids[]" value="{{ $tech->id }}"
+                                            class="tech-checkbox-limit"
+                                            {{ in_array($tech->id, $assignedIds) ? 'checked' : '' }}>
+                                        <span>{{ $tech->name }}</span>
+                                    </label>
                                 @endforeach
-                            </select>
+                            </div>
+                            <small style="color: #64748b; font-size: 0.78rem; display: block; margin-top: 4px;">* KTV đầu tiên chọn sẽ là KTV trưởng phụ trách chính.</small>
                         </div>
-                        <button type="submit" class="tk-btn-primary" style="padding: 8px;">Phân công</button>
+                        <button type="submit" class="tk-btn-primary" style="padding: 8px 16px;">Lưu phân công</button>
                     </form>
                 </div>
             </div>
