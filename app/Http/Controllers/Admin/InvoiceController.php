@@ -461,15 +461,23 @@ class InvoiceController extends Controller
 
         $activePrices = ServicePrice::where('status', 'active')->get();
 
-        $apartments = Apartment::with('floor.block')
+        $apartments = Apartment::with(['floor.block', 'invoices' => function ($query) use ($selectedYear, $selectedMonthNumber) {
+            $query->where('billing_month', $selectedMonthNumber)
+                ->where('billing_year', $selectedYear)
+                ->where('status', '!=', 'cancelled');
+        }])
             ->where('status', 'occupied')
-            ->whereDoesntHave('invoices', function ($query) use ($selectedYear, $selectedMonthNumber) {
-                $query->where('billing_month', $selectedMonthNumber)
-                    ->where('billing_year', $selectedYear)
-                    ->where('status', '!=', 'cancelled');
-            })
-            ->orderBy('id')
             ->get();
+
+        // Sắp xếp: đã xuất lên đầu
+        $apartments = $apartments->sort(function ($a, $b) {
+            $aHas = $a->invoices->isNotEmpty() ? 1 : 0;
+            $bHas = $b->invoices->isNotEmpty() ? 1 : 0;
+            if ($aHas !== $bHas) {
+                return $bHas <=> $aHas;
+            }
+            return $a->id <=> $b->id;
+        })->values();
 
         $occupiedCount = $apartments->count();
         $totalCount = $apartments->count();
@@ -570,7 +578,7 @@ class InvoiceController extends Controller
                 // ============================================================
                 // XỬ LÝ ĐIỆN / NƯỚC
                 // ============================================================
-                if (in_array($type, ['electricity', 'water'])) {
+                if (in_array($type, ['water', 'electricity'])) {
                     $servicePrice = $activePrices->get($type)?->first();
                     if (!$servicePrice) {
                         $skipped++;
@@ -597,6 +605,9 @@ class InvoiceController extends Controller
                             'billing_year'  => $year,
                             'due_date'      => $request->due_date,
                             'total_amount'  => 0,
+                            'previous_debt' => $apartmentPreviousDebt,
+                            'current_amount' => 0,
+                            'total_due_at_issue' => $apartmentPreviousDebt,
                             'status'        => 'unpaid',
                         ]);
                     }

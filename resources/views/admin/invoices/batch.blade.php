@@ -171,16 +171,21 @@
                                 </thead>
                                 <tbody>
                                     @forelse($apartments as $apt)
-                                        <tr data-status="{{ $apt->status }}">
+                                        @php
+                                            $hasInvoice = $apt->invoices->isNotEmpty();
+                                        @endphp
+                                        <tr data-status="{{ $apt->status }}" class="{{ $hasInvoice ? 'batch-row-highlight' : '' }}">
                                             <td>
                                                 <input type="checkbox" name="apartment_ids[]" value="{{ $apt->id }}"
-                                                    class="batch-target-check batch-check" checked>
+                                                    class="batch-target-check batch-check" {{ $hasInvoice ? '' : 'checked' }}>
                                             </td>
                                             <td class="batch-apt-num">{{ $apt->apartment_number }}</td>
                                             <td>{{ optional(optional($apt->floor)->block)->name ?? '—' }}</td>
                                             <td>Tầng {{ optional($apt->floor)->floor_number ?? '—' }}</td>
                                             <td>
-                                                @if ($apt->status === 'occupied')
+                                                @if ($hasInvoice)
+                                                    <span class="batch-badge batch-badge--success">Đã xuất</span>
+                                                @elseif ($apt->status === 'occupied')
                                                     <span class="batch-badge batch-badge--occupied">Đang ở</span>
                                                 @elseif($apt->status === 'vacant')
                                                     <span class="batch-badge batch-badge--vacant">Trống</span>
@@ -539,6 +544,15 @@
         .batch-badge--occupied {
             background: #dcfce7;
             color: #15803d;
+        }
+
+        .batch-badge--success {
+            background: #bbf7d0;
+            color: #166534;
+        }
+
+        .batch-row-highlight td {
+            background-color: #f0fdf4 !important;
         }
 
         .batch-badge--vacant {
