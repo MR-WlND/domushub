@@ -331,6 +331,7 @@ class AuthController extends Controller
             'email' => ['required', 'email', 'max:150', 'regex:/^[a-zA-Z0-9._%+-]+@gmail\.com$/i', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'invite_code' => ['required', 'string', 'max:50'],
+            'cccd'        => ['nullable', 'string', 'regex:/^[0-9]{9,12}$/', 'unique:users,cccd'],
         ], [
             'name.required' => 'Vui lòng nhập họ và tên.',
             'phone.required' => 'Vui lòng nhập số điện thoại.',
@@ -344,6 +345,8 @@ class AuthController extends Controller
             'password.min' => 'Mật khẩu phải có ít nhất 8 ký tự.',
             'password.confirmed' => 'Xác nhận mật khẩu không khớp.',
             'invite_code.required' => 'Vui lòng nhập mã mời cư dân.',
+            'cccd.regex'           => 'Số CCCD/CMND phải gồm 9 hoặc 12 chữ số.',
+            'cccd.unique'          => 'Số CCCD/CMND này đã được đăng ký trong hệ thống.',
         ]);
 
         // Tìm mã mời hợp lệ
@@ -399,11 +402,10 @@ class AuthController extends Controller
                 'phone' => $validated['phone'],
                 'email' => $validated['email'],
                 'password' => $validated['password'], // Password tự động được hash nhờ config Cast trong User Model
-                'role' => 'resident',
-                'status' => 'active',
-
-                // CẬP NHẬT: Gán trực tiếp apartment_id từ bảng mã mời sang
+                'role'         => 'resident',
+                'status'       => 'active',
                 'apartment_id' => $invite->apartment_id,
+                'cccd'         => $validated['cccd'] ?? null,
             ]);
 
             Resident::create([

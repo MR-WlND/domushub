@@ -69,6 +69,20 @@
                     </div>
 
                     <div class="group">
+                        <label>Số CCCD / CMND</label>
+                        <div class="input-box">
+                            <i class="fa-solid fa-id-card"></i>
+                            <input type="text" name="cccd" placeholder="Ví dụ: 012345678901"
+                                value="{{ old('cccd') }}"
+                                maxlength="12" inputmode="numeric" pattern="^[0-9]{9,12}$"
+                                title="Số CCCD/CMND phải gồm 9 hoặc 12 chữ số">
+                        </div>
+                        @error('cccd')
+                            <span class="error-msg">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="group">
                         <label>Email</label>
                         <div class="input-box">
                             <i class="fa-regular fa-envelope"></i>
