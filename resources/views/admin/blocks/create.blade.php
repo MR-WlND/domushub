@@ -73,24 +73,24 @@
                     <div class="form-grid-2" style="margin-top: 15px;">
                         {{-- Số tầng nổi (Giữ theo yc) --}}
                         <div class="form-group-custom">
-                            <label class="form-label-custom">Số tầng nổi</label>
+                            <label class="form-label-custom">Số tầng nổi <span class="required">*</span></label>
                             <div class="input-wrapper-custom">
                                 <span class="input-icon-custom">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
                                 </span>
-                                <input type="number" name="total_floors" value="{{ old('total_floors') }}" placeholder="VD: 25" min="0" class="form-input-custom @error('total_floors') input-error @enderror">
+                                <input type="number" name="total_floors" value="{{ old('total_floors') }}" placeholder="VD: 25" min="0" class="form-input-custom @error('total_floors') input-error @enderror" required>
                             </div>
                             @error('total_floors') <p class="form-error-custom">{{ $message }}</p> @enderror
                         </div>
 
                         {{-- Số tầng hầm (Giữ theo yc) --}}
                         <div class="form-group-custom">
-                            <label class="form-label-custom">Số tầng hầm</label>
+                            <label class="form-label-custom">Số tầng hầm <span class="required">*</span></label>
                             <div class="input-wrapper-custom">
                                 <span class="input-icon-custom">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
                                 </span>
-                                <input type="number" name="total_basements" value="{{ old('total_basements') }}" placeholder="VD: 2" min="0" class="form-input-custom @error('total_basements') input-error @enderror">
+                                <input type="number" name="total_basements" value="{{ old('total_basements') }}" placeholder="VD: 2" min="0" class="form-input-custom @error('total_basements') input-error @enderror" required>
                             </div>
                             @error('total_basements') <p class="form-error-custom">{{ $message }}</p> @enderror
                         </div>
@@ -174,7 +174,7 @@
     {{-- Actions --}}
     <div class="blocks-page__actions" style="justify-content: flex-end; margin-top: 24px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
         <a href="{{ portal_route('blocks.index') }}" class="blocks-button blocks-button--light" style="margin-right: 12px;">Hủy</a>
-        <button type="button" onclick="document.getElementById('createBlockForm').submit()" class="blocks-button blocks-button--primary">
+        <button type="submit" form="createBlockForm" class="blocks-button blocks-button--primary">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
             Lưu tòa nhà
         </button>
