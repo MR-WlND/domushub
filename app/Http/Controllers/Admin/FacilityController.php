@@ -69,7 +69,7 @@ class FacilityController extends Controller
             'min_advance_booking_hours' => 'nullable|integer|min:0',
             'max_advance_booking_days'  => 'nullable|integer|min:0',
             'rules'                     => 'nullable|string|max:1000',
-            'images' => 'nullable|array|max:5',
+            'images' => 'required|array|min:1|max:5',
             'images.*'                  => 'image|mimes:jpeg,png,jpg,webp|max:5120',
         ], [
             'name.required'             => 'Vui lòng nhập tên tiện ích.',
@@ -83,8 +83,10 @@ class FacilityController extends Controller
             'fee_type.required'         => 'Vui lòng chọn loại phí.',
             'price.required_unless'     => 'Vui lòng nhập đơn giá.',
             'images.max'                => 'Tải tối đa 5 ảnh.',
+            'images.required'           => 'Vui lòng upload ít nhất 1 ảnh.',
+            'images.min'                => 'Vui lòng upload ít nhất 1 ảnh.',
             'images.*.image'            => 'File phải là ảnh.',
-            'images.*.max'              => 'Mỗi ảnh tối đa 3MB.',
+            'images.*.max'              => 'Mỗi ảnh tối đa 5MB.',
         ]);
 
         if ($validated['fee_type'] === 'free') {
