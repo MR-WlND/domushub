@@ -88,31 +88,9 @@
                         @enderror
                     </div>
 
-                    <div class="invitations-form__field">
-                        <label class="invitations-form__label">
-                            Số lượt dùng tối đa <span>*</span>
-                        </label>
-                        <input type="number" name="max_uses" class="invitations-form__input" min="1" max="1"
-                            value="1" readonly required>
-                        @error('max_uses')
-                            <small class="invitations-form__hint invitations-form__hint--error">{{ $message }}</small>
-                        @else
-                            <small class="invitations-form__hint">Mỗi mã mời chỉ sử dụng được 1 lần.</small>
-                        @enderror
-                    </div>
+                    <input type="hidden" name="max_uses" value="1">
 
-                    <div class="invitations-form__field">
-                        <label class="invitations-form__label">
-                            Mối quan hệ với cư dân <span>*</span>
-                        </label>
-                        <input type="hidden" name="intended_relationship" value="owner">
-                        <input type="text" class="invitations-form__input" value="Chủ hộ" readonly>
-                        @error('intended_relationship')
-                            <small class="invitations-form__hint invitations-form__hint--error">{{ $message }}</small>
-                        @else
-                            <small class="invitations-form__hint">Mã mời dành cho chủ hộ đăng ký tài khoản.</small>
-                        @enderror
-                    </div>
+                    <input type="hidden" name="intended_relationship" value="owner">
 
                     <div class="invitations-form__field">
                         <label class="invitations-form__label">Ngày hết hạn</label>
