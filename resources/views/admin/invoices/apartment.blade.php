@@ -6,21 +6,30 @@
 <div class="apt-inv-page">
 
     {{-- Header --}}
-    <div class="apt-inv-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+    <div class="apt-inv-header">
         <div>
             <a href="{{ portal_route('invoices.index') }}" class="btn-back">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
                 Quay lại danh sách
             </a>
-            <div class="apt-inv-header__content">
+            <div class="apt-inv-header__content" style="margin-top:8px;">
                 <p class="apt-inv-eyebrow">Tài chính <span class="dot">·</span> Hóa đơn căn hộ</p>
+                @php
+                    $blockName = optional(optional($apartment->floor)->block)->name;
+                    $floorName = optional($apartment->floor)->name;
+                @endphp
                 <h1 class="apt-inv-title">
                     Căn {{ $apartment->apartment_number }}
-                    @if(optional(optional($apartment->floor)->block)->name)
-                        <span class="apt-inv-block-tag">Tòa {{ $apartment->floor->block->name }}</span>
+                    @if($blockName)
+                        <span class="apt-inv-block-tag">{{ \Illuminate\Support\Str::startsWith($blockName, 'Tòa') ? $blockName : 'Tòa ' . $blockName }}</span>
                     @endif
                 </h1>
-                <p class="apt-inv-sub">Tầng {{ optional($apartment->floor)->name ?? '' }} <span class="dot">·</span> {{ $apartment->owner_name }}</p>
+                <p class="apt-inv-sub">
+                    @if($floorName)
+                        {{ \Illuminate\Support\Str::startsWith($floorName, 'Tầng') ? $floorName : 'Tầng ' . $floorName }} <span class="dot">·</span>
+                    @endif
+                    {{ $apartment->owner_name }}
+                </p>
             </div>
         </div>
 
@@ -212,7 +221,7 @@
 .apt-inv-page { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
 
 /* Header */
-.apt-inv-header { margin-bottom: 32px; display: flex; flex-direction: column; gap: 24px; }
+.apt-inv-header { margin-bottom: 24px; display: flex; flex-direction: row; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
 .btn-back { display: inline-flex; align-items: center; gap: 8px; color: #2563eb; font-weight: 500; font-size: 1rem; text-decoration: none; }
 .btn-back:hover { color: #1d4ed8; text-decoration: underline; }
 .apt-inv-header__content { display: flex; flex-direction: column; gap: 8px; }
