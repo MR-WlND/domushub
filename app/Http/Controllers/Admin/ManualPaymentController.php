@@ -28,8 +28,56 @@ class ManualPaymentController extends Controller
     {
         $q = trim($request->get('q', ''));
 
+        // Nếu từ khóa rỗng: Trả về TẤT CẢ hóa đơn chưa thanh toán / thanh toán 1 phần trong hệ thống
         if (empty($q)) {
-            return response()->json(['success' => false, 'message' => 'Vui lòng nhập từ khóa tìm kiếm.']);
+            $invoices = Invoice::with(['apartment.ownerResident.user', 'details.servicePrice'])
+                ->whereIn('status', ['unpaid', 'partial_paid'])
+                ->orderBy('due_date', 'asc')
+                ->get()
+                ->map(function ($invoice) {
+                    $isOverdue = $invoice->due_date && now()->isAfter($invoice->due_date);
+
+                    $serviceNames = $invoice->details
+                        ->map(function ($detail) {
+                            return optional($detail->servicePrice)->name ?? $detail->note;
+                        })
+                        ->filter()
+                        ->unique()
+                        ->implode(', ');
+
+                    $description = !empty($serviceNames) ? $serviceNames : ($invoice->title ?? 'Hóa đơn dịch vụ');
+
+                    $totalDue = (float) ($invoice->total_due_at_issue > 0 ? $invoice->total_due_at_issue : $invoice->total_amount);
+                    $remainingAmount = max(0, $totalDue - (float) $invoice->paid_amount);
+
+                    $statusLabel = match ($invoice->status) {
+                        'partial_paid' => 'Thanh toán 1 phần',
+                        default => ($isOverdue ? 'Quá hạn' : 'Chưa thanh toán'),
+                    };
+
+                    return [
+                        'id'               => $invoice->id,
+                        'apartment_code'   => $invoice->apartment->apartment_code ?? $invoice->apartment->apartment_number ?? '---',
+                        'owner_name'       => optional(optional($invoice->apartment->ownerResident)->user)->name ?? '---',
+                        'invoice_code'     => $invoice->invoice_code,
+                        'billing_month'    => $invoice->billing_month instanceof \Carbon\Carbon
+                            ? $invoice->billing_month->format('m')
+                            : $invoice->getRawOriginal('billing_month'),
+                        'billing_year'     => $invoice->billing_year,
+                        'due_date'         => $invoice->due_date ? $invoice->due_date->format('d/m/Y') : null,
+                        'total_amount'     => $remainingAmount,
+                        'status'           => $invoice->status === 'partial_paid' ? 'partial_paid' : ($isOverdue ? 'overdue' : 'unpaid'),
+                        'status_label'     => $statusLabel,
+                        'description'      => $description,
+                        'show_url'         => portal_route('invoices.show', $invoice->id),
+                    ];
+                });
+
+            return response()->json([
+                'success'  => true,
+                'is_all'   => true,
+                'invoices' => $invoices,
+            ]);
         }
 
         // Tìm căn hộ theo mã hoặc chủ hộ theo tên/số điện thoại/email
@@ -55,7 +103,7 @@ class ManualPaymentController extends Controller
             ->whereIn('status', ['unpaid', 'partial_paid'])
             ->orderBy('due_date', 'asc')
             ->get()
-            ->map(function ($invoice) {
+            ->map(function ($invoice) use ($apartment) {
                 $isOverdue = $invoice->due_date && now()->isAfter($invoice->due_date);
 
                 $serviceNames = $invoice->details
@@ -81,6 +129,8 @@ class ManualPaymentController extends Controller
 
                 return [
                     'id'            => $invoice->id,
+                    'apartment_code'=> $apartment->apartment_code,
+                    'owner_name'    => optional(optional($apartment->ownerResident)->user)->name ?? '---',
                     'invoice_code'  => $invoice->invoice_code,
                     'billing_month' => $invoice->billing_month instanceof \Carbon\Carbon
                         ? $invoice->billing_month->format('m')

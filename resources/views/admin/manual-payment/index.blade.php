@@ -454,6 +454,7 @@
                     <th style="width:40px;">
                         <input type="checkbox" id="checkAll" title="Chọn tất cả" />
                     </th>
+                    <th>Căn hộ</th>
                     <th>Mã HĐ</th>
                     <th>Kỳ hóa đơn</th>
                     <th>Hạn thanh toán</th>
@@ -570,7 +571,6 @@ function doSearch() {
     const q = document.getElementById('searchInput').value.trim();
     const errEl = document.getElementById('searchError');
     errEl.style.display = 'none';
-    if (!q) { errEl.textContent = 'Vui lòng nhập từ khóa.'; errEl.style.display = 'block'; return; }
 
     fetch(`${SEARCH_URL}?q=${encodeURIComponent(q)}`, {
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -585,8 +585,15 @@ function doSearch() {
             document.getElementById('paymentSection').style.display = 'none';
             return;
         }
-        renderResident(data);
-        renderInvoices(data.invoices, data.apartment.id);
+
+        if (data.is_all) {
+            document.getElementById('residentCard').style.display = 'none';
+            document.getElementById('hiddenApartmentId').value = '';
+            renderInvoices(data.invoices);
+        } else {
+            renderResident(data);
+            renderInvoices(data.invoices);
+        }
     })
     .catch(() => {
         errEl.textContent = 'Lỗi kết nối. Vui lòng thử lại.';
@@ -599,14 +606,14 @@ document.getElementById('searchInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
 });
 
-// --- Auto Search if query param 'q' exists in URL ---
+// --- Auto Load on Page Load ---
 document.addEventListener('DOMContentLoaded', function () {
     const urlParams = new URLSearchParams(window.location.search);
     const initialQuery = urlParams.get('q');
     if (initialQuery) {
         document.getElementById('searchInput').value = initialQuery;
-        doSearch();
     }
+    doSearch();
 });
 
 // --- Render Resident Card ---
@@ -636,7 +643,7 @@ function renderResident(data) {
 }
 
 // --- Render Invoices Table ---
-function renderInvoices(invoices, apartmentId) {
+function renderInvoices(invoices) {
     const tbody = document.getElementById('invoicesTbody');
     const noMsg = document.getElementById('noInvoicesMsg');
     const section = document.getElementById('invoicesSection');
@@ -659,6 +666,10 @@ function renderInvoices(invoices, apartmentId) {
             : String(inv.billing_month).padStart(2, '0');
         tr.innerHTML = `
             <td><input type="checkbox" class="inv-chk" data-id="${inv.id}" data-amount="${inv.total_amount}" checked /></td>
+            <td>
+                <strong style="color:#1e293b; font-size:13px;">${inv.apartment_code || '---'}</strong>
+                <div style="font-size:11px; color:#64748b;">${inv.owner_name || ''}</div>
+            </td>
             <td>
                 <a href="${inv.show_url}" target="_blank" class="mp-invoice-code" title="Xem chi tiết hóa đơn">
                     ${inv.invoice_code} <i class="fas fa-external-link-alt" style="font-size:11px; margin-left:3px;"></i>
