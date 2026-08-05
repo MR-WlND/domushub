@@ -80,6 +80,7 @@ class ManualPaymentController extends Controller
                     'status'        => $isOverdue ? 'overdue' : 'unpaid',
                     'status_label'  => $isOverdue ? 'Quá hạn' : 'Chưa thanh toán',
                     'description'   => $description,
+                    'show_url'      => portal_route('invoices.show', $invoice->id),
                 ];
             });
 

@@ -227,7 +227,8 @@
     accent-color: #3b82f6;
     cursor: pointer;
 }
-.mp-invoice-code { font-weight: 600; color: #2563eb; }
+.mp-invoice-code { font-weight: 600; color: #2563eb; text-decoration: none; display: inline-flex; align-items: center; }
+.mp-invoice-code:hover { text-decoration: underline; color: #1d4ed8; }
 .mp-invoice-desc { font-size: 12px; color: #a0abc0; margin-top: 2px; }
 .mp-amount { font-weight: 700; text-align: right; font-size: 14px; }
 
@@ -608,7 +609,9 @@ function renderInvoices(invoices, apartmentId) {
         tr.innerHTML = `
             <td><input type="checkbox" class="inv-chk" data-id="${inv.id}" data-amount="${inv.total_amount}" checked /></td>
             <td>
-                <div class="mp-invoice-code">${inv.invoice_code}</div>
+                <a href="${inv.show_url}" target="_blank" class="mp-invoice-code" title="Xem chi tiết hóa đơn">
+                    ${inv.invoice_code} <i class="fas fa-external-link-alt" style="font-size:11px; margin-left:3px;"></i>
+                </a>
                 <div class="mp-invoice-desc">${inv.description}</div>
             </td>
             <td>Tháng ${monthStr}/${inv.billing_year}</td>
