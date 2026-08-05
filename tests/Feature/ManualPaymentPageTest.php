@@ -42,9 +42,9 @@ class ManualPaymentPageTest extends TestCase
     }
 
     /**
-     * Test AJAX search khi không có từ khóa trả về lỗi.
+     * Test AJAX search khi không có từ khóa trả về danh sách căn hộ nợ mặc định.
      */
-    public function test_search_without_query_returns_error(): void
+    public function test_search_without_query_returns_default_list(): void
     {
         $admin = User::where('role', 'admin')->first();
         if (!$admin) {
@@ -55,7 +55,7 @@ class ManualPaymentPageTest extends TestCase
             ->getJson(portal_route('manual-payment.search', ['q' => '']));
 
         $response->assertStatus(200)
-                 ->assertJson(['success' => false]);
+                 ->assertJson(['success' => true, 'is_default_list' => true]);
     }
 
     /**

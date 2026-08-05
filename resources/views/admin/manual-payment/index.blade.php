@@ -440,6 +440,30 @@
 
     </div>
 
+    {{-- Danh sách căn hộ có hóa đơn chưa thanh toán (hiển thị mặc định để không bị trống trang) --}}
+    <div class="mp-card" id="defaultApartmentsSection" style="display:none; margin-bottom: 20px;">
+        <div class="mp-invoices-header" style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+            <div class="mp-invoices-header__icon" style="width:36px; height:36px; background:#eff6ff; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#2563eb; font-size:16px;">
+                <i class="fas fa-building"></i>
+            </div>
+            <h2 class="mp-invoices-header__title" style="font-size:16px; font-weight:700; color:#1e293b; margin:0;">Danh sách căn hộ có hóa đơn chưa thanh toán</h2>
+        </div>
+        <table class="mp-table">
+            <thead>
+                <tr>
+                    <th>Căn hộ</th>
+                    <th>Chủ hộ</th>
+                    <th>Số HĐ chưa TT</th>
+                    <th>Tổng nợ cần thu</th>
+                    <th style="text-align:right;">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody id="defaultApartmentsTbody">
+                {{-- JS Render --}}
+            </tbody>
+        </table>
+    </div>
+
     {{-- Danh sách hóa đơn chưa thanh toán --}}
     <div class="mp-card" id="invoicesSection" style="display:none;">
         <div class="mp-invoices-header">
@@ -566,11 +590,10 @@ const SEARCH_URL = "{{ portal_route('manual-payment.search') }}";
 const CSRF_TOKEN = "{{ csrf_token() }}";
 
 // --- AJAX Search ---
-function doSearch() {
-    const q = document.getElementById('searchInput').value.trim();
+function doSearch(targetQuery) {
+    let q = targetQuery !== undefined ? targetQuery : document.getElementById('searchInput').value.trim();
     const errEl = document.getElementById('searchError');
     errEl.style.display = 'none';
-    if (!q) { errEl.textContent = 'Vui lòng nhập từ khóa.'; errEl.style.display = 'block'; return; }
 
     fetch(`${SEARCH_URL}?q=${encodeURIComponent(q)}`, {
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -580,13 +603,23 @@ function doSearch() {
         if (!data.success) {
             errEl.textContent = data.message || 'Không tìm thấy kết quả.';
             errEl.style.display = 'block';
+            document.getElementById('defaultApartmentsSection').style.display = 'none';
             document.getElementById('residentCard').style.display = 'none';
             document.getElementById('invoicesSection').style.display = 'none';
             document.getElementById('paymentSection').style.display = 'none';
             return;
         }
-        renderResident(data);
-        renderInvoices(data.invoices, data.apartment.id);
+
+        if (data.is_default_list) {
+            document.getElementById('residentCard').style.display = 'none';
+            document.getElementById('invoicesSection').style.display = 'none';
+            document.getElementById('paymentSection').style.display = 'none';
+            renderDefaultApartments(data.apartments);
+        } else {
+            document.getElementById('defaultApartmentsSection').style.display = 'none';
+            renderResident(data);
+            renderInvoices(data.invoices, data.apartment.id);
+        }
     })
     .catch(() => {
         errEl.textContent = 'Lỗi kết nối. Vui lòng thử lại.';
@@ -594,18 +627,60 @@ function doSearch() {
     });
 }
 
-document.getElementById('searchBtn').addEventListener('click', doSearch);
+function renderDefaultApartments(apartments) {
+    const section = document.getElementById('defaultApartmentsSection');
+    const tbody = document.getElementById('defaultApartmentsTbody');
+    tbody.innerHTML = '';
+
+    if (!apartments || apartments.length === 0) {
+        section.style.display = 'none';
+        return;
+    }
+
+    apartments.forEach(apt => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>
+                <strong style="color:#1e293b; font-size:14px;">Căn ${apt.apartment_code || apt.apartment_number}</strong>
+                <div style="font-size:11px; color:#64748b;">${apt.block_name} ${apt.floor_name ? '· ' + apt.floor_name : ''}</div>
+            </td>
+            <td>
+                <div style="font-weight:600; color:#334155;">${apt.owner_name}</div>
+                <div style="font-size:11px; color:#64748b;">${apt.owner_phone}</div>
+            </td>
+            <td><span style="font-weight:700; color:#475569;">${apt.unpaid_count} hóa đơn</span></td>
+            <td><span style="font-weight:800; color:#2563eb;">${Number(apt.total_debt).toLocaleString('vi-VN')} đ</span></td>
+            <td style="text-align:right;">
+                <button type="button" onclick="selectApartmentForPayment('${apt.apartment_code || apt.apartment_number}')" style="background:#16a34a; color:#fff; border:none; padding:7px 16px; border-radius:6px; font-weight:600; cursor:pointer; font-size:13px; display:inline-flex; align-items:center; gap:6px;">
+                    <i class="fas fa-money-bill-wave"></i> Thu tiền
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    section.style.display = 'block';
+}
+
+function selectApartmentForPayment(aptCode) {
+    document.getElementById('searchInput').value = aptCode;
+    doSearch(aptCode);
+}
+
+document.getElementById('searchBtn').addEventListener('click', () => doSearch());
 document.getElementById('searchInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
 });
 
-// --- Auto Search if query param 'q' exists in URL ---
+// Auto load default list on page load if no query, or search initial query if present
 document.addEventListener('DOMContentLoaded', function () {
     const urlParams = new URLSearchParams(window.location.search);
     const initialQuery = urlParams.get('q');
     if (initialQuery) {
         document.getElementById('searchInput').value = initialQuery;
-        doSearch();
+        doSearch(initialQuery);
+    } else {
+        doSearch('');
     }
 });
 
