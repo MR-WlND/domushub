@@ -232,13 +232,10 @@ function renderApartmentGroups(apartments) {
                     </tbody>
                 </table>
 
-                <div style="padding:14px 20px; background:#fafafa; border-top:1px solid #f1f5f9; display:flex; justify-content:flex-end; gap:10px; align-items:center;">
-                    <button type="submit" name="action" value="print" class="mp-btn mp-btn--outline">
-                        <i class="fas fa-print"></i> Xác nhận &amp; In phiếu thu
-                    </button>
-                    <button type="submit" name="action" value="confirm" class="mp-btn mp-btn--primary">
-                        <i class="fas fa-check-circle"></i> Xác nhận thu Căn ${apt.apartment_code || apt.apartment_number}
-                    </button>
+                <div style="padding:14px 20px; background:#fafafa; border-top:1px solid #f1f5f9; display:flex; justify-content:flex-end; align-items:center;">
+                    <a href="${apt.apartment_url}" class="mp-btn mp-btn--primary" style="padding:10px 22px; font-size:14px; text-decoration:none;">
+                        <i class="fas fa-credit-card"></i> Thanh toán
+                    </a>
                 </div>
             </form>
         `;

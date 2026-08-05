@@ -111,6 +111,7 @@ class ManualPaymentController extends Controller
                 'owner_avatar'     => $ownerUser && $ownerUser->avatar ? asset('storage/' . $ownerUser->avatar) : null,
                 'unpaid_count'     => $unpaidInvoices->count(),
                 'total_debt'       => $totalDebt,
+                'apartment_url'    => portal_route('invoices.apartment', $apt->id),
                 'invoices'         => $unpaidInvoices->values()->toArray(),
             ];
         });
