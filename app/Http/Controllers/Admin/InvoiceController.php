@@ -886,7 +886,18 @@ class InvoiceController extends Controller
      */
     public function markAsPaid(Request $request, Invoice $invoice)
     {
-        $maxAmount = $invoice->remaining_amount > 0 ? $invoice->remaining_amount : $invoice->total_amount;
+        if ($invoice->status === 'cancelled') {
+            return back()->with('error', 'Hóa đơn này đã bị hủy, không thể ghi nhận thanh toán.');
+        }
+
+        $totalDueAtIssue = (float) ($invoice->total_due_at_issue > 0 ? $invoice->total_due_at_issue : $invoice->total_amount);
+        $remainingDue = max(0, $totalDueAtIssue - (float) $invoice->paid_amount);
+
+        if ($remainingDue <= 0) {
+            return back()->with('error', 'Hóa đơn này đã được thanh toán đầy đủ.');
+        }
+
+        $maxAmount = $remainingDue;
 
         $validated = $request->validate([
             'payment_method' => 'required|in:cash,bank_transfer,momo,vnpay,other',
@@ -914,7 +925,7 @@ class InvoiceController extends Controller
             $proofPath = $request->file('proof_image')->store('proofs', 'public');
         }
 
-        DB::transaction(function () use ($invoice, $validated, $proofPath) {
+        DB::transaction(function () use ($invoice, $validated, $proofPath, $totalDueAtIssue) {
             // Tạo bản ghi payment
             Payment::create([
                 'bill_id'        => $invoice->id,
@@ -932,8 +943,8 @@ class InvoiceController extends Controller
             // Cộng vào paid_amount của bill
             $newPaidAmount = (float) $invoice->paid_amount + (float) $validated['amount'];
 
-            // Xác định status mới
-            $newStatus = $newPaidAmount >= (float) $invoice->total_amount ? 'paid' : 'partial_paid';
+            // Xác định status mới dựa trên total_due_at_issue (tính cả nợ cũ)
+            $newStatus = $newPaidAmount >= $totalDueAtIssue ? 'paid' : 'partial_paid';
 
             $invoice->update([
                 'paid_amount' => $newPaidAmount,
@@ -958,11 +969,10 @@ class InvoiceController extends Controller
             $this->activateVehicleIfParkingFee($freshInvoice);
         }
 
-        $message = (float)($invoice->fresh()->paid_amount) >= (float)$invoice->total_amount
+        $freshPaid = (float) $freshInvoice->paid_amount;
+        $message = $freshPaid >= $totalDueAtIssue
             ? 'Hóa đơn đã được thanh toán đầy đủ.'
-            : 'Ghi nhận thanh toán ' . number_format($validated['amount']) . 'đ thành công. Còn lại: ' . number_format($invoice->fresh()->remaining_amount) . 'đ.';
-
-
+            : 'Ghi nhận thanh toán ' . number_format($validated['amount']) . 'đ thành công. Còn lại: ' . number_format(max(0, $totalDueAtIssue - $freshPaid)) . 'đ.';
 
         return back()->with('success', $message);
     }
@@ -1174,29 +1184,35 @@ class InvoiceController extends Controller
 
         if (!$parkingDetail) return;
 
-        $vehicle = \App\Models\Vehicle::where('apartment_id', $invoice->apartment_id)
+        $vehicles = \App\Models\Vehicle::where('apartment_id', $invoice->apartment_id)
             ->where('status', 'awaiting_payment')
-            ->first();
+            ->get();
 
-        if (!$vehicle) return;
+        if ($vehicles->isEmpty()) return;
 
-        $vehicle->update(['status' => 'active']);
+        foreach ($vehicles as $vehicle) {
+            $vehicle->update(['status' => 'active']);
 
-        // Sinh QR
-        try {
-            $dir = storage_path('app/public/qr/vehicles');
-            if (!is_dir($dir)) mkdir($dir, 0775, true);
-            $content = strtoupper(str_replace([' ', '-'], '', $vehicle->license_plate));
-            $filename = $content . '.svg';
-            $filePath = $dir . '/' . $filename;
-            if (class_exists(\SimpleSoftwareIO\QrCode\Facades\QrCode::class)) {
-                \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(300)->errorCorrection('H')->generate($content, $filePath);
+            // Sinh QR
+            try {
+                $dir = storage_path('app/public/qr/vehicles');
+                if (!is_dir($dir)) mkdir($dir, 0775, true);
+                $content = strtoupper(str_replace([' ', '-'], '', $vehicle->license_plate));
+                $filename = $content . '.svg';
+                $filePath = $dir . '/' . $filename;
+                if (class_exists(\SimpleSoftwareIO\QrCode\Facades\QrCode::class)) {
+                    \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(300)->errorCorrection('H')->generate($content, $filePath);
+                }
+                $vehicle->update(['qr_code' => 'qr/vehicles/' . $filename]);
+            } catch (\Throwable $e) {
+                $vehicle->update(['qr_code' => strtoupper(str_replace([' ', '-'], '', $vehicle->license_plate))]);
             }
-            $vehicle->update(['qr_code' => 'qr/vehicles/' . $filename]);
-        } catch (\Throwable $e) {
-            $vehicle->update(['qr_code' => strtoupper(str_replace([' ', '-'], '', $vehicle->license_plate))]);
-        }
 
-        \App\Helpers\SystemLogger::log('Kích hoạt xe sau thanh toán', $vehicle->license_plate);
+            SystemLogger::log(
+                'vehicle',
+                'Kích hoạt xe ' . $vehicle->license_plate . ' sau khi thanh toán phí gửi xe',
+                ['vehicle_id' => $vehicle->id, 'apartment_id' => $invoice->apartment_id]
+            );
+        }
     }
 }
