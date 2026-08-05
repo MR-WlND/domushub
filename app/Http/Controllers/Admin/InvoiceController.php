@@ -886,7 +886,10 @@ class InvoiceController extends Controller
      */
     public function markAsPaid(Request $request, Invoice $invoice)
     {
-        $maxAmount = $invoice->remaining_amount > 0 ? $invoice->remaining_amount : $invoice->total_amount;
+        // Tính số tiền còn phải trả dựa trên tổng nợ (bao gồm nợ cũ previous_debt)
+        $totalDue   = (float) $invoice->total_due_at_issue;
+        $paidSoFar  = (float) $invoice->paid_amount;
+        $maxAmount  = max(0, $totalDue - $paidSoFar);
 
         $validated = $request->validate([
             'payment_method' => 'required|in:cash,bank_transfer,momo,vnpay,other',
