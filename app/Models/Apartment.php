@@ -115,6 +115,29 @@ class Apartment extends Model
     }
 
     /**
+     * Chủ hộ của căn hộ (Resident với relationship = 'owner', kèm User)
+     */
+    public function ownerResident()
+    {
+        return $this->hasOne(Resident::class)->where('relationship', 'owner')->with('user');
+    }
+
+    /**
+     * Truy xuất User chủ hộ nhanh qua apartment_id
+     */
+    public function owner()
+    {
+        return $this->hasOneThrough(
+            \App\Models\User::class,
+            \App\Models\Resident::class,
+            'apartment_id',  // FK on residents
+            'id',            // FK on users
+            'id',            // local key on apartments
+            'user_id'        // local key on residents
+        )->where('residents.relationship', 'owner');
+    }
+
+    /**
      * Chỉ số điện nước của căn hộ
      */
     public function utilityMeters(): HasMany
