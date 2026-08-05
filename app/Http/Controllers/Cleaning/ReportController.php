@@ -23,16 +23,20 @@ class ReportController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:200',
-            'location' => 'required|string|max:100',
-            'priority' => 'required|in:low,medium,high',
+            'title'       => 'required|string|max:200',
+            'location'    => 'required|string|max:100',
+            'priority'    => 'required|in:low,medium,high',
             'description' => 'nullable|string|max:2000',
-            'images.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'images'      => 'nullable|array|max:5',
+            'images.*'    => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
         ], [
-            'title.required' => 'Vui lòng nhập tiêu đề sự cố.',
+            'title.required'    => 'Vui lòng nhập tiêu đề sự cố.',
+            'title.max'         => 'Tiêu đề không được vượt quá 200 ký tự.',
             'location.required' => 'Vui lòng chọn khu vực.',
-            'images.*.image' => 'File phải là hình ảnh.',
-            'images.*.max' => 'Ảnh không được vượt quá 10MB.',
+            'priority.required' => 'Vui lòng chọn mức độ ưu tiên.',
+            'images.max'        => 'Tải tối đa 5 hình ảnh.',
+            'images.*.image'    => 'File phải là hình ảnh.',
+            'images.*.max'      => 'Ảnh không được vượt quá 10MB.',
         ]);
 
         $imagePaths = [];
