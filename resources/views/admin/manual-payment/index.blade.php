@@ -450,7 +450,73 @@
 
     {{-- Xử lý thanh toán --}}
     <div class="mp-card" id="paymentSection" style="display:none;">
-        <div class="mp-payment-form"></div>
+        <form method="POST" action="{{ route('manual-payment.process') }}" id="paymentForm">
+            @csrf
+            <input type="hidden" name="apartment_id" id="hiddenApartmentId" />
+
+            {{-- Header row --}}
+            <div class="mp-payment-title-row">
+                <h3 class="mp-payment-title">Xử lý thanh toán</h3>
+                <div>
+                    <span class="mp-payment-total-label">Tổng tiền cần thanh toán: </span>
+                    <span class="mp-payment-total-value" id="totalDisplay">0 VNĐ</span>
+                </div>
+            </div>
+
+            {{-- Body: left = phương thức + số tiền, right = ghi chú --}}
+            <div class="mp-payment-body">
+                <div>
+                    {{-- Phương thức thanh toán --}}
+                    <label class="mp-method-label">Phương thức thanh toán</label>
+                    <div class="mp-method-group" id="methodGroup">
+                        <button type="button" class="mp-method-btn active" data-method="cash">
+                            <i class="fas fa-money-bill-wave"></i>
+                            Tiền mặt
+                        </button>
+                        <button type="button" class="mp-method-btn" data-method="bank_transfer">
+                            <i class="fas fa-university"></i>
+                            Chuyển khoản
+                        </button>
+                        <button type="button" class="mp-method-btn" data-method="card">
+                            <i class="fas fa-credit-card"></i>
+                            Thẻ
+                        </button>
+                    </div>
+                    <input type="hidden" name="payment_method" id="paymentMethodInput" value="cash" />
+
+                    {{-- Số tiền thực thu --}}
+                    <div class="mp-amount-field">
+                        <label class="mp-field-label" for="amountReceived">Số tiền thực thu (VNĐ)</label>
+                        <input type="text"
+                               id="amountReceived"
+                               name="amount_received"
+                               class="mp-input"
+                               placeholder="0"
+                               autocomplete="off" />
+                        <p class="mp-field-hint">Mặc định bằng tổng số tiền các hóa đơn đã chọn.</p>
+                    </div>
+                </div>
+
+                <div>
+                    {{-- Ghi chú --}}
+                    <label class="mp-field-label" for="paymentNote">Ghi chú (Tùy chọn)</label>
+                    <textarea id="paymentNote"
+                              name="note"
+                              class="mp-textarea"
+                              placeholder="Nhập ghi chú hoặc mã giao dịch ngân hàng..."></textarea>
+
+                    {{-- Action buttons --}}
+                    <div class="mp-btn-row">
+                        <button type="submit" name="action" value="print" class="mp-btn mp-btn--outline" id="btnPrint">
+                            <i class="fas fa-print"></i> Xác nhận &amp; In phiếu thu
+                        </button>
+                        <button type="submit" name="action" value="confirm" class="mp-btn mp-btn--primary" id="btnConfirm">
+                            Xác nhận thanh toán
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
     </div>
 
 </div>
