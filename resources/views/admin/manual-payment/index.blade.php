@@ -659,5 +659,21 @@ function recalcTotal() {
         form.appendChild(inp);
     });
 }
+
+// --- Payment Method Selection ---
+document.querySelectorAll('.mp-method-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+        document.querySelectorAll('.mp-method-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById('paymentMethodInput').value = this.dataset.method;
+    });
+});
+
+// --- Format amount input ---
+document.getElementById('amountReceived').addEventListener('input', function () {
+    const raw = this.value.replace(/[^\d]/g, '');
+    if (raw) this.value = Number(raw).toLocaleString('vi-VN');
+});
 </script>
 @endpush
+
