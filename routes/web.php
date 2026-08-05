@@ -198,6 +198,7 @@ $portalRoutes = function () {
     Route::delete('/service-prices/{id}', [ServicePriceController::class, 'destroy'])->name('service-prices.destroy');
 
     Route::get('/thu-tien-thu-cong', [\App\Http\Controllers\Admin\ManualPaymentController::class, 'index'])->name('manual-payment.index');
+    Route::get('/thu-tien-thu-cong/search', [\App\Http\Controllers\Admin\ManualPaymentController::class, 'search'])->name('manual-payment.search');
     Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
     Route::get('/invoices/stats', [InvoiceController::class, 'stats'])->name('invoices.stats');
     Route::get('/invoices/create', [InvoiceController::class, 'create'])->name('invoices.create');
