@@ -41,6 +41,14 @@ class Facility extends Model
     ];
 
     /**
+     * Query scope lấy các tiện ích khả dụng (available hoặc active)
+     */
+    public function scopeAvailable($query)
+    {
+        return $query->whereIn('status', ['available', 'active']);
+    }
+
+    /**
      * Tòa nhà
      */
     public function block()
