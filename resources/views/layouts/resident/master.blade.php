@@ -237,8 +237,8 @@
         const CSRF = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
         // ===== HIỆN POPUP 1 LẦN MỖI PHIÊN ĐĂNG NHẬP =====
-        // sessionStorage tự xóa khi đóng tab/trình duyệt → mỗi lần đăng nhập mới sẽ hiện lại
-        const storageKey = 'vp_popup_shown';
+        // Gắn key theo Laravel session ID → mỗi lần đăng nhập mới sẽ có key mới → popup hiện lại
+        const storageKey = 'vp_popup_shown_{{ session()->getId() }}';
 
         document.addEventListener('DOMContentLoaded', function () {
             const bd = document.getElementById('visitorPopupBackdrop');
