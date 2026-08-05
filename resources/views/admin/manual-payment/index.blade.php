@@ -521,3 +521,44 @@
 
 </div>
 @endsection
+
+@push('scripts')
+<script>
+const SEARCH_URL = "{{ route('manual-payment.search') }}";
+const CSRF_TOKEN = "{{ csrf_token() }}";
+
+// --- AJAX Search ---
+function doSearch() {
+    const q = document.getElementById('searchInput').value.trim();
+    const errEl = document.getElementById('searchError');
+    errEl.style.display = 'none';
+    if (!q) { errEl.textContent = 'Vui lòng nhập từ khóa.'; errEl.style.display = 'block'; return; }
+
+    fetch(`${SEARCH_URL}?q=${encodeURIComponent(q)}`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (!data.success) {
+            errEl.textContent = data.message || 'Không tìm thấy kết quả.';
+            errEl.style.display = 'block';
+            document.getElementById('residentCard').style.display = 'none';
+            document.getElementById('invoicesSection').style.display = 'none';
+            document.getElementById('paymentSection').style.display = 'none';
+            return;
+        }
+        renderResident(data);
+        renderInvoices(data.invoices, data.apartment.id);
+    })
+    .catch(() => {
+        errEl.textContent = 'Lỗi kết nối. Vui lòng thử lại.';
+        errEl.style.display = 'block';
+    });
+}
+
+document.getElementById('searchBtn').addEventListener('click', doSearch);
+document.getElementById('searchInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
+});
+</script>
+@endpush
