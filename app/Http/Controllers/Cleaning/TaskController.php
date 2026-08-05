@@ -106,7 +106,13 @@ class TaskController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $checklist = $request->input('checklist');
+        $validated = $request->validate([
+            'checklist'        => 'required|array',
+            'checklist.*.text' => 'required|string|max:500',
+            'checklist.*.done' => 'required|boolean',
+        ]);
+
+        $checklist = $validated['checklist'];
         $task->checklist = $checklist;
 
         // If all checklist items are done, auto-mark task as done
