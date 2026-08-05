@@ -132,8 +132,10 @@ class ManualPaymentController extends Controller
             'amount_received.min'    => 'Số tiền phải lớn hơn 0.',
         ]);
 
+        $lastPaymentId = null;
+
         try {
-            DB::transaction(function () use ($request) {
+            DB::transaction(function () use ($request, &$lastPaymentId) {
                 $invoiceIds     = $request->invoice_ids;
                 $paymentDate    = $request->payment_date ? now()->parse($request->payment_date) : now();
                 $paymentMethod   = $request->payment_method;
@@ -161,7 +163,7 @@ class ManualPaymentController extends Controller
 
                     $payForThisBill = min($remainingToPay, $dueAmount);
 
-                    Payment::create([
+                    $payment = Payment::create([
                         'bill_id'        => $invoice->id,
                         'amount'         => $payForThisBill,
                         'payment_method' => $paymentMethod,
@@ -170,6 +172,8 @@ class ManualPaymentController extends Controller
                         'note'           => $note,
                         'recorded_by'    => auth()->id(),
                     ]);
+
+                    $lastPaymentId = $payment->id;
 
                     $newPaidAmount = $currentPaid + $payForThisBill;
                     $newStatus     = ($newPaidAmount >= $totalDue - 0.01) ? 'paid' : 'partial_paid';
@@ -197,8 +201,14 @@ class ManualPaymentController extends Controller
                 }
             });
 
-            return redirect()->to(portal_route('manual-payment.index'))
+            $redirect = redirect()->to(portal_route('manual-payment.index'))
                 ->with('success', 'Xác nhận thanh toán thành công!');
+
+            if ($request->get('action') === 'print' && $lastPaymentId) {
+                $redirect->with('print_receipt_url', portal_route('payments.receipt', $lastPaymentId));
+            }
+
+            return $redirect;
         } catch (\Exception $e) {
             return redirect()->back()
                 ->withInput()

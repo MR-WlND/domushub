@@ -370,7 +370,14 @@
 
     {{-- Flash messages --}}
     @if(session('success'))
-        <div class="mp-alert mp-alert--success">{{ session('success') }}</div>
+        <div class="mp-alert mp-alert--success" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+            <div>{{ session('success') }}</div>
+            @if(session('print_receipt_url'))
+                <a href="{{ session('print_receipt_url') }}" target="_blank" class="mp-btn mp-btn--outline" style="padding:4px 12px; font-size:13px; background:#fff; text-decoration:none;">
+                    <i class="fas fa-print"></i> Mở phiếu thu vừa in
+                </a>
+            @endif
+        </div>
     @endif
     @if(session('error'))
         <div class="mp-alert mp-alert--error">{{ session('error') }}</div>
@@ -695,6 +702,10 @@ document.getElementById('paymentForm').addEventListener('submit', function (e) {
     // Chuẩn hóa amount_received về số nguyên trước khi gửi
     document.getElementById('amountReceived').value = rawAmount;
 });
+
+@if(session('print_receipt_url'))
+    window.open("{{ session('print_receipt_url') }}", "_blank");
+@endif
 </script>
 @endpush
 
