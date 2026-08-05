@@ -999,10 +999,11 @@ class InvoiceController extends Controller
             // Trừ paid_amount của bill
             $newPaidAmount = max(0, (float) $invoice->paid_amount - (float) $payment->amount);
 
-            // Xác định lại status
+            // Xác định lại status dựa trên tổng nợ (bao gồm previous_debt)
+            $totalDue = (float) $invoice->total_due_at_issue;
             if ($newPaidAmount <= 0) {
                 $newStatus = 'unpaid';
-            } elseif ($newPaidAmount < (float) $invoice->total_amount) {
+            } elseif ($newPaidAmount < $totalDue) {
                 $newStatus = 'partial_paid';
             } else {
                 $newStatus = 'paid';
