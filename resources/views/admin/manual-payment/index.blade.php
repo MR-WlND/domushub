@@ -599,6 +599,16 @@ document.getElementById('searchInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
 });
 
+// --- Auto Search if query param 'q' exists in URL ---
+document.addEventListener('DOMContentLoaded', function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialQuery = urlParams.get('q');
+    if (initialQuery) {
+        document.getElementById('searchInput').value = initialQuery;
+        doSearch();
+    }
+});
+
 // --- Render Resident Card ---
 function renderResident(data) {
     const owner = data.owner;

@@ -6,20 +6,30 @@
 <div class="apt-inv-page">
 
     {{-- Header --}}
-    <div class="apt-inv-header">
-        <a href="{{ portal_route('invoices.index') }}" class="btn-back">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-            Quay lại danh sách
-        </a>
-        <div class="apt-inv-header__content">
-            <p class="apt-inv-eyebrow">Tài chính <span class="dot">·</span> Hóa đơn căn hộ</p>
-            <h1 class="apt-inv-title">
-                Căn {{ $apartment->apartment_number }}
-                @if(optional(optional($apartment->floor)->block)->name)
-                    <span class="apt-inv-block-tag">Tòa {{ $apartment->floor->block->name }}</span>
-                @endif
-            </h1>
-            <p class="apt-inv-sub">Tầng {{ optional($apartment->floor)->name ?? '' }} <span class="dot">·</span> {{ $apartment->owner_name }}</p>
+    <div class="apt-inv-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+        <div>
+            <a href="{{ portal_route('invoices.index') }}" class="btn-back">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                Quay lại danh sách
+            </a>
+            <div class="apt-inv-header__content">
+                <p class="apt-inv-eyebrow">Tài chính <span class="dot">·</span> Hóa đơn căn hộ</p>
+                <h1 class="apt-inv-title">
+                    Căn {{ $apartment->apartment_number }}
+                    @if(optional(optional($apartment->floor)->block)->name)
+                        <span class="apt-inv-block-tag">Tòa {{ $apartment->floor->block->name }}</span>
+                    @endif
+                </h1>
+                <p class="apt-inv-sub">Tầng {{ optional($apartment->floor)->name ?? '' }} <span class="dot">·</span> {{ $apartment->owner_name }}</p>
+            </div>
+        </div>
+
+        <div>
+            <a href="{{ portal_route('manual-payment.index', ['q' => $apartment->apartment_number]) }}" 
+               class="apt-inv-btn" 
+               style="background:#16a34a; color:#fff; padding:10px 20px; font-size:14px; font-weight:700; border-radius:8px; display:inline-flex; align-items:center; gap:8px; text-decoration:none; box-shadow:0 2px 6px rgba(22,163,74,0.3);">
+                <i class="fas fa-hand-holding-usd" style="font-size:16px;"></i> Thu tiền
+            </a>
         </div>
     </div>
 
@@ -121,12 +131,6 @@
                     </td>
                     <td>
                         <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-                            @if(!in_array($inv->status, ['paid', 'cancelled']))
-                            <button type="button" class="apt-inv-btn apt-inv-btn--pay"
-                                onclick="event.stopPropagation(); openPayModal({{ $inv->id }}, '{{ $inv->invoice_code }}', '{{ addslashes($inv->title) }}', {{ $inv->remaining_amount ?: $inv->total_amount }}, '{{ addslashes($apartment->owner_name ?? '') }}', 'Tháng {{ $inv->billing_month->format('m/Y') }}')">
-                                Thu tiền
-                            </button>
-                            @endif
                             @if (!in_array($inv->status, ['paid', 'cancelled']))
                                 <form action="{{ portal_route('invoices.resend-notification', $inv) }}"
                                     method="POST" style="display:inline;" onclick="event.stopPropagation()">
