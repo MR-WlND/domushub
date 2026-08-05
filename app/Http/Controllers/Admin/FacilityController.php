@@ -208,6 +208,10 @@ class FacilityController extends Controller
             return back()->with('error', 'Chỉ có thể duyệt booking đang ở trạng thái chờ.');
         }
 
+        if ($booking->facility && $booking->facility->status !== 'available') {
+            return back()->with('error', 'Không thể duyệt lịch do tiện ích hiện đang bảo trì hoặc tạm đóng.');
+        }
+
         $booking->update(['status' => 'approved']);
 
         return back()->with('success', 'Đã duyệt lịch đặt tiện ích thành công.');
