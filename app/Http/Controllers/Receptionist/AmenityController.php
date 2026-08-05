@@ -38,10 +38,16 @@ class AmenityController extends Controller
 
     public function rejectBooking(Request $request, $id)
     {
+        $validated = $request->validate([
+            'reason' => 'nullable|string|max:500',
+        ], [
+            'reason.max' => 'Lý do từ chối không được vượt quá 500 ký tự.',
+        ]);
+
         $booking = FacilityBooking::findOrFail($id);
         $booking->update([
             'status'          => 'rejected',
-            'rejection_reason' => $request->reason,
+            'rejection_reason' => $validated['reason'] ?? null,
         ]);
 
         return back()->with('success', 'Đã từ chối đặt lịch tiện ích.');
