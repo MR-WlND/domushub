@@ -932,8 +932,8 @@ class InvoiceController extends Controller
             // Cộng vào paid_amount của bill
             $newPaidAmount = (float) $invoice->paid_amount + (float) $validated['amount'];
 
-            // Xác định status mới
-            $newStatus = $newPaidAmount >= (float) $invoice->total_amount ? 'paid' : 'partial_paid';
+            // Xác định status mới — so sánh với total_due_at_issue để tính cả nợ cũ (previous_debt)
+            $newStatus = $newPaidAmount >= (float) $invoice->total_due_at_issue ? 'paid' : 'partial_paid';
 
             $invoice->update([
                 'paid_amount' => $newPaidAmount,
