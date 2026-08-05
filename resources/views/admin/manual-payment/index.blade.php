@@ -560,5 +560,31 @@ document.getElementById('searchBtn').addEventListener('click', doSearch);
 document.getElementById('searchInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
 });
+
+// --- Render Resident Card ---
+function renderResident(data) {
+    const owner = data.owner;
+    const apt   = data.apartment;
+
+    if (owner) {
+        document.getElementById('residentName').textContent  = owner.name || '---';
+        document.getElementById('residentPhone').textContent = owner.phone || '---';
+        document.getElementById('residentEmail').textContent = owner.email || '---';
+    }
+    document.getElementById('residentApt').textContent = 'Căn hộ ' + (apt.apartment_code || '---');
+    document.getElementById('hiddenApartmentId').value = apt.id;
+
+    // Avatar
+    const avatarEl = document.getElementById('residentAvatar');
+    if (owner && owner.avatar) {
+        avatarEl.innerHTML = `<img src="${owner.avatar}" alt="avatar" />`;
+    } else {
+        const initials = owner ? owner.name.split(' ').map(w => w[0]).slice(-2).join('').toUpperCase() : '?';
+        avatarEl.innerHTML = `<span style="font-size:22px;font-weight:700;color:#2563eb;">${initials}</span>`;
+        avatarEl.style.background = '#eff6ff';
+    }
+
+    document.getElementById('residentCard').style.display = 'flex';
+}
 </script>
 @endpush
