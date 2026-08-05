@@ -243,6 +243,7 @@
 }
 .mp-badge--overdue   { background: #fff1f0; color: #e53935; border: 1px solid #ffcdd2; }
 .mp-badge--unpaid    { background: #fffde7; color: #f59e0b; border: 1px solid #ffe082; }
+.mp-badge--partial   { background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; }
 
 /* ===== Payment Form ===== */
 .mp-payment-title-row {
@@ -601,7 +602,7 @@ function renderInvoices(invoices, apartmentId) {
 
     noMsg.style.display = 'none';
     invoices.forEach(inv => {
-        const badgeClass = inv.status === 'overdue' ? 'mp-badge--overdue' : 'mp-badge--unpaid';
+        const badgeClass = inv.status === 'overdue' ? 'mp-badge--overdue' : (inv.status === 'partial_paid' ? 'mp-badge--partial' : 'mp-badge--unpaid');
         const tr = document.createElement('tr');
         const monthStr = String(inv.billing_month).includes('T')
             ? String(new Date(inv.billing_month).getMonth() + 1).padStart(2, '0')

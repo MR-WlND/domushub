@@ -49,10 +49,10 @@ class ManualPaymentController extends Controller
             return response()->json(['success' => false, 'message' => 'Không tìm thấy căn hộ hoặc chủ hộ phù hợp.']);
         }
 
-        // Lấy danh sách hóa đơn chưa thanh toán của căn hộ
+        // Lấy danh sách hóa đơn chưa thanh toán hoặc thanh toán một phần của căn hộ
         $invoices = Invoice::with(['details.servicePrice'])
             ->where('apartment_id', $apartment->id)
-            ->where('status', 'unpaid')
+            ->whereIn('status', ['unpaid', 'partial_paid'])
             ->orderBy('due_date', 'asc')
             ->get()
             ->map(function ($invoice) {
@@ -68,6 +68,17 @@ class ManualPaymentController extends Controller
 
                 $description = !empty($serviceNames) ? $serviceNames : ($invoice->title ?? 'Hóa đơn dịch vụ');
 
+                $totalDue = (float) ($invoice->total_due_at_issue > 0 ? $invoice->total_due_at_issue : $invoice->total_amount);
+                $remainingAmount = max(0, $totalDue - (float) $invoice->paid_amount);
+
+                $statusLabel = match ($invoice->status) {
+                    'partial_paid' => 'Thanh toán 1 phần',
+                    default => ($isOverdue ? 'Quá hạn' : 'Chưa thanh toán'),
+                };
+                if ($isOverdue && $invoice->status !== 'paid') {
+                    $statusLabel = 'Quá hạn';
+                }
+
                 return [
                     'id'            => $invoice->id,
                     'invoice_code'  => $invoice->invoice_code,
@@ -76,9 +87,9 @@ class ManualPaymentController extends Controller
                         : $invoice->getRawOriginal('billing_month'),
                     'billing_year'  => $invoice->billing_year,
                     'due_date'      => $invoice->due_date ? $invoice->due_date->format('d/m/Y') : null,
-                    'total_amount'  => $invoice->total_amount,
-                    'status'        => $isOverdue ? 'overdue' : 'unpaid',
-                    'status_label'  => $isOverdue ? 'Quá hạn' : 'Chưa thanh toán',
+                    'total_amount'  => $remainingAmount,
+                    'status'        => $invoice->status === 'partial_paid' ? 'partial_paid' : ($isOverdue ? 'overdue' : 'unpaid'),
+                    'status_label'  => $statusLabel,
                     'description'   => $description,
                     'show_url'      => portal_route('invoices.show', $invoice->id),
                 ];
@@ -103,7 +114,7 @@ class ManualPaymentController extends Controller
     }
 
     /**
-     * Xử lý thanh toán thủ công hàng loạt.
+     * Xử lý thanh toán thủ công hàng loạt (Hỗ trợ nộp một phần tiền).
      */
     public function process(Request $request)
     {
@@ -123,41 +134,63 @@ class ManualPaymentController extends Controller
 
         try {
             DB::transaction(function () use ($request) {
-                $invoiceIds   = $request->invoice_ids;
-                $paymentDate  = $request->payment_date ? now()->parse($request->payment_date) : now();
-                $paymentMethod = $request->payment_method;
-                $note          = $request->note;
+                $invoiceIds     = $request->invoice_ids;
+                $paymentDate    = $request->payment_date ? now()->parse($request->payment_date) : now();
+                $paymentMethod   = $request->payment_method;
+                $note            = $request->note;
+                $remainingToPay = (float) $request->amount_received;
 
                 foreach ($invoiceIds as $invoiceId) {
+                    if ($remainingToPay <= 0) {
+                        break;
+                    }
+
                     $invoice = Invoice::lockForUpdate()->findOrFail($invoiceId);
 
-                    if ($invoice->status !== 'unpaid') {
+                    if (in_array($invoice->status, ['paid', 'cancelled'])) {
                         continue;
                     }
 
-                    // Tạo bản ghi thanh toán
+                    $totalDue    = (float) ($invoice->total_due_at_issue > 0 ? $invoice->total_due_at_issue : $invoice->total_amount);
+                    $currentPaid = (float) $invoice->paid_amount;
+                    $dueAmount   = max(0, $totalDue - $currentPaid);
+
+                    if ($dueAmount <= 0) {
+                        continue;
+                    }
+
+                    $payForThisBill = min($remainingToPay, $dueAmount);
+
                     Payment::create([
                         'invoice_id'     => $invoice->id,
-                        'amount'         => $invoice->total_amount,
+                        'amount'         => $payForThisBill,
                         'payment_method' => $paymentMethod,
                         'paid_at'        => $paymentDate,
                         'note'           => $note,
                         'paid_by'        => auth()->id(),
                     ]);
 
-                    // Cập nhật trạng thái hóa đơn
+                    $newPaidAmount = $currentPaid + $payForThisBill;
+                    $newStatus     = ($newPaidAmount >= $totalDue - 0.01) ? 'paid' : 'partial_paid';
+
                     $invoice->update([
-                        'status'   => 'paid',
-                        'paid_at'  => $paymentDate,
+                        'paid_amount' => $newPaidAmount,
+                        'status'      => $newStatus,
+                        'paid_at'     => $newStatus === 'paid' ? $paymentDate : $invoice->paid_at,
                     ]);
 
-                    // Kích hoạt xe nếu là phí gửi xe
-                    $this->activateVehicleIfParkingFee($invoice);
+                    $invoice->recalculateDetailsStatus();
+
+                    if ($newStatus === 'paid') {
+                        $this->activateVehicleIfParkingFee($invoice);
+                    }
+
+                    $remainingToPay -= $payForThisBill;
 
                     SystemLogger::log(
                         'payment',
-                        'Ghi nhận thanh toán thủ công hóa đơn #' . $invoice->invoice_code,
-                        ['invoice_id' => $invoice->id, 'method' => $paymentMethod],
+                        'Ghi nhận thanh toán thủ công hóa đơn #' . $invoice->invoice_code . ' (Gạch nợ: ' . number_format($payForThisBill) . ' đ)',
+                        ['invoice_id' => $invoice->id, 'amount' => $payForThisBill, 'method' => $paymentMethod],
                         auth()->id()
                     );
                 }
