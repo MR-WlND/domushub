@@ -35,7 +35,16 @@ class AmenityController extends Controller
 
     public function approveBooking($id)
     {
-        $booking = FacilityBooking::findOrFail($id);
+        $booking = FacilityBooking::with('facility')->findOrFail($id);
+
+        if ($booking->status !== 'pending') {
+            return back()->with('error', 'Chỉ có thể duyệt lịch đặt đang ở trạng thái chờ.');
+        }
+
+        if ($booking->facility && !in_array($booking->facility->status, ['available', 'active'], true)) {
+            return back()->with('error', 'Không thể duyệt lịch do tiện ích hiện đang bảo trì hoặc tạm đóng.');
+        }
+
         $booking->update(['status' => 'approved']);
 
         return back()->with('success', 'Đã duyệt đặt lịch tiện ích.');
