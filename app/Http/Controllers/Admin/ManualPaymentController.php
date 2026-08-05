@@ -50,12 +50,24 @@ class ManualPaymentController extends Controller
         }
 
         // Lấy danh sách hóa đơn chưa thanh toán của căn hộ
-        $invoices = Invoice::where('apartment_id', $apartment->id)
+        $invoices = Invoice::with(['details.servicePrice'])
+            ->where('apartment_id', $apartment->id)
             ->where('status', 'unpaid')
             ->orderBy('due_date', 'asc')
             ->get()
             ->map(function ($invoice) {
                 $isOverdue = $invoice->due_date && now()->isAfter($invoice->due_date);
+
+                $serviceNames = $invoice->details
+                    ->map(function ($detail) {
+                        return optional($detail->servicePrice)->name ?? $detail->note;
+                    })
+                    ->filter()
+                    ->unique()
+                    ->implode(', ');
+
+                $description = !empty($serviceNames) ? $serviceNames : ($invoice->title ?? 'Hóa đơn dịch vụ');
+
                 return [
                     'id'            => $invoice->id,
                     'invoice_code'  => $invoice->invoice_code,
@@ -67,7 +79,7 @@ class ManualPaymentController extends Controller
                     'total_amount'  => $invoice->total_amount,
                     'status'        => $isOverdue ? 'overdue' : 'unpaid',
                     'status_label'  => $isOverdue ? 'Quá hạn' : 'Chưa thanh toán',
-                    'description'   => optional($invoice->details()->first())->description ?? 'Phí quản lý',
+                    'description'   => $description,
                 ];
             });
 
