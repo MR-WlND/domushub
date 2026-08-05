@@ -63,7 +63,7 @@
         <div class="detail-card__meta">
             <div class="meta-item">
                 <span class="meta-label">Kỳ thanh toán</span>
-                <span class="meta-val">Tháng {{ str_pad($invoice->billing_month->month ?? $invoice->billing_month, 2, '0', STR_PAD_LEFT) }}/{{ $invoice->billing_year }}</span>
+                <span class="meta-val">Tháng {{ str_pad($invoice->getRawOriginal('billing_month') ?: ($invoice->billing_month->month ?? 1), 2, '0', STR_PAD_LEFT) }}/{{ $invoice->billing_year }}</span>
             </div>
             <div class="meta-item">
                 <span class="meta-label">Ngày phát hành</span>
@@ -102,10 +102,9 @@
                                 @if(in_array(optional($detail->servicePrice)->type, ['water']))
                                     @php
                                         $meter = \App\Models\UtilityMeter::where('apartment_id', $invoice->apartment_id)
-                                            ->where('type', $detail->servicePrice->type)
-                                            ->where('record_month', $invoice->billing_month->month ?? $invoice->billing_month)
-                                            ->where('record_year', $invoice->billing_year)
-                                            ->first();
+                                                                ->where('record_month', $invoice->getRawOriginal('billing_month'))
+                                             ->where('record_year', $invoice->billing_year)
+                                             ->first();
                                     @endphp
                                     @if($meter)
                                         <div class="item-meter-info" style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">
@@ -137,6 +136,10 @@
 
         {{-- Total Row --}}
         @php
+            $currentAmount = $invoice->current_amount > 0 
+                ? $invoice->current_amount 
+                : ($invoice->details->sum('amount') > 0 ? $invoice->details->sum('amount') : $invoice->total_amount);
+                
             $realPreviousDebt = \App\Models\Invoice::where('apartment_id', $invoice->apartment_id)
                 ->where('status', '!=', 'cancelled')
                 ->where(function ($q) use ($invoice) {
@@ -148,7 +151,7 @@
                 })->get()->sum(function($inv) {
                     return max(0, $inv->total_amount - $inv->paid_amount);
                 });
-            $displayTotalDue = $invoice->current_amount + $realPreviousDebt;
+            $displayTotalDue = $currentAmount + $realPreviousDebt;
         @endphp
         <div class="detail-card__summary">
             @if($realPreviousDebt > 0)
@@ -159,7 +162,7 @@
             @endif
             <div class="summary-item">
                 <span class="summary-label">Phát sinh kỳ này</span>
-                <span class="summary-val">{{ number_format($invoice->current_amount, 0, ',', '.') }} đ</span>
+                <span class="summary-val">{{ number_format($currentAmount, 0, ',', '.') }} đ</span>
             </div>
             <div class="summary-item total-due">
                 <span class="summary-label">Tổng phải thanh toán</span>
