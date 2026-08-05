@@ -220,9 +220,28 @@
                 e.stopPropagation();
                 if (userMenu) userMenu.classList.remove('active');
                 if (servicesMenu) servicesMenu.classList.remove('active');
-                
+
                 const isVisible = dropdown.style.display === 'block';
                 dropdown.style.display = isVisible ? 'none' : 'block';
+
+                // Tự động đánh dấu tất cả đã đọc khi mở dropdown
+                if (!isVisible && badge.style.display !== 'none') {
+                    const csrfToken = document.querySelector('input[name="_token"]')?.value || '';
+                    fetch('/resident/notifications/mark-read/all', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        keepalive: true
+                    }).then(() => {
+                        // Ẩn badge ngay lập tức
+                        badge.style.display = 'none';
+                        // Cập nhật lại danh sách (bỏ highlight chưa đọc)
+                        loadNotifications();
+                    }).catch(() => {});
+                }
             });
         }
 
