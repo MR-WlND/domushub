@@ -80,9 +80,9 @@ class TaskController extends Controller
             $task->completed_at = null;
         }
 
-        // Save note if provided
+        // Lưu ghi chú của nhân viên vào staff_note (không được ghi vào manager_note)
         if ($request->has('note')) {
-            $task->manager_note = $request->input('note');
+            $task->staff_note = $request->input('note');
         }
 
         $task->save();
