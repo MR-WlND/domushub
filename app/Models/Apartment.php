@@ -187,6 +187,14 @@ class Apartment extends Model
     }
 
     /**
+     * Accessor apartment_code - alias của apartment_number để tương thích API
+     */
+    public function getApartmentCodeAttribute(): string
+    {
+        return $this->apartment_number ?? '';
+    }
+
+    /**
      * Lấy tên chủ hộ hoặc cư dân đầu tiên của căn hộ
      */
     public function getOwnerNameAttribute(): string

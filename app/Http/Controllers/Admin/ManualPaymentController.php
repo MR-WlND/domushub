@@ -35,7 +35,7 @@ class ManualPaymentController extends Controller
         // Tìm căn hộ theo mã hoặc chủ hộ theo tên/số điện thoại/email
         $apartment = Apartment::with(['ownerResident.user'])
             ->where(function ($query) use ($q) {
-                $query->where('apartment_code', 'like', "%{$q}%")
+                $query->where('apartment_number', 'like', "%{$q}%")
                     ->orWhereHas('ownerResident.user', function ($sub) use ($q) {
                         $sub->where('name', 'like', "%{$q}%")
                             ->orWhere('phone', 'like', "%{$q}%")
@@ -43,6 +43,7 @@ class ManualPaymentController extends Controller
                     });
             })
             ->first();
+
 
         if (!$apartment) {
             return response()->json(['success' => false, 'message' => 'Không tìm thấy căn hộ hoặc chủ hộ phù hợp.']);
