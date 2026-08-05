@@ -33,11 +33,11 @@ class ManualPaymentController extends Controller
         }
 
         // Tìm căn hộ theo mã hoặc chủ hộ theo tên/số điện thoại/email
-        $apartment = Apartment::with(['owner'])
+        $apartment = Apartment::with(['ownerResident.user'])
             ->where(function ($query) use ($q) {
                 $query->where('apartment_code', 'like', "%{$q}%")
-                    ->orWhereHas('owner', function ($sub) use ($q) {
-                        $sub->where('full_name', 'like', "%{$q}%")
+                    ->orWhereHas('ownerResident.user', function ($sub) use ($q) {
+                        $sub->where('name', 'like', "%{$q}%")
                             ->orWhere('phone', 'like', "%{$q}%")
                             ->orWhere('email', 'like', "%{$q}%");
                     });
@@ -64,11 +64,11 @@ class ManualPaymentController extends Controller
                     'total_amount'  => $invoice->total_amount,
                     'status'        => $isOverdue ? 'overdue' : 'unpaid',
                     'status_label'  => $isOverdue ? 'Quá hạn' : 'Chưa thanh toán',
-                    'description'   => optional($invoice->details->first())->description ?? 'Phí quản lý',
+                    'description'   => optional($invoice->details()->first())->description ?? 'Phí quản lý',
                 ];
             });
 
-        $owner = $apartment->owner;
+        $ownerUser = optional($apartment->ownerResident)->user;
 
         return response()->json([
             'success'   => true,
@@ -76,11 +76,11 @@ class ManualPaymentController extends Controller
                 'id'             => $apartment->id,
                 'apartment_code' => $apartment->apartment_code,
             ],
-            'owner' => $owner ? [
-                'name'   => $owner->full_name,
-                'phone'  => $owner->phone,
-                'email'  => $owner->email,
-                'avatar' => $owner->avatar_url ?? null,
+            'owner' => $ownerUser ? [
+                'name'   => $ownerUser->name,
+                'phone'  => $ownerUser->phone,
+                'email'  => $ownerUser->email,
+                'avatar' => $ownerUser->avatar ? asset('storage/' . $ownerUser->avatar) : null,
             ] : null,
             'invoices' => $invoices,
         ]);
