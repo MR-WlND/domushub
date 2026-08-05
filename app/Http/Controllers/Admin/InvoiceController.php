@@ -509,7 +509,7 @@ class InvoiceController extends Controller
             'billing_month' => 'required|string',
             'due_date'      => 'required|date',
             'types'         => 'required|array|min:1',
-            'types.*'       => 'in:water,management_fee,parking_fee_motorbike,parking_fee_car,parking_fee_electric_bike,parking_fee_bicycle,internet,service,other',
+            'types.*'       => 'in:electricity,water,management_fee,parking_fee_motorbike,parking_fee_car,parking_fee_electric_bike,parking_fee_bicycle,internet,service,other',
             'apartment_ids' => 'required|array|min:1',
             'apartment_ids.*' => 'integer|exists:apartments,id',
         ], [
