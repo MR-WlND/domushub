@@ -2,6 +2,77 @@
 
 @section('page_title', 'Thu tiền thủ công')
 
+@push('styles')
+<style>
+/* ===== Layout Wrapper ===== */
+.mp-wrap {
+    padding: 24px 28px;
+    background: #f4f6f9;
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+}
+
+/* ===== Page Header ===== */
+.mp-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 22px;
+}
+.mp-header__title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a2236;
+    margin: 0 0 4px;
+}
+.mp-header__sub {
+    font-size: 13px;
+    color: #7a8399;
+    margin: 0;
+}
+
+/* ===== Card Base ===== */
+.mp-card {
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e8ecf1;
+    padding: 20px 22px;
+    margin-bottom: 18px;
+}
+
+/* ===== Top Row (2 cột) ===== */
+.mp-top-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 18px;
+}
+.mp-search-card,
+.mp-resident-card {
+    margin-bottom: 0;
+}
+
+/* ===== Alert ===== */
+.mp-alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    font-weight: 500;
+}
+.mp-alert--success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border-left: 4px solid #43a047;
+}
+.mp-alert--error {
+    background: #fdecea;
+    color: #c62828;
+    border-left: 4px solid #e53935;
+}
+</style>
+@endpush
+
 @section('content')
 <div class="mp-wrap">
 
