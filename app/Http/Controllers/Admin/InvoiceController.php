@@ -26,10 +26,10 @@ class InvoiceController extends Controller
 
         // KPI tổng quát
         $totalRevenue     = Invoice::where('status', 'paid')->sum('total_amount');
-        $thisMonthRevenue = Invoice::where('status', 'paid')
-            ->whereMonth('updated_at', now()->month)
-            ->whereYear('updated_at', now()->year)
-            ->sum('total_amount');
+        $thisMonthRevenue = \App\Models\Payment::where('status', 'success')
+            ->whereMonth('paid_at', now()->month)
+            ->whereYear('paid_at', now()->year)
+            ->sum('amount');
         $totalInvoices    = Invoice::count();
         $paidCount        = Invoice::where('status', 'paid')->count();
         $unpaidCount      = Invoice::where('status', 'unpaid')->count();
