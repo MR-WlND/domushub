@@ -121,7 +121,7 @@
             </a>
             @endif
             @if(in_array($role, ['admin', 'staff']))
-            <a href="{{ route('manual-payment.index') }}" class="dashboard-nav__item {{ request()->routeIs('manual-payment.*') ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ portal_route('manual-payment.index') }}" class="dashboard-nav__item {{ is_portal_route('manual-payment.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="12" y1="1" x2="12" y2="23"></line>
                     <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>

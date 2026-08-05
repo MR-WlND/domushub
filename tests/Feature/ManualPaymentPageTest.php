@@ -19,7 +19,7 @@ class ManualPaymentPageTest extends TestCase
             $this->markTestSkipped('Không có user admin trong DB.');
         }
 
-        $response = $this->actingAs($admin)->get(route('manual-payment.index'));
+        $response = $this->actingAs($admin)->get(portal_route('manual-payment.index'));
         $response->assertStatus(200);
         $response->assertSee('Thu tiền thủ công');
     }
@@ -35,7 +35,7 @@ class ManualPaymentPageTest extends TestCase
         }
 
         $response = $this->actingAs($admin)
-            ->getJson(route('manual-payment.search', ['q' => 'A1']));
+            ->getJson(portal_route('manual-payment.search', ['q' => 'A1']));
 
         $response->assertStatus(200)
                  ->assertJsonStructure(['success']);
@@ -52,7 +52,7 @@ class ManualPaymentPageTest extends TestCase
         }
 
         $response = $this->actingAs($admin)
-            ->getJson(route('manual-payment.search', ['q' => '']));
+            ->getJson(portal_route('manual-payment.search', ['q' => '']));
 
         $response->assertStatus(200)
                  ->assertJson(['success' => false]);
@@ -63,7 +63,7 @@ class ManualPaymentPageTest extends TestCase
      */
     public function test_manual_payment_page_requires_auth(): void
     {
-        $response = $this->get(route('manual-payment.index'));
+        $response = $this->get(route('admin.manual-payment.index'));
         $response->assertRedirect();
     }
 }

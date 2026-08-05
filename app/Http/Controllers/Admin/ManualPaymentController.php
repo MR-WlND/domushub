@@ -148,7 +148,7 @@ class ManualPaymentController extends Controller
                 }
             });
 
-            return redirect()->route('manual-payment.index')
+            return redirect()->to(portal_route('manual-payment.index'))
                 ->with('success', 'Xác nhận thanh toán thành công!');
         } catch (\Exception $e) {
             return redirect()->back()

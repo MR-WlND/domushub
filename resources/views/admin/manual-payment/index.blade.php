@@ -450,7 +450,7 @@
 
     {{-- Xử lý thanh toán --}}
     <div class="mp-card" id="paymentSection" style="display:none;">
-        <form method="POST" action="{{ route('manual-payment.process') }}" id="paymentForm">
+        <form method="POST" action="{{ portal_route('manual-payment.process') }}" id="paymentForm">
             @csrf
             <input type="hidden" name="apartment_id" id="hiddenApartmentId" />
 
@@ -524,7 +524,7 @@
 
 @push('scripts')
 <script>
-const SEARCH_URL = "{{ route('manual-payment.search') }}";
+const SEARCH_URL = "{{ portal_route('manual-payment.search') }}";
 const CSRF_TOKEN = "{{ csrf_token() }}";
 
 // --- AJAX Search ---
