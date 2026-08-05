@@ -162,12 +162,13 @@ class ManualPaymentController extends Controller
                     $payForThisBill = min($remainingToPay, $dueAmount);
 
                     Payment::create([
-                        'invoice_id'     => $invoice->id,
+                        'bill_id'        => $invoice->id,
                         'amount'         => $payForThisBill,
                         'payment_method' => $paymentMethod,
+                        'status'         => 'success',
                         'paid_at'        => $paymentDate,
                         'note'           => $note,
-                        'paid_by'        => auth()->id(),
+                        'recorded_by'    => auth()->id(),
                     ]);
 
                     $newPaidAmount = $currentPaid + $payForThisBill;
