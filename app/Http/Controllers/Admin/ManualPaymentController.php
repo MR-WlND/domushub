@@ -80,6 +80,7 @@ class ManualPaymentController extends Controller
             'invoice_ids.*'    => 'integer|exists:bills,id',
             'payment_method'   => 'required|in:cash,bank_transfer',
             'amount_received'  => 'required|numeric|min:1',
+            'payer_name'       => 'nullable|string|max:255',
             'note'             => 'nullable|string|max:500',
             'payment_date'     => 'nullable|date',
             'proof_image'      => 'nullable|image|mimes:jpeg,jpg,png,webp|max:5120',
@@ -124,11 +125,12 @@ class ManualPaymentController extends Controller
 
         try {
             DB::transaction(function () use ($request, &$lastPaymentId, $proofPath) {
-                $invoiceIds     = $request->invoice_ids;
-                $paymentDate    = $request->payment_date ? now()->parse($request->payment_date) : now();
+                $invoiceIds      = $request->invoice_ids;
+                $paymentDate     = $request->payment_date ? now()->parse($request->payment_date) : now();
                 $paymentMethod   = $request->payment_method;
+                $payerName       = $request->payer_name;
                 $note            = $request->note;
-                $remainingToPay = (float) $request->amount_received;
+                $remainingToPay  = (float) $request->amount_received;
 
                 foreach ($invoiceIds as $invoiceId) {
                     if ($remainingToPay <= 0) {
@@ -155,6 +157,7 @@ class ManualPaymentController extends Controller
                         'bill_id'        => $invoice->id,
                         'amount'         => $payForThisBill,
                         'payment_method' => $paymentMethod,
+                        'payer_name'     => $payerName,
                         'status'         => 'success',
                         'paid_at'        => $paymentDate,
                         'note'           => $note,

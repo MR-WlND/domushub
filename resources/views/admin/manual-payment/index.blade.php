@@ -530,6 +530,15 @@
                 </div>
 
                 <div>
+                    {{-- Người nộp tiền --}}
+                    <label class="mp-field-label" for="payerName">Người nộp tiền (Tùy chọn)</label>
+                    <input type="text"
+                           id="payerName"
+                           name="payer_name"
+                           class="mp-input"
+                           placeholder="Tên người thanh toán..."
+                           style="margin-bottom: 16px;" />
+
                     {{-- Ghi chú --}}
                     <label class="mp-field-label" for="paymentNote">Ghi chú (Tùy chọn)</label>
                     <textarea id="paymentNote"

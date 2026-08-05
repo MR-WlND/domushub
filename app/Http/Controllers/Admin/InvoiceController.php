@@ -473,7 +473,9 @@ class InvoiceController extends Controller
         $selectedYear = (int) $selectedYear;
         $selectedMonthNumber = (int) $selectedMonthNumber;
 
-        $activePrices = ServicePrice::where('status', 'active')->get();
+        $activePrices = ServicePrice::where('status', 'active')
+            ->whereNotIn('type', ['compensation', 'penalty', 'card_reissue'])
+            ->get();
 
         $apartments = Apartment::with(['floor.block', 'invoices' => function ($query) use ($selectedYear, $selectedMonthNumber) {
             $query->where('billing_month', $selectedMonthNumber)

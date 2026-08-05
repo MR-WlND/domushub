@@ -251,7 +251,7 @@
                     </div>
                     <div class="payment-info-item">
                         <span class="info-label">Người nộp (Cư dân):</span>
-                        <span class="info-val">{{ $pm->payer_name ?: ($invoice->apartment->owner_name ?? 'Cư dân căn hộ') }}</span>
+                        <span class="info-val">{{ $pm->payer_name ?: 'Người nộp chưa xác định' }}</span>
                     </div>
                     @if($pm->recorder)
                     <div class="payment-info-item">
@@ -923,7 +923,7 @@
     function confirmDetailPayment(event) {
         const methodSelect = document.getElementById('modal_detail_payment_method');
         const methodVal = methodSelect.options[methodSelect.selectedIndex].text;
-        const payerVal = document.getElementById('modal_detail_payer_name').value || '{{ $invoice->apartment->owner_name ?? 'Cư dân' }}';
+        const payerVal = document.getElementById('modal_detail_payer_name').value || 'Người nộp chưa xác định';
         
         const formattedAmount = Number(currentDetailAmount).toLocaleString('vi-VN') + ' đ';
 
