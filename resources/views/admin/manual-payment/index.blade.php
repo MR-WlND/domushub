@@ -674,6 +674,25 @@ document.getElementById('amountReceived').addEventListener('input', function () 
     const raw = this.value.replace(/[^\d]/g, '');
     if (raw) this.value = Number(raw).toLocaleString('vi-VN');
 });
+
+// --- Form Validation before Submit ---
+document.getElementById('paymentForm').addEventListener('submit', function (e) {
+    const checked = document.querySelectorAll('.inv-chk:checked');
+    if (checked.length === 0) {
+        e.preventDefault();
+        alert('Vui lòng chọn ít nhất một hóa đơn để thanh toán.');
+        return;
+    }
+    const rawAmount = document.getElementById('amountReceived').value.replace(/[^\d]/g, '');
+    if (!rawAmount || parseInt(rawAmount) <= 0) {
+        e.preventDefault();
+        alert('Vui lòng nhập số tiền thực thu hợp lệ.');
+        return;
+    }
+    // Chuẩn hóa amount_received về số nguyên trước khi gửi
+    document.getElementById('amountReceived').value = rawAmount;
+});
 </script>
 @endpush
+
 
