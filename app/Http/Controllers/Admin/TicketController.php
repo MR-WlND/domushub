@@ -23,6 +23,7 @@ class TicketController extends Controller
             'priority'    => 'nullable|in:low,medium,high,urgent',
             'ticket_type' => 'nullable|in:complaint,report',
             'block_id'    => 'nullable|integer|exists:blocks,id',
+            'date'        => 'nullable|date',
             'search'      => 'nullable|string|max:200',
 
             // Tab 2: Điều phối (Dispatch)
