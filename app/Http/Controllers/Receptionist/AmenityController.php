@@ -11,15 +11,20 @@ class AmenityController extends Controller
 {
     public function index(Request $request)
     {
+        $validated = $request->validate([
+            'status'      => 'nullable|string|in:pending,approved,used,cancelled,rejected',
+            'facility_id' => 'nullable|integer|exists:facilities,id',
+        ]);
+
         $query = FacilityBooking::with(['facility', 'user'])
             ->latest();
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        if (!empty($validated['status'])) {
+            $query->where('status', $validated['status']);
         }
 
-        if ($request->filled('facility_id')) {
-            $query->where('facility_id', $request->facility_id);
+        if (!empty($validated['facility_id'])) {
+            $query->where('facility_id', $validated['facility_id']);
         }
 
         $bookings  = $query->paginate(15)->withQueryString();
