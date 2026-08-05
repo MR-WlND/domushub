@@ -34,7 +34,7 @@
                 </div>
 
                 <div>
-                    <a href="{{ portal_route('manual-payment.index', ['q' => $apartment->apartment_number]) }}" 
+                    <a href="{{ portal_route('manual-payment.index', ['apartment_id' => $apartment->id]) }}" 
                        class="apt-inv-btn" 
                        style="background:#16a34a; color:#fff; padding:10px 22px; font-size:14px; font-weight:700; border-radius:8px; display:inline-flex; align-items:center; gap:8px; text-decoration:none; box-shadow:0 2px 6px rgba(22,163,74,0.3); white-space:nowrap;">
                         <i class="fas fa-hand-holding-usd" style="font-size:16px;"></i> Thu tiền

@@ -137,6 +137,7 @@
                         <th>Tổng tiền HĐ</th>
                         <th>Đã thu</th>
                         <th>Tổng dư nợ</th>
+                        <th>Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -178,10 +179,17 @@
                             <td style="{{ $debt > 0 ? 'color:#b91c1c;font-weight:700;' : 'color:#16a34a;font-weight:600;' }}">
                                 {{ number_format($debt) }}đ
                             </td>
+                            <td>
+                                @if($debt > 0)
+                                    <a href="{{ portal_route('manual-payment.index', ['apartment_id' => $apt->id]) }}" class="inv-admin__btn" style="background:#16a34a;color:#fff;border:none;padding:7px 14px;font-size:0.85rem;border-radius:6px;white-space:nowrap;line-height:1.2;" onclick="event.stopPropagation()">
+                                        Thanh toán
+                                    </a>
+                                @endif
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7">
+                            <td colspan="8">
                                 <div class="inv-admin__empty">Không tìm thấy căn hộ nào phù hợp</div>
                             </td>
                         </tr>

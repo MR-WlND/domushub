@@ -7,7 +7,7 @@
 /* ===== Layout Wrapper ===== */
 .mp-wrap {
     padding: 24px 28px;
-    background: #f4f6f9;
+    background: #fff;
     min-height: 100vh;
     font-family: 'Inter', sans-serif;
 }
@@ -40,14 +40,10 @@
     margin-bottom: 18px;
 }
 
-/* ===== Top Row (2 cột) ===== */
+/* ===== Top Row ===== */
 .mp-top-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 18px;
     margin-bottom: 18px;
 }
-.mp-search-card,
 .mp-resident-card {
     margin-bottom: 0;
 }
@@ -71,57 +67,7 @@
     border-left: 4px solid #e53935;
 }
 
-/* ===== Search Box ===== */
-.mp-search-label {
-    font-size: 14px;
-    font-weight: 600;
-    color: #3d4a60;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    margin-bottom: 12px;
-}
-.mp-search-label i { color: #3b82f6; }
-.mp-search-input-wrap {
-    position: relative;
-}
-.mp-search-input {
-    width: 100%;
-    height: 44px;
-    border: 1.5px solid #d1d9e6;
-    border-radius: 8px;
-    padding: 0 46px 0 14px;
-    font-size: 14px;
-    color: #1a2236;
-    outline: none;
-    transition: border-color .2s;
-    box-sizing: border-box;
-}
-.mp-search-input:focus { border-color: #3b82f6; }
-.mp-search-btn {
-    position: absolute;
-    right: 0; top: 0;
-    width: 44px; height: 44px;
-    background: #3b82f6;
-    border: none;
-    border-radius: 0 8px 8px 0;
-    color: #fff;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: background .2s;
-}
-.mp-search-btn:hover { background: #2563eb; }
-.mp-search-hint {
-    font-size: 12px;
-    color: #a0abc0;
-    margin-top: 7px;
-}
-.mp-search-error {
-    font-size: 13px;
-    color: #e53935;
-    margin-top: 8px;
-    display: none;
-}
+/* Xóa CSS cũ của ô tìm kiếm */
 
 /* ===== Resident Card ===== */
 .mp-resident-info {
@@ -377,8 +323,13 @@
     {{-- Page Header --}}
     <div class="mp-header">
         <div>
-            <h1 class="mp-header__title">Thu tiền thủ công</h1>
-            <p class="mp-header__sub">Tra cứu và ghi nhận thanh toán trực tiếp từ cư dân.</p>
+            <h1 class="mp-header__title">Thanh toán cho căn hộ: {{ $apartment->apartment_number }}</h1>
+            <p class="mp-header__sub">Ghi nhận thanh toán các hóa đơn còn nợ của căn hộ này.</p>
+        </div>
+        <div>
+            <a href="{{ portal_route('invoices.index') }}" class="mp-btn mp-btn--outline" style="text-decoration:none;">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
         </div>
     </div>
 
@@ -397,114 +348,128 @@
         <div class="mp-alert mp-alert--error">{{ session('error') }}</div>
     @endif
 
-    {{-- Top Row: Tra cứu + Thông tin cư dân --}}
+    {{-- Thông tin cư dân --}}
     <div class="mp-top-row">
-        {{-- Left: Ô tìm kiếm --}}
-        <div class="mp-card mp-search-card">
-            <div class="mp-search-label">
-                <i class="fas fa-search"></i>
-                Tra cứu
-            </div>
-            <p style="font-size:13px;color:#7a8399;margin:0 0 14px;">Mã căn hộ hoặc Tên chủ hộ</p>
-            <div class="mp-search-input-wrap">
-                <input type="text"
-                       id="searchInput"
-                       class="mp-search-input"
-                       placeholder="Ví dụ: A1-1205 hoặc Nguyễn Văn An"
-                       autocomplete="off" />
-                <button type="button" class="mp-search-btn" id="searchBtn" title="Tìm kiếm">
-                    <i class="fas fa-search"></i>
-                </button>
-            </div>
-            <p class="mp-search-hint">Nhập mã căn hộ, tên, số điện thoại hoặc email của chủ hộ.</p>
-            <div class="mp-search-error" id="searchError"></div>
-        </div>
-
-        {{-- Right: Card thông tin cư dân --}}
-        <div class="mp-card mp-resident-card" id="residentCard" style="display:none;">
+        <div class="mp-card mp-resident-card" id="residentCard">
             <div class="mp-resident-info">
                 <div class="mp-resident-avatar" id="residentAvatar">
-                    <i class="fas fa-user"></i>
+                    @if($ownerUser && $ownerUser->avatar)
+                        <img src="{{ asset('storage/' . $ownerUser->avatar) }}" alt="avatar" />
+                    @else
+                        @php
+                            $initials = $ownerUser ? strtoupper(substr(explode(' ', trim($ownerUser->name))[count(explode(' ', trim($ownerUser->name)))-1] ?? '?', 0, 1)) : '?';
+                        @endphp
+                        <span style="font-size:22px;font-weight:700;color:#2563eb;">{{ $initials }}</span>
+                    @endif
                 </div>
                 <div>
-                    <p class="mp-resident-name" id="residentName">---</p>
+                    <p class="mp-resident-name" id="residentName">{{ $ownerUser->name ?? '---' }}</p>
                     <p class="mp-resident-role">Chủ hộ</p>
-                    <span class="mp-resident-apt-badge" id="residentApt"></span>
-                    <div class="mp-resident-contacts">
-                        <span><i class="fas fa-phone"></i><span id="residentPhone"></span></span>
-                        <span><i class="fas fa-envelope"></i><span id="residentEmail"></span></span>
-                    </div>
+                    <span class="mp-resident-apt-badge" id="residentApt">Căn hộ {{ $apartment->apartment_code ?? '---' }}</span>
+                </div>
+                <div class="mp-resident-contacts" style="margin-left: auto; text-align: right; margin-top: 0;">
+                    <span style="justify-content: flex-end;"><i class="fas fa-phone"></i><span id="residentPhone">{{ $ownerUser->phone ?? '---' }}</span></span>
+                    <span style="justify-content: flex-end;"><i class="fas fa-envelope"></i><span id="residentEmail">{{ $ownerUser->email ?? '---' }}</span></span>
                 </div>
             </div>
         </div>
 
     </div>
 
-    {{-- Danh sách căn hộ có hóa đơn chưa thanh toán (hiển thị mặc định để không bị trống trang) --}}
-    <div class="mp-card" id="defaultApartmentsSection" style="display:none; margin-bottom: 20px;">
-        <div class="mp-invoices-header" style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
-            <div class="mp-invoices-header__icon" style="width:36px; height:36px; background:#eff6ff; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#2563eb; font-size:16px;">
-                <i class="fas fa-building"></i>
-            </div>
-            <h2 class="mp-invoices-header__title" style="font-size:16px; font-weight:700; color:#1e293b; margin:0;">Danh sách căn hộ có hóa đơn chưa thanh toán</h2>
-        </div>
-        <table class="mp-table">
-            <thead>
-                <tr>
-                    <th>Căn hộ</th>
-                    <th>Chủ hộ</th>
-                    <th>Số HĐ chưa TT</th>
-                    <th>Tổng nợ cần thu</th>
-                    <th style="text-align:right;">Thao tác</th>
-                </tr>
-            </thead>
-            <tbody id="defaultApartmentsTbody">
-                {{-- JS Render --}}
-            </tbody>
-        </table>
-    </div>
 
     {{-- Danh sách hóa đơn chưa thanh toán --}}
-    <div class="mp-card" id="invoicesSection" style="display:none;">
+    <div class="mp-card" id="invoicesSection">
         <div class="mp-invoices-header">
             <div class="mp-invoices-header__icon">
                 <i class="fas fa-file-invoice"></i>
             </div>
             <h2 class="mp-invoices-header__title">Danh sách hóa đơn chưa thanh toán</h2>
         </div>
-        <table class="mp-table" id="invoicesTable">
-            <thead>
-                <tr>
-                    <th style="width:40px;">
-                        <input type="checkbox" id="checkAll" title="Chọn tất cả" />
-                    </th>
-                    <th>Mã HĐ</th>
-                    <th>Kỳ hóa đơn</th>
-                    <th>Hạn thanh toán</th>
-                    <th>Trạng thái</th>
-                    <th style="text-align:right;">Số tiền (VNĐ)</th>
-                </tr>
-            </thead>
-            <tbody id="invoicesTbody">
-                {{-- Dữ liệu sẽ được render bởi JavaScript --}}
-            </tbody>
-        </table>
-        <div id="noInvoicesMsg" style="display:none; text-align:center; padding:30px; color:#a0abc0; font-size:14px;">
-            <i class="fas fa-check-circle" style="font-size:28px; color:#43a047; display:block; margin-bottom:8px;"></i>
-            Căn hộ này không có hóa đơn chưa thanh toán.
-        </div>
+        
+        @if($invoices->isEmpty())
+            <div id="noInvoicesMsg" style="text-align:center; padding:30px; color:#a0abc0; font-size:14px;">
+                <i class="fas fa-check-circle" style="font-size:28px; color:#43a047; display:block; margin-bottom:8px;"></i>
+                Căn hộ này không có hóa đơn chưa thanh toán.
+            </div>
+        @else
+            <table class="mp-table" id="invoicesTable">
+                <thead>
+                    <tr>
+                        <th style="width:40px;">
+                            <input type="checkbox" id="checkAll" title="Chọn tất cả" checked />
+                        </th>
+                        <th>Mã HĐ</th>
+                        <th>Kỳ hóa đơn</th>
+                        <th>Hạn thanh toán</th>
+                        <th>Trạng thái</th>
+                        <th style="text-align:right;">Tổng tiền HĐ</th>
+                        <th style="text-align:right;">Đã thu</th>
+                        <th style="text-align:right; color:#e53935;">Còn phải thu</th>
+                    </tr>
+                </thead>
+                <tbody id="invoicesTbody">
+                    @foreach($invoices as $inv)
+                        @php
+                            $badgeClass = $inv->status === 'overdue' ? 'mp-badge--overdue' : ($inv->status === 'partial_paid' ? 'mp-badge--partial' : 'mp-badge--unpaid');
+                            $monthStr = $inv->billing_month;
+                            if (is_string($monthStr) && str_contains($monthStr, 'T')) {
+                                $monthStr = str_pad(Carbon\Carbon::parse($monthStr)->month, 2, '0', STR_PAD_LEFT);
+                            } else {
+                                $monthStr = str_pad($monthStr, 2, '0', STR_PAD_LEFT);
+                            }
+                        @endphp
+                        <tr>
+                            <td><input type="checkbox" class="inv-chk" data-id="{{ $inv->id }}" data-amount="{{ $inv->formatted_remaining }}" checked /></td>
+                            <td>
+                                <a href="{{ $inv->show_url }}" target="_blank" class="mp-invoice-code" title="Xem chi tiết hóa đơn">
+                                    {{ $inv->invoice_code }} <i class="fas fa-external-link-alt" style="font-size:11px; margin-left:3px;"></i>
+                                </a>
+                                @php
+                                    $feesList = explode(', ', $inv->formatted_description);
+                                    $feesCount = count($feesList);
+                                @endphp
+                                @if($feesCount > 1)
+                                    <div class="mp-invoice-desc" style="margin-top: 4px;">
+                                        <span style="font-weight: 600; color: #475569;">{{ $feesCount }} khoản phí</span>
+                                        <button type="button" style="background:none; border:none; color:#3b82f6; font-size:12px; cursor:pointer; padding:0; margin-left:6px;" onclick="this.nextElementSibling.style.display='block'; this.style.display='none';">▶ Xem chi tiết</button>
+                                        <div style="display:none; margin-top:6px; background:#f8fafc; padding:8px 10px; border-radius:6px; border:1px solid #e2e8f0;">
+                                            <ul style="padding-left:14px; margin:0 0 6px 0; color:#64748b; font-size:12px; line-height:1.5;">
+                                                @foreach($feesList as $fee)
+                                                    <li>{{ $fee }}</li>
+                                                @endforeach
+                                            </ul>
+                                            <button type="button" style="background:none; border:none; color:#ef4444; font-size:12px; cursor:pointer; padding:0;" onclick="this.parentElement.style.display='none'; this.parentElement.previousElementSibling.style.display='inline';">▲ Thu gọn</button>
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="mp-invoice-desc">{{ $inv->formatted_description }}</div>
+                                @endif
+                            </td>
+                            <td>Tháng {{ $monthStr }}/{{ $inv->billing_year }}</td>
+                            <td>{{ $inv->due_date ? Carbon\Carbon::parse($inv->due_date)->format('d/m/Y') : '---' }}</td>
+                            <td><span class="mp-badge {{ $badgeClass }}">{{ $inv->formatted_status_label }}</span></td>
+                            <td style="text-align:right; font-weight:500;">{{ number_format($inv->total_amount, 0, ',', '.') }}</td>
+                            <td style="text-align:right; font-weight:500; color:#16a34a;">{{ number_format($inv->paid_amount, 0, ',', '.') }}</td>
+                            <td style="text-align:right; font-weight:700; color:#e53935;" class="mp-amount">{{ number_format($inv->formatted_remaining, 0, ',', '.') }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
     </div>
 
+    @if($invoices->isNotEmpty())
     {{-- Xử lý thanh toán --}}
-    <div class="mp-card" id="paymentSection" style="display:none;">
+    <div class="mp-card" id="paymentSection">
         <form method="POST" action="{{ portal_route('manual-payment.process') }}" id="paymentForm" enctype="multipart/form-data">
             @csrf
-            <input type="hidden" name="apartment_id" id="hiddenApartmentId" />
+            <input type="hidden" name="apartment_id" id="hiddenApartmentId" value="{{ $apartment->id }}" />
 
             {{-- Header row --}}
             <div class="mp-payment-title-row">
                 <h3 class="mp-payment-title">Xử lý thanh toán</h3>
-                <div>
+                <div style="text-align: right;">
+                    <div style="font-size: 13.5px; color: #475569; font-weight: 600; margin-bottom: 2px;" id="selectedCountLabel">Đã chọn 0 hóa đơn</div>
                     <span class="mp-payment-total-label">Tổng tiền cần thanh toán: </span>
                     <span class="mp-payment-total-value" id="totalDisplay">0 VNĐ</span>
                 </div>
@@ -536,7 +501,18 @@
                                class="mp-input"
                                placeholder="0"
                                autocomplete="off" />
-                        <p class="mp-field-hint">Mặc định bằng tổng số tiền các hóa đơn đã chọn.</p>
+                        
+                        <div id="paymentPreview" style="margin-top: 10px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 13.5px; display: none;">
+                            <div style="margin-bottom: 6px; font-weight: 700; color: #334155; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Sau thanh toán</div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span style="color: #64748b; font-weight: 500;">Đã thu:</span>
+                                <span id="previewPaid" style="font-weight: 700; color: #16a34a;">0 VNĐ</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: #64748b; font-weight: 500;">Còn nợ:</span>
+                                <span id="previewDebt" style="font-weight: 700; color: #ef4444;">0 VNĐ</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -568,11 +544,12 @@
                     </div>
 
                     {{-- Action buttons --}}
-                    <div class="mp-btn-row" style="margin-top: 14px;">
-                        <button type="submit" name="action" value="print" class="mp-btn mp-btn--outline" id="btnPrint">
-                            <i class="fas fa-print"></i> Xác nhận &amp; In phiếu thu
-                        </button>
-                        <button type="submit" name="action" value="confirm" class="mp-btn mp-btn--primary" id="btnConfirm">
+                    <div class="mp-btn-row" style="margin-top: 14px; display:flex; flex-direction:column; gap:14px; align-items:flex-start;">
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:14.5px; font-weight:500; color:#3d4a60; user-select:none;">
+                            <input type="checkbox" name="action" value="print" style="width:18px; height:18px; accent-color:#3b82f6; cursor:pointer;" checked />
+                            In phiếu thu sau khi thanh toán
+                        </label>
+                        <button type="submit" class="mp-btn mp-btn--primary" id="btnConfirm" style="width:100%; padding:14px; font-size:15.5px; text-transform:uppercase;">
                             Xác nhận thanh toán
                         </button>
                     </div>
@@ -580,176 +557,32 @@
             </div>
         </form>
     </div>
+    @endif
 
 </div>
+
+{{-- Confirm Modal --}}
+<div id="confirmPaymentModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; backdrop-filter: blur(2px);">
+    <div style="background:#fff; width:380px; border-radius:12px; padding:24px; text-align:center; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+        <i class="fas fa-question-circle" style="font-size:48px; color:#3b82f6; margin-bottom:16px;"></i>
+        <h3 style="margin:0 0 8px; font-size:18px; color:#1e293b;">Xác nhận thu tiền</h3>
+        <p style="margin:0 0 24px; font-size:14.5px; color:#475569; line-height:1.6;">
+            Bạn xác nhận thu <br/>
+            <strong id="confirmAmountTxt" style="font-size:24px; color:#2563eb;">0 VNĐ</strong> <br/>
+            cho <strong>Căn hộ {{ $apartment->apartment_number ?? '' }}</strong>?
+        </p>
+        <div style="display:flex; gap:12px;">
+            <button type="button" onclick="closeConfirmModal()" style="flex:1; padding:12px; border-radius:8px; border:1px solid #cbd5e1; background:#f8fafc; color:#475569; font-size:15px; font-weight:600; cursor:pointer;">Hủy bỏ</button>
+            <button type="button" onclick="submitConfirmedForm()" style="flex:1; padding:12px; border-radius:8px; border:none; background:#16a34a; color:#fff; font-size:15px; font-weight:600; cursor:pointer;">Xác nhận</button>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
 <script>
-const SEARCH_URL = "{{ portal_route('manual-payment.search') }}";
-const CSRF_TOKEN = "{{ csrf_token() }}";
-
-// --- AJAX Search ---
-function doSearch(targetQuery) {
-    let q = targetQuery !== undefined ? targetQuery : document.getElementById('searchInput').value.trim();
-    const errEl = document.getElementById('searchError');
-    errEl.style.display = 'none';
-
-    fetch(`${SEARCH_URL}?q=${encodeURIComponent(q)}`, {
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (!data.success) {
-            errEl.textContent = data.message || 'Không tìm thấy kết quả.';
-            errEl.style.display = 'block';
-            document.getElementById('defaultApartmentsSection').style.display = 'none';
-            document.getElementById('residentCard').style.display = 'none';
-            document.getElementById('invoicesSection').style.display = 'none';
-            document.getElementById('paymentSection').style.display = 'none';
-            return;
-        }
-
-        if (data.is_default_list) {
-            document.getElementById('residentCard').style.display = 'none';
-            document.getElementById('invoicesSection').style.display = 'none';
-            document.getElementById('paymentSection').style.display = 'none';
-            renderDefaultApartments(data.apartments);
-        } else {
-            document.getElementById('defaultApartmentsSection').style.display = 'none';
-            renderResident(data);
-            renderInvoices(data.invoices, data.apartment.id);
-        }
-    })
-    .catch(() => {
-        errEl.textContent = 'Lỗi kết nối. Vui lòng thử lại.';
-        errEl.style.display = 'block';
-    });
-}
-
-function renderDefaultApartments(apartments) {
-    const section = document.getElementById('defaultApartmentsSection');
-    const tbody = document.getElementById('defaultApartmentsTbody');
-    tbody.innerHTML = '';
-
-    if (!apartments || apartments.length === 0) {
-        section.style.display = 'none';
-        return;
-    }
-
-    apartments.forEach(apt => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>
-                <strong style="color:#1e293b; font-size:14px;">Căn ${apt.apartment_code || apt.apartment_number}</strong>
-                <div style="font-size:11px; color:#64748b;">${apt.block_name} ${apt.floor_name ? '· ' + apt.floor_name : ''}</div>
-            </td>
-            <td>
-                <div style="font-weight:600; color:#334155;">${apt.owner_name}</div>
-                <div style="font-size:11px; color:#64748b;">${apt.owner_phone}</div>
-            </td>
-            <td><span style="font-weight:700; color:#475569;">${apt.unpaid_count} hóa đơn</span></td>
-            <td><span style="font-weight:800; color:#2563eb;">${Number(apt.total_debt).toLocaleString('vi-VN')} đ</span></td>
-            <td style="text-align:right;">
-                <button type="button" onclick="selectApartmentForPayment('${apt.apartment_code || apt.apartment_number}')" style="background:#16a34a; color:#fff; border:none; padding:7px 16px; border-radius:6px; font-weight:600; cursor:pointer; font-size:13px; display:inline-flex; align-items:center; gap:6px;">
-                    <i class="fas fa-money-bill-wave"></i> Thu tiền
-                </button>
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
-
-    section.style.display = 'block';
-}
-
-function selectApartmentForPayment(aptCode) {
-    document.getElementById('searchInput').value = aptCode;
-    doSearch(aptCode);
-}
-
-document.getElementById('searchBtn').addEventListener('click', () => doSearch());
-document.getElementById('searchInput').addEventListener('keydown', e => {
-    if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
-});
-
-// Auto load default list on page load if no query, or search initial query if present
 document.addEventListener('DOMContentLoaded', function () {
-    const urlParams = new URLSearchParams(window.location.search);
-    const initialQuery = urlParams.get('q');
-    if (initialQuery) {
-        document.getElementById('searchInput').value = initialQuery;
-        doSearch(initialQuery);
-    } else {
-        doSearch('');
-    }
-});
-
-// --- Render Resident Card ---
-function renderResident(data) {
-    const owner = data.owner;
-    const apt   = data.apartment;
-
-    if (owner) {
-        document.getElementById('residentName').textContent  = owner.name || '---';
-        document.getElementById('residentPhone').textContent = owner.phone || '---';
-        document.getElementById('residentEmail').textContent = owner.email || '---';
-    }
-    document.getElementById('residentApt').textContent = 'Căn hộ ' + (apt.apartment_code || '---');
-    document.getElementById('hiddenApartmentId').value = apt.id;
-
-    // Avatar
-    const avatarEl = document.getElementById('residentAvatar');
-    if (owner && owner.avatar) {
-        avatarEl.innerHTML = `<img src="${owner.avatar}" alt="avatar" />`;
-    } else {
-        const initials = owner ? owner.name.split(' ').map(w => w[0]).slice(-2).join('').toUpperCase() : '?';
-        avatarEl.innerHTML = `<span style="font-size:22px;font-weight:700;color:#2563eb;">${initials}</span>`;
-        avatarEl.style.background = '#eff6ff';
-    }
-
-    document.getElementById('residentCard').style.display = 'flex';
-}
-
-// --- Render Invoices Table ---
-function renderInvoices(invoices, apartmentId) {
-    const tbody = document.getElementById('invoicesTbody');
-    const noMsg = document.getElementById('noInvoicesMsg');
-    const section = document.getElementById('invoicesSection');
-    const paySection = document.getElementById('paymentSection');
-    tbody.innerHTML = '';
-
-    if (!invoices || invoices.length === 0) {
-        section.style.display = 'block';
-        noMsg.style.display = 'block';
-        paySection.style.display = 'none';
-        return;
-    }
-
-    noMsg.style.display = 'none';
-    invoices.forEach(inv => {
-        const badgeClass = inv.status === 'overdue' ? 'mp-badge--overdue' : (inv.status === 'partial_paid' ? 'mp-badge--partial' : 'mp-badge--unpaid');
-        const tr = document.createElement('tr');
-        const monthStr = String(inv.billing_month).includes('T')
-            ? String(new Date(inv.billing_month).getMonth() + 1).padStart(2, '0')
-            : String(inv.billing_month).padStart(2, '0');
-        tr.innerHTML = `
-            <td><input type="checkbox" class="inv-chk" data-id="${inv.id}" data-amount="${inv.total_amount}" checked /></td>
-            <td>
-                <a href="${inv.show_url}" target="_blank" class="mp-invoice-code" title="Xem chi tiết hóa đơn">
-                    ${inv.invoice_code} <i class="fas fa-external-link-alt" style="font-size:11px; margin-left:3px;"></i>
-                </a>
-                <div class="mp-invoice-desc">${inv.description}</div>
-            </td>
-            <td>Tháng ${monthStr}/${inv.billing_year}</td>
-            <td>${inv.due_date || '---'}</td>
-            <td><span class="mp-badge ${badgeClass}">${inv.status_label}</span></td>
-            <td class="mp-amount">${Number(inv.total_amount).toLocaleString('vi-VN')}</td>
-        `;
-        tbody.appendChild(tr);
-    });
-
-    section.style.display = 'block';
-    paySection.style.display = 'block';
     recalcTotal();
 
     // Checkbox logic
@@ -758,23 +591,29 @@ function renderInvoices(invoices, apartmentId) {
     });
 
     // Check all
-    document.getElementById('checkAll').addEventListener('change', function() {
-        document.querySelectorAll('.inv-chk').forEach(c => { c.checked = this.checked; });
-        recalcTotal();
-    });
-}
+    const checkAllBtn = document.getElementById('checkAll');
+    if (checkAllBtn) {
+        checkAllBtn.addEventListener('change', function() {
+            document.querySelectorAll('.inv-chk').forEach(c => { c.checked = this.checked; });
+            recalcTotal();
+        });
+    }
+});
 
 // --- Recalculate Total ---
+let currentTotalDebt = 0;
+
 function recalcTotal() {
-    let total = 0;
+    currentTotalDebt = 0;
     const selectedIds = [];
     document.querySelectorAll('.inv-chk:checked').forEach(c => {
-        total += parseFloat(c.dataset.amount || 0);
+        currentTotalDebt += parseFloat(c.dataset.amount || 0);
         selectedIds.push(c.dataset.id);
     });
 
-    document.getElementById('totalDisplay').textContent = Number(total).toLocaleString('vi-VN') + ' VNĐ';
-    document.getElementById('amountReceived').value = Number(total).toLocaleString('vi-VN');
+    document.getElementById('selectedCountLabel').textContent = 'Đã chọn ' + selectedIds.length + ' hóa đơn';
+    document.getElementById('totalDisplay').textContent = Number(currentTotalDebt).toLocaleString('vi-VN') + ' VNĐ';
+    document.getElementById('amountReceived').value = Number(currentTotalDebt).toLocaleString('vi-VN');
 
     // Cập nhật hidden inputs hóa đơn được chọn
     document.querySelectorAll('input[name="invoice_ids[]"]').forEach(e => e.remove());
@@ -786,6 +625,8 @@ function recalcTotal() {
         inp.value = id;
         form.appendChild(inp);
     });
+    
+    updatePaymentPreview();
 }
 
 // --- Payment Method Selection ---
@@ -797,29 +638,73 @@ document.querySelectorAll('.mp-method-btn').forEach(btn => {
     });
 });
 
-// --- Format amount input ---
+// --- Format amount input & Preview ---
 document.getElementById('amountReceived').addEventListener('input', function () {
-    const raw = this.value.replace(/[^\d]/g, '');
-    if (raw) this.value = Number(raw).toLocaleString('vi-VN');
+    let raw = this.value.replace(/[^\d]/g, '');
+    let amount = parseInt(raw) || 0;
+    
+    if (amount > currentTotalDebt) {
+        amount = currentTotalDebt;
+        raw = amount.toString();
+        alert('Không được vượt quá số tiền còn nợ (' + Number(currentTotalDebt).toLocaleString('vi-VN') + ' VNĐ).');
+    }
+    
+    if (raw) {
+        this.value = Number(raw).toLocaleString('vi-VN');
+    } else {
+        this.value = '';
+    }
+    
+    updatePaymentPreview();
 });
 
+function updatePaymentPreview() {
+    const rawAmount = document.getElementById('amountReceived').value.replace(/[^\d]/g, '');
+    const amount = parseInt(rawAmount) || 0;
+    const previewBox = document.getElementById('paymentPreview');
+    
+    if (amount > 0 && amount <= currentTotalDebt) {
+        previewBox.style.display = 'block';
+        document.getElementById('previewPaid').textContent = Number(amount).toLocaleString('vi-VN') + ' VNĐ';
+        document.getElementById('previewDebt').textContent = Number(currentTotalDebt - amount).toLocaleString('vi-VN') + ' VNĐ';
+    } else {
+        previewBox.style.display = 'none';
+    }
+}
+
 // --- Form Validation before Submit ---
+let isConfirmed = false;
+
 document.getElementById('paymentForm').addEventListener('submit', function (e) {
+    if (isConfirmed) return; // Nếu đã xác nhận thì cho phép form submit
+    
+    e.preventDefault();
     const checked = document.querySelectorAll('.inv-chk:checked');
     if (checked.length === 0) {
-        e.preventDefault();
         alert('Vui lòng chọn ít nhất một hóa đơn để thanh toán.');
         return;
     }
     const rawAmount = document.getElementById('amountReceived').value.replace(/[^\d]/g, '');
     if (!rawAmount || parseInt(rawAmount) <= 0) {
-        e.preventDefault();
         alert('Vui lòng nhập số tiền thực thu hợp lệ.');
         return;
     }
-    // Chuẩn hóa amount_received về số nguyên trước khi gửi
+    // Chuẩn hóa amount_received về số nguyên
     document.getElementById('amountReceived').value = rawAmount;
+    
+    // Hiển thị modal xác nhận
+    document.getElementById('confirmAmountTxt').textContent = Number(rawAmount).toLocaleString('vi-VN') + ' VNĐ';
+    document.getElementById('confirmPaymentModal').style.display = 'flex';
 });
+
+function closeConfirmModal() {
+    document.getElementById('confirmPaymentModal').style.display = 'none';
+}
+
+function submitConfirmedForm() {
+    isConfirmed = true;
+    document.getElementById('paymentForm').submit();
+}
 
 // --- Photo Upload / Camera handlers ---
 function handlePhotoSelect(input) {

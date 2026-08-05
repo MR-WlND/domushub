@@ -16,93 +16,18 @@ class ManualPaymentController extends Controller
     /**
      * Hiển thị trang Thu tiền thủ công.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.manual-payment.index');
-    }
-
-    /**
-     * AJAX: Tìm kiếm căn hộ/chủ hộ và trả về danh sách hóa đơn chưa thanh toán.
-     */
-    public function search(Request $request)
-    {
-        $q = trim($request->get('q', ''));
-
-        // Nếu từ khóa rỗng: Trả về danh sách các Căn hộ đang có hóa đơn chưa thanh toán
-        if (empty($q)) {
-            $apartments = Apartment::with([
-                'floor.block',
-                'ownerResident.user',
-                'invoices' => function ($invQ) {
-                    $invQ->whereIn('status', ['unpaid', 'partial_paid']);
-                }
-            ])
-            ->whereHas('invoices', function ($invQ) {
-                $invQ->whereIn('status', ['unpaid', 'partial_paid']);
-            })
-            ->orderBy('apartment_number', 'asc')
-            ->get()
-            ->map(function ($apt) {
-                $ownerUser = optional($apt->ownerResident)->user;
-                $unpaidInvoices = $apt->invoices->filter(function ($inv) {
-                    if (in_array($inv->status, ['paid', 'cancelled'])) {
-                        return false;
-                    }
-                    $totalDue = (float) ($inv->total_due_at_issue > 0 ? $inv->total_due_at_issue : $inv->total_amount);
-                    $remaining = max(0, $totalDue - (float) $inv->paid_amount);
-                    return $remaining > 0;
-                });
-
-                $totalDebt = $unpaidInvoices->sum(function ($inv) {
-                    $totalDue = (float) ($inv->total_due_at_issue > 0 ? $inv->total_due_at_issue : $inv->total_amount);
-                    return max(0, $totalDue - (float) $inv->paid_amount);
-                });
-
-                $blockName = optional(optional($apt->floor)->block)->name;
-                $floorName = optional($apt->floor)->name;
-
-                return [
-                    'apartment_id'     => $apt->id,
-                    'apartment_number' => $apt->apartment_number,
-                    'apartment_code'   => $apt->apartment_code,
-                    'block_name'       => $blockName ? (\Illuminate\Support\Str::startsWith($blockName, 'Tòa') ? $blockName : 'Tòa ' . $blockName) : '',
-                    'floor_name'       => $floorName ? (\Illuminate\Support\Str::startsWith($floorName, 'Tầng') ? $floorName : 'Tầng ' . $floorName) : '',
-                    'owner_name'       => $ownerUser->name ?? $apt->owner_name ?? '---',
-                    'owner_phone'      => $ownerUser->phone ?? '---',
-                    'unpaid_count'     => $unpaidInvoices->count(),
-                    'total_debt'       => $totalDebt,
-                ];
-            })
-            ->filter(function ($apt) {
-                return $apt['total_debt'] > 0 && $apt['unpaid_count'] > 0;
-            })
-            ->values();
-
-            return response()->json([
-                'success'         => true,
-                'is_default_list' => true,
-                'apartments'      => $apartments,
-            ]);
+        $apartmentId = $request->get('apartment_id');
+        if (!$apartmentId) {
+            return redirect('/admin/invoices')->with('error', 'Vui lòng chọn căn hộ để thanh toán.');
         }
 
-        // Tìm căn hộ theo mã hoặc chủ hộ theo tên/số điện thoại/email
-        $apartment = Apartment::with(['ownerResident.user'])
-            ->where(function ($query) use ($q) {
-                $query->where('apartment_number', 'like', "%{$q}%")
-                    ->orWhereHas('ownerResident.user', function ($sub) use ($q) {
-                        $sub->where('name', 'like', "%{$q}%")
-                            ->orWhere('phone', 'like', "%{$q}%")
-                            ->orWhere('email', 'like', "%{$q}%");
-                    });
-            })
-            ->first();
-
-
+        $apartment = Apartment::with(['ownerResident.user'])->find($apartmentId);
         if (!$apartment) {
-            return response()->json(['success' => false, 'message' => 'Không tìm thấy căn hộ hoặc chủ hộ phù hợp.']);
+            return redirect('/admin/invoices')->with('error', 'Không tìm thấy căn hộ hợp lệ.');
         }
 
-        // Lấy danh sách hóa đơn chưa thanh toán hoặc thanh toán một phần của căn hộ
         $invoices = Invoice::with(['details.servicePrice'])
             ->where('apartment_id', $apartment->id)
             ->whereIn('status', ['unpaid', 'partial_paid'])
@@ -132,38 +57,17 @@ class ManualPaymentController extends Controller
                     $statusLabel = 'Quá hạn';
                 }
 
-                return [
-                    'id'            => $invoice->id,
-                    'invoice_code'  => $invoice->invoice_code,
-                    'billing_month' => $invoice->billing_month instanceof \Carbon\Carbon
-                        ? $invoice->billing_month->format('m')
-                        : $invoice->getRawOriginal('billing_month'),
-                    'billing_year'  => $invoice->billing_year,
-                    'due_date'      => $invoice->due_date ? $invoice->due_date->format('d/m/Y') : null,
-                    'total_amount'  => $remainingAmount,
-                    'status'        => $invoice->status === 'partial_paid' ? 'partial_paid' : ($isOverdue ? 'overdue' : 'unpaid'),
-                    'status_label'  => $statusLabel,
-                    'description'   => $description,
-                    'show_url'      => portal_route('invoices.show', $invoice->id),
-                ];
+                $invoice->formatted_remaining = $remainingAmount;
+                $invoice->formatted_status_label = $statusLabel;
+                $invoice->formatted_description = $description;
+                $invoice->is_overdue = $isOverdue;
+                $invoice->show_url = portal_route('invoices.show', $invoice->id);
+                return $invoice;
             });
 
         $ownerUser = optional($apartment->ownerResident)->user;
 
-        return response()->json([
-            'success'   => true,
-            'apartment' => [
-                'id'             => $apartment->id,
-                'apartment_code' => $apartment->apartment_code,
-            ],
-            'owner' => $ownerUser ? [
-                'name'   => $ownerUser->name,
-                'phone'  => $ownerUser->phone,
-                'email'  => $ownerUser->email,
-                'avatar' => $ownerUser->avatar ? asset('storage/' . $ownerUser->avatar) : null,
-            ] : null,
-            'invoices' => $invoices,
-        ]);
+        return view('admin.manual-payment.index', compact('apartment', 'ownerUser', 'invoices'));
     }
 
     /**
@@ -264,7 +168,7 @@ class ManualPaymentController extends Controller
                 }
             });
 
-            $redirect = redirect()->to(portal_route('manual-payment.index'))
+            $redirect = redirect()->to(portal_route('manual-payment.index', ['apartment_id' => $request->apartment_id]))
                 ->with('success', 'Xác nhận thanh toán thành công!');
 
             if ($request->get('action') === 'print' && $lastPaymentId) {
