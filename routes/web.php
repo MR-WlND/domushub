@@ -205,7 +205,7 @@ $portalRoutes = function () {
     Route::get('/invoices/batch', [InvoiceController::class, 'batchCreate'])->name('invoices.batch');
     Route::post('/invoices/batch', [InvoiceController::class, 'batchStore'])->name('invoices.batch.store');
 
-    Route::post('/invoices/generate', [InvoiceController::class, 'generate'])->name('invoices.generate');
+    // Route 'generate' đã bị xóa — chức năng xuất hàng loạt dùng /invoices/batch thay thế
     Route::get('/invoices/apartment/{apartment}', [InvoiceController::class, 'apartmentInvoices'])->name('invoices.apartment');
     Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
     Route::get('/invoices/{invoice}/edit', [InvoiceController::class, 'edit'])->name('invoices.edit');
