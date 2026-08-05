@@ -353,6 +353,20 @@
     color: #fff;
 }
 .mp-btn--primary:hover { background: #1d4ed8; }
+
+/* Photo Upload Box */
+.mp-photo-box {
+    border: 2px dashed #cbd5e1;
+    border-radius: 8px;
+    background: #f8fafc;
+    padding: 6px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+.mp-photo-box:hover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
 </style>
 @endpush
 
@@ -459,7 +473,7 @@
 
     {{-- Xử lý thanh toán --}}
     <div class="mp-card" id="paymentSection" style="display:none;">
-        <form method="POST" action="{{ portal_route('manual-payment.process') }}" id="paymentForm">
+        <form method="POST" action="{{ portal_route('manual-payment.process') }}" id="paymentForm" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="apartment_id" id="hiddenApartmentId" />
 
@@ -508,10 +522,29 @@
                     <textarea id="paymentNote"
                               name="note"
                               class="mp-textarea"
-                              placeholder="Nhập ghi chú hoặc mã giao dịch ngân hàng..."></textarea>
+                              placeholder="Nhập ghi chú hoặc mã giao dịch ngân hàng..."
+                              style="height: 60px;"></textarea>
+
+                    {{-- Ảnh minh chứng / Chụp ảnh --}}
+                    <div style="margin-top: 10px;">
+                        <label class="mp-field-label">
+                            <i class="fas fa-camera" style="margin-right:4px; color:#3b82f6;"></i> Ảnh minh chứng / Chụp ảnh
+                        </label>
+                        <div class="mp-photo-box" id="photoDropArea" onclick="document.getElementById('proofImageInput').click();">
+                            <input type="file" name="proof_image" id="proofImageInput" accept="image/*" capture="environment" style="display:none;" onchange="handlePhotoSelect(this)" />
+                            <div id="photoPlaceholder" style="text-align:center; padding:8px; cursor:pointer;">
+                                <i class="fas fa-camera" style="font-size:18px; color:#3b82f6; margin-bottom:4px;"></i>
+                                <div style="font-size:12px; font-weight:600; color:#3b82f6;">Chụp ảnh / Tải ảnh minh chứng</div>
+                            </div>
+                            <div id="photoPreviewWrap" style="display:none; position:relative; text-align:center;">
+                                <img id="photoPreview" src="" alt="Preview" style="max-height:80px; border-radius:6px; border:1px solid #cbd5e1; object-fit:contain;" />
+                                <button type="button" onclick="event.stopPropagation(); removePhoto();" style="position:absolute; top:-6px; right:-6px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:11px; line-height:1;">&times;</button>
+                            </div>
+                        </div>
+                    </div>
 
                     {{-- Action buttons --}}
-                    <div class="mp-btn-row">
+                    <div class="mp-btn-row" style="margin-top: 14px;">
                         <button type="submit" name="action" value="print" class="mp-btn mp-btn--outline" id="btnPrint">
                             <i class="fas fa-print"></i> Xác nhận &amp; In phiếu thu
                         </button>
@@ -702,6 +735,26 @@ document.getElementById('paymentForm').addEventListener('submit', function (e) {
     // Chuẩn hóa amount_received về số nguyên trước khi gửi
     document.getElementById('amountReceived').value = rawAmount;
 });
+
+// --- Photo Upload / Camera handlers ---
+function handlePhotoSelect(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            document.getElementById('photoPreview').src = e.target.result;
+            document.getElementById('photoPlaceholder').style.display = 'none';
+            document.getElementById('photoPreviewWrap').style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function removePhoto() {
+    document.getElementById('proofImageInput').value = '';
+    document.getElementById('photoPreview').src = '';
+    document.getElementById('photoPlaceholder').style.display = 'block';
+    document.getElementById('photoPreviewWrap').style.display = 'none';
+}
 
 @if(session('print_receipt_url'))
     window.open("{{ session('print_receipt_url') }}", "_blank");

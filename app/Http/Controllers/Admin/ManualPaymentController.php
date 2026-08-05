@@ -125,17 +125,26 @@ class ManualPaymentController extends Controller
             'amount_received'  => 'required|numeric|min:1',
             'note'             => 'nullable|string|max:500',
             'payment_date'     => 'nullable|date',
+            'proof_image'      => 'nullable|image|mimes:jpeg,jpg,png,webp|max:5120',
         ], [
             'invoice_ids.required'   => 'Vui lòng chọn ít nhất một hóa đơn.',
             'payment_method.required' => 'Vui lòng chọn phương thức thanh toán.',
             'amount_received.required' => 'Vui lòng nhập số tiền thực thu.',
             'amount_received.min'    => 'Số tiền phải lớn hơn 0.',
+            'proof_image.image'      => 'File tải lên phải là hình ảnh.',
+            'proof_image.max'        => 'Dung lượng ảnh tối đa là 5MB.',
         ]);
 
         $lastPaymentId = null;
 
+        // Lưu ảnh minh chứng nếu có
+        $proofPath = null;
+        if ($request->hasFile('proof_image')) {
+            $proofPath = $request->file('proof_image')->store('payments/proofs', 'public');
+        }
+
         try {
-            DB::transaction(function () use ($request, &$lastPaymentId) {
+            DB::transaction(function () use ($request, &$lastPaymentId, $proofPath) {
                 $invoiceIds     = $request->invoice_ids;
                 $paymentDate    = $request->payment_date ? now()->parse($request->payment_date) : now();
                 $paymentMethod   = $request->payment_method;
@@ -170,6 +179,7 @@ class ManualPaymentController extends Controller
                         'status'         => 'success',
                         'paid_at'        => $paymentDate,
                         'note'           => $note,
+                        'proof_image'    => $proofPath,
                         'recorded_by'    => auth()->id(),
                     ]);
 
