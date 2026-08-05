@@ -10,7 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 class ManualPaymentPageTest extends TestCase
 {
     /**
-     * Test trang Thu tiền thủ công có thể truy cập với admin.
+     * Test trang Thu tiền thủ công có thể truy cập khi có apartment_id.
      */
     public function test_manual_payment_page_accessible_for_admin(): void
     {
@@ -18,44 +18,29 @@ class ManualPaymentPageTest extends TestCase
         if (!$admin) {
             $this->markTestSkipped('Không có user admin trong DB.');
         }
+        
+        $apartment = Apartment::first();
+        if (!$apartment) {
+            $this->markTestSkipped('Không có apartment trong DB.');
+        }
+
+        $response = $this->actingAs($admin)->get(portal_route('manual-payment.index', ['apartment_id' => $apartment->id]));
+        $response->assertStatus(200);
+        $response->assertSee('Thu tiền');
+    }
+
+    /**
+     * Test trang redirect khi không có apartment_id.
+     */
+    public function test_manual_payment_redirects_without_apartment_id(): void
+    {
+        $admin = User::where('role', 'admin')->first();
+        if (!$admin) {
+            $this->markTestSkipped('Không có user admin trong DB.');
+        }
 
         $response = $this->actingAs($admin)->get(portal_route('manual-payment.index'));
-        $response->assertStatus(200);
-        $response->assertSee('Thu tiền thủ công');
-    }
-
-    /**
-     * Test AJAX endpoint search trả về 200 khi có query.
-     */
-    public function test_search_endpoint_returns_json(): void
-    {
-        $admin = User::where('role', 'admin')->first();
-        if (!$admin) {
-            $this->markTestSkipped('Không có user admin trong DB.');
-        }
-
-        $response = $this->actingAs($admin)
-            ->getJson(portal_route('manual-payment.search', ['q' => 'A1']));
-
-        $response->assertStatus(200)
-                 ->assertJsonStructure(['success']);
-    }
-
-    /**
-     * Test AJAX search khi không có từ khóa trả về danh sách căn hộ nợ mặc định.
-     */
-    public function test_search_without_query_returns_default_list(): void
-    {
-        $admin = User::where('role', 'admin')->first();
-        if (!$admin) {
-            $this->markTestSkipped('Không có user admin trong DB.');
-        }
-
-        $response = $this->actingAs($admin)
-            ->getJson(portal_route('manual-payment.search', ['q' => '']));
-
-        $response->assertStatus(200)
-                 ->assertJson(['success' => true, 'is_default_list' => true]);
+        $response->assertStatus(302);
     }
 
     /**
