@@ -117,6 +117,8 @@
                     padding:1rem 1.5rem;
                     {{ !$loop->last ? 'border-bottom:1px solid #f1f5f9;' : '' }}
                 ">
+                    {{-- Clickable info row → mark read + navigate --}}
+                    <a href="{{ $detailUrl }}" onclick="vpMarkRead('{{ $notifId }}')" style="display:block;text-decoration:none;color:inherit;">
                     <div style="display:flex;gap:.85rem;align-items:flex-start;">
                         {{-- Avatar --}}
                         <div style="
@@ -145,6 +147,7 @@
                             <p style="margin:.4rem 0 0;font-size:.72rem;color:#94a3b8;">{{ $notif->created_at->diffForHumans() }}</p>
                         </div>
                     </div>
+                    </a>
 
                     {{-- Actions --}}
                     @if($visitorId)
@@ -233,12 +236,25 @@
     (function() {
         const CSRF = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
-        // Open popup on load
+        // ===== HIỆN POPUP 1 LẦN MỖI PHIÊN ĐĂNG NHẬP =====
+        // sessionStorage tự xóa khi đóng tab/trình duyệt → mỗi lần đăng nhập mới sẽ hiện lại
+        const storageKey = 'vp_popup_shown';
+
         document.addEventListener('DOMContentLoaded', function () {
             const bd = document.getElementById('visitorPopupBackdrop');
             const card = document.getElementById('visitorPopupCard');
             if (!bd || !card) return;
 
+            // Nếu trong phiên này đã hiện popup rồi → ẩn ngay, không show lại
+            if (sessionStorage.getItem(storageKey)) {
+                bd.remove();
+                return;
+            }
+
+            // Đánh dấu đã hiện popup trong phiên này
+            sessionStorage.setItem(storageKey, '1');
+
+            // Animate mở popup
             requestAnimationFrame(() => {
                 bd.style.opacity = '1';
                 requestAnimationFrame(() => {
