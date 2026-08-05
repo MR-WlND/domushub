@@ -377,7 +377,25 @@
     {{-- Top Row: Tra cứu + Thông tin cư dân --}}
     <div class="mp-top-row">
         {{-- Left: Ô tìm kiếm --}}
-        <div class="mp-card mp-search-card"></div>
+        <div class="mp-card mp-search-card">
+            <div class="mp-search-label">
+                <i class="fas fa-search"></i>
+                Tra cứu
+            </div>
+            <p style="font-size:13px;color:#7a8399;margin:0 0 14px;">Mã căn hộ hoặc Tên chủ hộ</p>
+            <div class="mp-search-input-wrap">
+                <input type="text"
+                       id="searchInput"
+                       class="mp-search-input"
+                       placeholder="Ví dụ: A1-1205 hoặc Nguyễn Văn An"
+                       autocomplete="off" />
+                <button type="button" class="mp-search-btn" id="searchBtn" title="Tìm kiếm">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            <p class="mp-search-hint">Nhập mã căn hộ, tên, số điện thoại hoặc email của chủ hộ.</p>
+            <div class="mp-search-error" id="searchError"></div>
+        </div>
 
         {{-- Right: Card thông tin cư dân --}}
         <div class="mp-card mp-resident-card" id="residentCard" style="display:none;"></div>
