@@ -7,38 +7,35 @@
 
     {{-- Header --}}
     <div class="apt-inv-header">
-        <div>
-            <a href="{{ portal_route('invoices.index') }}" class="btn-back">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-                Quay lại danh sách
-            </a>
-            <div class="apt-inv-header__content" style="margin-top:8px;">
-                <p class="apt-inv-eyebrow">Tài chính <span class="dot">·</span> Hóa đơn căn hộ</p>
-                @php
-                    $blockName = optional(optional($apartment->floor)->block)->name;
-                    $floorName = optional($apartment->floor)->name;
-                @endphp
-                <h1 class="apt-inv-title">
+        <a href="{{ portal_route('invoices.index') }}" class="btn-back">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Quay lại danh sách
+        </a>
+        <div class="apt-inv-header__content" style="margin-top:8px;">
+            <p class="apt-inv-eyebrow">Tài chính <span class="dot">·</span> Hóa đơn căn hộ</p>
+            @php
+                $blockName = optional(optional($apartment->floor)->block)->name;
+                $floorName = optional($apartment->floor)->name;
+            @endphp
+            <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:16px; flex-wrap:wrap;">
+                <h1 class="apt-inv-title" style="margin:0;">
                     Căn {{ $apartment->apartment_number }}
                     @if($blockName)
                         <span class="apt-inv-block-tag">{{ \Illuminate\Support\Str::startsWith($blockName, 'Tòa') ? $blockName : 'Tòa ' . $blockName }}</span>
                     @endif
                 </h1>
-                <p class="apt-inv-sub">
-                    @if($floorName)
-                        {{ \Illuminate\Support\Str::startsWith($floorName, 'Tầng') ? $floorName : 'Tầng ' . $floorName }} <span class="dot">·</span>
-                    @endif
-                    {{ $apartment->owner_name }}
-                </p>
+                <a href="{{ portal_route('manual-payment.index', ['q' => $apartment->apartment_number]) }}" 
+                   class="apt-inv-btn" 
+                   style="background:#16a34a; color:#fff; padding:10px 22px; font-size:14px; font-weight:700; border-radius:8px; display:inline-flex; align-items:center; gap:8px; text-decoration:none; box-shadow:0 2px 6px rgba(22,163,74,0.3); white-space:nowrap;">
+                    <i class="fas fa-hand-holding-usd" style="font-size:16px;"></i> Thu tiền
+                </a>
             </div>
-        </div>
-
-        <div>
-            <a href="{{ portal_route('manual-payment.index', ['q' => $apartment->apartment_number]) }}" 
-               class="apt-inv-btn" 
-               style="background:#16a34a; color:#fff; padding:10px 20px; font-size:14px; font-weight:700; border-radius:8px; display:inline-flex; align-items:center; gap:8px; text-decoration:none; box-shadow:0 2px 6px rgba(22,163,74,0.3);">
-                <i class="fas fa-hand-holding-usd" style="font-size:16px;"></i> Thu tiền
-            </a>
+            <p class="apt-inv-sub" style="margin-top:6px;">
+                @if($floorName)
+                    {{ \Illuminate\Support\Str::startsWith($floorName, 'Tầng') ? $floorName : 'Tầng ' . $floorName }} <span class="dot">·</span>
+                @endif
+                {{ $apartment->owner_name }}
+            </p>
         </div>
     </div>
 
