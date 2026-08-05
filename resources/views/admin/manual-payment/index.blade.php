@@ -398,7 +398,23 @@
         </div>
 
         {{-- Right: Card thông tin cư dân --}}
-        <div class="mp-card mp-resident-card" id="residentCard" style="display:none;"></div>
+        <div class="mp-card mp-resident-card" id="residentCard" style="display:none;">
+            <div class="mp-resident-info">
+                <div class="mp-resident-avatar" id="residentAvatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div>
+                    <p class="mp-resident-name" id="residentName">---</p>
+                    <p class="mp-resident-role">Chủ hộ</p>
+                    <span class="mp-resident-apt-badge" id="residentApt"></span>
+                    <div class="mp-resident-contacts">
+                        <span><i class="fas fa-phone"></i><span id="residentPhone"></span></span>
+                        <span><i class="fas fa-envelope"></i><span id="residentEmail"></span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     {{-- Danh sách hóa đơn chưa thanh toán --}}
