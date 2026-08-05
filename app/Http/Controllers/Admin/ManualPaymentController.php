@@ -59,7 +59,9 @@ class ManualPaymentController extends Controller
                 return [
                     'id'            => $invoice->id,
                     'invoice_code'  => $invoice->invoice_code,
-                    'billing_month' => $invoice->billing_month,
+                    'billing_month' => $invoice->billing_month instanceof \Carbon\Carbon
+                        ? $invoice->billing_month->format('m')
+                        : $invoice->getRawOriginal('billing_month'),
                     'billing_year'  => $invoice->billing_year,
                     'due_date'      => $invoice->due_date ? $invoice->due_date->format('d/m/Y') : null,
                     'total_amount'  => $invoice->total_amount,

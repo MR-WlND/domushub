@@ -602,13 +602,16 @@ function renderInvoices(invoices, apartmentId) {
     invoices.forEach(inv => {
         const badgeClass = inv.status === 'overdue' ? 'mp-badge--overdue' : 'mp-badge--unpaid';
         const tr = document.createElement('tr');
+        const monthStr = String(inv.billing_month).includes('T')
+            ? String(new Date(inv.billing_month).getMonth() + 1).padStart(2, '0')
+            : String(inv.billing_month).padStart(2, '0');
         tr.innerHTML = `
             <td><input type="checkbox" class="inv-chk" data-id="${inv.id}" data-amount="${inv.total_amount}" checked /></td>
             <td>
                 <div class="mp-invoice-code">${inv.invoice_code}</div>
                 <div class="mp-invoice-desc">${inv.description}</div>
             </td>
-            <td>Tháng ${inv.billing_month}/${inv.billing_year}</td>
+            <td>Tháng ${monthStr}/${inv.billing_year}</td>
             <td>${inv.due_date || '---'}</td>
             <td><span class="mp-badge ${badgeClass}">${inv.status_label}</span></td>
             <td class="mp-amount">${Number(inv.total_amount).toLocaleString('vi-VN')}</td>
