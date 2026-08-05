@@ -477,10 +477,6 @@
                             <i class="fas fa-university"></i>
                             Chuyển khoản
                         </button>
-                        <button type="button" class="mp-method-btn" data-method="card">
-                            <i class="fas fa-credit-card"></i>
-                            Thẻ
-                        </button>
                     </div>
                     <input type="hidden" name="payment_method" id="paymentMethodInput" value="cash" />
 

@@ -95,7 +95,7 @@ class ManualPaymentController extends Controller
         $request->validate([
             'invoice_ids'      => 'required|array|min:1',
             'invoice_ids.*'    => 'integer|exists:invoices,id',
-            'payment_method'   => 'required|in:cash,bank_transfer,card',
+            'payment_method'   => 'required|in:cash,bank_transfer',
             'amount_received'  => 'required|numeric|min:1',
             'note'             => 'nullable|string|max:500',
             'payment_date'     => 'nullable|date',
