@@ -44,7 +44,15 @@ class ManualPaymentController extends Controller
             ->get()
             ->map(function ($apt) {
                 $ownerUser = optional($apt->ownerResident)->user;
-                $unpaidInvoices = $apt->invoices;
+                $unpaidInvoices = $apt->invoices->filter(function ($inv) {
+                    if (in_array($inv->status, ['paid', 'cancelled'])) {
+                        return false;
+                    }
+                    $totalDue = (float) ($inv->total_due_at_issue > 0 ? $inv->total_due_at_issue : $inv->total_amount);
+                    $remaining = max(0, $totalDue - (float) $inv->paid_amount);
+                    return $remaining > 0;
+                });
+
                 $totalDebt = $unpaidInvoices->sum(function ($inv) {
                     $totalDue = (float) ($inv->total_due_at_issue > 0 ? $inv->total_due_at_issue : $inv->total_amount);
                     return max(0, $totalDue - (float) $inv->paid_amount);
