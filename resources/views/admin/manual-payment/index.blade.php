@@ -425,7 +425,27 @@
             </div>
             <h2 class="mp-invoices-header__title">Danh sách hóa đơn chưa thanh toán</h2>
         </div>
-        <table class="mp-table" id="invoicesTable"></table>
+        <table class="mp-table" id="invoicesTable">
+            <thead>
+                <tr>
+                    <th style="width:40px;">
+                        <input type="checkbox" id="checkAll" title="Chọn tất cả" />
+                    </th>
+                    <th>Mã HĐ</th>
+                    <th>Kỳ hóa đơn</th>
+                    <th>Hạn thanh toán</th>
+                    <th>Trạng thái</th>
+                    <th style="text-align:right;">Số tiền (VNĐ)</th>
+                </tr>
+            </thead>
+            <tbody id="invoicesTbody">
+                {{-- Dữ liệu sẽ được render bởi JavaScript --}}
+            </tbody>
+        </table>
+        <div id="noInvoicesMsg" style="display:none; text-align:center; padding:30px; color:#a0abc0; font-size:14px;">
+            <i class="fas fa-check-circle" style="font-size:28px; color:#43a047; display:block; margin-bottom:8px;"></i>
+            Căn hộ này không có hóa đơn chưa thanh toán.
+        </div>
     </div>
 
     {{-- Xử lý thanh toán --}}
