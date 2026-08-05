@@ -164,10 +164,6 @@
             </div>
             @endif
             <div class="summary-item">
-                <span class="summary-label">Phát sinh kỳ này</span>
-                <span class="summary-val">{{ number_format($currentAmount, 0, ',', '.') }} đ</span>
-            </div>
-            <div class="summary-item">
                 <span class="summary-label">Tổng hóa đơn</span>
                 <span class="summary-val">{{ number_format($displayTotalDue, 0, ',', '.') }} đ</span>
             </div>
