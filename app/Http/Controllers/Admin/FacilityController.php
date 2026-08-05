@@ -222,7 +222,16 @@ class FacilityController extends Controller
             return back()->with('error', 'Chỉ có thể từ chối booking đang ở trạng thái chờ.');
         }
 
-        $booking->update(['status' => 'rejected']);
+        $validated = $request->validate([
+            'reason' => 'nullable|string|max:500',
+        ], [
+            'reason.max' => 'Lý do từ chối không được vượt quá 500 ký tự.',
+        ]);
+
+        $booking->update([
+            'status'           => 'rejected',
+            'rejection_reason' => $validated['reason'] ?? null,
+        ]);
 
         return back()->with('success', 'Đã từ chối lịch đặt.');
     }
