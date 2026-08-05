@@ -1177,33 +1177,36 @@ class InvoiceController extends Controller
 
         if (!$parkingDetail) return;
 
-        $vehicle = \App\Models\Vehicle::where('apartment_id', $invoice->apartment_id)
+        // Kích hoạt TẤT CẢ xe đang awaiting_payment của căn hộ (không chỉ first())
+        $vehicles = \App\Models\Vehicle::where('apartment_id', $invoice->apartment_id)
             ->where('status', 'awaiting_payment')
-            ->first();
+            ->get();
 
-        if (!$vehicle) return;
+        if ($vehicles->isEmpty()) return;
 
-        $vehicle->update(['status' => 'active']);
+        foreach ($vehicles as $vehicle) {
+            $vehicle->update(['status' => 'active']);
 
-        // Sinh QR
-        try {
-            $dir = storage_path('app/public/qr/vehicles');
-            if (!is_dir($dir)) mkdir($dir, 0775, true);
-            $content = strtoupper(str_replace([' ', '-'], '', $vehicle->license_plate));
-            $filename = $content . '.svg';
-            $filePath = $dir . '/' . $filename;
-            if (class_exists(\SimpleSoftwareIO\QrCode\Facades\QrCode::class)) {
-                \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(300)->errorCorrection('H')->generate($content, $filePath);
+            // Sinh QR
+            try {
+                $dir = storage_path('app/public/qr/vehicles');
+                if (!is_dir($dir)) mkdir($dir, 0775, true);
+                $content = strtoupper(str_replace([' ', '-'], '', $vehicle->license_plate));
+                $filename = $content . '.svg';
+                $filePath = $dir . '/' . $filename;
+                if (class_exists(\SimpleSoftwareIO\QrCode\Facades\QrCode::class)) {
+                    \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(300)->errorCorrection('H')->generate($content, $filePath);
+                }
+                $vehicle->update(['qr_code' => 'qr/vehicles/' . $filename]);
+            } catch (\Throwable $e) {
+                $vehicle->update(['qr_code' => strtoupper(str_replace([' ', '-'], '', $vehicle->license_plate))]);
             }
-            $vehicle->update(['qr_code' => 'qr/vehicles/' . $filename]);
-        } catch (\Throwable $e) {
-            $vehicle->update(['qr_code' => strtoupper(str_replace([' ', '-'], '', $vehicle->license_plate))]);
-        }
 
-        \App\Helpers\SystemLogger::log(
-            'Kích hoạt xe sau thanh toán',
-            'Xe: ' . $vehicle->license_plate,
-            ['vehicle_id' => $vehicle->id, 'apartment_id' => $vehicle->apartment_id]
-        );
+            \App\Helpers\SystemLogger::log(
+                'Kích hoạt xe sau thanh toán',
+                'Xe: ' . $vehicle->license_plate,
+                ['vehicle_id' => $vehicle->id, 'apartment_id' => $vehicle->apartment_id]
+            );
+        }
     }
 }
