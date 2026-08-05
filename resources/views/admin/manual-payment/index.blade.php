@@ -441,122 +441,60 @@
     </div>
 
     {{-- Danh sách hóa đơn chưa thanh toán --}}
-    <div class="mp-card" id="invoicesSection" style="display:none;">
-        <div class="mp-invoices-header">
-            <div class="mp-invoices-header__icon">
-                <i class="fas fa-file-invoice"></i>
+    <form method="POST" action="{{ portal_route('manual-payment.process') }}" id="paymentForm">
+        @csrf
+        <input type="hidden" name="apartment_id" id="hiddenApartmentId" />
+        <input type="hidden" name="payment_method" value="cash" />
+        <input type="hidden" name="amount_received" id="amountReceived" value="0" />
+
+        <div class="mp-card" id="invoicesSection" style="display:none;">
+            <div class="mp-invoices-header">
+                <div class="mp-invoices-header__icon">
+                    <i class="fas fa-file-invoice"></i>
+                </div>
+                <h2 class="mp-invoices-header__title">Danh sách hóa đơn chưa thanh toán</h2>
             </div>
-            <h2 class="mp-invoices-header__title">Danh sách hóa đơn chưa thanh toán</h2>
+            <table class="mp-table" id="invoicesTable">
+                <thead>
+                    <tr>
+                        <th style="width:40px;">
+                            <input type="checkbox" id="checkAll" title="Chọn tất cả" />
+                        </th>
+                        <th>Căn hộ</th>
+                        <th>Mã HĐ</th>
+                        <th>Kỳ hóa đơn</th>
+                        <th>Hạn thanh toán</th>
+                        <th>Trạng thái</th>
+                        <th style="text-align:right;">Số tiền (VNĐ)</th>
+                    </tr>
+                </thead>
+                <tbody id="invoicesTbody">
+                    {{-- Dữ liệu sẽ được render bởi JavaScript --}}
+                </tbody>
+            </table>
+            <div id="noInvoicesMsg" style="display:none; text-align:center; padding:30px; color:#a0abc0; font-size:14px;">
+                <i class="fas fa-check-circle" style="font-size:28px; color:#43a047; display:block; margin-bottom:8px;"></i>
+                Căn hộ này không có hóa đơn chưa thanh toán.
+            </div>
+
+            {{-- Thanh thao tác thanh toán trực tiếp dưới bảng --}}
+            <div id="actionFooterBar" style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding-top:16px; border-top:1px solid #e2e8f0; flex-wrap:wrap; gap:12px;">
+                <div>
+                    <span style="font-size:14px; color:#64748b; font-weight:600;">Tổng tiền cần thanh toán: </span>
+                    <span style="font-size:20px; font-weight:800; color:#2563eb;" id="totalDisplay">0 VNĐ</span>
+                </div>
+
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <button type="submit" name="action" value="print" class="mp-btn mp-btn--outline" id="btnPrint">
+                        <i class="fas fa-print"></i> Xác nhận &amp; In phiếu thu
+                    </button>
+                    <button type="submit" name="action" value="confirm" class="mp-btn mp-btn--primary" id="btnConfirm">
+                        Xác nhận thanh toán
+                    </button>
+                </div>
+            </div>
         </div>
-        <table class="mp-table" id="invoicesTable">
-            <thead>
-                <tr>
-                    <th style="width:40px;">
-                        <input type="checkbox" id="checkAll" title="Chọn tất cả" />
-                    </th>
-                    <th>Căn hộ</th>
-                    <th>Mã HĐ</th>
-                    <th>Kỳ hóa đơn</th>
-                    <th>Hạn thanh toán</th>
-                    <th>Trạng thái</th>
-                    <th style="text-align:right;">Số tiền (VNĐ)</th>
-                </tr>
-            </thead>
-            <tbody id="invoicesTbody">
-                {{-- Dữ liệu sẽ được render bởi JavaScript --}}
-            </tbody>
-        </table>
-        <div id="noInvoicesMsg" style="display:none; text-align:center; padding:30px; color:#a0abc0; font-size:14px;">
-            <i class="fas fa-check-circle" style="font-size:28px; color:#43a047; display:block; margin-bottom:8px;"></i>
-            Căn hộ này không có hóa đơn chưa thanh toán.
-        </div>
-    </div>
-
-    {{-- Xử lý thanh toán --}}
-    <div class="mp-card" id="paymentSection" style="display:none;">
-        <form method="POST" action="{{ portal_route('manual-payment.process') }}" id="paymentForm" enctype="multipart/form-data">
-            @csrf
-            <input type="hidden" name="apartment_id" id="hiddenApartmentId" />
-
-            {{-- Header row --}}
-            <div class="mp-payment-title-row">
-                <h3 class="mp-payment-title">Xử lý thanh toán</h3>
-                <div>
-                    <span class="mp-payment-total-label">Tổng tiền cần thanh toán: </span>
-                    <span class="mp-payment-total-value" id="totalDisplay">0 VNĐ</span>
-                </div>
-            </div>
-
-            {{-- Body: left = phương thức + số tiền, right = ghi chú --}}
-            <div class="mp-payment-body">
-                <div>
-                    {{-- Phương thức thanh toán --}}
-                    <label class="mp-method-label">Phương thức thanh toán</label>
-                    <div class="mp-method-group" id="methodGroup">
-                        <button type="button" class="mp-method-btn active" data-method="cash">
-                            <i class="fas fa-money-bill-wave"></i>
-                            Tiền mặt
-                        </button>
-                        <button type="button" class="mp-method-btn" data-method="bank_transfer">
-                            <i class="fas fa-university"></i>
-                            Chuyển khoản
-                        </button>
-                    </div>
-                    <input type="hidden" name="payment_method" id="paymentMethodInput" value="cash" />
-
-                    {{-- Số tiền thực thu --}}
-                    <div class="mp-amount-field">
-                        <label class="mp-field-label" for="amountReceived">Số tiền thực thu (VNĐ)</label>
-                        <input type="text"
-                               id="amountReceived"
-                               name="amount_received"
-                               class="mp-input"
-                               placeholder="0"
-                               autocomplete="off" />
-                        <p class="mp-field-hint">Mặc định bằng tổng số tiền các hóa đơn đã chọn.</p>
-                    </div>
-                </div>
-
-                <div>
-                    {{-- Ghi chú --}}
-                    <label class="mp-field-label" for="paymentNote">Ghi chú (Tùy chọn)</label>
-                    <textarea id="paymentNote"
-                              name="note"
-                              class="mp-textarea"
-                              placeholder="Nhập ghi chú hoặc mã giao dịch ngân hàng..."
-                              style="height: 60px;"></textarea>
-
-                    {{-- Ảnh minh chứng --}}
-                    <div style="margin-top: 10px;">
-                        <label class="mp-field-label">
-                            <i class="fas fa-image" style="margin-right:4px; color:#3b82f6;"></i> Ảnh minh chứng
-                        </label>
-                        <div class="mp-photo-box" id="photoDropArea" onclick="document.getElementById('proofImageInput').click();">
-                            <input type="file" name="proof_image" id="proofImageInput" accept="image/*" style="display:none;" onchange="handlePhotoSelect(this)" />
-                            <div id="photoPlaceholder" style="text-align:center; padding:8px; cursor:pointer;">
-                                <i class="fas fa-upload" style="font-size:18px; color:#3b82f6; margin-bottom:4px;"></i>
-                                <div style="font-size:12px; font-weight:600; color:#3b82f6;">Tải lên ảnh minh chứng</div>
-                            </div>
-                            <div id="photoPreviewWrap" style="display:none; position:relative; text-align:center;">
-                                <img id="photoPreview" src="" alt="Preview" style="max-height:80px; border-radius:6px; border:1px solid #cbd5e1; object-fit:contain;" />
-                                <button type="button" onclick="event.stopPropagation(); removePhoto();" style="position:absolute; top:-6px; right:-6px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:11px; line-height:1;">&times;</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Action buttons --}}
-                    <div class="mp-btn-row" style="margin-top: 14px;">
-                        <button type="submit" name="action" value="print" class="mp-btn mp-btn--outline" id="btnPrint">
-                            <i class="fas fa-print"></i> Xác nhận &amp; In phiếu thu
-                        </button>
-                        <button type="submit" name="action" value="confirm" class="mp-btn mp-btn--primary" id="btnConfirm">
-                            Xác nhận thanh toán
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </form>
-    </div>
+    </form>
 
 </div>
 @endsection
@@ -582,7 +520,6 @@ function doSearch() {
             errEl.style.display = 'block';
             document.getElementById('residentCard').style.display = 'none';
             document.getElementById('invoicesSection').style.display = 'none';
-            document.getElementById('paymentSection').style.display = 'none';
             return;
         }
 
@@ -647,17 +584,19 @@ function renderInvoices(invoices) {
     const tbody = document.getElementById('invoicesTbody');
     const noMsg = document.getElementById('noInvoicesMsg');
     const section = document.getElementById('invoicesSection');
-    const paySection = document.getElementById('paymentSection');
+    const actionFooterBar = document.getElementById('actionFooterBar');
     tbody.innerHTML = '';
 
     if (!invoices || invoices.length === 0) {
         section.style.display = 'block';
         noMsg.style.display = 'block';
-        paySection.style.display = 'none';
+        if (actionFooterBar) actionFooterBar.style.display = 'none';
         return;
     }
 
     noMsg.style.display = 'none';
+    if (actionFooterBar) actionFooterBar.style.display = 'flex';
+
     invoices.forEach(inv => {
         const badgeClass = inv.status === 'overdue' ? 'mp-badge--overdue' : (inv.status === 'partial_paid' ? 'mp-badge--partial' : 'mp-badge--unpaid');
         const tr = document.createElement('tr');
@@ -685,7 +624,6 @@ function renderInvoices(invoices) {
     });
 
     section.style.display = 'block';
-    paySection.style.display = 'block';
     recalcTotal();
 
     // Checkbox logic
