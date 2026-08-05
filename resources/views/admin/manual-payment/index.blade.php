@@ -525,16 +525,16 @@
                               placeholder="Nhập ghi chú hoặc mã giao dịch ngân hàng..."
                               style="height: 60px;"></textarea>
 
-                    {{-- Ảnh minh chứng / Chụp ảnh --}}
+                    {{-- Ảnh minh chứng --}}
                     <div style="margin-top: 10px;">
                         <label class="mp-field-label">
-                            <i class="fas fa-camera" style="margin-right:4px; color:#3b82f6;"></i> Ảnh minh chứng / Chụp ảnh
+                            <i class="fas fa-image" style="margin-right:4px; color:#3b82f6;"></i> Ảnh minh chứng
                         </label>
                         <div class="mp-photo-box" id="photoDropArea" onclick="document.getElementById('proofImageInput').click();">
-                            <input type="file" name="proof_image" id="proofImageInput" accept="image/*" capture="environment" style="display:none;" onchange="handlePhotoSelect(this)" />
+                            <input type="file" name="proof_image" id="proofImageInput" accept="image/*" style="display:none;" onchange="handlePhotoSelect(this)" />
                             <div id="photoPlaceholder" style="text-align:center; padding:8px; cursor:pointer;">
-                                <i class="fas fa-camera" style="font-size:18px; color:#3b82f6; margin-bottom:4px;"></i>
-                                <div style="font-size:12px; font-weight:600; color:#3b82f6;">Chụp ảnh / Tải ảnh minh chứng</div>
+                                <i class="fas fa-upload" style="font-size:18px; color:#3b82f6; margin-bottom:4px;"></i>
+                                <div style="font-size:12px; font-weight:600; color:#3b82f6;">Tải lên ảnh minh chứng</div>
                             </div>
                             <div id="photoPreviewWrap" style="display:none; position:relative; text-align:center;">
                                 <img id="photoPreview" src="" alt="Preview" style="max-height:80px; border-radius:6px; border:1px solid #cbd5e1; object-fit:contain;" />
