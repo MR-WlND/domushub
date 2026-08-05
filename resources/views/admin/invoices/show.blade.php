@@ -140,6 +140,9 @@
                 ? $invoice->current_amount 
                 : ($invoice->details->sum('amount') > 0 ? $invoice->details->sum('amount') : $invoice->total_amount);
                 
+            $alreadyPaid = (float) $invoice->paid_amount;
+            $remainingThisBill = max(0, $currentAmount - $alreadyPaid);
+            
             $realPreviousDebt = \App\Models\Invoice::where('apartment_id', $invoice->apartment_id)
                 ->where('status', '!=', 'cancelled')
                 ->where(function ($q) use ($invoice) {
@@ -151,21 +154,11 @@
                 })->get()->sum(function($inv) {
                     return max(0, $inv->total_amount - $inv->paid_amount);
                 });
-                
-            $displayTotalDue = $currentAmount + $realPreviousDebt;
-            $alreadyPaid = (float) $invoice->paid_amount;
-            $remainingDue = max(0, $displayTotalDue - $alreadyPaid);
         @endphp
         <div class="detail-card__summary">
-            @if($realPreviousDebt > 0)
             <div class="summary-item">
-                <span class="summary-label">Nợ kỳ trước</span>
-                <span class="summary-val">{{ number_format($realPreviousDebt, 0, ',', '.') }} đ</span>
-            </div>
-            @endif
-            <div class="summary-item">
-                <span class="summary-label">Tổng hóa đơn</span>
-                <span class="summary-val">{{ number_format($displayTotalDue, 0, ',', '.') }} đ</span>
+                <span class="summary-label">Tổng hóa đơn kỳ này</span>
+                <span class="summary-val">{{ number_format($currentAmount, 0, ',', '.') }} đ</span>
             </div>
             @if($alreadyPaid > 0)
             <div class="summary-item" style="color: #16a34a;">
@@ -175,10 +168,16 @@
             @endif
             <div class="summary-item total-due" style="border-top: 1px dashed #cbd5e1; margin-top: 6px; padding-top: 8px;">
                 <span class="summary-label" style="font-weight: 700;">Còn phải thanh toán</span>
-                <span class="summary-val" style="color: {{ $remainingDue > 0 ? '#dc2626' : '#16a34a' }}; font-weight: 800; font-size: 1.1rem;">
-                    {{ number_format($remainingDue, 0, ',', '.') }} đ
+                <span class="summary-val" style="color: {{ $remainingThisBill > 0 ? '#dc2626' : '#16a34a' }}; font-weight: 800; font-size: 1.1rem;">
+                    {{ number_format($remainingThisBill, 0, ',', '.') }} đ
                 </span>
             </div>
+            @if($realPreviousDebt > 0)
+            <div class="summary-item" style="margin-top:8px; padding-top:8px; border-top:1px solid #f1f5f9; color:#64748b; font-size:0.85rem;">
+                <span class="summary-label">Nợ đọng các kỳ trước</span>
+                <span class="summary-val" style="color:#d97706; font-weight:600;">{{ number_format($realPreviousDebt, 0, ',', '.') }} đ</span>
+            </div>
+            @endif
         </div>
 
         {{-- Lịch sử thanh toán --}}

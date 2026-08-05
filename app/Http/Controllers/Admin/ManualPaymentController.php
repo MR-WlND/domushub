@@ -28,8 +28,61 @@ class ManualPaymentController extends Controller
     {
         $q = trim($request->get('q', ''));
 
+        // Nếu từ khóa rỗng: Trả về danh sách các Căn hộ đang có hóa đơn chưa thanh toán
         if (empty($q)) {
-            return response()->json(['success' => false, 'message' => 'Vui lòng nhập từ khóa tìm kiếm.']);
+            $apartments = Apartment::with([
+                'floor.block',
+                'ownerResident.user',
+                'invoices' => function ($invQ) {
+                    $invQ->whereIn('status', ['unpaid', 'partial_paid']);
+                }
+            ])
+            ->whereHas('invoices', function ($invQ) {
+                $invQ->whereIn('status', ['unpaid', 'partial_paid']);
+            })
+            ->orderBy('apartment_number', 'asc')
+            ->get()
+            ->map(function ($apt) {
+                $ownerUser = optional($apt->ownerResident)->user;
+                $unpaidInvoices = $apt->invoices->filter(function ($inv) {
+                    if (in_array($inv->status, ['paid', 'cancelled'])) {
+                        return false;
+                    }
+                    $totalDue = (float) ($inv->total_due_at_issue > 0 ? $inv->total_due_at_issue : $inv->total_amount);
+                    $remaining = max(0, $totalDue - (float) $inv->paid_amount);
+                    return $remaining > 0;
+                });
+
+                $totalDebt = $unpaidInvoices->sum(function ($inv) {
+                    $totalDue = (float) ($inv->total_due_at_issue > 0 ? $inv->total_due_at_issue : $inv->total_amount);
+                    return max(0, $totalDue - (float) $inv->paid_amount);
+                });
+
+                $blockName = optional(optional($apt->floor)->block)->name;
+                $floorName = optional($apt->floor)->name;
+
+                return [
+                    'apartment_id'     => $apt->id,
+                    'apartment_number' => $apt->apartment_number,
+                    'apartment_code'   => $apt->apartment_code,
+                    'block_name'       => $blockName ? (\Illuminate\Support\Str::startsWith($blockName, 'Tòa') ? $blockName : 'Tòa ' . $blockName) : '',
+                    'floor_name'       => $floorName ? (\Illuminate\Support\Str::startsWith($floorName, 'Tầng') ? $floorName : 'Tầng ' . $floorName) : '',
+                    'owner_name'       => $ownerUser->name ?? $apt->owner_name ?? '---',
+                    'owner_phone'      => $ownerUser->phone ?? '---',
+                    'unpaid_count'     => $unpaidInvoices->count(),
+                    'total_debt'       => $totalDebt,
+                ];
+            })
+            ->filter(function ($apt) {
+                return $apt['total_debt'] > 0 && $apt['unpaid_count'] > 0;
+            })
+            ->values();
+
+            return response()->json([
+                'success'         => true,
+                'is_default_list' => true,
+                'apartments'      => $apartments,
+            ]);
         }
 
         // Tìm căn hộ theo mã hoặc chủ hộ theo tên/số điện thoại/email
