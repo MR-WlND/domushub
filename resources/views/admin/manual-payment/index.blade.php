@@ -586,5 +586,78 @@ function renderResident(data) {
 
     document.getElementById('residentCard').style.display = 'flex';
 }
+
+// --- Render Invoices Table ---
+function renderInvoices(invoices, apartmentId) {
+    const tbody = document.getElementById('invoicesTbody');
+    const noMsg = document.getElementById('noInvoicesMsg');
+    const section = document.getElementById('invoicesSection');
+    const paySection = document.getElementById('paymentSection');
+    tbody.innerHTML = '';
+
+    if (!invoices || invoices.length === 0) {
+        section.style.display = 'block';
+        noMsg.style.display = 'block';
+        paySection.style.display = 'none';
+        return;
+    }
+
+    noMsg.style.display = 'none';
+    invoices.forEach(inv => {
+        const badgeClass = inv.status === 'overdue' ? 'mp-badge--overdue' : 'mp-badge--unpaid';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><input type="checkbox" class="inv-chk" data-id="${inv.id}" data-amount="${inv.total_amount}" checked /></td>
+            <td>
+                <div class="mp-invoice-code">${inv.invoice_code}</div>
+                <div class="mp-invoice-desc">${inv.description}</div>
+            </td>
+            <td>Tháng ${inv.billing_month}/${inv.billing_year}</td>
+            <td>${inv.due_date || '---'}</td>
+            <td><span class="mp-badge ${badgeClass}">${inv.status_label}</span></td>
+            <td class="mp-amount">${Number(inv.total_amount).toLocaleString('vi-VN')}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    section.style.display = 'block';
+    paySection.style.display = 'block';
+    recalcTotal();
+
+    // Checkbox logic
+    document.querySelectorAll('.inv-chk').forEach(chk => {
+        chk.addEventListener('change', recalcTotal);
+    });
+
+    // Check all
+    document.getElementById('checkAll').addEventListener('change', function() {
+        document.querySelectorAll('.inv-chk').forEach(c => { c.checked = this.checked; });
+        recalcTotal();
+    });
+}
+
+// --- Recalculate Total ---
+function recalcTotal() {
+    let total = 0;
+    const selectedIds = [];
+    document.querySelectorAll('.inv-chk:checked').forEach(c => {
+        total += parseFloat(c.dataset.amount || 0);
+        selectedIds.push(c.dataset.id);
+    });
+
+    document.getElementById('totalDisplay').textContent = Number(total).toLocaleString('vi-VN') + ' VNĐ';
+    document.getElementById('amountReceived').value = Number(total).toLocaleString('vi-VN');
+
+    // Cập nhật hidden inputs hóa đơn được chọn
+    document.querySelectorAll('input[name="invoice_ids[]"]').forEach(e => e.remove());
+    const form = document.getElementById('paymentForm');
+    selectedIds.forEach(id => {
+        const inp = document.createElement('input');
+        inp.type = 'hidden';
+        inp.name = 'invoice_ids[]';
+        inp.value = id;
+        form.appendChild(inp);
+    });
+}
 </script>
 @endpush
