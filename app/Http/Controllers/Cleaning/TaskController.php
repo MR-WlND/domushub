@@ -61,6 +61,11 @@ class TaskController extends Controller
 
         $request->validate([
             'status' => 'required|in:pending,progress,done',
+            'note'   => 'nullable|string|max:1000',
+        ], [
+            'status.required' => 'Vui lòng chọn trạng thái.',
+            'status.in'       => 'Trạng thái không hợp lệ.',
+            'note.max'        => 'Ghi chú không được vượt quá 1000 ký tự.',
         ]);
 
         $task->status = $request->status;
