@@ -1200,6 +1200,10 @@ class InvoiceController extends Controller
             $vehicle->update(['qr_code' => strtoupper(str_replace([' ', '-'], '', $vehicle->license_plate))]);
         }
 
-        \App\Helpers\SystemLogger::log('Kích hoạt xe sau thanh toán', $vehicle->license_plate);
+        \App\Helpers\SystemLogger::log(
+            'Kích hoạt xe sau thanh toán',
+            'Xe: ' . $vehicle->license_plate,
+            ['vehicle_id' => $vehicle->id, 'apartment_id' => $vehicle->apartment_id]
+        );
     }
 }
