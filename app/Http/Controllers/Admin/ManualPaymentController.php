@@ -28,138 +28,97 @@ class ManualPaymentController extends Controller
     {
         $q = trim($request->get('q', ''));
 
-        // Nếu từ khóa rỗng: Trả về TẤT CẢ hóa đơn chưa thanh toán / thanh toán 1 phần trong hệ thống
-        if (empty($q)) {
-            $invoices = Invoice::with(['apartment.ownerResident.user', 'details.servicePrice'])
-                ->whereIn('status', ['unpaid', 'partial_paid'])
-                ->orderBy('due_date', 'asc')
-                ->get()
-                ->map(function ($invoice) {
-                    $isOverdue = $invoice->due_date && now()->isAfter($invoice->due_date);
+        // Query các căn hộ có hóa đơn chưa thanh toán / thanh toán 1 phần
+        $query = Apartment::with([
+            'floor.block',
+            'ownerResident.user',
+            'invoices' => function ($invQ) {
+                $invQ->whereIn('status', ['unpaid', 'partial_paid'])->orderBy('due_date', 'asc');
+            },
+            'invoices.details.servicePrice'
+        ])
+        ->whereHas('invoices', function ($invQ) {
+            $invQ->whereIn('status', ['unpaid', 'partial_paid']);
+        });
 
-                    $serviceNames = $invoice->details
-                        ->map(function ($detail) {
-                            return optional($detail->servicePrice)->name ?? $detail->note;
-                        })
-                        ->filter()
-                        ->unique()
-                        ->implode(', ');
-
-                    $description = !empty($serviceNames) ? $serviceNames : ($invoice->title ?? 'Hóa đơn dịch vụ');
-
-                    $totalDue = (float) ($invoice->total_due_at_issue > 0 ? $invoice->total_due_at_issue : $invoice->total_amount);
-                    $remainingAmount = max(0, $totalDue - (float) $invoice->paid_amount);
-
-                    $statusLabel = match ($invoice->status) {
-                        'partial_paid' => 'Thanh toán 1 phần',
-                        default => ($isOverdue ? 'Quá hạn' : 'Chưa thanh toán'),
-                    };
-
-                    return [
-                        'id'               => $invoice->id,
-                        'apartment_code'   => $invoice->apartment->apartment_code ?? $invoice->apartment->apartment_number ?? '---',
-                        'owner_name'       => optional(optional($invoice->apartment->ownerResident)->user)->name ?? '---',
-                        'invoice_code'     => $invoice->invoice_code,
-                        'billing_month'    => $invoice->billing_month instanceof \Carbon\Carbon
-                            ? $invoice->billing_month->format('m')
-                            : $invoice->getRawOriginal('billing_month'),
-                        'billing_year'     => $invoice->billing_year,
-                        'due_date'         => $invoice->due_date ? $invoice->due_date->format('d/m/Y') : null,
-                        'total_amount'     => $remainingAmount,
-                        'status'           => $invoice->status === 'partial_paid' ? 'partial_paid' : ($isOverdue ? 'overdue' : 'unpaid'),
-                        'status_label'     => $statusLabel,
-                        'description'      => $description,
-                        'show_url'         => portal_route('invoices.show', $invoice->id),
-                    ];
-                });
-
-            return response()->json([
-                'success'  => true,
-                'is_all'   => true,
-                'invoices' => $invoices,
-            ]);
-        }
-
-        // Tìm căn hộ theo mã hoặc chủ hộ theo tên/số điện thoại/email
-        $apartment = Apartment::with(['ownerResident.user'])
-            ->where(function ($query) use ($q) {
-                $query->where('apartment_number', 'like', "%{$q}%")
-                    ->orWhereHas('ownerResident.user', function ($sub) use ($q) {
-                        $sub->where('name', 'like', "%{$q}%")
-                            ->orWhere('phone', 'like', "%{$q}%")
-                            ->orWhere('email', 'like', "%{$q}%");
+        // Nếu có từ khóa tìm kiếm, lọc theo mã căn hộ hoặc chủ hộ
+        if (!empty($q)) {
+            $query->where(function ($subQ) use ($q) {
+                $subQ->where('apartment_number', 'like', "%{$q}%")
+                    ->orWhereHas('ownerResident.user', function ($uQ) use ($q) {
+                        $uQ->where('name', 'like', "%{$q}%")
+                           ->orWhere('phone', 'like', "%{$q}%")
+                           ->orWhere('email', 'like', "%{$q}%");
                     });
-            })
-            ->first();
-
-
-        if (!$apartment) {
-            return response()->json(['success' => false, 'message' => 'Không tìm thấy căn hộ hoặc chủ hộ phù hợp.']);
+            });
         }
 
-        // Lấy danh sách hóa đơn chưa thanh toán hoặc thanh toán một phần của căn hộ
-        $invoices = Invoice::with(['details.servicePrice'])
-            ->where('apartment_id', $apartment->id)
-            ->whereIn('status', ['unpaid', 'partial_paid'])
-            ->orderBy('due_date', 'asc')
-            ->get()
-            ->map(function ($invoice) use ($apartment) {
+        $apartments = $query->orderBy('apartment_number', 'asc')->get();
+
+        if (!empty($q) && $apartments->isEmpty()) {
+            return response()->json(['success' => false, 'message' => 'Không tìm thấy căn hộ hoặc chủ hộ nào có hóa đơn chưa thanh toán.']);
+        }
+
+        $result = $apartments->map(function ($apt) {
+            $ownerUser = optional($apt->ownerResident)->user;
+            $unpaidInvoices = $apt->invoices->map(function ($invoice) use ($apt, $ownerUser) {
                 $isOverdue = $invoice->due_date && now()->isAfter($invoice->due_date);
+                $totalDue = (float) ($invoice->total_due_at_issue > 0 ? $invoice->total_due_at_issue : $invoice->total_amount);
+                $remaining = max(0, $totalDue - (float) $invoice->paid_amount);
 
                 $serviceNames = $invoice->details
-                    ->map(function ($detail) {
-                        return optional($detail->servicePrice)->name ?? $detail->note;
-                    })
-                    ->filter()
-                    ->unique()
-                    ->implode(', ');
+                    ->map(fn($d) => optional($d->servicePrice)->name ?? $d->note)
+                    ->filter()->unique()->implode(', ');
 
                 $description = !empty($serviceNames) ? $serviceNames : ($invoice->title ?? 'Hóa đơn dịch vụ');
-
-                $totalDue = (float) ($invoice->total_due_at_issue > 0 ? $invoice->total_due_at_issue : $invoice->total_amount);
-                $remainingAmount = max(0, $totalDue - (float) $invoice->paid_amount);
 
                 $statusLabel = match ($invoice->status) {
                     'partial_paid' => 'Thanh toán 1 phần',
                     default => ($isOverdue ? 'Quá hạn' : 'Chưa thanh toán'),
                 };
-                if ($isOverdue && $invoice->status !== 'paid') {
-                    $statusLabel = 'Quá hạn';
-                }
 
                 return [
-                    'id'            => $invoice->id,
-                    'apartment_code'=> $apartment->apartment_code,
-                    'owner_name'    => optional(optional($apartment->ownerResident)->user)->name ?? '---',
-                    'invoice_code'  => $invoice->invoice_code,
-                    'billing_month' => $invoice->billing_month instanceof \Carbon\Carbon
+                    'id'               => $invoice->id,
+                    'apartment_code'   => $apt->apartment_code,
+                    'owner_name'       => $ownerUser->name ?? $apt->owner_name ?? '---',
+                    'invoice_code'     => $invoice->invoice_code,
+                    'billing_month'    => $invoice->billing_month instanceof \Carbon\Carbon
                         ? $invoice->billing_month->format('m')
                         : $invoice->getRawOriginal('billing_month'),
-                    'billing_year'  => $invoice->billing_year,
-                    'due_date'      => $invoice->due_date ? $invoice->due_date->format('d/m/Y') : null,
-                    'total_amount'  => $remainingAmount,
-                    'status'        => $invoice->status === 'partial_paid' ? 'partial_paid' : ($isOverdue ? 'overdue' : 'unpaid'),
-                    'status_label'  => $statusLabel,
-                    'description'   => $description,
-                    'show_url'      => portal_route('invoices.show', $invoice->id),
+                    'billing_year'     => $invoice->billing_year,
+                    'due_date'         => $invoice->due_date ? $invoice->due_date->format('d/m/Y') : null,
+                    'total_amount'     => $remaining,
+                    'status'           => $invoice->status === 'partial_paid' ? 'partial_paid' : ($isOverdue ? 'overdue' : 'unpaid'),
+                    'status_label'     => $statusLabel,
+                    'description'      => $description,
+                    'show_url'         => portal_route('invoices.show', $invoice->id),
                 ];
             });
 
-        $ownerUser = optional($apartment->ownerResident)->user;
+            $totalDebt = $unpaidInvoices->sum('total_amount');
+            $blockName = optional(optional($apt->floor)->block)->name;
+            $floorName = optional($apt->floor)->name;
+
+            return [
+                'apartment_id'     => $apt->id,
+                'apartment_number' => $apt->apartment_number,
+                'apartment_code'   => $apt->apartment_code,
+                'block_name'       => $blockName ? (\Illuminate\Support\Str::startsWith($blockName, 'Tòa') ? $blockName : 'Tòa ' . $blockName) : '',
+                'floor_name'       => $floorName ? (\Illuminate\Support\Str::startsWith($floorName, 'Tầng') ? $floorName : 'Tầng ' . $floorName) : '',
+                'owner_name'       => $ownerUser->name ?? $apt->owner_name ?? '---',
+                'owner_phone'      => $ownerUser->phone ?? '---',
+                'owner_email'      => $ownerUser->email ?? '---',
+                'owner_avatar'     => $ownerUser && $ownerUser->avatar ? asset('storage/' . $ownerUser->avatar) : null,
+                'unpaid_count'     => $unpaidInvoices->count(),
+                'total_debt'       => $totalDebt,
+                'invoices'         => $unpaidInvoices->values()->toArray(),
+            ];
+        });
 
         return response()->json([
-            'success'   => true,
-            'apartment' => [
-                'id'             => $apartment->id,
-                'apartment_code' => $apartment->apartment_code,
-            ],
-            'owner' => $ownerUser ? [
-                'name'   => $ownerUser->name,
-                'phone'  => $ownerUser->phone,
-                'email'  => $ownerUser->email,
-                'avatar' => $ownerUser->avatar ? asset('storage/' . $ownerUser->avatar) : null,
-            ] : null,
-            'invoices' => $invoices,
+            'success'    => true,
+            'is_grouped' => true,
+            'apartments' => $result,
         ]);
     }
 
