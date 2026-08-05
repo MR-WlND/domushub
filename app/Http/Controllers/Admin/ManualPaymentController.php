@@ -92,6 +92,28 @@ class ManualPaymentController extends Controller
             'proof_image.max'        => 'Dung lượng ảnh tối đa là 5MB.',
         ]);
 
+        $apartmentId = $request->get('apartment_id');
+        $invoices = Invoice::whereIn('id', $request->invoice_ids)->get();
+
+        // Validate 1: Kiểm tra xem các hóa đơn này có thuộc về căn hộ hiện tại không
+        $invalidInvoices = $invoices->filter(fn($inv) => $inv->apartment_id != $apartmentId);
+        if ($invalidInvoices->isNotEmpty()) {
+            return back()->withErrors(['invoice_ids' => 'Một số hóa đơn không thuộc căn hộ này. Vui lòng tải lại trang và thử lại.'])->withInput();
+        }
+
+        // Validate 2: Số tiền thực thu không được vượt quá tổng nợ của các hóa đơn được chọn
+        $totalDebt = $invoices->sum(function ($invoice) {
+            if (in_array($invoice->status, ['paid', 'cancelled'])) {
+                return 0;
+            }
+            $totalDue = (float) ($invoice->total_due_at_issue > 0 ? $invoice->total_due_at_issue : $invoice->total_amount);
+            return max(0, $totalDue - (float) $invoice->paid_amount);
+        });
+
+        if ($request->amount_received > $totalDebt) {
+            return back()->withErrors(['amount_received' => 'Số tiền thu không được lớn hơn tổng nợ của các hóa đơn đã chọn (' . number_format($totalDebt) . ' VNĐ).'])->withInput();
+        }
+
         $lastPaymentId = null;
 
         // Lưu ảnh minh chứng nếu có

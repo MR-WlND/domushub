@@ -499,9 +499,21 @@
                         <input type="text"
                                id="amountReceived"
                                name="amount_received"
-                               class="mp-input"
+                               class="mp-input @error('amount_received') is-invalid @enderror"
                                placeholder="0"
                                autocomplete="off" />
+                               
+                        @error('amount_received')
+                            <div style="color: #ef4444; font-size: 13px; margin-top: 6px; font-weight: 500;">
+                                <i class="fas fa-exclamation-circle" style="margin-right:4px;"></i> {{ $message }}
+                            </div>
+                        @enderror
+
+                        @error('invoice_ids')
+                            <div style="color: #ef4444; font-size: 13px; margin-top: 6px; font-weight: 500;">
+                                <i class="fas fa-exclamation-circle" style="margin-right:4px;"></i> {{ $message }}
+                            </div>
+                        @enderror
                         
                         <div id="paymentPreview" style="margin-top: 10px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 13.5px; display: none;">
                             <div style="margin-bottom: 6px; font-weight: 700; color: #334155; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Sau thanh toán</div>
