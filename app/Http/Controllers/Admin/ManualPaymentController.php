@@ -64,7 +64,11 @@ class ManualPaymentController extends Controller
                     'unpaid_count'     => $unpaidInvoices->count(),
                     'total_debt'       => $totalDebt,
                 ];
-            });
+            })
+            ->filter(function ($apt) {
+                return $apt['total_debt'] > 0 && $apt['unpaid_count'] > 0;
+            })
+            ->values();
 
             return response()->json([
                 'success'         => true,
