@@ -965,7 +965,6 @@ class UtilityMeterController extends Controller
     }
 
 
-    }
 
     /**
      * Lấy lịch sử từ chối của chỉ số nước từ Spatie Activity Log.

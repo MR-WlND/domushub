@@ -171,8 +171,8 @@
 
                 item.addEventListener('click', function(e) {
                     if (!notif.read_at) {
-                        e.preventDefault();
-                        markNotificationRead(notif.id, notif.url);
+                        // Gọi mark-as-read ngầm (không chặn navigation)
+                        markNotificationRead(notif.id);
                     }
                 });
 
@@ -180,7 +180,7 @@
             });
         }
 
-        function markNotificationRead(id, redirectUrl) {
+        function markNotificationRead(id) {
             const csrfToken = document.querySelector('input[name="_token"]')?.value || '';
             fetch(`/resident/notifications/mark-read/${id}`, {
                 method: 'POST',
@@ -188,19 +188,9 @@
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': csrfToken,
                     'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    if (redirectUrl) {
-                        window.location.href = redirectUrl;
-                    } else {
-                        loadNotifications();
-                    }
-                }
-            })
-            .catch(err => console.error('Error marking notification read:', err));
+                },
+                keepalive: true  // đảm bảo request hoàn thành dù trang đã chuyển
+            }).catch(() => {});
         }
 
         if (markAllReadBtn) {
@@ -230,9 +220,28 @@
                 e.stopPropagation();
                 if (userMenu) userMenu.classList.remove('active');
                 if (servicesMenu) servicesMenu.classList.remove('active');
-                
+
                 const isVisible = dropdown.style.display === 'block';
                 dropdown.style.display = isVisible ? 'none' : 'block';
+
+                // Tự động đánh dấu tất cả đã đọc khi mở dropdown
+                if (!isVisible && badge.style.display !== 'none') {
+                    const csrfToken = document.querySelector('input[name="_token"]')?.value || '';
+                    fetch('/resident/notifications/mark-read/all', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        keepalive: true
+                    }).then(() => {
+                        // Ẩn badge ngay lập tức
+                        badge.style.display = 'none';
+                        // Cập nhật lại danh sách (bỏ highlight chưa đọc)
+                        loadNotifications();
+                    }).catch(() => {});
+                }
             });
         }
 

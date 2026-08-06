@@ -76,10 +76,34 @@
 
                 <div class="inv-admin__filter-group">
                     <svg class="inv-admin__filter-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                    <select name="apartment_id" class="inv-admin__select inv-admin__select--with-icon">
+                    <select name="block_id" id="filter_block" class="inv-admin__select inv-admin__select--with-icon">
+                        <option value="">Tất cả tòa</option>
+                        @foreach ($blocks as $blk)
+                            <option value="{{ $blk->id }}" {{ request('block_id') == $blk->id ? 'selected' : '' }}>
+                                {{ $blk->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="inv-admin__filter-group">
+                    <svg class="inv-admin__filter-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
+                    <select name="floor_id" id="filter_floor" class="inv-admin__select inv-admin__select--with-icon">
+                        <option value="">Tất cả tầng</option>
+                        @foreach ($floors as $flr)
+                            <option value="{{ $flr->id }}" data-block="{{ $flr->block_id }}" {{ request('floor_id') == $flr->id ? 'selected' : '' }}>
+                                {{ $flr->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="inv-admin__filter-group">
+                    <svg class="inv-admin__filter-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    <select name="apartment_id" id="filter_apartment" class="inv-admin__select inv-admin__select--with-icon">
                         <option value="">Tất cả căn hộ</option>
                         @foreach ($apartments as $apt)
-                            <option value="{{ $apt->id }}" {{ request('apartment_id') == $apt->id ? 'selected' : '' }}>
+                            <option value="{{ $apt->id }}" data-floor="{{ $apt->floor_id }}" data-block="{{ optional($apt->floor)->block_id }}" {{ request('apartment_id') == $apt->id ? 'selected' : '' }}>
                                 Căn {{ $apt->apartment_number }}
                                 @if (optional(optional($apt->floor)->block)->name)
                                     ({{ $apt->floor->block->name }})
@@ -137,6 +161,7 @@
                         <th>Tổng tiền HĐ</th>
                         <th>Đã thu</th>
                         <th>Tổng dư nợ</th>
+                        <th>Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -178,10 +203,17 @@
                             <td style="{{ $debt > 0 ? 'color:#b91c1c;font-weight:700;' : 'color:#16a34a;font-weight:600;' }}">
                                 {{ number_format($debt) }}đ
                             </td>
+                            <td>
+                                @if($debt > 0)
+                                    <a href="{{ portal_route('manual-payment.index', ['apartment_id' => $apt->id]) }}" class="inv-admin__btn" style="background:#16a34a;color:#fff;border:none;padding:7px 14px;font-size:0.85rem;border-radius:6px;white-space:nowrap;line-height:1.2;" onclick="event.stopPropagation()">
+                                        Thanh toán
+                                    </a>
+                                @endif
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7">
+                            <td colspan="8">
                                 <div class="inv-admin__empty">Không tìm thấy căn hộ nào phù hợp</div>
                             </td>
                         </tr>
@@ -802,3 +834,63 @@
     </style>
 
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const blockSelect = document.getElementById('filter_block');
+        const floorSelect = document.getElementById('filter_floor');
+        const aptSelect = document.getElementById('filter_apartment');
+
+        function filterOptions(selectElement, attribute, value) {
+            const options = selectElement.querySelectorAll('option');
+            options.forEach(opt => {
+                if (opt.value === "") {
+                    opt.style.display = ''; // Luôn hiện "Tất cả"
+                    return;
+                }
+                const optValue = opt.getAttribute(attribute);
+                if (!value || optValue == value) {
+                    opt.style.display = '';
+                } else {
+                    opt.style.display = 'none';
+                    if (opt.selected) {
+                        selectElement.value = ""; // Reset nếu đang chọn mục bị ẩn
+                    }
+                }
+            });
+        }
+
+        blockSelect.addEventListener('change', function() {
+            const blockId = this.value;
+            filterOptions(floorSelect, 'data-block', blockId);
+            filterOptions(aptSelect, 'data-block', blockId);
+        });
+
+        floorSelect.addEventListener('change', function() {
+            const floorId = this.value;
+            filterOptions(aptSelect, 'data-floor', floorId);
+            
+            // Nếu chọn tầng mà chưa chọn tòa, tự động chọn tòa
+            if (floorId) {
+                const selectedFloorOpt = floorSelect.options[floorSelect.selectedIndex];
+                const bId = selectedFloorOpt.getAttribute('data-block');
+                if (bId && !blockSelect.value) {
+                    blockSelect.value = bId;
+                    // Lọc lại luôn tầng cho đúng chuẩn
+                    filterOptions(floorSelect, 'data-block', bId);
+                }
+            }
+        });
+
+        // Chạy lần đầu khi load trang (để giữ trạng thái sau khi submit form)
+        if (blockSelect.value) {
+            filterOptions(floorSelect, 'data-block', blockSelect.value);
+            filterOptions(aptSelect, 'data-block', blockSelect.value);
+        }
+        if (floorSelect.value) {
+            filterOptions(aptSelect, 'data-floor', floorSelect.value);
+        }
+    });
+</script>
+@endpush
