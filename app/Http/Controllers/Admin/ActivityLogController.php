@@ -7,6 +7,7 @@ use App\Models\Announcement;
 use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Spatie\Activitylog\Models\Activity;
 
 class ActivityLogController extends Controller
@@ -51,10 +52,12 @@ class ActivityLogController extends Controller
     public function notificationLogs(Request $request)
     {
         try {
-            $query = Announcement::with('user')->withTrashed();
+            $user = Auth::user();
+            $query = $user->notifications();
 
             if ($request->filled('search')) {
-                $query->where('title', 'LIKE', '%' . $request->search . '%');
+                $search = $request->search;
+                $query->where('data', 'LIKE', '%' . $search . '%');
             }
             if ($request->filled('date_from') && $request->filled('date_to')) {
                 $query->whereBetween('created_at', [
