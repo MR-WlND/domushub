@@ -83,14 +83,18 @@
                                 @endphp
                                 <label class="batch-price-item">
                                     <input type="checkbox" name="types[]" value="{{ $checkboxValue }}"
-                                        data-price="{{ $price->unit_price }}"
+                                        data-price="{{ $price->type === 'management_fee' ? 0 : $price->unit_price }}"
                                         {{ old('types') && in_array($checkboxValue, old('types')) ? 'checked' : '' }}
                                         class="batch-check"
                                         onchange="updateEstimatedCost()">
                                     <div class="batch-price-info">
                                         <div>
                                             <div class="batch-price-name">{{ $price->name }}</div>
-                                            <div class="batch-price-val">{{ number_format($price->unit_price) }}đ / đơn vị</div>
+                                            @if($price->type === 'management_fee')
+                                                <div class="batch-price-val" style="color: #64748b;">Tính theo m² từng loại căn hộ</div>
+                                            @else
+                                                <div class="batch-price-val">{{ number_format($price->unit_price) }}đ / đơn vị</div>
+                                            @endif
                                         </div>
                                     </div>
                                     <span class="batch-price-active">Hoạt động</span>

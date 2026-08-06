@@ -33,6 +33,9 @@
                 <div id="notificationList" style="max-height: 320px; overflow-y: auto;">
                     <div style="padding: 30px; text-align: center; color: #94a3b8; font-size: 13px;">Đang tải thông báo...</div>
                 </div>
+                <div style="padding: 10px; border-top: 1px solid #e2e8f0; text-align: center; background: #f8fafc; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+                    <a href="{{ portal_route('notification-logs.index') }}" style="font-size: 13px; color: #0b57d0; font-weight: 600; text-decoration: none; display: block; padding: 4px;">Xem lịch sử thông báo</a>
+                </div>
             </div>
         </div>
 
@@ -97,7 +100,8 @@
             }
             
             function markAsRead(id, redirectUrl) {
-                fetch(`/admin/notifications/mark-read/${id}`, {
+                let url = '{{ portal_route('notifications.mark-read', 'ID_HERE') }}'.replace('ID_HERE', id);
+                fetch(url, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -144,7 +148,7 @@
             // Đánh dấu tất cả đã đọc
             markAllBtn.addEventListener('click', function (e) {
                 e.stopPropagation();
-                fetch('/admin/notifications/mark-read/all', {
+                fetch('{{ portal_route('notifications.mark-read', 'all') }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

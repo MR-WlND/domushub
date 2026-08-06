@@ -197,6 +197,9 @@ $portalRoutes = function () {
     Route::put('/service-prices/{id}', [ServicePriceController::class, 'update'])->name('service-prices.update');
     Route::delete('/service-prices/{id}', [ServicePriceController::class, 'destroy'])->name('service-prices.destroy');
 
+    Route::get('/thu-tien-thu-cong', [\App\Http\Controllers\Admin\ManualPaymentController::class, 'index'])->name('manual-payment.index');
+
+    Route::post('/thu-tien-thu-cong/process', [\App\Http\Controllers\Admin\ManualPaymentController::class, 'process'])->name('manual-payment.process');
     Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
     Route::get('/invoices/stats', [InvoiceController::class, 'stats'])->name('invoices.stats');
     Route::get('/invoices/create', [InvoiceController::class, 'create'])->name('invoices.create');

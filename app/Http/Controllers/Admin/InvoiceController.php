@@ -202,11 +202,25 @@ class InvoiceController extends Controller
             }
         }
 
+        // Lọc theo Tòa (Block)
+        if ($request->filled('block_id')) {
+            $query->whereHas('floor', function($q) use ($request) {
+                $q->where('block_id', $request->block_id);
+            });
+        }
+
+        // Lọc theo Tầng (Floor)
+        if ($request->filled('floor_id')) {
+            $query->where('floor_id', $request->floor_id);
+        }
+
         $apartmentsPaginated = $query->paginate(20)->withQueryString();
         $apartments = Apartment::with('floor.block')->orderBy('apartment_number')->get();
+        $blocks     = \App\Models\Block::orderBy('name')->get();
+        $floors     = \App\Models\Floor::orderBy('name')->get();
         $statuses   = ['unpaid', 'partial_paid', 'paid', 'overdue', 'cancelled'];
 
-        return view('admin.invoices.index', compact('apartmentsPaginated', 'apartments', 'statuses'));
+        return view('admin.invoices.index', compact('apartmentsPaginated', 'apartments', 'blocks', 'floors', 'statuses'));
     }
 
     /**
@@ -459,7 +473,9 @@ class InvoiceController extends Controller
         $selectedYear = (int) $selectedYear;
         $selectedMonthNumber = (int) $selectedMonthNumber;
 
-        $activePrices = ServicePrice::where('status', 'active')->get();
+        $activePrices = ServicePrice::where('status', 'active')
+            ->whereNotIn('type', ['compensation', 'penalty', 'card_reissue'])
+            ->get();
 
         $apartments = Apartment::with(['floor.block', 'invoices' => function ($query) use ($selectedYear, $selectedMonthNumber) {
             $query->where('billing_month', $selectedMonthNumber)

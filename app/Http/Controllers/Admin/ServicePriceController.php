@@ -17,6 +17,7 @@ class ServicePriceController extends Controller
     public function index(): View
     {
         $servicePrices = ServicePrice::where('type', '!=', 'management_fee')
+            ->whereNotIn('type', ['compensation', 'penalty', 'card_reissue'])
             ->where(function ($q) {
                 $q->whereNull('vehicle_type')->orWhere('vehicle_type', '!=', 'bicycle');
             })

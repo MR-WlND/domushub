@@ -27,4 +27,5 @@ class VisitorLogTest extends TestCase
         $response = $this->get(route('security.vehicle-checkin.index'));
         $response->assertStatus(200);
     }
-g}
+}
+

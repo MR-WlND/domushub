@@ -63,7 +63,7 @@
         <div class="detail-card__meta">
             <div class="meta-item">
                 <span class="meta-label">Kỳ thanh toán</span>
-                <span class="meta-val">Tháng {{ str_pad($invoice->billing_month->month ?? $invoice->billing_month, 2, '0', STR_PAD_LEFT) }}/{{ $invoice->billing_year }}</span>
+                <span class="meta-val">Tháng {{ str_pad($invoice->getRawOriginal('billing_month') ?: ($invoice->billing_month->month ?? 1), 2, '0', STR_PAD_LEFT) }}/{{ $invoice->billing_year }}</span>
             </div>
             <div class="meta-item">
                 <span class="meta-label">Ngày phát hành</span>
@@ -102,10 +102,9 @@
                                 @if(in_array(optional($detail->servicePrice)->type, ['water']))
                                     @php
                                         $meter = \App\Models\UtilityMeter::where('apartment_id', $invoice->apartment_id)
-                                            ->where('type', $detail->servicePrice->type)
-                                            ->where('record_month', $invoice->billing_month->month ?? $invoice->billing_month)
-                                            ->where('record_year', $invoice->billing_year)
-                                            ->first();
+                                                                ->where('record_month', $invoice->getRawOriginal('billing_month'))
+                                             ->where('record_year', $invoice->billing_year)
+                                             ->first();
                                     @endphp
                                     @if($meter)
                                         <div class="item-meter-info" style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">
@@ -137,6 +136,13 @@
 
         {{-- Total Row --}}
         @php
+            $currentAmount = $invoice->current_amount > 0 
+                ? $invoice->current_amount 
+                : ($invoice->details->sum('amount') > 0 ? $invoice->details->sum('amount') : $invoice->total_amount);
+                
+            $alreadyPaid = (float) $invoice->paid_amount;
+            $remainingThisBill = max(0, $currentAmount - $alreadyPaid);
+            
             $realPreviousDebt = \App\Models\Invoice::where('apartment_id', $invoice->apartment_id)
                 ->where('status', '!=', 'cancelled')
                 ->where(function ($q) use ($invoice) {
@@ -148,23 +154,30 @@
                 })->get()->sum(function($inv) {
                     return max(0, $inv->total_amount - $inv->paid_amount);
                 });
-            $displayTotalDue = $invoice->current_amount + $realPreviousDebt;
         @endphp
         <div class="detail-card__summary">
-            @if($realPreviousDebt > 0)
             <div class="summary-item">
-                <span class="summary-label">Nợ kỳ trước</span>
-                <span class="summary-val">{{ number_format($realPreviousDebt, 0, ',', '.') }} đ</span>
+                <span class="summary-label">Tổng hóa đơn kỳ này</span>
+                <span class="summary-val">{{ number_format($currentAmount, 0, ',', '.') }} đ</span>
+            </div>
+            @if($alreadyPaid > 0)
+            <div class="summary-item" style="color: #16a34a;">
+                <span class="summary-label">Đã thanh toán</span>
+                <span class="summary-val">- {{ number_format($alreadyPaid, 0, ',', '.') }} đ</span>
             </div>
             @endif
-            <div class="summary-item">
-                <span class="summary-label">Phát sinh kỳ này</span>
-                <span class="summary-val">{{ number_format($invoice->current_amount, 0, ',', '.') }} đ</span>
+            <div class="summary-item total-due" style="border-top: 1px dashed #cbd5e1; margin-top: 6px; padding-top: 8px;">
+                <span class="summary-label" style="font-weight: 700;">Còn phải thanh toán</span>
+                <span class="summary-val" style="color: {{ $remainingThisBill > 0 ? '#dc2626' : '#16a34a' }}; font-weight: 800; font-size: 1.1rem;">
+                    {{ number_format($remainingThisBill, 0, ',', '.') }} đ
+                </span>
             </div>
-            <div class="summary-item total-due">
-                <span class="summary-label">Tổng phải thanh toán</span>
-                <span class="summary-val">{{ number_format($displayTotalDue, 0, ',', '.') }} đ</span>
+            @if($realPreviousDebt > 0)
+            <div class="summary-item" style="margin-top:8px; padding-top:8px; border-top:1px solid #f1f5f9; color:#64748b; font-size:0.85rem;">
+                <span class="summary-label">Nợ đọng các kỳ trước</span>
+                <span class="summary-val" style="color:#d97706; font-weight:600;">{{ number_format($realPreviousDebt, 0, ',', '.') }} đ</span>
             </div>
+            @endif
         </div>
 
         {{-- Lịch sử thanh toán --}}
@@ -238,7 +251,7 @@
                     </div>
                     <div class="payment-info-item">
                         <span class="info-label">Người nộp (Cư dân):</span>
-                        <span class="info-val">{{ $pm->payer_name ?: ($invoice->apartment->owner_name ?? 'Cư dân căn hộ') }}</span>
+                        <span class="info-val">{{ $pm->payer_name ?: 'Người nộp chưa xác định' }}</span>
                     </div>
                     @if($pm->recorder)
                     <div class="payment-info-item">
@@ -910,7 +923,7 @@
     function confirmDetailPayment(event) {
         const methodSelect = document.getElementById('modal_detail_payment_method');
         const methodVal = methodSelect.options[methodSelect.selectedIndex].text;
-        const payerVal = document.getElementById('modal_detail_payer_name').value || '{{ $invoice->apartment->owner_name ?? 'Cư dân' }}';
+        const payerVal = document.getElementById('modal_detail_payer_name').value || 'Người nộp chưa xác định';
         
         const formattedAmount = Number(currentDetailAmount).toLocaleString('vi-VN') + ' đ';
 
