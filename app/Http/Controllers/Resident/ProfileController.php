@@ -75,6 +75,12 @@ class ProfileController extends Controller
             ->whereIn('status', ['unpaid', 'partial', 'overdue'])
             ->sum(\Illuminate\Support\Facades\DB::raw('total_amount - paid_amount'));
 
+        // Hoá đơn gần nhất
+        $invoices = \App\Models\Invoice::where('apartment_id', $user->apartment_id)
+            ->orderBy('created_at', 'desc')
+            ->take(3)
+            ->get();
+
         // Resident record của user hiện tại
         $selfResident = \App\Models\Resident::where('user_id', $user->id)
             ->whereNull('deleted_at')
@@ -82,7 +88,7 @@ class ProfileController extends Controller
 
         return view('resident.profile.index', compact(
             'user', 'apartments', 'registeredMembers', 'declaredMembers',
-            'vehicles', 'outstandingBalance', 'selfResident'
+            'vehicles', 'outstandingBalance', 'selfResident', 'invoices'
         ));
     }
 

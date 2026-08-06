@@ -63,7 +63,7 @@ class PostController extends Controller
             return view('admin.posts.index', compact('reportedComments', 'activeTab'));
         }
 
-        $query = Post::withTrashed()->with(['user.apartment', 'comments'])
+        $query = Post::withTrashed()->with(['user.apartment'])
             ->withCount('reports')
             ->orderBy('created_at', 'desc');
 

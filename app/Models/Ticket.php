@@ -53,6 +53,11 @@ class Ticket extends Model
         return $this->belongsTo(User::class, 'handler_id');
     }
 
+    public function technicians()
+    {
+        return $this->belongsToMany(User::class, 'ticket_assignments', 'ticket_id', 'user_id')->withTimestamps();
+    }
+
     public function progress()
     {
         return $this->hasMany(TicketProgress::class)->orderBy('created_at', 'asc');

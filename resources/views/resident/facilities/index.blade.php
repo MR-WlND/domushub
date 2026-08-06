@@ -2,64 +2,64 @@
 
 @push('styles')
 <style>
-.rf-page { max-width: 1100px; margin: 0 auto; padding: 32px 20px; font-family: 'Inter', sans-serif; }
+.rf-page { max-width: 1100px; margin: 0 auto; padding: 24px 20px; font-family: 'Inter', sans-serif; }
 
-.rf-header { margin-bottom: 24px; }
-.rf-title { font-size: 28px; font-weight: 700; color: #1e3a8a; margin: 0 0 8px; }
-.rf-subtitle { font-size: 15px; color: #475569; margin: 0; line-height: 1.6; max-width: 800px; }
+.rf-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+.rf-title { font-size: 17px; font-weight: 700; color: #0f172a; margin: 0; }
+.rf-subtitle { font-size: 12px; color: #94a3b8; margin: 4px 0 0; max-width: 500px; line-height: 1.5; }
 
 /* Toolbar: Search and Filters */
-.rf-toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 28px; }
+.rf-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 16px; }
 
-.rf-search { flex: 1; min-width: 250px; position: relative; }
-.rf-search input { width: 100%; padding: 10px 16px 10px 40px; border: 1px solid #e2e8f0; border-radius: 20px; font-size: 14px; outline: none; background: #f8fafc; transition: border-color 0.2s; box-sizing: border-box; }
-.rf-search input:focus { border-color: #3b82f6; background: #fff; }
-.rf-search svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+.rf-search { flex: 1; min-width: 180px; position: relative; }
+.rf-search input { width: 100%; padding: 7px 12px 7px 32px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 12px; outline: none; background: #fff; transition: border-color 0.15s; box-sizing: border-box; }
+.rf-search input:focus { border-color: #3b82f6; }
+.rf-search svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #94a3b8; width: 14px; height: 14px; }
 
-.rf-filters { display: flex; gap: 10px; flex-wrap: wrap; }
-.rf-filter-btn { padding: 8px 18px; border: 1px solid #e2e8f0; border-radius: 20px; font-size: 14px; font-weight: 500; color: #475569; background: #fff; text-decoration: none; transition: all 0.2s; cursor: pointer; }
-.rf-filter-btn:hover { border-color: #cbd5e1; background: #f1f5f9; }
-.rf-filter-btn.active { background: #1e3a8a; color: #fff; border-color: #1e3a8a; }
+.rf-filters { display: flex; gap: 4px; flex-wrap: wrap; }
+.rf-filter-btn { padding: 5px 12px; border: 1px solid #e2e8f0; border-radius: 5px; font-size: 11px; font-weight: 600; color: #475569; background: #fff; text-decoration: none; transition: all 0.15s; cursor: pointer; }
+.rf-filter-btn:hover { background: #f8fafc; border-color: #cbd5e1; }
+.rf-filter-btn.active { background: #0f172a; color: #fff; border-color: #0f172a; }
 
 /* Grid */
-.rf-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 32px; }
+.rf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-bottom: 24px; }
 
-/* Card */
-.rf-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; display: flex; transition: box-shadow 0.2s, transform 0.2s; text-decoration: none; color: inherit; height: 220px; }
-.rf-card:hover { box-shadow: 0 10px 25px rgba(0,0,0,0.06); transform: translateY(-2px); }
+/* Card - Vertical */
+.rf-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; transition: box-shadow 0.15s; text-decoration: none; color: inherit; }
+.rf-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.06); }
 
-/* Left Side: Image */
-.rf-card-img-wrap { width: 45%; position: relative; overflow: hidden; background: linear-gradient(135deg, #e0f2fe, #ede9fe); }
+/* Image */
+.rf-card-img-wrap { width: 100%; height: 130px; position: relative; overflow: hidden; background: #f1f5f9; cursor:pointer; }
 .rf-card-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
-.rf-card-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+.rf-card-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 12px; }
 
-.rf-badge { position: absolute; top: 12px; right: 12px; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.9); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-.rf-badge-dot { width: 8px; height: 8px; border-radius: 50%; }
-.rf-badge--available { color: #16a34a; }
+.rf-badge { position: absolute; top: 8px; left: 8px; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+.rf-badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+.rf-badge--available { background: #dcfce7; color: #166534; }
 .rf-badge--available .rf-badge-dot { background: #16a34a; }
-.rf-badge--maintenance { color: #dc2626; }
+.rf-badge--maintenance { background: #fee2e2; color: #991b1b; }
 .rf-badge--maintenance .rf-badge-dot { background: #dc2626; }
-.rf-badge--closed { color: #ea580c; }
+.rf-badge--closed { background: #fef3c7; color: #92400e; }
 .rf-badge--closed .rf-badge-dot { background: #ea580c; }
 
-/* Right Side: Info */
-.rf-card-body { width: 55%; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; }
-.rf-card-title { font-size: 18px; font-weight: 700; color: #0f172a; margin: 0 0 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.rf-card-location { font-size: 13px; color: #64748b; display: flex; align-items: center; gap: 4px; margin-bottom: 16px; }
-.rf-card-location svg { flex-shrink: 0; }
+/* Body */
+.rf-card-body { padding: 12px 14px; display: flex; flex-direction: column; flex: 1; }
+.rf-card-title { font-size: 14px; font-weight: 700; color: #0f172a; margin: 0 0 3px; }
+.rf-card-location { font-size: 11px; color: #64748b; display: flex; align-items: center; gap: 4px; margin-bottom: 8px; }
+.rf-card-location svg { flex-shrink: 0; width: 12px; height: 12px; }
 
-.rf-info-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; }
-.rf-info-label { color: #475569; }
+.rf-info-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+.rf-info-label { color: #64748b; }
 .rf-info-val { font-weight: 600; color: #0f172a; }
 .rf-info-val--free { color: #16a34a; }
 
-.rf-card-actions { display: flex; gap: 10px; margin-top: auto; }
-.rf-btn { flex: 1; padding: 8px; border-radius: 6px; font-size: 13px; font-weight: 600; text-align: center; text-decoration: none; transition: all 0.2s; border: 1px solid transparent; display: flex; align-items: center; justify-content: center; }
-.rf-btn-primary { background: #1e3a8a; color: #fff; }
-.rf-btn-primary:hover { background: #1e3a8a; opacity: 0.9; color: #fff; }
-.rf-btn-outline { background: #fff; color: #475569; border-color: #cbd5e1; }
-.rf-btn-outline:hover { background: #f8fafc; color: #0f172a; }
-.rf-btn-disabled { background: #cbd5e1; color: #fff; cursor: not-allowed; }
+.rf-card-actions { display: flex; gap: 6px; margin-top: auto; padding-top: 10px; border-top: 1px solid #f1f5f9; }
+.rf-btn { flex: 1; padding: 7px; border-radius: 6px; font-size: 12px; font-weight: 600; text-align: center; text-decoration: none; transition: all 0.15s; border: 1px solid transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.rf-btn-primary { background: #0f172a; color: #fff; }
+.rf-btn-primary:hover { background: #1e293b; }
+.rf-btn-outline { background: #fff; color: #475569; border-color: #e2e8f0; }
+.rf-btn-outline:hover { background: #f8fafc; }
+.rf-btn-disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
 
 /* Modal */
 .rf-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.2s; padding: 20px; }
@@ -123,10 +123,7 @@
             <h1 class="rf-title">Tiện ích Toà nhà</h1>
             <p class="rf-subtitle">Khám phá và đăng ký các dịch vụ cao cấp dành riêng cho cư dân ResiCare. Tận hưởng không gian sống đẳng cấp và hiện đại ngay tại nơi bạn ở.</p>
         </div>
-        <a href="{{ route('resident.facility-bookings.index') }}" class="rf-btn rf-btn-outline" style="white-space: nowrap; padding: 10px 20px;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right: 6px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Lịch sử đặt tiện ích
-        </a>
+        <a href="{{ route('resident.facility-bookings.index') }}" style="font-size:13px;font-weight:600;color:#0b57d0;text-decoration:none;">Lịch sử đặt →</a>
     </div>
 
     {{-- Toolbar --}}
@@ -163,6 +160,7 @@
             $priceClass = ($priceText === 'Miễn phí') ? 'rf-info-val--free' : '';
         @endphp
         <div class="rf-card">
+            <a href="{{ route('resident.facilities.show', $facility) }}" style="text-decoration:none;color:inherit;display:block;">
             <div class="rf-card-img-wrap">
                 @if($facility->images && count($facility->images) > 0)
                     <img src="{{ asset('storage/' . $facility->images[0]) }}" alt="{{ $facility->name }}">
@@ -175,10 +173,13 @@
                     <span class="rf-badge-dot"></span> {{ $statusText }}
                 </div>
             </div>
+            </a>
             
             <div class="rf-card-body">
                 <div>
+                    <a href="{{ route('resident.facilities.show', $facility) }}" style="text-decoration:none;color:inherit;">
                     <h3 class="rf-card-title" title="{{ $facility->name }}">{{ $facility->name }}</h3>
+                    </a>
                     <div class="rf-card-location">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                         {{ $facility->floor?->name ? $facility->floor->name . ', ' : '' }}{{ $facility->block?->name ?: 'Khu vực chung' }}
@@ -246,10 +247,28 @@
                                     @endforeach
                                 </div>
                             </div>
+                        @elseif($facility->fee_type === 'per_hour')
+                            <input type="hidden" name="start_time" value="{{ $facility->open_time ? substr($facility->open_time, 0, 5) : '06:00' }}">
+                            <input type="hidden" name="end_time" id="end_time_h_{{ $facility->id }}" value="{{ $facility->close_time ? substr($facility->close_time, 0, 5) : '22:00' }}">
+                            <input type="hidden" name="number_of_people" value="1">
+                            <div class="rfd-form-group">
+                                <label>Số giờ sử dụng</label>
+                                <div class="rfd-people-wrap">
+                                    <button type="button" class="rfd-people-btn" onclick="changeModalHours('{{ $facility->id }}', -1, {{ (int)$facility->price }})">−</button>
+                                    <span class="rfd-people-val" id="hours_display_{{ $facility->id }}">1</span>
+                                    <input type="hidden" id="hours_input_{{ $facility->id }}" value="1">
+                                    <button type="button" class="rfd-people-btn" onclick="changeModalHours('{{ $facility->id }}', 1, {{ (int)$facility->price }})">+</button>
+                                </div>
+                            </div>
+                            <div class="rfd-price-row" style="margin-top:12px;">
+                                <span>Tạm tính:</span>
+                                <span class="rfd-price-val" id="total_h_{{ $facility->id }}">{{ number_format($facility->price) }}đ</span>
+                            </div>
                         @else
                             <input type="hidden" name="start_time" value="{{ $facility->open_time ? substr($facility->open_time, 0, 5) : '00:00' }}">
                             <input type="hidden" name="end_time" value="{{ $facility->close_time ? substr($facility->close_time, 0, 5) : '23:59' }}">
                         @endif
+                        @if($facility->fee_type !== 'per_hour')
                         <div class="rfd-form-group">
                             <label>Số người tham gia</label>
                                 <div class="rfd-people-wrap">
@@ -259,14 +278,17 @@
                                     <button type="button" class="rfd-people-btn" onclick="changeModalPeople('{{ $facility->id }}', 1, {{ $facility->capacity ?? 10 }})">+</button>
                                 </div>
                             </div>
+                        @else
+                        <input type="hidden" name="number_of_people" value="1">
+                        @endif
                         <div class="rfd-form-group">
                             <label>Ghi chú (Tùy chọn)</label>
                             <textarea name="note" class="rfd-input" placeholder="Nhập ghi chú cho BQL..."></textarea>
                         </div>
                         @if($hasFee)
                             <div class="rfd-price-row">
-                                <span>Phí dịch vụ:</span>
-                                <span class="rfd-price-val">{{ $facility->price_label }}</span>
+                                <span>Tạm tính:</span>
+                                <span class="rfd-price-val" id="modal_price_{{ $facility->id }}" data-unit-price="{{ $facility->price }}" data-fee-type="{{ $facility->fee_type }}">{{ number_format($facility->price) }}đ</span>
                             </div>
                         @endif
                         <button type="submit" class="rfd-submit">Xác nhận đăng ký</button>
@@ -329,6 +351,37 @@ function changeModalPeople(facilityId, delta, maxCap) {
     
     input.value = val;
     display.innerText = val;
+}
+
+function changeModalHours(facilityId, delta, unitPrice) {
+    const input = document.getElementById('hours_input_' + facilityId);
+    const display = document.getElementById('hours_display_' + facilityId);
+    const endEl = document.getElementById('end_time_h_' + facilityId);
+    const totalEl = document.getElementById('modal_price_' + facilityId);
+    if(!input || !display) return;
+    
+    let val = parseInt(input.value) || 1;
+    val += delta;
+    if(val < 1) val = 1;
+    if(val > 8) val = 8;
+    
+    input.value = val;
+    display.innerText = val;
+    
+    // Update end_time
+    if(endEl) {
+        const startEl = endEl.previousElementSibling;
+        if(startEl && startEl.value) {
+            const [h] = startEl.value.split(':').map(Number);
+            const endH = Math.min(h + val, 22);
+            endEl.value = String(endH).padStart(2,'0') + ':00';
+        }
+    }
+    
+    // Update total price
+    if(totalEl && unitPrice) {
+        totalEl.innerText = (unitPrice * val).toLocaleString('vi-VN') + 'đ';
+    }
 }
 </script>
 @endpush

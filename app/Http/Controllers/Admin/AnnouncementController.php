@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
+use App\Helpers\SystemLogger;
 
 class AnnouncementController extends Controller
 {
@@ -107,6 +108,8 @@ class AnnouncementController extends Controller
             Notification::send($residents, new NewAnnouncementNotification($announcement));
         }
 
+        SystemLogger::log('Đăng thông báo mới', 'Thông báo: ' . $announcement->title);
+
         return redirect()->route('admin.announcements.index')
             ->with('success', 'Đăng thông báo mới thành công!');
     }
@@ -173,6 +176,8 @@ class AnnouncementController extends Controller
             Notification::send($residents, new NewAnnouncementNotification($announcement));
         }
 
+        SystemLogger::log('Cập nhật thông báo', 'Thông báo: ' . $announcement->title);
+
         return redirect()->route('admin.announcements.index')
             ->with('success', 'Cập nhật thông báo thành công!');
     }
@@ -189,7 +194,10 @@ class AnnouncementController extends Controller
             Storage::disk('public')->delete($announcement->image_path);
         }
 
+        $title = $announcement->title;
         $announcement->delete();
+
+        SystemLogger::log('Xóa thông báo', 'Thông báo: ' . $title);
 
         return redirect()->route('admin.announcements.index')
             ->with('success', 'Xóa thông báo thành công!');
@@ -203,6 +211,8 @@ class AnnouncementController extends Controller
         $announcement = Announcement::findOrFail($id);
         $announcement->pinned = !$announcement->pinned;
         $announcement->save();
+
+        SystemLogger::log($announcement->pinned ? 'Ghim thông báo' : 'Bỏ ghim thông báo', 'Thông báo: ' . $announcement->title);
 
         if ($request->ajax()) {
             return response()->json([

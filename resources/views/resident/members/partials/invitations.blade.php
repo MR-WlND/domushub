@@ -14,44 +14,71 @@
             <form action="{{ route('resident.members.invitations.store') }}" method="POST" class="member-form">
                 @csrf
 
-                {{-- Bước 1: Chọn tòa nhà --}}
-                <div class="form-group">
-                    <label for="block_select" class="form-label">
-                        <i class="fa-solid fa-building"></i> Tòa nhà
-                    </label>
-                    <select id="block_select" class="form-input" onchange="filterApartmentsByBlock(this.value)" required>
-                        <option value="">-- Chọn tòa nhà --</option>
-                        @foreach ($blocks as $block)
-                            <option value="{{ $block->id }}"
-                                {{ old('block_id') == $block->id ? 'selected' : '' }}>
-                                {{ $block->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+                {{-- Chọn Tòa & Căn hộ: cố định nếu chỉ có 1 căn hộ, dropdown nếu nhiều hơn --}}
+                @if ($apartments->count() === 1)
+                    @php $apt = $apartments->first(); @endphp
+                    <input type="hidden" name="apartment_id" value="{{ $apt->id }}">
+                    <div class="form-group">
+                        <label class="form-label"><i class="fa-solid fa-building"></i> Tòa nhà</label>
+                        <div class="form-input" style="background:#f8fafc;color:#64748b;cursor:default;display:flex;align-items:center;gap:.5rem;">
+                            <i class="fa-solid fa-lock" style="font-size:.75rem;opacity:.5;"></i>
+                            {{ $apt->floor->block->name ?? '—' }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label"><i class="fa-solid fa-layer-group"></i> Tầng</label>
+                        <div class="form-input" style="background:#f8fafc;color:#64748b;cursor:default;display:flex;align-items:center;gap:.5rem;">
+                            <i class="fa-solid fa-lock" style="font-size:.75rem;opacity:.5;"></i>
+                            {{ $apt->floor->name ?? ('Tầng ' . ($apt->floor->floor_number ?? '?')) }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label"><i class="fa-solid fa-door-open"></i> Căn hộ</label>
+                        <div class="form-input" style="background:#f8fafc;color:#64748b;cursor:default;display:flex;align-items:center;gap:.5rem;">
+                            <i class="fa-solid fa-lock" style="font-size:.75rem;opacity:.5;"></i>
+                            {{ $apt->apartment_number }}
+                        </div>
+                    </div>
+                @else
+                    {{-- Bước 1: Chọn tòa nhà --}}
+                    <div class="form-group">
+                        <label for="block_select" class="form-label">
+                            <i class="fa-solid fa-building"></i> Tòa nhà
+                        </label>
+                        <select id="block_select" class="form-input" onchange="filterApartmentsByBlock(this.value)" required>
+                            <option value="">-- Chọn tòa nhà --</option>
+                            @foreach ($blocks as $block)
+                                <option value="{{ $block->id }}"
+                                    {{ old('block_id') == $block->id ? 'selected' : '' }}>
+                                    {{ $block->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                {{-- Bước 2: Chọn căn hộ (lọc theo tòa) --}}
-                <div class="form-group">
-                    <label for="apartment_id_invite" class="form-label">
-                        <i class="fa-solid fa-door-open"></i> Căn hộ
-                    </label>
-                    <select name="apartment_id" id="apartment_id_invite" class="form-input" required>
-                        <option value="">-- Chọn tòa trước --</option>
-                        @foreach ($apartments as $apartment)
-                            <option value="{{ $apartment->id }}"
-                                    data-block-id="{{ $apartment->floor->block->id ?? '' }}"
-                                    data-floor="{{ $apartment->floor->name ?? ('Tầng ' . ($apartment->floor->floor_number ?? '?')) }}"
-                                    style="display:none;"
-                                    {{ old('apartment_id') == $apartment->id ? 'selected' : '' }}>
-                                {{ $apartment->apartment_number }}
-                                – {{ $apartment->floor->name ?? ('Tầng ' . $apartment->floor->floor_number) }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('apartment_id')
-                        <span class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</span>
-                    @enderror
-                </div>
+                    {{-- Bước 2: Chọn căn hộ (lọc theo tòa) --}}
+                    <div class="form-group">
+                        <label for="apartment_id_invite" class="form-label">
+                            <i class="fa-solid fa-door-open"></i> Căn hộ
+                        </label>
+                        <select name="apartment_id" id="apartment_id_invite" class="form-input" required>
+                            <option value="">-- Chọn tòa trước --</option>
+                            @foreach ($apartments as $apartment)
+                                <option value="{{ $apartment->id }}"
+                                        data-block-id="{{ $apartment->floor->block->id ?? '' }}"
+                                        data-floor="{{ $apartment->floor->name ?? ('Tầng ' . ($apartment->floor->floor_number ?? '?')) }}"
+                                        style="display:none;"
+                                        {{ old('apartment_id') == $apartment->id ? 'selected' : '' }}>
+                                    {{ $apartment->apartment_number }}
+                                    – {{ $apartment->floor->name ?? ('Tầng ' . $apartment->floor->floor_number) }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('apartment_id')
+                            <span class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</span>
+                        @enderror
+                    </div>
+                @endif
 
                 {{-- Vai trò dự kiến --}}
                 <div class="form-group">
@@ -229,12 +256,16 @@
 @if (session('new_invite_code'))
     <div class="invite-modal-overlay" id="inviteModal">
         <div class="invite-modal">
+            <button type="button" class="invite-modal__close-corner" onclick="closeInviteModal()" title="Đóng">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
             <div class="invite-modal__header">
                 <div class="invite-modal__icon-wrap">
-                    <i class="fa-solid fa-circle-check"></i>
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
                 </div>
                 <h3 class="invite-modal__title">Mã mời đã được tạo!</h3>
-                <p class="invite-modal__subtitle">Sao chép và gửi mã này cho người thân hoặc người thuê để họ dùng khi đăng ký tài khoản.</p>
+                <p class="invite-modal__subtitle">Sao chép mã hoặc gửi mã QR bên dưới cho người thân / người thuê để họ dùng khi đăng ký tài khoản.</p>
             </div>
 
             <div class="invite-modal__code-block">
@@ -246,21 +277,22 @@
                 </button>
             </div>
 
-            <div class="invite-modal__qr-wrap" style="text-align: center; margin: 15px 0; background: #fff; padding: 12px; border-radius: 8px; box-shadow: inset 0 0 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center;">
-                <div style="margin-bottom: 6px;">
-                    {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(130)->generate(route('resident.register') . '?invite_code=' . urlencode(session('new_invite_code'))) !!}
+            <div class="invite-modal__qr-card">
+                <div class="invite-modal__qr-img">
+                    {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(140)->generate(route('resident.register') . '?invite_code=' . urlencode(session('new_invite_code'))) !!}
                 </div>
-                <span class="text-muted" style="font-size: 11px;"><i class="fa-solid fa-qrcode"></i> Quét QR để đăng ký nhanh</span>
+                <p class="invite-modal__qr-text"><i class="fa-solid fa-qrcode"></i> Quét QR để đăng ký tài khoản nhanh</p>
             </div>
 
             <div class="invite-modal__note">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                Mã này chỉ sử dụng được <strong>1 lần</strong>.
-                Sau khi có người đăng ký bằng mã này, mã sẽ tự động vô hiệu.
+                <i class="fa-solid fa-circle-info"></i>
+                <div>
+                    Mã này chỉ sử dụng được <strong>1 lần</strong>. Sau khi có người đăng ký bằng mã này, hệ thống sẽ tự động vô hiệu hóa mã.
+                </div>
             </div>
 
             <button type="button" class="btn btn-secondary w-100" onclick="closeInviteModal()">
-                <i class="fa-solid fa-xmark"></i> Đóng
+                Đóng cửa sổ
             </button>
         </div>
     </div>

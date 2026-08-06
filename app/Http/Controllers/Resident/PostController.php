@@ -27,28 +27,16 @@ class PostController extends Controller
      */
     public function index(Request $request)
     {
-        // Tự động chạy migrate nếu bảng post_hides chưa được tạo
-        if (!\Illuminate\Support\Facades\Schema::hasTable('post_hides')) {
-            try {
-                \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-            } catch (\Exception $e) {
-                \Log::error('Migration check/run failed in PostController: ' . $e->getMessage());
-            }
-        }
-
-        $query = Post::with(['user.apartment', 'comments.user.apartment', 'images'])
+        $query = Post::with(['user.apartment', 'images'])
             ->withCount(['likes', 'comments'])
             ->with(['likedByCurrentUser'])
             ->where('status', 'published')
             ->whereDoesntHave('reports', function($q) {
                 $q->where('user_id', Auth::id());
-            });
-
-        if (\Illuminate\Support\Facades\Schema::hasTable('post_hides')) {
-            $query->whereDoesntHave('hides', function($q) {
+            })
+            ->whereDoesntHave('hides', function($q) {
                 $q->where('user_id', Auth::id());
             });
-        }
 
         $query->orderBy('created_at', 'desc');
  

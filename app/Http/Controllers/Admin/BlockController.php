@@ -84,14 +84,21 @@ class BlockController extends Controller
     {
         $validated = $request->validate([
             'name'                 => 'required|string|max:50|unique:blocks,name',
-            'code'                 => 'nullable|string|max:100|unique:blocks,code',
+            'code'                 => 'required|string|max:100|unique:blocks,code',
             'status'               => 'nullable|in:active,inactive,maintenance',
             'image'                => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-            'total_floors'         => 'nullable|integer|min:0',
-            'total_basements'      => 'nullable|integer|min:0',
+            'total_floors'         => 'required|integer|min:0',
+            'total_basements'      => 'required|integer|min:0',
             'apartments_per_floor' => 'nullable|integer|min:0',
             'amenities'            => 'nullable|array',
             'amenities.*'          => 'string',
+        ], [
+            'name.required' => 'Vui lòng nhập tên tòa nhà.',
+            'name.unique'   => 'Tên tòa nhà đã tồn tại.',
+            'code.required' => 'Vui lòng nhập mã tòa nhà.',
+            'code.unique'   => 'Mã tòa nhà đã tồn tại.',
+            'total_floors.required' => 'Vui lòng nhập số tầng nổi.',
+            'total_basements.required' => 'Vui lòng nhập số tầng hầm.',
         ]);
 
         $imagePath = null;
@@ -150,14 +157,21 @@ class BlockController extends Controller
     {
         $validated = $request->validate([
             'name'                 => 'required|string|max:50|unique:blocks,name,' . $block->id,
-            'code'                 => 'nullable|string|max:100|unique:blocks,code,' . $block->id,
+            'code'                 => 'required|string|max:100|unique:blocks,code,' . $block->id,
             'status'               => 'nullable|in:active,inactive,maintenance',
             'image'                => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-            'total_floors'         => 'nullable|integer|min:0',
-            'total_basements'      => 'nullable|integer|min:0',
+            'total_floors'         => 'required|integer|min:0',
+            'total_basements'      => 'required|integer|min:0',
             'apartments_per_floor' => 'nullable|integer|min:0',
             'amenities'            => 'nullable|array',
             'amenities.*'          => 'string',
+        ], [
+            'name.required' => 'Vui lòng nhập tên tòa nhà.',
+            'name.unique'   => 'Tên tòa nhà đã tồn tại.',
+            'code.required' => 'Vui lòng nhập mã tòa nhà.',
+            'code.unique'   => 'Mã tòa nhà đã tồn tại.',
+            'total_floors.required' => 'Vui lòng nhập số tầng nổi.',
+            'total_basements.required' => 'Vui lòng nhập số tầng hầm.',
         ]);
 
         $imagePath = $block->image;

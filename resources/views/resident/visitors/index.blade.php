@@ -1,12 +1,12 @@
 @extends('layouts.resident.master')
-@section('title', 'Khách viếng thăm – DomusHub')
+@section('title', 'Khách ghé thăm – DomusHub')
 @push('styles')
     @vite(['resources/css/resident/visitors.css'])
     <style>
     /* ---- OVERRIDES & EXTRAS ---- */
     .vr-wrap { max-width: 860px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
     .vr-header { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; }
-    .vr-eyebrow { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:#7c3aed; margin:0 0 .2rem; }
+    .vr-eyebrow { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:#00236f; margin:0 0 .2rem; }
     .vr-title   { font-size:1.5rem; font-weight:800; color:#0f172a; margin:0; }
 
     /* STATS */
@@ -14,7 +14,7 @@
     @media(max-width:500px){ .vr-stats { grid-template-columns:1fr 1fr; } }
     .vr-stat { background:#fff; border:1px solid #e8ecf4; border-radius:12px; padding:.8rem 1rem; display:flex; align-items:center; gap:.65rem; box-shadow:0 1px 4px rgba(0,20,80,.04); }
     .vr-stat__ic { width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-    .vr-stat__ic--purple { background:#f3e8ff; color:#7c3aed; }
+    .vr-stat__ic--purple { background:#dbeafe; color:#00236f; }
     .vr-stat__ic--green  { background:#dcfce7; color:#16a34a; }
     .vr-stat__ic--gray   { background:#f1f5f9; color:#64748b; }
     .vr-stat__ic--orange { background:#ffedd5; color:#ea580c; }
@@ -40,7 +40,7 @@
     .vr-card__info { flex:1; min-width:0; }
     .vr-card__name { font-size:.9rem; font-weight:800; color:#0f172a; margin:0 0 .15rem; }
     .vr-card__meta { font-size:.77rem; color:#64748b; display:flex; flex-wrap:wrap; gap:.2rem .7rem; }
-    .vr-card__apt  { font-weight:700; color:#7c3aed; }
+    .vr-card__apt  { font-weight:700; color:#00236f; }
 
     /* badges */
     .vr-chip { display:inline-flex; align-items:center; gap:.25rem; font-size:.7rem; font-weight:700; padding:.2rem .6rem; border-radius:999px; }
@@ -63,7 +63,7 @@
     .vr-empty p  { font-size:.85rem; color:#64748b; margin:0; }
 
     /* New notification dot */
-    .vr-card__new { width:8px; height:8px; border-radius:50%; background:#7c3aed; flex-shrink:0; }
+    .vr-card__new { width:8px; height:8px; border-radius:50%; background:#00236f; flex-shrink:0; }
     </style>
 @endpush
 
@@ -74,7 +74,7 @@
     <div class="vr-header">
         <div>
             <p class="vr-eyebrow">Dịch vụ</p>
-            <h1 class="vr-title">Khách viếng thăm</h1>
+            <h1 class="vr-title">Khách ghé thăm</h1>
         </div>
     </div>
 

@@ -1,297 +1,151 @@
 @extends('layouts.admin.master')
 
-@section('page_title', $facility->name . ' - Lịch đặt')
+@section('page_title', $facility->name . ' - Chi tiết')
+
+@push('styles')
+<style>
+.af-page { max-width:1200px; margin:0 auto; }
+.af-back { font-size:13px; color:#64748b; text-decoration:none; display:inline-block; margin-bottom:14px; } .af-back:hover { color:#0b57d0; }
+.af-alert { padding:12px 16px; border-radius:8px; margin-bottom:16px; font-size:13px; }
+.af-alert--success { background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; }
+.af-alert--error { background:#fef2f2; border:1px solid #fecaca; color:#dc2626; }
+
+/* Two-column layout */
+.af-detail-layout { display:grid; grid-template-columns:300px 1fr; gap:20px; align-items:start; }
+@media(max-width:900px) { .af-detail-layout { grid-template-columns:1fr; } }
+
+/* Left panel */
+.af-sidebar { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:20px; position:sticky; top:80px; }
+.af-sidebar__badge { display:inline-block; padding:3px 10px; border-radius:5px; font-size:11px; font-weight:600; margin-bottom:10px; }
+.af-sidebar__badge--available { background:#dcfce7; color:#166534; }
+.af-sidebar__badge--maintenance { background:#fef3c7; color:#92400e; }
+.af-sidebar__badge--closed { background:#fee2e2; color:#991b1b; }
+.af-sidebar__name { font-size:18px; font-weight:700; color:#0b1c30; margin-bottom:4px; }
+.af-sidebar__desc { font-size:12px; color:#64748b; margin-bottom:16px; line-height:1.5; }
+.af-sidebar__list { list-style:none; padding:0; margin:0; }
+.af-sidebar__list li { display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid #f1f5f9; font-size:13px; }
+.af-sidebar__list li:last-child { border-bottom:none; }
+.af-sidebar__list-label { color:#64748b; }
+.af-sidebar__list-value { color:#0b1c30; font-weight:600; text-align:right; }
+.af-sidebar__actions { margin-top:16px; padding-top:14px; border-top:1px solid #e2e8f0; display:flex; gap:8px; }
+.af-btn { padding:8px 16px; border-radius:7px; font-size:12px; font-weight:600; cursor:pointer; border:none; text-decoration:none; transition:.15s; }
+.af-btn--edit { background:#f1f5f9; color:#334155; } .af-btn--edit:hover { background:#e2e8f0; }
+.af-btn--sm { padding:5px 12px; font-size:11px; }
+.af-btn--approve { background:#dcfce7; color:#166534; } .af-btn--approve:hover { background:#bbf7d0; }
+.af-btn--reject { background:#fef2f2; color:#dc2626; } .af-btn--reject:hover { background:#fee2e2; }
+
+/* Right panel */
+.af-main { }
+.af-main__header { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+.af-main__title { font-size:16px; font-weight:700; color:#0b1c30; }
+.af-main__stats { display:flex; gap:16px; font-size:12px; color:#64748b; }
+.af-main__stats strong { color:#0b1c30; font-weight:700; }
+
+/* Table */
+.af-table-wrap { background:#fff; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden; }
+.af-table { width:100%; border-collapse:collapse; }
+.af-table th { text-align:left; padding:10px 16px; font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:.3px; background:#f8fafc; border-bottom:1px solid #e2e8f0; }
+.af-table td { padding:12px 16px; font-size:13px; color:#334155; border-bottom:1px solid #f1f5f9; }
+.af-table tr:last-child td { border-bottom:none; }
+.af-table tr:hover td { background:#fafbff; }
+.af-table-name { font-weight:600; color:#0b1c30; }
+.af-table-sub { font-size:11px; color:#94a3b8; }
+.af-table-time { font-family:monospace; font-size:12px; background:#f1f5f9; padding:2px 6px; border-radius:4px; }
+.af-badge { display:inline-block; padding:3px 9px; border-radius:5px; font-size:11px; font-weight:600; }
+.af-badge--warning { background:#fef3c7; color:#92400e; }
+.af-badge--success { background:#dcfce7; color:#166534; }
+.af-badge--danger { background:#fee2e2; color:#991b1b; }
+.af-badge--info { background:#dbeafe; color:#1e40af; }
+.af-badge--muted { background:#f1f5f9; color:#64748b; }
+.af-row-actions { display:flex; gap:6px; }
+.af-empty { text-align:center; padding:40px 20px; color:#94a3b8; font-size:13px; }
+.af-pagination { padding:12px 16px; border-top:1px solid #f1f5f9; }
+</style>
+@endpush
 
 @section('content')
-<div class="ams-page">
+<div class="af-page">
 
-    {{-- Breadcrumb --}}
-    <div class="ams-breadcrumb">
-        <a href="{{ portal_route('amenities.index') }}">Tiện ích chung cư</a>
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
-        <span>{{ $facility->name }}</span>
-    </div>
+    <a href="{{ portal_route('amenities.index') }}" class="af-back">← Danh sách tiện ích</a>
 
-    {{-- Flash --}}
-    @if(session('success'))
-        <div class="ams-alert ams-alert--success">{{ session('success') }}</div>
-    @endif
-    @if(session('error'))
-        <div class="ams-alert ams-alert--error">{{ session('error') }}</div>
-    @endif
+    @if(session('success'))<div class="af-alert af-alert--success">{{ session('success') }}</div>@endif
+    @if(session('error'))<div class="af-alert af-alert--error">{{ session('error') }}</div>@endif
 
-    {{-- Header --}}
-    <div class="ams-header">
-        <div class="ams-header-info">
-            <span class="ams-status-badge ams-status--{{ $facility->status }}">{{ $facility->status_label }}</span>
-            <h1 class="ams-title">{{ $facility->name }}</h1>
+    <div class="af-detail-layout">
+        {{-- LEFT: Info Panel --}}
+        <div class="af-sidebar">
+            <span class="af-sidebar__badge af-sidebar__badge--{{ $facility->status }}">
+                {{ $facility->status=='available'?'Hoạt động':($facility->status=='maintenance'?'Bảo trì':'Đóng cửa') }}
+            </span>
+            <h1 class="af-sidebar__name">{{ $facility->name }}</h1>
             @if($facility->description)
-                <p class="ams-desc">{{ $facility->description }}</p>
+            <p class="af-sidebar__desc">{{ $facility->description }}</p>
             @endif
-            <p class="ams-capacity">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                Sức chứa: <strong>{{ $facility->capacity }} người</strong>
-            </p>
-        </div>
-        <a href="{{ portal_route('amenities.edit', $facility) }}" class="ams-btn ams-btn--outline">
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            Chỉnh sửa
-        </a>
-    </div>
 
-    {{-- Cấu hình tiện ích --}}
-    <div class="ams-config-grid">
-        <div class="ams-config-card">
-            <div class="ams-config-icon" style="background:#eff6ff;color:#2563eb">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </div>
-            <div>
-                <p class="ams-config-label">Giờ hoạt động</p>
-                <p class="ams-config-value">{{ $facility->operating_hours }}</p>
-            </div>
-        </div>
-        <div class="ams-config-card">
-            <div class="ams-config-icon" style="background:#faf5ff;color:#7c3aed">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            </div>
-            <div>
-                <p class="ams-config-label">Thời lượng mỗi lần đặt</p>
-                @php $dur = $facility->slot_duration ?? 60; $durLabel = match((int)$dur){0=>'Cả ngày',30=>'30 phút',60=>'1 tiếng',90=>'1.5 tiếng',120=>'2 tiếng',default=>$dur.' phút'}; @endphp
-                <p class="ams-config-value">{{ $durLabel }}</p>
-            </div>
-        </div>
-        <div class="ams-config-card">
-            <div class="ams-config-icon" style="background:#eff6ff;color:#2563eb">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            </div>
-            <div>
-                <p class="ams-config-label">Kiểu đặt chỗ</p>
-                <p class="ams-config-value">{{ $facility->booking_type_label }}</p>
-            </div>
-        </div>
-        <div class="ams-config-card">
-            <div class="ams-config-icon" style="background:#f0fdf4;color:#16a34a">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            </div>
-            <div>
-                <p class="ams-config-label">Giá</p>
-                <p class="ams-config-value">{{ $facility->price_label }}</p>
-            </div>
-        </div>
-        @if($facility->rules)
-        <div class="ams-config-card ams-config-card--wide">
-            <div class="ams-config-icon" style="background:#fff7ed;color:#ea580c">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            </div>
-            <div style="flex:1">
-                <p class="ams-config-label">Nội quy sử dụng</p>
-                <p class="ams-config-value" style="white-space:pre-line;font-size:0.83rem;font-weight:400;color:#475569">{{ $facility->rules }}</p>
-            </div>
-        </div>
-        @endif
-        @if($facility->open_time && $facility->close_time)
-        <div class="ams-config-card ams-config-card--wide">
-            <div class="ams-config-icon" style="background:#f0f9ff;color:#0284c7">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            </div>
-            <div style="flex:1">
-                <p class="ams-config-label">Các khung giờ có thể đặt</p>
-                <div class="ams-slots-wrap">
-                    @foreach($facility->getTimeSlots() as $slot)
-                        <span class="ams-slot-chip">{{ $slot['label'] }}</span>
-                    @endforeach
-                </div>
-            </div>
-        </div>
-        @endif
-    </div>
+            <ul class="af-sidebar__list">
+                <li><span class="af-sidebar__list-label">Sức chứa</span><span class="af-sidebar__list-value">{{ $facility->capacity }} người</span></li>
+                <li><span class="af-sidebar__list-label">Giờ hoạt động</span><span class="af-sidebar__list-value">{{ $facility->operating_hours ?: '—' }}</span></li>
+                <li><span class="af-sidebar__list-label">Giá</span><span class="af-sidebar__list-value">{{ $facility->price_label ?: 'Miễn phí' }}</span></li>
+                <li><span class="af-sidebar__list-label">Đặt chỗ</span><span class="af-sidebar__list-value">{{ $facility->booking_type_label }}</span></li>
+                <li><span class="af-sidebar__list-label">Thời lượng/lượt</span><span class="af-sidebar__list-value">{{ ($facility->slot_duration ?? 0) > 0 ? $facility->slot_duration.' phút' : '—' }}</span></li>
+                <li><span class="af-sidebar__list-label">Vị trí</span><span class="af-sidebar__list-value">{{ $facility->block?->name ?: '—' }}{{ $facility->floor ? ', '.$facility->floor->name : '' }}</span></li>
+            </ul>
 
-
-    {{-- Thống kê --}}
-    <div class="ams-stats">
-        <div class="ams-stat">
-            <p class="ams-stat-num">{{ $stats['total'] }}</p>
-            <p class="ams-stat-lbl">Tổng lịch đặt</p>
-        </div>
-        <div class="ams-stat ams-stat--yellow">
-            <p class="ams-stat-num">{{ $stats['pending'] }}</p>
-            <p class="ams-stat-lbl">Chờ duyệt</p>
-        </div>
-        <div class="ams-stat ams-stat--green">
-            <p class="ams-stat-num">{{ $stats['approved'] }}</p>
-            <p class="ams-stat-lbl">Đã duyệt</p>
-        </div>
-        <div class="ams-stat ams-stat--blue">
-            <p class="ams-stat-num">{{ $stats['completed'] }}</p>
-            <p class="ams-stat-lbl">Hoàn thành</p>
-        </div>
-    </div>
-
-    {{-- Bảng lịch đặt --}}
-    <div class="ams-card">
-        <div class="ams-card-header">
-            <span>Danh sách lịch đặt</span>
+            <div class="af-sidebar__actions">
+                <a href="{{ portal_route('amenities.edit', $facility) }}" class="af-btn af-btn--edit">Chỉnh sửa</a>
+            </div>
         </div>
 
-        @if($bookings->isEmpty())
-        <div class="ams-empty">
-            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" stroke="#cbd5e1" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            <p>Chưa có lịch đặt nào</p>
-        </div>
-        @else
-        <table class="ams-table">
-            <thead>
-                <tr>
-                    <th>Cư dân</th>
-                    <th>Ngày đặt</th>
-                    <th>Giờ sử dụng</th>
-                    <th>Trạng thái</th>
-                    <th>Đặt lúc</th>
-                    <th style="width:130px"></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($bookings as $booking)
-                <tr>
-                    <td>
-                        <div class="ams-user">
-                            <div class="ams-avatar">{{ mb_substr($booking->user->name ?? 'N', 0, 1) }}</div>
-                            <div>
-                                <p class="ams-user-name">{{ $booking->user->name ?? '—' }}</p>
-                                <p class="ams-user-email">{{ $booking->user->email ?? '' }}</p>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="ams-date">{{ \Carbon\Carbon::parse($booking->booking_date)->format('d/m/Y') }}</span>
-                    </td>
-                    <td>
-                        <span class="ams-time">{{ substr($booking->start_time, 0, 5) }} – {{ substr($booking->end_time, 0, 5) }}</span>
-                    </td>
-                    <td>
-                        <span class="ams-badge ams-badge--{{ $booking->status_class }}">
-                            {{ $booking->status_label }}
-                        </span>
-                    </td>
-                    <td class="ams-created">{{ $booking->created_at->format('d/m H:i') }}</td>
-                    <td>
-                        @if($booking->status === 'pending')
-                        <div class="ams-row-actions">
-                            <form method="POST" action="{{ portal_route('amenities.bookings.approve', $booking) }}">
-                                @csrf
-                                <button type="submit" class="ams-btn ams-btn--xs ams-btn--approve">Duyệt</button>
-                            </form>
-                            <form method="POST" action="{{ portal_route('amenities.bookings.reject', $booking) }}">
-                                @csrf
-                                <button type="submit" class="ams-btn ams-btn--xs ams-btn--reject" onclick="return confirm('Từ chối lịch đặt này?')">Từ chối</button>
-                            </form>
-                        </div>
-                        @else
-                            <span class="ams-no-action">—</span>
-                        @endif
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+        {{-- RIGHT: Bookings --}}
+        <div class="af-main">
+            <div class="af-main__header">
+                <span class="af-main__title">Lịch đặt</span>
+            </div>
 
-        {{-- Pagination --}}
-        @if($bookings->hasPages())
-        <div class="ams-pagination">
-            {{ $bookings->links() }}
+            <div class="af-table-wrap">
+                @if($bookings->isEmpty())
+                <div class="af-empty">Chưa có lịch đặt nào.</div>
+                @else
+                <table class="af-table">
+                    <thead>
+                        <tr>
+                            <th>Cư dân</th>
+                            <th>Ngày</th>
+                            <th>Giờ</th>
+                            <th>Trạng thái</th>
+                            <th>Đặt lúc</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($bookings as $booking)
+                        <tr>
+                            <td>
+                                <div class="af-table-name">{{ $booking->user->name ?? '—' }}</div>
+                                <div class="af-table-sub">{{ $booking->user->phone ?? '' }}</div>
+                            </td>
+                            <td>{{ \Carbon\Carbon::parse($booking->booking_date)->format('d/m/Y') }}</td>
+                            <td><span class="af-table-time">{{ substr($booking->start_time, 0, 5) }}–{{ substr($booking->end_time, 0, 5) }}</span></td>
+                            <td><span class="af-badge af-badge--{{ $booking->status_class }}">{{ $booking->status_label }}</span></td>
+                            <td style="font-size:11px;color:#94a3b8;">{{ $booking->created_at->format('d/m H:i') }}</td>
+                            <td>
+                                @if($booking->status === 'pending')
+                                <div class="af-row-actions">
+                                    <form method="POST" action="{{ portal_route('amenities.bookings.approve', $booking) }}">@csrf<button class="af-btn af-btn--sm af-btn--approve">Duyệt</button></form>
+                                    <form method="POST" action="{{ portal_route('amenities.bookings.reject', $booking) }}" onsubmit="return confirm('Từ chối?')">@csrf<button class="af-btn af-btn--sm af-btn--reject">Từ chối</button></form>
+                                </div>
+                                @endif
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                @if($bookings->hasPages())
+                <div class="af-pagination">{{ $bookings->links() }}</div>
+                @endif
+                @endif
+            </div>
         </div>
-        @endif
-        @endif
     </div>
 </div>
-
-<style>
-.ams-page { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
-
-.ams-breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: #64748b; margin-bottom: 20px; }
-.ams-breadcrumb a { color: #2563eb; text-decoration: none; font-weight: 500; }
-.ams-breadcrumb a:hover { text-decoration: underline; }
-
-.ams-alert { padding: 12px 16px; border-radius: 8px; font-size: 0.875rem; font-weight: 500; margin-bottom: 20px; }
-.ams-alert--success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
-.ams-alert--error   { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
-
-.ams-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
-.ams-title { font-size: 1.6rem; font-weight: 700; color: #0f172a; margin: 6px 0 4px; }
-.ams-desc { font-size: 0.875rem; color: #64748b; margin: 0 0 8px; }
-.ams-capacity { font-size: 0.82rem; color: #475569; display: flex; align-items: center; gap: 5px; margin: 0; }
-.ams-capacity strong { color: #0f172a; }
-
-/* Config grid */
-.ams-config-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
-.ams-config-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; display: flex; align-items: flex-start; gap: 12px; }
-.ams-config-card--wide { grid-column: 1 / -1; }
-.ams-config-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.ams-config-label { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin: 0 0 4px; }
-.ams-config-value { font-size: 0.9rem; font-weight: 700; color: #0f172a; margin: 0; }
-
-/* Slots */
-.ams-slots-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-.ams-slot-chip { background: #eff6ff; color: #2563eb; font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 20px; border: 1px solid #bfdbfe; }
-
-.ams-status-badge { font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
-.ams-status--available   { background: #dcfce7; color: #15803d; }
-.ams-status--maintenance { background: #fef9c3; color: #a16207; }
-.ams-status--closed      { background: #fee2e2; color: #b91c1c; }
-
-/* Stats */
-.ams-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
-.ams-stat { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 18px; text-align: center; }
-.ams-stat--yellow .ams-stat-num { color: #d97706; }
-.ams-stat--green  .ams-stat-num { color: #16a34a; }
-.ams-stat--blue   .ams-stat-num { color: #2563eb; }
-.ams-stat-num { font-size: 2rem; font-weight: 700; color: #0f172a; margin: 0; line-height: 1; }
-.ams-stat-lbl { font-size: 0.78rem; color: #64748b; margin: 4px 0 0; font-weight: 500; }
-
-/* Table card */
-.ams-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; }
-.ams-card-header { padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 0.85rem; font-weight: 600; color: #334155; background: #f8fafc; }
-
-.ams-table { width: 100%; border-collapse: collapse; }
-.ams-table th { text-align: left; padding: 10px 14px; font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #e2e8f0; background: #f8fafc; }
-.ams-table td { padding: 12px 14px; font-size: 0.875rem; color: #1e293b; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-.ams-table tr:last-child td { border-bottom: none; }
-.ams-table tr:hover td { background: #fafbff; }
-
-.ams-user { display: flex; align-items: center; gap: 10px; }
-.ams-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; flex-shrink: 0; }
-.ams-user-name { font-weight: 600; color: #0f172a; margin: 0; font-size: 0.875rem; }
-.ams-user-email { font-size: 0.75rem; color: #94a3b8; margin: 1px 0 0; }
-
-.ams-date { font-weight: 600; color: #0f172a; }
-.ams-time { font-size: 0.82rem; color: #475569; background: #f1f5f9; padding: 3px 8px; border-radius: 5px; font-family: monospace; }
-.ams-created { font-size: 0.78rem; color: #94a3b8; }
-
-.ams-badge { font-size: 0.72rem; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
-.ams-badge--warning   { background: #fef9c3; color: #a16207; }
-.ams-badge--success   { background: #dcfce7; color: #15803d; }
-.ams-badge--danger    { background: #fee2e2; color: #b91c1c; }
-.ams-badge--secondary { background: #f1f5f9; color: #64748b; }
-.ams-badge--info      { background: #e0f2fe; color: #0369a1; }
-
-.ams-row-actions { display: flex; gap: 5px; }
-.ams-no-action { color: #cbd5e1; font-size: 0.85rem; }
-
-.ams-btn { display: inline-flex; align-items: center; gap: 5px; padding: 8px 14px; border-radius: 7px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none; text-decoration: none; transition: all 0.15s; }
-.ams-btn--outline { background: #fff; color: #475569; border: 1px solid #e2e8f0; }
-.ams-btn--outline:hover { background: #f8fafc; }
-.ams-btn--xs { padding: 4px 10px; font-size: 0.75rem; }
-.ams-btn--approve { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-.ams-btn--approve:hover { background: #bbf7d0; }
-.ams-btn--reject  { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
-.ams-btn--reject:hover  { background: #fecaca; }
-
-.ams-pagination { padding: 14px 18px; border-top: 1px solid #f1f5f9; }
-.ams-empty { text-align: center; padding: 48px; color: #94a3b8; }
-.ams-empty p { margin-top: 12px; font-size: 0.9rem; }
-
-@media (max-width: 768px) {
-    .ams-stats { grid-template-columns: repeat(2, 1fr); }
-}
-</style>
 @endsection

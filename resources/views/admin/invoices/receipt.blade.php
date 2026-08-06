@@ -251,12 +251,12 @@
                 <span class="info-val">{{ $payment->invoice->apartment->owner_name ?? 'Cư dân căn hộ' }}</span>
                 <span class="info-dots"></span>
             </div>
-            @if($payment->payer_name && $payment->payer_name !== ($payment->invoice->apartment->owner_name ?? ''))
-            <div class="info-line">
-                <span class="info-label">Người nộp tiền:</span>
-                <span class="info-val">{{ $payment->payer_name }}</span>
-                <span class="info-dots"></span>
-            </div>
+            @if($payment->payer_name)
+                <div class="info-line">
+                    <span class="info-label">Người nộp tiền:</span>
+                    <span class="info-val">{{ $payment->payer_name }}</span>
+                    <span class="info-dots"></span>
+                </div>
             @endif
             <div class="info-line">
                 <span class="info-label">Nội dung thanh toán:</span>
@@ -293,9 +293,10 @@
 
         <div class="signatures">
             <div class="sig-block">
-                <div class="sig-title">Người nộp tiền</div>
-                <div style="font-size: 11px; margin-top:-55px; font-style:italic; color:#555; margin-bottom: 50px;">(Ký và ghi rõ họ tên)</div>
-                <div class="sig-name">{{ $payment->payer_name ?: ($payment->invoice->apartment->owner_name ?? '—') }}</div>
+                <div class="sig-title">Người Nộp Tiền</div>
+                <div class="sig-sub">(Ký, ghi rõ họ tên)</div>
+                <div class="sig-space"></div>
+                <div class="sig-name">{{ $payment->payer_name ?: 'Người nộp chưa xác định' }}</div>
             </div>
             <div class="sig-block">
                 <div class="sig-title">Người thu tiền / Thủ quỹ</div>

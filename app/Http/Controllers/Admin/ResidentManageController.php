@@ -113,4 +113,40 @@ class ResidentManageController extends Controller
 
         return back()->with('success', 'Trạng thái cư trú được cập nhật thành công.');
     }
+
+    /**
+     * Xem chi tiết hồ sơ cư dân
+     */
+    public function show($id)
+    {
+        $user = User::with(['apartment.floor.block'])->findOrFail($id);
+        $apartmentId = $user->apartment_id;
+        
+        $residentInfo = null;
+        $familyMembers = [];
+        $vehicles = [];
+        $invoices = [];
+
+        if ($apartmentId) {
+            $residentInfo = Resident::where('user_id', $user->id)
+                ->where('apartment_id', $apartmentId)
+                ->first();
+
+            $familyMembers = Resident::with('user')
+                ->where('apartment_id', $apartmentId)
+                ->where('user_id', '!=', $user->id)
+                ->get();
+
+            $vehicles = \App\Models\Vehicle::where('apartment_id', $apartmentId)
+                ->where('status', '!=', 'deleted')
+                ->get();
+
+            $invoices = \App\Models\Invoice::where('apartment_id', $apartmentId)
+                ->orderBy('created_at', 'desc')
+                ->take(3)
+                ->get();
+        }
+
+        return view('admin.residents.show', compact('user', 'residentInfo', 'familyMembers', 'vehicles', 'invoices'));
+    }
 }

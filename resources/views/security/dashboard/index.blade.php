@@ -100,26 +100,6 @@
                 <span class="sec-stat__label">Xe ra hôm nay</span>
             </div>
         </div>
-
-        <div class="sec-stat">
-            <div class="sec-stat__icon sec-stat__icon--purple">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            </div>
-            <div class="sec-stat__body">
-                <span class="sec-stat__num">{{ $visitorsInside }}</span>
-                <span class="sec-stat__label">Khách đang ở</span>
-            </div>
-        </div>
-
-        <div class="sec-stat">
-            <div class="sec-stat__icon sec-stat__icon--rose">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            </div>
-            <div class="sec-stat__body">
-                <span class="sec-stat__num">{{ $todayVisitors }}</span>
-                <span class="sec-stat__label">Khách hôm nay</span>
-            </div>
-        </div>
     </div>
 
     {{-- Quick Actions --}}
@@ -141,16 +121,6 @@
             <div>
                 <div class="sec-action__text">Quét xe ra</div>
                 <div class="sec-action__desc">Scan QR cho phương tiện ra khỏi bãi</div>
-            </div>
-        </a>
-
-        <a href="{{ route('security.walk-in.index') }}" class="sec-action">
-            <div class="sec-action__icon sec-action__icon--visitor">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-            </div>
-            <div>
-                <div class="sec-action__text">Đăng ký khách</div>
-                <div class="sec-action__desc">Đăng ký khách vãng lai tại cổng</div>
             </div>
         </a>
     </div>

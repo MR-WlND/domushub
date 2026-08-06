@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    RESIDENT VEHICLES â€” Clean Professional Design
    ============================================================ */
 
@@ -123,7 +123,7 @@ select.rv-input {
 .rv-info-card__title { margin: 0 0 12px; font-size: 0.92rem; font-weight: 700; color: #1e3a5f; display: flex; align-items: center; gap: 8px; }
 .rv-info-card__list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
 .rv-info-card__list li { font-size: 0.82rem; color: #334155; display: flex; align-items: flex-start; gap: 6px; line-height: 1.5; }
-.rv-info-card__list li::before { content: 'âœ“'; color: #2563eb; font-weight: 700; flex-shrink: 0; }
+.rv-info-card__list li::before { content: '\2713'; color: #2563eb; font-weight: 700; flex-shrink: 0; }
 .rv-info-card__note { margin: 12px 0 0; font-size: 0.72rem; color: #64748b; font-style: italic; }
 
 .rv-steps-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 22px; }

@@ -34,6 +34,24 @@
 
     @stack('scripts')
     <script>
+        // Preserve sidebar scroll position
+        document.addEventListener("DOMContentLoaded", function() {
+            const sidebarNav = document.querySelector('.dashboard-nav');
+            if (sidebarNav) {
+                const scrollPos = sessionStorage.getItem('sidebar-scroll');
+                if (scrollPos) {
+                    sidebarNav.scrollTop = parseInt(scrollPos, 10);
+                }
+            }
+        });
+
+        window.addEventListener('beforeunload', function() {
+            const sidebarNav = document.querySelector('.dashboard-nav');
+            if (sidebarNav) {
+                sessionStorage.setItem('sidebar-scroll', sidebarNav.scrollTop);
+            }
+        });
+
         function openSidebar() {
             document.getElementById('dashboardSidebar').classList.add('sidebar--open');
             document.getElementById('sidebarOverlay').classList.add('sidebar-overlay--visible');

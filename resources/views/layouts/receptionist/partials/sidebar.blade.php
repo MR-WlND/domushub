@@ -52,6 +52,32 @@
                 </svg>
                 <span>Quét QR Tiện ích</span>
             </a>
+
+        </div>
+
+        <div class="nav-section">
+            <span class="nav-section__label">QUẢN LÝ KHÁCH</span>
+
+            <a href="{{ route('receptionist.walk-in.index') }}" class="dashboard-nav__item {{ request()->routeIs('receptionist.walk-in*') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <line x1="19" y1="8" x2="19" y2="14"></line>
+                    <line x1="22" y1="11" x2="16" y2="11"></line>
+                </svg>
+                <span>Đăng ký khách</span>
+            </a>
+
+            <a href="{{ route('receptionist.visitor-log.index') }}" class="dashboard-nav__item {{ request()->routeIs('receptionist.visitor-log*') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                </svg>
+                <span>Lịch sử ra vào</span>
+            </a>
         </div>
     </nav>
 

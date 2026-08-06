@@ -53,7 +53,7 @@
                     {{-- Right column - Settings --}}
                     <div>
                         <div class="form-group">
-                            <label for="category">Phân loại thông báo <span style="color: red;">*</span></label>
+                            <label for="category">Phân loại thông báo</label>
                             <select name="category" id="category" class="form-control" required>
                                 <option value="general" @selected(old('category') === 'general')>Tin tức chung</option>
                                 <option value="maintenance" @selected(old('category') === 'maintenance')>Bảo trì kỹ thuật (điện, nước, thang máy...)</option>
@@ -63,7 +63,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="status">Trạng thái phát hành <span style="color: red;">*</span></label>
+                            <label for="status">Trạng thái phát hành</label>
                             <select name="status" id="status" class="form-control" required>
                                 <option value="published" @selected(old('status', 'published') === 'published')>Công bố ngay lập tức</option>
                                 <option value="draft" @selected(old('status') === 'draft')>Lưu bản nháp</option>

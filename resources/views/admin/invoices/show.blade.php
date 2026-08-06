@@ -63,7 +63,7 @@
         <div class="detail-card__meta">
             <div class="meta-item">
                 <span class="meta-label">Kỳ thanh toán</span>
-                <span class="meta-val">Tháng {{ str_pad($invoice->billing_month->month ?? $invoice->billing_month, 2, '0', STR_PAD_LEFT) }}/{{ $invoice->billing_year }}</span>
+                <span class="meta-val">Tháng {{ str_pad($invoice->getRawOriginal('billing_month') ?: ($invoice->billing_month->month ?? 1), 2, '0', STR_PAD_LEFT) }}/{{ $invoice->billing_year }}</span>
             </div>
             <div class="meta-item">
                 <span class="meta-label">Ngày phát hành</span>
@@ -102,10 +102,9 @@
                                 @if(in_array(optional($detail->servicePrice)->type, ['water']))
                                     @php
                                         $meter = \App\Models\UtilityMeter::where('apartment_id', $invoice->apartment_id)
-                                            ->where('type', $detail->servicePrice->type)
-                                            ->where('record_month', $invoice->billing_month->month ?? $invoice->billing_month)
-                                            ->where('record_year', $invoice->billing_year)
-                                            ->first();
+                                                                ->where('record_month', $invoice->getRawOriginal('billing_month'))
+                                             ->where('record_year', $invoice->billing_year)
+                                             ->first();
                                     @endphp
                                     @if($meter)
                                         <div class="item-meter-info" style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">
@@ -137,6 +136,13 @@
 
         {{-- Total Row --}}
         @php
+            $currentAmount = $invoice->current_amount > 0 
+                ? $invoice->current_amount 
+                : ($invoice->details->sum('amount') > 0 ? $invoice->details->sum('amount') : $invoice->total_amount);
+                
+            $alreadyPaid = (float) $invoice->paid_amount;
+            $remainingThisBill = max(0, $currentAmount - $alreadyPaid);
+            
             $realPreviousDebt = \App\Models\Invoice::where('apartment_id', $invoice->apartment_id)
                 ->where('status', '!=', 'cancelled')
                 ->where(function ($q) use ($invoice) {
@@ -148,23 +154,30 @@
                 })->get()->sum(function($inv) {
                     return max(0, $inv->total_amount - $inv->paid_amount);
                 });
-            $displayTotalDue = $invoice->current_amount + $realPreviousDebt;
         @endphp
         <div class="detail-card__summary">
-            @if($realPreviousDebt > 0)
             <div class="summary-item">
-                <span class="summary-label">Nợ kỳ trước</span>
-                <span class="summary-val">{{ number_format($realPreviousDebt, 0, ',', '.') }} đ</span>
+                <span class="summary-label">Tổng hóa đơn kỳ này</span>
+                <span class="summary-val">{{ number_format($currentAmount, 0, ',', '.') }} đ</span>
+            </div>
+            @if($alreadyPaid > 0)
+            <div class="summary-item" style="color: #16a34a;">
+                <span class="summary-label">Đã thanh toán</span>
+                <span class="summary-val">- {{ number_format($alreadyPaid, 0, ',', '.') }} đ</span>
             </div>
             @endif
-            <div class="summary-item">
-                <span class="summary-label">Phát sinh kỳ này</span>
-                <span class="summary-val">{{ number_format($invoice->current_amount, 0, ',', '.') }} đ</span>
+            <div class="summary-item total-due" style="border-top: 1px dashed #cbd5e1; margin-top: 6px; padding-top: 8px;">
+                <span class="summary-label" style="font-weight: 700;">Còn phải thanh toán</span>
+                <span class="summary-val" style="color: {{ $remainingThisBill > 0 ? '#dc2626' : '#16a34a' }}; font-weight: 800; font-size: 1.1rem;">
+                    {{ number_format($remainingThisBill, 0, ',', '.') }} đ
+                </span>
             </div>
-            <div class="summary-item total-due">
-                <span class="summary-label">Tổng phải thanh toán</span>
-                <span class="summary-val">{{ number_format($displayTotalDue, 0, ',', '.') }} đ</span>
+            @if($realPreviousDebt > 0)
+            <div class="summary-item" style="margin-top:8px; padding-top:8px; border-top:1px solid #f1f5f9; color:#64748b; font-size:0.85rem;">
+                <span class="summary-label">Nợ đọng các kỳ trước</span>
+                <span class="summary-val" style="color:#d97706; font-weight:600;">{{ number_format($realPreviousDebt, 0, ',', '.') }} đ</span>
             </div>
+            @endif
         </div>
 
         {{-- Lịch sử thanh toán --}}
@@ -238,7 +251,7 @@
                     </div>
                     <div class="payment-info-item">
                         <span class="info-label">Người nộp (Cư dân):</span>
-                        <span class="info-val">{{ $pm->payer_name ?: ($invoice->apartment->owner_name ?? 'Cư dân căn hộ') }}</span>
+                        <span class="info-val">{{ $pm->payer_name ?: 'Người nộp chưa xác định' }}</span>
                     </div>
                     @if($pm->recorder)
                     <div class="payment-info-item">
@@ -302,155 +315,7 @@
             @endforelse
         </div>
 
-        {{-- Form ghi nhận thanh toán thủ công --}}
-        @if($invoice->status !== 'paid' && $invoice->status !== 'cancelled')
-        <div class="detail-card__pay-action" style="flex-direction: column; align-items: stretch; background-color: #ffffff; border-top: 1px solid var(--color-outline-soft); padding: 32px;">
-            <h3 class="section-title" style="margin-bottom: 8px; font-size: 1.15rem; color: var(--color-text);">
-                Ghi nhận thanh toán thủ công
-            </h3>
-            <p style="font-size: 0.9rem; color: var(--color-text-secondary); margin-bottom: 24px;">
-                Ghi nhận khi cư dân nộp tiền mặt hoặc chuyển khoản.
-                @if($invoice->status === 'partial_paid')
-                Còn thiếu <strong style="color:var(--color-error);">{{ number_format($invoice->remaining_amount) }}đ</strong>.
-                @endif
-            </p>
-
-            <form method="POST" action="{{ portal_route('invoices.mark-paid', $invoice) }}" enctype="multipart/form-data" onsubmit="return confirmManualPayment(event);">
-                @csrf
-                @method('PATCH')
-                <div class="payment-form-grid" style="gap: 20px; margin-bottom: 20px;">
-                    {{-- Số tiền --}}
-                    <div class="form-group">
-                        <label class="form-label" for="amount">Số tiền thu</label>
-                        <input
-                            type="number"
-                            name="amount"
-                            id="amount"
-                            class="form-input"
-                            style="padding: 12px 16px; font-size: 0.95rem; border-color: #cbd5e1; border-radius: 8px;"
-                            value="{{ old('amount', $invoice->remaining_amount ?: $invoice->total_amount) }}"
-                            min="1"
-                            max="{{ $invoice->remaining_amount ?: $invoice->total_amount }}"
-                            step="1"
-                            required>
-                        @error('amount')
-                        <span class="form-error">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    {{-- Phương thức --}}
-                    <div class="form-group">
-                        <label class="form-label" for="payment_method">Phương thức</label>
-                        <select name="payment_method" id="payment_method" class="form-input" style="padding: 12px 16px; font-size: 0.95rem; border-color: #cbd5e1; border-radius: 8px; background-color: #fff;">
-                            <option value="bank_transfer">Chuyển khoản ngân hàng</option>
-                            <option value="cash">Tiền mặt</option>
-                            <option value="momo">MoMo</option>
-                            <option value="vnpay">VNPay</option>
-                            <option value="other">Khác</option>
-                        </select>
-                    </div>
-
-                    {{-- Người nộp tiền --}}
-                    <div class="form-group">
-                        <label class="form-label" for="payer_name">Người nộp tiền <span style="font-weight:400;text-transform:none;color:#94a3b8;">(tuỳ chọn)</span></label>
-                        <input
-                            type="text"
-                            name="payer_name"
-                            id="payer_name"
-                            class="form-input"
-                            style="padding: 12px 16px; font-size: 0.95rem; border-color: #cbd5e1; border-radius: 8px;"
-                            placeholder="Tên người thanh toán..."
-                            value="{{ old('payer_name', $invoice->apartment->owner_name ?? '') }}">
-                        @error('payer_name')
-                        <span class="form-error">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    {{-- ID giao dịch --}}
-                    <div class="form-group">
-                        <label class="form-label" for="transaction_code">ID giao dịch ngân hàng <span style="font-weight:400;text-transform:none;color:#94a3b8;">(nếu chuyển khoản)</span></label>
-                        <input
-                            type="text"
-                            name="transaction_code"
-                            id="transaction_code"
-                            class="form-input"
-                            style="padding: 12px 16px; font-size: 0.95rem; border-color: #cbd5e1; border-radius: 8px;"
-                            placeholder="Mã giao dịch đối soát..."
-                            value="{{ old('transaction_code') }}">
-                        @error('transaction_code')
-                        <span class="form-error">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    {{-- Ghi chú --}}
-                    <div class="form-group" style="grid-column: 1 / -1;">
-                        <label class="form-label" for="note">Ghi chú <span style="font-weight:400;text-transform:none;color:#94a3b8;">(tuỳ chọn)</span></label>
-                        <input
-                            type="text"
-                            name="note"
-                            id="note"
-                            class="form-input"
-                            style="padding: 12px 16px; font-size: 0.95rem; border-color: #cbd5e1; border-radius: 8px;"
-                            placeholder="VD: Chuyển khoản ngày 15/06..."
-                            value="{{ old('note') }}">
-                        @error('note')
-                        <span class="form-error">{{ $message }}</span>
-                        @enderror
-                    </div>
-                </div>
-
-                <div style="margin-bottom: 24px;">
-                    {{-- Ảnh hóa đơn --}}
-                    <div class="form-group">
-                        <label class="form-label" for="proof_image">Minh chứng thanh toán <span style="font-weight:400;text-transform:none;color:#94a3b8;">(Ảnh chụp bill / Biên lai)</span></label>
-                        <div class="custom-file-upload-box" style="border: 1px dashed #cbd5e1; border-radius: 8px; padding: 12px 16px; background: #f8fafc; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; transition: all 0.2s;">
-                            <span id="file_name_label_proof_image" style="color: #64748b; font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">Chưa chọn tệp nào</span>
-                            <div style="display: flex; gap: 8px; flex-shrink: 0;">
-                                <button type="button" onclick="document.getElementById('proof_image').click()" style="background: #ffffff; color: #334155; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.2s;">
-                                    Chọn tệp
-                                </button>
-                                <button type="button" onclick="startCamera('proof_image')" style="background: #ffffff; color: #0284c7; border: 1px solid #bae6fd; padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.2s;">
-                                    Mở Camera
-                                </button>
-                            </div>
-                        </div>
-                        <input
-                            type="file"
-                            name="proof_image"
-                            id="proof_image"
-                            class="form-input"
-                            accept="image/*"
-                            capture="environment"
-                            style="display: none;"
-                            onchange="updateFileNameLabel(this, 'proof_image')">
-                        @error('proof_image')
-                        <span class="form-error">{{ $message }}</span>
-                        @enderror
-
-                        <div class="camera-wrapper" style="margin-top: 12px;">
-                            <div id="camera_container_proof_image" style="display:none; margin-top:12px; position:relative; background:#000; border-radius:8px; overflow:hidden;">
-                                <video id="video_proof_image" autoplay playsinline style="width:100%; max-height:250px; object-fit:cover; display:block;"></video>
-                                <div style="position:absolute; bottom:12px; left:50%; transform:translateX(-50%); display:flex; gap:12px; z-index:10;">
-                                    <button type="button" onclick="captureSnapshot('proof_image')" style="background:#10b981; color:#fff; border:none; padding:8px 20px; border-radius:24px; font-weight:500; cursor:pointer; font-size:0.9rem; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">Chụp</button>
-                                    <button type="button" onclick="stopCamera('proof_image')" style="background:#ef4444; color:#fff; border:none; padding:8px 20px; border-radius:24px; font-weight:500; cursor:pointer; font-size:0.9rem; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">Đóng</button>
-                                </div>
-                            </div>
-                            <div id="preview_container_proof_image" style="display:none; margin-top:12px; position:relative; max-width: 200px;">
-                                <img id="img_preview_proof_image" src="" style="width:100%; border-radius:8px; border:1px solid #cbd5e1; display:block;">
-                                <button type="button" onclick="removeCapturedPhoto('proof_image')" style="position:absolute; top:-8px; right:-8px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:bold; cursor:pointer; padding:0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">×</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="text-align: right; padding-top: 16px;">
-                    <button type="submit" class="btn-pay-now" style="padding: 12px 28px; font-size: 1rem; border-radius: 8px; background-color: var(--color-primary); color: #fff;">
-                        Xác nhận thanh toán
-                    </button>
-                </div>
-            </form>
-        </div>
-        @endif
+        {{-- Trang chi tiết hóa đơn (Chế độ chỉ xem chi tiết) --}}
     </div>
 </div>
 
@@ -1058,7 +923,7 @@
     function confirmDetailPayment(event) {
         const methodSelect = document.getElementById('modal_detail_payment_method');
         const methodVal = methodSelect.options[methodSelect.selectedIndex].text;
-        const payerVal = document.getElementById('modal_detail_payer_name').value || '{{ $invoice->apartment->owner_name ?? 'Cư dân' }}';
+        const payerVal = document.getElementById('modal_detail_payer_name').value || 'Người nộp chưa xác định';
         
         const formattedAmount = Number(currentDetailAmount).toLocaleString('vi-VN') + ' đ';
 
