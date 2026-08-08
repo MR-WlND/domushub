@@ -33,7 +33,6 @@
                     <select name="type" required onchange="toggleAddVehicleType(this)">
                         <option value="">-- Chọn loại --</option>
                         <option value="water"       {{ old('type')=='water'?'selected':'' }}>Nước</option>
-                        <option value="management_fee" {{ old('type')=='management_fee'?'selected':'' }}>Phí quản lý</option>
                         <option value="parking_fee" {{ old('type')=='parking_fee'?'selected':'' }}>Phí quản lý xe</option>
                         <option value="internet"    {{ old('type')=='internet'?'selected':'' }}>Internet</option>
                         <option value="service"     {{ old('type')=='service'?'selected':'' }}>Dịch vụ khác</option>
@@ -48,7 +47,6 @@
                         <option value="car" {{ old('vehicle_type')=='car'?'selected':'' }}>Ô tô</option>
                         <option value="motorbike" {{ old('vehicle_type')=='motorbike'?'selected':'' }}>Xe máy</option>
                         <option value="electric_bike" {{ old('vehicle_type')=='electric_bike'?'selected':'' }}>Xe điện</option>
-                        <option value="bicycle" {{ old('vehicle_type')=='bicycle'?'selected':'' }}>Xe đạp</option>
                     </select>
                     @error('vehicle_type')<span class="sp-error">{{ $message }}</span>@enderror
                 </div>
@@ -79,7 +77,6 @@
         @php
             $typeLabels = [
                 'water'          => 'Nước',
-                'management_fee' => 'Quản lý',
                 'parking_fee'    => 'Phí gửi xe',
                 'internet'       => 'Internet',
                 'service'        => 'Dịch vụ',
@@ -89,7 +86,6 @@
                 'car' => 'Ô tô',
                 'motorbike' => 'Xe máy',
                 'electric_bike' => 'Xe điện',
-                'bicycle' => 'Xe đạp',
             ];
             $grouped = $servicePrices->groupBy('type');
         @endphp
@@ -159,7 +155,6 @@
                                     <label>Loại dịch vụ</label>
                                     <select name="type" required onchange="toggleEditVehicleType(this, {{ $sp->id }})">
                                         <option value="water"       {{ $sp->type=='water'?'selected':'' }}>Nước</option>
-                                        <option value="management_fee" {{ $sp->type=='management_fee'?'selected':'' }}>Phí quản lý</option>
                                         <option value="parking_fee" {{ $sp->type=='parking_fee'?'selected':'' }}>Phí quản lý xe</option>
                                         <option value="internet"    {{ $sp->type=='internet'?'selected':'' }}>Internet</option>
                                         <option value="service"     {{ $sp->type=='service'?'selected':'' }}>Dịch vụ khác</option>
@@ -173,7 +168,6 @@
                                         <option value="car" {{ $sp->vehicle_type=='car'?'selected':'' }}>Ô tô</option>
                                         <option value="motorbike" {{ $sp->vehicle_type=='motorbike'?'selected':'' }}>Xe máy</option>
                                         <option value="electric_bike" {{ $sp->vehicle_type=='electric_bike'?'selected':'' }}>Xe điện</option>
-                                        <option value="bicycle" {{ $sp->vehicle_type=='bicycle'?'selected':'' }}>Xe đạp</option>
                                     </select>
                                 </div>
                                 <div class="sp-field">

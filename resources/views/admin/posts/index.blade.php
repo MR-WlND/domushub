@@ -7,6 +7,106 @@
 
 @push('styles')
     @vite(['resources/css/pages/admin/posts/index.css'])
+    <style>
+        /* Generic Modal Styles */
+        .announcement-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 23, 42, 0.6);
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.2s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .announcement-modal-content {
+            background-color: #fff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+            transform: scale(0.95);
+            animation: scaleIn 0.2s ease-out forwards;
+        }
+        @keyframes scaleIn { to { transform: scale(1); } }
+        .announcement-modal-header {
+            padding: 32px 24px 16px;
+            text-align: center;
+        }
+        .modal-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 28px;
+        }
+        .modal-icon.warning {
+            background-color: #fef2f2;
+            color: #ef4444;
+        }
+        .announcement-modal-header h3 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .announcement-modal-body {
+            padding: 0 32px 24px;
+            text-align: center;
+        }
+        .announcement-modal-body p {
+            margin: 0;
+            font-size: 15px;
+            color: #475569;
+            line-height: 1.6;
+        }
+        .announcement-modal-footer {
+            padding: 20px 24px;
+            background-color: #f8fafc;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            border-top: 1px solid #e2e8f0;
+        }
+        .announcement-modal-footer button {
+            flex: 1;
+            justify-content: center;
+            font-size: 14px;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .posts-button--danger {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            transition: all 0.2s ease;
+        }
+        .posts-button--danger:hover {
+            background-color: #dc2626;
+            box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3);
+            transform: translateY(-1px);
+        }
+        .posts-button--secondary {
+            background-color: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            transition: all 0.2s ease;
+        }
+        .posts-button--secondary:hover {
+            background-color: #e2e8f0;
+        }
+    </style>
 @endpush
 
 @php
@@ -94,173 +194,177 @@
                 </div>
             </form>
 
-            {{-- BẢNG DANH SÁCH BÀI VIẾT --}}
-            <div class="posts-table-card">
-                <div class="posts-table-wrap">
-                    <table class="posts-table">
-                        <thead>
-                            <tr>
-                                <th>Bài viết</th>
-                                <th>Phân loại</th>
-                                <th>Trạng thái</th>
-                                <th>Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($posts as $post)
-                                <tr>
-                                    <td>
-                                        <div class="post-details">
-                                            <a href="javascript:void(0)" onclick="openAdminPostModal({{ $post->id }})" class="post-title-link" title="Bấm để xem chi tiết bài đăng và danh sách báo cáo vi phạm">
-                                                {{ $post->title }}
-                                            </a>
-                                            @if($post->reports_count > 0)
-                                                <span style="color: #dc2626; font-size: 0.725rem; font-weight: 700; background: #fee2e2; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.25rem; margin-left: 0.5rem;" title="Bài viết bị cư dân báo cáo vi phạm">
-                                                    <i class="fa-solid fa-circle-exclamation"></i> {{ $post->reports_count }} báo cáo
-                                                </span>
-                                            @endif
-                                            <p class="post-excerpt">{{ Str::limit($post->content, 120, '...') }}</p>
-                                            <span class="post-author">
-                                                Đăng bởi: <strong>{{ $post->user->name ?? 'Không xác định' }}</strong> 
-                                                @if($post->user && $post->user->apartment)
-                                                    (Căn: {{ $post->user->apartment->apartment_number }})
-                                                @endif
-                                                • {{ $post->created_at->format('H:i d/m/Y') }}
-                                            </span>
-                                            
-                                            @if($post->user && $post->user->role === 'resident')
-                                                <div class="ban-controls" style="display: flex; gap: 0.5rem; margin-top: 0.4rem; flex-wrap: wrap;">
-                                                    {{-- Form khóa/mở đăng bài --}}
-                                                    <form action="{{ portal_route('users.ban-posting', $post->user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
-                                                        @csrf
-                                                        <div class="ban-select-wrapper">
-                                                            <i class="fa-regular fa-lock"></i>
-                                                            <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" class="ban-select" title="Khóa quyền đăng bài viết">
-                                                                <option value="" disabled selected>Đăng bài: {{ $post->user->isBannedPosting() ? 'Bị khóa' : 'Mở' }}</option>
-                                                                @if($post->user->isBannedPosting())
-                                                                    <option value="unban">Mở khóa đăng bài</option>
-                                                                @else
-                                                                    <option value="1">Khóa đăng bài 1 ngày</option>
-                                                                    <option value="3">Khóa đăng bài 3 ngày</option>
-                                                                    <option value="7">Khóa đăng bài 7 ngày</option>
-                                                                    <option value="30">Khóa đăng bài 30 ngày</option>
-                                                                    <option value="permanent">Khóa đăng bài vĩnh viễn</option>
-                                                                @endif
-                                                            </select>
-                                                        </div>
-                                                    </form>
-
-                                                    {{-- Form khóa/mở bình luận --}}
-                                                    <form action="{{ portal_route('users.ban-commenting', $post->user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
-                                                        @csrf
-                                                        <div class="ban-select-wrapper">
-                                                            <i class="fa-regular fa-comment"></i>
-                                                            <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" class="ban-select" title="Khóa quyền bình luận">
-                                                                <option value="" disabled selected>Bình luận: {{ $post->user->isBannedCommenting() ? 'Bị khóa' : 'Mở' }}</option>
-                                                                @if($post->user->isBannedCommenting())
-                                                                    <option value="unban">Mở khóa bình luận</option>
-                                                                    @else
-                                                                    <option value="1">Khóa bình luận 1 ngày</option>
-                                                                    <option value="3">Khóa bình luận 3 ngày</option>
-                                                                    <option value="7">Khóa bình luận 7 ngày</option>
-                                                                    <option value="30">Khóa bình luận 30 ngày</option>
-                                                                    <option value="permanent">Khóa bình luận vĩnh viễn</option>
-                                                                @endif
-                                                            </select>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        @if ($post->price !== null)
-                                            <span class="post-type-badge post-type-badge--marketplace">Thanh lý</span>
-                                            <span class="post-price-tag">{{ number_format($post->price, 0, ',', '.') }}đ</span>
-                                        @else
-                                            <span class="post-type-badge post-type-badge--general">Chia sẻ</span>
+            {{-- DANH SÁCH BÀI VIẾT CƯ DÂN --}}
+            <div class="posts-cards-list">
+                @forelse ($posts as $post)
+                    <div class="post-card">
+                        {{-- Header của Card --}}
+                        <div class="post-card__header">
+                            <div class="post-card__author-info">
+                                @if($post->user && $post->user->avatar)
+                                    <img src="/storage/{{ $post->user->avatar }}" alt="Avatar" class="post-card__avatar">
+                                @else
+                                    <div class="post-card__avatar-fallback">
+                                        {{ mb_substr($post->user->name ?? '?', 0, 1) }}
+                                    </div>
+                                @endif
+                                <div class="post-card__author-details">
+                                    <span class="post-card__author-name">{{ $post->user->name ?? 'Không xác định' }}</span>
+                                    <span class="post-card__author-meta">
+                                        @if($post->user && $post->user->apartment)
+                                            Căn: <strong>{{ $post->user->apartment->apartment_number }}</strong>
                                         @endif
-                                    </td>
-                                    <td>
-                                        @if($post->trashed())
-                                            <span class="status-pill status-pill--hidden" style="background-color: #fee2e2; color: #991b1b;">
-                                                <span class="status-dot" style="background-color: #991b1b;"></span>
-                                                Đã bị xóa
-                                            </span>
-                                        @else
-                                            <span class="status-pill status-pill--{{ $post->status }}">
-                                                <span class="status-dot"></span>
-                                                {{ $statusLabels[$post->status] ?? $post->status }}
-                                            </span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <div class="admin-actions">
-                                            @if($post->trashed())
-                                                {{-- Nút Khôi phục bài viết --}}
-                                                <form action="{{ portal_route('posts.restore', $post->id) }}" method="POST" style="display: inline;">
-                                                    @csrf
-                                                    <button type="submit" class="admin-action-btn admin-action-btn--toggle admin-action-btn--blue">
-                                                        <i class="fa-solid fa-rotate-left"></i> Khôi phục bài viết
-                                                    </button>
-                                                </form>
-                                            @else
-                                                {{-- Nút Ẩn/Hiện bài viết --}}
-                                                <form action="{{ portal_route('posts.toggle-status', $post->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn thay đổi trạng thái hiển thị của bài đăng này?')">
-                                                    @csrf
-                                                    @if ($post->status === 'published')
-                                                        <button type="submit" class="admin-action-btn admin-action-btn--toggle">
-                                                            <i class="fa-solid fa-eye-slash"></i> Ẩn bài viết
-                                                        </button>
-                                                    @else
-                                                        <button type="submit" class="admin-action-btn admin-action-btn--toggle admin-action-btn--blue">
-                                                            <i class="fa-solid fa-eye"></i> Hiện bài viết
-                                                        </button>
-                                                    @endif
-                                                </form>
+                                        • <i class="fa-regular fa-clock"></i> {{ $post->created_at->format('H:i d/m/Y') }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="post-card__badges">
+                                @if ($post->price !== null)
+                                    <span class="post-type-badge post-type-badge--marketplace">Thanh lý</span>
+                                    <span class="post-price-tag">{{ number_format($post->price, 0, ',', '.') }}đ</span>
+                                @else
+                                    <span class="post-type-badge post-type-badge--general">Chia sẻ</span>
+                                @endif
 
-                                                {{-- Nút Bỏ qua báo cáo (chỉ hiện khi có lượt báo cáo) --}}
-                                                @if($post->reports_count > 0)
-                                                    <form action="{{ portal_route('posts.dismiss-reports', $post->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn bỏ qua và gỡ bỏ toàn bộ lượt báo cáo của bài viết này?')">
-                                                        @csrf
-                                                        <button type="submit" class="admin-action-btn admin-action-btn--dismiss">
-                                                            <i class="fa-solid fa-shield-halved"></i> Bỏ qua báo cáo
-                                                        </button>
-                                                    </form>
+                                @if($post->trashed())
+                                    <span class="status-pill status-pill--hidden" style="background-color: #fee2e2; color: #991b1b;">
+                                        <span class="status-dot" style="background-color: #991b1b;"></span>
+                                        Đã bị xóa
+                                    </span>
+                                @else
+                                    <span class="status-pill status-pill--{{ $post->status }}">
+                                        <span class="status-dot"></span>
+                                        {{ $statusLabels[$post->status] ?? $post->status }}
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+
+                        {{-- Body của Card --}}
+                        <div class="post-card__body">
+                            <a href="javascript:void(0)" onclick="openAdminPostModal({{ $post->id }})" class="post-card__title" title="Bấm để xem chi tiết bài đăng và danh sách báo cáo vi phạm">
+                                {{ $post->title }}
+                            </a>
+                            <p class="post-card__excerpt">{{ Str::limit(strip_tags($post->content), 180, '...') }}</p>
+                            
+                            @if($post->reports_count > 0)
+                                <div class="post-card__warning">
+                                    <span class="warning-badge" onclick="openAdminPostModal({{ $post->id }})" style="cursor: pointer; background: #fee2e2; border-color: #fca5a5;" title="Bài viết bị cư dân báo cáo vi phạm">
+                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                        {{ $post->reports_count }} báo cáo vi phạm (Bấm để xem chi tiết)
+                                    </span>
+                                </div>
+                            @endif
+                        </div>
+
+                        {{-- Footer / Thao tác của Card --}}
+                        <div class="post-card__footer">
+                            <div class="post-card__moderation">
+                                @if($post->user && $post->user->role === 'resident')
+                                    {{-- Form khóa/mở đăng bài --}}
+                                    <form action="{{ portal_route('users.ban-posting', $post->user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
+                                        @csrf
+                                        <div class="ban-select-wrapper ban-select-wrapper--md">
+                                            <i class="fa-regular fa-lock"></i>
+                                            <select name="duration" onchange="confirmSelectAction(this)" class="ban-select ban-select--md" title="Khóa quyền đăng bài viết">
+                                                <option value="" disabled selected>Đăng bài: {{ $post->user->isBannedPosting() ? 'Bị khóa' : 'Mở' }}</option>
+                                                @if($post->user->isBannedPosting())
+                                                    <option value="unban">Mở khóa đăng bài</option>
+                                                @else
+                                                    <option value="1">Khóa đăng bài 1 ngày</option>
+                                                    <option value="3">Khóa đăng bài 3 ngày</option>
+                                                    <option value="7">Khóa đăng bài 7 ngày</option>
+                                                    <option value="30">Khóa đăng bài 30 ngày</option>
+                                                    <option value="permanent">Khóa đăng bài vĩnh viễn</option>
                                                 @endif
-
-                                                {{-- Nút Xóa bài viết --}}
-                                                <form action="{{ portal_route('posts.destroy', $post->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Hành động này sẽ ẩn bài đăng khỏi phía cư dân nhưng vẫn giữ lại lịch sử báo cáo cho Admin. Bạn có chắc chắn muốn tiếp tục?')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="admin-action-btn admin-action-btn--delete">
-                                                        <i class="fa-solid fa-trash-can"></i> Xóa bài viết
-                                                    </button>
-                                                </form>
-                                            @endif
+                                            </select>
                                         </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="4">
-                                        <div class="posts-empty">Không tìm thấy bài đăng cư dân nào phù hợp.</div>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                                    </form>
 
-                {{-- PHÂN TRANG BÀI VIẾT --}}
-                <div class="posts-table-footer">
+                                    {{-- Form khóa/mở bình luận --}}
+                                    <form action="{{ portal_route('users.ban-commenting', $post->user->id) }}" method="POST" style="display: inline-flex; align-items: center;">
+                                        @csrf
+                                        <div class="ban-select-wrapper ban-select-wrapper--md">
+                                            <i class="fa-regular fa-comment"></i>
+                                            <select name="duration" onchange="confirmSelectAction(this)" class="ban-select ban-select--md" title="Khóa quyền bình luận">
+                                                <option value="" disabled selected>Bình luận: {{ $post->user->isBannedCommenting() ? 'Bị khóa' : 'Mở' }}</option>
+                                                @if($post->user->isBannedCommenting())
+                                                    <option value="unban">Mở khóa bình luận</option>
+                                                @else
+                                                    <option value="1">Khóa bình luận 1 ngày</option>
+                                                    <option value="3">Khóa bình luận 3 ngày</option>
+                                                    <option value="7">Khóa bình luận 7 ngày</option>
+                                                    <option value="30">Khóa bình luận 30 ngày</option>
+                                                    <option value="permanent">Khóa bình luận vĩnh viễn</option>
+                                                @endif
+                                            </select>
+                                        </div>
+                                    </form>
+                                @endif
+                            </div>
+
+                            <div class="post-card__actions">
+                                @if($post->trashed())
+                                    <form action="{{ portal_route('posts.restore', $post->id) }}" method="POST" style="display: inline;">
+                                        @csrf
+                                        <button type="submit" class="admin-action-btn admin-action-btn--toggle admin-action-btn--blue" style="padding: 0.5rem 1rem;">
+                                            <i class="fa-solid fa-rotate-left"></i> Khôi phục bài viết
+                                        </button>
+                                    </form>
+                                @else
+                                    {{-- Nút Ẩn/Hiện bài viết --}}
+                                    <form action="{{ portal_route('posts.toggle-status', $post->id) }}" method="POST" style="display: inline;" onsubmit="confirmAction(event, this, 'Bạn có chắc chắn muốn thay đổi trạng thái hiển thị của bài đăng này?')">
+                                        @csrf
+                                        @if ($post->status === 'published')
+                                            <button type="submit" class="admin-action-btn admin-action-btn--toggle" style="padding: 0.5rem 1rem;">
+                                                <i class="fa-solid fa-eye-slash"></i> Ẩn bài viết
+                                            </button>
+                                        @else
+                                            <button type="submit" class="admin-action-btn admin-action-btn--toggle admin-action-btn--blue" style="padding: 0.5rem 1rem;">
+                                                <i class="fa-solid fa-eye"></i> Hiện bài viết
+                                            </button>
+                                        @endif
+                                    </form>
+
+                                    {{-- Nút Bỏ qua báo cáo (chỉ hiện khi có lượt báo cáo) --}}
+                                    @if($post->reports_count > 0)
+                                        <form action="{{ portal_route('posts.dismiss-reports', $post->id) }}" method="POST" style="display: inline;" onsubmit="confirmAction(event, this, 'Bạn có chắc chắn muốn bỏ qua và gỡ bỏ toàn bộ lượt báo cáo của bài viết này?')">
+                                            @csrf
+                                            <button type="submit" class="admin-action-btn admin-action-btn--dismiss" style="padding: 0.5rem 1rem;">
+                                                <i class="fa-solid fa-shield-halved"></i> Bỏ qua báo cáo
+                                            </button>
+                                        </form>
+                                    @endif
+
+                                    {{-- Nút Xóa bài viết --}}
+                                    <form action="{{ portal_route('posts.destroy', $post->id) }}" method="POST" style="display: inline;" onsubmit="confirmAction(event, this, 'Hành động này sẽ ẩn bài đăng khỏi phía cư dân nhưng vẫn giữ lại lịch sử báo cáo cho Admin. Bạn có chắc chắn muốn tiếp tục?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="admin-action-btn admin-action-btn--delete" style="padding: 0.5rem 1rem;">
+                                            <i class="fa-solid fa-trash-can"></i> Xóa bài viết
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="posts-empty">Không tìm thấy bài đăng cư dân nào phù hợp.</div>
+                @endforelse
+            </div>
+
+            {{-- PHÂN TRANG BÀI VIẾT --}}
+            @if($posts->total() > 0)
+                <div class="posts-table-footer" style="margin-top: 1.5rem; border-radius: 8px; border: 1px solid #e2e8f0;">
                     <div class="posts-table-footer__stats">
                         Hiển thị {{ $posts->count() }} trên {{ $posts->total() }} bài viết
                     </div>
                     <div>
                         {{ $posts->appends(request()->query())->links('admin.users.pagination') }}
                     </div>
-            </div>
+                </div>
+            @endif
         @elseif($activeTab === 'comments')
             {{-- BỘ LỌC TÌM KIẾM BÌNH LUẬN --}}
             <form class="posts-filter" method="GET" action="{{ portal_route('posts.index') }}">
@@ -343,14 +447,14 @@
                         {{-- Action bar (Thao tác nhanh) --}}
                         <div class="comment-card__actions">
                             {{-- Nút Bỏ qua báo cáo --}}
-                            <form action="{{ portal_route('comments.dismiss-reports', $comment->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn bỏ qua và gỡ bỏ toàn bộ lượt báo cáo của bình luận này?')">
+                            <form action="{{ portal_route('comments.dismiss-reports', $comment->id) }}" method="POST" style="display: inline;" onsubmit="confirmAction(event, this, 'Bạn có chắc chắn muốn bỏ qua và gỡ bỏ toàn bộ lượt báo cáo của bình luận này?')">
                                 @csrf
                                 <button type="submit" class="admin-action-btn admin-action-btn--dismiss" style="padding: 0.5rem 1rem;">
                                     <i class="fa-solid fa-shield-halved"></i> Bỏ qua báo cáo
                                 </button>
                             </form>
 
-                            <form action="{{ portal_route('comments.destroy', $comment->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bình luận này?')">
+                            <form action="{{ portal_route('comments.destroy', $comment->id) }}" method="POST" style="display: inline;" onsubmit="confirmAction(event, this, 'Bạn có chắc chắn muốn xóa bình luận này?')">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="admin-action-btn admin-action-btn--delete" style="padding: 0.5rem 1rem;">
@@ -555,7 +659,7 @@
                                                 @csrf
                                                 <div class="ban-select-wrapper ban-select-wrapper--md">
                                                     <i class="fa-regular fa-lock"></i>
-                                                    <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" class="ban-select ban-select--md" title="Quản lý quyền đăng bài">
+                                                    <select name="duration" onchange="confirmSelectAction(this)" class="ban-select ban-select--md" title="Quản lý quyền đăng bài">
                                                         <option value="" disabled selected>Đăng bài: {{ $user->isBannedPosting() ? 'Bị khóa' : 'Mở' }}</option>
                                                         @if($user->isBannedPosting())
                                                             <option value="unban">Mở khóa đăng bài</option>
@@ -580,7 +684,7 @@
                                                 @csrf
                                                 <div class="ban-select-wrapper ban-select-wrapper--md">
                                                     <i class="fa-regular fa-comment"></i>
-                                                    <select name="duration" onchange="if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) this.form.submit(); else this.selectedIndex=0;" class="ban-select ban-select--md" title="Quản lý quyền bình luận">
+                                                    <select name="duration" onchange="confirmSelectAction(this)" class="ban-select ban-select--md" title="Quản lý quyền bình luận">
                                                         <option value="" disabled selected>Bình luận: {{ $user->isBannedCommenting() ? 'Bị khóa' : 'Mở' }}</option>
                                                         @if($user->isBannedCommenting())
                                                             <option value="unban">Mở khóa bình luận</option>
@@ -626,6 +730,25 @@
                 @endif
             </div>
         @endif
+    </div>
+
+    {{-- Generic Confirm Modal --}}
+    <div id="genericConfirmModal" class="announcement-modal">
+        <div class="announcement-modal-content">
+            <div class="announcement-modal-header">
+                <div class="modal-icon warning">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <h3 id="genericConfirmTitle">Xác nhận</h3>
+            </div>
+            <div class="announcement-modal-body">
+                <p id="genericConfirmMessage">Bạn có chắc chắn muốn thực hiện hành động này?</p>
+            </div>
+            <div class="announcement-modal-footer">
+                <button type="button" class="posts-button posts-button--secondary" onclick="closeGenericConfirmModal()">Hủy bỏ</button>
+                <button type="button" class="posts-button posts-button--danger" id="genericConfirmBtn">Đồng ý</button>
+            </div>
+        </div>
     </div>
 
     {{-- Modal xem chi tiết bài viết & báo cáo phía Admin --}}

@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Facility;
 use App\Models\FacilityBooking;
+use App\Models\Block;
+use App\Models\Floor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -17,7 +19,7 @@ class FacilityController extends Controller
      */
     public function index(): View
     {
-        $facilities = Facility::withCount([
+        $facilities = Facility::with(['block', 'floor'])->withCount([
             'bookings',
             'pendingBookings',
         ])->orderBy('name')->get();
@@ -26,11 +28,21 @@ class FacilityController extends Controller
     }
 
     /**
+     * Lấy danh sách tầng theo tòa (AJAX)
+     */
+    public function getFloorsByBlock($blockId)
+    {
+        $floors = Floor::where('block_id', $blockId)->orderBy('floor_number')->get(['id', 'name']);
+        return response()->json($floors);
+    }
+
+    /**
      * Form tạo tiện ích mới
      */
     public function create(): View
     {
-        return view('admin.amenities.create');
+        $blocks = Block::orderBy('name')->get();
+        return view('admin.amenities.create', compact('blocks'));
     }
 
     /**
@@ -39,34 +51,47 @@ class FacilityController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name'             => 'required|string|max:100|unique:facilities,name',
-            'capacity'         => 'required|integer|min:1',
-            'description'      => 'nullable|string|max:500',
-            'status'           => 'required|in:available,maintenance,closed',
-            'open_time'        => 'nullable|date_format:H:i',
-            'close_time'       => 'nullable|date_format:H:i|after:open_time',
-            'slot_duration'    => 'required|integer|in:0,30,60,90,120',
-            'booking_type'     => 'required|in:slot,person',
-            'price_per_slot'   => 'required|numeric|min:0',
-            'price_per_person' => 'required|numeric|min:0',
-            'rules'            => 'nullable|string|max:1000',
-            'images'           => 'nullable|array|max:5',
-            'images.*'         => 'image|mimes:jpeg,png,jpg,webp|max:3072',
+            'name'                      => 'required|string|max:100|unique:facilities,name',
+            'facility_type'             => 'nullable|string|max:100',
+            'block_id'                  => 'nullable|exists:blocks,id',
+            'floor_id'                  => 'nullable|exists:floors,id',
+            'capacity'                  => 'required|integer|min:1',
+            'description'               => 'nullable|string|max:500',
+            'status'                    => 'required|in:available,maintenance,closed',
+            'open_time'                 => 'nullable|date_format:H:i',
+            'close_time'                => 'nullable|date_format:H:i|after:open_time',
+            'operating_days'            => 'nullable|array',
+            'operating_days.*'          => 'string|in:T2,T3,T4,T5,T6,T7,CN',
+            'slot_duration'             => 'required_if:booking_type,time_slot,slot|integer|min:0',
+            'booking_type'              => 'required|in:none,time_slot,slot',
+            'fee_type'                  => 'required|in:free,per_hour,per_use,per_person',
+            'price'                     => 'required_unless:fee_type,free|numeric|min:0',
+            'min_advance_booking_hours' => 'nullable|integer|min:0',
+            'max_advance_booking_days'  => 'nullable|integer|min:0',
+            'rules'                     => 'nullable|string|max:1000',
+            'images' => 'required|array|min:1|max:5',
+            'images.*'                  => 'image|mimes:jpeg,png,jpg,webp|max:5120',
         ], [
-            'name.required'           => 'Vui lòng nhập tên tiện ích.',
-            'name.unique'             => 'Tên tiện ích đã tồn tại.',
-            'capacity.required'       => 'Vui lòng nhập sức chứa.',
-            'capacity.min'            => 'Sức chứa phải ít nhất 1 người.',
-            'status.required'         => 'Vui lòng chọn trạng thái.',
-            'close_time.after'        => 'Giờ đóng cửa phải sau giờ mở cửa.',
-            'slot_duration.in'        => 'Thời lượng slot không hợp lệ.',
-            'booking_type.required'   => 'Vui lòng chọn kiểu đặt chỗ.',
-            'price_per_slot.min'      => 'Giá phải lớn hơn hoặc bằng 0.',
-            'price_per_person.min'    => 'Giá theo người phải lớn hơn hoặc bằng 0.',
-            'images.max'              => 'Tải tối đa 5 ảnh.',
-            'images.*.image'          => 'File phải là ảnh.',
-            'images.*.max'            => 'Mỗi ảnh tối đa 3MB.',
+            'name.required'             => 'Vui lòng nhập tên tiện ích.',
+            'name.unique'               => 'Tên tiện ích đã tồn tại.',
+            'capacity.required'         => 'Vui lòng nhập sức chứa.',
+            'capacity.min'              => 'Sức chứa phải ít nhất 1 người.',
+            'status.required'           => 'Vui lòng chọn trạng thái.',
+            'close_time.after'          => 'Giờ đóng cửa phải sau giờ mở cửa.',
+            'slot_duration.in'          => 'Thời lượng slot không hợp lệ.',
+            'booking_type.required'     => 'Vui lòng chọn hình thức đặt chỗ.',
+            'fee_type.required'         => 'Vui lòng chọn loại phí.',
+            'price.required_unless'     => 'Vui lòng nhập đơn giá.',
+            'images.max'                => 'Tải tối đa 5 ảnh.',
+            'images.required'           => 'Vui lòng upload ít nhất 1 ảnh.',
+            'images.min'                => 'Vui lòng upload ít nhất 1 ảnh.',
+            'images.*.image'            => 'File phải là ảnh.',
+            'images.*.max'              => 'Mỗi ảnh tối đa 5MB.',
         ]);
+
+        if ($validated['fee_type'] === 'free') {
+            $validated['price'] = 0;
+        }
 
         $uploadedImages = [];
         if ($request->hasFile('images')) {
@@ -111,7 +136,8 @@ class FacilityController extends Controller
      */
     public function edit(Facility $facility): View
     {
-        return view('admin.amenities.edit', compact('facility'));
+        $blocks = \App\Models\Block::orderBy('name')->get();
+        return view('admin.amenities.edit', compact('facility', 'blocks'));
     }
 
     /**
@@ -120,28 +146,36 @@ class FacilityController extends Controller
     public function update(Request $request, Facility $facility): RedirectResponse
     {
         $validated = $request->validate([
-            'name'             => 'required|string|max:100|unique:facilities,name,' . $facility->id,
-            'capacity'         => 'required|integer|min:1',
-            'description'      => 'nullable|string|max:500',
-            'status'           => 'required|in:available,maintenance,closed',
-            'open_time'        => 'nullable|date_format:H:i',
-            'close_time'       => 'nullable|date_format:H:i|after:open_time',
-            'slot_duration'    => 'required|integer|in:0,30,60,90,120',
-            'booking_type'     => 'required|in:slot,person',
-            'price_per_slot'   => 'required|numeric|min:0',
-            'price_per_person' => 'required|numeric|min:0',
-            'rules'            => 'nullable|string|max:1000',
+            'name'                      => 'required|string|max:100|unique:facilities,name,' . $facility->id,
+            'facility_type'             => 'nullable|string|max:100',
+            'location'                  => 'nullable|string|max:255',
+            'capacity'                  => 'required|integer|min:1',
+            'description'               => 'nullable|string|max:500',
+            'status'                    => 'required|in:available,maintenance,closed',
+            'open_time'                 => 'nullable|date_format:H:i',
+            'close_time'                => 'nullable|date_format:H:i|after:open_time',
+            'slot_duration'             => 'required_if:booking_type,time_slot,slot|integer|min:0',
+            'booking_type'              => 'required|in:none,time_slot,slot',
+            'fee_type'                  => 'required|in:free,per_hour,per_use,per_person',
+            'price'                     => 'required_unless:fee_type,free|numeric|min:0',
+            'min_advance_booking_hours' => 'nullable|integer|min:0',
+            'max_advance_booking_days'  => 'nullable|integer|min:0',
+            'rules'                     => 'nullable|string|max:1000',
         ], [
-            'name.required'           => 'Vui lòng nhập tên tiện ích.',
-            'name.unique'             => 'Tên tiện ích đã tồn tại.',
-            'capacity.required'       => 'Vui lòng nhập sức chứa.',
-            'status.required'         => 'Vui lòng chọn trạng thái.',
-            'close_time.after'        => 'Giờ đóng cửa phải sau giờ mở cửa.',
-            'slot_duration.in'        => 'Thời lượng slot không hợp lệ.',
-            'booking_type.required'   => 'Vui lòng chọn kiểu đặt chỗ.',
-            'price_per_slot.min'      => 'Giá phải lớn hơn hoặc bằng 0.',
-            'price_per_person.min'    => 'Giá theo người phải lớn hơn hoặc bằng 0.',
+            'name.required'             => 'Vui lòng nhập tên tiện ích.',
+            'name.unique'               => 'Tên tiện ích đã tồn tại.',
+            'capacity.required'         => 'Vui lòng nhập sức chứa.',
+            'status.required'           => 'Vui lòng chọn trạng thái.',
+            'close_time.after'          => 'Giờ đóng cửa phải sau giờ mở cửa.',
+            'slot_duration.in'          => 'Thời lượng slot không hợp lệ.',
+            'booking_type.required'     => 'Vui lòng chọn hình thức đặt chỗ.',
+            'fee_type.required'         => 'Vui lòng chọn loại phí.',
+            'price.required_unless'     => 'Vui lòng nhập đơn giá.',
         ]);
+
+        if ($validated['fee_type'] === 'free') {
+            $validated['price'] = 0;
+        }
 
         $facility->update($validated);
 
@@ -203,6 +237,13 @@ class FacilityController extends Controller
         }
 
         $booking->update(['status' => 'cancelled']);
+
+        if ($booking->bill_id) {
+            $invoice = \App\Models\Invoice::find($booking->bill_id);
+            if ($invoice && !in_array($invoice->status, ['paid', 'cancelled'])) {
+                $invoice->update(['status' => 'cancelled']);
+            }
+        }
 
         return back()->with('success', 'Đã hủy lịch đặt thành công.');
     }
@@ -283,8 +324,8 @@ class FacilityController extends Controller
     public function storeImage(Request $request, Facility $facility): RedirectResponse
     {
         $request->validate([
-            'images'   => 'required|array|max:5',
-            'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:3072',
+            'images' => 'required|array|max:5',
+            'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
         ], [
             'images.required'   => 'Vui lòng chọn ít nhất một ảnh.',
             'images.*.image'    => 'File phải là ảnh.',
@@ -389,31 +430,53 @@ class FacilityController extends Controller
             }
         };
 
-        $facilities = Facility::withCount([
-            'bookings' => function ($q) use ($applyFilters) {
-                $applyFilters($q);
-            },
-            'bookings as approved_count' => function ($q) use ($applyFilters) {
-                $q->where('status', 'approved');
-                $applyFilters($q);
-            },
-            'bookings as completed_count' => function ($q) use ($applyFilters) {
-                $q->where('status', 'completed');
-                $applyFilters($q);
-            },
-            'bookings as rejected_count' => function ($q) use ($applyFilters) {
-                $q->where('status', 'rejected');
-                $applyFilters($q);
-            },
-            'pendingBookings as pending_bookings_count' => function ($q) use ($applyFilters) {
-                $applyFilters($q);
-            },
-        ])->get();
+        $facilities = Facility::orderBy('name')->get();
 
-        // Tính doanh thu (approved + completed × price_per_slot)
+        // Lấy tất cả bookings thỏa mãn bộ lọc để đếm và tính doanh thu chính xác
+        $bookingsQuery = \App\Models\FacilityBooking::with('facility');
+        $applyFilters($bookingsQuery);
+        $bookings = $bookingsQuery->get();
+
+        $stats = [];
         foreach ($facilities as $f) {
-            $paid = ($f->approved_count + $f->completed_count);
-            $f->revenue = $paid * ($f->price_per_slot ?? 0);
+            $stats[$f->id] = [
+                'bookings_count' => 0,
+                'approved_count' => 0,
+                'completed_count' => 0, // Dùng để hiển thị completed + used
+                'rejected_count' => 0,
+                'pending_count' => 0,
+                'revenue' => 0.0,
+            ];
+        }
+
+        foreach ($bookings as $b) {
+            if (!isset($stats[$b->facility_id])) {
+                continue;
+            }
+            $stats[$b->facility_id]['bookings_count']++;
+            if ($b->status === 'approved') {
+                $stats[$b->facility_id]['approved_count']++;
+            } elseif (in_array($b->status, ['completed', 'used'])) {
+                $stats[$b->facility_id]['completed_count']++;
+            } elseif ($b->status === 'rejected') {
+                $stats[$b->facility_id]['rejected_count']++;
+            } elseif ($b->status === 'pending') {
+                $stats[$b->facility_id]['pending_count']++;
+            }
+
+            // Doanh thu chỉ tính cho các booking đã duyệt/sử dụng/hoàn thành
+            if (in_array($b->status, ['approved', 'completed', 'used'])) {
+                $stats[$b->facility_id]['revenue'] += (float)$b->amount;
+            }
+        }
+
+        foreach ($facilities as $f) {
+            $f->bookings_count = $stats[$f->id]['bookings_count'];
+            $f->approved_count = $stats[$f->id]['approved_count'];
+            $f->completed_count = $stats[$f->id]['completed_count'];
+            $f->rejected_count = $stats[$f->id]['rejected_count'];
+            $f->pending_bookings_count = $stats[$f->id]['pending_count'];
+            $f->revenue = $stats[$f->id]['revenue'];
         }
 
         $summary = [
@@ -480,31 +543,53 @@ class FacilityController extends Controller
             }
         };
 
-        $facilities = Facility::withCount([
-            'bookings' => function ($q) use ($applyFilters) {
-                $applyFilters($q);
-            },
-            'bookings as approved_count' => function ($q) use ($applyFilters) {
-                $q->where('status', 'approved');
-                $applyFilters($q);
-            },
-            'bookings as completed_count' => function ($q) use ($applyFilters) {
-                $q->where('status', 'completed');
-                $applyFilters($q);
-            },
-            'bookings as rejected_count' => function ($q) use ($applyFilters) {
-                $q->where('status', 'rejected');
-                $applyFilters($q);
-            },
-            'pendingBookings as pending_bookings_count' => function ($q) use ($applyFilters) {
-                $applyFilters($q);
-            },
-        ])->get();
+        $facilities = Facility::orderBy('name')->get();
 
-        // Tính doanh thu (approved + completed × price_per_slot)
+        // Lấy tất cả bookings thỏa mãn bộ lọc để đếm và tính doanh thu chính xác
+        $bookingsQuery = \App\Models\FacilityBooking::with('facility');
+        $applyFilters($bookingsQuery);
+        $bookings = $bookingsQuery->get();
+
+        $stats = [];
         foreach ($facilities as $f) {
-            $paid = ($f->approved_count + $f->completed_count);
-            $f->revenue = $paid * ($f->price_per_slot ?? 0);
+            $stats[$f->id] = [
+                'bookings_count' => 0,
+                'approved_count' => 0,
+                'completed_count' => 0, // Dùng để hiển thị completed + used
+                'rejected_count' => 0,
+                'pending_count' => 0,
+                'revenue' => 0.0,
+            ];
+        }
+
+        foreach ($bookings as $b) {
+            if (!isset($stats[$b->facility_id])) {
+                continue;
+            }
+            $stats[$b->facility_id]['bookings_count']++;
+            if ($b->status === 'approved') {
+                $stats[$b->facility_id]['approved_count']++;
+            } elseif (in_array($b->status, ['completed', 'used'])) {
+                $stats[$b->facility_id]['completed_count']++;
+            } elseif ($b->status === 'rejected') {
+                $stats[$b->facility_id]['rejected_count']++;
+            } elseif ($b->status === 'pending') {
+                $stats[$b->facility_id]['pending_count']++;
+            }
+
+            // Doanh thu chỉ tính cho các booking đã duyệt/sử dụng/hoàn thành
+            if (in_array($b->status, ['approved', 'completed', 'used'])) {
+                $stats[$b->facility_id]['revenue'] += (float)$b->amount;
+            }
+        }
+
+        foreach ($facilities as $f) {
+            $f->bookings_count = $stats[$f->id]['bookings_count'];
+            $f->approved_count = $stats[$f->id]['approved_count'];
+            $f->completed_count = $stats[$f->id]['completed_count'];
+            $f->rejected_count = $stats[$f->id]['rejected_count'];
+            $f->pending_bookings_count = $stats[$f->id]['pending_count'];
+            $f->revenue = $stats[$f->id]['revenue'];
         }
 
         try {

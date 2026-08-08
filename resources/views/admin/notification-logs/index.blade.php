@@ -52,9 +52,8 @@
                 <thead>
                     <tr>
                         <th>Thời gian</th>
-                        <th>Tiêu đề</th>
-                        <th>Danh mục</th>
-                        <th>Người gửi</th>
+                        <th>Nội dung thông báo</th>
+                        <th>Nguồn</th>
                         <th style="text-align:center">Trạng thái</th>
                     </tr>
                 </thead>
@@ -66,43 +65,28 @@
                         </td>
                         <td>
                             <div style="display:flex;align-items:center;gap:8px;">
-                                @if($log->pinned)
-                                    <span title="Đã ghim" style="color:#eab308;">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
-                                    </span>
-                                @endif
-                                <strong style="color:#0f172a;">{{ $log->title }}</strong>
+                                <strong style="color:#0f172a;">{{ $log->data['title'] ?? 'Thông báo hệ thống' }}</strong>
                             </div>
+                            <div style="font-size: 13px; color: #475569; margin-top: 4px;">
+                                {!! $log->data['message'] ?? '' !!}
+                            </div>
+                            @if(!empty($log->data['url']) && $log->data['url'] !== '#')
+                                <a href="{{ $log->data['url'] }}" data-notif-id="{{ $log->id }}" class="mark-read-and-redirect" style="font-size: 12px; color: #0b57d0; text-decoration: none; display: inline-block; margin-top: 6px;">Xem chi tiết &rarr;</a>
+                            @endif
                         </td>
                         <td>
-                            @php
-                                $cats = [
-                                    'general'       => ['Chung','#475569','#f1f5f9'],
-                                    'maintenance'   => ['Bảo trì','#d97706','#fef3c7'],
-                                    'event'         => ['Sự kiện','#4f46e5','#e0e7ff'],
-                                    'security'      => ['An ninh','#dc2626','#fee2e2'],
-                                    'finance'       => ['Tài chính','#059669','#d1fae5'],
-                                    'emergency'     => ['Khẩn cấp','#b91c1c','#ffe4e6'],
-                                ];
-                                [$cl, $cc, $cb] = $cats[$log->category ?? 'general'] ?? ['Khác','#475569','#f1f5f9'];
-                            @endphp
-                            <span class="db-badge" style="color:{{ $cc }};background:{{ $cb }};">{{ $cl }}</span>
+                            <span class="db-badge" style="color:#475569;background:#f1f5f9;">Hệ thống</span>
                         </td>
-                        <td>{{ $log->user->name ?? '—' }}</td>
                         <td style="text-align:center;">
-                            @php
-                                $statuses = [
-                                    'published' => ['Đã gửi','#059669','#d1fae5'],
-                                    'draft'     => ['Bản nháp','#d97706','#fef3c7'],
-                                    'archived'  => ['Lưu trữ','#475569','#f1f5f9'],
-                                ];
-                                [$sl, $sc, $sb] = $statuses[$log->status ?? ''] ?? ['Khác','#475569','#f1f5f9'];
-                            @endphp
-                            <span class="db-badge" style="color:{{ $sc }};background:{{ $sb }};">{{ $sl }}</span>
+                            @if($log->read_at)
+                                <span class="db-badge" style="color:#059669;background:#d1fae5;">Đã đọc</span>
+                            @else
+                                <span class="db-badge" style="color:#d97706;background:#fef3c7;">Chưa đọc</span>
+                            @endif
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="5" class="empty-row">Chưa có dữ liệu thông báo nào.</td></tr>
+                    <tr><td colspan="4" class="empty-row">Chưa có dữ liệu thông báo nào.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -118,5 +102,36 @@
 
 @push('styles')
     @vite(['resources/css/pages/admin/statistics.css', 'resources/css/pages/admin/dashboard.css', 'resources/css/pages/admin/activity-logs.css'])
+@endpush
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const links = document.querySelectorAll('.mark-read-and-redirect');
+    links.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const notifId = this.getAttribute('data-notif-id');
+            const url = this.getAttribute('href');
+            
+            // Mark as read via AJAX
+            fetch('{{ portal_route('notifications.mark-read', 'ID_HERE') }}'.replace('ID_HERE', notifId), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                window.location.href = url;
+            })
+            .catch(err => {
+                console.error('Error marking notification read:', err);
+                window.location.href = url;
+            });
+        });
+    });
+});
+</script>
 @endpush
 @endsection

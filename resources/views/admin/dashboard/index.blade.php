@@ -283,10 +283,17 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                         <span>Thêm Căn Hộ</span>
                     </a>
+                    @if(auth()->user()->role === 'technician')
                     <a href="{{ portal_route('utility-readings.create') }}" class="db-quick-btn db-quick-btn--amber">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>
-                        <span>Ghi Điện Nước</span>
+                        <span>Ghi số Nước</span>
                     </a>
+                    @else
+                    <a href="{{ portal_route('utility-readings.index') }}" class="db-quick-btn db-quick-btn--amber">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>
+                        <span>Chốt Số Nước</span>
+                    </a>
+                    @endif
                     <a href="{{ portal_route('invoices.create') }}" class="db-quick-btn db-quick-btn--green">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
                         <span>Tạo Hóa Đơn</span>

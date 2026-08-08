@@ -95,7 +95,7 @@
                                         / {{ $detail->servicePrice->unit }}
                                     @endif
                                 </div>
-                                @if(in_array(optional($detail->servicePrice)->type, ['water', 'electricity']))
+                                @if(in_array(optional($detail->servicePrice)->type, ['water']))
                                     @php
                                         $meter = \App\Models\UtilityMeter::where('apartment_id', $invoice->apartment_id)
                                             ->where('type', $detail->servicePrice->type)

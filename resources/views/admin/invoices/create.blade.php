@@ -582,7 +582,10 @@ function addCustomFeeRow() {
         <td>
             <select name="custom_fees[${rowCount}][type]" class="type-select">
                 <option value="service">Dịch vụ</option>
-                <option value="other">Phí khác</option>
+                <option value="compensation">Bồi thường</option>
+                <option value="penalty">Phạt</option>
+                <option value="card_reissue">Làm lại thẻ</option>
+                <option value="other">Khác</option>
             </select>
         </td>
         <td>

@@ -77,8 +77,13 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                             </div>
                             <div>
-                                <h2 class="infra-featured__name">{{ $featuredBlock->name }}</h2>
-                                <p class="infra-featured__desc">{{ $featuredBlock->description ?? 'Khu vực quản lý' }}</p>
+                                <a href="{{ portal_route('blocks.show', $featuredBlock->id) }}" style="text-decoration: none; color: inherit; display: inline-flex; align-items: baseline; gap: 8px;">
+                                    <h2 class="infra-featured__name" style="transition: color 0.2s; margin: 0;" onmouseover="this.style.color='#1d4ed8'" onmouseout="this.style.color=''">{{ $featuredBlock->name }}</h2>
+                                    @if($featuredBlock->code)
+                                        <span style="font-size: 16px; color: #64748b; font-weight: 600;">- {{ $featuredBlock->code }}</span>
+                                    @endif
+                                </a>
+                                <p class="infra-featured__desc" style="margin-top: 4px;">{{ $featuredBlock->description ?? 'Khu vực quản lý' }}</p>
                             </div>
                         </div>
 
@@ -101,13 +106,6 @@
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                                         Chỉnh sửa tòa nhà
                                     </a>
-                                    <form action="{{ portal_route('blocks.destroy', $featuredBlock) }}" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn xóa tòa nhà này?')">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="infra-dropdown-item infra-dropdown-item--danger">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                            Xóa tòa nhà
-                                        </button>
-                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -124,8 +122,8 @@
                             <span class="infra-stat-value">{{ $featuredBlock->apartments_count }}</span>
                         </div>
                         <div class="infra-stat-item">
-                            <span class="infra-stat-label">THANG MÁY</span>
-                            <span class="infra-stat-value">8</span> <!-- Placeholder data for Thang máy -->
+                            <span class="infra-stat-label">CĂN ĐANG Ở</span>
+                            <span class="infra-stat-value">{{ $featuredBlock->occupied_apartments_count }}</span>
                         </div>
                     </div>
 
@@ -164,12 +162,6 @@
                                                 <a href="{{ portal_route('floors.edit', $floor->id) }}" class="infra-table-btn infra-table-btn--edit">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                                                 </a>
-                                                <form action="{{ portal_route('floors.destroy', $floor->id) }}" method="POST" onsubmit="return confirm('Xóa tầng này?')">
-                                                    @csrf @method('DELETE')
-                                                    <button type="submit" class="infra-table-btn infra-table-btn--delete">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                                    </button>
-                                                </form>
                                             </div>
                                         </td>
                                     </tr>
@@ -202,7 +194,12 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                         </div>
                         <div class="infra-block-card__info">
-                            <h3>{{ $block->name }}</h3>
+                            <h3 style="display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;">
+                                {{ $block->name }}
+                                @if($block->code)
+                                    <span style="font-size: 14px; color: #64748b; font-weight: 600;">- {{ $block->code }}</span>
+                                @endif
+                            </h3>
                             <p>{{ Str::limit($block->description, 30) }}</p>
                         </div>
                         <span class="infra-status-bubble infra-status-bubble--{{ $block->status }}">
@@ -221,10 +218,14 @@
                             <span class="infra-block-stat-label">Căn hộ</span>
                             <span class="infra-block-stat-value">{{ $block->apartments_count }}</span>
                         </div>
+                        <div class="infra-block-stat">
+                            <span class="infra-block-stat-label">Đang ở</span>
+                            <span class="infra-block-stat-value">{{ $block->occupied_apartments_count }}</span>
+                        </div>
                     </div>
 
                     <a href="{{ portal_route('blocks.index', ['featured_block_id' => $block->id]) }}" class="infra-block-card__btn">
-                        Chi tiết tòa nhà
+                        Xem tòa
                     </a>
                 </div>
             @empty

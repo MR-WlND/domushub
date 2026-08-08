@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Rules\CleanContent;
 
 class PostController extends Controller
 {
@@ -26,28 +27,16 @@ class PostController extends Controller
      */
     public function index(Request $request)
     {
-        // Tự động chạy migrate nếu bảng post_hides chưa được tạo
-        if (!\Illuminate\Support\Facades\Schema::hasTable('post_hides')) {
-            try {
-                \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-            } catch (\Exception $e) {
-                \Log::error('Migration check/run failed in PostController: ' . $e->getMessage());
-            }
-        }
-
-        $query = Post::with(['user.apartment', 'comments.user.apartment', 'images'])
+        $query = Post::with(['user.apartment', 'images'])
             ->withCount(['likes', 'comments'])
             ->with(['likedByCurrentUser'])
             ->where('status', 'published')
             ->whereDoesntHave('reports', function($q) {
                 $q->where('user_id', Auth::id());
-            });
-
-        if (\Illuminate\Support\Facades\Schema::hasTable('post_hides')) {
-            $query->whereDoesntHave('hides', function($q) {
+            })
+            ->whereDoesntHave('hides', function($q) {
                 $q->where('user_id', Auth::id());
             });
-        }
 
         $query->orderBy('created_at', 'desc');
  
@@ -98,8 +87,8 @@ class PostController extends Controller
 
         // 2. Validate dữ liệu đầu vào (hỗ trợ images/video dạng mảng)
         $request->validate([
-            'title' => 'nullable|string|max:200',
-            'content' => 'required|string',
+            'title' => ['nullable', 'string', 'max:200', new CleanContent()],
+            'content' => ['required', 'string', new CleanContent()],
             'price' => 'nullable|numeric|min:0|max:999999999',
             'media' => 'nullable|array|max:5', // Tối đa 5 file ảnh/video
             'media.*' => 'file|mimes:jpeg,png,jpg,gif,webp,mp4,mov,avi,webm|max:20480', // Mỗi file tối đa 20MB
@@ -239,7 +228,7 @@ class PostController extends Controller
         }
 
         $request->validate([
-            'content' => 'required|string',
+            'content' => ['required', 'string', new CleanContent()],
             'parent_id' => 'nullable|exists:comments,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ], [
@@ -546,8 +535,8 @@ class PostController extends Controller
         }
 
         $request->validate([
-            'title' => 'nullable|string|max:200',
-            'content' => 'required|string',
+            'title' => ['nullable', 'string', 'max:200', new CleanContent()],
+            'content' => ['required', 'string', new CleanContent()],
             'price' => 'nullable|numeric|min:0|max:999999999',
             'media' => 'nullable|array|max:5',
             'media.*' => 'file|mimes:jpeg,png,jpg,gif,webp,mp4,mov,avi,webm|max:20480',

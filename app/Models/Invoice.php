@@ -148,6 +148,9 @@ class Invoice extends Model
             'management_fee' => 'Phí quản lý',
             'internet'       => 'Internet',
             'service'        => 'Dịch vụ',
+            'compensation'   => 'Bồi thường',
+            'penalty'        => 'Phạt',
+            'card_reissue'   => 'Làm lại thẻ',
             default          => 'Khác',
         };
     }

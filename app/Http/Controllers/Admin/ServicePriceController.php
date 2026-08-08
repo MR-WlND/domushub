@@ -16,7 +16,14 @@ class ServicePriceController extends Controller
      */
     public function index(): View
     {
-        $servicePrices = ServicePrice::orderBy('type')->orderByDesc('status')->get();
+        $servicePrices = ServicePrice::where('type', '!=', 'management_fee')
+            ->whereNotIn('type', ['compensation', 'penalty', 'card_reissue'])
+            ->where(function ($q) {
+                $q->whereNull('vehicle_type')->orWhere('vehicle_type', '!=', 'bicycle');
+            })
+            ->orderBy('type')
+            ->orderByDesc('status')
+            ->get();
 
         return view('admin.service-prices.index', compact('servicePrices'));
     }
@@ -28,8 +35,8 @@ class ServicePriceController extends Controller
     {
         $validated = $request->validate([
             'name'        => 'required|string|max:100',
-            'type'        => 'required|in:water,management_fee,internet,service,other,parking_fee',
-            'vehicle_type'=> 'nullable|required_if:type,parking_fee|in:motorbike,electric_bike,car,bicycle',
+            'type'        => 'required|in:water,internet,service,other,parking_fee',
+            'vehicle_type'=> 'nullable|required_if:type,parking_fee|in:motorbike,electric_bike,car',
             'unit_price'  => 'required|numeric|min:0',
             'description' => 'nullable|string|max:500',
         ], [
@@ -58,8 +65,8 @@ class ServicePriceController extends Controller
 
         $validated = $request->validate([
             'name'        => 'required|string|max:100',
-            'type'        => 'required|in:water,management_fee,internet,service,other,parking_fee',
-            'vehicle_type'=> 'nullable|required_if:type,parking_fee|in:motorbike,electric_bike,car,bicycle',
+            'type'        => 'required|in:water,internet,service,other,parking_fee',
+            'vehicle_type'=> 'nullable|required_if:type,parking_fee|in:motorbike,electric_bike,car',
             'unit_price'  => 'required|numeric|min:0',
             'status'      => 'required|in:active,pending,banned',
             'description' => 'nullable|string|max:500',

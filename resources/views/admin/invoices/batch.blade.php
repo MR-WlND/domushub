@@ -66,7 +66,6 @@
                         @php
                             $baseTypes = [
                                 'water' => 'Tiền nước',
-                                'management_fee' => 'Phí quản lý',
                                 'internet' => 'Internet',
                                 'service' => 'Dịch vụ'
                             ];
@@ -74,8 +73,9 @@
                         @endphp
 
                         <div class="batch-price-list">
-                            {{-- Hiển thị tất cả các loại giá đang hoạt động (bao gồm nhiều loại xe của parking_fee) --}}
+                            {{-- Hiển thị tất cả các loại giá đang hoạt động (bao gồm nhiều loại xe của parking_fee, bỏ qua xe đạp) --}}
                             @foreach ($activePrices as $price)
+                                @if($price->vehicle_type === 'bicycle') @continue @endif
                                 @php
                                     $checkboxValue = $price->type === 'parking_fee' && $price->vehicle_type
                                         ? 'parking_fee_' . $price->vehicle_type
@@ -83,14 +83,18 @@
                                 @endphp
                                 <label class="batch-price-item">
                                     <input type="checkbox" name="types[]" value="{{ $checkboxValue }}"
-                                        data-price="{{ $price->unit_price }}"
+                                        data-price="{{ $price->type === 'management_fee' ? 0 : $price->unit_price }}"
                                         {{ old('types') && in_array($checkboxValue, old('types')) ? 'checked' : '' }}
                                         class="batch-check"
                                         onchange="updateEstimatedCost()">
                                     <div class="batch-price-info">
                                         <div>
                                             <div class="batch-price-name">{{ $price->name }}</div>
-                                            <div class="batch-price-val">{{ number_format($price->unit_price) }}đ / đơn vị</div>
+                                            @if($price->type === 'management_fee')
+                                                <div class="batch-price-val" style="color: #64748b;">Tính theo m² từng loại căn hộ</div>
+                                            @else
+                                                <div class="batch-price-val">{{ number_format($price->unit_price) }}đ / đơn vị</div>
+                                            @endif
                                         </div>
                                     </div>
                                     <span class="batch-price-active">Hoạt động</span>
@@ -171,16 +175,21 @@
                                 </thead>
                                 <tbody>
                                     @forelse($apartments as $apt)
-                                        <tr data-status="{{ $apt->status }}">
+                                        @php
+                                            $hasInvoice = $apt->invoices->isNotEmpty();
+                                        @endphp
+                                        <tr data-status="{{ $apt->status }}" class="{{ $hasInvoice ? 'batch-row-highlight' : '' }}">
                                             <td>
                                                 <input type="checkbox" name="apartment_ids[]" value="{{ $apt->id }}"
-                                                    class="batch-target-check batch-check" checked>
+                                                    class="batch-target-check batch-check" {{ $hasInvoice ? '' : 'checked' }}>
                                             </td>
                                             <td class="batch-apt-num">{{ $apt->apartment_number }}</td>
                                             <td>{{ optional(optional($apt->floor)->block)->name ?? '—' }}</td>
                                             <td>Tầng {{ optional($apt->floor)->floor_number ?? '—' }}</td>
                                             <td>
-                                                @if ($apt->status === 'occupied')
+                                                @if ($hasInvoice)
+                                                    <span class="batch-badge batch-badge--success">Đã xuất</span>
+                                                @elseif ($apt->status === 'occupied')
                                                     <span class="batch-badge batch-badge--occupied">Đang ở</span>
                                                 @elseif($apt->status === 'vacant')
                                                     <span class="batch-badge batch-badge--vacant">Trống</span>
@@ -539,6 +548,15 @@
         .batch-badge--occupied {
             background: #dcfce7;
             color: #15803d;
+        }
+
+        .batch-badge--success {
+            background: #bbf7d0;
+            color: #166534;
+        }
+
+        .batch-row-highlight td {
+            background-color: #f0fdf4 !important;
         }
 
         .batch-badge--vacant {

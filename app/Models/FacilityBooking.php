@@ -116,41 +116,38 @@ class FacilityBooking extends Model
         return $this->payment_status === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán';
     }
 
-    /**
-     * Tính tiền dựa trên booking_type của tiện ích
-     * - slot: price_per_slot × số slot thời gian
-     * - person: price_per_person × số người
-     */
     public function getAmountAttribute(): int
     {
         if (!$this->facility) {
             return 0;
         }
 
-        $bookingType = $this->facility->booking_type ?? 'slot';
+        $feeType = $this->facility->fee_type;
+        $price = (int)($this->facility->price ?? 0);
 
-        if ($bookingType === 'person') {
-            // Đặt theo người: giá/người × số người
-            $pricePerPerson = (int)($this->facility->price_per_person ?? 0);
-            if ($pricePerPerson <= 0) return 0;
-            $people = max(1, (int)($this->number_of_people ?? 1));
-            return $pricePerPerson * $people;
+        if ($feeType === 'free' || $price <= 0) {
+            return 0;
         }
 
-        // Đặt theo tiếng (slot): giá/slot × số slot
-        $pricePerSlot = (int)($this->facility->price_per_slot ?? 0);
-        if ($pricePerSlot <= 0) return 0;
+        if ($feeType === 'per_person') {
+            $people = max(1, (int)($this->number_of_people ?? 1));
+            return $price * $people;
+        }
 
-        $duration = $this->facility->slot_duration;
-        if ($duration == 0) {
-            $slots = 1;
-        } else {
+        if ($feeType === 'per_use') {
+            return $price;
+        }
+
+        if ($feeType === 'per_hour') {
             $startTime = strtotime($this->start_time);
             $endTime   = strtotime($this->end_time);
             $minutes   = ($endTime - $startTime) / 60;
-            $slots     = max(1, (int)ceil($minutes / $duration));
+            // Calculate hours (e.g. 90 mins = 1.5 hours)
+            // But since price is int, maybe use round or ceil for parts of an hour
+            $hours = ceil($minutes / 60);
+            return (int)($price * $hours);
         }
 
-        return $slots * $pricePerSlot;
+        return 0;
     }
 }

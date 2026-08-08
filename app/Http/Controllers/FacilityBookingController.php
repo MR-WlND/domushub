@@ -344,6 +344,13 @@ class FacilityBookingController extends Controller
 
         $booking->update(['status' => 'cancelled']);
 
+        if ($booking->bill_id) {
+            $invoice = Invoice::find($booking->bill_id);
+            if ($invoice && !in_array($invoice->status, ['paid', 'cancelled'])) {
+                $invoice->update(['status' => 'cancelled']);
+            }
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Hủy lịch thành công',
@@ -423,25 +430,36 @@ class FacilityBookingController extends Controller
     }
 
     /**
-     * Tính tiền thanh toán (số slot × giá × số người)
+     * Tính tiền thanh toán
      */
     private function calculateAmount($booking)
     {
-        if (!$booking->facility || !$booking->facility->price_per_slot) {
+        if (!$booking->facility || $booking->facility->fee_type === 'free' || !$booking->facility->price) {
             return 0;
         }
 
-        $duration = $booking->facility->slot_duration;
-        if ($duration == 0) {
-            $slots = 1;
-        } else {
+        $price = (float)$booking->facility->price;
+        $feeType = $booking->facility->fee_type;
+        $people = max(1, (int)($booking->number_of_people ?? 1));
+
+        if ($feeType === 'per_person') {
+            return (int)($price * $people);
+        }
+
+        if ($feeType === 'per_use') {
+            return (int)$price;
+        }
+
+        if ($feeType === 'per_hour') {
             $startTime = strtotime($booking->start_time);
             $endTime   = strtotime($booking->end_time);
             $minutes   = ($endTime - $startTime) / 60;
-            $slots     = ceil($minutes / $duration);
+            $hours     = ceil($minutes / 60); // Tính theo block 1 giờ hoặc có thể chia theo số phút chính xác
+            // Ở đây tính theo block giờ (1h, 2h...)
+            return (int)($hours * $price);
         }
-        $people    = max(1, (int)($booking->number_of_people ?? 1));
 
-        return intval($slots * $booking->facility->price_per_slot * $people);
+        // Fallback for old system or missing fee_type
+        return 0;
     }
 }

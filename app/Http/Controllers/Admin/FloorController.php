@@ -52,8 +52,27 @@ class FloorController extends Controller
         }
 
         $selectedBlockId = $request->query('block_id');
-        $blocks = Block::orderBy('name')->get();
-        return view('admin.floors.create', compact('blocks', 'selectedBlockId'));
+        $blocks = Block::with(['floors' => function($q) {
+            $q->orderBy('floor_number', 'desc');
+        }])->orderBy('name')->get();
+
+        $blocksData = $blocks->map(function($block) {
+            return [
+                'id' => $block->id,
+                'name' => $block->name,
+                'code' => $block->code ?? 'BLK',
+                'apartments_per_floor' => $block->apartments_per_floor,
+                'floors' => $block->floors->map(function($floor) {
+                    return [
+                        'id' => $floor->id,
+                        'name' => $floor->name,
+                        'floor_number' => $floor->floor_number
+                    ];
+                })
+            ];
+        });
+
+        return view('admin.floors.create', compact('blocks', 'selectedBlockId', 'blocksData'));
     }
 
     /**
@@ -71,10 +90,9 @@ class FloorController extends Controller
         $validated = $request->validate([
             'block_id'             => 'required|exists:blocks,id',
             'name'                 => 'required|string|max:50',
-            'floor_type'           => 'required|in:residential,commercial,technical,amenity',
+            'floor_type'           => 'required|in:above_ground,basement',
             'status'               => 'required|in:active,maintenance,inactive',
             'description'          => 'nullable|string',
-            'number_of_apartments' => 'nullable|integer|min:0|max:100',
         ]);
 
         // Phân tích số tầng từ tên tầng
@@ -127,27 +145,6 @@ class FloorController extends Controller
                 'status'       => $validated['status'],
                 'description'  => $validated['description'],
             ]);
-
-            $numberOfApartments = isset($validated['number_of_apartments']) ? (int)$validated['number_of_apartments'] : 0;
-
-            if ($numberOfApartments > 0) {
-                for ($i = 1; $i <= $numberOfApartments; $i++) {
-                    if ($floorNumber > 0) {
-                        $apartmentNumber = $floorNumber . str_pad($i, 2, '0', STR_PAD_LEFT);
-                    } elseif ($floorNumber === 0) {
-                        $apartmentNumber = '0' . str_pad($i, 2, '0', STR_PAD_LEFT);
-                    } else {
-                        $apartmentNumber = 'B' . abs($floorNumber) . str_pad($i, 2, '0', STR_PAD_LEFT);
-                    }
-
-                    Apartment::create([
-                        'floor_id'         => $floor->id,
-                        'apartment_number' => $apartmentNumber,
-                        'area'             => 0,
-                        'status'           => 'vacant',
-                    ]);
-                }
-            }
         });
 
         return redirect()
@@ -220,8 +217,26 @@ class FloorController extends Controller
         }
 
         $floor->loadCount('apartments');
-        $blocks = Block::orderBy('name')->get();
-        return view('admin.floors.edit', compact('floor', 'blocks'));
+        $blocks = Block::with(['floors' => function($q) {
+            $q->orderBy('floor_number', 'desc');
+        }])->orderBy('name')->get();
+        
+        $blocksData = $blocks->map(function ($block) {
+            return [
+                'id' => $block->id,
+                'name' => $block->name,
+                'code' => $block->code,
+                'floors' => $block->floors->map(function ($f) {
+                    return [
+                        'id' => $f->id,
+                        'name' => $f->name,
+                        'floor_number' => $f->floor_number
+                    ];
+                })->toArray()
+            ];
+        })->toArray();
+
+        return view('admin.floors.edit', compact('floor', 'blocks', 'blocksData'));
     }
 
     /**
@@ -241,12 +256,9 @@ class FloorController extends Controller
         $validated = $request->validate([
             'block_id'             => 'required|exists:blocks,id',
             'name'                 => 'required|string|max:50',
-            'floor_type'           => 'required|in:residential,commercial,technical,amenity',
+            'floor_type'           => 'required|in:above_ground,basement',
             'status'               => 'required|in:active,maintenance,inactive',
             'description'          => 'nullable|string',
-            'number_of_apartments' => 'nullable|integer|min:' . $currentApartmentsCount . '|max:100',
-        ], [
-            'number_of_apartments.min' => 'Không thể giảm số lượng căn hộ thấp hơn số lượng hiện tại (' . $currentApartmentsCount . ') để tránh mất mát dữ liệu.',
         ]);
 
         // Phân tích số tầng từ tên tầng
@@ -293,7 +305,7 @@ class FloorController extends Controller
             ]);
         }
 
-        DB::transaction(function () use ($floor, $validated, $floorNumber, $currentApartmentsCount) {
+        DB::transaction(function () use ($floor, $validated, $floorNumber) {
             $floor->update([
                 'block_id'     => $validated['block_id'],
                 'floor_number' => $floorNumber,
@@ -302,38 +314,6 @@ class FloorController extends Controller
                 'status'       => $validated['status'],
                 'description'  => $validated['description'],
             ]);
-
-            $numberOfApartments = isset($validated['number_of_apartments']) ? (int)$validated['number_of_apartments'] : $currentApartmentsCount;
-
-            if ($numberOfApartments > $currentApartmentsCount) {
-                $diff = $numberOfApartments - $currentApartmentsCount;
-                $added = 0;
-                $i = 1;
-                while ($added < $diff) {
-                    if ($floorNumber > 0) {
-                        $apartmentNumber = $floorNumber . str_pad($i, 2, '0', STR_PAD_LEFT);
-                    } elseif ($floorNumber === 0) {
-                        $apartmentNumber = '0' . str_pad($i, 2, '0', STR_PAD_LEFT);
-                    } else {
-                        $apartmentNumber = 'B' . abs($floorNumber) . str_pad($i, 2, '0', STR_PAD_LEFT);
-                    }
-
-                    $existsApartment = Apartment::where('floor_id', $floor->id)
-                        ->where('apartment_number', $apartmentNumber)
-                        ->exists();
-
-                    if (!$existsApartment) {
-                        Apartment::create([
-                            'floor_id'         => $floor->id,
-                            'apartment_number' => $apartmentNumber,
-                            'area'             => 0,
-                            'status'           => 'vacant',
-                        ]);
-                        $added++;
-                    }
-                    $i++;
-                }
-            }
         });
 
         return redirect()

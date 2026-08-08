@@ -19,7 +19,7 @@ class VehicleController extends Controller
 
         $vehicles = Vehicle::with('parkingLot')
             ->where('apartment_id', $user->apartment_id)
-            ->whereIn('status', ['pending', 'active', 'pending_renewal', 'locked'])
+            ->whereIn('status', ['pending', 'awaiting_payment', 'active', 'pending_renewal', 'locked'])
             ->withoutTrashed()
             ->latest()
             ->get();
@@ -51,10 +51,10 @@ class VehicleController extends Controller
 
         // 2. Validate
         $validated = $request->validate([
-            'vehicle_type'  => ['required', 'in:motorbike,electric_bike,car,bicycle'],
+            'vehicle_type'  => ['required', 'in:motorbike,electric_bike,car'],
             'license_plate' => ['required_if:vehicle_type,motorbike,car', 'nullable', 'string', 'max:20', 'regex:/^[A-Za-z0-9\-\.]+$/'],
             'brand'         => ['nullable', 'string', 'max:50'],
-            'image'         => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'image'         => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp'],
         ]);
 
         $licensePlate = $validated['license_plate'] ?? ('XD-' . strtoupper(\Illuminate\Support\Str::random(6)));
@@ -76,22 +76,8 @@ class VehicleController extends Controller
         $status      = 'active';
         $parkingLotId = null;
 
-        if (in_array($validated['vehicle_type'], ['motorbike', 'electric_bike', 'bicycle'])) {
-            $limit = \App\Models\SystemSetting::get('max_motorbike_per_apartment', 3);
-
-            // Xe máy/điện: Giới hạn theo SystemSetting (đếm cả locked, pending_renewal)
-            $currentMotoCount = Vehicle::where('apartment_id', $user->apartment_id)
-                ->whereIn('vehicle_type', ['motorbike', 'electric_bike', 'bicycle'])
-                ->whereIn('status', ['pending', 'active', 'pending_renewal', 'locked'])
-                ->count();
-
-            if ($currentMotoCount >= $limit) {
-                return back()->withInput()->withErrors([
-                    'vehicle_type' => "Căn hộ của bạn đã đăng ký tối đa {$limit} xe máy/xe điện."
-                ]);
-            }
-
-            // Xe máy mới đăng ký → chờ admin duyệt
+        if (in_array($validated['vehicle_type'], ['motorbike', 'electric_bike'])) {
+            // Xe máy/điện: chờ admin duyệt
             $status = 'pending';
 
         } elseif ($validated['vehicle_type'] === 'car') {
@@ -147,7 +133,9 @@ class VehicleController extends Controller
             'qr_code'        => null,
         ]);
 
-        $message = 'Đăng ký phương tiện thành công. Vui lòng chờ Ban quản lý duyệt.';
+        $message = $status === 'active' 
+            ? 'Đăng ký xe đạp thành công! Xe đã được kích hoạt.'
+            : 'Đăng ký phương tiện thành công. Vui lòng chờ Ban quản lý duyệt.';
 
         return redirect()->route('resident.vehicles.index')->with('success', $message);
     }

@@ -207,40 +207,52 @@ class ApartmentController extends Controller
                 'min:0',
             ],
 
-            'status' => [
-                'required',
-                'in:vacant,occupied,maintenance',
-            ],
-
             'description' => [
                 'nullable',
                 'string',
             ],
 
+            'images.*' => [
+                'nullable',
+                'image',
+                'mimes:jpeg,png,jpg,gif,svg',
+                'max:5120'
+            ],
+
         ]);
 
-        /**
-         * Check unique căn hộ trong tầng
-         */
-        $exists = Apartment::where(
-            'floor_id',
-            $validated['floor_id']
-        )
-            ->where(
-                'apartment_number',
-                $validated['apartment_number']
-            )
-            ->exists();
+        $imagesPaths = [];
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('apartments', 'public');
+                $imagesPaths[] = $path;
+            }
+        }
+        $validated['images'] = $imagesPaths;
 
-        if ($exists) {
+        /**
+         * Check unique căn hộ trong tầng (bao gồm cả căn hộ đã xóa)
+         */
+        $existing = Apartment::withTrashed()
+            ->where('floor_id', $validated['floor_id'])
+            ->where('apartment_number', $validated['apartment_number'])
+            ->first();
+
+        if ($existing) {
+            if ($existing->trashed()) {
+                // Khôi phục và cập nhật
+                $existing->restore();
+                $existing->update($validated);
+                
+                return redirect()
+                    ->route('admin.apartments.index', ['floor_id' => $validated['floor_id']])
+                    ->with('success', 'Căn hộ (đã xóa trước đó) đã được khôi phục và cập nhật thành công.');
+            }
 
             return back()
                 ->withInput()
                 ->withErrors([
-
-                    'apartment_number' =>
-                    'Số căn hộ đã tồn tại trong tầng này.'
-
+                    'apartment_number' => 'Số căn hộ đã tồn tại trong tầng này.'
                 ]);
         }
 
@@ -267,13 +279,88 @@ class ApartmentController extends Controller
      */
     public function show(Apartment $apartment): View
     {
-        $apartment->load(['floor.block', 'residents.user']);
+        $apartment->load(['floor.block', 'residents.user', 'invoices', 'vehicles']);
 
         $declaredMembers = \App\Models\ApartmentMember::where('apartment_id', $apartment->id)
             ->orderBy('created_at')
             ->get();
 
-        return view('admin.apartments.show', compact('apartment', 'declaredMembers'));
+        $allResidents = \App\Models\User::where('role', 'resident')
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
+
+        $residentsHistory = \App\Models\Resident::withTrashed()
+            ->with(['user'])
+            ->where('apartment_id', $apartment->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('admin.apartments.show', compact('apartment', 'declaredMembers', 'allResidents', 'residentsHistory'));
+    }
+
+    /**
+     * Gán chủ hộ trực tiếp
+     */
+    public function assignOwner(Request $request, Apartment $apartment): RedirectResponse
+    {
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+        ], [
+            'user_id.required' => 'Vui lòng chọn cư dân để gán.',
+            'user_id.exists' => 'Cư dân được chọn không hợp lệ.',
+        ]);
+
+        $user = \App\Models\User::findOrFail($validated['user_id']);
+
+        if ($user->role !== 'resident') {
+            return back()->with('error', 'Người dùng được chọn không phải là cư dân.');
+        }
+
+        // Kiểm tra giới hạn số lượng cư dân tối đa (10 người)
+        $currentCount = $apartment->residents()
+            ->whereNull('deleted_at')
+            ->whereIn('status', ['active', 'pending'])
+            ->count();
+        if ($currentCount >= 10) {
+            return back()->with('error', 'Căn hộ đã đạt giới hạn cư dân tối đa (10 người).');
+        }
+
+        // 1. Kiểm tra căn hộ đã có chủ hộ hay chưa
+        $hasOwner = $apartment->residents()
+            ->where('relationship', 'owner')
+            ->whereNull('deleted_at')
+            ->exists();
+
+        if ($hasOwner) {
+            return back()->with('error', 'Căn hộ này đã có chủ hộ đăng ký trong hệ thống.');
+        }
+
+        // 2. Gán cư dân làm chủ hộ
+        \Illuminate\Support\Facades\DB::transaction(function () use ($apartment, $user) {
+            $resident = \App\Models\Resident::where('apartment_id', $apartment->id)
+                ->where('user_id', $user->id)
+                ->first();
+
+            if ($resident) {
+                $resident->update([
+                    'relationship' => 'owner',
+                    'end_date' => null,
+                ]);
+            } else {
+                \App\Models\Resident::create([
+                    'user_id' => $user->id,
+                    'apartment_id' => $apartment->id,
+                    'relationship' => 'owner',
+                    'temporary_status' => 'permanent',
+                    'start_date' => now()->toDateString(),
+                ]);
+            }
+        });
+
+        return redirect()
+            ->route('admin.apartments.show', $apartment->id)
+            ->with('success', 'Đã gán chủ hộ thành công cho cư dân ' . $user->name . '.');
     }
 
     /**
@@ -345,24 +432,45 @@ class ApartmentController extends Controller
                 'string',
             ],
 
+            'images.*' => [
+                'nullable',
+                'image',
+                'mimes:jpeg,png,jpg,gif,svg',
+                'max:5120'
+            ],
+            
+            'old_images' => [
+                'nullable',
+                'array'
+            ],
+
         ]);
 
+        $imagesPaths = $request->input('old_images', []);
+        
+        // Find deleted images to delete from storage
+        $currentImages = $apartment->images ?? [];
+        $deletedImages = array_diff($currentImages, $imagesPaths);
+        foreach ($deletedImages as $deletedImage) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($deletedImage);
+        }
+
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('apartments', 'public');
+                $imagesPaths[] = $path;
+            }
+        }
+        
+        $validated['images'] = $imagesPaths;
+
         /**
-         * Check duplicate
+         * Check duplicate (bao gồm cả căn hộ đã xóa)
          */
-        $exists = Apartment::where(
-            'floor_id',
-            $validated['floor_id']
-        )
-            ->where(
-                'apartment_number',
-                $validated['apartment_number']
-            )
-            ->where(
-                'id',
-                '!=',
-                $apartment->id
-            )
+        $exists = Apartment::withTrashed()
+            ->where('floor_id', $validated['floor_id'])
+            ->where('apartment_number', $validated['apartment_number'])
+            ->where('id', '!=', $apartment->id)
             ->exists();
 
         if ($exists) {
@@ -370,10 +478,7 @@ class ApartmentController extends Controller
             return back()
                 ->withInput()
                 ->withErrors([
-
-                    'apartment_number' =>
-                    'Số căn hộ đã tồn tại trong tầng này.'
-
+                    'apartment_number' => 'Số căn hộ đã tồn tại (hoặc đã bị xóa) trong tầng này.'
                 ]);
         }
 
@@ -470,9 +575,9 @@ class ApartmentController extends Controller
             // Dòng đầu tiên là header
             $header = $rows[0];
             
-            // Validate sơ bộ số cột (ít nhất phải có 13 cột cho cấu trúc mẫu đầy đủ)
-            if (count($header) < 13) {
-                return back()->with('error', 'Tệp Excel không đúng số cột quy định của file mẫu (yêu cầu 13 cột).');
+            // Validate sơ bộ số cột (ít nhất phải có 15 cột cho cấu trúc mẫu đầy đủ)
+            if (count($header) < 15) {
+                return back()->with('error', 'Tệp Excel không đúng số cột quy định của file mẫu (yêu cầu 15 cột mới).');
             }
 
             $successCount = 0;
@@ -497,17 +602,19 @@ class ApartmentController extends Controller
 
                     $blockName = trim($row[0] ?? '');
                     $blockCode = trim($row[1] ?? '');
-                    $blockManagerName = trim($row[2] ?? '');
-                    $blockManagerContact = trim($row[3] ?? '');
-                    $blockDescription = trim($row[4] ?? '');
-                    $floorNumberStr = trim($row[5] ?? '');
-                    $floorName = trim($row[6] ?? '');
-                    $floorTypeStr = trim($row[7] ?? '');
-                    $floorDescription = trim($row[8] ?? '');
-                    $apartmentNumber = trim($row[9] ?? '');
-                    $areaStr = trim($row[10] ?? '');
-                    $statusStr = trim($row[11] ?? '');
-                    $apartmentDescription = trim($row[12] ?? '');
+                    $blockTotalFloors = trim($row[2] ?? '');
+                    $blockTotalBasements = trim($row[3] ?? '');
+                    $blockAptsPerFloor = trim($row[4] ?? '');
+                    $blockAmenities = trim($row[5] ?? '');
+                    $floorNumberStr = trim($row[6] ?? '');
+                    $floorName = trim($row[7] ?? '');
+                    $floorTypeStr = trim($row[8] ?? '');
+                    $floorDescription = trim($row[9] ?? '');
+                    $apartmentNumber = trim($row[10] ?? '');
+                    $apartmentTypeName = trim($row[11] ?? '');
+                    $areaStr = trim($row[12] ?? '');
+                    $statusStr = trim($row[13] ?? '');
+                    $apartmentDescription = trim($row[14] ?? '');
 
                     $rowNum = $i + 1; // Số hàng trong Excel (1-indexed)
 
@@ -536,36 +643,37 @@ class ApartmentController extends Controller
 
                     // 1. Tìm hoặc tạo Block
                     $block = Block::whereRaw('LOWER(name) = ?', [strtolower($blockName)])->first();
+                    $amenitiesArray = $blockAmenities ? array_map('trim', explode(',', $blockAmenities)) : null;
+
                     if (!$block) {
                         $block = Block::create([
                             'name' => $blockName,
                             'code' => $blockCode ?: \Illuminate\Support\Str::slug($blockName),
                             'status' => 'active',
-                            'manager_name' => $blockManagerName ?: null,
-                            'manager_contact' => $blockManagerContact ?: null,
-                            'description' => $blockDescription ?: null,
+                            'total_floors' => $blockTotalFloors !== '' ? (int)$blockTotalFloors : null,
+                            'total_basements' => $blockTotalBasements !== '' ? (int)$blockTotalBasements : null,
+                            'apartments_per_floor' => $blockAptsPerFloor !== '' ? (int)$blockAptsPerFloor : null,
+                            'amenities' => $amenitiesArray,
                         ]);
                     } else {
                         // Cập nhật thông tin block nếu có giá trị mới
                         $updateData = [];
                         if ($blockCode !== '') $updateData['code'] = $blockCode;
-                        if ($blockManagerName !== '') $updateData['manager_name'] = $blockManagerName;
-                        if ($blockManagerContact !== '') $updateData['manager_contact'] = $blockManagerContact;
-                        if ($blockDescription !== '') $updateData['description'] = $blockDescription;
+                        if ($blockTotalFloors !== '') $updateData['total_floors'] = (int)$blockTotalFloors;
+                        if ($blockTotalBasements !== '') $updateData['total_basements'] = (int)$blockTotalBasements;
+                        if ($blockAptsPerFloor !== '') $updateData['apartments_per_floor'] = (int)$blockAptsPerFloor;
+                        if ($blockAmenities !== '') $updateData['amenities'] = $amenitiesArray;
+                        
                         if (!empty($updateData)) {
                             $block->update($updateData);
                         }
                     }
 
                     // Phân loại tầng từ tiếng Việt sang enum
-                    $floorType = 'residential';
+                    $floorType = 'above_ground';
                     $floorTypeLower = mb_strtolower($floorTypeStr, 'UTF-8');
-                    if (str_contains($floorTypeLower, 'thương mại') || str_contains($floorTypeLower, 'commercial')) {
-                        $floorType = 'commercial';
-                    } elseif (str_contains($floorTypeLower, 'kỹ thuật') || str_contains($floorTypeLower, 'technical')) {
-                        $floorType = 'technical';
-                    } elseif (str_contains($floorTypeLower, 'tiện ích') || str_contains($floorTypeLower, 'amenity')) {
-                        $floorType = 'amenity';
+                    if (str_contains($floorTypeLower, 'hầm') || str_contains($floorTypeLower, 'basement')) {
+                        $floorType = 'basement';
                     }
 
                     // 2. Tìm hoặc tạo Floor
@@ -601,7 +709,16 @@ class ApartmentController extends Controller
                         $status = 'maintenance';
                     }
 
-                    // 4. Tìm hoặc tạo/cập nhật Apartment (tìm cả căn hộ đã xóa mềm)
+                    // 4. Tìm loại căn hộ (nếu có nhập Tên Loại Căn Hộ)
+                    $apartmentTypeId = null;
+                    if ($apartmentTypeName !== '') {
+                        $aptType = \App\Models\ApartmentType::whereRaw('LOWER(name) = ?', [strtolower($apartmentTypeName)])->first();
+                        if ($aptType) {
+                            $apartmentTypeId = $aptType->id;
+                        }
+                    }
+
+                    // 5. Tìm hoặc tạo/cập nhật Apartment (tìm cả căn hộ đã xóa mềm)
                     $apartment = Apartment::withTrashed()
                         ->where('floor_id', $floor->id)
                         ->where('apartment_number', $apartmentNumber)
@@ -611,15 +728,24 @@ class ApartmentController extends Controller
                         if ($apartment->trashed()) {
                             $apartment->restore();
                         }
-                        $apartment->update([
+                        
+                        $updateData = [
                             'area' => $area,
                             'status' => $status,
-                            'description' => $apartmentDescription ?: $apartment->description,
-                        ]);
+                        ];
+                        if ($apartmentDescription !== '') {
+                            $updateData['description'] = $apartmentDescription;
+                        }
+                        if ($apartmentTypeId !== null) {
+                            $updateData['apartment_type_id'] = $apartmentTypeId;
+                        }
+                        
+                        $apartment->update($updateData);
                         $updatedCount++;
                     } else {
                         Apartment::create([
                             'floor_id' => $floor->id,
+                            'apartment_type_id' => $apartmentTypeId,
                             'apartment_number' => $apartmentNumber,
                             'area' => $area,
                             'status' => $status,

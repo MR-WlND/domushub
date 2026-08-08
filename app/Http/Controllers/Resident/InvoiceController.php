@@ -481,6 +481,11 @@ class InvoiceController extends Controller
                     'payment_method' => 'vnpay',
                 ]);
             }
+
+            // Kích hoạt xe nếu đây là hóa đơn phí gửi xe
+            if ($invoice->status === 'paid') {
+                $this->activateVehicleIfParkingFee($invoice);
+            }
         }
 
         // Gửi thông báo cho quản trị viên/kế toán khi cư dân thanh toán thành công
@@ -690,5 +695,41 @@ class InvoiceController extends Controller
             'success' => true,
             'message' => 'Đã gửi khiếu nại thành công! Ban Quản Lý sẽ sớm liên hệ xử lý.'
         ]);
+    }
+
+    /**
+     * Kích hoạt xe khi hóa đơn phí gửi xe được thanh toán xong.
+     */
+    private function activateVehicleIfParkingFee(Invoice $invoice): void
+    {
+        $parkingDetail = $invoice->details()->whereHas('servicePrice', function ($q) {
+            $q->where('type', 'parking_fee');
+        })->first();
+
+        if (!$parkingDetail) return;
+
+        // Tìm xe awaiting_payment match biển số trong title
+        $vehicle = \App\Models\Vehicle::where('apartment_id', $invoice->apartment_id)
+            ->where('status', 'awaiting_payment')
+            ->first();
+
+        if (!$vehicle) return;
+
+        $vehicle->update(['status' => 'active']);
+
+        // Sinh QR
+        try {
+            $dir = storage_path('app/public/qr/vehicles');
+            if (!is_dir($dir)) mkdir($dir, 0775, true);
+            $content = strtoupper(str_replace([' ', '-'], '', $vehicle->license_plate));
+            $filename = $content . '.svg';
+            $filePath = $dir . '/' . $filename;
+            if (class_exists(\SimpleSoftwareIO\QrCode\Facades\QrCode::class)) {
+                \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(300)->errorCorrection('H')->generate($content, $filePath);
+            }
+            $vehicle->update(['qr_code' => 'qr/vehicles/' . $filename]);
+        } catch (\Throwable $e) {
+            $vehicle->update(['qr_code' => strtoupper(str_replace([' ', '-'], '', $vehicle->license_plate))]);
+        }
     }
 }

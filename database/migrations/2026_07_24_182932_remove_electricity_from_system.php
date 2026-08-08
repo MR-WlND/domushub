@@ -15,11 +15,11 @@ return new class extends Migration
         DB::table('utility_meter_logs')->where('type', 'electricity')->delete();
         DB::table('utility_meters')->where('type', 'electricity')->delete();
 
-        // 2. Change electricity invoices to other to avoid data loss
+        // 2. Change electricity to other
         DB::table('service_prices')->where('type', 'electricity')->update(['type' => 'other']);
 
-        // 3. Update Enum types to exclude 'electricity'
-        DB::statement("ALTER TABLE service_prices MODIFY COLUMN type ENUM('water', 'management_fee', 'internet', 'service', 'other', 'motorbike', 'car', 'bicycle', 'electric_bike') NOT NULL");
+        // 3. Update Enum types to exclude 'electricity' (keep 'parking' since data exists)
+        DB::statement("ALTER TABLE service_prices MODIFY COLUMN type ENUM('water', 'management_fee', 'internet', 'service', 'other', 'motorbike', 'car', 'bicycle', 'electric_bike', 'parking') NOT NULL");
 
         // For utility_meters and utility_meter_logs: previous was ('electricity', 'water')
         DB::statement("ALTER TABLE utility_meters MODIFY COLUMN type ENUM('water') NOT NULL");

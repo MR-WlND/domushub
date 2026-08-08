@@ -1,6 +1,6 @@
 @extends('layouts.admin.master')
 
-@section('page_title', 'Chốt số Điện Nước – DomusHub')
+@section('page_title', auth()->user()->role === 'technician' ? 'Ghi số Nước – DomusHub' : 'Chốt số Nước – DomusHub')
 
 @push('styles')
 @vite(['resources/css/pages/admin/utility-readings/index.css'])
@@ -11,10 +11,9 @@
 {{-- ── Page Header ─────────────────────────────────── --}}
 <div class="util-page-header">
     <div>
-        <h1>Chốt số Nước</h1>
-        <p>Quản lý chỉ số nước theo tháng – Tháng {{ $month }}/{{ $year }}</p>
+        <h1>{{ auth()->user()->role === 'technician' ? 'Ghi số Nước' : 'Chốt số Nước' }}</h1>
+        <p>{{ auth()->user()->role === 'technician' ? 'Ghi nhận chỉ số nước theo tháng' : 'Quản lý chỉ số nước theo tháng' }} – Tháng {{ $month }}/{{ $year }}</p>
     </div>
-    @if(in_array(auth()->user()->role, ['technician', 'admin']))
     <div class="util-header-actions">
         @if(auth()->user()->role === 'admin')
         <a href="{{ portal_route('utility-logs.index') }}" class="util-btn util-btn--outline" style="background:#fff; color:#475569; border:1px solid #cbd5e1; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
@@ -24,12 +23,7 @@
             Lịch sử
         </a>
         @endif
-        <button onclick="openImportModal()" class="util-btn util-btn--outline" style="background:#fff; color:#475569; border:1px solid #cbd5e1; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-            </svg>
-            Nhập từ file Excel/CSV
-        </button>
+        @if(auth()->user()->role === 'technician')
         <a href="{{ portal_route('utility-readings.batch') }}" class="util-btn util-btn--secondary">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
@@ -44,8 +38,8 @@
             </svg>
             Ghi đơn lẻ
         </a>
+        @endif
     </div>
-    @endif
 </div>
 
 {{-- ── Flash Message ───────────────────────────────── --}}
@@ -398,7 +392,7 @@
         <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>
     </svg>
     <p>Chưa có chỉ số nào được ghi cho tháng {{ $month }}/{{ $year }}.</p>
-    @if(in_array(auth()->user()->role, ['technician', 'admin']))
+    @if(auth()->user()->role === 'technician')
     <div class="util-empty-actions">
         <a href="{{ portal_route('utility-readings.batch') }}" class="util-btn util-btn--secondary">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right: 6px;">
