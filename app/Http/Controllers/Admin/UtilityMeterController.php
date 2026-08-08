@@ -1055,6 +1055,203 @@ class UtilityMeterController extends Controller
     }
 
     /**
+     * Tải file mẫu CSV
+     */
+    public function downloadTemplate(Request $request)
+    {
+        if (!in_array(\Illuminate\Support\Facades\Auth::user()->role, ['technician', 'admin'])) {
+            abort(403, 'Bạn không có quyền tải mẫu nhập chỉ số.');
+        }
+
+        $month = (int) $request->query('month', now()->month);
+        $year  = (int) $request->query('year', now()->year);
+
+        // Lấy tất cả căn hộ
+        $apartments = \App\Models\Apartment::with('floor.block')
+            ->where('status', '!=', 'maintenance')
+            ->get();
+        
+        $apartments = $apartments->sortBy('apartment_number');
+
+        $filename = "Mau_Chot_So_Nuoc_Thang_{$month}_{$year}.xlsx";
+        try {
+            $tempFilePath = \App\Helpers\SimpleXlsx::exportUtilityTemplate($apartments, $month, $year);
+            return response()->download($tempFilePath, $filename, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ])->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Lỗi khi xuất file Excel mẫu: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Import file CSV/Excel với nhận diện cột thông minh (Smart Mapping)
+     */
+    public function import(Request $request): \Illuminate\Http\RedirectResponse
+    {
+        if (!in_array(\Illuminate\Support\Facades\Auth::user()->role, ['technician', 'admin', 'manager', 'staff'])) {
+            abort(403, 'Bạn không có quyền import chỉ số.');
+        }
+
+        $request->validate([
+            'import_month' => 'required|integer|min:1|max:12',
+            'import_year'  => 'required|integer|min:2020|max:2100',
+            'csv_file'     => 'required|file|mimes:xlsx,xls,csv,txt|max:4096',
+        ], [
+            'csv_file.required' => 'Vui lòng chọn file Excel/CSV để tải lên.',
+        ]);
+
+        $month = (int)$request->import_month;
+        $year  = (int)$request->import_year;
+        $file = $request->file('csv_file');
+        $extension = strtolower($file->getClientOriginalExtension());
+        $filePath = $file->getRealPath();
+
+        $rows = [];
+        if (in_array($extension, ['xlsx', 'xls'])) {
+            try {
+                $rows = \App\Helpers\SimpleXlsx::parse($filePath);
+            } catch (\Exception $e) {
+                return back()->with('error', 'Lỗi khi đọc file Excel: ' . $e->getMessage());
+            }
+        } else {
+            $handle = fopen($filePath, 'r');
+            if ($handle !== false) {
+                while (($row = fgetcsv($handle)) !== false) {
+                    $rows[] = $row;
+                }
+                fclose($handle);
+            }
+        }
+
+        if (count($rows) < 2) {
+            return back()->with('error', 'File không có dữ liệu (ít nhất phải có 2 dòng).');
+        }
+
+        // Smart Mapping Algorithm
+        $headerRowIndex = -1;
+        $colApt = -1;
+        $colNew = -1;
+        $colOld = -1;
+
+        // Quét tối đa 5 dòng đầu để tìm tiêu đề
+        for ($i = 0; $i < min(5, count($rows)); $i++) {
+            $row = $rows[$i];
+            $foundApt = -1;
+            $foundNew = -1;
+            $foundOld = -1;
+
+            foreach ($row as $colIndex => $cellValue) {
+                $val = mb_strtolower(trim($cellValue), 'UTF-8');
+                if ($val === '') continue;
+
+                // Cột Căn hộ / Số phòng
+                if ($foundApt === -1 && (str_contains($val, 'phòng') || str_contains($val, 'căn hộ') || str_contains($val, 'mã') || str_contains($val, 'room') || str_contains($val, 'apt') || str_contains($val, 'nhà'))) {
+                    $foundApt = $colIndex;
+                }
+                // Cột Chỉ số mới
+                if ($foundNew === -1 && (str_contains($val, 'mới') || str_contains($val, 'cuối') || str_contains($val, 'new') || str_contains($val, 'tháng này') || str_contains($val, 'chỉ số'))) {
+                    // Tránh nhận nhầm cột "cũ"
+                    if (!str_contains($val, 'cũ') && !str_contains($val, 'đầu') && !str_contains($val, 'trước') && !str_contains($val, 'old')) {
+                        $foundNew = $colIndex;
+                    }
+                }
+                // Cột Chỉ số cũ
+                if ($foundOld === -1 && (str_contains($val, 'cũ') || str_contains($val, 'đầu') || str_contains($val, 'trước') || str_contains($val, 'old'))) {
+                    $foundOld = $colIndex;
+                }
+            }
+
+            if ($foundApt !== -1 && $foundNew !== -1) {
+                $headerRowIndex = $i;
+                $colApt = $foundApt;
+                $colNew = $foundNew;
+                $colOld = $foundOld;
+                break;
+            }
+        }
+
+        if ($headerRowIndex === -1) {
+            return back()->with('error', 'Không nhận diện được tiêu đề. File cần có cột ghi rõ "Số phòng" và "Chỉ số mới".');
+        }
+
+        $successCount = 0;
+        $errors = [];
+
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        try {
+            for ($i = $headerRowIndex + 1; $i < count($rows); $i++) {
+                $row = $rows[$i];
+                if (empty(array_filter($row))) continue; // Bỏ qua dòng trống hoàn toàn
+
+                $aptNumber = isset($row[$colApt]) ? trim($row[$colApt]) : '';
+                $newValStr = isset($row[$colNew]) ? trim($row[$colNew]) : '';
+                
+                if ($aptNumber === '' || $newValStr === '') continue; // Nếu thiếu thông tin quan trọng thì bỏ qua
+
+                $newVal = (int) preg_replace('/[^\d]/', '', $newValStr);
+                $oldVal = 0;
+                
+                if ($colOld !== -1 && isset($row[$colOld]) && trim($row[$colOld]) !== '') {
+                    $oldVal = (int) preg_replace('/[^\d]/', '', $row[$colOld]);
+                }
+
+                $apartment = \App\Models\Apartment::where('apartment_number', $aptNumber)->first();
+                if (!$apartment) {
+                    // Dò tìm nếu file nhập dạng "Tòa-Phòng" (VD: A-101)
+                    $parts = explode('-', $aptNumber);
+                    if (count($parts) === 2) {
+                        $apartment = \App\Models\Apartment::where('apartment_number', trim($parts[1]))->first();
+                    }
+                }
+
+                if (!$apartment) {
+                    $errors[] = "Dòng " . ($i + 1) . ": Không tìm thấy số phòng '{$aptNumber}'.";
+                    continue;
+                }
+
+                if ($colOld !== -1 && $newVal < $oldVal) {
+                    $errors[] = "Dòng " . ($i + 1) . ": Phòng {$apartment->apartment_number} có chỉ số mới ({$newVal}) nhỏ hơn cũ ({$oldVal}).";
+                    continue;
+                }
+
+                \App\Models\UtilityMeter::updateOrCreate(
+                    [
+                        'apartment_id' => $apartment->id,
+                        'type'         => 'water',
+                        'record_month' => $month,
+                        'record_year'  => $year,
+                    ],
+                    [
+                        'old_value'   => $oldVal,
+                        'new_value'   => $newVal,
+                        'recorded_by' => \Illuminate\Support\Facades\Auth::id(),
+                        'status'      => 'pending',
+                    ]
+                );
+                $successCount++;
+            }
+
+            if (count($errors) > 0) {
+                \Illuminate\Support\Facades\DB::rollBack();
+                return back()->with('error', 'Import thất bại do có lỗi dữ liệu. Bạn hãy sửa file và tải lại.')->withErrors($errors);
+            }
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            return redirect()->route('admin.utility-readings.index', [
+                'month' => $month,
+                'year'  => $year,
+            ])->with('success', "Nhận diện thông minh và import thành công {$successCount} chỉ số nước (Chờ duyệt).");
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return back()->with('error', 'Lỗi hệ thống: ' . $e->getMessage());
+        }
+    }
+
+
+    /**
      * AI OCR - Nhận diện chỉ số từ ảnh công tơ bằng Google Gemini
      */
     public function ocr(Request $request): \Illuminate\Http\JsonResponse
