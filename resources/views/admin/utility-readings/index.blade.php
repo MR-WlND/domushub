@@ -24,6 +24,12 @@
             Lịch sử
         </a>
         @endif
+        <button onclick="openImportModal()" class="util-btn util-btn--outline" style="background:#fff; color:#475569; border:1px solid #cbd5e1; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+            </svg>
+            Nhập từ file Excel/CSV
+        </button>
         <a href="{{ portal_route('utility-readings.batch') }}" class="util-btn util-btn--secondary">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
@@ -402,6 +408,9 @@
             </svg>
             Ghi hàng loạt
         </a>
+        <button onclick="openImportModal()" class="util-btn util-btn--outline" style="background:#fff; color:#475569; border:1px solid #cbd5e1; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+            Nhập từ file Excel
+        </button>
         <a href="{{ portal_route('utility-readings.create') }}" class="util-btn util-btn--primary">+ Ghi đơn lẻ</a>
     </div>
     @endif
@@ -555,6 +564,69 @@
     </div>
 </div>
 
+{{-- ── Import Modal ─────────────────────────────── --}}
+<div class="util-modal-backdrop" id="importModal">
+    <div class="util-modal" style="max-width: 500px;">
+        <div class="util-modal-header">
+            <h3>
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:inline-block; vertical-align:middle; margin-right:6px; color:#10b981;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                </svg>
+                Nhập số nước từ file Excel/CSV
+            </h3>
+            <button class="util-modal-close" onclick="closeImportModal()">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <form action="{{ portal_route('utility-readings.import') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div class="util-modal-body" style="padding: 20px 24px;">
+                <div style="margin-bottom: 16px;">
+                    <p style="font-size: 14px; color: #475569; margin-bottom: 12px;">Tải file mẫu về, điền chỉ số mới rồi tải lên hệ thống.</p>
+                    <a href="{{ portal_route('utility-readings.import-template', ['month' => $month, 'year' => $year]) }}" class="util-btn util-btn--outline util-btn--sm" style="display:inline-flex; align-items:center; gap:6px;">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                        </svg>
+                        Tải file mẫu tháng {{ $month }}/{{ $year }}
+                    </a>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label class="util-form-label" style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">Tháng áp dụng <span class="text-danger">*</span></label>
+                        <select name="import_month" class="util-form-input" required>
+                            @for ($m = 1; $m <= 12; $m++)
+                                <option value="{{ $m }}" {{ $month == $m ? 'selected' : '' }}>Tháng {{ $m }}</option>
+                            @endfor
+                        </select>
+                    </div>
+                    <div>
+                        <label class="util-form-label" style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">Năm áp dụng <span class="text-danger">*</span></label>
+                        <select name="import_year" class="util-form-input" required>
+                            @for ($y = date('Y') + 1; $y >= 2020; $y--)
+                                <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>Năm {{ $y }}</option>
+                            @endfor
+                        </select>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label class="util-form-label" style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">Chọn file Excel hoặc CSV <span class="text-danger">*</span></label>
+                    <input type="file" name="csv_file" accept=".xlsx, .xls, .csv" class="util-form-input" required style="padding: 8px;">
+                    <small style="color: #64748b; margin-top: 4px; display: block;">Hỗ trợ .xlsx, .xls, .csv (tối đa 4MB)</small>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #f3f4f6; padding-top: 16px; margin-top: 20px;">
+                    <button type="button" class="util-btn util-btn--outline" onclick="closeImportModal()">Hủy</button>
+                    <button type="submit" class="util-btn util-btn--primary">Tiến hành Import</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
 <style>
 @keyframes spin {
     to { transform: rotate(360deg); }
@@ -645,6 +717,13 @@
 
 @push('scripts')
 <script>
+
+function openImportModal() {
+    document.getElementById('importModal').classList.add('active');
+}
+function closeImportModal() {
+    document.getElementById('importModal').classList.remove('active');
+}
 
 
 document.addEventListener('DOMContentLoaded', function() {
