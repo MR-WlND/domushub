@@ -6,31 +6,27 @@
 <style>
     .tr-page {
         font-family: 'Inter', 'Segoe UI', sans-serif;
-        background-color: #f8fafc;
-        padding: 24px;
-        min-height: calc(100vh - 64px);
+        /* Removed background and padding to match other pages */
     }
     
     .tr-container {
-        background-color: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        padding: 24px;
+        /* Removed card styling to blend with the layout */
         margin-bottom: 24px;
     }
 
     .tr-header {
         display: flex;
         justify-content: space-between;
-        align-items: flex-start;
+        align-items: flex-end;
         margin-bottom: 24px;
     }
 
     .tr-title {
-        font-size: 24px;
+        font-size: 28px;
         font-weight: 700;
-        color: #0f172a;
-        margin: 0 0 4px 0;
+        color: #00236f;
+        margin: 0 0 6px 0;
+        line-height: 1.2;
     }
 
     .tr-subtitle {
@@ -42,37 +38,45 @@
     .btn-create {
         display: inline-flex;
         align-items: center;
-        background-color: #0f172a;
+        background-color: #00236f;
         color: #ffffff;
         font-size: 14px;
         font-weight: 600;
         padding: 10px 16px;
         border-radius: 8px;
         text-decoration: none;
-        transition: background-color 0.2s;
+        transition: all 0.2s;
     }
     
     .btn-create:hover {
-        background-color: #1e293b;
+        background-color: #0b57d0;
         color: #ffffff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0, 35, 111, 0.2);
     }
 
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 16px;
-        margin-bottom: 32px;
+        margin-bottom: 24px;
     }
 
     .stat-card {
         border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 16px;
+        border-radius: 10px;
+        padding: 20px;
         background: #ffffff;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
         min-height: 100px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 35, 111, 0.06);
     }
 
     .stat-header {
@@ -80,10 +84,10 @@
         justify-content: space-between;
         align-items: center;
         font-size: 12px;
-        font-weight: 600;
+        font-weight: 700;
         color: #64748b;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.05em;
     }
 
     .stat-icon {
@@ -101,17 +105,18 @@
     .stat-icon.green { background-color: #dcfce7; color: #16a34a; }
 
     .stat-value {
-        font-size: 36px;
-        font-weight: 700;
+        font-size: 28px;
+        font-weight: 800;
         color: #0f172a;
-        margin-top: 8px;
+        margin-top: 10px;
         line-height: 1;
     }
 
     .filter-container {
+        background: #f8f9ff;
         border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 16px;
+        border-radius: 10px;
+        padding: 18px;
         margin-bottom: 24px;
     }
 
@@ -130,28 +135,28 @@
     }
 
     .filter-label {
-        font-size: 12px;
-        font-weight: 500;
-        color: #64748b;
+        font-size: 13px;
+        font-weight: 700;
+        color: #475569;
         margin-bottom: 6px;
     }
 
     .filter-input {
         height: 40px;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        padding: 0 12px;
+        border: 1px solid #d9e2f2;
+        border-radius: 10px;
+        padding: 0 14px;
         font-size: 14px;
-        color: #334155;
+        color: #0f172a;
         outline: none;
-        background-color: #f8fafc;
+        background-color: #ffffff;
         width: 100%;
-        transition: border-color 0.2s;
+        transition: border-color 0.2s, box-shadow 0.2s;
     }
 
     .filter-input:focus {
-        border-color: #0f172a;
-        background-color: #ffffff;
+        border-color: #00236f;
+        box-shadow: 0 0 0 3px rgba(0, 35, 111, 0.08);
     }
 
     .filter-input-with-icon {
@@ -160,63 +165,73 @@
     
     .filter-input-with-icon svg {
         position: absolute;
-        left: 12px;
+        left: 14px;
         top: 50%;
         transform: translateY(-50%);
         color: #94a3b8;
     }
     
     .filter-input-with-icon input {
-        padding-left: 36px;
+        padding-left: 40px;
     }
 
     .btn-filter {
         height: 40px;
-        background-color: #334155;
+        background-color: #00236f;
         color: #ffffff;
         border: none;
-        border-radius: 8px;
-        padding: 0 20px;
+        border-radius: 10px;
+        padding: 0 24px;
         font-size: 14px;
         font-weight: 600;
         cursor: pointer;
-        transition: background-color 0.2s;
+        transition: all 0.2s;
     }
 
     .btn-filter:hover {
-        background-color: #1e293b;
+        background-color: #0b57d0;
+        box-shadow: 0 4px 6px rgba(0, 35, 111, 0.2);
     }
 
     .table-container {
         overflow-x: auto;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
     }
 
     .tr-table {
         width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
+        border-collapse: collapse;
         text-align: left;
     }
 
     .tr-table th {
-        font-size: 12px;
-        font-weight: 600;
+        font-size: 11px;
+        font-weight: 700;
         color: #64748b;
-        padding: 12px 16px;
+        padding: 14px 18px;
+        background: #f1f5f9;
         border-bottom: 1px solid #e2e8f0;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
         white-space: nowrap;
     }
 
     .tr-table td {
         font-size: 14px;
         color: #334155;
-        padding: 16px;
+        padding: 14px 18px;
         border-bottom: 1px solid #f1f5f9;
         vertical-align: middle;
     }
 
+    .tr-table tr:last-child td {
+        border-bottom: none;
+    }
+
     .tr-table tr:hover td {
-        background-color: #f8fafc;
+        background-color: #f8faff;
     }
 
     .code-text {

@@ -56,14 +56,17 @@ class TemporaryRegistrationController extends Controller
     public function create()
     {
         $users = User::where('role', 'resident')->get();
-        $apartments = Apartment::all();
-        return view('admin.temporary-registrations.create', compact('users', 'apartments'));
+        $blocks = \App\Models\Block::with('floors.apartments')->get();
+        return view('admin.temporary-registrations.create', compact('users', 'blocks'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'user_id' => 'required|exists:users,id',
+            'user_id' => 'nullable|exists:users,id',
+            'guest_name' => 'required_without:user_id|string|max:255',
+            'guest_phone' => 'required_without:user_id|string|max:20',
+            'guest_cccd' => 'required_without:user_id|string|max:20',
             'apartment_id' => 'required|exists:apartments,id',
             'type' => 'required|in:residence,absence',
             'start_date' => 'required|date',
@@ -74,9 +77,25 @@ class TemporaryRegistrationController extends Controller
 
         DB::beginTransaction();
         try {
-            $data = $request->except('attachment');
+            $data = $request->except(['attachment', 'guest_name', 'guest_phone', 'guest_cccd']);
             
-            // Nếu admin tạo, trạng thái mặc định là approved (như user yêu cầu)
+            // Nếu là Tạm trú và không chọn user có sẵn, tạo User mới
+            if ($request->type === 'residence' && !$request->user_id) {
+                $user = User::create([
+                    'name' => $request->guest_name,
+                    'phone' => $request->guest_phone,
+                    'cccd' => $request->guest_cccd,
+                    'email' => 'guest_' . time() . '@domushub.local',
+                    'password' => bcrypt('password123'), // Mật khẩu mặc định
+                    'role' => 'resident',
+                    'apartment_id' => $request->apartment_id,
+                ]);
+                $data['user_id'] = $user->id;
+            } elseif (!$request->user_id) {
+                throw new \Exception("Vui lòng chọn Cư dân cho đơn Tạm vắng.");
+            }
+            
+            // Nếu admin tạo, trạng thái mặc định là approved
             $data['status'] = 'approved';
             $data['approved_by'] = Auth::id();
 
@@ -101,14 +120,17 @@ class TemporaryRegistrationController extends Controller
     public function edit(TemporaryRegistration $temporaryRegistration)
     {
         $users = User::where('role', 'resident')->get();
-        $apartments = Apartment::all();
-        return view('admin.temporary-registrations.edit', compact('temporaryRegistration', 'users', 'apartments'));
+        $blocks = \App\Models\Block::with('floors.apartments')->get();
+        return view('admin.temporary-registrations.edit', compact('temporaryRegistration', 'users', 'blocks'));
     }
 
     public function update(Request $request, TemporaryRegistration $temporaryRegistration)
     {
         $request->validate([
-            'user_id' => 'required|exists:users,id',
+            'user_id' => 'nullable|exists:users,id',
+            'guest_name' => 'required_without:user_id|string|max:255',
+            'guest_phone' => 'required_without:user_id|string|max:20',
+            'guest_cccd' => 'required_without:user_id|string|max:20',
             'apartment_id' => 'required|exists:apartments,id',
             'type' => 'required|in:residence,absence',
             'start_date' => 'required|date',
@@ -119,7 +141,22 @@ class TemporaryRegistrationController extends Controller
 
         DB::beginTransaction();
         try {
-            $data = $request->except('attachment');
+            $data = $request->except(['attachment', 'guest_name', 'guest_phone', 'guest_cccd']);
+
+            if ($request->type === 'residence' && !$request->user_id) {
+                $user = User::create([
+                    'name' => $request->guest_name,
+                    'phone' => $request->guest_phone,
+                    'cccd' => $request->guest_cccd,
+                    'email' => 'guest_' . time() . '@domushub.local',
+                    'password' => bcrypt('password123'),
+                    'role' => 'resident',
+                    'apartment_id' => $request->apartment_id,
+                ]);
+                $data['user_id'] = $user->id;
+            } elseif (!$request->user_id) {
+                throw new \Exception("Vui lòng chọn Cư dân cho đơn Tạm vắng.");
+            }
 
             if ($request->hasFile('attachment')) {
                 if ($temporaryRegistration->attachment_path) {
