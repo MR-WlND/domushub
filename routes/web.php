@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\UtilityMeterController;
 use App\Http\Controllers\Admin\ServicePriceController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\ResidentManageController;
+use App\Http\Controllers\Admin\TemporaryRegistrationController;
 use App\Http\Controllers\Admin\AdminFacilityController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\InvitationController;
@@ -342,6 +343,11 @@ $portalRoutes = function () {
 
     // Danh sách cư dân
     Route::get('/residents', [ResidentManageController::class, 'index'])->name('residents.index');
+
+    // Quản lý Tạm trú / Tạm vắng
+    Route::post('/temporary-registrations/{temporary_registration}/approve', [TemporaryRegistrationController::class, 'approve'])->name('temporary-registrations.approve');
+    Route::post('/temporary-registrations/{temporary_registration}/reject', [TemporaryRegistrationController::class, 'reject'])->name('temporary-registrations.reject');
+    Route::resource('/temporary-registrations', TemporaryRegistrationController::class);
 
     // Quản lý phản ánh & điều phối kỹ thuật (admin / manager)
     Route::get('/tickets', [App\Http\Controllers\Admin\TicketController::class, 'index'])->name('tickets.index');
