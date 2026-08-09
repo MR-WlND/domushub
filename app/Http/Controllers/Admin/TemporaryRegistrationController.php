@@ -65,7 +65,7 @@ class TemporaryRegistrationController extends Controller
         $request->validate([
             'user_id' => 'nullable|exists:users,id',
             'guest_name' => 'nullable|required_without:user_id|string|max:255',
-            'guest_phone' => 'nullable|required_without:user_id|string|max:20',
+            'guest_phone' => 'nullable|required_without:user_id|string|max:20|unique:users,phone',
             'guest_cccd' => 'nullable|required_without:user_id|string|max:20',
             'apartment_id' => 'required|exists:apartments,id',
             'type' => 'required|in:residence,absence',
@@ -129,7 +129,7 @@ class TemporaryRegistrationController extends Controller
         $request->validate([
             'user_id' => 'nullable|exists:users,id',
             'guest_name' => 'nullable|required_without:user_id|string|max:255',
-            'guest_phone' => 'nullable|required_without:user_id|string|max:20',
+            'guest_phone' => 'nullable|required_without:user_id|string|max:20|unique:users,phone',
             'guest_cccd' => 'nullable|required_without:user_id|string|max:20',
             'apartment_id' => 'required|exists:apartments,id',
             'type' => 'required|in:residence,absence',
@@ -237,10 +237,16 @@ class TemporaryRegistrationController extends Controller
     private function syncResidentStatus(TemporaryRegistration $registration)
     {
         // Tạo hoặc cập nhật resident
-        $resident = Resident::firstOrCreate([
-            'user_id' => $registration->user_id,
-            'apartment_id' => $registration->apartment_id,
-        ]);
+        $resident = Resident::firstOrCreate(
+            [
+                'user_id' => $registration->user_id,
+                'apartment_id' => $registration->apartment_id,
+            ],
+            [
+                'relationship' => 'tenant',
+                'start_date' => $registration->start_date,
+            ]
+        );
 
         if ($registration->type === 'residence') {
             $resident->temporary_status = 'temporary';

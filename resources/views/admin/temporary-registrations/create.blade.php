@@ -232,6 +232,16 @@
         <p class="tr-subtitle">Hệ thống sẽ tự động duyệt và ghi nhận thông tin cư dân tạm trú / tạm vắng.</p>
     </div>
 
+    @if(session('success'))
+        <div style="background: #dcfce7; color: #166534; padding: 16px; border-radius: 8px; margin-bottom: 24px; font-size: 14px; font-weight: 500;">
+            {{ session('success') }}
+        </div>
+    @endif
+    @if(session('error'))
+        <div style="background: #fee2e2; color: #991b1b; padding: 16px; border-radius: 8px; margin-bottom: 24px; font-size: 14px; font-weight: 500;">
+            {{ session('error') }}
+        </div>
+    @endif
     @if($errors->any())
         <div style="background: #fee2e2; color: #991b1b; padding: 16px; border-radius: 8px; margin-bottom: 24px; font-size: 14px; border: 1px solid #f87171;">
             <ul style="margin: 0; padding-left: 20px;">
