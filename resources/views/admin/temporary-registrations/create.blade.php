@@ -250,7 +250,7 @@
             <div class="grid-cols-3" style="margin-bottom: 24px;">
                 <div class="form-group">
                     <label class="form-label">Tòa nhà <span class="required">*</span></label>
-                    <select id="block_id" class="form-control">
+                    <select name="block_id" id="block_id" class="form-control" required>
                         <option value="">-- Chọn tòa nhà --</option>
                         @foreach($blocks as $block)
                             <option value="{{ $block->id }}" data-floors="{{ json_encode($block->floors) }}">{{ $block->name }}</option>
@@ -260,7 +260,7 @@
 
                 <div class="form-group">
                     <label class="form-label">Tầng <span class="required">*</span></label>
-                    <select id="floor_id" class="form-control" disabled>
+                    <select name="floor_id" id="floor_id" class="form-control" required disabled>
                         <option value="">-- Chọn tầng --</option>
                     </select>
                 </div>
@@ -363,6 +363,10 @@
         const floorSelect = document.getElementById('floor_id');
         const apartmentSelect = document.getElementById('apartment_id');
         
+        const oldBlockId = "{{ old('block_id') }}";
+        const oldFloorId = "{{ old('floor_id') }}";
+        const oldApartmentId = "{{ old('apartment_id') }}";
+
         // Cascading Dropdowns
         blockSelect.addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
@@ -370,7 +374,7 @@
             apartmentSelect.innerHTML = '<option value="">-- Chọn căn hộ --</option>';
             apartmentSelect.disabled = true;
             
-            if (this.value) {
+            if (this.value && selectedOption.hasAttribute('data-floors')) {
                 const floors = JSON.parse(selectedOption.getAttribute('data-floors'));
                 floors.forEach(floor => {
                     const option = document.createElement('option');
@@ -381,6 +385,11 @@
                     floorSelect.appendChild(option);
                 });
                 floorSelect.disabled = false;
+                
+                if (oldFloorId && !floorSelect.value) {
+                    floorSelect.value = oldFloorId;
+                    floorSelect.dispatchEvent(new Event('change'));
+                }
             } else {
                 floorSelect.disabled = true;
             }
@@ -390,7 +399,7 @@
             const selectedOption = this.options[this.selectedIndex];
             apartmentSelect.innerHTML = '<option value="">-- Chọn căn hộ --</option>';
             
-            if (this.value) {
+            if (this.value && selectedOption.hasAttribute('data-apartments')) {
                 const apartments = JSON.parse(selectedOption.getAttribute('data-apartments'));
                 apartments.forEach(apt => {
                     const option = document.createElement('option');
@@ -399,10 +408,20 @@
                     apartmentSelect.appendChild(option);
                 });
                 apartmentSelect.disabled = false;
+                
+                if (oldApartmentId && !apartmentSelect.value) {
+                    apartmentSelect.value = oldApartmentId;
+                }
             } else {
                 apartmentSelect.disabled = true;
             }
         });
+
+        // Restore old values if validation failed
+        if (oldBlockId) {
+            blockSelect.value = oldBlockId;
+            blockSelect.dispatchEvent(new Event('change'));
+        }
 
         // Toggle Resident/Guest Logic
         const typeResidence = document.getElementById('type_residence');

@@ -369,7 +369,7 @@
             <div class="grid-cols-3" style="margin-bottom: 24px;">
                 <div class="form-group">
                     <label class="form-label">Tòa nhà <span class="required">*</span></label>
-                    <select id="block_id" class="form-control">
+                    <select name="block_id" id="block_id" class="form-control" required>
                         <option value="">-- Chọn tòa nhà --</option>
                         @foreach($blocks as $block)
                             <option value="{{ $block->id }}" data-floors="{{ json_encode($block->floors) }}">{{ $block->name }}</option>
@@ -379,7 +379,7 @@
 
                 <div class="form-group">
                     <label class="form-label">Tầng <span class="required">*</span></label>
-                    <select id="floor_id" class="form-control" disabled>
+                    <select name="floor_id" id="floor_id" class="form-control" required disabled>
                         <option value="">-- Chọn tầng --</option>
                     </select>
                 </div>

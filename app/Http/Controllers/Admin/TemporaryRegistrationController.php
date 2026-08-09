@@ -64,9 +64,9 @@ class TemporaryRegistrationController extends Controller
     {
         $request->validate([
             'user_id' => 'nullable|exists:users,id',
-            'guest_name' => 'required_without:user_id|string|max:255',
-            'guest_phone' => 'required_without:user_id|string|max:20',
-            'guest_cccd' => 'required_without:user_id|string|max:20',
+            'guest_name' => 'nullable|required_without:user_id|string|max:255',
+            'guest_phone' => 'nullable|required_without:user_id|string|max:20',
+            'guest_cccd' => 'nullable|required_without:user_id|string|max:20',
             'apartment_id' => 'required|exists:apartments,id',
             'type' => 'required|in:residence,absence',
             'start_date' => 'required|date',
@@ -128,9 +128,9 @@ class TemporaryRegistrationController extends Controller
     {
         $request->validate([
             'user_id' => 'nullable|exists:users,id',
-            'guest_name' => 'required_without:user_id|string|max:255',
-            'guest_phone' => 'required_without:user_id|string|max:20',
-            'guest_cccd' => 'required_without:user_id|string|max:20',
+            'guest_name' => 'nullable|required_without:user_id|string|max:255',
+            'guest_phone' => 'nullable|required_without:user_id|string|max:20',
+            'guest_cccd' => 'nullable|required_without:user_id|string|max:20',
             'apartment_id' => 'required|exists:apartments,id',
             'type' => 'required|in:residence,absence',
             'start_date' => 'required|date',
