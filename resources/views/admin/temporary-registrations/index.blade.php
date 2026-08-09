@@ -1,178 +1,550 @@
 @extends('layouts.admin.master')
 
-@section('page_title', 'Quản lý Tạm trú / Tạm vắng')
+@section('page_title', 'Quản lý Tạm trú - Tạm vắng')
+
+@push('styles')
+<style>
+    .tr-page {
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+        background-color: #f8fafc;
+        padding: 24px;
+        min-height: calc(100vh - 64px);
+    }
+    
+    .tr-container {
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+
+    .tr-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 24px;
+    }
+
+    .tr-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0 0 4px 0;
+    }
+
+    .tr-subtitle {
+        font-size: 14px;
+        color: #64748b;
+        margin: 0;
+    }
+
+    .btn-create {
+        display: inline-flex;
+        align-items: center;
+        background-color: #0f172a;
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 600;
+        padding: 10px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: background-color 0.2s;
+    }
+    
+    .btn-create:hover {
+        background-color: #1e293b;
+        color: #ffffff;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+
+    .stat-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 16px;
+        background: #ffffff;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 100px;
+    }
+
+    .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .stat-icon.blue { background-color: #e0f2fe; color: #0284c7; }
+    .stat-icon.yellow { background-color: #fef3c7; color: #d97706; }
+    .stat-icon.red { background-color: #fee2e2; color: #dc2626; }
+    .stat-icon.green { background-color: #dcfce7; color: #16a34a; }
+
+    .stat-value {
+        font-size: 36px;
+        font-weight: 700;
+        color: #0f172a;
+        margin-top: 8px;
+        line-height: 1;
+    }
+
+    .filter-container {
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 24px;
+    }
+
+    .filter-form {
+        display: flex;
+        gap: 16px;
+        align-items: flex-end;
+        flex-wrap: wrap;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .filter-label {
+        font-size: 12px;
+        font-weight: 500;
+        color: #64748b;
+        margin-bottom: 6px;
+    }
+
+    .filter-input {
+        height: 40px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0 12px;
+        font-size: 14px;
+        color: #334155;
+        outline: none;
+        background-color: #f8fafc;
+        width: 100%;
+        transition: border-color 0.2s;
+    }
+
+    .filter-input:focus {
+        border-color: #0f172a;
+        background-color: #ffffff;
+    }
+
+    .filter-input-with-icon {
+        position: relative;
+    }
+    
+    .filter-input-with-icon svg {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+    }
+    
+    .filter-input-with-icon input {
+        padding-left: 36px;
+    }
+
+    .btn-filter {
+        height: 40px;
+        background-color: #334155;
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        padding: 0 20px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .btn-filter:hover {
+        background-color: #1e293b;
+    }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .tr-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        text-align: left;
+    }
+
+    .tr-table th {
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748b;
+        padding: 12px 16px;
+        border-bottom: 1px solid #e2e8f0;
+        white-space: nowrap;
+    }
+
+    .tr-table td {
+        font-size: 14px;
+        color: #334155;
+        padding: 16px;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+    }
+
+    .tr-table tr:hover td {
+        background-color: #f8fafc;
+    }
+
+    .code-text {
+        font-weight: 600;
+        color: #0f172a;
+    }
+
+    .badge-status {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .badge-pending { background-color: #fef3c7; color: #d97706; }
+    .badge-approved { background-color: #dcfce7; color: #16a34a; }
+    .badge-rejected { background-color: #fee2e2; color: #dc2626; }
+
+    .action-icons {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .action-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px;
+        border-radius: 4px;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+
+    .action-btn:hover {
+        background-color: #f1f5f9;
+        color: #0f172a;
+    }
+
+    .action-btn.approve:hover { color: #16a34a; background-color: #dcfce7; }
+    .action-btn.reject:hover { color: #dc2626; background-color: #fee2e2; }
+
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 16px;
+        border-top: 1px solid #e2e8f0;
+        margin-top: 8px;
+    }
+
+    .pagination-info {
+        font-size: 13px;
+        color: #64748b;
+    }
+    
+    .pagination-links nav div:first-child {
+        display: none;
+    }
+    .pagination-links svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    @media (max-width: 1024px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    @media (max-width: 640px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        .filter-form {
+            flex-direction: column;
+            align-items: stretch;
+        }
+    }
+</style>
+@endpush
 
 @section('content')
-<div class="px-4 py-6 sm:px-6 lg:px-8">
-    <div class="sm:flex sm:items-center sm:justify-between">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">Quản lý Tạm trú / Tạm vắng</h1>
-            <p class="mt-2 text-sm text-gray-700">Danh sách các yêu cầu đăng ký tạm trú, tạm vắng của cư dân.</p>
-        </div>
-        <div class="mt-4 sm:mt-0">
-            <a href="{{ route('admin.temporary-registrations.create') }}" class="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto">
-                Tạo đăng ký mới
+<div class="tr-page">
+    <div class="tr-container">
+        
+        {{-- Header --}}
+        <div class="tr-header">
+            <div>
+                <h1 class="tr-title">Quản lý Tạm trú - Tạm vắng</h1>
+                <p class="tr-subtitle">Quản lý danh sách cư dân đăng ký tạm trú, tạm vắng và trạng thái phê duyệt hồ sơ.</p>
+            </div>
+            <a href="{{ route('admin.temporary-registrations.create') }}" class="btn-create">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="margin-right: 6px;">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Tạo đơn hộ
             </a>
         </div>
-    </div>
 
-    @if(session('success'))
-        <div class="mt-4 rounded-md bg-green-50 p-4">
-            <div class="flex">
-                <div class="ml-3">
-                    <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
+        @if(session('success'))
+            <div style="background: #dcfce7; color: #166534; padding: 12px; border-radius: 8px; margin-bottom: 24px; font-size: 14px; font-weight: 500;">
+                {{ session('success') }}
+            </div>
+        @endif
+        @if(session('error'))
+            <div style="background: #fee2e2; color: #991b1b; padding: 12px; border-radius: 8px; margin-bottom: 24px; font-size: 14px; font-weight: 500;">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        {{-- Stats --}}
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span>Tổng yêu cầu mới</span>
+                    <div class="stat-icon blue">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                        </svg>
+                    </div>
                 </div>
+                <div class="stat-value">{{ $stats['total_new'] ?? 0 }}</div>
             </div>
-        </div>
-    @endif
-    @if(session('error'))
-        <div class="mt-4 rounded-md bg-red-50 p-4">
-            <div class="flex">
-                <div class="ml-3">
-                    <p class="text-sm font-medium text-red-800">{{ session('error') }}</p>
+            
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span>Đang chờ duyệt</span>
+                    <div class="stat-icon yellow">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
                 </div>
+                <div class="stat-value">{{ $stats['pending'] ?? 0 }}</div>
             </div>
-        </div>
-    @endif
 
-    {{-- Stats --}}
-    <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-4">
-        <div class="overflow-hidden rounded-lg bg-white shadow">
-            <div class="p-5">
-                <dt class="truncate text-sm font-medium text-gray-500">Tổng số</dt>
-                <dd class="mt-1 text-3xl font-semibold text-gray-900">{{ $stats['total'] }}</dd>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span>Sắp hết hạn</span>
+                    <div class="stat-icon red">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                    </div>
+                </div>
+                <div class="stat-value">{{ $stats['expiring_soon'] ?? 0 }}</div>
             </div>
-        </div>
-        <div class="overflow-hidden rounded-lg bg-white shadow">
-            <div class="p-5">
-                <dt class="truncate text-sm font-medium text-gray-500">Chờ duyệt</dt>
-                <dd class="mt-1 text-3xl font-semibold text-yellow-600">{{ $stats['pending'] }}</dd>
-            </div>
-        </div>
-        <div class="overflow-hidden rounded-lg bg-white shadow">
-            <div class="p-5">
-                <dt class="truncate text-sm font-medium text-gray-500">Đã duyệt</dt>
-                <dd class="mt-1 text-3xl font-semibold text-green-600">{{ $stats['approved'] }}</dd>
-            </div>
-        </div>
-        <div class="overflow-hidden rounded-lg bg-white shadow">
-            <div class="p-5">
-                <dt class="truncate text-sm font-medium text-gray-500">Từ chối</dt>
-                <dd class="mt-1 text-3xl font-semibold text-red-600">{{ $stats['rejected'] }}</dd>
-            </div>
-        </div>
-    </div>
 
-    {{-- Filters --}}
-    <div class="mt-6 rounded-lg bg-white p-4 shadow">
-        <form method="GET" action="{{ route('admin.temporary-registrations.index') }}" class="flex flex-wrap gap-4 items-end">
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Loại</label>
-                <select name="type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                    <option value="">Tất cả</option>
-                    <option value="residence" {{ request('type') == 'residence' ? 'selected' : '' }}>Tạm trú</option>
-                    <option value="absence" {{ request('type') == 'absence' ? 'selected' : '' }}>Tạm vắng</option>
-                </select>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span>Đã phê duyệt</span>
+                    <div class="stat-icon green">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    </div>
+                </div>
+                <div class="stat-value">{{ $stats['approved'] ?? 0 }}</div>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Trạng thái</label>
-                <select name="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                    <option value="">Tất cả</option>
-                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Chờ duyệt</option>
-                    <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Đã duyệt</option>
-                    <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Từ chối</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Tìm kiếm</label>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Tên, Email, SĐT..." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-            </div>
-            <div>
-                <button type="submit" class="inline-flex justify-center rounded-md border border-transparent bg-gray-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">Lọc</button>
-                @if(request('type') || request('status') || request('search'))
-                    <a href="{{ route('admin.temporary-registrations.index') }}" class="ml-2 text-sm text-red-600 hover:text-red-800">Xóa lọc</a>
+        </div>
+
+        {{-- Filters --}}
+        <div class="filter-container">
+            <form method="GET" action="{{ route('admin.temporary-registrations.index') }}" class="filter-form">
+                <div class="filter-group" style="flex: 2;">
+                    <label class="filter-label">Tìm kiếm</label>
+                    <div class="filter-input-with-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" name="search" value="{{ request('search') }}" class="filter-input" placeholder="Tên, căn hộ...">
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Loại đơn</label>
+                    <select name="type" class="filter-input">
+                        <option value="">Tất cả</option>
+                        <option value="residence" {{ request('type') == 'residence' ? 'selected' : '' }}>Tạm trú</option>
+                        <option value="absence" {{ request('type') == 'absence' ? 'selected' : '' }}>Tạm vắng</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Trạng thái</label>
+                    <select name="status" class="filter-input">
+                        <option value="">Tất cả</option>
+                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Chờ duyệt</option>
+                        <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Đã duyệt</option>
+                        <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Từ chối</option>
+                    </select>
+                </div>
+
+                <div class="filter-group" style="flex: 0; min-width: auto;">
+                    <button type="submit" class="btn-filter">Lọc</button>
+                </div>
+                @if(request()->anyFilled(['search', 'type', 'status']))
+                    <div class="filter-group" style="flex: 0; min-width: auto;">
+                        <a href="{{ route('admin.temporary-registrations.index') }}" style="color: #ef4444; font-size: 14px; text-decoration: none; padding-left: 8px;">Xóa</a>
+                    </div>
                 @endif
-            </div>
-        </form>
-    </div>
+            </form>
+        </div>
 
-    {{-- Table --}}
-    <div class="mt-8 flex flex-col">
-        <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-                <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-                    <table class="min-w-full divide-y divide-gray-300">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Cư dân</th>
-                                <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Căn hộ</th>
-                                <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Loại</th>
-                                <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Thời gian</th>
-                                <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Trạng thái</th>
-                                <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Người duyệt</th>
-                                <th class="relative px-3 py-3.5"><span class="sr-only">Hành động</span></th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200 bg-white">
-                            @forelse($registrations as $reg)
-                                <tr>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
-                                        <div class="font-medium">{{ $reg->user->name ?? 'N/A' }}</div>
-                                        <div class="text-gray-500">{{ $reg->user->phone ?? '' }}</div>
-                                    </td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                        {{ $reg->apartment->apartment_number ?? 'N/A' }}
-                                    </td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                        @if($reg->type == 'residence')
-                                            <span class="inline-flex rounded-full bg-blue-100 px-2 text-xs font-semibold leading-5 text-blue-800">Tạm trú</span>
-                                        @else
-                                            <span class="inline-flex rounded-full bg-orange-100 px-2 text-xs font-semibold leading-5 text-orange-800">Tạm vắng</span>
-                                        @endif
-                                    </td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                        {{ $reg->start_date->format('d/m/Y') }} 
-                                        @if($reg->end_date)
-                                            - {{ $reg->end_date->format('d/m/Y') }}
-                                        @else
-                                            - (Chưa xác định)
-                                        @endif
-                                    </td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                        @if($reg->status == 'pending')
-                                            <span class="inline-flex rounded-full bg-yellow-100 px-2 text-xs font-semibold leading-5 text-yellow-800">Chờ duyệt</span>
-                                        @elseif($reg->status == 'approved')
-                                            <span class="inline-flex rounded-full bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800">Đã duyệt</span>
-                                        @else
-                                            <span class="inline-flex rounded-full bg-red-100 px-2 text-xs font-semibold leading-5 text-red-800">Từ chối</span>
-                                        @endif
-                                    </td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                        {{ $reg->approver->name ?? 'N/A' }}
-                                    </td>
-                                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                                        <a href="{{ route('admin.temporary-registrations.edit', $reg->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-2">Chi tiết / Sửa</a>
-                                        
-                                        <form action="{{ route('admin.temporary-registrations.destroy', $reg->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Bạn có chắc muốn xóa bản ghi này?');">
+        {{-- Table --}}
+        <div class="table-container">
+            <table class="tr-table">
+                <thead>
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Cư dân</th>
+                        <th>Căn hộ</th>
+                        <th>Loại đơn</th>
+                        <th>Thời gian</th>
+                        <th>Trạng thái</th>
+                        <th style="text-align: right;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($registrations as $reg)
+                        <tr>
+                            <td class="code-text">#REQ-{{ str_pad($reg->id, 4, '0', STR_PAD_LEFT) }}</td>
+                            <td>{{ $reg->user->name ?? 'N/A' }}</td>
+                            <td style="font-weight: 500;">{{ $reg->apartment->apartment_number ?? 'N/A' }}</td>
+                            <td>{{ $reg->type == 'residence' ? 'Tạm trú' : 'Tạm vắng' }}</td>
+                            <td>
+                                {{ $reg->start_date->format('d/m/Y') }} - 
+                                {{ $reg->end_date ? $reg->end_date->format('d/m/Y') : 'Chưa xác định' }}
+                            </td>
+                            <td>
+                                @if($reg->status == 'pending')
+                                    <span class="badge-status badge-pending">Chờ duyệt</span>
+                                @elseif($reg->status == 'approved')
+                                    <span class="badge-status badge-approved">Đã duyệt</span>
+                                @else
+                                    <span class="badge-status badge-rejected">Từ chối</span>
+                                @endif
+                            </td>
+                            <td>
+                                <div class="action-icons" style="justify-content: flex-end;">
+                                    {{-- Nút Xem chi tiết --}}
+                                    <a href="{{ route('admin.temporary-registrations.edit', $reg->id) }}" class="action-btn" title="Xem chi tiết">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                    </a>
+                                    
+                                    @if($reg->status == 'pending')
+                                        {{-- Nút Duyệt --}}
+                                        <form action="{{ route('admin.temporary-registrations.approve', $reg->id) }}" method="POST" style="margin: 0;">
                                             @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900">Xóa</button>
+                                            <button type="submit" class="action-btn approve" title="Duyệt đơn" onclick="return confirm('Xác nhận duyệt đăng ký này?');">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            </button>
                                         </form>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="7" class="px-3 py-4 text-center text-sm text-gray-500">Không có dữ liệu</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+
+                                        {{-- Nút Từ chối --}}
+                                        <button type="button" class="action-btn reject" title="Từ chối" onclick="promptReject({{ $reg->id }})">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                                            </svg>
+                                        </button>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 32px; color: #64748b;">Không có dữ liệu</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        {{-- Pagination --}}
+        @if($registrations->hasPages())
+        <div class="pagination-container">
+            <div class="pagination-info">
+                Hiển thị {{ $registrations->firstItem() ?? 0 }}-{{ $registrations->lastItem() ?? 0 }} của {{ $registrations->total() }} kết quả
+            </div>
+            <div class="pagination-links">
+                {{ $registrations->links() }}
             </div>
         </div>
-    </div>
-    <div class="mt-4">
-        {{ $registrations->links() }}
+        @else
+        <div class="pagination-container" style="justify-content: flex-start;">
+            <div class="pagination-info">
+                Hiển thị {{ $registrations->count() }} kết quả
+            </div>
+        </div>
+        @endif
+        
     </div>
 </div>
+
+<!-- Modal Từ chối ẩn (sử dụng javascript để submit form thay vì modal html) -->
+<form id="globalRejectForm" method="POST" action="" style="display: none;">
+    @csrf
+    <input type="hidden" name="rejection_reason" id="globalRejectReason">
+</form>
+
+<script>
+    function promptReject(id) {
+        let reason = prompt("Nhập lý do từ chối:");
+        if (reason !== null && reason.trim() !== "") {
+            let form = document.getElementById('globalRejectForm');
+            form.action = `/admin/temporary-registrations/${id}/reject`;
+            document.getElementById('globalRejectReason').value = reason.trim();
+            form.submit();
+        } else if (reason !== null) {
+            alert("Lý do từ chối không được để trống!");
+        }
+    }
+</script>
 @endsection

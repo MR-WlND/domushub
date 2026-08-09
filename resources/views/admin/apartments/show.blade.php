@@ -174,6 +174,7 @@
                                         <th>Họ & Tên</th>
                                         <th>Thông tin liên hệ</th>
                                         <th>Vai trò</th>
+                                        <th>Cư trú</th>
                                         <th>Trạng thái</th>
                                     </tr>
                                 </thead>
@@ -227,6 +228,15 @@
                                                     <span class="badge-relationship tenant">Người thuê</span>
                                                 @else
                                                     <span class="badge-relationship family">Thành viên gia đình</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($resident->temporary_status == 'temporary')
+                                                    <span style="display:inline-block; padding:2px 8px; border-radius:12px; font-size:12px; font-weight:600; background:#dbeafe; color:#1e40af;">Tạm trú</span>
+                                                @elseif($resident->temporary_status == 'absent')
+                                                    <span style="display:inline-block; padding:2px 8px; border-radius:12px; font-size:12px; font-weight:600; background:#ffedd5; color:#9a3412;">Tạm vắng</span>
+                                                @else
+                                                    <span style="display:inline-block; padding:2px 8px; border-radius:12px; font-size:12px; font-weight:600; background:#f1f5f9; color:#475569;">Thường trú</span>
                                                 @endif
                                             </td>
                                             <td>

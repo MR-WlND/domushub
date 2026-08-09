@@ -38,11 +38,16 @@ class TemporaryRegistrationController extends Controller
 
         $registrations = $query->paginate(20)->withQueryString();
 
+        $now = now();
+        $thirtyDaysLater = now()->addDays(30);
+
         $stats = [
-            'total' => TemporaryRegistration::count(),
+            'total_new' => TemporaryRegistration::whereDate('created_at', today())->count(), // or just total pending if they prefer, but image says "Tổng yêu cầu mới"
             'pending' => TemporaryRegistration::where('status', 'pending')->count(),
+            'expiring_soon' => TemporaryRegistration::whereNotNull('end_date')
+                                ->whereBetween('end_date', [$now, $thirtyDaysLater])
+                                ->count(),
             'approved' => TemporaryRegistration::where('status', 'approved')->count(),
-            'rejected' => TemporaryRegistration::where('status', 'rejected')->count(),
         ];
 
         return view('admin.temporary-registrations.index', compact('registrations', 'stats'));
