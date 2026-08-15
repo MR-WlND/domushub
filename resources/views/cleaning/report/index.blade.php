@@ -33,9 +33,31 @@
     .upload-area i{font-size:24px;color:#A3AED0;margin-bottom:8px;}
     .upload-area p{font-size:13px;color:#707EAE;font-weight:500;}
     .upload-area span{font-size:11px;color:#A3AED0;display:block;margin-top:3px;}
-    .upload-preview{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
-    .upload-thumb{width:56px;height:56px;border-radius:8px;overflow:hidden;border:2px solid #E9EDF7;}
-    .upload-thumb img{width:100%;height:100%;object-fit:cover;}
+    .upload-preview{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+    .upload-thumb{width:80px;height:80px;border-radius:10px;overflow:hidden;border:2px solid #E9EDF7;position:relative;cursor:pointer;transition:.2s;}
+    .upload-thumb:hover{border-color:#3652D9;transform:scale(1.03);}
+    .upload-thumb img,.upload-thumb video{width:100%;height:100%;object-fit:cover;display:block;}
+    .upload-thumb__overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);border-radius:8px;opacity:1;}
+    .upload-thumb__overlay i{color:white;font-size:18px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));}
+    .upload-thumb__remove{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#EE5D50;color:white;border:2px solid white;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:.15s;z-index:2;}
+    .upload-thumb:hover .upload-thumb__remove{opacity:1;}
+    .upload-thumb__name{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.6);color:white;font-size:9px;padding:2px 4px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+    /* Lightbox */
+    .lightbox{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.85);align-items:center;justify-content:center;padding:20px;}
+    .lightbox--active{display:flex;}
+    .lightbox__content{max-width:90vw;max-height:85vh;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+    .lightbox__content img,.lightbox__content video{max-width:90vw;max-height:85vh;display:block;border-radius:12px;}
+    .lightbox__close{position:absolute;top:20px;right:24px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.15);backdrop-filter:blur(4px);border:none;color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;}
+    .lightbox__close:hover{background:rgba(255,255,255,.3);}
+
+    /* History media thumbnails */
+    .history-item__media{display:flex;gap:6px;margin-top:6px;}
+    .history-media-thumb{width:36px;height:36px;border-radius:6px;overflow:hidden;border:1.5px solid #E9EDF7;cursor:pointer;position:relative;transition:.15s;}
+    .history-media-thumb:hover{border-color:#3652D9;transform:scale(1.05);}
+    .history-media-thumb img,.history-media-thumb video{width:100%;height:100%;object-fit:cover;display:block;}
+    .history-media-thumb__play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);border-radius:4px;}
+    .history-media-thumb__play i{color:white;font-size:10px;}
     .btn-submit{display:inline-flex;align-items:center;gap:10px;background:#3652D9;color:white;border:none;padding:13px 28px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:.2s;font-family:inherit;margin-top:4px;}
     .btn-submit:hover{background:#2a43b8;transform:translateY(-1px);box-shadow:0 6px 16px rgba(54,82,217,.3);}
 
@@ -163,13 +185,34 @@
     <div class="history-card">
         <h2 class="history-card__title"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử báo cáo ({{ $reports->count() }})</h2>
         @foreach($reports as $report)
-        <div class="history-item">
+        <div class="history-item" style="flex-wrap:wrap;">
             <div class="history-item__dot history-item__dot--{{ $report->status }}"></div>
             <span class="history-item__title">{{ $report->title }}</span>
             <span class="history-item__status history-item__status--{{ $report->status }}">
                 {{ $report->status === 'pending' ? 'Chờ xử lý' : ($report->status === 'processing' ? 'Đang xử lý' : 'Đã xử lý') }}
             </span>
             <span class="history-item__date">{{ $report->created_at->format('d/m') }}</span>
+            @if($report->images && count($report->images) > 0)
+            <div class="history-item__media" style="width:100%;padding-left:20px;">
+                @foreach($report->images as $media)
+                @php
+                    $ext = strtolower(pathinfo($media, PATHINFO_EXTENSION));
+                    $isVideo = in_array($ext, ['mp4','mov','avi','webm']);
+                    $url = asset('storage/' . $media);
+                @endphp
+                @if($isVideo)
+                <div class="history-media-thumb" onclick="openLightbox('{{ $url }}', 'video')">
+                    <video src="{{ $url }}" muted preload="metadata"></video>
+                    <div class="history-media-thumb__play"><i class="fa-solid fa-play"></i></div>
+                </div>
+                @else
+                <div class="history-media-thumb" onclick="openLightbox('{{ $url }}', 'image')">
+                    <img src="{{ $url }}" alt="Ảnh sự cố">
+                </div>
+                @endif
+                @endforeach
+            </div>
+            @endif
         </div>
         @endforeach
     </div>
@@ -199,42 +242,159 @@
 
 @push('scripts')
 <script>
+// ═══════════════════════════════════════
+// FILE PREVIEW (trước khi gửi)
+// ═══════════════════════════════════════
+let selectedFiles = [];
+
 function previewFiles(input) {
     const preview = document.getElementById('uploadPreview');
     preview.innerHTML = '';
-    if (input.files) {
-        Array.from(input.files).forEach(file => {
-            const thumb = document.createElement('div');
-            thumb.className = 'upload-thumb';
+    selectedFiles = Array.from(input.files);
 
-            if (file.type.startsWith('video/')) {
-                // Video preview
-                const video = document.createElement('video');
-                video.src = URL.createObjectURL(file);
-                video.muted = true;
-                video.style.width = '100%';
-                video.style.height = '100%';
-                video.style.objectFit = 'cover';
-                video.addEventListener('loadeddata', () => video.currentTime = 1);
-                thumb.appendChild(video);
-                // Add play icon overlay
-                const overlay = document.createElement('div');
-                overlay.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);border-radius:6px;';
-                overlay.innerHTML = '<i class="fa-solid fa-play" style="color:white;font-size:14px;"></i>';
-                thumb.style.position = 'relative';
-                thumb.appendChild(overlay);
-            } else {
-                // Image preview
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    thumb.innerHTML = '<img src="' + e.target.result + '" alt="preview">';
-                };
-                reader.readAsDataURL(file);
-            }
+    selectedFiles.forEach((file, idx) => {
+        const thumb = document.createElement('div');
+        thumb.className = 'upload-thumb';
 
-            preview.appendChild(thumb);
+        if (file.type.startsWith('video/')) {
+            const video = document.createElement('video');
+            video.src = URL.createObjectURL(file);
+            video.muted = true;
+            video.preload = 'metadata';
+            video.addEventListener('loadeddata', () => { video.currentTime = 1; });
+            thumb.appendChild(video);
+
+            const overlay = document.createElement('div');
+            overlay.className = 'upload-thumb__overlay';
+            overlay.innerHTML = '<i class="fa-solid fa-video"></i>';
+            thumb.appendChild(overlay);
+        } else {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.alt = file.name;
+            thumb.appendChild(img);
+        }
+
+        // File name label
+        const nameLabel = document.createElement('div');
+        nameLabel.className = 'upload-thumb__name';
+        nameLabel.textContent = file.name.length > 12 ? file.name.substring(0, 9) + '...' : file.name;
+        thumb.appendChild(nameLabel);
+
+        // Remove button
+        const removeBtn = document.createElement('div');
+        removeBtn.className = 'upload-thumb__remove';
+        removeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        removeBtn.onclick = function(e) {
+            e.stopPropagation();
+            selectedFiles.splice(idx, 1);
+            rebuildFileInput();
+            previewFromArray();
+        };
+        thumb.appendChild(removeBtn);
+
+        // Click to preview full
+        thumb.addEventListener('click', function() {
+            const url = URL.createObjectURL(file);
+            openLightbox(url, file.type.startsWith('video/') ? 'video' : 'image');
         });
-    }
+
+        preview.appendChild(thumb);
+    });
 }
+
+function previewFromArray() {
+    const preview = document.getElementById('uploadPreview');
+    preview.innerHTML = '';
+    selectedFiles.forEach((file, idx) => {
+        const thumb = document.createElement('div');
+        thumb.className = 'upload-thumb';
+
+        if (file.type.startsWith('video/')) {
+            const video = document.createElement('video');
+            video.src = URL.createObjectURL(file);
+            video.muted = true;
+            video.preload = 'metadata';
+            video.addEventListener('loadeddata', () => { video.currentTime = 1; });
+            thumb.appendChild(video);
+            const overlay = document.createElement('div');
+            overlay.className = 'upload-thumb__overlay';
+            overlay.innerHTML = '<i class="fa-solid fa-video"></i>';
+            thumb.appendChild(overlay);
+        } else {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            thumb.appendChild(img);
+        }
+
+        const nameLabel = document.createElement('div');
+        nameLabel.className = 'upload-thumb__name';
+        nameLabel.textContent = file.name.length > 12 ? file.name.substring(0, 9) + '...' : file.name;
+        thumb.appendChild(nameLabel);
+
+        const removeBtn = document.createElement('div');
+        removeBtn.className = 'upload-thumb__remove';
+        removeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        removeBtn.onclick = function(e) {
+            e.stopPropagation();
+            selectedFiles.splice(idx, 1);
+            rebuildFileInput();
+            previewFromArray();
+        };
+        thumb.appendChild(removeBtn);
+
+        thumb.addEventListener('click', function() {
+            openLightbox(URL.createObjectURL(file), file.type.startsWith('video/') ? 'video' : 'image');
+        });
+
+        preview.appendChild(thumb);
+    });
+}
+
+function rebuildFileInput() {
+    const dt = new DataTransfer();
+    selectedFiles.forEach(f => dt.items.add(f));
+    document.getElementById('fileInput').files = dt.files;
+}
+
+// ═══════════════════════════════════════
+// LIGHTBOX (xem ảnh/video full)
+// ═══════════════════════════════════════
+function openLightbox(url, type) {
+    let lightbox = document.getElementById('mediaLightbox');
+    if (!lightbox) {
+        lightbox = document.createElement('div');
+        lightbox.id = 'mediaLightbox';
+        lightbox.className = 'lightbox';
+        lightbox.innerHTML = '<button class="lightbox__close" onclick="closeLightbox()"><i class="fa-solid fa-xmark"></i></button><div class="lightbox__content" id="lightboxContent"></div>';
+        lightbox.addEventListener('click', function(e) { if (e.target === this) closeLightbox(); });
+        document.body.appendChild(lightbox);
+    }
+
+    const content = document.getElementById('lightboxContent');
+    if (type === 'video') {
+        content.innerHTML = `<video src="${url}" controls autoplay style="max-width:90vw;max-height:85vh;border-radius:12px;"></video>`;
+    } else {
+        content.innerHTML = `<img src="${url}" alt="Preview" style="max-width:90vw;max-height:85vh;border-radius:12px;">`;
+    }
+    lightbox.classList.add('lightbox--active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+    const lightbox = document.getElementById('mediaLightbox');
+    if (lightbox) {
+        lightbox.classList.remove('lightbox--active');
+        const content = document.getElementById('lightboxContent');
+        const video = content.querySelector('video');
+        if (video) video.pause();
+        content.innerHTML = '';
+    }
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeLightbox();
+});
 </script>
 @endpush
