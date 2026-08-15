@@ -453,7 +453,7 @@
                 <thead>
                     <tr>
                         <th>Mã đơn</th>
-                        <th>Cư dân</th>
+                        <th>Người Tạm Trú / Vắng</th>
                         <th>Căn hộ</th>
                         <th>Loại đơn</th>
                         <th>Thời gian</th>
@@ -465,7 +465,13 @@
                     @forelse($registrations as $reg)
                         <tr>
                             <td class="code-text">#REQ-{{ str_pad($reg->id, 4, '0', STR_PAD_LEFT) }}</td>
-                            <td>{{ $reg->user->name ?? 'N/A' }}</td>
+                            <td>
+                                @if($reg->type == 'residence')
+                                    {{ $reg->guest_name ?? 'Khách' }}
+                                @else
+                                    {{ $reg->user->name ?? 'N/A' }}
+                                @endif
+                            </td>
                             <td>
                                 <div style="font-weight: 500;">{{ $reg->apartment->apartment_number ?? 'N/A' }}</div>
                                 @if($reg->apartment && $reg->apartment->floor && $reg->apartment->floor->block)

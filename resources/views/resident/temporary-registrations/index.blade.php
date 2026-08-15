@@ -115,7 +115,7 @@
                 <tr>
                     <th>Mã đơn</th>
                     <th>Loại</th>
-                    <th>Người đăng ký</th>
+                    <th>Người Tạm Trú / Vắng</th>
                     <th>Thời gian</th>
                     <th>Trạng thái</th>
                     <th>Thao tác</th>

@@ -119,6 +119,7 @@
             <button class="tab-button" onclick="openTab(event, 'tab-residents')">Cư dân</button>
             <button class="tab-button" onclick="openTab(event, 'tab-invoices')">Hóa đơn</button>
             <button class="tab-button" onclick="openTab(event, 'tab-vehicles')">Phương tiện</button>
+            <button class="tab-button" onclick="openTab(event, 'tab-temporary')">Tạm trú / Tạm vắng</button>
         </div>
 
         <div class="tabs-content">
@@ -310,6 +311,57 @@
                             Chưa có phương tiện nào được đăng ký.
                         </div>
                     @endforelse
+                </div>
+            </div>
+
+            {{-- Tab 5: Tạm trú/Tạm vắng --}}
+            <div id="tab-temporary" class="tab-pane" style="display: none;">
+                <div class="table-responsive">
+                    <table class="clean-table">
+                        <thead>
+                            <tr>
+                                <th>Người Tạm Trú / Vắng</th>
+                                <th>Loại đơn</th>
+                                <th>Thời gian</th>
+                                <th>Trạng thái</th>
+                                <th style="text-align: right;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($temporaryRegistrations as $reg)
+                                <tr>
+                                    <td>
+                                        @if($reg->type == 'residence')
+                                            {{ $reg->guest_name ?? 'Khách' }}
+                                        @else
+                                            {{ $reg->user->name ?? 'N/A' }}
+                                        @endif
+                                    </td>
+                                    <td>{{ $reg->type == 'residence' ? 'Tạm trú' : 'Tạm vắng' }}</td>
+                                    <td>
+                                        {{ $reg->start_date->format('d/m/Y') }} - 
+                                        {{ $reg->end_date ? $reg->end_date->format('d/m/Y') : 'Vô thời hạn' }}
+                                    </td>
+                                    <td>
+                                        @if($reg->status == 'pending')
+                                            <span class="badge-status-pill badge-status-pill--warning">Chờ duyệt</span>
+                                        @elseif($reg->status == 'approved')
+                                            <span class="badge-status-pill badge-status-pill--success">Đã duyệt</span>
+                                        @else
+                                            <span class="badge-status-pill badge-status-pill--danger">Từ chối</span>
+                                        @endif
+                                    </td>
+                                    <td style="text-align: right;">
+                                        <a href="{{ route('admin.temporary-registrations.edit', $reg->id) }}" class="td-action-link">Chi tiết</a>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: #64748b; padding: 24px;">Chưa có đơn đăng ký tạm trú / tạm vắng nào.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

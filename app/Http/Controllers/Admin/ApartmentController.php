@@ -296,7 +296,12 @@ class ApartmentController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('admin.apartments.show', compact('apartment', 'declaredMembers', 'allResidents', 'residentsHistory'));
+        $temporaryRegistrations = \App\Models\TemporaryRegistration::with(['user', 'approver'])
+            ->where('apartment_id', $apartment->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('admin.apartments.show', compact('apartment', 'declaredMembers', 'allResidents', 'residentsHistory', 'temporaryRegistrations'));
     }
 
     /**
