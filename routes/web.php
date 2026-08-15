@@ -630,6 +630,17 @@ Route::middleware(['receptionist'])->prefix('receptionist')->name('receptionist.
     Route::post('/walk-in/checkout',                [\App\Http\Controllers\Receptionist\VisitorController::class, 'checkout'])->name('walk-in.checkout');
     Route::get('/visitor-log',                      [\App\Http\Controllers\Receptionist\VisitorController::class, 'log'])->name('visitor-log.index');
 
+    // Quản lý Tạm trú - Tạm vắng
+    Route::get('/temporary-registrations',                  [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'index'])->name('temporary-registrations.index');
+    Route::get('/temporary-registrations/create',           [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'create'])->name('temporary-registrations.create');
+    Route::post('/temporary-registrations',                 [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'store'])->name('temporary-registrations.store');
+    Route::get('/temporary-registrations/{temporaryRegistration}/edit', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'edit'])->name('temporary-registrations.edit');
+    Route::put('/temporary-registrations/{temporaryRegistration}', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'update'])->name('temporary-registrations.update');
+    Route::delete('/temporary-registrations/{temporaryRegistration}', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'destroy'])->name('temporary-registrations.destroy');
+    Route::post('/temporary-registrations/{temporaryRegistration}/approve', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'approve'])->name('temporary-registrations.approve');
+    Route::post('/temporary-registrations/{temporaryRegistration}/reject', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'reject'])->name('temporary-registrations.reject');
+    Route::post('/temporary-registrations/{temporaryRegistration}/end-early', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'endEarly'])->name('temporary-registrations.end-early');
+
     // Trang cá nhân
     Route::get('/profile',                          [\App\Http\Controllers\Receptionist\ProfileController::class, 'index'])->name('profile');
     Route::put('/profile',                          [\App\Http\Controllers\Receptionist\ProfileController::class, 'update'])->name('profile.update');
