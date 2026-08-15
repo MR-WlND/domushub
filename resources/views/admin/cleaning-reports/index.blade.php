@@ -1,6 +1,6 @@
 @extends('layouts.admin.master')
 
-@section('page_title', 'Báo cáo sự cố vệ sinh – DomusHub')
+@section('page_title', 'Báo cáo sự cố vận hành – DomusHub')
 
 @push('styles')
 <style>
@@ -23,6 +23,7 @@
 .cr-badge--pending{background:#fef3c7;color:#d97706;}
 .cr-badge--processing{background:#dbeafe;color:#2563eb;}
 .cr-badge--resolved{background:#d1fae5;color:#059669;}
+.cr-badge--role{background:#f1f5f9;color:#475569;}
 .cr-status-form select{height:32px;border:1px solid #e2e8f0;border-radius:6px;padding:0 8px;font-size:11.5px;font-family:inherit;}
 .cr-imgs{display:flex;gap:4px;}
 .cr-imgs img{width:36px;height:36px;border-radius:6px;object-fit:cover;border:1px solid #e2e8f0;cursor:pointer;transition:opacity .2s;}
@@ -75,8 +76,8 @@
 <div class="cr-page">
     <div class="cr-header">
         <div>
-            <h1>Báo cáo sự cố vệ sinh</h1>
-            <p>Danh sách sự cố do nhân viên vệ sinh báo cáo</p>
+            <h1>Báo cáo sự cố vận hành</h1>
+            <p>Tổng hợp sự cố từ tất cả nhân viên (vệ sinh, bảo vệ, kỹ thuật, lễ tân...)</p>
         </div>
     </div>
 
@@ -97,6 +98,15 @@
             <option value="medium" {{ request('priority') == 'medium' ? 'selected' : '' }}>Trung bình</option>
             <option value="low" {{ request('priority') == 'low' ? 'selected' : '' }}>Thấp</option>
         </select>
+        <select name="role" onchange="this.form.submit()">
+            <option value="">Tất cả bộ phận</option>
+            <option value="cleaning" {{ request('role') == 'cleaning' ? 'selected' : '' }}>Vệ sinh</option>
+            <option value="security" {{ request('role') == 'security' ? 'selected' : '' }}>Bảo vệ</option>
+            <option value="technician" {{ request('role') == 'technician' ? 'selected' : '' }}>Kỹ thuật</option>
+            <option value="receptionist" {{ request('role') == 'receptionist' ? 'selected' : '' }}>Lễ tân</option>
+            <option value="staff" {{ request('role') == 'staff' ? 'selected' : '' }}>Nhân viên</option>
+            <option value="manager" {{ request('role') == 'manager' ? 'selected' : '' }}>Quản lý</option>
+        </select>
     </form>
 
     <table class="cr-table">
@@ -104,6 +114,7 @@
             <tr>
                 <th>Tiêu đề</th>
                 <th>Người báo</th>
+                <th>Bộ phận</th>
                 <th>Khu vực</th>
                 <th>Ưu tiên</th>
                 <th>Ảnh</th>
@@ -113,10 +124,24 @@
         </thead>
         <tbody>
             @forelse($reports as $report)
+            @php
+                $roleLabels = [
+                    'cleaning' => 'Vệ sinh',
+                    'security' => 'Bảo vệ',
+                    'technician' => 'Kỹ thuật',
+                    'receptionist' => 'Lễ tân',
+                    'staff' => 'Nhân viên',
+                    'manager' => 'Quản lý',
+                    'admin' => 'Admin',
+                ];
+                $reporterRole = $report->reporter->role ?? '';
+                $roleLabel = $roleLabels[$reporterRole] ?? $reporterRole;
+            @endphp
             <tr class="cr-row" 
                 data-id="{{ $report->id }}"
                 data-title="{{ $report->title }}"
                 data-reporter="{{ $report->reporter->name ?? '—' }}"
+                data-role="{{ $roleLabel }}"
                 data-location="{{ $report->location }}"
                 data-priority="{{ $report->priority }}"
                 data-status="{{ $report->status }}"
@@ -126,12 +151,23 @@
             >
                 <td><span class="cr-title" style="cursor:pointer;text-decoration:underline;text-decoration-color:#cbd5e1;text-underline-offset:2px;">{{ $report->title }}</span></td>
                 <td>{{ $report->reporter->name ?? '—' }}</td>
+                <td><span class="cr-badge cr-badge--role">{{ $roleLabel }}</span></td>
                 <td>{{ $report->location }}</td>
                 <td><span class="cr-badge cr-badge--{{ $report->priority }}">{{ $report->priority === 'high' ? 'Cao' : ($report->priority === 'medium' ? 'TB' : 'Thấp') }}</span></td>
                 <td>
                     <div class="cr-imgs">
                         @foreach(($report->images ?? []) as $img)
+                        @php
+                            $ext = strtolower(pathinfo($img, PATHINFO_EXTENSION));
+                            $isVideo = in_array($ext, ['mp4','mov','avi','webm']);
+                        @endphp
+                        @if($isVideo)
+                        <div style="width:36px;height:36px;border-radius:6px;background:#1e293b;display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="event.stopPropagation();openMedia('{{ asset('storage/' . $img) }}','video')">
+                            <i class="fa-solid fa-play" style="color:white;font-size:10px;"></i>
+                        </div>
+                        @else
                         <img src="{{ asset('storage/' . $img) }}" alt="evidence">
+                        @endif
                         @endforeach
                         @if(empty($report->images)) — @endif
                     </div>
@@ -149,7 +185,7 @@
                 <td style="font-size:12px;color:#94a3b8;">{{ $report->created_at->format('H:i d/m') }}</td>
             </tr>
             @empty
-            <tr><td colspan="7" style="text-align:center;color:#94a3b8;padding:32px;">Chưa có báo cáo sự cố nào.</td></tr>
+            <tr><td colspan="8" style="text-align:center;color:#94a3b8;padding:32px;">Chưa có báo cáo sự cố nào.</td></tr>
             @endforelse
         </tbody>
     </table>
@@ -173,6 +209,10 @@
                     <div class="cr-detail-popup__meta-value" id="crDetailReporter"></div>
                 </div>
                 <div class="cr-detail-popup__meta-item">
+                    <div class="cr-detail-popup__meta-label">Bộ phận</div>
+                    <div class="cr-detail-popup__meta-value" id="crDetailRole"></div>
+                </div>
+                <div class="cr-detail-popup__meta-item">
                     <div class="cr-detail-popup__meta-label">Khu vực</div>
                     <div class="cr-detail-popup__meta-value" id="crDetailLocation"></div>
                 </div>
@@ -191,7 +231,7 @@
                         <div class="cr-detail-popup__status-msg" id="crDetailStatusMsg"></div>
                     </div>
                 </div>
-                <div class="cr-detail-popup__meta-item" style="grid-column:span 2;">
+                <div class="cr-detail-popup__meta-item">
                     <div class="cr-detail-popup__meta-label">Thời gian báo cáo</div>
                     <div class="cr-detail-popup__meta-value" id="crDetailDate"></div>
                 </div>
@@ -201,7 +241,7 @@
                 <div class="cr-detail-popup__desc-text" id="crDetailDesc"></div>
             </div>
             <div class="cr-detail-popup__images" id="crDetailImagesSection" style="display:none;">
-                <div class="cr-detail-popup__images-label">Hình ảnh đính kèm</div>
+                <div class="cr-detail-popup__images-label">Ảnh / Video đính kèm</div>
                 <div class="cr-detail-popup__images-grid" id="crDetailImagesGrid"></div>
             </div>
         </div>
@@ -232,6 +272,7 @@
     const detailClose = document.getElementById('crDetailClose');
     const detailTitle = document.getElementById('crDetailTitle');
     const detailReporter = document.getElementById('crDetailReporter');
+    const detailRole = document.getElementById('crDetailRole');
     const detailLocation = document.getElementById('crDetailLocation');
     const detailPriority = document.getElementById('crDetailPriority');
     const detailStatusSelect = document.getElementById('crDetailStatusSelect');
@@ -255,6 +296,7 @@
 
             detailTitle.textContent = row.dataset.title;
             detailReporter.textContent = row.dataset.reporter;
+            detailRole.textContent = row.dataset.role || '—';
             detailLocation.textContent = row.dataset.location;
             detailPriority.textContent = priorityMap[row.dataset.priority] || row.dataset.priority;
             detailStatusSelect.value = row.dataset.status;
@@ -263,22 +305,35 @@
             detailDate.textContent = row.dataset.date;
             detailDesc.textContent = row.dataset.description;
 
-            // Images
+            // Images & Videos
             const images = JSON.parse(row.dataset.images || '[]');
             detailImagesGrid.innerHTML = '';
             if (images.length > 0) {
                 detailImagesSection.style.display = 'block';
                 images.forEach(img => {
-                    const imgEl = document.createElement('img');
-                    imgEl.src = '/storage/' + img;
-                    imgEl.alt = 'Ảnh sự cố';
-                    imgEl.addEventListener('click', function() {
-                        currentImages = images.map(i => '/storage/' + i);
-                        currentIndex = currentImages.indexOf(this.src);
-                        showImage();
-                        lightbox.classList.add('active');
-                    });
-                    detailImagesGrid.appendChild(imgEl);
+                    const ext = img.split('.').pop().toLowerCase();
+                    const isVideo = ['mp4','mov','avi','webm'].includes(ext);
+                    const url = '/storage/' + img;
+
+                    if (isVideo) {
+                        const div = document.createElement('div');
+                        div.style.cssText = 'width:100%;aspect-ratio:1;border-radius:10px;background:#1e293b;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid #e2e8f0;';
+                        div.innerHTML = '<i class="fa-solid fa-play" style="color:white;font-size:20px;"></i>';
+                        div.addEventListener('click', function() { openMedia(url, 'video'); });
+                        detailImagesGrid.appendChild(div);
+                    } else {
+                        const imgEl = document.createElement('img');
+                        imgEl.src = url;
+                        imgEl.alt = 'Ảnh sự cố';
+                        imgEl.addEventListener('click', function() {
+                            currentImages = images.filter(i => !['mp4','mov','avi','webm'].includes(i.split('.').pop().toLowerCase())).map(i => '/storage/' + i);
+                            currentIndex = currentImages.indexOf(this.src);
+                            if (currentIndex < 0) currentIndex = 0;
+                            showImage();
+                            lightbox.classList.add('active');
+                        });
+                        detailImagesGrid.appendChild(imgEl);
+                    }
                 });
             } else {
                 detailImagesSection.style.display = 'none';
@@ -401,6 +456,46 @@
             if (e.key === 'Escape') closeDetail();
         }
     });
+
+    // === Video Lightbox ===
+    window.openMedia = function(url, type) {
+        if (type === 'video') {
+            lightboxImg.style.display = 'none';
+            let videoEl = document.getElementById('crLightboxVideo');
+            if (!videoEl) {
+                videoEl = document.createElement('video');
+                videoEl.id = 'crLightboxVideo';
+                videoEl.controls = true;
+                videoEl.autoplay = true;
+                videoEl.style.cssText = 'max-width:90vw;max-height:85vh;border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.4);';
+                lightbox.appendChild(videoEl);
+            }
+            videoEl.src = url;
+            videoEl.style.display = 'block';
+            btnPrev.style.display = 'none';
+            btnNext.style.display = 'none';
+            lightboxCounter.textContent = '';
+            lightbox.classList.add('active');
+        } else {
+            currentImages = [url];
+            currentIndex = 0;
+            showImage();
+            lightbox.classList.add('active');
+        }
+    };
+
+    const origCloseLightbox = closeLightbox;
+    closeLightbox = function() {
+        lightbox.classList.remove('active');
+        lightboxImg.src = '';
+        lightboxImg.style.display = '';
+        const videoEl = document.getElementById('crLightboxVideo');
+        if (videoEl) { videoEl.pause(); videoEl.style.display = 'none'; videoEl.src = ''; }
+    };
+    btnClose.removeEventListener('click', origCloseLightbox);
+    btnClose.addEventListener('click', closeLightbox);
+    lightbox.removeEventListener('click', function(){});
+    lightbox.addEventListener('click', function(e) { if (e.target === lightbox) closeLightbox(); });
 })();
 </script>
 @endpush

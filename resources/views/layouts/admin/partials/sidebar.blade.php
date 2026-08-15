@@ -231,11 +231,11 @@
 
 
         {{-- ============================================================== --}}
-        {{-- QUẢN LÝ VỆ SINH - Admin & Manager --}}
+        {{-- QUẢN LÝ VẬN HÀNH - Admin & Manager --}}
         {{-- ============================================================== --}}
         @if(in_array($role, ['admin', 'manager']))
         <div class="nav-section">
-            <span class="nav-section__label">QUẢN LÝ VỆ SINH</span>
+            <span class="nav-section__label">QUẢN LÝ VẬN HÀNH</span>
             <a href="{{ portal_route('cleaning-tasks.index') }}" class="dashboard-nav__item {{ is_portal_route('cleaning-tasks.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path>
@@ -250,7 +250,7 @@
                     <line x1="12" y1="9" x2="12" y2="13"></line>
                     <line x1="12" y1="17" x2="12.01" y2="17"></line>
                 </svg>
-                <span>Báo cáo sự cố VS</span>
+                <span>Báo cáo sự cố</span>
             </a>
         </div>
         @endif

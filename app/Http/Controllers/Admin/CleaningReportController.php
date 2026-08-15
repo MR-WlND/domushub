@@ -13,7 +13,11 @@ class CleaningReportController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = CleaningReport::with('reporter')->latest();
+        $query = CleaningReport::with('reporter')
+            ->whereHas('reporter', function ($q) {
+                $q->where('role', '!=', 'resident');
+            })
+            ->latest();
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -21,6 +25,12 @@ class CleaningReportController extends Controller
 
         if ($request->filled('priority')) {
             $query->where('priority', $request->priority);
+        }
+
+        if ($request->filled('role')) {
+            $query->whereHas('reporter', function ($q) use ($request) {
+                $q->where('role', $request->role);
+            });
         }
 
         $reports = $query->paginate(15);
