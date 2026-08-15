@@ -84,8 +84,9 @@
     .history-card{background:white;border-radius:14px;padding:20px;box-shadow:0 2px 12px rgba(54,82,217,.04);margin-top:20px;}
     .history-card__title{font-size:15px;font-weight:700;color:#1B2559;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
     .history-card__title i{color:#3652D9;font-size:13px;}
-    .history-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #F4F7FE;font-size:12.5px;}
+    .history-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #F4F7FE;font-size:12.5px;transition:.15s;border-radius:8px;}
     .history-item:last-child{border-bottom:none;}
+    .history-item:hover{background:#F8FAFF;padding-left:8px;padding-right:8px;}
     .history-item__dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
     .history-item__dot--pending{background:#FFB547;}
     .history-item__dot--processing{background:#3652D9;}
@@ -195,7 +196,7 @@
     <div class="history-card">
         <h2 class="history-card__title"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử báo cáo ({{ $reports->count() }})</h2>
         @foreach($reports as $report)
-        <div class="history-item" style="flex-wrap:wrap;">
+        <a href="{{ route('cleaning.report.show', $report->id) }}" class="history-item" style="flex-wrap:wrap;text-decoration:none;cursor:pointer;">
             <div class="history-item__dot history-item__dot--{{ $report->status }}"></div>
             <span class="history-item__title">{{ $report->title }}</span>
             <span class="history-item__status history-item__status--{{ $report->status }}">
@@ -211,19 +212,19 @@
                     $url = asset('storage/' . $media);
                 @endphp
                 @if($isVideo)
-                <div class="history-media-thumb" onclick="openLightbox('{{ $url }}', 'video')">
+                <div class="history-media-thumb">
                     <video src="{{ $url }}" muted preload="metadata"></video>
                     <div class="history-media-thumb__play"><i class="fa-solid fa-play"></i></div>
                 </div>
                 @else
-                <div class="history-media-thumb" onclick="openLightbox('{{ $url }}', 'image')">
+                <div class="history-media-thumb">
                     <img src="{{ $url }}" alt="Ảnh sự cố">
                 </div>
                 @endif
                 @endforeach
             </div>
             @endif
-        </div>
+        </a>
         @endforeach
     </div>
     @endif

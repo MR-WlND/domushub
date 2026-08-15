@@ -393,6 +393,7 @@ Route::middleware(['cleaning'])->group(function () {
 
     Route::get('/cleaning/report', [\App\Http\Controllers\Cleaning\ReportController::class, 'index'])->name('cleaning.report');
     Route::post('/cleaning/report', [\App\Http\Controllers\Cleaning\ReportController::class, 'store'])->name('cleaning.report.store');
+    Route::get('/cleaning/report/{id}', [\App\Http\Controllers\Cleaning\ReportController::class, 'show'])->name('cleaning.report.show');
 
     Route::get('/cleaning/tasks', [\App\Http\Controllers\Cleaning\TaskController::class, 'index'])->name('cleaning.tasks');
     Route::get('/cleaning/tasks/{id}', [\App\Http\Controllers\Cleaning\TaskController::class, 'show'])->name('cleaning.tasks.show');

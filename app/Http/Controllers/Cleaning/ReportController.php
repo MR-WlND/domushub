@@ -34,6 +34,18 @@ class ReportController extends Controller
         return view('cleaning.report.index', compact('reports', 'todaySchedule'));
     }
 
+    public function show($id): View
+    {
+        $report = CleaningReport::findOrFail($id);
+
+        // Chỉ cho phép xem báo cáo của chính mình
+        if ($report->reported_by !== auth()->id()) {
+            abort(403);
+        }
+
+        return view('cleaning.report.show', compact('report'));
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
