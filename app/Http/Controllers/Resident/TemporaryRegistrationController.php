@@ -286,7 +286,21 @@ class TemporaryRegistrationController extends Controller
                 'end_date' => now(),
             ]);
 
-            $resident = \App\Models\Resident::where('user_id', $temporaryRegistration->user_id)
+            $targetUserId = $temporaryRegistration->user_id;
+            if ($temporaryRegistration->type === 'residence' && $temporaryRegistration->guest_name) {
+                $sponsor = \App\Models\User::find($temporaryRegistration->user_id);
+                if ($sponsor && trim(mb_strtolower($sponsor->name)) !== trim(mb_strtolower($temporaryRegistration->guest_name))) {
+                    $guestUser = \App\Models\User::where(function($q) use ($temporaryRegistration) {
+                        if ($temporaryRegistration->guest_phone) $q->where('phone', $temporaryRegistration->guest_phone);
+                        if ($temporaryRegistration->guest_cccd) $q->orWhere('cccd', $temporaryRegistration->guest_cccd);
+                    })->first();
+                    if ($guestUser) {
+                        $targetUserId = $guestUser->id;
+                    }
+                }
+            }
+
+            $resident = \App\Models\Resident::where('user_id', $targetUserId)
                 ->where('apartment_id', $temporaryRegistration->apartment_id)
                 ->first();
 

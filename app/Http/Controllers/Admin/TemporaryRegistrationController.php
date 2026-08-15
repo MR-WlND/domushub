@@ -71,7 +71,7 @@ class TemporaryRegistrationController extends Controller
         $request->validate([
             'user_id' => 'nullable|exists:users,id',
             'guest_name' => 'nullable|required_without:user_id|string|max:255',
-            'guest_phone' => 'nullable|required_without:user_id|regex:/^(0)[0-9]{9}$/|unique:users,phone',
+            'guest_phone' => 'nullable|required_without:user_id|regex:/^(0)[0-9]{9}$/',
             'guest_cccd' => 'nullable|required_without:user_id|regex:/^[0-9]{9,12}$/',
             'guest_email' => 'nullable|email|max:255',
             'guest_dob' => 'nullable|date',
@@ -101,17 +101,30 @@ class TemporaryRegistrationController extends Controller
         try {
             $data = $request->except(['attachments']);
             
-            // Nếu là Tạm trú và không chọn user có sẵn, tạo User mới
+            // Nếu là Tạm trú và không chọn user có sẵn, tìm hoặc tạo User mới
             if ($request->type === 'residence' && !$request->user_id) {
-                $user = User::create([
-                    'name' => $request->guest_name,
-                    'phone' => $request->guest_phone,
-                    'cccd' => $request->guest_cccd,
-                    'email' => $request->guest_email ?? ('guest_' . time() . '@domushub.local'),
-                    'password' => bcrypt('password123'), // Mật khẩu mặc định
-                    'role' => 'resident',
-                    'apartment_id' => $request->apartment_id,
-                ]);
+                $user = User::where('phone', $request->guest_phone)
+                    ->orWhere('cccd', $request->guest_cccd)
+                    ->first();
+
+                if (!$user) {
+                    $user = User::create([
+                        'name' => $request->guest_name,
+                        'phone' => $request->guest_phone,
+                        'cccd' => $request->guest_cccd,
+                        'email' => $request->guest_email ?? ('guest_' . time() . '@domushub.local'),
+                        'password' => bcrypt('password123'), // Mật khẩu mặc định
+                        'role' => 'resident',
+                        'apartment_id' => $request->apartment_id,
+                    ]);
+                } else {
+                    // Cập nhật thông tin nếu user đã tồn tại
+                    $user->update([
+                        'name' => $request->guest_name,
+                        'email' => $request->guest_email ?? $user->email,
+                        'apartment_id' => $request->apartment_id,
+                    ]);
+                }
                 $data['user_id'] = $user->id;
             } elseif (!$request->user_id) {
                 throw new \Exception("Vui lòng chọn Cư dân cho đơn Tạm vắng.");
@@ -155,7 +168,7 @@ class TemporaryRegistrationController extends Controller
         $request->validate([
             'user_id' => 'nullable|exists:users,id',
             'guest_name' => 'nullable|required_without:user_id|string|max:255',
-            'guest_phone' => 'nullable|required_without:user_id|regex:/^(0)[0-9]{9}$/|unique:users,phone,' . ($request->user_id ?? 'NULL'),
+            'guest_phone' => 'nullable|required_without:user_id|regex:/^(0)[0-9]{9}$/',
             'guest_cccd' => 'nullable|required_without:user_id|digits:12',
             'guest_email' => 'nullable|email|max:255',
             'guest_dob' => 'nullable|date',
@@ -176,15 +189,27 @@ class TemporaryRegistrationController extends Controller
             $data = $request->except(['attachments']);
 
             if ($request->type === 'residence' && !$request->user_id) {
-                $user = User::create([
-                    'name' => $request->guest_name,
-                    'phone' => $request->guest_phone,
-                    'cccd' => $request->guest_cccd,
-                    'email' => $request->guest_email ?? ('guest_' . time() . '@domushub.local'),
-                    'password' => bcrypt('password123'),
-                    'role' => 'resident',
-                    'apartment_id' => $request->apartment_id,
-                ]);
+                $user = User::where('phone', $request->guest_phone)
+                    ->orWhere('cccd', $request->guest_cccd)
+                    ->first();
+
+                if (!$user) {
+                    $user = User::create([
+                        'name' => $request->guest_name,
+                        'phone' => $request->guest_phone,
+                        'cccd' => $request->guest_cccd,
+                        'email' => $request->guest_email ?? ('guest_' . time() . '@domushub.local'),
+                        'password' => bcrypt('password123'),
+                        'role' => 'resident',
+                        'apartment_id' => $request->apartment_id,
+                    ]);
+                } else {
+                    $user->update([
+                        'name' => $request->guest_name,
+                        'email' => $request->guest_email ?? $user->email,
+                        'apartment_id' => $request->apartment_id,
+                    ]);
+                }
                 $data['user_id'] = $user->id;
             } elseif (!$request->user_id) {
                 throw new \Exception("Vui lòng chọn Cư dân cho đơn Tạm vắng.");
@@ -292,7 +317,21 @@ class TemporaryRegistrationController extends Controller
                 'end_date' => now(),
             ]);
 
-            $resident = \App\Models\Resident::where('user_id', $temporaryRegistration->user_id)
+            $targetUserId = $temporaryRegistration->user_id;
+            if ($temporaryRegistration->type === 'residence' && $temporaryRegistration->guest_name) {
+                $sponsor = \App\Models\User::find($temporaryRegistration->user_id);
+                if ($sponsor && trim(mb_strtolower($sponsor->name)) !== trim(mb_strtolower($temporaryRegistration->guest_name))) {
+                    $guestUser = \App\Models\User::where(function($q) use ($temporaryRegistration) {
+                        if ($temporaryRegistration->guest_phone) $q->where('phone', $temporaryRegistration->guest_phone);
+                        if ($temporaryRegistration->guest_cccd) $q->orWhere('cccd', $temporaryRegistration->guest_cccd);
+                    })->first();
+                    if ($guestUser) {
+                        $targetUserId = $guestUser->id;
+                    }
+                }
+            }
+
+            $resident = \App\Models\Resident::where('user_id', $targetUserId)
                 ->where('apartment_id', $temporaryRegistration->apartment_id)
                 ->first();
 
@@ -322,7 +361,7 @@ class TemporaryRegistrationController extends Controller
         if ($registration->type === 'residence' && $registration->guest_name) {
             $sponsor = \App\Models\User::find($registration->user_id);
             // Nếu người tạo đơn (sponsor) khác với tên khách, nghĩa là chủ hộ tạo dùm khách
-            if ($sponsor && $sponsor->name !== $registration->guest_name) {
+            if ($sponsor && trim(mb_strtolower($sponsor->name)) !== trim(mb_strtolower($registration->guest_name))) {
                 // Tìm hoặc tạo User mới cho khách
                 $guestUser = \App\Models\User::where(function($q) use ($registration) {
                     if ($registration->guest_phone) $q->where('phone', $registration->guest_phone);
