@@ -574,21 +574,43 @@
     </div>
 </div>
 
-<!-- Modal Từ chối ẩn (sử dụng javascript để submit form thay vì modal html) -->
-<form id="globalRejectForm" method="POST" action="" style="display: none;">
-    @csrf
-    <input type="hidden" name="rejection_reason" id="globalRejectReason">
-</form>
+<!-- Custom Modal Từ chối -->
+<div id="rejectModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 24px; border-radius: 12px; width: 400px; max-width: 90%; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+        <h3 style="margin-top: 0; color: #1e293b; font-size: 18px; font-weight: 700;">Từ chối đơn đăng ký</h3>
+        <p style="font-size: 14px; color: #64748b; margin-bottom: 16px;">Vui lòng nhập lý do từ chối đơn đăng ký này.</p>
+        
+        <form id="globalRejectForm" method="POST" action="">
+            @csrf
+            <textarea name="rejection_reason" id="globalRejectReason" rows="3" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 16px; font-family: inherit; font-size: 14px; resize: vertical;" placeholder="Nhập lý do..."></textarea>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                <button type="button" onclick="closeRejectModal()" style="padding: 8px 16px; background: #f1f5f9; color: #475569; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">Hủy</button>
+                <button type="button" onclick="submitRejectModal()" style="padding: 8px 16px; background: #dc2626; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">Xác nhận Từ chối</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <script>
     function promptReject(id) {
-        let reason = prompt("Nhập lý do từ chối:");
-        if (reason !== null && reason.trim() !== "") {
-            let form = document.getElementById('globalRejectForm');
-            form.action = `/admin/temporary-registrations/${id}/reject`;
-            document.getElementById('globalRejectReason').value = reason.trim();
-            form.submit();
-        } else if (reason !== null) {
+        let form = document.getElementById('globalRejectForm');
+        form.action = `/admin/temporary-registrations/${id}/reject`;
+        document.getElementById('globalRejectReason').value = '';
+        
+        let modal = document.getElementById('rejectModal');
+        modal.style.display = 'flex';
+    }
+    
+    function closeRejectModal() {
+        document.getElementById('rejectModal').style.display = 'none';
+    }
+    
+    function submitRejectModal() {
+        let reason = document.getElementById('globalRejectReason').value;
+        if (reason.trim() !== "") {
+            document.getElementById('globalRejectForm').submit();
+        } else {
             alert("Lý do từ chối không được để trống!");
         }
     }

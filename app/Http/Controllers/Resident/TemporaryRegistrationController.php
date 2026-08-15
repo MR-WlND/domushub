@@ -63,7 +63,7 @@ class TemporaryRegistrationController extends Controller
         $request->validate([
             'guest_name' => 'nullable|required_if:type,residence|string|max:255',
             'guest_phone' => 'nullable|required_if:type,residence|regex:/^(0)[0-9]{9}$/',
-            'guest_cccd' => 'nullable|required_if:type,residence|digits:12',
+            'guest_cccd' => 'nullable|required_if:type,residence|regex:/^[0-9]{9,12}$/',
             'guest_email' => 'nullable|email|max:255',
             'guest_dob' => 'nullable|date',
             'guest_gender' => 'nullable|in:male,female,other',
@@ -73,8 +73,18 @@ class TemporaryRegistrationController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'reason' => 'nullable|string',
-            'attachments' => 'nullable|required_if:type,residence|array',
-            'attachments.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240',
+        ], [
+            'guest_name.required_if' => 'Vui lòng nhập họ và tên khách.',
+            'guest_phone.required_if' => 'Vui lòng nhập số điện thoại.',
+            'guest_phone.regex' => 'Số điện thoại không hợp lệ.',
+            'guest_cccd.required_if' => 'Vui lòng nhập CCCD/CMND.',
+            'guest_cccd.regex' => 'CCCD/CMND phải từ 9 đến 12 số.',
+            'start_date.required' => 'Vui lòng chọn ngày bắt đầu.',
+            'end_date.after_or_equal' => 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.',
+            'attachments.*.max' => 'Mỗi file đính kèm không được vượt quá 10MB.',
+            'attachments.*.mimes' => 'File đính kèm phải là hình ảnh (jpg, jpeg, png) hoặc PDF.',
         ]);
 
         DB::beginTransaction();
@@ -98,7 +108,7 @@ class TemporaryRegistrationController extends Controller
             $registration = TemporaryRegistration::create($data);
 
             // Notify admins
-            $admins = User::whereIn('role', ['admin', 'manager'])->get();
+            $admins = User::whereIn('role', ['admin', 'manager', 'receptionist'])->get();
             foreach ($admins as $admin) {
                 $admin->notify(new NewTemporaryRegistrationNotification($registration));
             }
@@ -106,6 +116,109 @@ class TemporaryRegistrationController extends Controller
             DB::commit();
             return redirect()->route('resident.temporary-registrations.index')
                 ->with('success', 'Tạo đơn đăng ký thành công. Đang chờ Ban quản lý phê duyệt.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->withInput()->with('error', 'Đã xảy ra lỗi: ' . $e->getMessage());
+        }
+    }
+
+    public function edit($id)
+    {
+        $user = Auth::user();
+        $temporaryRegistration = TemporaryRegistration::where(function ($q) use ($user) {
+                $q->where('user_id', $user->id)
+                  ->orWhere('apartment_id', $user->apartment_id);
+            })
+            ->findOrFail($id);
+
+        if (!in_array($temporaryRegistration->status, ['rejected', 'pending'])) {
+            return redirect()->back()->with('error', 'Chỉ có thể chỉnh sửa đơn bị từ chối hoặc đang chờ duyệt.');
+        }
+
+        return view('resident.temporary-registrations.edit', compact('user', 'temporaryRegistration'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $user = Auth::user();
+        $registration = TemporaryRegistration::where(function ($q) use ($user) {
+                $q->where('user_id', $user->id)
+                  ->orWhere('apartment_id', $user->apartment_id);
+            })
+            ->findOrFail($id);
+
+        if (!in_array($registration->status, ['rejected', 'pending'])) {
+            return redirect()->back()->with('error', 'Chỉ có thể chỉnh sửa đơn bị từ chối hoặc đang chờ duyệt.');
+        }
+
+        $request->validate([
+            'guest_name' => 'nullable|required_if:type,residence|string|max:255',
+            'guest_phone' => 'nullable|required_if:type,residence|regex:/^(0)[0-9]{9}$/',
+            'guest_cccd' => 'nullable|required_if:type,residence|regex:/^[0-9]{9,12}$/',
+            'guest_email' => 'nullable|email|max:255',
+            'guest_dob' => 'nullable|date',
+            'guest_gender' => 'nullable|in:male,female,other',
+            'guest_hometown' => 'nullable|string|max:255',
+            'relationship' => 'nullable|string|max:255',
+            'type' => 'required|in:residence,absence',
+            'start_date' => 'required|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'reason' => 'nullable|string',
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240',
+            'remove_attachments' => 'nullable|array',
+        ], [
+            'guest_name.required_if' => 'Vui lòng nhập họ và tên khách.',
+            'guest_phone.required_if' => 'Vui lòng nhập số điện thoại.',
+            'guest_phone.regex' => 'Số điện thoại không hợp lệ.',
+            'guest_cccd.required_if' => 'Vui lòng nhập CCCD/CMND.',
+            'guest_cccd.regex' => 'CCCD/CMND phải từ 9 đến 12 số.',
+            'start_date.required' => 'Vui lòng chọn ngày bắt đầu.',
+            'end_date.after_or_equal' => 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.',
+            'attachments.*.max' => 'Mỗi file đính kèm không được vượt quá 10MB.',
+            'attachments.*.mimes' => 'File đính kèm phải là hình ảnh (jpg, jpeg, png) hoặc PDF.',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $data = $request->except(['attachments', 'remove_attachments']);
+            
+            $data['status'] = 'pending'; // Reset status
+            $data['rejection_reason'] = null; // Clear rejection reason
+            
+            $currentAttachments = $registration->attachments ?? [];
+            
+            // Remove attachments if requested
+            if ($request->has('remove_attachments')) {
+                foreach ($request->remove_attachments as $pathToRemove) {
+                    if (in_array($pathToRemove, $currentAttachments)) {
+                        Storage::disk('public')->delete($pathToRemove);
+                        $currentAttachments = array_diff($currentAttachments, [$pathToRemove]);
+                    }
+                }
+            }
+            
+            // Upload new attachments
+            if ($request->hasFile('attachments')) {
+                foreach ($request->file('attachments') as $file) {
+                    $currentAttachments[] = $file->store('temporary_registrations', 'public');
+                }
+            }
+            
+            // Re-index array
+            $data['attachments'] = array_values($currentAttachments);
+
+            $registration->update($data);
+
+            // Notify admins
+            $admins = User::whereIn('role', ['admin', 'manager', 'receptionist'])->get();
+            foreach ($admins as $admin) {
+                $admin->notify(new NewTemporaryRegistrationNotification($registration));
+            }
+
+            DB::commit();
+            return redirect()->route('resident.temporary-registrations.index')
+                ->with('success', 'Cập nhật đơn đăng ký thành công. Đang chờ Ban quản lý phê duyệt lại.');
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->withInput()->with('error', 'Đã xảy ra lỗi: ' . $e->getMessage());
@@ -185,6 +298,12 @@ class TemporaryRegistrationController extends Controller
                     $resident->temporary_status = null;
                     $resident->save();
                 }
+            }
+
+            // Notify admins and receptionists
+            $admins = \App\Models\User::whereIn('role', ['admin', 'manager', 'receptionist'])->get();
+            foreach ($admins as $admin) {
+                $admin->notify(new \App\Notifications\TemporaryRegistrationEndedEarlyNotification($temporaryRegistration));
             }
 
             DB::commit();

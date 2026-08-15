@@ -72,7 +72,7 @@ class TemporaryRegistrationController extends Controller
             'user_id' => 'nullable|exists:users,id',
             'guest_name' => 'nullable|required_without:user_id|string|max:255',
             'guest_phone' => 'nullable|required_without:user_id|regex:/^(0)[0-9]{9}$/|unique:users,phone',
-            'guest_cccd' => 'nullable|required_without:user_id|digits:12',
+            'guest_cccd' => 'nullable|required_without:user_id|regex:/^[0-9]{9,12}$/',
             'guest_email' => 'nullable|email|max:255',
             'guest_dob' => 'nullable|date',
             'guest_gender' => 'nullable|in:male,female,other',
@@ -83,8 +83,18 @@ class TemporaryRegistrationController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'reason' => 'nullable|string',
-            'attachments' => 'nullable|required_if:type,residence|array',
-            'attachments.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240',
+        ], [
+            'guest_name.required_without' => 'Vui lòng nhập họ và tên khách.',
+            'guest_phone.required_without' => 'Vui lòng nhập số điện thoại.',
+            'guest_phone.regex' => 'Số điện thoại không hợp lệ.',
+            'guest_cccd.required_without' => 'Vui lòng nhập CCCD/CMND.',
+            'guest_cccd.regex' => 'CCCD/CMND phải từ 9 đến 12 số.',
+            'start_date.required' => 'Vui lòng chọn ngày bắt đầu.',
+            'end_date.after_or_equal' => 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.',
+            'attachments.*.max' => 'Mỗi file đính kèm không được vượt quá 10MB.',
+            'attachments.*.mimes' => 'File đính kèm phải là hình ảnh (jpg, jpeg, png) hoặc PDF.',
         ]);
 
         DB::beginTransaction();

@@ -1,6 +1,6 @@
 @extends('layouts.resident.master')
 
-@section('title', 'Tạo Đăng ký Tạm trú / Tạm vắng')
+@section('title', 'Chỉnh sửa Đăng ký Tạm trú / Tạm vắng')
 
 @push('styles')
 <style>
@@ -27,8 +27,8 @@
 @section('content')
 <div class="tr-form-page">
     <div class="tr-header">
-        <h1 class="tr-title">Đăng ký Tạm trú / Tạm vắng</h1>
-        <p class="tr-subtitle">Gửi yêu cầu lên Ban quản lý để được xét duyệt.</p>
+        <h1 class="tr-title">Chỉnh sửa Đăng ký Tạm trú / Tạm vắng</h1>
+        <p class="tr-subtitle">Chỉnh sửa và gửi lại đơn đăng ký đã bị từ chối.</p>
     </div>
 
     @if(session('error'))
@@ -45,19 +45,27 @@
         </div>
     @endif
 
+    @if($temporaryRegistration->status == 'rejected' && $temporaryRegistration->rejection_reason)
+        <div style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+            <div style="font-weight: 700; margin-bottom: 4px;">Lý do từ chối trước đó:</div>
+            <div>{{ $temporaryRegistration->rejection_reason }}</div>
+        </div>
+    @endif
+
     <div class="tr-card">
-        <form action="{{ route('resident.temporary-registrations.store') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('resident.temporary-registrations.update', $temporaryRegistration->id) }}" method="POST" enctype="multipart/form-data">
             @csrf
+            @method('PUT')
             
             <div class="form-group" style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid #f1f5f9;">
                 <label class="form-label">Loại đăng ký <span class="required">*</span></label>
                 <div class="radio-group">
                     <label class="radio-label">
-                        <input type="radio" name="type" value="residence" id="type_residence" required {{ old('type', 'residence') == 'residence' ? 'checked' : '' }}>
+                        <input type="radio" name="type" value="residence" id="type_residence" required {{ old('type', $temporaryRegistration->type) == 'residence' ? 'checked' : '' }}>
                         Tạm trú (Đăng ký cho khách/người thân đến ở)
                     </label>
                     <label class="radio-label">
-                        <input type="radio" name="type" value="absence" id="type_absence" required {{ old('type') == 'absence' ? 'checked' : '' }}>
+                        <input type="radio" name="type" value="absence" id="type_absence" required {{ old('type', $temporaryRegistration->type) == 'absence' ? 'checked' : '' }}>
                         Tạm vắng (Chủ hộ/cư dân vắng mặt dài ngày)
                     </label>
                 </div>
@@ -68,49 +76,49 @@
                 <div class="grid-cols-2">
                     <div class="form-group">
                         <label class="form-label">Họ và tên <span class="required">*</span></label>
-                        <input type="text" name="guest_name" id="guest_name" value="{{ old('guest_name', $extendRegistration ? $extendRegistration->guest_name : '') }}" class="form-control">
+                        <input type="text" name="guest_name" id="guest_name" value="{{ old('guest_name', $temporaryRegistration->guest_name) }}" class="form-control">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Email</label>
-                        <input type="email" name="guest_email" id="guest_email" value="{{ old('guest_email', $extendRegistration ? $extendRegistration->guest_email : '') }}" class="form-control">
+                        <input type="email" name="guest_email" id="guest_email" value="{{ old('guest_email', $temporaryRegistration->guest_email) }}" class="form-control">
                     </div>
                 </div>
                 <div class="grid-cols-3">
                     <div class="form-group">
                         <label class="form-label">Số điện thoại <span class="required">*</span></label>
-                        <input type="text" name="guest_phone" id="guest_phone" value="{{ old('guest_phone', $extendRegistration ? $extendRegistration->guest_phone : '') }}" class="form-control">
+                        <input type="text" name="guest_phone" id="guest_phone" value="{{ old('guest_phone', $temporaryRegistration->guest_phone) }}" class="form-control">
                     </div>
                     <div class="form-group">
                         <label class="form-label">CCCD/CMND <span class="required">*</span></label>
-                        <input type="text" name="guest_cccd" id="guest_cccd" value="{{ old('guest_cccd', $extendRegistration ? $extendRegistration->guest_cccd : '') }}" class="form-control">
+                        <input type="text" name="guest_cccd" id="guest_cccd" value="{{ old('guest_cccd', $temporaryRegistration->guest_cccd) }}" class="form-control">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Giới tính</label>
                         <select name="guest_gender" class="form-control">
                             <option value="">-- Chọn --</option>
-                            <option value="male" {{ old('guest_gender', $extendRegistration ? $extendRegistration->guest_gender : '') == 'male' ? 'selected' : '' }}>Nam</option>
-                            <option value="female" {{ old('guest_gender', $extendRegistration ? $extendRegistration->guest_gender : '') == 'female' ? 'selected' : '' }}>Nữ</option>
-                            <option value="other" {{ old('guest_gender', $extendRegistration ? $extendRegistration->guest_gender : '') == 'other' ? 'selected' : '' }}>Khác</option>
+                            <option value="male" {{ old('guest_gender', $temporaryRegistration->guest_gender) == 'male' ? 'selected' : '' }}>Nam</option>
+                            <option value="female" {{ old('guest_gender', $temporaryRegistration->guest_gender) == 'female' ? 'selected' : '' }}>Nữ</option>
+                            <option value="other" {{ old('guest_gender', $temporaryRegistration->guest_gender) == 'other' ? 'selected' : '' }}>Khác</option>
                         </select>
                     </div>
                 </div>
                 <div class="grid-cols-3">
                     <div class="form-group">
                         <label class="form-label">Ngày sinh</label>
-                        <input type="date" name="guest_dob" value="{{ old('guest_dob', ($extendRegistration && $extendRegistration->guest_dob) ? $extendRegistration->guest_dob->format('Y-m-d') : '') }}" class="form-control">
+                        <input type="date" name="guest_dob" value="{{ old('guest_dob', $temporaryRegistration->guest_dob ? $temporaryRegistration->guest_dob->format('Y-m-d') : '') }}" class="form-control">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Quê quán</label>
-                        <input type="text" name="guest_hometown" value="{{ old('guest_hometown', $extendRegistration ? $extendRegistration->guest_hometown : '') }}" class="form-control">
+                        <input type="text" name="guest_hometown" value="{{ old('guest_hometown', $temporaryRegistration->guest_hometown) }}" class="form-control">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Mối quan hệ</label>
                         <select name="relationship" class="form-control">
                             <option value="">-- Chọn --</option>
-                            <option value="Khách thuê" {{ old('relationship', $extendRegistration ? $extendRegistration->relationship : '') == 'Khách thuê' ? 'selected' : '' }}>Khách thuê</option>
-                            <option value="Người nhà" {{ old('relationship', $extendRegistration ? $extendRegistration->relationship : '') == 'Người nhà' ? 'selected' : '' }}>Người nhà</option>
-                            <option value="Giúp việc" {{ old('relationship', $extendRegistration ? $extendRegistration->relationship : '') == 'Giúp việc' ? 'selected' : '' }}>Giúp việc</option>
-                            <option value="Khác" {{ old('relationship', $extendRegistration ? $extendRegistration->relationship : '') == 'Khác' ? 'selected' : '' }}>Khác</option>
+                            <option value="Khách thuê" {{ old('relationship', $temporaryRegistration->relationship) == 'Khách thuê' ? 'selected' : '' }}>Khách thuê</option>
+                            <option value="Người nhà" {{ old('relationship', $temporaryRegistration->relationship) == 'Người nhà' ? 'selected' : '' }}>Người nhà</option>
+                            <option value="Giúp việc" {{ old('relationship', $temporaryRegistration->relationship) == 'Giúp việc' ? 'selected' : '' }}>Giúp việc</option>
+                            <option value="Khác" {{ old('relationship', $temporaryRegistration->relationship) == 'Khác' ? 'selected' : '' }}>Khác</option>
                         </select>
                     </div>
                 </div>
@@ -124,30 +132,56 @@
             <div class="grid-cols-2">
                 <div class="form-group">
                     <label class="form-label">Từ ngày <span class="required">*</span></label>
-                    <input type="date" name="start_date" required value="{{ old('start_date') }}" class="form-control">
+                    <input type="date" name="start_date" required value="{{ old('start_date', $temporaryRegistration->start_date ? $temporaryRegistration->start_date->format('Y-m-d') : '') }}" class="form-control">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Đến ngày</label>
-                    <input type="date" name="end_date" value="{{ old('end_date') }}" class="form-control">
+                    <input type="date" name="end_date" value="{{ old('end_date', $temporaryRegistration->end_date ? $temporaryRegistration->end_date->format('Y-m-d') : '') }}" class="form-control">
                 </div>
             </div>
 
             <div class="form-group">
                 <label class="form-label">Lý do</label>
-                <textarea name="reason" rows="3" class="form-control" style="height: auto; padding: 12px;">{{ old('reason') }}</textarea>
+                <textarea name="reason" rows="3" class="form-control" style="height: auto; padding: 12px;">{{ old('reason', $temporaryRegistration->reason) }}</textarea>
             </div>
 
             <div class="form-group">
                 <label class="form-label">Giấy tờ đính kèm</label>
                 <input type="file" name="attachments[]" accept=".jpg,.jpeg,.png,.pdf" class="form-control" style="padding-top: 8px;" id="file-input" multiple>
-                <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">Có thể chọn nhiều file. Tối đa 10MB mỗi file.</div>
+                <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">Tải lên file mới sẽ không xoá file cũ trừ khi bạn nhấn dấu X ở file cũ. Tối đa 10MB mỗi file.</div>
                 
-                <!-- Preview container -->
+                <!-- Old Attachments -->
+                @if($temporaryRegistration->attachments && count($temporaryRegistration->attachments) > 0)
+                    <div style="margin-top: 16px;">
+                        <div style="font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">File đã tải lên:</div>
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap;" id="old-attachments-container">
+                            @foreach($temporaryRegistration->attachments as $path)
+                                <div class="old-attachment-item" style="position: relative; width: 100px; height: 100px; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; background-color: #f8fafc;" data-path="{{ $path }}">
+                                    @if(preg_match('/\.(jpg|jpeg|png)$/i', $path))
+                                        <img src="{{ Storage::url($path) }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    @else
+                                        <div style="text-align: center; color: #dc2626;">
+                                            <i class="fa-solid fa-file-pdf" style="font-size: 24px; margin-bottom: 8px;"></i>
+                                            <div style="font-size: 11px; font-weight: 600; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 90px;">PDF Document</div>
+                                        </div>
+                                    @endif
+                                    
+                                    <label style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.6); color: #fff; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; margin: 0;">
+                                        <input type="checkbox" name="remove_attachments[]" value="{{ $path }}" style="display: none;" class="remove-attachment-cb">
+                                        <span class="remove-icon" style="font-size: 14px;">&times;</span>
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+                
+                <!-- New File Preview container -->
                 <div id="file-preview-container" style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px;"></div>
             </div>
 
             <div style="display: flex; gap: 12px; margin-top: 24px;">
-                <button type="submit" class="btn btn-primary">Gửi đăng ký</button>
+                <button type="submit" class="btn btn-primary">Lưu và gửi lại</button>
                 <a href="{{ route('resident.temporary-registrations.index') }}" class="btn btn-secondary">Hủy</a>
             </div>
         </form>
@@ -175,6 +209,19 @@
         typeResidence.addEventListener('change', toggleSections);
         typeAbsence.addEventListener('change', toggleSections);
         toggleSections();
+        
+        // Handle old attachments removal visual
+        const oldCheckboxes = document.querySelectorAll('.remove-attachment-cb');
+        oldCheckboxes.forEach(cb => {
+            cb.addEventListener('change', function() {
+                const parent = this.closest('.old-attachment-item');
+                if (this.checked) {
+                    parent.style.opacity = '0.3';
+                } else {
+                    parent.style.opacity = '1';
+                }
+            });
+        });
 
         // Image Preview and Multiple Files Logic
         const fileInput = document.getElementById('file-input');

@@ -390,7 +390,7 @@
                 <div class="file-upload-wrapper">
                     <input type="file" name="attachments[]" accept=".jpg,.jpeg,.png,.pdf" class="file-input" id="admin-file-input" multiple>
                 </div>
-                <div class="form-hint">Định dạng hỗ trợ: JPG, PNG, PDF. Kích thước tối đa 2MB/file. Có thể chọn nhiều file.</div>
+                <div class="form-hint">Định dạng hỗ trợ: JPG, PNG, PDF. Kích thước tối đa 10MB/file. Có thể chọn nhiều file.</div>
                 
                 <!-- Preview container -->
                 <div id="admin-file-preview-container" style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px;"></div>

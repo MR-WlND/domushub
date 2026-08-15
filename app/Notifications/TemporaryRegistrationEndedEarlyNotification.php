@@ -8,7 +8,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use App\Models\TemporaryRegistration;
 
-class NewTemporaryRegistrationNotification extends Notification implements ShouldQueue
+class TemporaryRegistrationEndedEarlyNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -38,17 +38,17 @@ class NewTemporaryRegistrationNotification extends Notification implements Shoul
     public function toMail(object $notifiable): MailMessage
     {
         $type = $this->temporaryRegistration->type === 'residence' ? 'Tạm trú' : 'Tạm vắng';
-        $apartment = $this->temporaryRegistration->apartment->name ?? '';
+        $apartment = $this->temporaryRegistration->apartment->apartment_number ?? 'N/A';
         $url = route('admin.temporary-registrations.edit', $this->temporaryRegistration->id);
         
         return (new MailMessage)
-                    ->subject("Yêu cầu đăng ký $type mới - Phòng $apartment")
+                    ->subject("Thông báo kết thúc sớm $type - Căn hộ $apartment")
                     ->greeting("Chào Ban quản lý,")
-                    ->line("Có một yêu cầu đăng ký $type mới từ phòng $apartment cần được phê duyệt.")
+                    ->line("Căn hộ $apartment vừa báo cáo kết thúc sớm đăng ký $type.")
                     ->line("Loại: $type")
-                    ->line("Ngày bắt đầu: " . $this->temporaryRegistration->start_date->format('d/m/Y'))
+                    ->line("Ngày kết thúc mới: " . now()->format('d/m/Y'))
                     ->action('Xem chi tiết', $url)
-                    ->line('Vui lòng kiểm tra và xử lý trên hệ thống.');
+                    ->line('Vui lòng kiểm tra và xác nhận trên hệ thống nếu cần.');
     }
 
     /**
@@ -61,9 +61,9 @@ class NewTemporaryRegistrationNotification extends Notification implements Shoul
         $type = $this->temporaryRegistration->type === 'residence' ? 'Tạm trú' : 'Tạm vắng';
         return [
             'temporary_registration_id' => $this->temporaryRegistration->id,
-            'title' => "Yêu cầu đăng ký $type mới",
-            'message' => "Phòng {$this->temporaryRegistration->apartment->name} vừa gửi yêu cầu đăng ký $type.",
-            'type' => 'temporary_registration',
+            'title' => "Báo cáo kết thúc sớm $type",
+            'message' => "Căn hộ {$this->temporaryRegistration->apartment->apartment_number} vừa báo cáo kết thúc sớm đăng ký $type.",
+            'type' => 'temporary_registration_ended_early',
         ];
     }
 }
