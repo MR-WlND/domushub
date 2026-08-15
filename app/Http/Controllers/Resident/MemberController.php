@@ -261,6 +261,11 @@ class MemberController extends Controller
             ->with('success', 'Đã vô hiệu hóa mã mời thành công.');
     }
 
+    public function destroyRegistered($id): RedirectResponse
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        $ownerApartmentIds = $this->getOwnerApartmentIds($user);
 
         // Đảm bảo resident nằm trong căn hộ thuộc sở hữu của chủ hộ này, và không tự gỡ chính mình
         $resident = Resident::whereIn('apartment_id', $ownerApartmentIds)

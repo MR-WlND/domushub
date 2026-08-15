@@ -466,7 +466,14 @@
                         <tr>
                             <td class="code-text">#REQ-{{ str_pad($reg->id, 4, '0', STR_PAD_LEFT) }}</td>
                             <td>{{ $reg->user->name ?? 'N/A' }}</td>
-                            <td style="font-weight: 500;">{{ $reg->apartment->apartment_number ?? 'N/A' }}</td>
+                            <td>
+                                <div style="font-weight: 500;">{{ $reg->apartment->apartment_number ?? 'N/A' }}</div>
+                                @if($reg->apartment && $reg->apartment->floor && $reg->apartment->floor->block)
+                                    <div style="font-size: 12px; color: #64748b; margin-top: 2px;">
+                                        {{ $reg->apartment->floor->block->name }} - {{ $reg->apartment->floor->name }}
+                                    </div>
+                                @endif
+                            </td>
                             <td>{{ $reg->type == 'residence' ? 'Tạm trú' : 'Tạm vắng' }}</td>
                             <td>
                                 {{ $reg->start_date->format('d/m/Y') }} - 
@@ -512,7 +519,7 @@
                                     @endif
                                     @if($reg->status == 'approved')
                                         {{-- Nút Gia hạn --}}
-                                        <a href="{{ route('receptionist.temporary-registrations.create', ['extend_id' => $reg->id]) }}" class="action-btn" style="color: #16a34a;" title="Gia hạn">
+                                        <a href="{{ route('receptionist.temporary-registrations.create', ['extend_id' => $reg->id]) }}" class="action-btn" title="Gia hạn">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                                             </svg>
@@ -521,7 +528,7 @@
                                         {{-- Nút Kết thúc sớm --}}
                                         <form action="{{ route('receptionist.temporary-registrations.end-early', $reg->id) }}" method="POST" style="margin: 0;">
                                             @csrf
-                                            <button type="submit" class="action-btn" style="color: #d97706;" title="Kết thúc sớm" onclick="return confirm('Xác nhận kết thúc sớm đăng ký này (cập nhật ngày kết thúc thành hôm nay)?');">
+                                            <button type="submit" class="action-btn" title="Kết thúc sớm" onclick="return confirm('Xác nhận kết thúc sớm đăng ký này (cập nhật ngày kết thúc thành hôm nay)?');">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>

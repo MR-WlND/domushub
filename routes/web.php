@@ -253,6 +253,17 @@ $portalRoutes = function () {
     Route::get('/vehicle-logs', [App\Http\Controllers\Admin\VehicleLogController::class, 'index'])->name('vehicle-logs.index');
     Route::get('/visitor-logs', [App\Http\Controllers\Admin\VisitorLogController::class, 'index'])->name('visitor-logs.index');
 
+    // TẠM TRÚ TẠM VẮNG (Admin)
+    Route::get('/temporary-registrations',                  [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'index'])->name('temporary-registrations.index');
+    Route::get('/temporary-registrations/create',           [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'create'])->name('temporary-registrations.create');
+    Route::post('/temporary-registrations',                 [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'store'])->name('temporary-registrations.store');
+    Route::get('/temporary-registrations/{temporaryRegistration}/edit', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'edit'])->name('temporary-registrations.edit');
+    Route::put('/temporary-registrations/{temporaryRegistration}', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'update'])->name('temporary-registrations.update');
+    Route::delete('/temporary-registrations/{temporaryRegistration}', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'destroy'])->name('temporary-registrations.destroy');
+    Route::post('/temporary-registrations/{temporaryRegistration}/approve', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'approve'])->name('temporary-registrations.approve');
+    Route::post('/temporary-registrations/{temporaryRegistration}/reject', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'reject'])->name('temporary-registrations.reject');
+    Route::post('/temporary-registrations/{temporaryRegistration}/end-early', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'endEarly'])->name('temporary-registrations.end-early');
+
     // QUẢN LÝ LỐT ĐỖ XE
     Route::get('/parking-lots', [App\Http\Controllers\Admin\ParkingLotController::class, 'index'])->name('parking-lots.index');
     Route::post('/parking-lots', [App\Http\Controllers\Admin\ParkingLotController::class, 'store'])->name('parking-lots.store');

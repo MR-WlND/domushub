@@ -16,7 +16,7 @@ class TemporaryRegistrationController extends Controller
 {
     public function index(Request $request)
     {
-        $query = TemporaryRegistration::with(['user', 'apartment', 'approver'])
+        $query = TemporaryRegistration::with(['user', 'apartment.floor.block', 'approver'])
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('type')) {
