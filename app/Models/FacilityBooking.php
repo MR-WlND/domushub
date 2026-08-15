@@ -151,16 +151,4 @@ class FacilityBooking extends Model
         return 0;
     }
 
-    public function getStatusLabelAttribute(): string
-    {
-        return match ($this->status) {
-            'pending'   => 'Chờ duyệt',
-            'approved'  => 'Đã duyệt',
-            'used'      => 'Đã sử dụng',
-            'completed' => 'Đã hoàn thành',
-            'cancelled' => 'Đã hủy',
-            'rejected'  => 'Bị từ chối',
-            default     => $this->status ?? 'Không xác định',
-        };
-    }
 }
