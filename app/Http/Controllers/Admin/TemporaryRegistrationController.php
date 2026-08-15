@@ -67,17 +67,22 @@ class TemporaryRegistrationController extends Controller
             'guest_name' => 'nullable|required_without:user_id|string|max:255',
             'guest_phone' => 'nullable|required_without:user_id|string|max:20|unique:users,phone',
             'guest_cccd' => 'nullable|required_without:user_id|string|max:20',
+            'guest_email' => 'nullable|email|max:255',
+            'guest_dob' => 'nullable|date',
+            'guest_gender' => 'nullable|in:male,female,other',
+            'guest_hometown' => 'nullable|string|max:255',
+            'relationship' => 'nullable|string|max:255',
             'apartment_id' => 'required|exists:apartments,id',
             'type' => 'required|in:residence,absence',
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'reason' => 'nullable|string',
-            'attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'attachments.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
         DB::beginTransaction();
         try {
-            $data = $request->except(['attachment', 'guest_name', 'guest_phone', 'guest_cccd']);
+            $data = $request->except(['attachments']);
             
             // Nếu là Tạm trú và không chọn user có sẵn, tạo User mới
             if ($request->type === 'residence' && !$request->user_id) {
@@ -85,7 +90,7 @@ class TemporaryRegistrationController extends Controller
                     'name' => $request->guest_name,
                     'phone' => $request->guest_phone,
                     'cccd' => $request->guest_cccd,
-                    'email' => 'guest_' . time() . '@domushub.local',
+                    'email' => $request->guest_email ?? ('guest_' . time() . '@domushub.local'),
                     'password' => bcrypt('password123'), // Mật khẩu mặc định
                     'role' => 'resident',
                     'apartment_id' => $request->apartment_id,
@@ -99,9 +104,13 @@ class TemporaryRegistrationController extends Controller
             $data['status'] = 'approved';
             $data['approved_by'] = Auth::id();
 
-            if ($request->hasFile('attachment')) {
-                $data['attachment_path'] = $request->file('attachment')->store('temporary_registrations', 'public');
+            $attachmentPaths = [];
+            if ($request->hasFile('attachments')) {
+                foreach ($request->file('attachments') as $file) {
+                    $attachmentPaths[] = $file->store('temporary_registrations', 'public');
+                }
             }
+            $data['attachments'] = $attachmentPaths;
 
             $registration = TemporaryRegistration::create($data);
 
@@ -131,24 +140,29 @@ class TemporaryRegistrationController extends Controller
             'guest_name' => 'nullable|required_without:user_id|string|max:255',
             'guest_phone' => 'nullable|required_without:user_id|string|max:20|unique:users,phone',
             'guest_cccd' => 'nullable|required_without:user_id|string|max:20',
+            'guest_email' => 'nullable|email|max:255',
+            'guest_dob' => 'nullable|date',
+            'guest_gender' => 'nullable|in:male,female,other',
+            'guest_hometown' => 'nullable|string|max:255',
+            'relationship' => 'nullable|string|max:255',
             'apartment_id' => 'required|exists:apartments,id',
             'type' => 'required|in:residence,absence',
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'reason' => 'nullable|string',
-            'attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'attachments.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
         DB::beginTransaction();
         try {
-            $data = $request->except(['attachment', 'guest_name', 'guest_phone', 'guest_cccd']);
+            $data = $request->except(['attachments']);
 
             if ($request->type === 'residence' && !$request->user_id) {
                 $user = User::create([
                     'name' => $request->guest_name,
                     'phone' => $request->guest_phone,
                     'cccd' => $request->guest_cccd,
-                    'email' => 'guest_' . time() . '@domushub.local',
+                    'email' => $request->guest_email ?? ('guest_' . time() . '@domushub.local'),
                     'password' => bcrypt('password123'),
                     'role' => 'resident',
                     'apartment_id' => $request->apartment_id,
@@ -158,11 +172,12 @@ class TemporaryRegistrationController extends Controller
                 throw new \Exception("Vui lòng chọn Cư dân cho đơn Tạm vắng.");
             }
 
-            if ($request->hasFile('attachment')) {
-                if ($temporaryRegistration->attachment_path) {
-                    Storage::disk('public')->delete($temporaryRegistration->attachment_path);
+            $attachmentPaths = $temporaryRegistration->attachments ?? [];
+            if ($request->hasFile('attachments')) {
+                foreach ($request->file('attachments') as $file) {
+                    $attachmentPaths[] = $file->store('temporary_registrations', 'public');
                 }
-                $data['attachment_path'] = $request->file('attachment')->store('temporary_registrations', 'public');
+                $data['attachments'] = $attachmentPaths;
             }
 
             $temporaryRegistration->update($data);
@@ -227,6 +242,11 @@ class TemporaryRegistrationController extends Controller
     {
         if ($temporaryRegistration->attachment_path) {
             Storage::disk('public')->delete($temporaryRegistration->attachment_path);
+        }
+        if ($temporaryRegistration->attachments) {
+            foreach ($temporaryRegistration->attachments as $path) {
+                Storage::disk('public')->delete($path);
+            }
         }
         $temporaryRegistration->delete();
 

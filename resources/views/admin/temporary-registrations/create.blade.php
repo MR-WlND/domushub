@@ -315,11 +315,17 @@
 
             <div id="residence_section" class="resident-guest-section">
                 <h3 class="section-title">2. Thông tin người tạm trú</h3>
-                <div class="form-group" style="margin-bottom: 16px;">
-                    <label class="form-label">Họ và tên <span class="required">*</span></label>
-                    <input type="text" name="guest_name" id="guest_name" value="{{ old('guest_name') }}" class="form-control" placeholder="Nhập họ và tên...">
-                </div>
                 <div class="grid-cols-2">
+                    <div class="form-group">
+                        <label class="form-label">Họ và tên <span class="required">*</span></label>
+                        <input type="text" name="guest_name" id="guest_name" value="{{ old('guest_name') }}" class="form-control" placeholder="Nhập họ và tên...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="guest_email" id="guest_email" value="{{ old('guest_email') }}" class="form-control" placeholder="Nhập email (không bắt buộc)">
+                    </div>
+                </div>
+                <div class="grid-cols-3">
                     <div class="form-group">
                         <label class="form-label">Số điện thoại <span class="required">*</span></label>
                         <input type="text" name="guest_phone" id="guest_phone" value="{{ old('guest_phone') }}" class="form-control" placeholder="Ví dụ: 0912345678">
@@ -327,6 +333,35 @@
                     <div class="form-group">
                         <label class="form-label">CCCD/CMND <span class="required">*</span></label>
                         <input type="text" name="guest_cccd" id="guest_cccd" value="{{ old('guest_cccd') }}" class="form-control" placeholder="Số CCCD...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Giới tính</label>
+                        <select name="guest_gender" class="form-control">
+                            <option value="">-- Chọn giới tính --</option>
+                            <option value="male" {{ old('guest_gender') == 'male' ? 'selected' : '' }}>Nam</option>
+                            <option value="female" {{ old('guest_gender') == 'female' ? 'selected' : '' }}>Nữ</option>
+                            <option value="other" {{ old('guest_gender') == 'other' ? 'selected' : '' }}>Khác</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid-cols-3">
+                    <div class="form-group">
+                        <label class="form-label">Ngày sinh</label>
+                        <input type="date" name="guest_dob" value="{{ old('guest_dob') }}" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Quê quán / Thường trú</label>
+                        <input type="text" name="guest_hometown" value="{{ old('guest_hometown') }}" class="form-control" placeholder="Nhập quê quán...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Mối quan hệ với chủ hộ</label>
+                        <select name="relationship" class="form-control">
+                            <option value="">-- Chọn --</option>
+                            <option value="Khách thuê" {{ old('relationship') == 'Khách thuê' ? 'selected' : '' }}>Khách thuê</option>
+                            <option value="Người nhà" {{ old('relationship') == 'Người nhà' ? 'selected' : '' }}>Người nhà</option>
+                            <option value="Giúp việc" {{ old('relationship') == 'Giúp việc' ? 'selected' : '' }}>Giúp việc</option>
+                            <option value="Khác" {{ old('relationship') == 'Khác' ? 'selected' : '' }}>Khác</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -353,9 +388,9 @@
             <div class="form-group">
                 <label class="form-label">Giấy tờ đính kèm (CCCD, Hợp đồng...)</label>
                 <div class="file-upload-wrapper">
-                    <input type="file" name="attachment" accept=".jpg,.jpeg,.png,.pdf" class="file-input">
+                    <input type="file" name="attachments[]" accept=".jpg,.jpeg,.png,.pdf" class="file-input" multiple>
                 </div>
-                <div class="form-hint">Định dạng hỗ trợ: JPG, PNG, PDF. Kích thước tối đa 2MB.</div>
+                <div class="form-hint">Định dạng hỗ trợ: JPG, PNG, PDF. Kích thước tối đa 2MB/file. Có thể chọn nhiều file.</div>
             </div>
 
             <div class="form-actions">

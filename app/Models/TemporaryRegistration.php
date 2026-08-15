@@ -19,13 +19,24 @@ class TemporaryRegistration extends Model
         'end_date',
         'reason',
         'attachment_path',
+        'attachments',
         'rejection_reason',
         'status',
+        'guest_name',
+        'guest_phone',
+        'guest_cccd',
+        'guest_email',
+        'guest_dob',
+        'guest_gender',
+        'guest_hometown',
+        'relationship',
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
+        'guest_dob' => 'date',
+        'attachments' => 'array',
     ];
 
     /**
