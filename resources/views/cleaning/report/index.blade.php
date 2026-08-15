@@ -144,13 +144,13 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label">Ảnh minh chứng</label>
+                <label class="form-label">Ảnh / Video minh chứng</label>
                 <div class="upload-area" onclick="document.getElementById('fileInput').click()">
                     <i class="fa-solid fa-cloud-arrow-up"></i>
-                    <p>Kéo thả hoặc nhấp để tải ảnh lên</p>
-                    <span>Định dạng JPG, PNG (Tối đa 10MB)</span>
+                    <p>Kéo thả hoặc nhấp để tải ảnh / video lên</p>
+                    <span>Ảnh: JPG, PNG, WebP (10MB) — Video: MP4, MOV, AVI, WebM (50MB)</span>
                 </div>
-                <input type="file" id="fileInput" name="images[]" multiple accept="image/*" style="display:none;" onchange="previewFiles(this)">
+                <input type="file" id="fileInput" name="images[]" multiple accept="image/*,video/*" style="display:none;" onchange="previewFiles(this)">
                 <div class="upload-preview" id="uploadPreview"></div>
             </div>
 
@@ -204,14 +204,35 @@ function previewFiles(input) {
     preview.innerHTML = '';
     if (input.files) {
         Array.from(input.files).forEach(file => {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const thumb = document.createElement('div');
-                thumb.className = 'upload-thumb';
-                thumb.innerHTML = '<img src="' + e.target.result + '" alt="preview">';
-                preview.appendChild(thumb);
-            };
-            reader.readAsDataURL(file);
+            const thumb = document.createElement('div');
+            thumb.className = 'upload-thumb';
+
+            if (file.type.startsWith('video/')) {
+                // Video preview
+                const video = document.createElement('video');
+                video.src = URL.createObjectURL(file);
+                video.muted = true;
+                video.style.width = '100%';
+                video.style.height = '100%';
+                video.style.objectFit = 'cover';
+                video.addEventListener('loadeddata', () => video.currentTime = 1);
+                thumb.appendChild(video);
+                // Add play icon overlay
+                const overlay = document.createElement('div');
+                overlay.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);border-radius:6px;';
+                overlay.innerHTML = '<i class="fa-solid fa-play" style="color:white;font-size:14px;"></i>';
+                thumb.style.position = 'relative';
+                thumb.appendChild(overlay);
+            } else {
+                // Image preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    thumb.innerHTML = '<img src="' + e.target.result + '" alt="preview">';
+                };
+                reader.readAsDataURL(file);
+            }
+
+            preview.appendChild(thumb);
         });
     }
 }
