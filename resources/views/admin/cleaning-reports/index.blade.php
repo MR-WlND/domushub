@@ -81,38 +81,6 @@
 /* Pagination */
 .ir-pagination{margin-top:20px;display:flex;justify-content:center;}
 
-/* Detail Slide Panel */
-.ir-panel-overlay{position:fixed;inset:0;z-index:9990;background:rgba(15,23,42,.4);backdrop-filter:blur(3px);display:none;opacity:0;transition:opacity .25s;}
-.ir-panel-overlay--active{display:block;opacity:1;}
-.ir-panel{position:fixed;top:0;right:-480px;bottom:0;width:480px;max-width:100vw;background:white;z-index:9991;box-shadow:-8px 0 40px rgba(0,0,0,.1);transition:right .3s cubic-bezier(.4,0,.2,1);overflow-y:auto;}
-.ir-panel--active{right:0;}
-.ir-panel__header{position:sticky;top:0;background:white;padding:24px 28px 16px;border-bottom:1px solid #f1f5f9;z-index:2;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
-.ir-panel__title{font-size:18px;font-weight:800;color:#0f172a;line-height:1.3;margin:0;}
-.ir-panel__close{width:36px;height:36px;border-radius:8px;border:none;background:#f1f5f9;color:#64748b;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0;}
-.ir-panel__close:hover{background:#e2e8f0;color:#0f172a;}
-.ir-panel__body{padding:24px 28px 32px;}
-.ir-panel__section{margin-bottom:24px;}
-.ir-panel__section-title{font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;}
-.ir-panel__info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.ir-panel__info-card{background:#f8fafc;border-radius:10px;padding:14px 16px;border:1px solid #f1f5f9;}
-.ir-panel__info-label{font-size:10.5px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;}
-.ir-panel__info-value{font-size:14px;font-weight:600;color:#1e293b;}
-.ir-panel__desc{font-size:14px;color:#334155;line-height:1.7;background:#f8fafc;border-radius:10px;padding:16px 18px;border:1px solid #f1f5f9;white-space:pre-wrap;}
-.ir-panel__gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;}
-.ir-panel__gallery-item{aspect-ratio:1;border-radius:10px;overflow:hidden;border:1.5px solid #e2e8f0;cursor:pointer;position:relative;transition:.2s;}
-.ir-panel__gallery-item:hover{border-color:#4F46E5;transform:scale(1.02);}
-.ir-panel__gallery-item img,.ir-panel__gallery-item video{width:100%;height:100%;object-fit:cover;display:block;}
-.ir-panel__gallery-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.4);}
-.ir-panel__gallery-play i{color:white;font-size:24px;}
-.ir-panel__status-group{display:flex;gap:8px;flex-wrap:wrap;}
-.ir-panel__status-btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;border:2px solid #e2e8f0;background:white;color:#64748b;cursor:pointer;transition:.2s;}
-.ir-panel__status-btn:hover{border-color:#cbd5e1;background:#f8fafc;}
-.ir-panel__status-btn--active{color:white;}
-.ir-panel__status-btn--pending.ir-panel__status-btn--active{background:#F59E0B;border-color:#F59E0B;}
-.ir-panel__status-btn--processing.ir-panel__status-btn--active{background:#3B82F6;border-color:#3B82F6;}
-.ir-panel__status-btn--resolved.ir-panel__status-btn--active{background:#10B981;border-color:#10B981;}
-.ir-panel__status-msg{font-size:12px;margin-top:8px;font-weight:600;}
-
 /* Lightbox */
 .ir-lightbox{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;padding:24px;}
 .ir-lightbox--active{display:flex;}
@@ -218,17 +186,7 @@
             $roleLabel = $roleLabels[$reporterRole] ?? $reporterRole;
         @endphp
         <div class="ir-card ir-card--{{ $report->priority }}"
-             data-id="{{ $report->id }}"
-             data-title="{{ e($report->title) }}"
-             data-reporter="{{ e($report->reporter->name ?? '—') }}"
-             data-role="{{ $roleLabel }}"
-             data-location="{{ e($report->location) }}"
-             data-priority="{{ $report->priority }}"
-             data-status="{{ $report->status }}"
-             data-description="{{ e($report->description ?? '') }}"
-             data-images='@json($report->images ?? [])'
-             data-date="{{ $report->created_at->format('H:i – d/m/Y') }}"
-             onclick="openPanel(this)"
+             onclick="window.location='{{ portal_route('cleaning-reports.show', $report->id) }}'"
         >
             {{-- Priority --}}
             <div class="ir-card__priority">
@@ -254,7 +212,7 @@
                         $ext = strtolower(pathinfo($media, PATHINFO_EXTENSION));
                         $isVideo = in_array($ext, ['mp4','mov','avi','webm']);
                     @endphp
-                    <div class="ir-card__media-thumb" onclick="event.stopPropagation();">
+                    <div class="ir-card__media-thumb">
                         @if($isVideo)
                         <video src="{{ asset('storage/' . $media) }}" muted preload="metadata"></video>
                         <div class="ir-card__media-play"><i class="fa-solid fa-play"></i></div>
@@ -280,6 +238,9 @@
                     <button type="button" class="ir-status-pill ir-status-pill--processing {{ $report->status == 'processing' ? 'ir-status-pill--active' : '' }}" onclick="updateStatus({{ $report->id }}, 'processing', this)" title="Đang xử lý">Xử lý</button>
                     <button type="button" class="ir-status-pill ir-status-pill--resolved {{ $report->status == 'resolved' ? 'ir-status-pill--active' : '' }}" onclick="updateStatus({{ $report->id }}, 'resolved', this)" title="Đã xong">Xong</button>
                 </div>
+                @if($report->assignee)
+                <span class="ir-card__meta-item" style="font-size:11px;"><i class="fa-solid fa-wrench"></i> {{ $report->assignee->name }}</span>
+                @endif
             </div>
         </div>
         @empty
@@ -294,64 +255,6 @@
     <div class="ir-pagination">{{ $reports->withQueryString()->links() }}</div>
 </div>
 
-{{-- DETAIL SLIDE PANEL --}}
-<div class="ir-panel-overlay" id="panelOverlay" onclick="closePanel()"></div>
-<div class="ir-panel" id="detailPanel">
-    <div class="ir-panel__header">
-        <h2 class="ir-panel__title" id="panelTitle"></h2>
-        <button class="ir-panel__close" onclick="closePanel()" aria-label="Đóng">
-            <i class="fa-solid fa-xmark"></i>
-        </button>
-    </div>
-    <div class="ir-panel__body">
-        <div class="ir-panel__section">
-            <div class="ir-panel__section-title">Thông tin sự cố</div>
-            <div class="ir-panel__info-grid">
-                <div class="ir-panel__info-card">
-                    <div class="ir-panel__info-label">Người báo cáo</div>
-                    <div class="ir-panel__info-value" id="panelReporter"></div>
-                </div>
-                <div class="ir-panel__info-card">
-                    <div class="ir-panel__info-label">Bộ phận</div>
-                    <div class="ir-panel__info-value" id="panelRole"></div>
-                </div>
-                <div class="ir-panel__info-card">
-                    <div class="ir-panel__info-label">Khu vực</div>
-                    <div class="ir-panel__info-value" id="panelLocation"></div>
-                </div>
-                <div class="ir-panel__info-card">
-                    <div class="ir-panel__info-label">Mức ưu tiên</div>
-                    <div class="ir-panel__info-value" id="panelPriority"></div>
-                </div>
-                <div class="ir-panel__info-card" style="grid-column:span 2;">
-                    <div class="ir-panel__info-label">Thời gian báo cáo</div>
-                    <div class="ir-panel__info-value" id="panelDate"></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="ir-panel__section" id="panelDescSection">
-            <div class="ir-panel__section-title">Mô tả chi tiết</div>
-            <div class="ir-panel__desc" id="panelDesc"></div>
-        </div>
-
-        <div class="ir-panel__section" id="panelMediaSection" style="display:none;">
-            <div class="ir-panel__section-title">Ảnh / Video đính kèm</div>
-            <div class="ir-panel__gallery" id="panelGallery"></div>
-        </div>
-
-        <div class="ir-panel__section">
-            <div class="ir-panel__section-title">Cập nhật trạng thái</div>
-            <div class="ir-panel__status-group" id="panelStatusGroup">
-                <button type="button" class="ir-panel__status-btn ir-panel__status-btn--pending" data-status="pending" onclick="updateStatusPanel('pending', this)"><i class="fa-solid fa-clock"></i> Chờ xử lý</button>
-                <button type="button" class="ir-panel__status-btn ir-panel__status-btn--processing" data-status="processing" onclick="updateStatusPanel('processing', this)"><i class="fa-solid fa-gear"></i> Đang xử lý</button>
-                <button type="button" class="ir-panel__status-btn ir-panel__status-btn--resolved" data-status="resolved" onclick="updateStatusPanel('resolved', this)"><i class="fa-solid fa-circle-check"></i> Đã xử lý</button>
-            </div>
-            <div class="ir-panel__status-msg" id="panelStatusMsg"></div>
-        </div>
-    </div>
-</div>
-
 {{-- LIGHTBOX --}}
 <div class="ir-lightbox" id="irLightbox">
     <button class="ir-lightbox__close" onclick="closeLightbox()" aria-label="Đóng"><i class="fa-solid fa-xmark"></i></button>
@@ -363,86 +266,13 @@
 <script>
 (function() {
     const token = document.querySelector('meta[name="csrf-token"]')?.content;
-    const priorityMap = { high: 'Cao', medium: 'Trung bình', low: 'Thấp' };
-    let currentPanelId = null;
 
-    // ═══════════════════════════════════════
-    // SLIDE PANEL
-    // ═══════════════════════════════════════
-    window.openPanel = function(cardEl) {
-        const d = cardEl.dataset;
-        currentPanelId = d.id;
-
-        document.getElementById('panelTitle').textContent = d.title;
-        document.getElementById('panelReporter').textContent = d.reporter;
-        document.getElementById('panelRole').textContent = d.role;
-        document.getElementById('panelLocation').textContent = d.location || '—';
-        document.getElementById('panelPriority').textContent = priorityMap[d.priority] || d.priority;
-        document.getElementById('panelDate').textContent = d.date;
-
-        // Description
-        const desc = d.description;
-        const descSection = document.getElementById('panelDescSection');
-        if (desc) {
-            descSection.style.display = '';
-            document.getElementById('panelDesc').textContent = desc;
-        } else {
-            descSection.style.display = 'none';
-        }
-
-        // Media
-        const images = JSON.parse(d.images || '[]');
-        const gallery = document.getElementById('panelGallery');
-        const mediaSection = document.getElementById('panelMediaSection');
-        gallery.innerHTML = '';
-        if (images.length > 0) {
-            mediaSection.style.display = '';
-            images.forEach(img => {
-                const ext = img.split('.').pop().toLowerCase();
-                const isVideo = ['mp4','mov','avi','webm'].includes(ext);
-                const url = '/storage/' + img;
-                const item = document.createElement('div');
-                item.className = 'ir-panel__gallery-item';
-
-                if (isVideo) {
-                    item.innerHTML = `<video src="${url}" muted preload="metadata"></video><div class="ir-panel__gallery-play"><i class="fa-solid fa-play"></i></div>`;
-                    item.onclick = () => openLightbox(url, 'video');
-                } else {
-                    item.innerHTML = `<img src="${url}" alt="Ảnh sự cố">`;
-                    item.onclick = () => openLightbox(url, 'image');
-                }
-                gallery.appendChild(item);
-            });
-        } else {
-            mediaSection.style.display = 'none';
-        }
-
-        // Status buttons
-        document.querySelectorAll('#panelStatusGroup .ir-panel__status-btn').forEach(btn => {
-            btn.classList.toggle('ir-panel__status-btn--active', btn.dataset.status === d.status);
-        });
-        document.getElementById('panelStatusMsg').textContent = '';
-
-        document.getElementById('panelOverlay').classList.add('ir-panel-overlay--active');
-        document.getElementById('detailPanel').classList.add('ir-panel--active');
-        document.body.style.overflow = 'hidden';
-    };
-
-    window.closePanel = function() {
-        document.getElementById('panelOverlay').classList.remove('ir-panel-overlay--active');
-        document.getElementById('detailPanel').classList.remove('ir-panel--active');
-        document.body.style.overflow = '';
-    };
-
-    // ═══════════════════════════════════════
-    // STATUS UPDATE (inline pills)
-    // ═══════════════════════════════════════
+    // Status update (inline pills)
     window.updateStatus = function(id, status, btnEl) {
         const card = btnEl.closest('.ir-card');
         const pills = card.querySelectorAll('.ir-status-pill');
         pills.forEach(p => p.classList.remove('ir-status-pill--active'));
         btnEl.classList.add('ir-status-pill--active');
-        card.dataset.status = status;
 
         fetch('/{{ request()->segment(1) }}/cleaning-reports/' + id + '/status', {
             method: 'PATCH',
@@ -451,44 +281,13 @@
         });
     };
 
-    window.updateStatusPanel = function(status, btnEl) {
-        if (!currentPanelId) return;
-        document.querySelectorAll('#panelStatusGroup .ir-panel__status-btn').forEach(b => b.classList.remove('ir-panel__status-btn--active'));
-        btnEl.classList.add('ir-panel__status-btn--active');
-
-        const msg = document.getElementById('panelStatusMsg');
-        msg.textContent = 'Đang cập nhật...';
-        msg.style.color = '#64748b';
-
-        fetch('/{{ request()->segment(1) }}/cleaning-reports/' + currentPanelId + '/status', {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token, 'Accept': 'application/json' },
-            body: JSON.stringify({ status })
-        }).then(r => {
-            if (r.ok) {
-                msg.textContent = '✓ Đã cập nhật';
-                msg.style.color = '#059669';
-                // Sync card pills
-                const card = document.querySelector(`.ir-card[data-id="${currentPanelId}"]`);
-                if (card) {
-                    card.dataset.status = status;
-                    card.querySelectorAll('.ir-status-pill').forEach(p => p.classList.remove('ir-status-pill--active'));
-                    card.querySelector(`.ir-status-pill--${status}`).classList.add('ir-status-pill--active');
-                }
-                setTimeout(() => { msg.textContent = ''; }, 2000);
-            } else throw new Error();
-        }).catch(() => { msg.textContent = '✗ Lỗi, thử lại'; msg.style.color = '#dc2626'; });
-    };
-
-    // ═══════════════════════════════════════
-    // LIGHTBOX
-    // ═══════════════════════════════════════
+    // Lightbox
     window.openLightbox = function(url, type) {
         const content = document.getElementById('lightboxContent');
         if (type === 'video') {
             content.innerHTML = `<video src="${url}" controls autoplay style="max-width:90vw;max-height:85vh;border-radius:10px;"></video>`;
         } else {
-            content.innerHTML = `<img src="${url}" alt="Xem ảnh" style="max-width:90vw;max-height:85vh;border-radius:10px;">`;
+            content.innerHTML = `<img src="${url}" alt="" style="max-width:90vw;max-height:85vh;border-radius:10px;">`;
         }
         document.getElementById('irLightbox').classList.add('ir-lightbox--active');
     };
@@ -501,13 +300,7 @@
         document.getElementById('lightboxContent').innerHTML = '';
     };
 
-    // Keyboard
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            if (document.getElementById('irLightbox').classList.contains('ir-lightbox--active')) closeLightbox();
-            else if (document.getElementById('detailPanel').classList.contains('ir-panel--active')) closePanel();
-        }
-    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 })();
 </script>
 @endpush

@@ -342,7 +342,9 @@ $portalRoutes = function () {
     Route::delete('/cleaning-tasks/{id}', [\App\Http\Controllers\Admin\CleaningTaskController::class, 'destroy'])->name('cleaning-tasks.destroy');
 
     Route::get('/cleaning-reports', [\App\Http\Controllers\Admin\CleaningReportController::class, 'index'])->name('cleaning-reports.index');
+    Route::get('/cleaning-reports/{id}', [\App\Http\Controllers\Admin\CleaningReportController::class, 'show'])->name('cleaning-reports.show');
     Route::patch('/cleaning-reports/{id}/status', [\App\Http\Controllers\Admin\CleaningReportController::class, 'updateStatus'])->name('cleaning-reports.update-status');
+    Route::post('/cleaning-reports/{id}/assign', [\App\Http\Controllers\Admin\CleaningReportController::class, 'assign'])->name('cleaning-reports.assign');
 
 };
 
