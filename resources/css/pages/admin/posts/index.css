@@ -1,4 +1,4 @@
-﻿/* CSS for Admin Posts Management Page */
+/* CSS for Admin Posts Management Page */
 
 .posts-page {
     display: flex;
@@ -860,5 +860,160 @@
     padding: 0 20px 0 28px !important;
 }
 
+/* =========================================================================
+   Post Moderation Card Styling (Premium Feed Card Layout)
+   ========================================================================= */
 
+.posts-cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
 
+.post-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), 
+                box-shadow 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 0.22s ease;
+}
+
+.post-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 10px 20px -5px rgba(0, 35, 111, 0.05), 
+                0 4px 6px -2px rgba(0, 35, 111, 0.02);
+    transform: translateY(-1.5px);
+}
+
+.post-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 0.6rem;
+}
+
+.post-card__author-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.post-card__avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid #f1f5f9;
+}
+
+.post-card__avatar-fallback {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #eff6ff;
+    color: #1d4ed8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    border: 1.5px solid #dbeafe;
+}
+
+.post-card__author-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.post-card__author-name {
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 0.9rem;
+}
+
+.post-card__author-meta {
+    font-size: 0.75rem;
+    color: #64748b;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.post-card__author-meta i {
+    font-size: 0.7rem;
+    color: #94a3b8;
+}
+
+.post-card__badges {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.post-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.post-card__title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0f172a;
+    text-decoration: none;
+    transition: color 0.15s ease;
+    line-height: 1.4;
+    display: inline-block;
+    align-self: flex-start;
+}
+
+.post-card__title:hover {
+    color: #00236f;
+}
+
+.post-card__excerpt {
+    font-size: 0.85rem;
+    color: #475569;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.post-card__warning {
+    align-self: flex-start;
+    margin-top: 0.15rem;
+}
+
+.post-card__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.post-card__moderation {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.post-card__actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}

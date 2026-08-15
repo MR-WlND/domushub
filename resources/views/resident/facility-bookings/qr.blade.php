@@ -1,5 +1,83 @@
 @extends('layouts.resident.master')
 
+@push('styles')
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+.qr-page { max-width: 860px; margin: 0 auto; padding: 28px 20px; font-family: 'Inter', sans-serif; }
+
+.qr-breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: #64748b; margin-bottom: 24px; }
+.qr-breadcrumb a { color: #2563eb; text-decoration: none; font-weight: 500; }
+.qr-breadcrumb a:hover { text-decoration: underline; }
+
+.qr-layout { display: grid; grid-template-columns: 1fr 240px; gap: 20px; align-items: start; }
+
+/* QR Card */
+.qr-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 32px; box-shadow: 0 4px 24px rgba(0,0,0,0.07); }
+
+.qr-card-header { text-align: center; margin-bottom: 24px; }
+.qr-card-badge { display: inline-flex; align-items: center; gap: 6px; background: #dcfce7; color: #15803d; font-size: 0.75rem; font-weight: 700; padding: 5px 12px; border-radius: 20px; margin-bottom: 14px; }
+.qr-facility-name { font-size: 1.5rem; font-weight: 800; color: #0f172a; margin: 0 0 4px; }
+.qr-booking-id { font-size: 0.82rem; color: #94a3b8; margin: 0; }
+
+/* QR Code */
+.qr-code-wrap { display: flex; flex-direction: column; align-items: center; margin-bottom: 24px; }
+.qr-code-inner { padding: 20px; background: #fff; border: 2px solid #e2e8f0; border-radius: 16px; display: inline-block; box-shadow: 0 2px 16px rgba(0,0,0,0.08); }
+.qr-img { width: 220px; height: 220px; display: block; }
+.qr-code-text { font-size: 0.68rem; color: #94a3b8; font-family: monospace; margin-top: 12px; word-break: break-all; text-align: center; }
+
+/* Details */
+.qr-details { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
+.qr-detail-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.875rem; }
+.qr-detail-label { color: #64748b; font-weight: 500; }
+.qr-detail-value { font-weight: 700; color: #0f172a; }
+.qr-time { font-family: monospace; font-size: 1rem; color: #2563eb; }
+.qr-price { color: #d97706; }
+.qr-paid { color: #15803d; font-size: 0.82rem; }
+.qr-unpaid { color: #dc2626; font-size: 0.82rem; }
+
+/* Guide */
+.qr-guide { background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 14px 16px; margin-bottom: 24px; }
+.qr-guide-title { display: flex; align-items: center; gap: 7px; font-size: 0.82rem; font-weight: 700; color: #92400e; margin-bottom: 10px; }
+.qr-guide-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+.qr-guide-list li { font-size: 0.82rem; color: #78350f; line-height: 1.5; }
+
+/* Actions */
+.qr-actions { display: flex; gap: 10px; }
+.qr-btn { display: inline-flex; align-items: center; gap: 7px; padding: 11px 20px; border-radius: 10px; font-size: 0.875rem; font-weight: 600; cursor: pointer; border: none; text-decoration: none; transition: all 0.15s; }
+.qr-btn--print { background: linear-gradient(135deg, #3b82f6, #6366f1); color: #fff; box-shadow: 0 3px 10px rgba(59,130,246,0.3); }
+.qr-btn--print:hover { transform: translateY(-1px); box-shadow: 0 5px 16px rgba(59,130,246,0.4); }
+.qr-btn--back { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
+.qr-btn--back:hover { background: #f1f5f9; }
+
+/* Sidebar */
+.qr-countdown { background: linear-gradient(135deg, #1e293b, #334155); border-radius: 16px; padding: 24px; text-align: center; color: #fff; margin-bottom: 14px; }
+.qr-countdown-today { }
+.qr-countdown-pulse { width: 14px; height: 14px; background: #22c55e; border-radius: 50%; margin: 0 auto 12px; animation: pulse 2s infinite; box-shadow: 0 0 0 6px rgba(34,197,94,0.2); }
+@keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.2);opacity:0.7} }
+.qr-countdown-label { font-size: 0.82rem; font-weight: 600; color: #94a3b8; margin: 0 0 6px; }
+.qr-countdown-time { font-size: 1.5rem; font-weight: 800; color: #fff; margin: 0; font-family: monospace; }
+.qr-countdown-future { }
+.qr-countdown-days { font-size: 3.5rem; font-weight: 900; color: #fff; line-height: 1; }
+.qr-countdown-date { font-size: 0.78rem; color: #64748b; margin-top: 10px; }
+
+.qr-notice { display: flex; flex-direction: column; gap: 8px; }
+.qr-notice-item { display: flex; align-items: flex-start; gap: 8px; font-size: 0.8rem; color: #475569; padding: 10px 12px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; }
+.qr-notice--warn { color: #d97706; background: #fffbeb; border-color: #fde68a; }
+
+@media (max-width: 640px) {
+    .qr-layout { grid-template-columns: 1fr; }
+}
+
+@media print {
+    .qr-breadcrumb, .qr-actions, .qr-reminder, .qr-guide { display: none !important; }
+    .qr-layout { grid-template-columns: 1fr; }
+    .qr-page { padding: 0; }
+    .qr-card { box-shadow: none; border: none; }
+}
+</style>
+@endpush
+
 @section('title', 'QR Check-in – ' . $booking->facility->name . ' – DomusHub')
 
 @section('content')
@@ -161,82 +239,9 @@
     </div>
 </div>
 
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@endsection
 
-.qr-page { max-width: 860px; margin: 0 auto; padding: 28px 20px; font-family: 'Inter', sans-serif; }
-
-.qr-breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: #64748b; margin-bottom: 24px; }
-.qr-breadcrumb a { color: #2563eb; text-decoration: none; font-weight: 500; }
-.qr-breadcrumb a:hover { text-decoration: underline; }
-
-.qr-layout { display: grid; grid-template-columns: 1fr 240px; gap: 20px; align-items: start; }
-
-/* QR Card */
-.qr-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 32px; box-shadow: 0 4px 24px rgba(0,0,0,0.07); }
-
-.qr-card-header { text-align: center; margin-bottom: 24px; }
-.qr-card-badge { display: inline-flex; align-items: center; gap: 6px; background: #dcfce7; color: #15803d; font-size: 0.75rem; font-weight: 700; padding: 5px 12px; border-radius: 20px; margin-bottom: 14px; }
-.qr-facility-name { font-size: 1.5rem; font-weight: 800; color: #0f172a; margin: 0 0 4px; }
-.qr-booking-id { font-size: 0.82rem; color: #94a3b8; margin: 0; }
-
-/* QR Code */
-.qr-code-wrap { display: flex; flex-direction: column; align-items: center; margin-bottom: 24px; }
-.qr-code-inner { padding: 20px; background: #fff; border: 2px solid #e2e8f0; border-radius: 16px; display: inline-block; box-shadow: 0 2px 16px rgba(0,0,0,0.08); }
-.qr-img { width: 220px; height: 220px; display: block; }
-.qr-code-text { font-size: 0.68rem; color: #94a3b8; font-family: monospace; margin-top: 12px; word-break: break-all; text-align: center; }
-
-/* Details */
-.qr-details { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
-.qr-detail-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.875rem; }
-.qr-detail-label { color: #64748b; font-weight: 500; }
-.qr-detail-value { font-weight: 700; color: #0f172a; }
-.qr-time { font-family: monospace; font-size: 1rem; color: #2563eb; }
-.qr-price { color: #d97706; }
-.qr-paid { color: #15803d; font-size: 0.82rem; }
-.qr-unpaid { color: #dc2626; font-size: 0.82rem; }
-
-/* Guide */
-.qr-guide { background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 14px 16px; margin-bottom: 24px; }
-.qr-guide-title { display: flex; align-items: center; gap: 7px; font-size: 0.82rem; font-weight: 700; color: #92400e; margin-bottom: 10px; }
-.qr-guide-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
-.qr-guide-list li { font-size: 0.82rem; color: #78350f; line-height: 1.5; }
-
-/* Actions */
-.qr-actions { display: flex; gap: 10px; }
-.qr-btn { display: inline-flex; align-items: center; gap: 7px; padding: 11px 20px; border-radius: 10px; font-size: 0.875rem; font-weight: 600; cursor: pointer; border: none; text-decoration: none; transition: all 0.15s; }
-.qr-btn--print { background: linear-gradient(135deg, #3b82f6, #6366f1); color: #fff; box-shadow: 0 3px 10px rgba(59,130,246,0.3); }
-.qr-btn--print:hover { transform: translateY(-1px); box-shadow: 0 5px 16px rgba(59,130,246,0.4); }
-.qr-btn--back { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
-.qr-btn--back:hover { background: #f1f5f9; }
-
-/* Sidebar */
-.qr-countdown { background: linear-gradient(135deg, #1e293b, #334155); border-radius: 16px; padding: 24px; text-align: center; color: #fff; margin-bottom: 14px; }
-.qr-countdown-today { }
-.qr-countdown-pulse { width: 14px; height: 14px; background: #22c55e; border-radius: 50%; margin: 0 auto 12px; animation: pulse 2s infinite; box-shadow: 0 0 0 6px rgba(34,197,94,0.2); }
-@keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.2);opacity:0.7} }
-.qr-countdown-label { font-size: 0.82rem; font-weight: 600; color: #94a3b8; margin: 0 0 6px; }
-.qr-countdown-time { font-size: 1.5rem; font-weight: 800; color: #fff; margin: 0; font-family: monospace; }
-.qr-countdown-future { }
-.qr-countdown-days { font-size: 3.5rem; font-weight: 900; color: #fff; line-height: 1; }
-.qr-countdown-date { font-size: 0.78rem; color: #64748b; margin-top: 10px; }
-
-.qr-notice { display: flex; flex-direction: column; gap: 8px; }
-.qr-notice-item { display: flex; align-items: flex-start; gap: 8px; font-size: 0.8rem; color: #475569; padding: 10px 12px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; }
-.qr-notice--warn { color: #d97706; background: #fffbeb; border-color: #fde68a; }
-
-@media (max-width: 640px) {
-    .qr-layout { grid-template-columns: 1fr; }
-}
-
-@media print {
-    .qr-breadcrumb, .qr-actions, .qr-reminder, .qr-guide { display: none !important; }
-    .qr-layout { grid-template-columns: 1fr; }
-    .qr-page { padding: 0; }
-    .qr-card { box-shadow: none; border: none; }
-}
-</style>
-
+@push('scripts')
 <script>
 // Live clock nếu là hôm nay
 const isToday = {{ $booking->booking_date->isToday() ? 'true' : 'false' }};
@@ -255,4 +260,4 @@ if (isToday) {
     }
 }
 </script>
-@endsection
+@endpush

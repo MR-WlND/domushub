@@ -15,11 +15,15 @@ class Block extends Model
         'name',
         'code',
         'status',
-        'description',
-        'manager_name',
-        'manager_contact',
+        'image',
         'total_floors',
         'total_basements',
+        'apartments_per_floor',
+        'amenities',
+    ];
+
+    protected $casts = [
+        'amenities' => 'array',
     ];
 
     /**

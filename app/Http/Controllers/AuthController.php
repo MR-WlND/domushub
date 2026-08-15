@@ -1,5 +1,6 @@
 <?php
 
+namespace App\Mail\ResetPasswordCodeMail;
 namespace App\Http\Controllers;
 
 use App\Mail\ResetPasswordCodeMail;
@@ -51,6 +52,11 @@ class AuthController extends Controller
         return view('auth.cleaning.login');
     }
 
+    public function showReceptionistLogin(): View
+    {
+        return view('auth.receptionist.login');
+    }
+
     public function showResidentLogin(): View
     {
         return view('auth.resident.login');
@@ -70,6 +76,14 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
+
+        if ($user->status !== 'active') {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ BQL.',
+            ])->onlyInput('email');
+        }
 
         if ($user->role !== 'admin') {
             Auth::logout();
@@ -116,6 +130,14 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
+        if ($user->status !== 'active') {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ BQL.',
+            ])->onlyInput('email');
+        }
+
         if ($user->role !== $role) {
             Auth::logout();
 
@@ -145,6 +167,14 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
+
+        if ($user->status !== 'active') {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ BQL.',
+            ])->onlyInput('email');
+        }
 
         if ($user->role !== 'security') {
             Auth::logout();
@@ -176,6 +206,14 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
+        if ($user->status !== 'active') {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ BQL.',
+            ])->onlyInput('email');
+        }
+
         if ($user->role !== 'cleaning') {
             Auth::logout();
 
@@ -189,6 +227,44 @@ class AuthController extends Controller
         \App\Helpers\SystemLogger::log('Đăng nhập', 'Hệ thống');
 
         return redirect()->route('cleaning.dashboard');
+    }
+
+    public function loginReceptionist(Request $request): RedirectResponse
+    {
+        $credentials = $request->validate([
+            'email'    => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+            return back()->withErrors([
+                'email' => 'Email hoặc mật khẩu không đúng.',
+            ])->onlyInput('email');
+        }
+
+        $user = Auth::user();
+
+        if ($user->status !== 'active') {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ BQL.',
+            ])->onlyInput('email');
+        }
+
+        if ($user->role !== 'receptionist') {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản này không có quyền truy cập vào cổng Lễ tân.',
+            ])->onlyInput('email');
+        }
+
+        $request->session()->regenerate();
+
+        \App\Helpers\SystemLogger::log('Đăng nhập', 'Hệ thống');
+
+        return redirect()->route('receptionist.dashboard');
     }
 
     public function loginResident(Request $request): RedirectResponse
@@ -206,11 +282,31 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
+        if ($user->status !== 'active') {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ BQL.',
+            ])->onlyInput('email');
+        }
+
         if ($user->role !== 'resident') {
             Auth::logout();
 
             return back()->withErrors([
                 'email' => 'Tài khoản này không có quyền truy cập vào resident.',
+            ])->onlyInput('email');
+        }
+
+        // Chặn đăng nhập nếu cư dân chỉ có trạng thái pending
+        $hasActiveResident = \App\Models\Resident::where('user_id', $user->id)->where('status', 'active')->exists();
+        $hasPendingResident = \App\Models\Resident::where('user_id', $user->id)->where('status', 'pending')->exists();
+        
+        if (!$hasActiveResident && $hasPendingResident) {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản đang chờ Chủ căn hộ phê duyệt.',
             ])->onlyInput('email');
         }
 
@@ -231,22 +327,26 @@ class AuthController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:100'],
-            'phone' => ['required', 'string', 'max:20', 'regex:/^[0-9+]+$/', 'unique:users,phone'],
-            'email' => ['required', 'email', 'max:150', 'unique:users,email'],
+            'phone' => ['required', 'string', 'regex:/^(03|05|07|08|09)[0-9]{8}$/', 'unique:users,phone'],
+            'email' => ['required', 'email', 'max:150', 'regex:/^[a-zA-Z0-9._%+-]+@gmail\.com$/i', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'invite_code' => ['required', 'string', 'max:50'],
+            'cccd'        => ['nullable', 'string', 'regex:/^[0-9]{9,12}$/', 'unique:users,cccd'],
         ], [
             'name.required' => 'Vui lòng nhập họ và tên.',
             'phone.required' => 'Vui lòng nhập số điện thoại.',
-            'phone.regex' => 'Số điện thoại chỉ được chứa số và dấu +.',
+            'phone.regex' => 'Số điện thoại phải gồm đúng 10 chữ số, bắt đầu bằng số 0 và thuộc mạng Việt Nam (đầu số 03, 05, 07, 08, 09).',
             'phone.unique' => 'Số điện thoại đã tồn tại trong hệ thống.',
             'email.required' => 'Vui lòng nhập email.',
             'email.email' => 'Email không đúng định dạng.',
+            'email.regex' => 'Email đăng ký phải là tài khoản Gmail hợp lệ (có đuôi @gmail.com).',
             'email.unique' => 'Email đã tồn tại trong hệ thống.',
             'password.required' => 'Vui lòng nhập mật khẩu.',
             'password.min' => 'Mật khẩu phải có ít nhất 8 ký tự.',
             'password.confirmed' => 'Xác nhận mật khẩu không khớp.',
             'invite_code.required' => 'Vui lòng nhập mã mời cư dân.',
+            'cccd.regex'           => 'Số CCCD/CMND phải gồm 9 hoặc 12 chữ số.',
+            'cccd.unique'          => 'Số CCCD/CMND này đã được đăng ký trong hệ thống.',
         ]);
 
         // Tìm mã mời hợp lệ
@@ -285,17 +385,27 @@ class AuthController extends Controller
 
         $apartment = Apartment::with(['floor.block'])->findOrFail($invite->apartment_id);
 
+        // Kiểm tra giới hạn số lượng cư dân tối đa (10 người)
+        $currentCount = Resident::where('apartment_id', $apartment->id)
+            ->whereNull('deleted_at')
+            ->whereIn('status', ['active', 'pending'])
+            ->count();
+        if ($currentCount >= 10) {
+            return back()->withErrors([
+                'invite_code' => 'Căn hộ liên kết với mã mời này đã đạt giới hạn cư dân tối đa (10 người).',
+            ])->onlyInput(['name', 'phone', 'email', 'invite_code']);
+        }
+
         DB::transaction(function () use ($validated, $invite, $apartment) {
             $user = User::create([
                 'name' => $validated['name'],
                 'phone' => $validated['phone'],
                 'email' => $validated['email'],
                 'password' => $validated['password'], // Password tự động được hash nhờ config Cast trong User Model
-                'role' => 'resident',
-                'status' => 'active',
-
-                // CẬP NHẬT: Gán trực tiếp apartment_id từ bảng mã mời sang
+                'role'         => 'resident',
+                'status'       => 'active',
                 'apartment_id' => $invite->apartment_id,
+                'cccd'         => $validated['cccd'] ?? null,
             ]);
 
             Resident::create([
@@ -305,6 +415,7 @@ class AuthController extends Controller
                 'relationship' => $invite->intended_relationship,
                 'temporary_status' => 'permanent',
                 'start_date' => now()->toDateString(),
+                'status' => $invite->intended_relationship === 'owner' ? 'active' : 'pending',
             ]);
 
             $invite->uses_count += 1;
@@ -347,6 +458,7 @@ class AuthController extends Controller
         if ($user) {
             $mailer = (string) config('mail.default');
 
+            if ($mailer === 'log' || empty($mailer)) {
                 return back()->with('error', 'Chức năng gửi email chưa được cấu hình. Vui lòng liên hệ quản trị viên để được hỗ trợ.');
             }
 
@@ -356,6 +468,9 @@ class AuthController extends Controller
                 report($exception);
                 return back()->with('error', 'Không thể gửi mã xác nhận lúc này. Vui lòng thử lại sau ít phút.');
             }
+        }
+
+        return redirect()->route('resident.reset-password')->with('status', 'Mã xác nhận đã được gửi đến email của bạn nếu email hợp lệ.');
     }
 
     public function resetPassword(Request $request): RedirectResponse
@@ -426,16 +541,20 @@ class AuthController extends Controller
             return redirect()->route('cleaning.login');
         }
 
+        if ($role === 'receptionist') {
+            return redirect()->route('receptionist.login');
+        }
+
         return redirect()->route('resident.login');
     }
 
     private function adminHomeRouteFor(string $role): string
     {
         return match ($role) {
-            'manager' => 'manager.dashboard',
-            'staff' => 'staff.utility-readings.index',
-            'technician' => 'technician.tickets.my-tasks',
-            default => 'admin.dashboard',
+            'manager'      => 'manager.dashboard',
+            'staff'        => 'staff.utility-readings.index',
+            'technician'   => 'technician.tickets.my-tasks',
+            default        => 'admin.dashboard',
         };
     }
 }

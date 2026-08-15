@@ -6,8 +6,7 @@ use App\Http\Controllers\Admin\UtilityMeterController;
 use App\Http\Controllers\Admin\ServicePriceController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\ResidentManageController;
-use App\Http\Controllers\Admin\TemporaryRegistrationController;
-use App\Http\Controllers\Admin\AdminFacilityController;
+use App\Http\Controllers\Admin\FacilityController as AdminFacilityController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\InvitationController;
 use App\Http\Controllers\Resident\InvoiceController as ResidentInvoiceController;
@@ -21,138 +20,7 @@ Route::get('/', function () {
     return redirect()->route('resident.login');
 });
 
-// Admin Login Routes
-Route::get('/admin/login', [AuthController::class, 'showAdminLogin'])->name('admin.login');
-Route::post('/admin/login', [AuthController::class, 'loginAdmin'])->name('admin.login.submit');
 
-// Resident Routes
-Route::get('/resident/login', [AuthController::class, 'showResidentLogin'])->name('resident.login');
-Route::post('/resident/login', [AuthController::class, 'loginResident'])->name('resident.login.submit');
-Route::get('/resident/register', [AuthController::class, 'showResidentRegister'])->name('resident.register');
-Route::post('/resident/register', [AuthController::class, 'registerResident'])->name('resident.register.submit');
-Route::get('/resident/forgot-password', [AuthController::class, 'showForgotPassword'])->name('resident.forgot-password');
-Route::post('/resident/forgot-password', [AuthController::class, 'sendResetCode'])->name('resident.forgot-password.submit');
-Route::get('/resident/reset-password', [AuthController::class, 'showResetPassword'])->name('resident.reset-password');
-Route::post('/resident/reset-password', [AuthController::class, 'resetPassword'])->name('resident.reset-password.submit');
-
-// Security Login Routes
-Route::get('/security/login', [AuthController::class, 'showSecurityLogin'])->name('security.login');
-Route::post('/security/login', [AuthController::class, 'loginSecurity'])->name('security.login.submit');
-
-// Logout (accessible from all roles)
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
-// Dashboard Routes
-Route::middleware(['admin'])->group(function () {
-    Route::get('/admin/dashboard', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.dashboard');
-
-    // Quản lý hạ tầng - Buildings/Blocks
-    Route::get('/admin/buildings', [\App\Http\Controllers\BlockController::class, 'index'])->name('admin.buildings.index');
-    Route::get('/admin/buildings/create', [\App\Http\Controllers\BlockController::class, 'create'])->name('admin.buildings.create');
-    Route::post('/admin/buildings', [\App\Http\Controllers\BlockController::class, 'store'])->name('admin.buildings.store');
-    Route::get('/admin/buildings/{block}/edit', [\App\Http\Controllers\BlockController::class, 'edit'])->name('admin.buildings.edit');
-    Route::put('/admin/buildings/{block}', [\App\Http\Controllers\BlockController::class, 'update'])->name('admin.buildings.update');
-    Route::delete('/admin/buildings/{block}', [\App\Http\Controllers\BlockController::class, 'destroy'])->name('admin.buildings.destroy');
-
-    // Block/Building routes (used in views)
-    Route::get('/admin/blocks', [\App\Http\Controllers\BlockController::class, 'index'])->name('admin.blocks.index');
-    Route::get('/admin/blocks/create', [\App\Http\Controllers\BlockController::class, 'create'])->name('admin.blocks.create');
-    Route::post('/admin/blocks', [\App\Http\Controllers\BlockController::class, 'store'])->name('admin.blocks.store');
-    Route::get('/admin/blocks/{block}/edit', [\App\Http\Controllers\BlockController::class, 'edit'])->name('admin.blocks.edit');
-    Route::put('/admin/blocks/{block}', [\App\Http\Controllers\BlockController::class, 'update'])->name('admin.blocks.update');
-    Route::delete('/admin/blocks/{block}', [\App\Http\Controllers\BlockController::class, 'destroy'])->name('admin.blocks.destroy');
-
-    // Floors (Tầng)
-    Route::get('/admin/floors', [\App\Http\Controllers\FloorController::class, 'index'])->name('admin.floors.index');
-    Route::get('/admin/floors/create', [\App\Http\Controllers\FloorController::class, 'create'])->name('admin.floors.create');
-    Route::post('/admin/floors', [\App\Http\Controllers\FloorController::class, 'store'])->name('admin.floors.store');
-    Route::get('/admin/floors/{floor}/edit', [\App\Http\Controllers\FloorController::class, 'edit'])->name('admin.floors.edit');
-    Route::put('/admin/floors/{floor}', [\App\Http\Controllers\FloorController::class, 'update'])->name('admin.floors.update');
-    Route::delete('/admin/floors/{floor}', [\App\Http\Controllers\FloorController::class, 'destroy'])->name('admin.floors.destroy');
-
-    // Apartments (Căn hộ/Phòng)
-    Route::get('/admin/apartments', [\App\Http\Controllers\ApartmentController::class, 'index'])->name('admin.apartments.index');
-    Route::get('/admin/apartments/create', [\App\Http\Controllers\ApartmentController::class, 'create'])->name('admin.apartments.create');
-    Route::post('/admin/apartments', [\App\Http\Controllers\ApartmentController::class, 'store'])->name('admin.apartments.store');
-    Route::get('/admin/apartments/{apartment}/edit', [\App\Http\Controllers\ApartmentController::class, 'edit'])->name('admin.apartments.edit');
-    Route::put('/admin/apartments/{apartment}', [\App\Http\Controllers\ApartmentController::class, 'update'])->name('admin.apartments.update');
-    Route::delete('/admin/apartments/{apartment}', [\App\Http\Controllers\ApartmentController::class, 'destroy'])->name('admin.apartments.destroy');
-
-    Route::get('/admin/invitations', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.invitations.index');
-
-    // Điện nước & hoá đơn
-    Route::get('/admin/utility-readings', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.utility-readings.index');
-
-    Route::get('/admin/service-prices', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.service-prices.index');
-
-    Route::get('/admin/invoices', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.invoices.index');
-
-    // Dịch vụ cư dân
-    Route::get('/admin/residents', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.residents.index');
-
-    Route::get('/admin/vehicles', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.vehicles.index');
-
-    Route::get('/admin/incidents', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.incidents.index');
-
-    Route::get('/admin/amenities', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.amenities.index');
-
-    // Tương tác & bảng tin
-    Route::get('/admin/announcements', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.announcements.index');
-
-    // Cấu hình hệ thống
-    Route::get('/admin/roles', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.roles.index');
-
-    Route::get('/admin/activity-logs', function () {
-        return view('admin.dashboard.index');
-    })->name('admin.activity-logs.index');
-});
-
-Route::middleware(['security'])->group(function () {
-    Route::get('/security/dashboard', function () {
-        return view('security.dashboard.index');
-    })->name('security.dashboard');
-
-    Route::get('/security/vehicle-checkin', function () {
-        return view('security.vehicle-checkin.index');
-    })->name('security.vehicle-checkin.index');
-
-    Route::get('/security/vehicle-checkout', function () {
-        return view('security.vehicle-checkout.index');
-    })->name('security.vehicle-checkout.index');
-
-    Route::get('/security/visitor-check', function () {
-        return view('security.visitor-check.index');
-    })->name('security.visitor-check.index');
-});
-
-
-Route::middleware(['resident'])->group(function () {
-    Route::get('/resident/dashboard', function () {
-        return view('resident.home.index');
-    })->name('resident.dashboard');
-});
 
 // Shortcut routes
 Route::get('/resident', function () {
@@ -219,6 +87,10 @@ Route::post('/security/login', [AuthController::class, 'loginSecurity'])->name('
 Route::get('/cleaning/login', [AuthController::class, 'showCleaningLogin'])->name('cleaning.login');
 Route::post('/cleaning/login', [AuthController::class, 'loginCleaning'])->name('cleaning.login.submit');
 
+// Receptionist Login Routes
+Route::get('/receptionist/login', [AuthController::class, 'showReceptionistLogin'])->name('receptionist.login');
+Route::post('/receptionist/login', [AuthController::class, 'loginReceptionist'])->name('receptionist.login.submit');
+
 // Logout (accessible from all roles)
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
@@ -282,11 +154,13 @@ $portalRoutes = function () {
     Route::get('/apartments/{apartment}/edit', [\App\Http\Controllers\Admin\ApartmentController::class, 'edit'])->name('apartments.edit');
     Route::put('/apartments/{apartment}', [\App\Http\Controllers\Admin\ApartmentController::class, 'update'])->name('apartments.update');
     Route::delete('/apartments/{apartment}', [\App\Http\Controllers\Admin\ApartmentController::class, 'destroy'])->name('apartments.destroy');
+    Route::post('/apartments/{apartment}/assign-owner', [\App\Http\Controllers\Admin\ApartmentController::class, 'assignOwner'])->name('apartments.assign-owner');
 
     // Apartment Types (Loại căn hộ)
     Route::get('/apartment-types', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'index'])->name('apartment-types.index');
     Route::get('/apartment-types/create', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'create'])->name('apartment-types.create');
     Route::post('/apartment-types', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'store'])->name('apartment-types.store');
+    Route::get('/apartment-types/{apartmentType}', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'show'])->name('apartment-types.show');
     Route::get('/apartment-types/{apartmentType}/edit', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'edit'])->name('apartment-types.edit');
     Route::put('/apartment-types/{apartmentType}', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'update'])->name('apartment-types.update');
     Route::delete('/apartment-types/{apartmentType}', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'destroy'])->name('apartment-types.destroy');
@@ -294,6 +168,7 @@ $portalRoutes = function () {
 
     // Xoá mềm cư dân khỏi phòng
     Route::delete('/residents/{id}', [ResidentManageController::class, 'destroy'])->name('residents.destroy');
+    Route::patch('/residents/{id}/status', [ResidentManageController::class, 'updateStatus'])->name('residents.update-status');
 
     // Thông báo (Notifications)
     Route::get('/notifications', [\App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('notifications.index');
@@ -306,8 +181,8 @@ $portalRoutes = function () {
     Route::get('/utility-readings/batch', [UtilityMeterController::class, 'batchCreate'])->name('utility-readings.batch');
     Route::post('/utility-readings/batch', [UtilityMeterController::class, 'batchStore'])->name('utility-readings.batch.store');
     Route::get('/utility-readings/get-old-value', [UtilityMeterController::class, 'getOldValue'])->name('utility-readings.get-old-value');
-    Route::get('/utility-readings/import-template', [UtilityMeterController::class, 'downloadTemplate'])->name('utility-readings.import-template');
-    Route::post('/utility-readings/import', [UtilityMeterController::class, 'import'])->name('utility-readings.import');
+    Route::post('/utility-readings/ocr', [UtilityMeterController::class, 'ocr'])->name('utility-readings.ocr');
+
     Route::get('/utility-readings/{id}', [UtilityMeterController::class, 'show'])->name('utility-readings.show');
     Route::get('/utility-readings/{id}/edit', [UtilityMeterController::class, 'edit'])->name('utility-readings.edit');
     Route::put('/utility-readings/{id}', [UtilityMeterController::class, 'update'])->name('utility-readings.update');
@@ -322,6 +197,9 @@ $portalRoutes = function () {
     Route::put('/service-prices/{id}', [ServicePriceController::class, 'update'])->name('service-prices.update');
     Route::delete('/service-prices/{id}', [ServicePriceController::class, 'destroy'])->name('service-prices.destroy');
 
+    Route::get('/thu-tien-thu-cong', [\App\Http\Controllers\Admin\ManualPaymentController::class, 'index'])->name('manual-payment.index');
+
+    Route::post('/thu-tien-thu-cong/process', [\App\Http\Controllers\Admin\ManualPaymentController::class, 'process'])->name('manual-payment.process');
     Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
     Route::get('/invoices/stats', [InvoiceController::class, 'stats'])->name('invoices.stats');
     Route::get('/invoices/create', [InvoiceController::class, 'create'])->name('invoices.create');
@@ -333,6 +211,8 @@ $portalRoutes = function () {
     Route::post('/invoices/generate', [InvoiceController::class, 'generate'])->name('invoices.generate');
     Route::get('/invoices/apartment/{apartment}', [InvoiceController::class, 'apartmentInvoices'])->name('invoices.apartment');
     Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
+    Route::get('/invoices/{invoice}/edit', [InvoiceController::class, 'edit'])->name('invoices.edit');
+    Route::put('/invoices/{invoice}', [InvoiceController::class, 'update'])->name('invoices.update');
     Route::match(['post', 'patch'], '/invoices/{invoice}/mark-paid', [InvoiceController::class, 'markAsPaid'])->name('invoices.mark-paid');
     Route::post('/invoices/{invoice}/cancel', [InvoiceController::class, 'cancelInvoice'])->name('invoices.cancel');
     Route::post('/invoices/batch-resend-notification', [InvoiceController::class, 'batchResendNotification'])->name('invoices.batch-resend-notification');
@@ -343,13 +223,7 @@ $portalRoutes = function () {
 
     // Danh sách cư dân
     Route::get('/residents', [ResidentManageController::class, 'index'])->name('residents.index');
-
-    // Quản lý Tạm trú / Tạm vắng
-    Route::post('/temporary-registrations/{temporary_registration}/approve', [TemporaryRegistrationController::class, 'approve'])->name('temporary-registrations.approve');
-    Route::post('/temporary-registrations/{temporary_registration}/reject', [TemporaryRegistrationController::class, 'reject'])->name('temporary-registrations.reject');
-    Route::post('/temporary-registrations/{temporary_registration}/end-early', [TemporaryRegistrationController::class, 'endEarly'])->name('temporary-registrations.end-early');
-    Route::resource('/temporary-registrations', TemporaryRegistrationController::class);
-
+    Route::get('/residents/{id}', [ResidentManageController::class, 'show'])->name('residents.show');
     // Quản lý phản ánh & điều phối kỹ thuật (admin / manager)
     Route::get('/tickets', [App\Http\Controllers\Admin\TicketController::class, 'index'])->name('tickets.index');
     Route::get('/tickets/report', [App\Http\Controllers\Admin\TicketController::class, 'report'])->name('tickets.report');
@@ -367,11 +241,13 @@ $portalRoutes = function () {
 
     // QUẢN LÝ PHƯƠNG TIỆN PHÍA ADMIN
     Route::get('/vehicles', [App\Http\Controllers\Admin\VehicleController::class, 'index'])->name('vehicles.index');
+    Route::post('/vehicles',                       [App\Http\Controllers\Admin\VehicleController::class, 'store'])->name('vehicles.store');
     Route::post('/vehicles/{vehicle}/assign-lot',  [App\Http\Controllers\Admin\VehicleController::class, 'assignLot'])->name('vehicles.assignLot');
     Route::post('/vehicles/{vehicle}/release-lot', [App\Http\Controllers\Admin\VehicleController::class, 'releaseLot'])->name('vehicles.releaseLot');
     Route::post('/vehicles/{vehicle}/approve',     [App\Http\Controllers\Admin\VehicleController::class, 'approve'])->name('vehicles.approve');
     Route::post('/vehicles/{vehicle}/lock',        [App\Http\Controllers\Admin\VehicleController::class, 'lock'])->name('vehicles.lock');
     Route::post('/vehicles/{vehicle}/unlock',      [App\Http\Controllers\Admin\VehicleController::class, 'unlock'])->name('vehicles.unlock');
+    Route::delete('/vehicles/{vehicle}',           [App\Http\Controllers\Admin\VehicleController::class, 'destroy'])->name('vehicles.destroy');
     
     // LỊCH SỬ RA VÀO (Admin)
     Route::get('/vehicle-logs', [App\Http\Controllers\Admin\VehicleLogController::class, 'index'])->name('vehicle-logs.index');
@@ -386,6 +262,7 @@ $portalRoutes = function () {
     // Quản lý tiện ích chung cư (Facilities)
     Route::get('/amenities', [AdminFacilityController::class, 'index'])->name('amenities.index');
     Route::get('/amenities/create', [AdminFacilityController::class, 'create'])->name('amenities.create');
+    Route::get('/amenities/floors/{block}', [AdminFacilityController::class, 'getFloorsByBlock'])->name('amenities.floors');
     Route::post('/amenities', [AdminFacilityController::class, 'store'])->name('amenities.store');
     Route::get('/amenities/statistics', [AdminFacilityController::class, 'statistics'])->name('amenities.statistics');
     Route::get('/amenities/statistics/export', [AdminFacilityController::class, 'exportExcel'])->name('amenities.statistics.export');
@@ -412,6 +289,25 @@ $portalRoutes = function () {
     Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
     Route::put('/users/{id}/update-status', [UserController::class, 'updateStatus'])->name('users.updateStatus');
     Route::put('/users/{id}/reset-password', [UserController::class, 'resetPassword'])->name('users.resetPassword');
+    Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+
+    // Quản lý nhân sự
+    Route::resource('departments', \App\Http\Controllers\Admin\DepartmentController::class)->except(['create', 'show', 'edit']);
+    Route::resource('staffs', \App\Http\Controllers\Admin\StaffController::class);
+    
+    // Phân ca làm việc (Khung lịch)
+    Route::get('/schedules', [\App\Http\Controllers\Admin\ScheduleController::class, 'index'])->name('schedules.index');
+    
+    // Cập nhật định mức ca
+    Route::post('/schedules/{shift}/requirements', [\App\Http\Controllers\Admin\ScheduleController::class, 'updateRequirements'])->name('schedules.requirements');
+    
+    // API & Phân công (RESTful StaffSchedules)
+    Route::get('/api/staffs', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'getStaffs'])->name('api.staffs');
+    Route::post('/staff-schedules', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'store'])->name('staff-schedules.store');
+    Route::delete('/staff-schedules/{staff_schedule}', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'destroy'])->name('staff-schedules.destroy');
+    Route::patch('/staff-schedules/{staff_schedule}/leader', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'toggleLeader'])->name('staff-schedules.leader');
+    Route::post('/staff-schedules/copy', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'copy'])->name('staff-schedules.copy');
+    Route::post('/staff-schedules/preview-copy', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'previewCopy'])->name('staff-schedules.preview-copy');
 
     // Quản lý mã mời
     Route::get('/invitations', [InvitationController::class, 'index'])->name('invitations.index');
@@ -455,14 +351,11 @@ Route::middleware(['staff'])->prefix('staff')->name('staff.')->group($portalRout
 Route::middleware(['technician'])->prefix('technician')->name('technician.')->group($portalRoutes);
 
 
-// DASHBOARD SECURITY ROUTES
 Route::middleware(['security'])->group(function () {
     Route::get('/security/dashboard', function () {
         $vehiclesInside = \App\Models\VehicleLog::where('status', 'inside')->count();
-        $visitorsInside = \App\Models\Visitor::where('status', 'checked_in')->count();
         $todayCheckins = \App\Models\VehicleLog::whereDate('check_in_at', today())->count();
         $todayCheckouts = \App\Models\VehicleLog::whereDate('check_out_at', today())->count();
-        $todayVisitors = \App\Models\Visitor::whereDate('check_in_at', today())->count();
 
         $recentLogs = \App\Models\VehicleLog::with('vehicle')
             ->latest()
@@ -470,7 +363,7 @@ Route::middleware(['security'])->group(function () {
             ->get();
 
         return view('security.dashboard.index', compact(
-            'vehiclesInside', 'visitorsInside', 'todayCheckins', 'todayCheckouts', 'todayVisitors', 'recentLogs'
+            'vehiclesInside', 'todayCheckins', 'todayCheckouts', 'recentLogs'
         ));
     })->name('security.dashboard');
 
@@ -485,21 +378,8 @@ Route::middleware(['security'])->group(function () {
     Route::post('/security/vehicle-checkout/scan', [\App\Http\Controllers\Security\VehicleCheckoutController::class, 'scan'])->name('security.vehicle-checkout.scan');
     Route::post('/security/vehicle-checkout/confirm', [\App\Http\Controllers\Security\VehicleCheckoutController::class, 'checkout'])->name('security.vehicle-checkout.confirm');
 
-    // Quét QR khách
-    Route::get('/security/visitor-check', [\App\Http\Controllers\Security\VisitorCheckinController::class, 'index'])->name('security.visitor-check.index');
-    Route::post('/security/visitor-check/scan', [\App\Http\Controllers\Security\VisitorCheckinController::class, 'scan'])->name('security.visitor-check.scan');
-    Route::post('/security/visitor-check/checkin', [\App\Http\Controllers\Security\VisitorCheckinController::class, 'checkin'])->name('security.visitor-check.checkin');
-    Route::post('/security/visitor-check/checkout', [\App\Http\Controllers\Security\VisitorCheckinController::class, 'checkout'])->name('security.visitor-check.checkout');
-
-    // Đăng ký khách vãng lai tại cổng (walk-in)
-    Route::get('/security/walk-in', [\App\Http\Controllers\Security\WalkInVisitorController::class, 'index'])->name('security.walk-in.index');
-    Route::get('/security/walk-in/residents', [\App\Http\Controllers\Security\WalkInVisitorController::class, 'getResidents'])->name('security.walk-in.residents');
-    Route::post('/security/walk-in', [\App\Http\Controllers\Security\WalkInVisitorController::class, 'store'])->name('security.walk-in.store');
-    Route::post('/security/walk-in/checkout', [\App\Http\Controllers\Security\WalkInVisitorController::class, 'checkout'])->name('security.walk-in.checkout');
-
-    // Xem lịch sử xe và khách cho bảo vệ
+    // Xem lịch sử xe cho bảo vệ
     Route::get('/security/vehicle-logs', [\App\Http\Controllers\Admin\VehicleLogController::class, 'index'])->name('security.vehicle-logs.index');
-    Route::get('/security/visitor-logs', [\App\Http\Controllers\Admin\VisitorLogController::class, 'index'])->name('security.visitor-logs.index');
 });
 
 // DASHBOARD CLEANING ROUTES
@@ -548,6 +428,12 @@ Route::middleware(['resident'])->group(function () {
             ->limit(5)
             ->get();
 
+        // Lấy thông báo khẩn cấp dạng Popup mới nhất
+        $popupAnnouncement = \App\Models\Announcement::where('status', 'published')
+            ->where('is_popup', true)
+            ->latest()
+            ->first();
+
         // Bài viết cư dân (full feed với filter + pagination)
         $postQuery = \App\Models\Post::with(['user', 'images', 'comments', 'likedByCurrentUser'])
             ->withCount(['likes', 'comments'])
@@ -565,7 +451,7 @@ Route::middleware(['resident'])->group(function () {
 
         return view('resident.home.index', compact(
             'user', 'apartment', 'totalUnpaidAmount', 'dueDate',
-            'announcements', 'posts'
+            'announcements', 'posts', 'popupAnnouncement'
         ));
     })->name('resident.dashboard');
 
@@ -577,12 +463,17 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/profile', [ProfileController::class, 'index'])->name('resident.profile.index');
     Route::put('/resident/profile', [ProfileController::class, 'update'])->name('resident.profile.update');
     Route::put('/resident/profile/change-password', [ProfileController::class, 'changePassword'])->name('resident.profile.change-password');
+    Route::post('/resident/profile/leave', [ProfileController::class, 'leaveApartment'])->name('resident.profile.leave');
+    Route::post('/resident/profile/transfer-owner/send-otp', [ProfileController::class, 'sendTransferOtp'])->name('resident.profile.transfer-owner.send-otp');
+    Route::post('/resident/profile/transfer-owner/verify', [ProfileController::class, 'verifyTransferOwner'])->name('resident.profile.transfer-owner.verify');
 
     // Hoá đơn cư dân
     Route::get('/resident/invoices', [ResidentInvoiceController::class, 'index'])->name('resident.invoices.index');
     Route::get('/resident/invoices/history', [ResidentInvoiceController::class, 'history'])->name('resident.invoices.history');
     Route::get('/resident/invoices/vnpay-return', [ResidentInvoiceController::class, 'vnpayReturn'])->name('resident.invoices.vnpay-return');
     Route::get('/resident/invoices/{id}', [ResidentInvoiceController::class, 'show'])->name('resident.invoices.show');
+    Route::get('/resident/invoices/{id}/print', [ResidentInvoiceController::class, 'printInvoice'])->name('resident.invoices.print');
+    Route::post('/resident/invoices/{invoice}/complaint-water', [ResidentInvoiceController::class, 'complaintWater'])->name('resident.invoices.complaint-water');
     Route::post('/resident/invoices/pay', [ResidentInvoiceController::class, 'pay'])->name('resident.invoices.pay');
     Route::post('/resident/invoices/pay-details', [ResidentInvoiceController::class, 'payDetails'])->name('resident.invoices.pay-details');
     Route::get('/resident/payments/{payment}/receipt', [ResidentInvoiceController::class, 'printReceipt'])->name('resident.payments.receipt');
@@ -593,7 +484,9 @@ Route::middleware(['resident'])->group(function () {
     Route::delete('/resident/members/declared/{member}', [\App\Http\Controllers\Resident\MemberController::class, 'destroyDeclared'])->name('resident.members.declared.destroy');
     Route::post('/resident/members/invitations', [\App\Http\Controllers\Resident\MemberController::class, 'storeInvite'])->name('resident.members.invitations.store');
     Route::delete('/resident/members/invitations/{id}', [\App\Http\Controllers\Resident\MemberController::class, 'destroyInvite'])->name('resident.members.invitations.destroy');
-
+    Route::delete('/resident/members/registered/{id}', [\App\Http\Controllers\Resident\MemberController::class, 'destroyRegistered'])->name('resident.members.registered.destroy');
+    Route::post('/resident/members/approve/{id}', [\App\Http\Controllers\Resident\MemberController::class, 'approveResident'])->name('resident.members.approve');
+    Route::post('/resident/members/reject/{id}', [\App\Http\Controllers\Resident\MemberController::class, 'rejectResident'])->name('resident.members.reject');
 
     // QUẢN LÝ PHƯƠNG TIỆN PHÍA CƯ DÂN
     Route::get('/resident/vehicles', [App\Http\Controllers\Resident\VehicleController::class, 'index'])
@@ -616,6 +509,8 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/visitors/create', [\App\Http\Controllers\Resident\VisitorController::class, 'create'])->name('resident.visitors.create');
     Route::post('/resident/visitors', [\App\Http\Controllers\Resident\VisitorController::class, 'store'])->name('resident.visitors.store');
     Route::get('/resident/visitors/{id}', [\App\Http\Controllers\Resident\VisitorController::class, 'show'])->name('resident.visitors.show');
+    Route::post('/resident/visitors/{id}/approve', [\App\Http\Controllers\Resident\VisitorController::class, 'approve'])->name('resident.visitors.approve');
+    Route::post('/resident/visitors/{id}/reject', [\App\Http\Controllers\Resident\VisitorController::class, 'reject'])->name('resident.visitors.reject');
     Route::delete('/resident/visitors/{id}', [\App\Http\Controllers\Resident\VisitorController::class, 'destroy'])->name('resident.visitors.destroy');
 
     // TẠM TRÚ TẠM VẮNG PHÍA CƯ DÂN
@@ -628,6 +523,13 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/tickets/{id}', [ResidentTicketController::class, 'show'])->name('resident.tickets.show');
     Route::post('/resident/tickets/{id}/cancel', [ResidentTicketController::class, 'cancel'])->name('resident.tickets.cancel');
     Route::post('/resident/tickets/{id}/feedback', [ResidentTicketController::class, 'feedback'])->name('resident.tickets.feedback');
+
+    // GỢI Ý KHẮC PHỤC
+    Route::get('/resident/tips/water-valve', function() { return view('resident.tips.water-valve'); })->name('resident.tips.water-valve');
+    Route::get('/resident/tips/circuit-breaker', function() { return view('resident.tips.circuit-breaker'); })->name('resident.tips.circuit-breaker');
+
+    // HƯỚNG DẪN SỬ DỤNG
+    Route::get('/resident/guide', function() { return view('resident.guide.index'); })->name('resident.guide');
 
     // BẢNG TIN & BÌNH LUẬN PHÍA CƯ DÂN
     Route::get('/resident/posts', function (\Illuminate\Http\Request $request) {
@@ -691,7 +593,54 @@ Route::middleware(['resident'])->group(function () {
     Route::post('/resident/tickets/{id}/respond-accusation', [ResidentTicketController::class, 'respondAccusation'])->name('resident.tickets.respond-accusation');
 });
 
+// =========================================================================
+// DASHBOARD RECEPTIONIST ROUTES
+// =========================================================================
+Route::middleware(['receptionist'])->prefix('receptionist')->name('receptionist.')->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [\App\Http\Controllers\Receptionist\DashboardController::class, 'index'])->name('dashboard');
 
+    // Bưu phẩm
+    Route::get('/parcels',                          [\App\Http\Controllers\Receptionist\ParcelController::class, 'index'])->name('parcels.index');
+    Route::get('/parcels/create',                   [\App\Http\Controllers\Receptionist\ParcelController::class, 'create'])->name('parcels.create');
+    Route::post('/parcels',                         [\App\Http\Controllers\Receptionist\ParcelController::class, 'store'])->name('parcels.store');
+    Route::get('/parcels/{id}',                     [\App\Http\Controllers\Receptionist\ParcelController::class, 'show'])->name('parcels.show');
+    Route::post('/parcels/{id}/received',           [\App\Http\Controllers\Receptionist\ParcelController::class, 'markReceived'])->name('parcels.received');
+    Route::post('/parcels/{id}/returned',           [\App\Http\Controllers\Receptionist\ParcelController::class, 'markReturned'])->name('parcels.returned');
+    Route::post('/parcels/{id}/notify',             [\App\Http\Controllers\Receptionist\ParcelController::class, 'markNotified'])->name('parcels.notify');
+
+    // Phản ánh
+    Route::get('/tickets',                          [\App\Http\Controllers\Receptionist\TicketController::class, 'index'])->name('tickets.index');
+    Route::get('/tickets/create',                   [\App\Http\Controllers\Receptionist\TicketController::class, 'create'])->name('tickets.create');
+    Route::post('/tickets',                         [\App\Http\Controllers\Receptionist\TicketController::class, 'store'])->name('tickets.store');
+    Route::get('/tickets/{id}',                     [\App\Http\Controllers\Receptionist\TicketController::class, 'show'])->name('tickets.show');
+
+    // Đặt lịch tiện ích
+    Route::get('/amenities',                        [\App\Http\Controllers\Receptionist\AmenityController::class, 'index'])->name('amenities.index');
+    Route::get('/amenities/scan-qr',                [\App\Http\Controllers\Receptionist\AmenityController::class, 'scanQr'])->name('amenities.scan-qr');
+    Route::post('/amenities/scan-qr/scan',          [\App\Http\Controllers\Receptionist\AmenityController::class, 'processQrScan'])->name('amenities.scan-qr.scan');
+    Route::post('/amenities/scan-qr/checkin',       [\App\Http\Controllers\Receptionist\AmenityController::class, 'checkin'])->name('amenities.scan-qr.checkin');
+    Route::post('/amenities/{id}/approve',          [\App\Http\Controllers\Receptionist\AmenityController::class, 'approveBooking'])->name('amenities.approve');
+    Route::post('/amenities/{id}/reject',           [\App\Http\Controllers\Receptionist\AmenityController::class, 'rejectBooking'])->name('amenities.reject');
+
+    // Quản lý khách
+    Route::get('/walk-in',                          [\App\Http\Controllers\Receptionist\VisitorController::class, 'walkIn'])->name('walk-in.index');
+    Route::get('/walk-in/residents',                [\App\Http\Controllers\Receptionist\VisitorController::class, 'getResidents'])->name('walk-in.residents');
+    Route::post('/walk-in',                         [\App\Http\Controllers\Receptionist\VisitorController::class, 'store'])->name('walk-in.store');
+    Route::post('/walk-in/checkout',                [\App\Http\Controllers\Receptionist\VisitorController::class, 'checkout'])->name('walk-in.checkout');
+    Route::get('/visitor-log',                      [\App\Http\Controllers\Receptionist\VisitorController::class, 'log'])->name('visitor-log.index');
+
+    // Trang cá nhân
+    Route::get('/profile',                          [\App\Http\Controllers\Receptionist\ProfileController::class, 'index'])->name('profile');
+    Route::put('/profile',                          [\App\Http\Controllers\Receptionist\ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/change-password',          [\App\Http\Controllers\Receptionist\ProfileController::class, 'changePassword'])->name('profile.change-password');
+});
+
+// Shortcut route
+Route::get('/receptionist', function () {
+    if (! Auth::check()) return redirect()->route('receptionist.login');
+    return redirect()->route('receptionist.dashboard');
+});
 
 // Fallback route to serve uploaded public storage files
 Route::get('/storage/{any}', function ($any) {

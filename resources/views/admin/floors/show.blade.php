@@ -9,26 +9,39 @@
 
 @section('content')
 
-    <div class="dashboard-content">
+    <div class="dashboard-content" style="padding: 24px; max-width: 1400px; margin: 0 auto; background: #f8fafc; min-height: calc(100vh - 64px);">
 
-        <div class="page-header">
-
+        {{-- Breadcrumb & Actions --}}
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
             <div>
-                <h1 class="page-title">{{ $floor->name ?? 'Tầng ' . $floor->floor_number }}</h1>
-                <p class="page-subtitle">
-                    {{ $floor->block->name }} - Quản lý phòng & mặt bằng tầng
-                </p>
+                <nav style="display: flex; gap: 8px; font-size: 13px; color: #64748b; margin-bottom: 8px;">
+                    <a href="{{ portal_route('dashboard') }}" style="color: #64748b; text-decoration: none;">Trang chủ</a>
+                    <span style="color: #cbd5e1;">/</span>
+                    <a href="{{ portal_route('blocks.index') }}" style="color: #64748b; text-decoration: none;">Quản lý Hạ tầng</a>
+                    <span style="color: #cbd5e1;">/</span>
+                    <a href="{{ portal_route('blocks.show', $floor->block_id) }}" style="color: #64748b; text-decoration: none;">{{ $floor->block->name }}</a>
+                    <span style="color: #cbd5e1;">/</span>
+                    <span style="color: #0f172a; font-weight: 600;">{{ $floor->name ?? 'Tầng ' . $floor->floor_number }}</span>
+                </nav>
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 12px;">
+                    {{ $floor->name ?? 'Tầng ' . $floor->floor_number }}
+                    @if (($floor->status ?? 'active') === 'active')
+                        <span style="background: #dcfce7; color: #166534; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 600;">Hoạt động</span>
+                    @elseif(($floor->status ?? 'active') === 'maintenance')
+                        <span style="background: #fef3c7; color: #b45309; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 600;">Bảo trì</span>
+                    @else
+                        <span style="background: #fee2e2; color: #b91c1c; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 600;">Ngưng hoạt động</span>
+                    @endif
+                </h1>
             </div>
 
-            <div class="page-header-actions">
-                <a href="{{ portal_route('floors.edit', $floor) }}" class="btn btn-light">
+            <div style="display: flex; gap: 12px;">
+                <a href="{{ portal_route('blocks.show', $floor->block_id) }}" style="background: white; border: 1px solid #e2e8f0; color: #475569; padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='white'">← Về Tòa nhà</a>
+                <a href="{{ portal_route('floors.edit', $floor) }}" style="background: #1d4ed8; border: 1px solid #1d4ed8; color: white; padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; transition: all 0.2s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#1e40af'" onmouseout="this.style.background='#1d4ed8'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                     Sửa tầng
                 </a>
-                <a href="{{ portal_route('blocks.show', $floor->block_id) }}" class="btn btn-secondary">
-                    ← Tòa nhà
-                </a>
             </div>
-
         </div>
 
         @if ($message = Session::get('success'))
@@ -60,17 +73,12 @@
                     <div class="detail-row">
                         <span class="detail-label">Loại tầng</span>
                         <span>
-                            @if ($floor->floor_type === 'resident')
-                                <span class="badge badge-success">Cư dân</span>
+                            @if ($floor->floor_type === 'above_ground')
+                                <span class="badge badge-success" style="background-color: #dbeafe; color: #1e40af;">Tầng nổi</span>
                             @elseif($floor->floor_type === 'basement')
-                                <span class="badge badge-danger" style="background-color: #fee2e2; color: #b91c1c;">Tầng
-                                    hầm</span>
-                            @elseif($floor->floor_type === 'commercial')
-                                <span class="badge badge-warning" style="background-color: #e0f2fe; color: #0369a1;">Thương
-                                    mại / Shophouse</span>
+                                <span class="badge badge-warning" style="background-color: #f1f5f9; color: #475569;">Tầng hầm</span>
                             @else
-                                <span class="badge badge-danger" style="background-color: #f1f5f9; color: #475569;">Kỹ thuật
-                                    / Dịch vụ</span>
+                                <span class="badge badge-success" style="background-color: #dbeafe; color: #1e40af;">Tầng nổi</span>
                             @endif
                         </span>
                     </div>
@@ -196,6 +204,12 @@
                                             <a href="{{ portal_route('apartments.edit', $apartment->id) }}" class="btn-action btn-action--edit" title="Sửa">
                                                 <i class="fa-regular fa-pen-to-square"></i>
                                             </a>
+                                            <form action="{{ portal_route('apartments.destroy', $apartment->id) }}" method="POST" style="display:contents;">
+                                                @csrf @method('DELETE')
+                                                <button type="button" class="btn-action btn-action--delete delete-apt-btn" title="Xóa" style="border:none; background:none;">
+                                                    <i class="fa-regular fa-trash-can" style="color: #ef4444;"></i>
+                                                </button>
+                                            </form>
                                         </div>
                                     </td>
                                 </tr>
@@ -223,4 +237,33 @@
 
 @push('styles')
     @vite(['resources/css/pages/admin/floors/show.css'])
+@endpush
+
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const deleteButtons = document.querySelectorAll('.delete-apt-btn');
+            deleteButtons.forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    const form = this.closest('form');
+                    Swal.fire({
+                        title: 'Xác nhận xóa?',
+                        text: "Bạn có chắc chắn muốn xóa căn hộ này không? Thao tác này không thể hoàn tác!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc2626',
+                        cancelButtonColor: '#64748b',
+                        confirmButtonText: 'Đồng ý xóa',
+                        cancelButtonText: 'Hủy bỏ',
+                        heightAuto: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+            });
+        });
+    </script>
 @endpush

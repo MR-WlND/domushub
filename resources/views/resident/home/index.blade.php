@@ -138,7 +138,7 @@
                                 </a>
                             @endif
                             @if($post->user_id === auth()->id() || auth()->user()->isAdminPortalUser())
-                                <form action="{{ route('resident.posts.destroy', $post->id) }}" method="POST" onsubmit="return confirm('Xóa bài đăng này?')" style="margin: 0;">
+                                <form action="{{ route('resident.posts.destroy', $post->id) }}" method="POST" onsubmit="return confirmDeletePost(event, this)" style="margin: 0;">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="rh-fb-card__dropdown-item rh-fb-card__dropdown-item--danger">
@@ -305,58 +305,6 @@ document.querySelectorAll('.rh-fb-share-btn').forEach(btn => {
     });
 });
 </script>
-
-{{-- Modal Báo cáo Bài viết --}}
-<div id="reportPostModal" class="rep-modal" onclick="handleOutsideModalClick(event)" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
-    <div class="rep-modal__content" style="background: #fff; padding: 24px; border-radius: 12px; max-width: 450px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.15); position: relative; animation: postDropdownFadeIn 0.3s ease-out; box-sizing: border-box;">
-        <div class="rep-modal__header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <h3 class="rep-modal__title" style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #00236f; display: flex; align-items: center; gap: 8px;">
-                <i class="fa-solid fa-triangle-exclamation" style="color: #dc2626;"></i> Báo cáo bài viết
-            </h3>
-            <button type="button" class="rep-modal__close" onclick="closeReportModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">&times;</button>
-        </div>
-        <form id="report-post-form">
-            @csrf
-            <input type="hidden" name="post_id" id="report-target-post-id" value="">
-            <div class="rep-modal__body" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
-                <span class="rep-modal__label" style="font-size: 0.85rem; font-weight: 600; color: #334155; margin-bottom: 6px;">Tại sao bạn muốn báo cáo bài viết này?</span>
-                <label class="rep-option" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #334155; cursor: pointer;"><input type="radio" name="reason_preset" value="Spam, quảng cáo rác" onclick="toggleCustomReason(false)"><span class="rep-option__text">Spam, quảng cáo rác</span></label>
-                <label class="rep-option" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #334155; cursor: pointer;"><input type="radio" name="reason_preset" value="Từ ngữ thô tục, công kích" onclick="toggleCustomReason(false)"><span class="rep-option__text">Từ ngữ thô tục, công kích</span></label>
-                <label class="rep-option" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #334155; cursor: pointer;"><input type="radio" name="reason_preset" value="Lừa đảo, giả mạo" onclick="toggleCustomReason(false)"><span class="rep-option__text">Lừa đảo, giả mạo thông tin</span></label>
-                <label class="rep-option" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #334155; cursor: pointer;"><input type="radio" name="reason_preset" value="Nội dung phản cảm, thù địch" onclick="toggleCustomReason(false)"><span class="rep-option__text">Nội dung phản cảm, thù địch</span></label>
-                <label class="rep-option" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #334155; cursor: pointer;"><input type="radio" name="reason_preset" value="other" onclick="toggleCustomReason(true)"><span class="rep-option__text">Lý do khác...</span></label>
-                <div class="rep-modal__custom-reason" id="custom-reason-container" style="display: none; margin-top: 8px;">
-                    <textarea name="reason_custom" id="report-reason-custom" class="rep-modal__textarea" placeholder="Nhập lý do cụ thể..." style="width: 100%; padding: 10px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; outline: none; font-family: inherit; resize: vertical; box-sizing: border-box;" rows="3"></textarea>
-                </div>
-            </div>
-            <div class="rep-modal__footer" style="display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid #f1f5f9; padding-top: 14px;">
-                <button type="button" class="rh-section__btn" style="background: #64748b;" onclick="closeReportModal()">Hủy bỏ</button>
-                <button type="submit" class="rh-section__btn" id="submit-report-btn" disabled style="background: #dc2626;">Gửi báo cáo</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-{{-- Modal Xác nhận Ẩn Bài viết --}}
-<div id="confirmHideModal" class="rep-modal" onclick="handleHideOutsideClick(event)" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
-    <div class="rep-modal__content" style="background: #fff; padding: 24px; border-radius: 12px; max-width: 400px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.15); position: relative; animation: postDropdownFadeIn 0.3s ease-out; box-sizing: border-box; text-align: center;">
-        <div style="font-size: 2.5rem; color: #eab308; margin-bottom: 12px;">
-            <i class="fa-solid fa-circle-question"></i>
-        </div>
-        <h3 style="margin: 0 0 10px; font-size: 1.15rem; font-weight: 700; color: #00236f;">Ẩn bài viết này?</h3>
-        <p style="margin: 0 0 20px; font-size: 0.88rem; color: #64748b; line-height: 1.4;">Bài viết này sẽ không còn hiển thị trên bảng tin của bạn nữa. Bạn vẫn muốn tiếp tục ẩn chứ?</p>
-        <div style="display: flex; justify-content: center; gap: 12px;">
-            <button type="button" class="rh-section__btn" style="background: #64748b; padding: 10px 20px;" onclick="closeHideModal()">Hủy bỏ</button>
-            <button type="button" class="rh-section__btn" id="confirm-hide-btn" style="background: #2563eb; padding: 10px 20px;">Đồng ý ẩn</button>
-        </div>
-    </div>
-</div>
-
-
-
-{{-- Toast Container --}}
-<div id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 10001; display: flex; flex-direction: column; gap: 0.5rem; max-width: 350px;"></div>
-
 <script>
 let pendingHidePostId = null;
 
@@ -589,5 +537,162 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
+{{-- Modal Báo cáo Bài viết --}}
+<div id="reportPostModal" class="rep-modal" onclick="handleOutsideModalClick(event)" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="rep-modal__content" style="background: #fff; padding: 24px; border-radius: 12px; max-width: 450px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.15); position: relative; animation: postDropdownFadeIn 0.3s ease-out; box-sizing: border-box;">
+        <div class="rep-modal__header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 class="rep-modal__title" style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #00236f; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-triangle-exclamation" style="color: #dc2626;"></i> Báo cáo bài viết
+            </h3>
+            <button type="button" class="rep-modal__close" onclick="closeReportModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">&times;</button>
+        </div>
+        <form id="report-post-form">
+            @csrf
+            <input type="hidden" name="post_id" id="report-target-post-id" value="">
+            <div class="rep-modal__body" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+                <span class="rep-modal__label" style="font-size: 0.85rem; font-weight: 600; color: #334155; margin-bottom: 6px;">Tại sao bạn muốn báo cáo bài viết này?</span>
+                <label class="rep-option" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #334155; cursor: pointer;"><input type="radio" name="reason_preset" value="Spam, quảng cáo rác" onclick="toggleCustomReason(false)"><span class="rep-option__text">Spam, quảng cáo rác</span></label>
+                <label class="rep-option" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #334155; cursor: pointer;"><input type="radio" name="reason_preset" value="Từ ngữ thô tục, công kích" onclick="toggleCustomReason(false)"><span class="rep-option__text">Từ ngữ thô tục, công kích</span></label>
+                <label class="rep-option" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #334155; cursor: pointer;"><input type="radio" name="reason_preset" value="Lừa đảo, giả mạo" onclick="toggleCustomReason(false)"><span class="rep-option__text">Lừa đảo, giả mạo thông tin</span></label>
+                <label class="rep-option" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #334155; cursor: pointer;"><input type="radio" name="reason_preset" value="Nội dung phản cảm, thù địch" onclick="toggleCustomReason(false)"><span class="rep-option__text">Nội dung phản cảm, thù địch</span></label>
+                <label class="rep-option" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #334155; cursor: pointer;"><input type="radio" name="reason_preset" value="other" onclick="toggleCustomReason(true)"><span class="rep-option__text">Lý do khác...</span></label>
+                <div class="rep-modal__custom-reason" id="custom-reason-container" style="display: none; margin-top: 8px;">
+                    <textarea name="reason_custom" id="report-reason-custom" class="rep-modal__textarea" placeholder="Nhập lý do cụ thể..." style="width: 100%; padding: 10px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; outline: none; font-family: inherit; resize: vertical; box-sizing: border-box;" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="rep-modal__footer" style="display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid #f1f5f9; padding-top: 14px;">
+                <button type="button" class="rh-section__btn" style="background: #64748b;" onclick="closeReportModal()">Hủy bỏ</button>
+                <button type="submit" class="rh-section__btn" id="submit-report-btn" disabled style="background: #dc2626;">Gửi báo cáo</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- Modal Xác nhận Ẩn Bài viết --}}
+<div id="confirmHideModal" class="rep-modal" onclick="handleHideOutsideClick(event)" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="rep-modal__content" style="background: #fff; padding: 24px; border-radius: 12px; max-width: 400px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.15); position: relative; animation: postDropdownFadeIn 0.3s ease-out; box-sizing: border-box; text-align: center;">
+        <div style="font-size: 2.5rem; color: #eab308; margin-bottom: 12px;">
+            <i class="fa-solid fa-circle-question"></i>
+        </div>
+        <h3 style="margin: 0 0 10px; font-size: 1.15rem; font-weight: 700; color: #00236f;">Ẩn bài viết này?</h3>
+        <p style="margin: 0 0 20px; font-size: 0.88rem; color: #64748b; line-height: 1.4;">Bài viết này sẽ không còn hiển thị trên bảng tin của bạn nữa. Bạn vẫn muốn tiếp tục ẩn chứ?</p>
+        <div style="display: flex; justify-content: center; gap: 12px;">
+            <button type="button" class="rh-section__btn" style="background: #64748b; padding: 10px 20px;" onclick="closeHideModal()">Hủy bỏ</button>
+            <button type="button" class="rh-section__btn" id="confirm-hide-btn" style="background: #2563eb; padding: 10px 20px;">Đồng ý ẩn</button>
+        </div>
+    </div>
+</div>
+
+@if($popupAnnouncement)
+    {{-- Modal Thông báo Khẩn cấp --}}
+    <div id="emergencyAnnouncementModal" class="rep-modal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); z-index: 20000; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease;">
+        <div class="rep-modal__content" style="background: var(--color-card, #fff); padding: 32px; border-radius: 20px; max-width: 550px; width: 90%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid rgba(220, 38, 38, 0.1); position: relative; transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); text-align: center; box-sizing: border-box;">
+            
+            {{-- Header Icon --}}
+            <div style="width: 72px; height: 72px; background: #fee2e2; color: #dc2626; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 2rem; box-shadow: 0 10px 15px -3px rgba(220, 38, 38, 0.2);">
+                @if($popupAnnouncement->category === 'warning')
+                    <i class="fa-solid fa-triangle-exclamation animate-bounce"></i>
+                @elseif($popupAnnouncement->category === 'maintenance')
+                    <i class="fa-solid fa-wrench"></i>
+                @else
+                    <i class="fa-solid fa-bullhorn"></i>
+                @endif
+            </div>
+
+            {{-- Category badge --}}
+            <span style="display: inline-block; padding: 6px 16px; border-radius: 30px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;
+                @if($popupAnnouncement->category === 'warning')
+                    background: #fee2e2; color: #dc2626;
+                @elseif($popupAnnouncement->category === 'maintenance')
+                    background: #e0f2fe; color: #0369a1;
+                @else
+                    background: #f1f5f9; color: #475569;
+                @endif
+            ">
+                @if($popupAnnouncement->category === 'warning')
+                    Cảnh báo khẩn cấp
+                @elseif($popupAnnouncement->category === 'maintenance')
+                    Thông báo bảo trì
+                @elseif($popupAnnouncement->category === 'event')
+                    Sự kiện chung cư
+                @else
+                    Thông báo chung
+                @endif
+            </span>
+
+            {{-- Title --}}
+            <h2 style="margin: 0 0 12px; font-size: 1.4rem; font-weight: 800; color: #0f172a; line-height: 1.3;">
+                {{ $popupAnnouncement->title }}
+            </h2>
+
+            {{-- Time --}}
+            <p style="margin: 0 0 20px; font-size: 0.8rem; color: #64748b; font-weight: 500;">
+                <i class="fa-regular fa-clock" style="margin-right: 4px;"></i> Đăng {{ $popupAnnouncement->created_at->diffForHumans() }}
+            </p>
+
+            {{-- Announcement Image if exists --}}
+            @if($popupAnnouncement->image_path)
+                <div style="width: 100%; max-height: 200px; border-radius: 12px; overflow: hidden; margin-bottom: 20px; border: 1px solid #f1f5f9;">
+                    <img src="{{ asset('storage/' . $popupAnnouncement->image_path) }}" style="width: 100%; height: 100%; object-fit: cover;" alt="Hình ảnh thông báo">
+                </div>
+            @endif
+
+            {{-- Content --}}
+            <div style="font-size: 0.95rem; color: #334155; line-height: 1.6; margin-bottom: 28px; text-align: left; max-height: 250px; overflow-y: auto; padding: 0 10px; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; padding-top: 16px; padding-bottom: 16px;">
+                {!! $popupAnnouncement->content !!}
+            </div>
+
+            {{-- Actions --}}
+            <div style="display: flex; justify-content: center; gap: 12px;">
+                <button type="button" onclick="dismissEmergencyAnnouncement({{ $popupAnnouncement->id }})" style="background: #0f172a; color: white; border: none; padding: 12px 30px; font-size: 0.9rem; font-weight: 700; border-radius: 12px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.1); width: 100%; max-width: 200px;" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
+                    Đã đọc & Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const popupId = {{ $popupAnnouncement->id }};
+        const dismissed = localStorage.getItem('dismissed_announcement_' + popupId);
+        
+        if (dismissed !== 'true') {
+            const modal = document.getElementById('emergencyAnnouncementModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                // Force reflow
+                modal.offsetHeight;
+                modal.style.opacity = '1';
+                
+                const content = modal.querySelector('.rep-modal__content');
+                if (content) {
+                    content.style.transform = 'scale(1)';
+                }
+            }
+        }
+    });
+
+    function dismissEmergencyAnnouncement(popupId) {
+        const modal = document.getElementById('emergencyAnnouncementModal');
+        if (modal) {
+            modal.style.opacity = '0';
+            const content = modal.querySelector('.rep-modal__content');
+            if (content) {
+                content.style.transform = 'scale(0.9)';
+            }
+            
+            setTimeout(() => {
+                modal.style.display = 'none';
+                localStorage.setItem('dismissed_announcement_' + popupId, 'true');
+            }, 300);
+        }
+    }
+    </script>
+@endif
+
+{{-- Toast Container --}}
+<div id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 10001; display: flex; flex-direction: column; gap: 0.5rem; max-width: 350px;"></div>
+
 @endpush
 @endsection

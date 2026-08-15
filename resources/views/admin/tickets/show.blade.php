@@ -8,512 +8,296 @@
 @section('user_role', auth()->user()->role)
 
 @push('styles')
-    @vite(['resources/css/pages/admin/tickets/index.css'])
+    @vite(['resources/css/pages/admin/tickets/show.css'])
 @endpush
 
 @section('content')
-<div class="tickets-page">
+<div class="tk-detail-page">
 
     {{-- Header --}}
-    <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
-        <div>
-            <h1 style="font-size: 1.6rem; font-weight: 800; color: #0f172a; margin: 0;">
-                {{ $ticket->ticket_type === 'report' ? 'Tố cáo' : 'Phản ánh' }} #{{ $ticket->id }}
-            </h1>
-            <p class="tickets-page__subtitle">{{ $ticket->title }}</p>
-        </div>
-        <a href="{{ portal_route('tickets.index') }}"
-           style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; border-radius: 10px; background: #f1f5f9; color: #334155; font-weight: 600; font-size: 0.88rem; text-decoration: none; transition: all 0.2s;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    <div class="tk-detail-header">
+        <a href="{{ url()->previous() == url()->current() ? portal_route('tickets.index') : url()->previous() }}" class="tk-back-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
             Quay lại
         </a>
+        <div class="tk-detail-header-content">
+            <div class="tk-detail-title-group">
+                <h1 class="tk-detail-title">REQ-{{ $ticket->id }}</h1>
+                <span class="tk-detail-status tk-status--{{ $ticket->status }}">{{ $ticket->statusLabel() }}</span>
+            </div>
+            <div class="tk-detail-meta">
+                Ngày gửi: {{ $ticket->created_at->format('d/m/Y - h:i A') }}
+            </div>
+        </div>
     </div>
 
     {{-- Alerts --}}
     @if(session('success'))
-        <div class="tickets-alert tickets-alert--success">{{ session('success') }}</div>
+        <div style="background: #dcfce7; color: #166534; padding: 12px 16px; border-radius: 8px; margin-bottom: 24px; font-weight: 500;">{{ session('success') }}</div>
     @endif
     @if($errors->any())
-        <div class="tickets-alert tickets-alert--danger">{{ $errors->first() }}</div>
+        <div style="background: #fee2e2; color: #991b1b; padding: 12px 16px; border-radius: 8px; margin-bottom: 24px; font-weight: 500;">{{ $errors->first() }}</div>
     @endif
 
-    {{-- Two Column Layout --}}
-    <div class="tickets-show">
-
-        {{-- Main Column --}}
-        <div class="tickets-show__main">
-
-            {{-- Ticket Info --}}
-            <div class="tk-show-card">
-                <div class="tk-show-card__header">
-                    <span class="tk-show-card__title">{{ $ticket->ticket_type === 'report' ? 'Nội dung tố cáo' : 'Nội dung phản ánh' }}</span>
-                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                        @if($ticket->ticket_type === 'report')
-                            <span style="display: inline-flex; align-items: center; gap: 3px; padding: 3px 10px; background: #fef2f2; color: #dc2626; border-radius: 20px; font-size: 0.75rem; font-weight: 700; border: 1px solid #fecaca;">
-                                Tố cáo
-                            </span>
-                        @else
-                            <span style="display: inline-flex; align-items: center; gap: 3px; padding: 3px 10px; background: #eff6ff; color: #2563eb; border-radius: 20px; font-size: 0.75rem; font-weight: 700; border: 1px solid #bfdbfe;">
-                                Phản ánh
-                            </span>
-                        @endif
-                        <span class="tk-priority tk-priority--{{ $ticket->priority }}">{{ $ticket->priorityLabel() }}</span>
-                        <span class="tk-status tk-status--{{ $ticket->status }}">{{ $ticket->statusLabel() }}</span>
-                        @if($ticket->rating)
-                            <div class="tk-rating-stars" style="display: inline-flex; align-items: center; gap: 2px; margin-left: 4px;">
-                                @for($i = 1; $i <= 5; $i++)
-                                    <span class="{{ $i <= $ticket->rating ? 'filled' : 'empty' }}">★</span>
-                                @endfor
-                            </div>
+    <div class="tk-detail-grid">
+        {{-- LEFT COLUMN --}}
+        <div class="tk-detail-left">
+            
+            {{-- Issue Card --}}
+            <div class="tk-card">
+                <div class="tk-card-header tk-card-header--icon" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="tk-card-icon-box">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2.25c-5.385 4.362-8.25 8.92-8.25 12.375 0 4.5 3.75 8.25 8.25 8.25s8.25-3.75 8.25-8.25c0-3.455-2.865-8.013-8.25-12.375z"/></svg>
+                        </div>
+                        <h2 class="tk-card-title" style="margin: 0;">{{ $ticket->title }}</h2>
+                    </div>
+                    
+                    @if(auth()->user()->role === 'technician')
+                    <div class="tk-action-list" style="margin: 0; display: flex; gap: 8px;">
+                        @if($ticket->status === 'pending' || $ticket->status === 'assigned')
+                            <form action="{{ portal_route('tickets.accept', $ticket->id) }}" method="POST" style="margin: 0;">
+                                @csrf
+                                <button type="submit" class="tk-btn-primary" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;">Nhận việc</button>
+                            </form>
+                        @elseif($ticket->status === 'in_progress')
+                            <button type="button" class="tk-btn-outline" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;" onclick="openProgressModal()">Cập nhật tiến độ</button>
+                        @elseif($ticket->status === 'completed')
+                            <span style="padding: 6px 14px; font-size: 0.85rem; font-weight: 700; border-radius: 6px; background: #dcfce7; color: #166534;">Đã hoàn thành</span>
                         @endif
                     </div>
+                    @endif
                 </div>
-                <div class="tk-show-card__body">
-                    <div class="tk-info-grid" style="margin-bottom: 1.25rem;">
-                        <div class="tk-info-item">
-                            <span class="tk-info-item__label">Căn hộ</span>
-                            <span class="tk-info-item__value">{{ $ticket->apartment->apartment_number ?? 'N/A' }}</span>
-                        </div>
-                        <div class="tk-info-item">
-                            <span class="tk-info-item__label">Tòa nhà</span>
-                            <span class="tk-info-item__value">{{ $ticket->apartment->floor->block->name ?? 'N/A' }}</span>
-                        </div>
-                        <div class="tk-info-item">
-                            <span class="tk-info-item__label">Người gửi</span>
-                            <span class="tk-info-item__value">{{ $ticket->sender->name ?? 'N/A' }}</span>
-                        </div>
-                        <div class="tk-info-item">
-                            <span class="tk-info-item__label">Ngày gửi</span>
-                            <span class="tk-info-item__value">{{ $ticket->created_at->format('d/m/Y H:i') }}</span>
-                        </div>
-                        @if($ticket->ticket_type === 'report')
-                            <div class="tk-info-item" style="grid-column: 1 / -1;">
-                                <span class="tk-info-item__label" style="color: #dc2626;">Người bị tố cáo</span>
-                                <span class="tk-info-item__value" style="color: #dc2626; font-weight: 700;">
-                                    {{ $ticket->reported_person ?: 'Chưa xác định — cần điều tra' }}
-                                </span>
-                            </div>
-                        @endif
-                    </div>
-
-                    <div style="border-top: 1px solid #f1f5f9; padding-top: 1rem;">
-                        <p style="font-size: 0.95rem; color: #334155; line-height: 1.7; margin: 0;">
-                            {{ $ticket->description }}
-                        </p>
+                <div class="tk-card-body">
+                    <div class="tk-section-title">NỘI DUNG PHẢN ÁNH</div>
+                    <div class="tk-description-box">
+                        {{ $ticket->description }}
                     </div>
 
                     @if($ticket->images && count($ticket->images) > 0)
-                        @php
-                            $videoExts = ['mp4', 'mov', 'avi', 'webm'];
-                            $imageFiles = [];
-                            $videoFiles = [];
-                            foreach ($ticket->images as $file) {
-                                $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-                                if (in_array($ext, $videoExts)) {
-                                    $videoFiles[] = $file;
-                                } else {
-                                    $imageFiles[] = $file;
-                                }
-                            }
-                        @endphp
-                        <div style="margin-top: 1rem;">
-                            <p style="font-size: 0.78rem; color: #94a3b8; font-weight: 600; margin-bottom: 6px;">ĐÍNH KÈM ({{ count($ticket->images) }} file)</p>
-
-                            @if(count($imageFiles) > 0)
-                                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin-bottom: 8px;">
-                                    @foreach($imageFiles as $img)
-                                        <img src="{{ asset('storage/' . $img) }}"
-                                             alt="Ảnh phản ánh"
-                                             style="width: 100%; height: 140px; border-radius: 10px; object-fit: cover; border: 1px solid #e2e8f0; cursor: pointer;"
-                                             onclick="openAdminImgModal(this.src)">
-                                    @endforeach
-                                </div>
-                            @endif
-
-                            @if(count($videoFiles) > 0)
-                                <div style="display: flex; flex-direction: column; gap: 8px;">
-                                    @foreach($videoFiles as $vid)
-                                        <video controls
-                                               src="{{ asset('storage/' . $vid) }}"
-                                               style="width: 100%; max-height: 280px; border-radius: 10px; border: 1px solid #e2e8f0; background: #0f172a;"
-                                               preload="metadata"
-                                               playsinline>
-                                            Trình duyệt không hỗ trợ video.
-                                        </video>
-                                    @endforeach
-                                </div>
-                            @endif
+                        <div class="tk-section-title">ẢNH ĐÍNH KÈM</div>
+                        <div class="tk-photo-grid">
+                            @foreach($ticket->images as $img)
+                                <img src="{{ asset('storage/' . $img) }}" alt="Photo" class="tk-photo-item" onclick="openAdminImgModal(this.src)">
+                            @endforeach
                         </div>
                     @elseif($ticket->image)
-                        <div style="margin-top: 1rem;">
-                            <p style="font-size: 0.78rem; color: #94a3b8; font-weight: 600; margin-bottom: 6px;">ẢNH ĐÍNH KÈM</p>
-                            <img src="{{ asset('storage/' . $ticket->image) }}"
-                                 alt="Ảnh phản ánh"
-                                 style="max-height: 280px; border-radius: 10px; object-fit: cover; border: 1px solid #e2e8f0; cursor: pointer;"
-                                 onclick="openAdminImgModal(this.src)">
-                        </div>
-                    @endif
-
-                    {{-- Rating Display --}}
-                    @if($ticket->rating)
-                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f1f5f9;">
-                            <p style="font-size: 0.78rem; color: #94a3b8; font-weight: 600; margin-bottom: 6px;">ĐÁNH GIÁ CỦA CƯ DÂN</p>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span style="font-weight: 800; color: #f59e0b;">{{ $ticket->rating }}/5</span>
-                            </div>
-                        </div>
-                    @elseif($ticket->status === 'completed')
-                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f1f5f9;">
-                            <p style="font-size: 0.78rem; color: #94a3b8; font-weight: 700; margin-bottom: 8px;">⭐ ĐÁNH GIÁ CỦA CƯ DÂN</p>
-                            <span style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:#ede9fe;color:#5b21b6;border-radius:20px;font-size:0.8rem;font-weight:600;">
-                                ✍ Cư dân chưa đánh giá
-                            </span>
+                        <div class="tk-section-title">ẢNH ĐÍNH KÈM</div>
+                        <div class="tk-photo-grid">
+                            <img src="{{ asset('storage/' . $ticket->image) }}" alt="Photo" class="tk-photo-item" onclick="openAdminImgModal(this.src)">
                         </div>
                     @endif
                 </div>
             </div>
 
-            {{-- Timeline --}}
-            <div class="tk-show-card">
-                <div class="tk-show-card__header">
-                    <span class="tk-show-card__title">Tiến trình xử lý</span>
+            {{-- Resident Info Card --}}
+            <div class="tk-card">
+                <div class="tk-card-header">
+                    <h2 class="tk-card-title" style="font-size: 1.1rem;">Thông tin cư dân</h2>
                 </div>
-                <div class="tk-show-card__body">
-                    @if($ticket->progress->isEmpty())
-                        <p style="color: #94a3b8; text-align: center; padding: 1.5rem 0;">Chưa có cập nhật.</p>
+                <div class="tk-card-body">
+                    <div class="tk-resident-info">
+                        <div class="tk-resident-item">
+                            <div class="tk-resident-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                            </div>
+                            <div class="tk-resident-text">
+                                <label>Họ và tên</label>
+                                <span>{{ $ticket->sender->name ?? 'N/A' }}</span>
+                            </div>
+                        </div>
+                        <div class="tk-resident-item">
+                            <div class="tk-resident-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                            </div>
+                            <div class="tk-resident-text">
+                                <label>Căn hộ</label>
+                                <span>Phòng {{ $ticket->apartment->apartment_number ?? 'N/A' }}, Tòa {{ $ticket->apartment->floor->block->name ?? 'N/A' }}</span>
+                            </div>
+                        </div>
+                        <div class="tk-resident-item">
+                            <div class="tk-resident-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                            </div>
+                            <div class="tk-resident-text">
+                                <label>Liên hệ</label>
+                                <span>{{ $ticket->sender->phone ?? 'N/A' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            {{-- Reported Person (if report) --}}
+            @if($ticket->ticket_type === 'report')
+            <div class="tk-card" style="border: 1px solid #fecaca;">
+                <div class="tk-card-header" style="background: #fef2f2;">
+                    <h2 class="tk-card-title" style="font-size: 1.1rem; color: #dc2626;">Người bị tố cáo</h2>
+                </div>
+                <div class="tk-card-body">
+                    @if($ticket->accused_user_id)
+                        <div style="font-weight: 700; color: #0f172a; margin-bottom: 8px;">{{ $ticket->accusedUser->name ?? 'N/A' }}</div>
+                        <div style="font-size: 0.9rem; color: #64748b;">Phản hồi: {{ $ticket->accusedResponseLabel() }}</div>
+                        @if($ticket->accused_response_comment)
+                            <div style="font-size: 0.9rem; font-style: italic; margin-top: 8px;">"{{ $ticket->accused_response_comment }}"</div>
+                        @endif
                     @else
-                        <div class="tk-admin-timeline">
+                        @if($ticket->reported_person)
+                            <div style="font-size: 0.9rem; color: #dc2626; margin-bottom: 12px;">Cư dân ghi: {{ $ticket->reported_person }}</div>
+                        @endif
+                        <form method="POST" action="{{ portal_route('tickets.assign-accused', $ticket->id) }}">
+                            @csrf
+                            <select name="accused_user_id" required style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 12px;">
+                                <option value="" disabled selected>-- Chọn cư dân --</option>
+                                @foreach($residents as $res)
+                                    <option value="{{ $res->id }}">{{ $res->name }}</option>
+                                @endforeach
+                            </select>
+                            <button type="submit" class="tk-btn-primary" style="background: #dc2626;">Gửi thông báo tố cáo</button>
+                        </form>
+                    @endif
+                </div>
+            </div>
+            @endif
+
+        </div>
+
+        {{-- RIGHT COLUMN --}}
+        <div class="tk-detail-right">
+
+
+            {{-- Internal Notes (Timeline) --}}
+            <div class="tk-card">
+                <div class="tk-card-header">
+                    <h2 class="tk-card-title" style="font-size: 1.1rem;">Ghi chú nội bộ</h2>
+                </div>
+                <div class="tk-card-body" style="padding: 16px;">
+                    @if($ticket->progress->isEmpty())
+                        <div class="tk-notes-empty">Chưa có ghi chú nào.</div>
+                    @else
+                        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; max-height: 400px; overflow-y: auto;">
                             @foreach($ticket->progress as $prog)
-                                <div class="tk-admin-timeline__item">
-                                    <div class="tk-admin-timeline__dot tk-admin-timeline__dot--{{ $prog->status }}"></div>
-                                    <div class="tk-admin-timeline__content">
-                                        <div class="tk-admin-timeline__status" style="color: {{ match($prog->status) {
-                                            'pending' => '#d97706',
-                                            'assigned' => '#7c3aed',
-                                            'in_progress' => '#2563eb',
-                                            'completed' => '#16a34a',
-                                            'cancelled' => '#64748b',
-                                            default => '#0f172a'
-                                        } }}">
-                                            {{ $prog->statusLabel() }}
-                                        </div>
-                                        @if($prog->comment)
-                                            <div class="tk-admin-timeline__comment">{{ $prog->comment }}</div>
-                                        @endif
-                                        <div class="tk-admin-timeline__meta">
-                                            <span>{{ $prog->updatedBy->name ?? 'Hệ thống' }}</span>
-                                            <span>{{ $prog->created_at->format('d/m/Y H:i') }}</span>
-                                        </div>
-                                        @if($prog->image_proof)
-                                            <div class="tk-admin-timeline__proof">
-                                                <img src="{{ asset('storage/' . $prog->image_proof) }}" alt="Ảnh chứng minh"
-                                                     onclick="openAdminImgModal(this.src)" style="cursor: pointer;">
-                                            </div>
-                                        @endif
+                                <div style="background: #f8fafc; border-radius: 8px; padding: 12px; font-size: 0.9rem;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                        <strong style="color: #0f172a;">{{ $prog->updatedBy->name ?? 'Hệ thống' }}</strong>
+                                        <span style="color: #94a3b8; font-size: 0.8rem;">{{ $prog->created_at->format('M d, h:i A') }}</span>
                                     </div>
+                                    <div style="color: #2563eb; font-weight: 600; font-size: 0.8rem; margin-bottom: 4px;">[{{ $prog->statusLabel() }}]</div>
+                                    @if($prog->comment)
+                                        <div style="color: #334155;">{{ $prog->comment }}</div>
+                                    @endif
+                                    @if($prog->image_proof)
+                                        <img src="{{ asset('storage/' . $prog->image_proof) }}" style="max-width:100%; border-radius:6px; margin-top:8px; cursor:pointer;" onclick="openAdminImgModal(this.src)">
+                                    @endif
                                 </div>
                             @endforeach
                         </div>
                     @endif
                 </div>
             </div>
-        </div>
 
-        {{-- Sidebar --}}
-        <div class="tickets-show__sidebar">
-
-            {{-- Assign Form --}}
-            @if(in_array($ticket->status, ['pending', 'assigned']) && in_array(auth()->user()->role, ['admin', 'manager']))
-                <div class="tk-show-card">
-                    <div class="tk-show-card__header">
-                        <span class="tk-show-card__title">Phân công xử lý</span>
-                    </div>
-                    <div class="tk-show-card__body">
-                        <form method="POST" action="{{ portal_route('tickets.assign', $ticket->id) }}">
-                            @csrf
-                            <div class="tk-form-group">
-                                <label>Kỹ thuật viên</label>
-                                <select name="handler_id" required>
-                                    <option value="" disabled {{ $ticket->handler_id ? '' : 'selected' }}>-- Chọn KTV --</option>
-                                    @foreach($technicians as $tech)
-                                        <option value="{{ $tech->id }}" {{ $ticket->handler_id == $tech->id ? 'selected' : '' }}>
-                                            {{ $tech->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <button type="submit" class="tk-form-submit tk-form-submit--primary" style="width: 100%; justify-content: center;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" x2="20" y1="8" y2="14"/><line x1="23" x2="17" y1="11" y2="11"/></svg>
-                                {{ $ticket->handler_id ? 'Đổi KTV' : 'Phân công' }}
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            @endif
-
-            {{-- Người bị tố cáo (chỉ hiện cho ticket loại report) --}}
-            @if($ticket->ticket_type === 'report')
-                <div class="tk-show-card" style="border: 1px solid #fecaca;">
-                    <div class="tk-show-card__header" style="background: #fef2f2;">
-                        <span class="tk-show-card__title" style="color: #dc2626;">Người bị tố cáo</span>
-                    </div>
-                    <div class="tk-show-card__body">
-                        @if($ticket->accused_user_id)
-                            {{-- Đã chọn người bị tố cáo --}}
-                            <div style="padding: 10px 14px; background: #f8fafc; border-radius: 8px; margin-bottom: 12px;">
-                                <div style="font-weight: 700; color: #0f172a; font-size: 0.95rem;">
-                                    {{ $ticket->accusedUser->name ?? 'N/A' }}
-                                </div>
-                                @if($ticket->accusedUser && $ticket->accusedUser->apartment)
-                                    <div style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">
-                                        Căn hộ {{ $ticket->accusedUser->apartment->apartment_number ?? '' }}
-                                    </div>
-                                @endif
-                            </div>
-
-                            {{-- Trạng thái phản hồi --}}
-                            <div style="padding: 10px 14px; border-radius: 8px;
-                                @if($ticket->accused_response === 'confirmed')
-                                    background: #f0fdf4; border: 1px solid #86efac;
-                                @elseif($ticket->accused_response === 'denied')
-                                    background: #fef2f2; border: 1px solid #fecaca;
-                                @else
-                                    background: #fffbeb; border: 1px solid #fde68a;
-                                @endif
-                            ">
-                                <div style="font-weight: 600; font-size: 0.82rem;
-                                    @if($ticket->accused_response === 'confirmed') color: #166534;
-                                    @elseif($ticket->accused_response === 'denied') color: #991b1b;
-                                    @else color: #92400e;
-                                    @endif
-                                ">
-                                    Phản hồi: {{ $ticket->accusedResponseLabel() }}
-                                </div>
-                                @if($ticket->accused_response_comment)
-                                    <div style="font-size: 0.82rem; color: #475569; margin-top: 6px; font-style: italic;">
-                                        "{{ $ticket->accused_response_comment }}"
-                                    </div>
-                                @endif
-                                @if($ticket->accused_responded_at)
-                                    <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 4px;">
-                                        {{ $ticket->accused_responded_at->format('d/m/Y H:i') }}
-                                    </div>
-                                @endif
-                            </div>
-
-                            {{-- Cho phép đổi người bị tố cáo --}}
-                            @if(!$ticket->hasAccusedResponse())
-                                <form method="POST" action="{{ portal_route('tickets.assign-accused', $ticket->id) }}" style="margin-top: 12px;">
-                                    @csrf
-                                    <div class="tk-form-group">
-                                        <label style="font-size: 0.78rem; color: #94a3b8;">Đổi người bị tố cáo</label>
-                                        <select name="accused_user_id" required>
-                                            <option value="" disabled selected>-- Chọn cư dân --</option>
-                                            @foreach($residents as $res)
-                                                <option value="{{ $res->id }}" {{ $ticket->accused_user_id == $res->id ? 'selected' : '' }}>
-                                                    {{ $res->name }} {{ $res->apartment ? '- ' . $res->apartment->apartment_number : '' }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <button type="submit" class="tk-form-submit" style="width: 100%; justify-content: center; background: #dc2626; color: #fff; font-size: 0.82rem;">
-                                        Đổi người bị tố cáo
-                                    </button>
-                                </form>
-                            @endif
-                        @else
-                            {{-- Chưa chọn người bị tố cáo --}}
-                            @if($ticket->reported_person)
-                                <div style="padding: 8px 12px; background: #fffbeb; border-radius: 6px; margin-bottom: 12px; font-size: 0.82rem; color: #92400e;">
-                                    Cư dân ghi: <strong>{{ $ticket->reported_person }}</strong>
-                                </div>
-                            @endif
-                            <form method="POST" action="{{ portal_route('tickets.assign-accused', $ticket->id) }}">
-                                @csrf
-                                <div class="tk-form-group">
-                                    <label>Chọn cư dân bị tố cáo</label>
-                                    <select name="accused_user_id" required>
-                                        <option value="" disabled selected>-- Chọn cư dân --</option>
-                                        @foreach($residents as $res)
-                                            <option value="{{ $res->id }}">
-                                                {{ $res->name }} {{ $res->apartment ? '- ' . $res->apartment->apartment_number : '' }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <button type="submit" class="tk-form-submit tk-form-submit--primary" style="width: 100%; justify-content: center; background: #dc2626;">
-                                    Gửi thông báo tố cáo
-                                </button>
-                            </form>
-                        @endif
-                    </div>
-                </div>
-            @endif
-
-            {{-- Chi phí phát sinh --}}
+            {{-- Admin Assign Form --}}
             @if(in_array(auth()->user()->role, ['admin', 'manager']))
-                <div class="tk-show-card">
-                    <div class="tk-show-card__header">
-                        <span class="tk-show-card__title">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                            Chi phí phát sinh
-                        </span>
-                    </div>
-                    <div class="tk-show-card__body">
-
-                        {{-- Danh sách chi phí --}}
-                        @if($ticket->costs->count() > 0)
-                            <div class="tk-cost-list">
-                                @foreach($ticket->costs as $cost)
-                                    <div class="tk-cost-item">
-                                        <div class="tk-cost-item__info">
-                                            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                                                @if($cost->cost_type === 'compensation')
-                                                    <span style="display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; background: #fef2f2; color: #dc2626; border-radius: 20px; font-size: 0.72rem; font-weight: 700; border: 1px solid #fecaca;">
-                                                        Đền bù
-                                                    </span>
-                                                @else
-                                                    <span style="display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; background: #eff6ff; color: #2563eb; border-radius: 20px; font-size: 0.72rem; font-weight: 700; border: 1px solid #bfdbfe;">
-                                                        Sửa chữa
-                                                    </span>
-                                                @endif
-                                                <span class="tk-cost-item__desc">{{ $cost->description }}</span>
-                                            </div>
-                                            <span class="tk-cost-item__amount">{{ number_format($cost->amount, 0, ',', '.') }}đ</span>
-                                        </div>
-                                        @if($cost->cost_type === 'compensation' && $cost->responsibleUser)
-                                            <p style="font-size: 0.78rem; color: #dc2626; margin: 4px 0 2px; font-weight: 600;">
-                                                Người chịu trách nhiệm: {{ $cost->responsibleUser->name }}
-                                            </p>
-                                        @endif
-                                        @if($cost->note)
-                                            <p class="tk-cost-item__note">{{ $cost->note }}</p>
-                                        @endif
-                                        <div class="tk-cost-item__meta">
-                                            <span>{{ $cost->createdBy->name ?? 'N/A' }} · {{ $cost->created_at->format('d/m/Y H:i') }}</span>
-                                            <form method="POST" action="{{ portal_route('tickets.delete-cost', [$ticket->id, $cost->id]) }}" onsubmit="return confirm('Xóa chi phí này?')" style="display: inline;">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="tk-cost-item__delete" title="Xóa">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                @endforeach
-
-                                {{-- Tổng chi phí tách theo loại --}}
+            <div class="tk-card">
+                <div class="tk-card-header">
+                    <h2 class="tk-card-title" style="font-size: 1.1rem;">Phân công kỹ thuật viên (Tối đa 5)</h2>
+                </div>
+                <div class="tk-card-body">
+                    <form method="POST" action="{{ portal_route('tickets.assign', $ticket->id) }}">
+                        @csrf
+                        <div style="margin-bottom: 12px;">
+                            <label style="font-size:0.85rem; color:#64748b; margin-bottom:6px; display:block; font-weight:600;">Chọn KTV phụ trách (tối đa 5 người):</label>
+                            <div style="max-height: 180px; overflow-y: auto; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; background: #f8fafc;">
                                 @php
-                                    $totalRepair = $ticket->costs->where('cost_type', 'repair')->sum('amount');
-                                    $totalCompensation = $ticket->costs->where('cost_type', 'compensation')->sum('amount');
+                                    $assignedIds = $ticket->technicians->pluck('id')->toArray();
+                                    if (empty($assignedIds) && $ticket->handler_id) {
+                                        $assignedIds = [$ticket->handler_id];
+                                    }
                                 @endphp
-                                <div class="tk-cost-total" style="flex-direction: column; gap: 6px;">
-                                    @if($totalRepair > 0)
-                                        <div style="display: flex; justify-content: space-between; width: 100%;">
-                                            <span style="color: #2563eb;">Tổng sửa chữa</span>
-                                            <strong style="color: #2563eb;">{{ number_format($totalRepair, 0, ',', '.') }}đ</strong>
-                                        </div>
-                                    @endif
-                                    @if($totalCompensation > 0)
-                                        <div style="display: flex; justify-content: space-between; width: 100%;">
-                                            <span style="color: #dc2626;">Tổng đền bù</span>
-                                            <strong style="color: #dc2626;">{{ number_format($totalCompensation, 0, ',', '.') }}đ</strong>
-                                        </div>
-                                    @endif
-                                    <div style="display: flex; justify-content: space-between; width: 100%; border-top: 1px solid #e2e8f0; padding-top: 6px; margin-top: 2px;">
-                                        <span>Tổng cộng</span>
-                                        <strong>{{ number_format($ticket->costs->sum('amount'), 0, ',', '.') }}đ</strong>
-                                    </div>
-                                </div>
+                                @foreach($technicians as $tech)
+                                    <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 0.9rem; cursor: pointer; color: #1e293b;">
+                                        <input type="checkbox" name="technician_ids[]" value="{{ $tech->id }}"
+                                            class="tech-checkbox-limit"
+                                            {{ in_array($tech->id, $assignedIds) ? 'checked' : '' }}>
+                                        <span>{{ $tech->name }}</span>
+                                    </label>
+                                @endforeach
                             </div>
-                        @else
-                            <p style="color: #94a3b8; font-size: 0.85rem; text-align: center; padding: 0.5rem 0;">Chưa có chi phí phát sinh.</p>
-                        @endif
-
-                        {{-- Form thêm chi phí --}}
-                        <form method="POST" action="{{ portal_route('tickets.add-cost', $ticket->id) }}" class="tk-cost-form">
-                            @csrf
-                            <div class="tk-cost-form__group">
-                                <label>Loại chi phí <span style="color: #ef4444;">*</span></label>
-                                <select name="cost_type" id="costTypeSelect" required onchange="toggleResponsibleUser()">
-                                    <option value="repair" {{ old('cost_type') === 'compensation' ? '' : 'selected' }}>Chi phí sửa chữa</option>
-                                    <option value="compensation" {{ old('cost_type') === 'compensation' ? 'selected' : '' }}>Chi phí đền bù</option>
-                                </select>
-                            </div>
-                            <div class="tk-cost-form__group" id="responsibleUserGroup" style="display: {{ old('cost_type') === 'compensation' ? 'block' : 'none' }};">
-                                <label>Người chịu trách nhiệm <span style="color: #ef4444;">*</span></label>
-                                <select name="responsible_user_id" id="responsibleUserSelect">
-                                    <option value="" disabled selected>-- Chọn cư dân --</option>
-                                    @foreach($residents as $resident)
-                                        <option value="{{ $resident->id }}" {{ old('responsible_user_id') == $resident->id ? 'selected' : '' }}>
-                                            {{ $resident->name }} ({{ $resident->email }})
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="tk-cost-form__group">
-                                <label>Mô tả <span style="color: #ef4444;">*</span></label>
-                                <input type="text" name="description" placeholder="VD: Thay cửa kính tầng 3" required value="{{ old('description') }}">
-                            </div>
-                            <div class="tk-cost-form__group">
-                                <label>Số tiền (VNĐ) <span style="color: #ef4444;">*</span></label>
-                                <input type="number" name="amount" placeholder="VD: 500000" min="1000" step="1000" required value="{{ old('amount') }}">
-                            </div>
-                            <div class="tk-cost-form__group">
-                                <label>Ghi chú</label>
-                                <textarea name="note" rows="2" placeholder="Ghi chú thêm (tùy chọn)">{{ old('note') }}</textarea>
-                            </div>
-                            <button type="submit" class="tk-form-submit tk-form-submit--warning" style="width: 100%; justify-content: center;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
-                                Thêm chi phí
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            @endif
-
-
-            {{-- Quick Info --}}
-            <div class="tk-show-card">
-                <div class="tk-show-card__header">
-                    <span class="tk-show-card__title">Thông tin nhanh</span>
-                </div>
-                <div class="tk-show-card__body" style="display: flex; flex-direction: column; gap: 10px;">
-                    <div style="display: flex; justify-content: space-between; font-size: 0.88rem;">
-                        <span style="color: #64748b;">Mã {{ $ticket->ticket_type === 'report' ? 'tố cáo' : 'phản ánh' }}</span>
-                        <strong>#{{ $ticket->id }}</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-size: 0.88rem;">
-                        <span style="color: #64748b;">Ngày tạo</span>
-                        <strong>{{ $ticket->created_at->format('d/m/Y') }}</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-size: 0.88rem;">
-                        <span style="color: #64748b;">Cập nhật lần cuối</span>
-                        <strong>{{ $ticket->updated_at->format('d/m/Y H:i') }}</strong>
-                    </div>
-                    @if($ticket->handler)
-                        <div style="display: flex; justify-content: space-between; font-size: 0.88rem;">
-                            <span style="color: #64748b;">KTV phụ trách</span>
-                            <strong>{{ $ticket->handler->name }}</strong>
+                            <small style="color: #64748b; font-size: 0.78rem; display: block; margin-top: 4px;">* KTV đầu tiên chọn sẽ là KTV trưởng phụ trách chính.</small>
                         </div>
-                    @endif
-                    @if($ticket->rating)
-                        <div style="display: flex; justify-content: space-between; font-size: 0.88rem; align-items: center;">
-                            <span style="color: #64748b;">Đánh giá</span>
-                            <strong style="color: #f59e0b;">
-                                @for($i = 1; $i <= 5; $i++)
-                                    <span style="color: {{ $i <= $ticket->rating ? '#f59e0b' : '#d1d5db' }};">★</span>
-                                @endfor
-                                {{ $ticket->rating }}/5
-                            </strong>
-                        </div>
-                    @endif
+                        <button type="submit" class="tk-btn-primary" style="padding: 8px 16px;">Lưu phân công</button>
+                    </form>
                 </div>
             </div>
+            @endif
+
 
         </div>
     </div>
+</div>
 
+{{-- Progress Modal --}}
+<div id="progressModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:999; align-items:center; justify-content:center;">
+    <div style="background:#fff; width:92%; max-width:480px; border-radius:16px; padding:24px; position:relative; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
+        <span style="position:absolute; top:18px; right:20px; font-size:1.5rem; font-weight:bold; cursor:pointer; color:#64748b;" onclick="closeProgressModal()">&times;</span>
+        <h2 style="margin-bottom: 20px; font-size:1.25rem; font-weight:700; color:#0f172a;" id="modalTitle">Cập nhật tiến độ</h2>
+        
+        <form id="progressForm" method="POST" action="{{ portal_route('tickets.update-progress', $ticket->id) }}" enctype="multipart/form-data">
+            @csrf
+            
+            <div style="margin-bottom: 16px;">
+                <label style="display:block; font-size:0.85rem; font-weight:600; color:#334155; margin-bottom:6px;">Trạng thái mới <span style="color:#dc2626;">*</span></label>
+                <select name="status" id="modalStatus" required onchange="updateShowModalNotes(this.value)" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; outline:none; font-size:0.9rem; background:#fff;">
+                    <option value="in_progress" {{ $ticket->status === 'in_progress' ? 'selected' : '' }}>🔄 Đang xử lý (tiếp tục)</option>
+                    <option value="completed">✅ Hoàn thành</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <label style="display:block; font-size:0.85rem; font-weight:600; color:#334155; margin-bottom:6px;">Báo cáo / Ghi chú <span id="showCommentNote" style="font-weight:normal; color:#64748b; font-size:0.8rem;">(tùy chọn)</span></label>
+                <textarea name="comment" id="showComment" rows="3" placeholder="Mô tả công việc đã thực hiện, kết quả, ghi chú..." style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; outline:none; font-family:inherit; font-size:0.9rem; box-sizing:border-box;"></textarea>
+            </div>
+            
+            <div style="margin-bottom: 24px;">
+                <label style="display:block; font-size:0.85rem; font-weight:600; color:#334155; margin-bottom:6px;">Chụp ảnh / Tải ảnh lên <span id="showProofNote" style="font-weight:normal; color:#64748b; font-size:0.8rem;">(tùy chọn)</span></label>
+                <div style="border: 2px dashed #cbd5e1; border-radius:8px; padding: 16px; text-align: center; cursor: pointer; background: #f8fafc;" onclick="document.getElementById('showImgInput').click()">
+                    <input type="file" name="image_proof" id="showImgInput" accept="image/*" capture="environment" style="display:none;" onchange="handleShowFileSelect(this)">
+                    <div id="showUploadPlaceholder">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#94a3b8" stroke-width="1.5" style="margin: 0 auto 6px;"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        <span style="display:block; font-size:0.85rem; color:#64748b;">Nhấn để chọn ảnh hoặc chụp ảnh</span>
+                    </div>
+                    <div id="showUploadPreview" style="display:none; align-items:center; gap:10px; justify-content:center;">
+                        <img id="showPreviewImg" src="" style="width:50px; height:50px; object-fit:cover; border-radius:6px;">
+                        <span id="showPreviewName" style="font-size:0.85rem; color:#334155; font-weight:500;"></span>
+                    </div>
+                </div>
+                <button type="button" class="tk-btn-outline" style="margin-top: 10px; padding: 8px 12px; font-size: 0.85rem; width: auto; display: inline-flex; align-items: center; gap: 6px;" onclick="openShowCameraCapture()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 7h-2a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2"/><path d="M9 7l1.5-3h3L15 7"/><circle cx="12" cy="15" r="3"/></svg>
+                    Mở camera máy tính
+                </button>
+            </div>
+
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" class="tk-btn-outline" style="width: auto; padding: 10px 20px;" onclick="closeProgressModal()">Hủy</button>
+                <button type="submit" class="tk-btn-primary" id="modalSubmitBtn" style="width: auto; padding: 10px 24px;">Cập nhật tiến độ</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="showCameraModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:10000;cursor:pointer;" onclick="closeShowCameraModal()"></div>
+<div id="showCameraModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%, -50%);width:92vw;max-width:520px;background:#fff;border-radius:16px;box-shadow:0 24px 48px rgba(15,23,42,0.25);z-index:10001;padding:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-weight:700;font-size:0.95rem;color:#0f172a;">Camera máy tính</div>
+        <button type="button" class="tk-btn-outline" style="padding:4px 10px;font-size:0.8rem;width:auto;" onclick="closeShowCameraModal()">Đóng</button>
+    </div>
+    <video id="showCameraVideo" autoplay playsinline style="width:100%;height:auto;border-radius:14px;background:#000;"></video>
+    <div style="display:flex;justify-content:flex-end;gap:0.75rem;margin-top:12px;">
+        <button type="button" class="tk-btn-outline" style="width:auto;padding:8px 16px;" onclick="closeShowCameraModal()">Hủy</button>
+        <button type="button" class="tk-btn-primary" style="width:auto;padding:8px 20px;" onclick="captureShowCameraPhoto()">Chụp ảnh</button>
+    </div>
 </div>
 
 {{-- Image Modal --}}
@@ -531,19 +315,107 @@ function openAdminImgModal(src) {
 function closeAdminImgModal() {
     document.getElementById('adminImgModal').style.display = 'none';
 }
-function toggleResponsibleUser() {
-    const costType = document.getElementById('costTypeSelect').value;
-    const group = document.getElementById('responsibleUserGroup');
-    const select = document.getElementById('responsibleUserSelect');
-    if (costType === 'compensation') {
-        group.style.display = 'block';
-        select.setAttribute('required', 'required');
+
+function openProgressModal() {
+    document.getElementById('progressModal').style.display = 'flex';
+    const statusVal = document.getElementById('modalStatus').value;
+    updateShowModalNotes(statusVal);
+}
+
+function closeProgressModal() {
+    document.getElementById('progressModal').style.display = 'none';
+}
+
+function updateShowModalNotes(status) {
+    const proofNote = document.getElementById('showProofNote');
+    const commentNote = document.getElementById('showCommentNote');
+    if (status === 'completed') {
+        if (proofNote) proofNote.textContent = '(bắt buộc khi hoàn thành)';
+        if (commentNote) commentNote.textContent = '(bắt buộc khi hoàn thành)';
     } else {
-        group.style.display = 'none';
-        select.removeAttribute('required');
-        select.value = '';
+        if (proofNote) proofNote.textContent = '(tùy chọn)';
+        if (commentNote) commentNote.textContent = '(tùy chọn)';
     }
 }
-</script>
 
+function handleShowFileSelect(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        document.getElementById('showPreviewImg').src = e.target.result;
+        document.getElementById('showPreviewName').textContent = file.name;
+        document.getElementById('showUploadPlaceholder').style.display = 'none';
+        document.getElementById('showUploadPreview').style.display = 'flex';
+    };
+    reader.readAsDataURL(file);
+}
+
+let showCameraStream = null;
+function openShowCameraCapture() {
+    const overlay = document.getElementById('showCameraModalOverlay');
+    const modal   = document.getElementById('showCameraModal');
+    const video   = document.getElementById('showCameraVideo');
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('Trình duyệt của bạn không hỗ trợ mở camera.');
+        return;
+    }
+
+    overlay.style.display = 'block';
+    modal.style.display   = 'block';
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+            showCameraStream = stream;
+            video.srcObject = stream;
+            video.play();
+        })
+        .catch(error => {
+            alert('Không thể kết nối camera. Bạn có thể chọn file ảnh tải lên.');
+            closeShowCameraModal();
+        });
+}
+
+function closeShowCameraModal() {
+    const overlay = document.getElementById('showCameraModalOverlay');
+    const modal   = document.getElementById('showCameraModal');
+    const video   = document.getElementById('showCameraVideo');
+
+    if (overlay) overlay.style.display = 'none';
+    if (modal)   modal.style.display   = 'none';
+
+    if (showCameraStream) {
+        showCameraStream.getTracks().forEach(track => track.stop());
+        showCameraStream = null;
+    }
+    if (video) video.srcObject = null;
+}
+
+function captureShowCameraPhoto() {
+    const video = document.getElementById('showCameraVideo');
+    if (!video || !video.videoWidth) {
+        alert('Camera chưa sẵn sàng.');
+        return;
+    }
+
+    const canvas  = document.createElement('canvas');
+    canvas.width  = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const context = canvas.getContext('2d');
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob(blob => {
+        if (!blob) return;
+        const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        const input = document.getElementById('showImgInput');
+        input.files = dataTransfer.files;
+        handleShowFileSelect(input);
+        closeShowCameraModal();
+    });
+}
+</script>
 @endsection

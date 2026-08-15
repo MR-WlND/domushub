@@ -184,8 +184,8 @@ class SimpleXlsx
                 $rowIndex = (int)$rowNode['r'];
                 $rowData = [];
                 
-                // Khởi tạo trước các cột từ A đến L để hỗ trợ nhiều cột dữ liệu
-                foreach (['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'] as $col) {
+                // Khởi tạo trước các cột từ A đến Z để hỗ trợ nhiều cột dữ liệu
+                foreach (range('A', 'Z') as $col) {
                     $rowData[$col] = '';
                 }
 
@@ -304,17 +304,19 @@ class SimpleXlsx
   <cols>
     <col min="1" max="1" width="22" customWidth="1"/>
     <col min="2" max="2" width="22" customWidth="1"/>
-    <col min="3" max="3" width="25" customWidth="1"/>
-    <col min="4" max="4" width="22" customWidth="1"/>
-    <col min="5" max="5" width="25" customWidth="1"/>
-    <col min="6" max="6" width="16" customWidth="1"/>
-    <col min="7" max="7" width="22" customWidth="1"/>
-    <col min="8" max="8" width="30" customWidth="1"/> <!-- Loại Tầng -->
-    <col min="9" max="9" width="25" customWidth="1"/> <!-- Mô Tả Tầng -->
-    <col min="10" max="10" width="18" customWidth="1"/>
-    <col min="11" max="11" width="18" customWidth="1"/>
-    <col min="12" max="12" width="28" customWidth="1"/>
-    <col min="13" max="13" width="30" customWidth="1"/>
+    <col min="3" max="3" width="18" customWidth="1"/> <!-- Tổng Số Tầng -->
+    <col min="4" max="4" width="18" customWidth="1"/> <!-- Số Tầng Hầm -->
+    <col min="5" max="5" width="18" customWidth="1"/> <!-- Số Căn/Tầng -->
+    <col min="6" max="6" width="30" customWidth="1"/> <!-- Tiện Ích Tòa Nhà -->
+    <col min="7" max="7" width="16" customWidth="1"/> <!-- Số Tầng -->
+    <col min="8" max="8" width="22" customWidth="1"/>
+    <col min="9" max="9" width="30" customWidth="1"/> <!-- Loại Tầng -->
+    <col min="10" max="10" width="25" customWidth="1"/> <!-- Mô Tả Tầng -->
+    <col min="11" max="11" width="18" customWidth="1"/> <!-- Số Căn Hộ -->
+    <col min="12" max="12" width="25" customWidth="1"/> <!-- Tên Loại Căn Hộ -->
+    <col min="13" max="13" width="18" customWidth="1"/> <!-- Diện Tích -->
+    <col min="14" max="14" width="28" customWidth="1"/> <!-- Trạng Thái -->
+    <col min="15" max="15" width="30" customWidth="1"/> <!-- Mô Tả Căn Hộ -->
   </cols>
   <sheetData>';
 
@@ -322,69 +324,94 @@ class SimpleXlsx
         $sheet1 .= '<row r="1">';
         $sheet1 .= '<c r="A1" t="inlineStr"><is><t>Tên Tòa Nhà (Bắt buộc)</t></is></c>';
         $sheet1 .= '<c r="B1" t="inlineStr"><is><t>Mã Tòa Nhà (Tùy chọn)</t></is></c>';
-        $sheet1 .= '<c r="C1" t="inlineStr"><is><t>Người Quản Lý Tòa (Tùy chọn)</t></is></c>';
-        $sheet1 .= '<c r="D1" t="inlineStr"><is><t>Liên Hệ Quản Lý (Tùy chọn)</t></is></c>';
-        $sheet1 .= '<c r="E1" t="inlineStr"><is><t>Mô Tả Tòa Nhà (Tùy chọn)</t></is></c>';
-        $sheet1 .= '<c r="F1" t="inlineStr"><is><t>Số Tầng (Bắt buộc)</t></is></c>';
-        $sheet1 .= '<c r="G1" t="inlineStr"><is><t>Tên Tầng (Bắt buộc)</t></is></c>';
-        $sheet1 .= '<c r="H1" t="inlineStr"><is><t>Loại Tầng (Cư dân / Thương mại / Kỹ thuật / Tiện ích)</t></is></c>';
-        $sheet1 .= '<c r="I1" t="inlineStr"><is><t>Mô Tả Tầng (Tùy chọn)</t></is></c>';
-        $sheet1 .= '<c r="J1" t="inlineStr"><is><t>Số Căn Hộ (Bắt buộc)</t></is></c>';
-        $sheet1 .= '<c r="K1" t="inlineStr"><is><t>Diện Tích m2 (Bắt buộc)</t></is></c>';
-        $sheet1 .= '<c r="L1" t="inlineStr"><is><t>Trạng Thái (Trống / Đang ở / Bảo trì)</t></is></c>';
-        $sheet1 .= '<c r="M1" t="inlineStr"><is><t>Mô Tả Căn Hộ (Tùy chọn)</t></is></c>';
+        $sheet1 .= '<c r="C1" t="inlineStr"><is><t>Tổng Số Tầng (Tùy chọn)</t></is></c>';
+        $sheet1 .= '<c r="D1" t="inlineStr"><is><t>Số Tầng Hầm (Tùy chọn)</t></is></c>';
+        $sheet1 .= '<c r="E1" t="inlineStr"><is><t>Số Căn/Tầng (Tùy chọn)</t></is></c>';
+        $sheet1 .= '<c r="F1" t="inlineStr"><is><t>Tiện Ích Tòa Nhà (Tùy chọn)</t></is></c>';
+        $sheet1 .= '<c r="G1" t="inlineStr"><is><t>Số Tầng (Bắt buộc)</t></is></c>';
+        $sheet1 .= '<c r="H1" t="inlineStr"><is><t>Tên Tầng (Bắt buộc)</t></is></c>';
+        $sheet1 .= '<c r="I1" t="inlineStr"><is><t>Loại Tầng (Tầng nổi / Tầng hầm)</t></is></c>';
+        $sheet1 .= '<c r="J1" t="inlineStr"><is><t>Mô Tả Tầng (Tùy chọn)</t></is></c>';
+        $sheet1 .= '<c r="K1" t="inlineStr"><is><t>Số Căn Hộ (Bắt buộc)</t></is></c>';
+        $sheet1 .= '<c r="L1" t="inlineStr"><is><t>Tên Loại Căn Hộ (Tùy chọn)</t></is></c>';
+        $sheet1 .= '<c r="M1" t="inlineStr"><is><t>Diện Tích m2 (Bắt buộc)</t></is></c>';
+        $sheet1 .= '<c r="N1" t="inlineStr"><is><t>Trạng Thái (Trống / Đang ở / Bảo trì)</t></is></c>';
+        $sheet1 .= '<c r="O1" t="inlineStr"><is><t>Mô Tả Căn Hộ (Tùy chọn)</t></is></c>';
         $sheet1 .= '</row>';
 
-        // Row 2: Sample Data 1
-        $sheet1 .= '<row r="2">';
-        $sheet1 .= '<c r="A2" t="inlineStr"><is><t>Tòa A</t></is></c>';
-        $sheet1 .= '<c r="B2" t="inlineStr"><is><t>BLOCK_A</t></is></c>';
-        $sheet1 .= '<c r="C2" t="inlineStr"><is><t>Nguyễn Văn A</t></is></c>';
-        $sheet1 .= '<c r="D2" t="inlineStr"><is><t>0912345678</t></is></c>';
-        $sheet1 .= '<c r="E2" t="inlineStr"><is><t>Khu căn hộ cao cấp phía Đông</t></is></c>';
-        $sheet1 .= '<c r="F2" s="1"><v>1</v></c>';
-        $sheet1 .= '<c r="G2" t="inlineStr"><is><t>Tầng 1</t></is></c>';
-        $sheet1 .= '<c r="H2" t="inlineStr"><is><t>Cư dân</t></is></c>';
-        $sheet1 .= '<c r="I2" t="inlineStr"><is><t>Khu thương mại và căn hộ trệt</t></is></c>';
-        $sheet1 .= '<c r="J2" t="inlineStr"><is><t>A101</t></is></c>';
-        $sheet1 .= '<c r="K2" s="2"><v>75.50</v></c>';
-        $sheet1 .= '<c r="L2" t="inlineStr"><is><t>Trống</t></is></c>';
-        $sheet1 .= '<c r="M2" t="inlineStr"><is><t>Căn hộ gần sảnh chính</t></is></c>';
-        $sheet1 .= '</row>';
+        $apartments = \App\Models\Apartment::with(['floor.block', 'apartmentType'])->get();
 
-        // Row 3: Sample Data 2
-        $sheet1 .= '<row r="3">';
-        $sheet1 .= '<c r="A3" t="inlineStr"><is><t>Tòa A</t></is></c>';
-        $sheet1 .= '<c r="B3" t="inlineStr"><is><t>BLOCK_A</t></is></c>';
-        $sheet1 .= '<c r="C3" t="inlineStr"><is><t>Nguyễn Văn A</t></is></c>';
-        $sheet1 .= '<c r="D3" t="inlineStr"><is><t>0912345678</t></is></c>';
-        $sheet1 .= '<c r="E3" t="inlineStr"><is><t>Khu căn hộ cao cấp phía Đông</t></is></c>';
-        $sheet1 .= '<c r="F3" s="1"><v>1</v></c>';
-        $sheet1 .= '<c r="G3" t="inlineStr"><is><t>Tầng 1</t></is></c>';
-        $sheet1 .= '<c r="H3" t="inlineStr"><is><t>Cư dân</t></is></c>';
-        $sheet1 .= '<c r="I3" t="inlineStr"><is><t>Khu thương mại và căn hộ trệt</t></is></c>';
-        $sheet1 .= '<c r="J3" t="inlineStr"><is><t>A102</t></is></c>';
-        $sheet1 .= '<c r="K3" s="2"><v>85.00</v></c>';
-        $sheet1 .= '<c r="L3" t="inlineStr"><is><t>Đang ở</t></is></c>';
-        $sheet1 .= '<c r="M3" t="inlineStr"><is><t>Căn hộ 2 phòng ngủ</t></is></c>';
-        $sheet1 .= '</row>';
+        if ($apartments->count() > 0) {
+            $rowNum = 2;
+            foreach ($apartments as $apt) {
+                $block = $apt->floor->block ?? null;
+                $floor = $apt->floor ?? null;
 
-        // Row 4: Sample Data 3
-        $sheet1 .= '<row r="4">';
-        $sheet1 .= '<c r="A4" t="inlineStr"><is><t>Tòa B</t></is></c>';
-        $sheet1 .= '<c r="B4" t="inlineStr"><is><t>BLOCK_B</t></is></c>';
-        $sheet1 .= '<c r="C4" t="inlineStr"><is><t>Trần Thị B</t></is></c>';
-        $sheet1 .= '<c r="D4" t="inlineStr"><is><t>0987654321</t></is></c>';
-        $sheet1 .= '<c r="E4" t="inlineStr"><is><t>Khu chung cư xã hội phía Nam</t></is></c>';
-        $sheet1 .= '<c r="F4" s="1"><v>2</v></c>';
-        $sheet1 .= '<c r="G4" t="inlineStr"><is><t>Tầng 2</t></is></c>';
-        $sheet1 .= '<c r="H4" t="inlineStr"><is><t>Thương mại</t></is></c>';
-        $sheet1 .= '<c r="I4" t="inlineStr"><is><t>Tầng dân cư trung cấp</t></is></c>';
-        $sheet1 .= '<c r="J4" t="inlineStr"><is><t>B201</t></is></c>';
-        $sheet1 .= '<c r="K4" s="2"><v>68.20</v></c>';
-        $sheet1 .= '<c r="L4" t="inlineStr"><is><t>Bảo trì</t></is></c>';
-        $sheet1 .= '<c r="M4" t="inlineStr"><is><t>Đang sửa chữa điện nước</t></is></c>';
-        $sheet1 .= '</row>';
+                $blockName = $block ? $block->name : '';
+                $blockCode = $block ? $block->code : '';
+                $totalFloors = $block ? $block->total_floors : '';
+                $totalBasements = $block ? $block->total_basements : '';
+                $aptsPerFloor = $block ? $block->apartments_per_floor : '';
+                $amenities = ($block && is_array($block->amenities)) ? implode(', ', $block->amenities) : '';
+
+                $floorNumber = $floor ? $floor->floor_number : '';
+                $floorName = $floor ? $floor->name : '';
+
+                $floorType = 'Tầng nổi';
+                if ($floor && $floor->floor_type == 'basement') $floorType = 'Tầng hầm';
+
+                $floorDesc = $floor ? $floor->description : '';
+
+                $aptNumber = $apt->apartment_number;
+                $aptTypeName = $apt->apartmentType ? $apt->apartmentType->name : '';
+                $area = $apt->area;
+
+                $status = 'Trống';
+                if ($apt->status == 'occupied') $status = 'Đang ở';
+                elseif ($apt->status == 'maintenance') $status = 'Bảo trì';
+
+                $aptDesc = $apt->description;
+
+                $sheet1 .= '<row r="' . $rowNum . '">';
+                $sheet1 .= '<c r="A' . $rowNum . '" t="inlineStr"><is><t>' . htmlspecialchars((string)$blockName, ENT_XML1, 'UTF-8') . '</t></is></c>';
+                $sheet1 .= '<c r="B' . $rowNum . '" t="inlineStr"><is><t>' . htmlspecialchars((string)$blockCode, ENT_XML1, 'UTF-8') . '</t></is></c>';
+                $sheet1 .= '<c r="C' . $rowNum . '" s="1"><v>' . (int)$totalFloors . '</v></c>';
+                $sheet1 .= '<c r="D' . $rowNum . '" s="1"><v>' . (int)$totalBasements . '</v></c>';
+                $sheet1 .= '<c r="E' . $rowNum . '" s="1"><v>' . (int)$aptsPerFloor . '</v></c>';
+                $sheet1 .= '<c r="F' . $rowNum . '" t="inlineStr"><is><t>' . htmlspecialchars((string)$amenities, ENT_XML1, 'UTF-8') . '</t></is></c>';
+                $sheet1 .= '<c r="G' . $rowNum . '" s="1"><v>' . (int)$floorNumber . '</v></c>';
+                $sheet1 .= '<c r="H' . $rowNum . '" t="inlineStr"><is><t>' . htmlspecialchars((string)$floorName, ENT_XML1, 'UTF-8') . '</t></is></c>';
+                $sheet1 .= '<c r="I' . $rowNum . '" t="inlineStr"><is><t>' . htmlspecialchars((string)$floorType, ENT_XML1, 'UTF-8') . '</t></is></c>';
+                $sheet1 .= '<c r="J' . $rowNum . '" t="inlineStr"><is><t>' . htmlspecialchars((string)$floorDesc, ENT_XML1, 'UTF-8') . '</t></is></c>';
+                $sheet1 .= '<c r="K' . $rowNum . '" t="inlineStr"><is><t>' . htmlspecialchars((string)$aptNumber, ENT_XML1, 'UTF-8') . '</t></is></c>';
+                $sheet1 .= '<c r="L' . $rowNum . '" t="inlineStr"><is><t>' . htmlspecialchars((string)$aptTypeName, ENT_XML1, 'UTF-8') . '</t></is></c>';
+                $sheet1 .= '<c r="M' . $rowNum . '" s="2"><v>' . (float)$area . '</v></c>';
+                $sheet1 .= '<c r="N' . $rowNum . '" t="inlineStr"><is><t>' . htmlspecialchars((string)$status, ENT_XML1, 'UTF-8') . '</t></is></c>';
+                $sheet1 .= '<c r="O' . $rowNum . '" t="inlineStr"><is><t>' . htmlspecialchars((string)$aptDesc, ENT_XML1, 'UTF-8') . '</t></is></c>';
+                $sheet1 .= '</row>';
+
+                $rowNum++;
+            }
+        } else {
+            // Row 2: Sample Data 1
+            $sheet1 .= '<row r="2">';
+            $sheet1 .= '<c r="A2" t="inlineStr"><is><t>Tòa A</t></is></c>';
+            $sheet1 .= '<c r="B2" t="inlineStr"><is><t>BLOCK_A</t></is></c>';
+            $sheet1 .= '<c r="C2" s="1"><v>20</v></c>';
+            $sheet1 .= '<c r="D2" s="1"><v>2</v></c>';
+            $sheet1 .= '<c r="E2" s="1"><v>10</v></c>';
+            $sheet1 .= '<c r="F2" t="inlineStr"><is><t>Hồ bơi, Gym</t></is></c>';
+            $sheet1 .= '<c r="G2" s="1"><v>1</v></c>';
+            $sheet1 .= '<c r="H2" t="inlineStr"><is><t>Tầng 1</t></is></c>';
+            $sheet1 .= '<c r="I2" t="inlineStr"><is><t>Tầng nổi</t></is></c>';
+            $sheet1 .= '<c r="J2" t="inlineStr"><is><t>Khu thương mại và căn hộ trệt</t></is></c>';
+            $sheet1 .= '<c r="K2" t="inlineStr"><is><t>A101</t></is></c>';
+            $sheet1 .= '<c r="L2" t="inlineStr"><is><t>Căn hộ Tiêu chuẩn</t></is></c>';
+            $sheet1 .= '<c r="M2" s="2"><v>75.50</v></c>';
+            $sheet1 .= '<c r="N2" t="inlineStr"><is><t>Trống</t></is></c>';
+            $sheet1 .= '<c r="O2" t="inlineStr"><is><t>Căn hộ gần sảnh chính</t></is></c>';
+            $sheet1 .= '</row>';
+        }
 
         $sheet1 .= '  </sheetData>';
         $sheet1 .= '</worksheet>';
@@ -484,7 +511,6 @@ class SimpleXlsx
     <col min="6" max="6" width="22" customWidth="1"/>
     <col min="7" max="7" width="22" customWidth="1"/>
     <col min="8" max="8" width="22" customWidth="1"/>
-    <col min="9" max="9" width="22" customWidth="1"/>
   </cols>
   <sheetData>';
 
@@ -501,10 +527,9 @@ class SimpleXlsx
         $sheet1 .= '<c r="C3" t="inlineStr" s="1"><is><t>Đã thu (VND)</t></is></c>';
         $sheet1 .= '<c r="D3" t="inlineStr" s="1"><is><t>Chưa thu (VND)</t></is></c>';
         $sheet1 .= '<c r="E3" t="inlineStr" s="1"><is><t>Tỷ lệ thu hồi (%)</t></is></c>';
-        $sheet1 .= '<c r="F3" t="inlineStr" s="1"><is><t>Tiêu thụ Điện (VND)</t></is></c>';
-        $sheet1 .= '<c r="G3" t="inlineStr" s="1"><is><t>Tiêu thụ Nước (VND)</t></is></c>';
-        $sheet1 .= '<c r="H3" t="inlineStr" s="1"><is><t>Phí quản lý (VND)</t></is></c>';
-        $sheet1 .= '<c r="I3" t="inlineStr" s="1"><is><t>Phí khác (VND)</t></is></c>';
+        $sheet1 .= '<c r="F3" t="inlineStr" s="1"><is><t>Tiêu thụ Nước (VND)</t></is></c>';
+        $sheet1 .= '<c r="G3" t="inlineStr" s="1"><is><t>Phí quản lý (VND)</t></is></c>';
+        $sheet1 .= '<c r="H3" t="inlineStr" s="1"><is><t>Phí khác (VND)</t></is></c>';
         $sheet1 .= '</row>';
 
         $rowNum = 4;
@@ -516,7 +541,6 @@ class SimpleXlsx
             $rate = $billed > 0 ? round(($collected / $billed) * 100, 2) : 0;
 
             $m = (int)$row->billing_month;
-            $elec = isset($serviceData[$m]['electricity']) ? (float)$serviceData[$m]['electricity'] : 0.0;
             $water = isset($serviceData[$m]['water']) ? (float)$serviceData[$m]['water'] : 0.0;
             $mgmt = isset($serviceData[$m]['management_fee']) ? (float)$serviceData[$m]['management_fee'] : 0.0;
             $other = isset($serviceData[$m]['other']) ? (float)$serviceData[$m]['other'] : 0.0;
@@ -527,22 +551,19 @@ class SimpleXlsx
             $sheet1 .= sprintf('<c r="C%d" s="2"><v>%.2f</v></c>', $rowNum, $collected);
             $sheet1 .= sprintf('<c r="D%d" s="2"><v>%.2f</v></c>', $rowNum, $unpaid);
             $sheet1 .= sprintf('<c r="E%d"><v>%.2f</v></c>', $rowNum, $rate);
-            $sheet1 .= sprintf('<c r="F%d" s="2"><v>%.2f</v></c>', $rowNum, $elec);
-            $sheet1 .= sprintf('<c r="G%d" s="2"><v>%.2f</v></c>', $rowNum, $water);
-            $sheet1 .= sprintf('<c r="H%d" s="2"><v>%.2f</v></c>', $rowNum, $mgmt);
-            $sheet1 .= sprintf('<c r="I%d" s="2"><v>%.2f</v></c>', $rowNum, $other);
+            $sheet1 .= sprintf('<c r="F%d" s="2"><v>%.2f</v></c>', $rowNum, $water);
+            $sheet1 .= sprintf('<c r="G%d" s="2"><v>%.2f</v></c>', $rowNum, $mgmt);
+            $sheet1 .= sprintf('<c r="H%d" s="2"><v>%.2f</v></c>', $rowNum, $other);
             $sheet1 .= '</row>';
             $rowNum++;
         }
 
         // Tính tổng cộng cho các loại dịch vụ
-        $totalElec = 0.0;
         $totalWater = 0.0;
         $totalMgmt = 0.0;
         $totalOther = 0.0;
         if (!empty($serviceData)) {
             foreach ($serviceData as $m => $s) {
-                $totalElec += $s['electricity'];
                 $totalWater += $s['water'];
                 $totalMgmt += $s['management_fee'];
                 $totalOther += $s['other'];
@@ -556,10 +577,9 @@ class SimpleXlsx
         $sheet1 .= sprintf('<c r="C%d" s="1"><v>%.2f</v></c>', $rowNum, $totalCollected);
         $sheet1 .= sprintf('<c r="D%d" s="1"><v>%.2f</v></c>', $rowNum, $totalUnpaid);
         $sheet1 .= sprintf('<c r="E%d" s="1"><v>%.2f</v></c>', $rowNum, $collectionRate);
-        $sheet1 .= sprintf('<c r="F%d" s="1"><v>%.2f</v></c>', $rowNum, $totalElec);
-        $sheet1 .= sprintf('<c r="G%d" s="1"><v>%.2f</v></c>', $rowNum, $totalWater);
-        $sheet1 .= sprintf('<c r="H%d" s="1"><v>%.2f</v></c>', $rowNum, $totalMgmt);
-        $sheet1 .= sprintf('<c r="I%d" s="1"><v>%.2f</v></c>', $rowNum, $totalOther);
+        $sheet1 .= sprintf('<c r="F%d" s="1"><v>%.2f</v></c>', $rowNum, $totalWater);
+        $sheet1 .= sprintf('<c r="G%d" s="1"><v>%.2f</v></c>', $rowNum, $totalMgmt);
+        $sheet1 .= sprintf('<c r="H%d" s="1"><v>%.2f</v></c>', $rowNum, $totalOther);
         $sheet1 .= '</row>';
 
         $sheet1 .= '  </sheetData>';
@@ -715,7 +735,7 @@ class SimpleXlsx
             $comment = htmlspecialchars($t->feedback_comment ?? '', ENT_XML1, 'UTF-8');
             
             $createdAt = $t->created_at ? \Carbon\Carbon::parse($t->created_at)->format('d/m/Y H:i') : '';
-            $completedAt = ($t->status === 'completed' && $t->updated_at) ? \Carbon\Carbon::parse($t->updated_at)->format('d/m/Y H:i') : '';
+            $completedAt = ($t->status === 'completed' && $t->completed_at) ? \Carbon\Carbon::parse($t->completed_at)->format('d/m/Y H:i') : '';
 
             $sheet1 .= sprintf('<row r="%d">', $rowNum);
             $sheet1 .= sprintf('<c r="A%d"><v>%d</v></c>', $rowNum, $id);

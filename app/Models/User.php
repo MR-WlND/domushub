@@ -32,6 +32,7 @@ class User extends Authenticatable
         'apartment_id',
         'banned_posting_until',
         'banned_commenting_until',
+        'staff_id',
     ];
 
     /**
@@ -108,6 +109,19 @@ class User extends Authenticatable
         return $this->hasMany(Ticket::class, 'handler_id');
     }
 
+    public function assignedTickets()
+    {
+        return $this->belongsToMany(Ticket::class, 'ticket_assignments', 'user_id', 'ticket_id')->withTimestamps();
+    }
+
+    /**
+     * Thông tin nhân sự liên kết
+     */
+    public function staff()
+    {
+        return $this->belongsTo(Staff::class);
+    }
+
     // ── Role helpers ────────────────────────────────────────────────
 
     public function isAdmin(): bool
@@ -133,6 +147,11 @@ class User extends Authenticatable
     public function isCleaning(): bool
     {
         return $this->role === 'cleaning';
+    }
+
+    public function isReceptionist(): bool
+    {
+        return $this->role === 'receptionist';
     }
 
     /**

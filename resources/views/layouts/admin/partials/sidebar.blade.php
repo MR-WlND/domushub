@@ -10,7 +10,7 @@
             @elseif($role === 'manager')
                 Quản lý
             @elseif($role === 'staff')
-                Nhân viên
+                Kế toán
             @elseif($role === 'technician')
                 Kỹ thuật viên
             @endif
@@ -90,7 +90,7 @@
         @endif
 
         {{-- ============================================================== --}}
-        {{-- ĐIỆN NƯỚC & HOÁ ĐƠN - Admin & Staff --}}
+        {{-- NƯỚC & HOÁ ĐƠN - Admin & Staff --}}
         {{-- ============================================================== --}}
         @if(in_array($role, ['admin', 'manager', 'staff', 'technician']))
         <div class="nav-section">
@@ -99,7 +99,7 @@
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"></path>
                 </svg>
-                <span>Chốt số nước</span>
+                <span>{{ $role === 'technician' ? 'Ghi số nước' : 'Chốt số nước' }}</span>
             </a>
 
             @if(in_array($role, ['admin', 'staff']))
@@ -121,8 +121,8 @@
             </a>
             @endif
 
-
         </div>
+
         @endif
 
         {{-- ============================================================== --}}
@@ -131,7 +131,7 @@
         @if($role === 'technician')
         <div class="nav-section">
             <span class="nav-section__label">NHIỆM VỤ KỸ THUẬT</span>
-            <a href="{{ portal_route('tickets.my-tasks') }}" class="dashboard-nav__item {{ is_portal_route('tickets.my-tasks') || ($role === 'technician' && is_portal_route('tickets.show')) ? 'dashboard-nav__item--active' : '' }}">
+            <a href="{{ portal_route('tickets.my-tasks') }}" class="dashboard-nav__item {{ is_portal_route('tickets.my-tasks') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
                 </svg>
@@ -144,6 +144,12 @@
                 @if($myPendingCount > 0)
                     <span style="margin-left:auto; background:#f97316; color:#fff; font-size:.68rem; font-weight:800; padding:1px 7px; border-radius:12px; min-width:20px; text-align:center;">{{ $myPendingCount }}</span>
                 @endif
+            </a>
+            <a href="{{ portal_route('tickets.index') }}" class="dashboard-nav__item {{ is_portal_route('tickets.index') || ($role === 'technician' && is_portal_route('tickets.show')) ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <span>Tất cả phản ánh</span>
             </a>
         </div>
         @endif
@@ -211,7 +217,7 @@
                     <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                     <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                 </svg>
-                <span>Lịch sử khách ghé thăm</span>
+                <span>Khách ghé thăm</span>
             </a>
             @endif
 
@@ -283,12 +289,52 @@
         @endif
 
         {{-- ============================================================== --}}
+        {{-- QUẢN TRỊ NHÂN SỰ - Chỉ Admin --}}
+        {{-- ============================================================== --}}
+        @if($role === 'admin')
+        <div class="nav-section">
+            <span class="nav-section__label">QUẢN TRỊ NHÂN SỰ</span>
+            
+            <a href="{{ portal_route('departments.index') }}" class="dashboard-nav__item {{ is_portal_route('departments.*') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                <span>Phòng ban</span>
+            </a>
+
+            <a href="{{ portal_route('staffs.index') }}" class="dashboard-nav__item {{ is_portal_route('staffs.*') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <span>Hồ sơ nhân sự</span>
+            </a>
+
+            <a href="{{ portal_route('schedules.index') }}" class="dashboard-nav__item {{ is_portal_route('schedules.*') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span>Bảng phân ca</span>
+            </a>
+        </div>
+        @endif
+
+        {{-- ============================================================== --}}
         {{-- CẤU HÌNH HỆ THỐNG - Chỉ Admin --}}
         {{-- Manager, Staff, Technician KHÔNG thấy mục này --}}
         {{-- ============================================================== --}}
         @if($role === 'admin')
         <div class="nav-section">
             <span class="nav-section__label">CẤU HÌNH HỆ THỐNG</span>
+
             <a href="{{ portal_route('users.index') }}" class="dashboard-nav__item {{ is_portal_route('users.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>

@@ -1,4 +1,4 @@
-﻿/* ---------- Page Layout ---------- */
+/* ---------- Page Layout ---------- */
 
 .invitations-page {
     display: flex;
@@ -101,7 +101,7 @@
 
 .invitations-form {
     display: grid;
-    grid-template-columns: 1fr 1fr auto;
+    grid-template-columns: repeat(3, 1fr);
     gap: 16px;
     align-items: start;
 }

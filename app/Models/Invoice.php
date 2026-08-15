@@ -12,6 +12,27 @@ class Invoice extends Model
 
     protected $table = 'bills';
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($invoice) {
+            // Quy tắc làm tròn số tiền hóa đơn đến hàng nghìn đồng (ví dụ: 10.500đ -> 11.000đ, 10.200đ -> 10.000đ)
+            if (isset($invoice->total_amount)) {
+                $invoice->total_amount = round((float)$invoice->total_amount, -3);
+            }
+            if (isset($invoice->current_amount)) {
+                $invoice->current_amount = round((float)$invoice->current_amount, -3);
+            }
+            if (isset($invoice->total_due_at_issue)) {
+                $invoice->total_due_at_issue = round((float)$invoice->total_due_at_issue, -3);
+            }
+            if (isset($invoice->previous_debt)) {
+                $invoice->previous_debt = round((float)$invoice->previous_debt, -3);
+            }
+        });
+    }
+
     protected $fillable = [
         'apartment_id',
         'title',
@@ -127,6 +148,9 @@ class Invoice extends Model
             'management_fee' => 'Phí quản lý',
             'internet'       => 'Internet',
             'service'        => 'Dịch vụ',
+            'compensation'   => 'Bồi thường',
+            'penalty'        => 'Phạt',
+            'card_reissue'   => 'Làm lại thẻ',
             default          => 'Khác',
         };
     }

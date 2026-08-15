@@ -58,7 +58,24 @@ class InvoiceController extends Controller
 
         $invoices = $query->paginate(15)->withQueryString();
 
-        return view('resident.invoices.history', compact('invoices'));
+        // Lấy dữ liệu lượng nước tiêu thụ thật từ database (tối đa 12 tháng gần nhất có dữ liệu chốt)
+        $meters = \App\Models\UtilityMeter::whereIn('apartment_id', $apartmentIds)
+            ->where('type', 'water')
+            ->where('status', 'approved')
+            ->orderBy('record_year', 'asc')
+            ->orderBy('record_month', 'asc')
+            ->take(12)
+            ->get();
+
+        $waterChartLabels = [];
+        $waterChartData = [];
+        
+        foreach ($meters as $meter) {
+            $waterChartLabels[] = 'Tháng ' . str_pad($meter->record_month, 2, '0', STR_PAD_LEFT) . '/' . $meter->record_year;
+            $waterChartData[] = (float)$meter->usage_amount;
+        }
+
+        return view('resident.invoices.history', compact('invoices', 'waterChartLabels', 'waterChartData'));
     }
 
     /**
@@ -464,6 +481,11 @@ class InvoiceController extends Controller
                     'payment_method' => 'vnpay',
                 ]);
             }
+
+            // Kích hoạt xe nếu đây là hóa đơn phí gửi xe
+            if ($invoice->status === 'paid') {
+                $this->activateVehicleIfParkingFee($invoice);
+            }
         }
 
         // Gửi thông báo cho quản trị viên/kế toán khi cư dân thanh toán thành công
@@ -601,5 +623,113 @@ class InvoiceController extends Controller
         }
         
         return view('admin.invoices.receipt', compact('payment'));
+    }
+
+    /**
+     * In hóa đơn cho cư dân (PDF/Print layout)
+     */
+    public function printInvoice($id)
+    {
+        $user = Auth::user();
+        $apartmentIds = $user->getApartmentIds();
+
+        if (empty($apartmentIds) && $user->apartment_id) {
+            $apartmentIds = [$user->apartment_id];
+        }
+
+        $invoice = Invoice::with(['apartment.floor.block', 'details.servicePrice', 'payments'])
+            ->whereIn('apartment_id', $apartmentIds)
+            ->findOrFail($id);
+
+        return view('admin.invoices.print', compact('invoice'));
+    }
+
+    /**
+     * Tự động tạo phản ánh khiếu nại chỉ số nước.
+     */
+    public function complaintWater(Request $request, $id)
+    {
+        $user = Auth::user();
+        $apartmentIds = $user->getApartmentIds();
+
+        if (empty($apartmentIds) && $user->apartment_id) {
+            $apartmentIds = [$user->apartment_id];
+        }
+
+        $invoice = Invoice::whereIn('apartment_id', $apartmentIds)->findOrFail($id);
+
+        // Tìm chỉ số nước tương ứng
+        $meter = \App\Models\UtilityMeter::where('apartment_id', $invoice->apartment_id)
+            ->where('type', 'water')
+            ->where('record_month', $invoice->billing_month->month)
+            ->where('record_year', $invoice->billing_year)
+            ->first();
+
+        if (!$meter) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy dữ liệu chỉ số nước cho kỳ hóa đơn này.'
+            ], 404);
+        }
+
+        // Tạo Ticket khiếu nại tự động
+        $title = "Khiếu nại chỉ số nước - HĐ " . $invoice->invoice_code;
+        $description = "Cư dân " . $user->name . " gửi khiếu nại về chỉ số nước của kỳ hóa đơn " . $invoice->invoice_code . ".\n"
+                     . "- Chỉ số cũ: " . $meter->old_value . " m³\n"
+                     . "- Chỉ số mới: " . $meter->new_value . " m³\n"
+                     . "- Tiêu thụ: " . $meter->usage_amount . " m³\n"
+                     . "- Ngày chốt: " . ($meter->recorded_at ? $meter->recorded_at->format('d/m/Y') : '—') . "\n"
+                     . "Cư dân phản ánh chỉ số nước không chính xác, vui lòng kiểm tra lại.";
+
+        $ticket = \App\Models\Ticket::create([
+            'apartment_id' => $invoice->apartment_id,
+            'sender_id' => $user->id,
+            'ticket_type' => 'complaint',
+            'title' => $title,
+            'description' => $description,
+            'priority' => 'high',
+            'status' => 'pending',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã gửi khiếu nại thành công! Ban Quản Lý sẽ sớm liên hệ xử lý.'
+        ]);
+    }
+
+    /**
+     * Kích hoạt xe khi hóa đơn phí gửi xe được thanh toán xong.
+     */
+    private function activateVehicleIfParkingFee(Invoice $invoice): void
+    {
+        $parkingDetail = $invoice->details()->whereHas('servicePrice', function ($q) {
+            $q->where('type', 'parking_fee');
+        })->first();
+
+        if (!$parkingDetail) return;
+
+        // Tìm xe awaiting_payment match biển số trong title
+        $vehicle = \App\Models\Vehicle::where('apartment_id', $invoice->apartment_id)
+            ->where('status', 'awaiting_payment')
+            ->first();
+
+        if (!$vehicle) return;
+
+        $vehicle->update(['status' => 'active']);
+
+        // Sinh QR
+        try {
+            $dir = storage_path('app/public/qr/vehicles');
+            if (!is_dir($dir)) mkdir($dir, 0775, true);
+            $content = strtoupper(str_replace([' ', '-'], '', $vehicle->license_plate));
+            $filename = $content . '.svg';
+            $filePath = $dir . '/' . $filename;
+            if (class_exists(\SimpleSoftwareIO\QrCode\Facades\QrCode::class)) {
+                \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(300)->errorCorrection('H')->generate($content, $filePath);
+            }
+            $vehicle->update(['qr_code' => 'qr/vehicles/' . $filename]);
+        } catch (\Throwable $e) {
+            $vehicle->update(['qr_code' => strtoupper(str_replace([' ', '-'], '', $vehicle->license_plate))]);
+        }
     }
 }

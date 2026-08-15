@@ -11,9 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('service_prices', function (Blueprint $table) {
-            $table->string('vehicle_type')->nullable()->after('type')->comment('Áp dụng cho loại xe: car, motorbike, bicycle, electric_bike');
-        });
+        if (!Schema::hasColumn('service_prices', 'vehicle_type')) {
+            Schema::table('service_prices', function (Blueprint $table) {
+                $table->string('vehicle_type')->nullable()->after('type')->comment('Áp dụng cho loại xe: car, motorbike, bicycle, electric_bike');
+            });
+        }
+
+        // 0. Chuẩn hóa: đổi 'parking' cũ thành 'other' trước khi alter
+        \Illuminate\Support\Facades\DB::table('service_prices')
+            ->where('type', 'parking')
+            ->update(['type' => 'other']);
 
         // 1. Thêm parking_fee vào enum
         \Illuminate\Support\Facades\DB::statement("ALTER TABLE service_prices MODIFY COLUMN type ENUM('water', 'management_fee', 'internet', 'service', 'other', 'motorbike', 'car', 'bicycle', 'electric_bike', 'parking_fee') NOT NULL DEFAULT 'other'");
@@ -36,7 +43,7 @@ return new class extends Migration
     public function down(): void
     {
         // 1. Trả lại enum cũ cộng thêm parking_fee để có thể chứa cả hai loại
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE service_prices MODIFY COLUMN type ENUM('water', 'management_fee', 'internet', 'service', 'other', 'motorbike', 'car', 'bicycle', 'electric_bike', 'parking_fee') NOT NULL DEFAULT 'other'");
+        \Illuminate\Support\Facades\DB::statement("ALTER TABLE service_prices MODIFY COLUMN type ENUM('electricity', 'water', 'management_fee', 'internet', 'service', 'other', 'motorbike', 'car', 'bicycle', 'electric_bike', 'parking_fee') NOT NULL DEFAULT 'other'");
 
         // 2. Phục hồi dữ liệu
         \Illuminate\Support\Facades\DB::table('service_prices')
@@ -47,7 +54,7 @@ return new class extends Migration
             ]);
 
         // 3. Khôi phục enum ban đầu
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE service_prices MODIFY COLUMN type ENUM('water', 'management_fee', 'internet', 'service', 'other', 'motorbike', 'car', 'bicycle', 'electric_bike') NOT NULL DEFAULT 'other'");
+        \Illuminate\Support\Facades\DB::statement("ALTER TABLE service_prices MODIFY COLUMN type ENUM('electricity', 'water', 'management_fee', 'internet', 'service', 'other', 'motorbike', 'car', 'bicycle', 'electric_bike') NOT NULL DEFAULT 'other'");
 
         Schema::table('service_prices', function (Blueprint $table) {
             $table->dropColumn('vehicle_type');

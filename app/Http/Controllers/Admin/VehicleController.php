@@ -50,6 +50,30 @@ class VehicleController extends Controller
     }
 
     // =========================================================================
+    // THÊM MỚI PHƯƠNG TIỆN (ADMIN)
+    // =========================================================================
+    
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'apartment_id'  => 'required|exists:apartments,id',
+            'vehicle_type'  => 'required|in:car,motorbike,electric_bike',
+            'license_plate' => 'required|string|max:20|unique:vehicles,license_plate',
+            'brand'         => 'nullable|string|max:100',
+        ], [
+            'license_plate.unique' => 'Biển số này đã được đăng ký trong hệ thống.',
+        ]);
+
+        $validated['status'] = 'pending'; // Mặc định là chờ duyệt theo chuẩn
+
+        $vehicle = Vehicle::create($validated);
+
+        SystemLogger::log('Tạo phương tiện mới', 'Admin đăng ký xe ' . $vehicle->license_plate . ' cho căn hộ ID: ' . $vehicle->apartment_id);
+
+        return back()->with('success', 'Đã thêm phương tiện mới thành công! Vui lòng bấm "Duyệt" để tạo hóa đơn và cấp mã QR.');
+    }
+
+    // =========================================================================
     // QUẢN LÝ LỐT ĐỖ (chỉ dành cho ô tô)
     // =========================================================================
 
@@ -75,12 +99,9 @@ class VehicleController extends Controller
             $vehicle->update(['parking_lot_id' => $lot->id, 'status' => 'active']);
         });
 
-        // Sinh QR code cho ô tô sau khi gán lốt
         $this->generateVehicleQr($vehicle);
 
-
-
-        return back()->with('success', 'Đã gán lốt ' . $lot->lot_number . ' cho xe ' . $vehicle->license_plate);
+        return back()->with('success', 'Đã gán lốt ' . $lot->lot_number . ' cho xe ' . $vehicle->license_plate . '. Phương tiện đang hoạt động.');
     }
 
     public function releaseLot(Vehicle $vehicle)
@@ -123,9 +144,7 @@ class VehicleController extends Controller
         $vehicle->update(['status' => 'active']);
         $this->generateVehicleQr($vehicle);
 
-
-
-        return back()->with('success', 'Đã duyệt xe ' . $vehicle->license_plate . '. Phương tiện hiện đang hoạt động.');
+        return back()->with('success', 'Đã duyệt xe ' . $vehicle->license_plate . '. Phương tiện đang hoạt động.');
     }
 
     // =========================================================================
@@ -160,6 +179,91 @@ class VehicleController extends Controller
 
 
         return back()->with('success', 'Đã mở khóa xe ' . $vehicle->license_plate . '.');
+    }
+
+    // =========================================================================
+    // XÓA PHƯƠNG TIỆN
+    // =========================================================================
+
+    public function destroy(Vehicle $vehicle)
+    {
+        if ($vehicle->isInside()) {
+            return back()->withErrors(['vehicle' => 'Không thể xóa xe đang ở trong hầm.']);
+        }
+
+        $plate = $vehicle->license_plate;
+
+        // Giải phóng lốt đỗ nếu có
+        if ($vehicle->parking_lot_id) {
+            $lot = ParkingLot::find($vehicle->parking_lot_id);
+            if ($lot) {
+                $lot->update(['status' => 'available', 'apartment_id' => null]);
+            }
+        }
+
+        $vehicle->delete();
+
+        SystemLogger::log('Xóa phương tiện', 'Biển số: ' . $plate);
+
+        return back()->with('success', 'Đã xóa xe ' . $plate . ' khỏi hệ thống.');
+    }
+
+    // =========================================================================
+    // TẠO HÓA ĐƠN PHÍ GỬI XE
+    // =========================================================================
+
+    /**
+     * Tạo hóa đơn phí gửi xe khi admin duyệt xe.
+     * Cư dân thanh toán xong → xe được kích hoạt + sinh QR.
+     */
+    private function createParkingFeeInvoice(Vehicle $vehicle): void
+    {
+        // Tìm service_price phù hợp với loại xe
+        $servicePrice = \App\Models\ServicePrice::where('type', 'parking_fee')
+            ->where('status', 'active')
+            ->where(function ($q) use ($vehicle) {
+                $q->where('vehicle_type', $vehicle->vehicle_type)
+                  ->orWhereNull('vehicle_type');
+            })
+            ->orderByRaw("CASE WHEN vehicle_type = ? THEN 0 ELSE 1 END", [$vehicle->vehicle_type])
+            ->first();
+
+        if (!$servicePrice) {
+            // Fallback: nếu không có giá, kích hoạt xe luôn (miễn phí)
+            $vehicle->update(['status' => 'active']);
+            $this->generateVehicleQr($vehicle);
+            return;
+        }
+
+        $amount = $servicePrice->unit_price;
+        $now = now();
+
+        // Tạo hóa đơn
+        $invoice = \App\Models\Invoice::create([
+            'apartment_id'       => $vehicle->apartment_id,
+            'title'              => 'Phí gửi xe - ' . $vehicle->license_plate,
+            'billing_month'      => $now->month,
+            'billing_year'       => $now->year,
+            'due_date'           => $now->copy()->addDays(7),
+            'total_amount'       => $amount,
+            'paid_amount'        => 0,
+            'previous_debt'      => 0,
+            'current_amount'     => $amount,
+            'total_due_at_issue' => $amount,
+            'status'             => 'unpaid',
+        ]);
+
+        // Tạo chi tiết hóa đơn
+        \App\Models\InvoiceDetail::create([
+            'bill_id'          => $invoice->id,
+            'service_price_id' => $servicePrice->id,
+            'quantity'         => 1,
+            'amount'           => $amount,
+            'status'           => 'unpaid',
+            'note'             => 'Phí gửi xe ' . $vehicle->typeLabel() . ' - ' . $vehicle->license_plate,
+        ]);
+
+        SystemLogger::log('Tạo hóa đơn phí gửi xe', $vehicle->license_plate . ' - ' . number_format($amount) . 'đ');
     }
 
     // =========================================================================

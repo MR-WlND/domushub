@@ -27,11 +27,13 @@ class Ticket extends Model
         'rating',
         'feedback_comment',
         'reopened_count',
+        'completed_at',
     ];
 
     protected $casts = [
         'images'              => 'array',
         'accused_responded_at' => 'datetime',
+        'completed_at'        => 'datetime',
     ];
 
     // ── Relationships ───────────────────────────────────────────
@@ -49,6 +51,11 @@ class Ticket extends Model
     public function handler()
     {
         return $this->belongsTo(User::class, 'handler_id');
+    }
+
+    public function technicians()
+    {
+        return $this->belongsToMany(User::class, 'ticket_assignments', 'ticket_id', 'user_id')->withTimestamps();
     }
 
     public function progress()

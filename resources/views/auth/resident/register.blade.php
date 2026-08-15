@@ -59,6 +59,8 @@
                         <div class="input-box">
                             <i class="fa-solid fa-phone"></i>
                             <input type="text" name="phone" placeholder="0901234567" value="{{ old('phone') }}"
+                                maxlength="10" inputmode="numeric" pattern="^(03|05|07|08|09)[0-9]{8}$"
+                                title="Số điện thoại phải gồm đúng 10 chữ số, bắt đầu bằng số 0 (03, 05, 07, 08, 09)"
                                 required>
                         </div>
                         @error('phone')
@@ -67,10 +69,26 @@
                     </div>
 
                     <div class="group">
+                        <label>Số CCCD / CMND</label>
+                        <div class="input-box">
+                            <i class="fa-solid fa-id-card"></i>
+                            <input type="text" name="cccd" placeholder="Ví dụ: 012345678901"
+                                value="{{ old('cccd') }}"
+                                maxlength="12" inputmode="numeric" pattern="^[0-9]{9,12}$"
+                                title="Số CCCD/CMND phải gồm 9 hoặc 12 chữ số">
+                        </div>
+                        @error('cccd')
+                            <span class="error-msg">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="group">
                         <label>Email</label>
                         <div class="input-box">
                             <i class="fa-regular fa-envelope"></i>
-                            <input type="email" name="email" placeholder="ten@vidu.com" value="{{ old('email') }}"
+                            <input type="email" name="email" placeholder="ten@gmail.com" value="{{ old('email') }}"
+                                pattern="^[a-zA-Z0-9._%+-]+@gmail\.com$"
+                                title="Email phải là tài khoản Gmail hợp lệ (dạng ten@gmail.com)"
                                 required>
                         </div>
                         @error('email')
@@ -103,7 +121,7 @@
                         <div class="input-box">
                             <i class="fa-solid fa-key"></i>
                             <input type="text" name="invite_code" placeholder="RES-XXXXXXXX"
-                                value="{{ old('invite_code') }}" required>
+                                value="{{ old('invite_code', request('invite_code')) }}" required>
                         </div>
                         @error('invite_code')
                             <span class="error-msg">{{ $message }}</span>
@@ -140,7 +158,4 @@
     </script>
 
 </body>
-
-<body>
-<div class="container">
-
+</html>
