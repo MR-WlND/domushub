@@ -28,6 +28,10 @@
     .priority-dot--low{background:#05CD99;}
     .priority-dot--medium{background:#FFB547;}
     .priority-dot--high{background:#EE5D50;}
+    .location-badge{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:10px;background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border:1.5px solid #C7D2FE;font-size:13.5px;font-weight:600;color:#3730A3;height:46px;}
+    .location-badge i{font-size:15px;color:#6366F1;}
+    .location-badge--muted{background:#F8FAFC;border-color:#E2E8F0;color:#94A3B8;}
+    .location-badge--muted i{color:#CBD5E1;}
     .upload-area{border:2px dashed #D8E0F0;border-radius:12px;padding:28px;text-align:center;cursor:pointer;transition:.2s;background:#FAFCFE;}
     .upload-area:hover{border-color:#3652D9;background:#F4F7FE;}
     .upload-area i{font-size:24px;color:#A3AED0;margin-bottom:8px;}
@@ -134,22 +138,28 @@
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Vị trí / Khu vực <span class="req">*</span></label>
-                    <select class="form-select" name="location" required>
-                        <option value="">Chọn khu vực</option>
-                        <option value="Tầng trệt / Sảnh chính" {{ old('location') == 'Tầng trệt / Sảnh chính' ? 'selected' : '' }}>Tầng trệt / Sảnh chính</option>
-                        <option value="Tầng 1" {{ old('location') == 'Tầng 1' ? 'selected' : '' }}>Tầng 1</option>
-                        <option value="Tầng 2" {{ old('location') == 'Tầng 2' ? 'selected' : '' }}>Tầng 2</option>
-                        <option value="Tầng 3" {{ old('location') == 'Tầng 3' ? 'selected' : '' }}>Tầng 3</option>
-                        <option value="Tầng 4" {{ old('location') == 'Tầng 4' ? 'selected' : '' }}>Tầng 4</option>
-                        <option value="Tầng 5" {{ old('location') == 'Tầng 5' ? 'selected' : '' }}>Tầng 5</option>
-                        <option value="Tầng hầm" {{ old('location') == 'Tầng hầm' ? 'selected' : '' }}>Tầng hầm</option>
-                        <option value="Sân thượng" {{ old('location') == 'Sân thượng' ? 'selected' : '' }}>Sân thượng</option>
-                        <option value="Hồ bơi" {{ old('location') == 'Hồ bơi' ? 'selected' : '' }}>Hồ bơi</option>
-                        <option value="Phòng Gym" {{ old('location') == 'Phòng Gym' ? 'selected' : '' }}>Phòng Gym</option>
-                        <option value="Thang máy" {{ old('location') == 'Thang máy' ? 'selected' : '' }}>Thang máy</option>
-                    </select>
+                    <label class="form-label">Khu vực phân công</label>
+                    @if($todaySchedule && $todaySchedule->block)
+                    <div class="location-badge">
+                        <i class="fa-solid fa-building"></i>
+                        <span>{{ $todaySchedule->block->name }} – {{ $todaySchedule->floor?->name ?? 'Tầng ' . $todaySchedule->floor?->floor_number }}</span>
+                    </div>
+                    <input type="hidden" name="block_id" value="{{ $todaySchedule->block_id }}">
+                    <input type="hidden" name="floor_id" value="{{ $todaySchedule->floor_id }}">
+                    @else
+                    <div class="location-badge location-badge--muted">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span>Chưa có lịch phân ca hôm nay</span>
+                    </div>
+                    @endif
                 </div>
+                <div class="form-group">
+                    <label class="form-label">Vị trí chi tiết</label>
+                    <input type="text" class="form-input" name="location" value="{{ old('location') }}" placeholder="VD: Hành lang, Cầu thang, Phòng rác...">
+                </div>
+            </div>
+
+            <div class="form-row">
                 <div class="form-group">
                     <label class="form-label">Mức độ ưu tiên</label>
                     <div class="priority-group">
