@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Shift;
 use App\Models\StaffSchedule;
 use App\Models\Staff;
+use App\Models\Floor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -35,6 +36,18 @@ class StaffScheduleController extends Controller
     }
 
     /**
+     * Lấy danh sách tầng theo tòa (REST API cho cascading dropdown)
+     */
+    public function getFloors(Request $request)
+    {
+        $floors = Floor::where('block_id', $request->block_id)
+            ->orderBy('floor_number')
+            ->get(['id', 'floor_number', 'name']);
+
+        return response()->json($floors);
+    }
+
+    /**
      * Phân ca (Thêm nhân viên vào ca)
      */
     public function store(Request $request)
@@ -43,6 +56,8 @@ class StaffScheduleController extends Controller
             'staff_id' => 'required|exists:staffs,id',
             'shift_id' => 'required|exists:shifts,id',
             'work_date' => 'required|date',
+            'block_id' => 'nullable|exists:blocks,id',
+            'floor_id' => 'nullable|exists:floors,id',
         ]);
 
         $shift = Shift::findOrFail($request->shift_id);
@@ -87,10 +102,12 @@ class StaffScheduleController extends Controller
             'staff_id' => $staffId,
             'shift_id' => $shift->id,
             'work_date' => $workDate,
-            'is_leader' => false
+            'is_leader' => false,
+            'block_id' => $request->block_id,
+            'floor_id' => $request->floor_id,
         ]);
 
-        $schedule->load('staff.department');
+        $schedule->load(['staff.department', 'block', 'floor']);
 
         return response()->json([
             'success' => true, 
@@ -100,7 +117,9 @@ class StaffScheduleController extends Controller
                 'staff_name' => $schedule->staff->full_name,
                 'department_id' => $schedule->staff->department_id,
                 'department_name' => optional($schedule->staff->department)->name,
-                'is_leader' => $schedule->is_leader
+                'is_leader' => $schedule->is_leader,
+                'block_name' => $schedule->block?->name,
+                'floor_name' => $schedule->floor?->name ?? ($schedule->floor ? 'Tầng ' . $schedule->floor->floor_number : null),
             ]
         ]);
     }
@@ -183,7 +202,9 @@ class StaffScheduleController extends Controller
                         'staff_id' => $sc->staff_id,
                         'shift_id' => $sc->shift_id,
                         'work_date' => $toDate,
-                        'is_leader' => $sc->is_leader
+                        'is_leader' => $sc->is_leader,
+                        'block_id' => $sc->block_id,
+                        'floor_id' => $sc->floor_id,
                     ]);
                     $totalCreated++;
                 }

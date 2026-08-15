@@ -303,6 +303,7 @@ $portalRoutes = function () {
     
     // API & Phân công (RESTful StaffSchedules)
     Route::get('/api/staffs', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'getStaffs'])->name('api.staffs');
+    Route::get('/api/floors', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'getFloors'])->name('api.floors');
     Route::post('/staff-schedules', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'store'])->name('staff-schedules.store');
     Route::delete('/staff-schedules/{staff_schedule}', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'destroy'])->name('staff-schedules.destroy');
     Route::patch('/staff-schedules/{staff_schedule}/leader', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'toggleLeader'])->name('staff-schedules.leader');

@@ -284,6 +284,7 @@
 
 .schedule-item {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
     background: #f0f7ff;
@@ -326,6 +327,24 @@
     color: #fff;
     padding: 1px 5px;
     border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.schedule-item__location {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    color: #6366f1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    margin-top: 2px;
+}
+
+.schedule-item__location i {
+    font-size: 8px;
     flex-shrink: 0;
 }
 
@@ -469,6 +488,38 @@
     outline: none;
     border-color: #0b57d0;
     box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.1);
+}
+
+.modal-box__select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.modal-box__select:focus {
+    outline: none;
+    border-color: #0b57d0;
+    box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.1);
+}
+
+.schedule-location-group {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.schedule-location-row {
+    display: flex;
+    gap: 12px;
+}
+
+.schedule-location-row select {
+    flex: 1;
 }
 
 .modal-box__error {

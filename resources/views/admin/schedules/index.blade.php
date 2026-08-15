@@ -101,10 +101,15 @@
                                                 @if(isset($grouped[$dept->id]))
                                                     @foreach($grouped[$dept->id] as $sc)
                                                         <div class="schedule-item {{ $sc->is_leader ? 'schedule-item--leader' : '' }}" id="schedule-item-{{ $sc->id }}">
-                                                            <span class="schedule-item__name" title="{{ $sc->staff->full_name }}">
+                                                            <span class="schedule-item__name" title="{{ $sc->staff->full_name }}{{ $sc->block ? ' | ' . $sc->block->name . ' - ' . ($sc->floor?->name ?? 'Tầng ' . $sc->floor?->floor_number) : '' }}">
                                                                 @if($sc->is_leader)<span class="schedule-item__leader-tag">TC</span>@endif
                                                                 {{ mb_strimwidth($sc->staff->full_name, 0, 18, '...') }}
                                                             </span>
+                                                            @if($sc->block)
+                                                            <span class="schedule-item__location" title="{{ $sc->block->name }} - {{ $sc->floor?->name ?? 'Tầng ' . $sc->floor?->floor_number }}">
+                                                                <i class="fa-solid fa-location-dot"></i> {{ $sc->block->name }}{{ $sc->floor ? ' - ' . ($sc->floor->name ?? 'T' . $sc->floor->floor_number) : '' }}
+                                                            </span>
+                                                            @endif
                                                             <div class="schedule-actions">
                                                                 <button type="button" class="action-btn action-btn--star" onclick="toggleLeader({{ $sc->id }}, this)" title="Trưởng ca"><i class="fa-solid fa-star"></i></button>
                                                                 <button type="button" class="action-btn action-btn--del" onclick="deleteSchedule({{ $sc->id }}, this)" title="Xóa"><i class="fa-solid fa-xmark"></i></button>
@@ -157,6 +162,21 @@
             <div class="form-group">
                 <label class="modal-box__label">Chọn nhân sự <span>*</span></label>
                 <select name="staff_id" id="inputStaffId" required></select>
+            </div>
+            {{-- Block/Floor fields (chỉ hiện cho phòng Vệ sinh) --}}
+            <div class="form-group schedule-location-group" id="locationGroup" style="display:none;">
+                <label class="modal-box__label">Phân công khu vực</label>
+                <div class="schedule-location-row">
+                    <select name="block_id" id="inputBlockId" class="modal-box__select">
+                        <option value="">Chọn tòa</option>
+                        @foreach($blocks as $block)
+                        <option value="{{ $block->id }}">{{ $block->name }}</option>
+                        @endforeach
+                    </select>
+                    <select name="floor_id" id="inputFloorId" class="modal-box__select">
+                        <option value="">Chọn tầng</option>
+                    </select>
+                </div>
             </div>
             <div class="modal-box__error" id="modalError"></div>
             <div class="modal-box__footer">
@@ -270,11 +290,13 @@
 <script>
     window.scheduleConfig = {
         staffsUrl: "{{ route('admin.api.staffs') }}",
+        floorsUrl: "{{ route('admin.api.floors') }}",
         storeUrl: "{{ route('admin.staff-schedules.store') }}",
         baseUrl: "{{ url('admin/staff-schedules') }}",
         copyUrl: "{{ route('admin.staff-schedules.copy') }}",
         previewCopyUrl: "{{ route('admin.staff-schedules.preview-copy') }}",
-        schedulesUrl: "{{ url('admin/schedules') }}"
+        schedulesUrl: "{{ url('admin/schedules') }}",
+        cleaningDeptId: {{ $departments->firstWhere('code', 'VS')?->id ?? 'null' }}
     };
 </script>
 @vite(['resources/js/admin/schedules.js'])

@@ -113,6 +113,35 @@
                 item: (item, escape) => `<div>${escape(item.text)}</div>`
             }
         });
+
+        // Cascading: Block → Floor
+        const blockSelect = document.getElementById('inputBlockId');
+        if (blockSelect) {
+            blockSelect.addEventListener('change', function () {
+                const floorSelect = document.getElementById('inputFloorId');
+                floorSelect.innerHTML = '<option value="">Đang tải...</option>';
+                if (!this.value) {
+                    floorSelect.innerHTML = '<option value="">Chọn tầng</option>';
+                    return;
+                }
+                const url = new URL(window.scheduleConfig.floorsUrl, window.location.origin);
+                url.searchParams.set('block_id', this.value);
+                fetch(url)
+                    .then(r => r.json())
+                    .then(floors => {
+                        floorSelect.innerHTML = '<option value="">Chọn tầng</option>';
+                        floors.forEach(f => {
+                            const opt = document.createElement('option');
+                            opt.value = f.id;
+                            opt.textContent = f.name || ('Tầng ' + f.floor_number);
+                            floorSelect.appendChild(opt);
+                        });
+                    })
+                    .catch(() => {
+                        floorSelect.innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
+                    });
+            });
+        }
     });
 
     // ═══════════════════════════════════════════════════════
@@ -125,6 +154,19 @@
         document.getElementById('modalSubtitle').textContent = `${shiftName} — ${dateFormatted} | ${deptName}`;
         document.getElementById('modalError').style.display = 'none';
         tomSelectInstance.clear(); tomSelectInstance.clearOptions(); tomSelectInstance.load('');
+
+        // Show/hide location fields for cleaning department
+        const locationGroup = document.getElementById('locationGroup');
+        if (window.scheduleConfig.cleaningDeptId && parseInt(deptId) === window.scheduleConfig.cleaningDeptId) {
+            locationGroup.style.display = 'block';
+            document.getElementById('inputBlockId').value = '';
+            document.getElementById('inputFloorId').innerHTML = '<option value="">Chọn tầng</option>';
+        } else {
+            locationGroup.style.display = 'none';
+            document.getElementById('inputBlockId').value = '';
+            document.getElementById('inputFloorId').innerHTML = '<option value="">Chọn tầng</option>';
+        }
+
         openModal('addModal');
     };
     window.closeAddModal = () => closeModal('addModal');
@@ -137,11 +179,13 @@
         const workDate = document.getElementById('inputWorkDate').value;
         const shiftId = document.getElementById('inputShiftId').value;
         const deptId = document.getElementById('inputDeptId').value;
+        const blockId = document.getElementById('inputBlockId').value || null;
+        const floorId = document.getElementById('inputFloorId').value || null;
         try {
             const res = await fetch(window.scheduleConfig.storeUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': token },
-                body: JSON.stringify({ work_date: workDate, shift_id: shiftId, staff_id: document.getElementById('inputStaffId').value })
+                body: JSON.stringify({ work_date: workDate, shift_id: shiftId, staff_id: document.getElementById('inputStaffId').value, block_id: blockId, floor_id: floorId })
             });
             const json = await res.json();
             if (json.success) {
@@ -152,7 +196,11 @@
                     const a = json.assignment;
                     const div = document.createElement('div');
                     div.className = 'schedule-item'; div.id = `schedule-item-${a.id}`;
-                    div.innerHTML = `<span class="schedule-item__name" title="${a.staff_name}">${a.staff_name.length > 18 ? a.staff_name.substring(0, 18) + '...' : a.staff_name}</span><div class="schedule-actions"><button type="button" class="action-btn action-btn--star" onclick="toggleLeader(${a.id}, this)" title="Trưởng ca"><i class="fa-solid fa-star"></i></button><button type="button" class="action-btn action-btn--del" onclick="deleteSchedule(${a.id}, this)" title="Xóa"><i class="fa-solid fa-xmark"></i></button></div>`;
+                    let locationHtml = '';
+                    if (a.block_name) {
+                        locationHtml = `<span class="schedule-item__location" title="${a.block_name}${a.floor_name ? ' - ' + a.floor_name : ''}"><i class="fa-solid fa-location-dot"></i> ${a.block_name}${a.floor_name ? ' - ' + a.floor_name : ''}</span>`;
+                    }
+                    div.innerHTML = `<span class="schedule-item__name" title="${a.staff_name}">${a.staff_name.length > 18 ? a.staff_name.substring(0, 18) + '...' : a.staff_name}</span>${locationHtml}<div class="schedule-actions"><button type="button" class="action-btn action-btn--star" onclick="toggleLeader(${a.id}, this)" title="Trưởng ca"><i class="fa-solid fa-star"></i></button><button type="button" class="action-btn action-btn--del" onclick="deleteSchedule(${a.id}, this)" title="Xóa"><i class="fa-solid fa-xmark"></i></button></div>`;
                     listEl.appendChild(div);
                     updateBadge(listEl);
                 }
