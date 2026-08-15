@@ -18,10 +18,11 @@
         </a>
 
         <div class="resident-header__dropdown-container" id="services-menu-container">
-            <button class="resident-header__link resident-header__dropdown-trigger {{ (request()->routeIs('resident.vehicles.*') || request()->routeIs('resident.invoices.*')) ? 'resident-header__link--active' : '' }}">
+            <button class="resident-header__link resident-header__dropdown-trigger {{ (request()->routeIs('resident.vehicles.*') || request()->routeIs('resident.invoices.*') || request()->routeIs('resident.temporary-registrations.*')) ? 'resident-header__link--active' : '' }}">
                 Dịch vụ <i class="fa-solid fa-chevron-down nav-dropdown-icon"></i>
             </button>
             <div class="resident-header__nav-dropdown">
+                <a href="{{ route('resident.temporary-registrations.index') }}" class="nav-dropdown-item {{ request()->routeIs('resident.temporary-registrations.*') ? 'nav-dropdown-item--active' : '' }}">Tạm trú / Tạm vắng</a>
                 <a href="{{ route('resident.vehicles.index') }}" class="nav-dropdown-item {{ request()->routeIs('resident.vehicles.*') ? 'nav-dropdown-item--active' : '' }}">Phương tiện</a>
                 <a href="{{ route('resident.facilities.index') }}" class="nav-dropdown-item {{ request()->routeIs('resident.facilities.*') ? 'nav-dropdown-item--active' : '' }}">Tiện ích</a>
 

@@ -19,7 +19,7 @@
     .tr-title {
         font-size: 32px;
         font-weight: 800;
-        color: #0f172a;
+        color: #00236f;
         margin: 0 0 8px 0;
         letter-spacing: -0.02em;
     }
@@ -63,11 +63,11 @@
 
     .tr-card {
         background: #ffffff;
-        border: none;
+        border: 1px solid #e2e8f0;
         border-radius: 20px;
         padding: 36px;
         margin-bottom: 32px;
-        box-shadow: 0 10px 40px -10px rgba(0,0,0,0.06);
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
         position: relative;
     }
     
@@ -267,10 +267,10 @@
 
     .sidebar-card {
         background: #f8fafc;
-        border: 1px solid #f1f5f9;
+        border: 1px solid #e2e8f0;
         border-radius: 20px;
         padding: 32px;
-        box-shadow: 0 10px 40px -10px rgba(0,0,0,0.03);
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
     }
 
     .section-divider {
@@ -328,19 +328,30 @@
                     </div>
                     <h3 class="card-title">Cư dân & Căn hộ</h3>
                 </div>
-                
+                @php
+                    $apartmentOwner = null;
+                    if ($temporaryRegistration->apartment) {
+                        $ownerResident = $temporaryRegistration->apartment->residents()->where('relationship', 'owner')->first();
+                        $apartmentOwner = $ownerResident ? $ownerResident->user : $temporaryRegistration->apartment->users()->first();
+                    }
+                @endphp
                 <div class="grid-2">
                     <div class="info-group">
-                        <div class="info-label">Đại diện đăng ký</div>
-                        <div class="info-value">{{ $temporaryRegistration->user ? $temporaryRegistration->user->name : 'N/A' }}</div>
+                        <div class="info-label">Chủ hộ / Đại diện căn hộ</div>
+                        <div class="info-value">
+                            {{ $apartmentOwner ? $apartmentOwner->name : 'Chưa có thông tin' }}
+                            @if($apartmentOwner && $apartmentOwner->id === $temporaryRegistration->user_id)
+                                <span style="font-size: 12px; color: #10b981; font-style: italic; margin-left: 8px;">(Người bảo lãnh)</span>
+                            @endif
+                        </div>
                     </div>
                     <div class="info-group">
                         <div class="info-label">Số điện thoại liên hệ</div>
-                        <div class="info-value">{{ $temporaryRegistration->user ? $temporaryRegistration->user->phone : 'N/A' }}</div>
+                        <div class="info-value">{{ $apartmentOwner ? $apartmentOwner->phone : 'N/A' }}</div>
                     </div>
                     <div class="info-group">
                         <div class="info-label">Định danh CCCD/CMND</div>
-                        <div class="info-value">{{ ($temporaryRegistration->user && $temporaryRegistration->user->cccd) ? $temporaryRegistration->user->cccd : 'Chưa cập nhật' }}</div>
+                        <div class="info-value">{{ ($apartmentOwner && $apartmentOwner->cccd) ? $apartmentOwner->cccd : 'Chưa cập nhật' }}</div>
                     </div>
                     <div class="info-group">
                         <div class="info-label">Căn hộ liên kết</div>

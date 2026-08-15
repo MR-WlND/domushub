@@ -53,11 +53,17 @@ class TemporaryRegistrationController extends Controller
         return view('admin.temporary-registrations.index', compact('registrations', 'stats'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $users = User::where('role', 'resident')->get();
         $blocks = \App\Models\Block::with('floors.apartments')->get();
-        return view('admin.temporary-registrations.create', compact('users', 'blocks'));
+        
+        $extendRegistration = null;
+        if ($request->has('extend_id')) {
+            $extendRegistration = TemporaryRegistration::find($request->extend_id);
+        }
+        
+        return view('admin.temporary-registrations.create', compact('users', 'blocks', 'extendRegistration'));
     }
 
     public function store(Request $request)
@@ -65,8 +71,8 @@ class TemporaryRegistrationController extends Controller
         $request->validate([
             'user_id' => 'nullable|exists:users,id',
             'guest_name' => 'nullable|required_without:user_id|string|max:255',
-            'guest_phone' => 'nullable|required_without:user_id|string|max:20|unique:users,phone',
-            'guest_cccd' => 'nullable|required_without:user_id|string|max:20',
+            'guest_phone' => 'nullable|required_without:user_id|regex:/^(0)[0-9]{9}$/|unique:users,phone',
+            'guest_cccd' => 'nullable|required_without:user_id|digits:12',
             'guest_email' => 'nullable|email|max:255',
             'guest_dob' => 'nullable|date',
             'guest_gender' => 'nullable|in:male,female,other',
@@ -77,6 +83,7 @@ class TemporaryRegistrationController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'reason' => 'nullable|string',
+            'attachments' => 'nullable|required_if:type,residence|array',
             'attachments.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
@@ -118,7 +125,7 @@ class TemporaryRegistrationController extends Controller
             $this->syncResidentStatus($registration);
 
             DB::commit();
-            return redirect()->route('admin.temporary-registrations.index')
+            return redirect(portal_route('temporary-registrations.index'))
                 ->with('success', 'Tạo đăng ký thành công và đã tự động duyệt.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -138,8 +145,8 @@ class TemporaryRegistrationController extends Controller
         $request->validate([
             'user_id' => 'nullable|exists:users,id',
             'guest_name' => 'nullable|required_without:user_id|string|max:255',
-            'guest_phone' => 'nullable|required_without:user_id|string|max:20|unique:users,phone',
-            'guest_cccd' => 'nullable|required_without:user_id|string|max:20',
+            'guest_phone' => 'nullable|required_without:user_id|regex:/^(0)[0-9]{9}$/|unique:users,phone,' . ($request->user_id ?? 'NULL'),
+            'guest_cccd' => 'nullable|required_without:user_id|digits:12',
             'guest_email' => 'nullable|email|max:255',
             'guest_dob' => 'nullable|date',
             'guest_gender' => 'nullable|in:male,female,other',
@@ -150,6 +157,7 @@ class TemporaryRegistrationController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'reason' => 'nullable|string',
+            'attachments' => 'nullable|array',
             'attachments.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
@@ -187,7 +195,7 @@ class TemporaryRegistrationController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('admin.temporary-registrations.index')
+            return redirect(portal_route('temporary-registrations.index'))
                 ->with('success', 'Cập nhật đăng ký thành công.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -210,6 +218,10 @@ class TemporaryRegistrationController extends Controller
             ]);
 
             $this->syncResidentStatus($temporaryRegistration);
+
+            if ($temporaryRegistration->user) {
+                $temporaryRegistration->user->notify(new \App\Notifications\TemporaryRegistrationStatusNotification($temporaryRegistration));
+            }
 
             DB::commit();
             return redirect()->back()->with('success', 'Đã duyệt đơn đăng ký.');
@@ -235,6 +247,10 @@ class TemporaryRegistrationController extends Controller
             'approved_by' => Auth::id(),
         ]);
 
+        if ($temporaryRegistration->user) {
+            $temporaryRegistration->user->notify(new \App\Notifications\TemporaryRegistrationStatusNotification($temporaryRegistration));
+        }
+
         return redirect()->back()->with('success', 'Đã từ chối đơn đăng ký.');
     }
 
@@ -250,20 +266,82 @@ class TemporaryRegistrationController extends Controller
         }
         $temporaryRegistration->delete();
 
-        return redirect()->route('admin.temporary-registrations.index')
+        return redirect(portal_route('temporary-registrations.index'))
             ->with('success', 'Đã xóa đơn đăng ký.');
+    }
+
+    public function endEarly(TemporaryRegistration $temporaryRegistration)
+    {
+        if ($temporaryRegistration->status !== 'approved') {
+            return redirect()->back()->with('error', 'Chỉ có thể kết thúc sớm các đăng ký đã được duyệt.');
+        }
+
+        DB::beginTransaction();
+        try {
+            $temporaryRegistration->update([
+                'end_date' => now(),
+            ]);
+
+            $resident = \App\Models\Resident::where('user_id', $temporaryRegistration->user_id)
+                ->where('apartment_id', $temporaryRegistration->apartment_id)
+                ->first();
+
+            if ($resident) {
+                if ($temporaryRegistration->type === 'residence' && $resident->temporary_status === 'temporary') {
+                    $resident->temporary_status = null;
+                    $resident->save();
+                } elseif ($temporaryRegistration->type === 'absence' && $resident->temporary_status === 'absent') {
+                    $resident->temporary_status = null;
+                    $resident->save();
+                }
+            }
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Đã báo cáo kết thúc sớm thành công.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Lỗi: ' . $e->getMessage());
+        }
     }
 
     private function syncResidentStatus(TemporaryRegistration $registration)
     {
+        $targetUserId = $registration->user_id;
+
+        // Nếu là đơn tạm trú và có tên khách
+        if ($registration->type === 'residence' && $registration->guest_name) {
+            $sponsor = \App\Models\User::find($registration->user_id);
+            // Nếu người tạo đơn (sponsor) khác với tên khách, nghĩa là chủ hộ tạo dùm khách
+            if ($sponsor && $sponsor->name !== $registration->guest_name) {
+                // Tìm hoặc tạo User mới cho khách
+                $guestUser = \App\Models\User::where(function($q) use ($registration) {
+                    if ($registration->guest_phone) $q->where('phone', $registration->guest_phone);
+                    if ($registration->guest_cccd) $q->orWhere('cccd', $registration->guest_cccd);
+                })->first();
+
+                if (!$guestUser) {
+                    $guestUser = \App\Models\User::create([
+                        'name' => $registration->guest_name,
+                        'phone' => $registration->guest_phone,
+                        'cccd' => $registration->guest_cccd,
+                        'email' => $registration->guest_email ?? ('guest_' . time() . '@domushub.local'),
+                        'password' => bcrypt('password123'),
+                        'role' => 'resident',
+                        'apartment_id' => $registration->apartment_id,
+                    ]);
+                }
+                $targetUserId = $guestUser->id;
+            }
+        }
+
         // Tạo hoặc cập nhật resident
-        $resident = Resident::firstOrCreate(
+        $resident = \App\Models\Resident::firstOrCreate(
             [
-                'user_id' => $registration->user_id,
+                'user_id' => $targetUserId,
                 'apartment_id' => $registration->apartment_id,
             ],
             [
-                'relationship' => 'tenant',
+                'relationship' => $registration->relationship ?? 'tenant',
                 'start_date' => $registration->start_date,
             ]
         );
@@ -280,7 +358,7 @@ class TemporaryRegistrationController extends Controller
         $resident->save();
 
         // Đồng bộ apartment_id vào users table
-        $user = User::find($registration->user_id);
+        $user = \App\Models\User::find($targetUserId);
         if ($user && $user->apartment_id !== $registration->apartment_id) {
             $user->update(['apartment_id' => $registration->apartment_id]);
         }

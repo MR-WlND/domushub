@@ -318,49 +318,49 @@
                 <div class="grid-cols-2">
                     <div class="form-group">
                         <label class="form-label">Họ và tên <span class="required">*</span></label>
-                        <input type="text" name="guest_name" id="guest_name" value="{{ old('guest_name') }}" class="form-control" placeholder="Nhập họ và tên...">
+                        <input type="text" name="guest_name" id="guest_name" value="{{ old('guest_name', $extendRegistration ? $extendRegistration->guest_name : '') }}" class="form-control" placeholder="Nhập họ và tên...">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Email</label>
-                        <input type="email" name="guest_email" id="guest_email" value="{{ old('guest_email') }}" class="form-control" placeholder="Nhập email (không bắt buộc)">
+                        <input type="email" name="guest_email" id="guest_email" value="{{ old('guest_email', $extendRegistration ? $extendRegistration->guest_email : '') }}" class="form-control" placeholder="Nhập email (không bắt buộc)">
                     </div>
                 </div>
                 <div class="grid-cols-3">
                     <div class="form-group">
                         <label class="form-label">Số điện thoại <span class="required">*</span></label>
-                        <input type="text" name="guest_phone" id="guest_phone" value="{{ old('guest_phone') }}" class="form-control" placeholder="Ví dụ: 0912345678">
+                        <input type="text" name="guest_phone" id="guest_phone" value="{{ old('guest_phone', $extendRegistration ? $extendRegistration->guest_phone : '') }}" class="form-control" placeholder="Ví dụ: 0912345678">
                     </div>
                     <div class="form-group">
                         <label class="form-label">CCCD/CMND <span class="required">*</span></label>
-                        <input type="text" name="guest_cccd" id="guest_cccd" value="{{ old('guest_cccd') }}" class="form-control" placeholder="Số CCCD...">
+                        <input type="text" name="guest_cccd" id="guest_cccd" value="{{ old('guest_cccd', $extendRegistration ? $extendRegistration->guest_cccd : '') }}" class="form-control" placeholder="Số CCCD...">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Giới tính</label>
                         <select name="guest_gender" class="form-control">
                             <option value="">-- Chọn giới tính --</option>
-                            <option value="male" {{ old('guest_gender') == 'male' ? 'selected' : '' }}>Nam</option>
-                            <option value="female" {{ old('guest_gender') == 'female' ? 'selected' : '' }}>Nữ</option>
-                            <option value="other" {{ old('guest_gender') == 'other' ? 'selected' : '' }}>Khác</option>
+                            <option value="male" {{ old('guest_gender', $extendRegistration ? $extendRegistration->guest_gender : '') == 'male' ? 'selected' : '' }}>Nam</option>
+                            <option value="female" {{ old('guest_gender', $extendRegistration ? $extendRegistration->guest_gender : '') == 'female' ? 'selected' : '' }}>Nữ</option>
+                            <option value="other" {{ old('guest_gender', $extendRegistration ? $extendRegistration->guest_gender : '') == 'other' ? 'selected' : '' }}>Khác</option>
                         </select>
                     </div>
                 </div>
                 <div class="grid-cols-3">
                     <div class="form-group">
                         <label class="form-label">Ngày sinh</label>
-                        <input type="date" name="guest_dob" value="{{ old('guest_dob') }}" class="form-control">
+                        <input type="date" name="guest_dob" value="{{ old('guest_dob', ($extendRegistration && $extendRegistration->guest_dob) ? $extendRegistration->guest_dob->format('Y-m-d') : '') }}" class="form-control">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Quê quán / Thường trú</label>
-                        <input type="text" name="guest_hometown" value="{{ old('guest_hometown') }}" class="form-control" placeholder="Nhập quê quán...">
+                        <input type="text" name="guest_hometown" value="{{ old('guest_hometown', $extendRegistration ? $extendRegistration->guest_hometown : '') }}" class="form-control" placeholder="Nhập quê quán...">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Mối quan hệ với chủ hộ</label>
                         <select name="relationship" class="form-control">
                             <option value="">-- Chọn --</option>
-                            <option value="Khách thuê" {{ old('relationship') == 'Khách thuê' ? 'selected' : '' }}>Khách thuê</option>
-                            <option value="Người nhà" {{ old('relationship') == 'Người nhà' ? 'selected' : '' }}>Người nhà</option>
-                            <option value="Giúp việc" {{ old('relationship') == 'Giúp việc' ? 'selected' : '' }}>Giúp việc</option>
-                            <option value="Khác" {{ old('relationship') == 'Khác' ? 'selected' : '' }}>Khác</option>
+                            <option value="Khách thuê" {{ old('relationship', $extendRegistration ? $extendRegistration->relationship : '') == 'Khách thuê' ? 'selected' : '' }}>Khách thuê</option>
+                            <option value="Người nhà" {{ old('relationship', $extendRegistration ? $extendRegistration->relationship : '') == 'Người nhà' ? 'selected' : '' }}>Người nhà</option>
+                            <option value="Giúp việc" {{ old('relationship', $extendRegistration ? $extendRegistration->relationship : '') == 'Giúp việc' ? 'selected' : '' }}>Giúp việc</option>
+                            <option value="Khác" {{ old('relationship', $extendRegistration ? $extendRegistration->relationship : '') == 'Khác' ? 'selected' : '' }}>Khác</option>
                         </select>
                     </div>
                 </div>
@@ -388,9 +388,12 @@
             <div class="form-group">
                 <label class="form-label">Giấy tờ đính kèm (CCCD, Hợp đồng...)</label>
                 <div class="file-upload-wrapper">
-                    <input type="file" name="attachments[]" accept=".jpg,.jpeg,.png,.pdf" class="file-input" multiple>
+                    <input type="file" name="attachments[]" accept=".jpg,.jpeg,.png,.pdf" class="file-input" id="admin-file-input" multiple>
                 </div>
                 <div class="form-hint">Định dạng hỗ trợ: JPG, PNG, PDF. Kích thước tối đa 2MB/file. Có thể chọn nhiều file.</div>
+                
+                <!-- Preview container -->
+                <div id="admin-file-preview-container" style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px;"></div>
             </div>
 
             <div class="form-actions">
@@ -505,6 +508,93 @@
 
         // Run once on load to set initial state
         toggleSections();
+
+        // Image Preview and Multiple Files Logic for Admin
+        const adminFileInput = document.getElementById('admin-file-input');
+        const adminPreviewContainer = document.getElementById('admin-file-preview-container');
+        let adminSelectedFiles = new DataTransfer();
+
+        if (adminFileInput) {
+            adminFileInput.addEventListener('change', function(e) {
+                const newFiles = Array.from(e.target.files);
+                
+                newFiles.forEach(file => {
+                    adminSelectedFiles.items.add(file);
+                });
+                
+                adminFileInput.files = adminSelectedFiles.files;
+                renderAdminPreviews();
+            });
+            
+            function removeAdminFile(index) {
+                const dt = new DataTransfer();
+                const files = Array.from(adminSelectedFiles.files);
+                files.splice(index, 1);
+                files.forEach(f => dt.items.add(f));
+                adminSelectedFiles = dt;
+                adminFileInput.files = adminSelectedFiles.files;
+                renderAdminPreviews();
+            }
+
+            function renderAdminPreviews() {
+                adminPreviewContainer.innerHTML = '';
+                
+                Array.from(adminSelectedFiles.files).forEach((file, index) => {
+                    const reader = new FileReader();
+                    
+                    const wrapper = document.createElement('div');
+                    wrapper.style.position = 'relative';
+                    wrapper.style.width = '100px';
+                    wrapper.style.height = '100px';
+                    wrapper.style.borderRadius = '8px';
+                    wrapper.style.overflow = 'hidden';
+                    wrapper.style.border = '1px solid #e2e8f0';
+                    wrapper.style.display = 'flex';
+                    wrapper.style.alignItems = 'center';
+                    wrapper.style.justifyContent = 'center';
+                    wrapper.style.backgroundColor = '#f8fafc';
+                    
+                    const removeBtn = document.createElement('div');
+                    removeBtn.innerHTML = '&times;';
+                    removeBtn.style.position = 'absolute';
+                    removeBtn.style.top = '4px';
+                    removeBtn.style.right = '4px';
+                    removeBtn.style.background = 'rgba(0,0,0,0.6)';
+                    removeBtn.style.color = '#fff';
+                    removeBtn.style.borderRadius = '50%';
+                    removeBtn.style.width = '20px';
+                    removeBtn.style.height = '20px';
+                    removeBtn.style.display = 'flex';
+                    removeBtn.style.alignItems = 'center';
+                    removeBtn.style.justifyContent = 'center';
+                    removeBtn.style.cursor = 'pointer';
+                    removeBtn.style.fontSize = '14px';
+                    removeBtn.style.zIndex = '10';
+                    removeBtn.onclick = function(e) {
+                        e.preventDefault();
+                        removeAdminFile(index);
+                    };
+                    
+                    if (file.type.startsWith('image/')) {
+                        reader.onload = function(e) {
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.style.width = '100%';
+                            img.style.height = '100%';
+                            img.style.objectFit = 'cover';
+                            wrapper.appendChild(img);
+                            wrapper.appendChild(removeBtn);
+                        }
+                        reader.readAsDataURL(file);
+                    } else if (file.type === 'application/pdf') {
+                        wrapper.innerHTML = '<div style="text-align: center; color: #dc2626;"><i class="fa-solid fa-file-pdf" style="font-size: 24px; margin-bottom: 8px;"></i><div style="font-size: 11px; font-weight: 600; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 90px;">' + file.name + '</div></div>';
+                        wrapper.appendChild(removeBtn);
+                    }
+                    
+                    adminPreviewContainer.appendChild(wrapper);
+                });
+            }
+        }
     });
 </script>
 @endpush

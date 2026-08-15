@@ -347,6 +347,7 @@ $portalRoutes = function () {
     // Quản lý Tạm trú / Tạm vắng
     Route::post('/temporary-registrations/{temporary_registration}/approve', [TemporaryRegistrationController::class, 'approve'])->name('temporary-registrations.approve');
     Route::post('/temporary-registrations/{temporary_registration}/reject', [TemporaryRegistrationController::class, 'reject'])->name('temporary-registrations.reject');
+    Route::post('/temporary-registrations/{temporary_registration}/end-early', [TemporaryRegistrationController::class, 'endEarly'])->name('temporary-registrations.end-early');
     Route::resource('/temporary-registrations', TemporaryRegistrationController::class);
 
     // Quản lý phản ánh & điều phối kỹ thuật (admin / manager)
@@ -592,7 +593,7 @@ Route::middleware(['resident'])->group(function () {
     Route::delete('/resident/members/declared/{member}', [\App\Http\Controllers\Resident\MemberController::class, 'destroyDeclared'])->name('resident.members.declared.destroy');
     Route::post('/resident/members/invitations', [\App\Http\Controllers\Resident\MemberController::class, 'storeInvite'])->name('resident.members.invitations.store');
     Route::delete('/resident/members/invitations/{id}', [\App\Http\Controllers\Resident\MemberController::class, 'destroyInvite'])->name('resident.members.invitations.destroy');
-    Route::delete('/resident/members/registered/{id}', [\App\Http\Controllers\Resident\MemberController::class, 'destroyRegistered'])->name('resident.members.registered.destroy');
+
 
     // QUẢN LÝ PHƯƠNG TIỆN PHÍA CƯ DÂN
     Route::get('/resident/vehicles', [App\Http\Controllers\Resident\VehicleController::class, 'index'])
@@ -618,6 +619,7 @@ Route::middleware(['resident'])->group(function () {
     Route::delete('/resident/visitors/{id}', [\App\Http\Controllers\Resident\VisitorController::class, 'destroy'])->name('resident.visitors.destroy');
 
     // TẠM TRÚ TẠM VẮNG PHÍA CƯ DÂN
+    Route::post('/resident/temporary-registrations/{temporary_registration}/end-early', [\App\Http\Controllers\Resident\TemporaryRegistrationController::class, 'endEarly'])->name('resident.temporary-registrations.end-early');
     Route::resource('/resident/temporary-registrations', \App\Http\Controllers\Resident\TemporaryRegistrationController::class, ['as' => 'resident']);
     // PHẢN ÁNH SỰ CỐ PHÍA CƯ DÂN
     Route::get('/resident/tickets', [ResidentTicketController::class, 'index'])->name('resident.tickets.index');

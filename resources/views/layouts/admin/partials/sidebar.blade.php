@@ -149,9 +149,9 @@
         @endif
 
         {{-- ============================================================== --}}
-        {{-- DỊCH VỤ CƯ DÂN - Admin & Manager --}}
+        {{-- DỊCH VỤ CƯ DÂN - Admin, Manager, Staff --}}
         {{-- ============================================================== --}}
-        @if(in_array($role, ['admin', 'manager']))
+        @if(in_array($role, ['admin', 'manager', 'staff']))
         <div class="nav-section">
             <span class="nav-section__label">DỊCH VỤ CƯ DÂN</span>
             <a href="{{ portal_route('residents.index') }}" class="dashboard-nav__item {{ is_portal_route('residents.*') ? 'dashboard-nav__item--active' : '' }}">
@@ -180,6 +180,7 @@
                 <span>Quản lý phản ánh</span>
             </a>
             {{-- Duyệt đăng ký xe: admin thấy toàn bộ quản lý xe, manager thấy duyệt xe --}}
+            @if(in_array($role, ['admin', 'manager']))
             <a href="{{ portal_route('vehicles.index') }}" class="dashboard-nav__item {{ is_portal_route('vehicles.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="1" y="3" width="15" height="13" rx="2"></rect>
@@ -189,6 +190,7 @@
                 </svg>
                 <span>{{ $role === 'manager' ? 'Duyệt đăng ký xe' : 'Quản lý xe' }}</span>
             </a>
+            @endif
             @if($role === 'admin')
             <a href="{{ portal_route('parking-lots.index') }}" class="dashboard-nav__item {{ is_portal_route('parking-lots.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

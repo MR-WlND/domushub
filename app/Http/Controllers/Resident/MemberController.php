@@ -235,20 +235,5 @@ class MemberController extends Controller
             ->with('success', 'Đã vô hiệu hóa mã mời thành công.');
     }
 
-    public function destroyRegistered($id): RedirectResponse
-    {
-        /** @var User $user */
-        $user = Auth::user();
-        $ownerApartmentIds = $this->getOwnerApartmentIds($user);
 
-        // Đảm bảo resident nằm trong căn hộ thuộc sở hữu của chủ hộ này, và không tự gỡ chính mình
-        $resident = Resident::whereIn('apartment_id', $ownerApartmentIds)
-            ->where('user_id', '!=', $user->id)
-            ->findOrFail($id);
-
-        $resident->delete(); // SoftDeletes → Kích hoạt Boot Event tự cập nhật trạng thái căn hộ
-
-        return redirect()->route('resident.members.index', ['tab' => 'registered'])
-            ->with('success', 'Đã gỡ cư dân khỏi hộ gia đình thành công.');
-    }
 }

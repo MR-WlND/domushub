@@ -14,9 +14,6 @@
                         <th>Căn hộ</th>
                         <th>Quan hệ / Vai trò</th>
                         <th>Ngày gia nhập</th>
-                        @if ($isOwner)
-                            <th style="width: 120px; text-align: center;">Hành động</th>
-                        @endif
                     </tr>
                 </thead>
                 <tbody>
@@ -65,11 +62,6 @@
                             @endif
                         </td>
                         <td>—</td>
-                        @if ($isOwner)
-                            <td class="text-center">
-                                <span class="text-muted fs-sm">—</span>
-                            </td>
-                        @endif
                     </tr>
 
                     <!-- Hiển thị các cư dân liên kết khác -->
@@ -107,19 +99,6 @@
                                 @endif
                             </td>
                             <td>{{ $member->created_at ? $member->created_at->format('d/m/Y') : '—' }}</td>
-                            @if ($isOwner)
-                                <td class="text-center">
-                                    <form action="{{ route('resident.members.registered.destroy', $member->id) }}" 
-                                          method="POST" 
-                                          onsubmit="return confirm('Bạn có chắc chắn muốn gỡ tài khoản cư dân này khỏi căn hộ? Họ sẽ mất quyền truy cập.');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm">
-                                            <i class="fa-solid fa-user-minus"></i> Gỡ bỏ
-                                        </button>
-                                    </form>
-                                </td>
-                            @endif
                         </tr>
                     @empty
                         @if ($registeredMembers->isEmpty() && !$isOwner)
