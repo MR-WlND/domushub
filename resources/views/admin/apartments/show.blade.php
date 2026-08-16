@@ -191,19 +191,30 @@
 
             {{-- Tab 2: Cư dân --}}
             <div id="tab-residents" class="tab-pane" style="display: none;">
-                <div class="table-responsive">
+                
+                {{-- Chủ hộ Section --}}
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h4 style="margin: 0; color: #0f172a; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#0b57d0" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                        Chủ Sở Hữu
+                    </h4>
+                    <button onclick="openAssignOwnerModal()" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 8px; border: 1px solid #bfdbfe; background-color: #eff6ff; color: #1d4ed8; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);" onmouseover="this.style.backgroundColor='#dbeafe'; this.style.borderColor='#93c5fd'" onmouseout="this.style.backgroundColor='#eff6ff'; this.style.borderColor='#bfdbfe'">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+                        Gán chủ hộ
+                    </button>
+                </div>
+                <div class="table-responsive" style="margin-bottom: 32px;">
                     <table class="clean-table">
                         <thead>
                             <tr>
                                 <th>Họ và tên</th>
-                                <th>Quan hệ</th>
                                 <th>Số điện thoại</th>
-                                <th>Ngày bắt đầu ở</th>
+                                <th>Ngày nhận nhà</th>
                                 <th style="text-align: right;">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($apartment->residents as $resident)
+                            @forelse($apartment->residents->where('relationship', 'owner') as $resident)
                                 @php
                                     $user = $resident->user;
                                     $residentName = $user->name ?? 'Chưa có tên';
@@ -217,20 +228,104 @@
                                             </div>
                                             <div class="td-name-info">
                                                 <div class="td-name">{{ $residentName }}</div>
-                                                <div class="td-sub">{{ $resident->relationship == 'owner' ? 'Chủ hộ' : 'Thành viên' }}</div>
+                                                <div class="td-sub" style="color: #0b57d0; font-weight: 600;">Chủ hộ</div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td>{{ $resident->relationship == 'owner' ? 'Chủ hộ' : 'Thành viên' }}</td>
                                     <td>{{ $residentPhone }}</td>
-                                    <td>{{ $resident->created_at ? $resident->created_at->format('d/m/Y') : '12/05/2021' }}</td>
+                                    <td>{{ $resident->start_date ? \Carbon\Carbon::parse($resident->start_date)->format('d/m/Y') : '--' }}</td>
                                     <td style="text-align: right;">
-                                        <a href="#" class="td-action-link">Chi tiết</a>
+                                        <form action="{{ route('admin.residents.destroy', $resident->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn gỡ chủ hộ này khỏi căn hộ không?');" style="display: inline-block;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" style="color: #ef4444; background: none; border: none; font-weight: 600; font-size: 13px; cursor: pointer; padding: 6px 10px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#fee2e2'" onmouseout="this.style.backgroundColor='transparent'">
+                                                Gỡ bỏ
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" style="text-align: center; color: #64748b; padding: 24px;">Chưa có cư dân nào.</td>
+                                    <td colspan="4" style="text-align: center; color: #64748b; padding: 24px;">Chưa gán chủ sở hữu.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                {{-- Người Thuê & Thành Viên Section --}}
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h4 style="margin: 0; color: #0f172a; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#16a34a" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                        Người Thuê & Thành Viên
+                    </h4>
+                    <button onclick="openAssignTenantModal()" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 8px; border: 1px solid #a7f3d0; background-color: #ecfdf5; color: #047857; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);" onmouseover="this.style.backgroundColor='#d1fae5'; this.style.borderColor='#6ee7b7'" onmouseout="this.style.backgroundColor='#ecfdf5'; this.style.borderColor='#a7f3d0'">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                        Thêm người thuê
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="clean-table">
+                        <thead>
+                            <tr>
+                                <th>Họ và tên</th>
+                                <th>Vai trò</th>
+                                <th>Ngày chuyển vào</th>
+                                <th>Ngày hết hạn (End Date)</th>
+                                <th style="text-align: right;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($apartment->residents->where('relationship', '!=', 'owner') as $resident)
+                                @php
+                                    $user = $resident->user;
+                                    $residentName = $user->name ?? 'Chưa có tên';
+                                @endphp
+                                <tr>
+                                    <td>
+                                        <div class="td-profile">
+                                            <div class="td-avatar" style="background: #10b981; color: white;">
+                                                {{ mb_strtoupper(mb_substr($residentName, 0, 2)) }}
+                                            </div>
+                                            <div class="td-name-info">
+                                                <div class="td-name">{{ $residentName }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if($resident->relationship == 'tenant')
+                                            <span class="badge-status-pill badge-status-pill--warning">Người thuê</span>
+                                        @else
+                                            <span class="badge-status-pill badge-status-pill--success">Thành viên</span>
+                                        @endif
+                                    </td>
+                                    <td>{{ $resident->start_date ? \Carbon\Carbon::parse($resident->start_date)->format('d/m/Y') : '--' }}</td>
+                                    <td>
+                                        @if($resident->relationship == 'tenant' && $resident->end_date)
+                                            @php
+                                                $endDate = \Carbon\Carbon::parse($resident->end_date);
+                                                $isExpired = $endDate->isPast();
+                                            @endphp
+                                            <span style="color: {{ $isExpired ? '#dc2626' : '#0f172a' }}; font-weight: {{ $isExpired ? 'bold' : 'normal' }}">
+                                                {{ $endDate->format('d/m/Y') }}
+                                            </span>
+                                        @else
+                                            <span style="color: #64748b;">Vô thời hạn</span>
+                                        @endif
+                                    </td>
+                                    <td style="text-align: right;">
+                                        <form action="{{ route('admin.residents.destroy', $resident->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn gỡ khách thuê này khỏi căn hộ không?');" style="display: inline-block;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" style="color: #ef4444; background: none; border: none; font-weight: 600; font-size: 13px; cursor: pointer; padding: 6px 10px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#fee2e2'" onmouseout="this.style.backgroundColor='transparent'">
+                                                Gỡ bỏ
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: #64748b; padding: 24px;">Chưa có người thuê hoặc thành viên.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -430,6 +525,97 @@
     </div>
 </div>
 
+<!-- Assign Owner Modal -->
+<div id="assignOwnerModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);">
+    <div class="modal-content shadow-lg" style="background-color: #ffffff; margin: 10vh auto; padding: 32px; border-radius: 24px; width: 90%; max-width: 480px; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+        <span class="close-modal" onclick="closeAssignOwnerModal()" style="position: absolute; right: 24px; top: 24px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #f8fafc; cursor: pointer; color: #64748b; transition: all 0.2s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </span>
+        
+        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+            <div style="width: 48px; height: 48px; border-radius: 14px; background: #eff6ff; display: flex; align-items: center; justify-content: center; color: #3b82f6; box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            </div>
+            <div>
+                <h3 style="margin: 0; color: #0f172a; font-size: 20px; font-weight: 800; letter-spacing: -0.5px;">Gán Chủ Hộ</h3>
+                <p style="margin: 4px 0 0; font-size: 14px; color: #64748b; font-weight: 500;">Chỉ định cư dân làm chủ tài sản này.</p>
+            </div>
+        </div>
+        
+        <form action="{{ route('admin.apartments.assign-owner', $apartment->id) }}" method="POST">
+            @csrf
+            
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 8px;">Chọn Cư dân <span style="color: #ef4444;">*</span></label>
+                <select name="user_id" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #cbd5e1; background-color: #f8fafc; font-size: 15px; color: #0f172a; outline: none; transition: all 0.2s; box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.02); appearance: none; background-image: url('data:image/svg+xml;utf8,<svg fill=%22none%22 stroke=%22%2364748b%22 stroke-width=%222%22 viewBox=%220 0 24 24%22 xmlns=%22http://www.w3.org/2000/svg%22><path stroke-linecap=%22round%22 stroke-linejoin=%22round%22 d=%22M19 9l-7 7-7-7%22></path></svg>'); background-repeat: no-repeat; background-position: right 16px center; background-size: 16px;">
+                    <option value="">-- Vui lòng chọn --</option>
+                    @foreach($allResidents as $res)
+                        <option value="{{ $res->id }}">{{ $res->name }} - {{ $res->phone }}</option>
+                    @endforeach
+                </select>
+                <small style="color: #64748b; font-size: 13px; display: flex; align-items: center; gap: 6px; margin-top: 10px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Chỉ hiển thị các tài khoản có role là resident.
+                </small>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; padding-top: 24px; border-top: 1px solid #f1f5f9;">
+                <button type="button" onclick="closeAssignOwnerModal()" style="padding: 10px 20px; border-radius: 12px; border: 1px solid #cbd5e1; background: #fff; color: #475569; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s;">Hủy bỏ</button>
+                <button type="submit" style="padding: 10px 24px; border-radius: 12px; border: none; background: #3b82f6; color: #fff; font-weight: 600; font-size: 14px; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3); transition: all 0.2s;">Xác nhận Gán</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Assign Tenant Modal -->
+<div id="assignTenantModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);">
+    <div class="modal-content shadow-lg" style="background-color: #ffffff; margin: 10vh auto; padding: 32px; border-radius: 24px; width: 90%; max-width: 480px; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+        <span class="close-modal" onclick="closeAssignTenantModal()" style="position: absolute; right: 24px; top: 24px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #f8fafc; cursor: pointer; color: #64748b; transition: all 0.2s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </span>
+        
+        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+            <div style="width: 48px; height: 48px; border-radius: 14px; background: #ecfdf5; display: flex; align-items: center; justify-content: center; color: #10b981; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.1);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+            </div>
+            <div>
+                <h3 style="margin: 0; color: #0f172a; font-size: 20px; font-weight: 800; letter-spacing: -0.5px;">Thêm Khách Thuê</h3>
+                <p style="margin: 4px 0 0; font-size: 14px; color: #64748b; font-weight: 500;">Đăng ký người thuê mới cho căn hộ.</p>
+            </div>
+        </div>
+        
+        <form action="{{ route('admin.apartments.assign-tenant', $apartment->id) }}" method="POST">
+            @csrf
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 8px;">Chọn Cư dân <span style="color: #ef4444;">*</span></label>
+                <select name="user_id" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #cbd5e1; background-color: #f8fafc; font-size: 15px; color: #0f172a; outline: none; transition: all 0.2s; box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.02); appearance: none; background-image: url('data:image/svg+xml;utf8,<svg fill=%22none%22 stroke=%22%2364748b%22 stroke-width=%222%22 viewBox=%220 0 24 24%22 xmlns=%22http://www.w3.org/2000/svg%22><path stroke-linecap=%22round%22 stroke-linejoin=%22round%22 d=%22M19 9l-7 7-7-7%22></path></svg>'); background-repeat: no-repeat; background-position: right 16px center; background-size: 16px;">
+                    <option value="">-- Vui lòng chọn --</option>
+                    @foreach($allResidents as $res)
+                        <option value="{{ $res->id }}">{{ $res->name }} - {{ $res->phone }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 8px;">Ngày bắt đầu thuê <span style="color: #ef4444;">*</span></label>
+                <input type="date" name="start_date" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #cbd5e1; background-color: #f8fafc; font-size: 15px; color: #0f172a; outline: none; transition: all 0.2s; box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.02); font-family: inherit;">
+            </div>
+
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 8px;">Ngày kết thúc hợp đồng</label>
+                <input type="date" name="end_date" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #cbd5e1; background-color: #f8fafc; font-size: 15px; color: #0f172a; outline: none; transition: all 0.2s; box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.02); font-family: inherit;">
+                <small style="color: #64748b; font-size: 13px; display: block; margin-top: 8px;">Bỏ trống trường này nếu hợp đồng vô thời hạn.</small>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; padding-top: 24px; border-top: 1px solid #f1f5f9;">
+                <button type="button" onclick="closeAssignTenantModal()" style="padding: 10px 20px; border-radius: 12px; border: 1px solid #cbd5e1; background: #fff; color: #475569; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s;">Hủy bỏ</button>
+                <button type="submit" style="padding: 10px 24px; border-radius: 12px; border: none; background: #10b981; color: #fff; font-weight: 600; font-size: 14px; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3); transition: all 0.2s;">Thêm Người Thuê</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -465,11 +651,36 @@
         document.getElementById('vehicleModal').style.display = 'none';
     }
 
+    function openAssignOwnerModal() {
+        document.getElementById('assignOwnerModal').style.display = 'block';
+    }
+
+    function closeAssignOwnerModal() {
+        document.getElementById('assignOwnerModal').style.display = 'none';
+    }
+
+    function openAssignTenantModal() {
+        document.getElementById('assignTenantModal').style.display = 'block';
+    }
+
+    function closeAssignTenantModal() {
+        document.getElementById('assignTenantModal').style.display = 'none';
+    }
+
     // Close modal when clicking outside
     window.onclick = function(event) {
-        var modal = document.getElementById('vehicleModal');
-        if (event.target == modal) {
-            modal.style.display = "none";
+        var vehicleModal = document.getElementById('vehicleModal');
+        var ownerModal = document.getElementById('assignOwnerModal');
+        var tenantModal = document.getElementById('assignTenantModal');
+        
+        if (event.target == vehicleModal) {
+            vehicleModal.style.display = "none";
+        }
+        if (event.target == ownerModal) {
+            ownerModal.style.display = "none";
+        }
+        if (event.target == tenantModal) {
+            tenantModal.style.display = "none";
         }
     }
 </script>

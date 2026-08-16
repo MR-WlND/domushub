@@ -156,6 +156,52 @@ class ApartmentController extends Controller
     }
 
     /**
+     * Sơ đồ Ma trận Căn hộ
+     */
+    public function matrix(Request $request): View
+    {
+        $blockId = $request->query('block_id');
+        $blocks = Block::orderBy('name')->get();
+
+        if (!$blockId && $blocks->isNotEmpty()) {
+            $blockId = $blocks->first()->id;
+        }
+
+        $block = null;
+        $floors = collect();
+
+        if ($blockId) {
+            $block = Block::findOrFail($blockId);
+            $floors = Floor::with(['apartments' => function($query) {
+                $query->orderBy('apartment_number');
+            }])->where('block_id', $blockId)->orderBy('floor_number', 'desc')->get();
+        }
+
+        /**
+         * Thống kê
+         */
+        $stats = [
+            'total' => Apartment::when($blockId, function($q) use ($blockId) {
+                $q->whereHas('floor', fn($f) => $f->where('block_id', $blockId));
+            })->count(),
+
+            'occupied' => Apartment::when($blockId, function($q) use ($blockId) {
+                $q->whereHas('floor', fn($f) => $f->where('block_id', $blockId));
+            })->where('status', 'occupied')->count(),
+
+            'vacant' => Apartment::when($blockId, function($q) use ($blockId) {
+                $q->whereHas('floor', fn($f) => $f->where('block_id', $blockId));
+            })->where('status', 'vacant')->count(),
+
+            'maintenance' => Apartment::when($blockId, function($q) use ($blockId) {
+                $q->whereHas('floor', fn($f) => $f->where('block_id', $blockId));
+            })->where('status', 'maintenance')->count(),
+        ];
+
+        return view('admin.apartments.matrix', compact('blocks', 'block', 'floors', 'blockId', 'stats'));
+    }
+
+    /**
      * Form tạo
      */
     public function create(Request $request): View
@@ -366,6 +412,66 @@ class ApartmentController extends Controller
         return redirect()
             ->route('admin.apartments.show', $apartment->id)
             ->with('success', 'Đã gán chủ hộ thành công cho cư dân ' . $user->name . '.');
+    }
+
+    /**
+     * Gán khách thuê trực tiếp
+     */
+    public function assignTenant(Request $request, Apartment $apartment): RedirectResponse
+    {
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'start_date' => 'required|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+        ], [
+            'user_id.required' => 'Vui lòng chọn cư dân để gán.',
+            'user_id.exists' => 'Cư dân được chọn không hợp lệ.',
+            'start_date.required' => 'Vui lòng chọn ngày bắt đầu thuê.',
+            'end_date.after_or_equal' => 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.',
+        ]);
+
+        $user = \App\Models\User::findOrFail($validated['user_id']);
+
+        if ($user->role !== 'resident') {
+            return back()->with('error', 'Người dùng được chọn không phải là cư dân.');
+        }
+
+        // Kiểm tra giới hạn số lượng cư dân tối đa (10 người)
+        $currentCount = $apartment->residents()
+            ->whereNull('deleted_at')
+            ->whereIn('status', ['active', 'pending'])
+            ->count();
+        if ($currentCount >= 10) {
+            return back()->with('error', 'Căn hộ đã đạt giới hạn cư dân tối đa (10 người).');
+        }
+
+        // Gán cư dân làm khách thuê
+        \Illuminate\Support\Facades\DB::transaction(function () use ($apartment, $user, $validated) {
+            $resident = \App\Models\Resident::where('apartment_id', $apartment->id)
+                ->where('user_id', $user->id)
+                ->first();
+
+            if ($resident) {
+                $resident->update([
+                    'relationship' => 'tenant',
+                    'start_date' => $validated['start_date'],
+                    'end_date' => $validated['end_date'] ?? null,
+                ]);
+            } else {
+                \App\Models\Resident::create([
+                    'user_id' => $user->id,
+                    'apartment_id' => $apartment->id,
+                    'relationship' => 'tenant',
+                    'temporary_status' => 'permanent',
+                    'start_date' => $validated['start_date'],
+                    'end_date' => $validated['end_date'] ?? null,
+                ]);
+            }
+        });
+
+        return redirect()
+            ->route('admin.apartments.show', $apartment->id)
+            ->with('success', 'Đã gán khách thuê thành công cho cư dân ' . $user->name . '.');
     }
 
     /**

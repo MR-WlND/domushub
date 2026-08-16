@@ -146,6 +146,7 @@ $portalRoutes = function () {
 
     // Apartments (Căn hộ/Phòng)
     Route::get('/apartments', [\App\Http\Controllers\Admin\ApartmentController::class, 'index'])->name('apartments.index');
+    Route::get('/apartments/matrix', [\App\Http\Controllers\Admin\ApartmentController::class, 'matrix'])->name('apartments.matrix');
     Route::get('/apartments/create', [\App\Http\Controllers\Admin\ApartmentController::class, 'create'])->name('apartments.create');
     Route::post('/apartments', [\App\Http\Controllers\Admin\ApartmentController::class, 'store'])->name('apartments.store');
     Route::get('/apartments/import-template', [\App\Http\Controllers\Admin\ApartmentController::class, 'downloadTemplate'])->name('apartments.import-template');
@@ -155,6 +156,7 @@ $portalRoutes = function () {
     Route::put('/apartments/{apartment}', [\App\Http\Controllers\Admin\ApartmentController::class, 'update'])->name('apartments.update');
     Route::delete('/apartments/{apartment}', [\App\Http\Controllers\Admin\ApartmentController::class, 'destroy'])->name('apartments.destroy');
     Route::post('/apartments/{apartment}/assign-owner', [\App\Http\Controllers\Admin\ApartmentController::class, 'assignOwner'])->name('apartments.assign-owner');
+    Route::post('/apartments/{apartment}/assign-tenant', [\App\Http\Controllers\Admin\ApartmentController::class, 'assignTenant'])->name('apartments.assign-tenant');
 
     // Apartment Types (Loại căn hộ)
     Route::get('/apartment-types', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'index'])->name('apartment-types.index');
