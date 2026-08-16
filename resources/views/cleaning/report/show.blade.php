@@ -51,7 +51,9 @@
     .timeline-dot--created{background:#3652D9;}
     .timeline-dot--processing{background:#F59E0B;}
     .timeline-dot--resolved{background:#05CD99;}
-    .timeline-info__title{font-size:13px;font-weight:600;color:#1B2559;}
+    .timeline-dot--completed-pending{background:#3B82F6;}
+    .timeline-dot--warning{background:#EF4444;}
+    .timeline-info__title{font-size:13px;font-weight:600;color:#1B2559;line-height:1.5;white-space:pre-wrap;}
     .timeline-info__date{font-size:11px;color:#A3AED0;margin-top:2px;}
 
     @media(max-width:640px){
@@ -143,8 +145,9 @@
 
         <!-- Timeline -->
         <div class="report-detail__section">
-            <div class="report-detail__label">Tiến trình</div>
+            <div class="report-detail__label">Tiến trình xử lý</div>
             <div class="report-detail__timeline">
+                {{-- Bước 1: Gửi báo cáo --}}
                 <div class="timeline-item">
                     <div class="timeline-dot timeline-dot--created"><i class="fa-solid fa-plus"></i></div>
                     <div class="timeline-info">
@@ -152,23 +155,45 @@
                         <div class="timeline-info__date">{{ $report->created_at->format('H:i – d/m/Y') }}</div>
                     </div>
                 </div>
-                @if($report->status === 'processing' || $report->status === 'resolved')
-                <div class="timeline-item">
-                    <div class="timeline-dot timeline-dot--processing"><i class="fa-solid fa-gear"></i></div>
-                    <div class="timeline-info">
-                        <div class="timeline-info__title">Đang xử lý</div>
-                        <div class="timeline-info__date">{{ $report->updated_at->format('H:i – d/m/Y') }}</div>
+
+                {{-- Progress notes từ KTV/Admin --}}
+                @if($report->progress_notes && count($report->progress_notes) > 0)
+                    @foreach($report->progress_notes as $note)
+                    <div class="timeline-item">
+                        @if(str_contains($note['note'] ?? '', '⚠️'))
+                        <div class="timeline-dot timeline-dot--warning"><i class="fa-solid fa-rotate-left"></i></div>
+                        @elseif(($note['status'] ?? '') === 'resolved')
+                        <div class="timeline-dot timeline-dot--resolved"><i class="fa-solid fa-check"></i></div>
+                        @elseif(($note['status'] ?? '') === 'completed_pending')
+                        <div class="timeline-dot timeline-dot--completed-pending"><i class="fa-solid fa-hourglass-half"></i></div>
+                        @else
+                        <div class="timeline-dot timeline-dot--processing"><i class="fa-solid fa-gear"></i></div>
+                        @endif
+                        <div class="timeline-info">
+                            <div class="timeline-info__title">{{ $note['note'] }}</div>
+                            <div class="timeline-info__date">{{ $note['user_name'] ?? '' }} · {{ \Carbon\Carbon::parse($note['created_at'])->format('H:i – d/m/Y') }}</div>
+                        </div>
                     </div>
-                </div>
-                @endif
-                @if($report->status === 'resolved')
-                <div class="timeline-item">
-                    <div class="timeline-dot timeline-dot--resolved"><i class="fa-solid fa-check"></i></div>
-                    <div class="timeline-info">
-                        <div class="timeline-info__title">Đã xử lý xong</div>
-                        <div class="timeline-info__date">{{ $report->updated_at->format('H:i – d/m/Y') }}</div>
+                    @endforeach
+                @else
+                    @if(in_array($report->status, ['processing', 'completed_pending', 'resolved']))
+                    <div class="timeline-item">
+                        <div class="timeline-dot timeline-dot--processing"><i class="fa-solid fa-gear"></i></div>
+                        <div class="timeline-info">
+                            <div class="timeline-info__title">Đang xử lý</div>
+                            <div class="timeline-info__date">{{ $report->updated_at->format('H:i – d/m/Y') }}</div>
+                        </div>
                     </div>
-                </div>
+                    @endif
+                    @if($report->status === 'resolved')
+                    <div class="timeline-item">
+                        <div class="timeline-dot timeline-dot--resolved"><i class="fa-solid fa-check"></i></div>
+                        <div class="timeline-info">
+                            <div class="timeline-info__title">Đã xử lý xong</div>
+                            <div class="timeline-info__date">{{ $report->updated_at->format('H:i – d/m/Y') }}</div>
+                        </div>
+                    </div>
+                    @endif
                 @endif
             </div>
         </div>
