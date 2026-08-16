@@ -120,6 +120,7 @@
             <button class="tab-button" onclick="openTab(event, 'tab-invoices')">Hóa đơn</button>
             <button class="tab-button" onclick="openTab(event, 'tab-vehicles')">Phương tiện</button>
             <button class="tab-button" onclick="openTab(event, 'tab-temporary')">Tạm trú / Tạm vắng</button>
+            <button class="tab-button" onclick="openTab(event, 'tab-history')">Lịch sử cư trú</button>
         </div>
 
         <div class="tabs-content">
@@ -183,6 +184,37 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                                 </svg>
                                 Thêm ghi chú mới
+                            </button>
+                        </div>
+
+                        <div class="info-section" style="margin-top: 32px;">
+                            <div class="section-title-wrapper">
+                                <div class="section-accent-line"></div>
+                                <h4 class="info-section-title">Pháp lý & Bàn giao</h4>
+                            </div>
+                            <div class="tech-detail-list" style="margin-bottom: 16px;">
+                                <div class="tech-detail-row">
+                                    <span class="tech-label">Ngày bàn giao:</span>
+                                    <span class="tech-value">{{ $apartment->handover_date ? \Carbon\Carbon::parse($apartment->handover_date)->format('d/m/Y') : 'Chưa xác định' }}</span>
+                                </div>
+                                <div class="tech-detail-row">
+                                    <span class="tech-label">Trạng thái Sổ hồng:</span>
+                                    <span class="tech-value">
+                                        @if($apartment->legal_status == 'issued')
+                                            <span class="badge-status-pill badge-status-pill--success" style="padding: 4px 8px; font-size: 11px;">Đã cấp sổ</span>
+                                        @elseif($apartment->legal_status == 'processing')
+                                            <span class="badge-status-pill badge-status-pill--warning" style="padding: 4px 8px; font-size: 11px;">Đang làm thủ tục</span>
+                                        @else
+                                            <span class="badge-status-pill badge-status-pill--danger" style="padding: 4px 8px; font-size: 11px;">Chưa cấp</span>
+                                        @endif
+                                    </span>
+                                </div>
+                            </div>
+                            <button class="btn-outline-custom" onclick="openUpdateLegalModal()" style="width: 100%; justify-content: center;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                </svg>
+                                Cập nhật pháp lý
                             </button>
                         </div>
                     </div>
@@ -253,33 +285,34 @@
                     </table>
                 </div>
 
-                {{-- Người Thuê & Thành Viên Section --}}
+                {{-- Thành Viên Cùng Ở Section --}}
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                     <h4 style="margin: 0; color: #0f172a; font-size: 16px; display: flex; align-items: center; gap: 8px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#16a34a" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                        Người Thuê & Thành Viên
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#10b981" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                        Thành Viên Cùng Ở
                     </h4>
-                    <button onclick="openAssignTenantModal()" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 8px; border: 1px solid #a7f3d0; background-color: #ecfdf5; color: #047857; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);" onmouseover="this.style.backgroundColor='#d1fae5'; this.style.borderColor='#6ee7b7'" onmouseout="this.style.backgroundColor='#ecfdf5'; this.style.borderColor='#a7f3d0'">
+                    <button style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 8px; border: 1px solid #a7f3d0; background-color: #ecfdf5; color: #047857; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);" onmouseover="this.style.backgroundColor='#d1fae5'; this.style.borderColor='#6ee7b7'" onmouseout="this.style.backgroundColor='#ecfdf5'; this.style.borderColor='#a7f3d0'">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                        Thêm người thuê
+                        Thêm thành viên
                     </button>
                 </div>
-                <div class="table-responsive">
+                <div class="table-responsive" style="margin-bottom: 32px;">
                     <table class="clean-table">
                         <thead>
                             <tr>
                                 <th>Họ và tên</th>
-                                <th>Vai trò</th>
+                                <th>Số điện thoại</th>
+                                <th>Quan hệ</th>
                                 <th>Ngày chuyển vào</th>
-                                <th>Ngày hết hạn (End Date)</th>
                                 <th style="text-align: right;">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($apartment->residents->where('relationship', '!=', 'owner') as $resident)
+                            @forelse($apartment->residents->whereNotIn('relationship', ['owner', 'tenant']) as $resident)
                                 @php
                                     $user = $resident->user;
                                     $residentName = $user->name ?? 'Chưa có tên';
+                                    $residentPhone = $user->phone ?? '—';
                                 @endphp
                                 <tr>
                                     <td>
@@ -292,16 +325,90 @@
                                             </div>
                                         </div>
                                     </td>
+                                    <td>{{ $residentPhone }}</td>
                                     <td>
-                                        @if($resident->relationship == 'tenant')
-                                            <span class="badge-status-pill badge-status-pill--warning">Người thuê</span>
-                                        @else
-                                            <span class="badge-status-pill badge-status-pill--success">Thành viên</span>
-                                        @endif
+                                        <span class="badge-status-pill badge-status-pill--success">Thành viên</span>
                                     </td>
                                     <td>{{ $resident->start_date ? \Carbon\Carbon::parse($resident->start_date)->format('d/m/Y') : '--' }}</td>
+                                    <td style="text-align: right;">
+                                        <form action="{{ route('admin.residents.destroy', $resident->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn gỡ thành viên này khỏi căn hộ không?');" style="display: inline-block;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" style="color: #ef4444; background: none; border: none; font-weight: 600; font-size: 13px; cursor: pointer; padding: 6px 10px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#fee2e2'" onmouseout="this.style.backgroundColor='transparent'">
+                                                Gỡ bỏ
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: #64748b; padding: 24px;">Chưa có thành viên nào khác.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                {{-- Khách Thuê Chính Section --}}
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h4 style="margin: 0; color: #0f172a; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#f59e0b" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
+                        Khách Thuê Hợp Đồng
+                    </h4>
+                    <button onclick="openAssignTenantModal()" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 8px; border: 1px solid #fde68a; background-color: #fffbeb; color: #d97706; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);" onmouseover="this.style.backgroundColor='#fef3c7'; this.style.borderColor='#fcd34d'" onmouseout="this.style.backgroundColor='#fffbeb'; this.style.borderColor='#fde68a'">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                        Thêm khách thuê
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="clean-table">
+                        <thead>
+                            <tr>
+                                <th>Họ và tên</th>
+                                <th>Số điện thoại</th>
+                                <th>Ngày bắt đầu thuê</th>
+                                <th>Tiền cọc</th>
+                                <th>Hợp đồng</th>
+                                <th>Ngày hết hạn hợp đồng</th>
+                                <th style="text-align: right;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($apartment->residents->where('relationship', 'tenant') as $resident)
+                                @php
+                                    $user = $resident->user;
+                                    $residentName = $user->name ?? 'Chưa có tên';
+                                    $residentPhone = $user->phone ?? '—';
+                                @endphp
+                                <tr>
                                     <td>
-                                        @if($resident->relationship == 'tenant' && $resident->end_date)
+                                        <div class="td-profile">
+                                            <div class="td-avatar" style="background: #f59e0b; color: white;">
+                                                {{ mb_strtoupper(mb_substr($residentName, 0, 2)) }}
+                                            </div>
+                                            <div class="td-name-info">
+                                                <div class="td-name">{{ $residentName }}</div>
+                                                <div class="td-sub" style="color: #d97706; font-weight: 600;">Khách thuê</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ $residentPhone }}</td>
+                                    <td>{{ $resident->start_date ? \Carbon\Carbon::parse($resident->start_date)->format('d/m/Y') : '--' }}</td>
+                                    <td style="font-weight: 600; color: #1e293b;">
+                                        {{ $resident->deposit_amount ? number_format($resident->deposit_amount, 0, ',', '.') . ' ₫' : '--' }}
+                                    </td>
+                                    <td>
+                                        @if($resident->contract_file)
+                                            <a href="{{ Storage::url($resident->contract_file) }}" target="_blank" style="color: #0ea5e9; display: inline-flex; align-items: center; gap: 4px; font-weight: 500;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                                Xem
+                                            </a>
+                                        @else
+                                            <span style="color: #94a3b8; font-size: 13px;">Chưa tải lên</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($resident->end_date)
                                             @php
                                                 $endDate = \Carbon\Carbon::parse($resident->end_date);
                                                 $isExpired = $endDate->isPast();
@@ -325,10 +432,13 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" style="text-align: center; color: #64748b; padding: 24px;">Chưa có người thuê hoặc thành viên.</td>
+                                    <td colspan="5" style="text-align: center; color: #64748b; padding: 24px;">Chưa có khách thuê chính.</td>
                                 </tr>
                             @endforelse
                         </tbody>
+                    </table>
+                </div>
+
                     </table>
                 </div>
             </div>
@@ -453,6 +563,55 @@
                             @empty
                                 <tr>
                                     <td colspan="5" style="text-align: center; color: #64748b; padding: 24px;">Chưa có đơn đăng ký tạm trú / tạm vắng nào.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {{-- Tab Lịch sử cư trú --}}
+            <div id="tab-history" class="tab-pane" style="display: none;">
+                <div class="table-responsive">
+                    <table class="clean-table">
+                        <thead>
+                            <tr>
+                                <th>Cư dân</th>
+                                <th>Vai trò</th>
+                                <th>Ngày chuyển vào</th>
+                                <th>Ngày rời đi</th>
+                                <th>Thời gian lưu trú</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($residentsHistory->whereNotNull('deleted_at') as $history)
+                                <tr>
+                                    <td>
+                                        <div style="font-weight: 600; color: #0f172a;">{{ $history->user->name ?? 'N/A' }}</div>
+                                        <div style="color: #64748b; font-size: 13px;">{{ $history->user->phone ?? '--' }}</div>
+                                    </td>
+                                    <td>
+                                        @if($history->relationship == 'owner')
+                                            <span class="badge-status-pill badge-status-pill--primary">Chủ hộ cũ</span>
+                                        @elseif($history->relationship == 'tenant')
+                                            <span class="badge-status-pill badge-status-pill--warning">Khách thuê cũ</span>
+                                        @else
+                                            <span class="badge-status-pill badge-status-pill--success">Thành viên cũ</span>
+                                        @endif
+                                    </td>
+                                    <td>{{ $history->start_date ? \Carbon\Carbon::parse($history->start_date)->format('d/m/Y') : '--' }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($history->deleted_at)->format('d/m/Y') }}</td>
+                                    <td>
+                                        @if($history->start_date)
+                                            {{ \Carbon\Carbon::parse($history->start_date)->diffInDays(\Carbon\Carbon::parse($history->deleted_at)) }} ngày
+                                        @else
+                                            --
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: #64748b; padding: 24px;">Chưa có lịch sử chuyển nhượng/rời đi.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -584,7 +743,7 @@
             </div>
         </div>
         
-        <form action="{{ route('admin.apartments.assign-tenant', $apartment->id) }}" method="POST">
+        <form action="{{ route('admin.apartments.assign-tenant', $apartment->id) }}" method="POST" enctype="multipart/form-data">
             @csrf
             
             <div style="margin-bottom: 20px;">
@@ -602,10 +761,20 @@
                 <input type="date" name="start_date" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #cbd5e1; background-color: #f8fafc; font-size: 15px; color: #0f172a; outline: none; transition: all 0.2s; box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.02); font-family: inherit;">
             </div>
 
-            <div style="margin-bottom: 24px;">
+            <div style="margin-bottom: 20px;">
                 <label style="display: block; font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 8px;">Ngày kết thúc hợp đồng</label>
                 <input type="date" name="end_date" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #cbd5e1; background-color: #f8fafc; font-size: 15px; color: #0f172a; outline: none; transition: all 0.2s; box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.02); font-family: inherit;">
                 <small style="color: #64748b; font-size: 13px; display: block; margin-top: 8px;">Bỏ trống trường này nếu hợp đồng vô thời hạn.</small>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 8px;">Tiền cọc (VNĐ)</label>
+                <input type="number" name="deposit_amount" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #cbd5e1; background-color: #f8fafc; font-size: 15px; color: #0f172a; outline: none; transition: all 0.2s; box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.02); font-family: inherit;" min="0" step="100000" placeholder="VD: 10000000">
+            </div>
+
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 8px;">File hợp đồng đính kèm</label>
+                <input type="file" name="contract_file" accept=".pdf,.jpg,.jpeg,.png" style="width: 100%; padding: 10px 16px; border-radius: 12px; border: 1px solid #cbd5e1; background-color: #f8fafc; font-size: 14px; color: #64748b; outline: none; transition: all 0.2s;">
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; padding-top: 24px; border-top: 1px solid #f1f5f9;">
@@ -617,6 +786,48 @@
 </div>
 
 @endsection
+
+<!-- Update Legal Modal -->
+<div id="updateLegalModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);">
+    <div class="modal-content shadow-lg" style="background-color: #ffffff; margin: 10vh auto; padding: 32px; border-radius: 24px; width: 90%; max-width: 480px; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+        <span class="close-modal" onclick="closeUpdateLegalModal()" style="position: absolute; right: 24px; top: 24px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #f8fafc; cursor: pointer; color: #64748b; transition: all 0.2s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </span>
+        
+        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+            <div style="width: 48px; height: 48px; border-radius: 14px; background: #f8fafc; display: flex; align-items: center; justify-content: center; color: #0f172a; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            </div>
+            <div>
+                <h3 style="margin: 0; color: #0f172a; font-size: 20px; font-weight: 800; letter-spacing: -0.5px;">Cập nhật Pháp lý</h3>
+                <p style="margin: 4px 0 0; font-size: 14px; color: #64748b; font-weight: 500;">Cập nhật thông tin sổ hồng & bàn giao.</p>
+            </div>
+        </div>
+        
+        <form action="{{ route('admin.apartments.update-legal', $apartment->id) }}" method="POST">
+            @csrf
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 8px;">Ngày bàn giao</label>
+                <input type="date" name="handover_date" value="{{ $apartment->handover_date ? \Carbon\Carbon::parse($apartment->handover_date)->format('Y-m-d') : '' }}" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #cbd5e1; background-color: #f8fafc; font-size: 15px; color: #0f172a; outline: none; font-family: inherit;">
+            </div>
+
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 8px;">Trạng thái Sổ hồng <span style="color: #ef4444;">*</span></label>
+                <select name="legal_status" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #cbd5e1; background-color: #f8fafc; font-size: 15px; color: #0f172a; outline: none;">
+                    <option value="pending" {{ $apartment->legal_status == 'pending' ? 'selected' : '' }}>Chưa cấp</option>
+                    <option value="processing" {{ $apartment->legal_status == 'processing' ? 'selected' : '' }}>Đang làm thủ tục</option>
+                    <option value="issued" {{ $apartment->legal_status == 'issued' ? 'selected' : '' }}>Đã cấp sổ</option>
+                </select>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; padding-top: 24px; border-top: 1px solid #f1f5f9;">
+                <button type="button" onclick="closeUpdateLegalModal()" style="padding: 10px 20px; border-radius: 12px; border: 1px solid #cbd5e1; background: #fff; color: #475569; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s;">Hủy bỏ</button>
+                <button type="submit" style="padding: 10px 24px; border-radius: 12px; border: none; background: #0f172a; color: #fff; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s;">Lưu thay đổi</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 @push('scripts')
 <script>
@@ -667,11 +878,20 @@
         document.getElementById('assignTenantModal').style.display = 'none';
     }
 
+    function openUpdateLegalModal() {
+        document.getElementById('updateLegalModal').style.display = 'block';
+    }
+
+    function closeUpdateLegalModal() {
+        document.getElementById('updateLegalModal').style.display = 'none';
+    }
+
     // Close modal when clicking outside
     window.onclick = function(event) {
         var vehicleModal = document.getElementById('vehicleModal');
         var ownerModal = document.getElementById('assignOwnerModal');
         var tenantModal = document.getElementById('assignTenantModal');
+        var legalModal = document.getElementById('updateLegalModal');
         
         if (event.target == vehicleModal) {
             vehicleModal.style.display = "none";
@@ -681,6 +901,9 @@
         }
         if (event.target == tenantModal) {
             tenantModal.style.display = "none";
+        }
+        if (event.target == legalModal) {
+            legalModal.style.display = "none";
         }
     }
 </script>

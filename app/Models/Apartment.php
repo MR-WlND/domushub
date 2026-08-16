@@ -21,10 +21,13 @@ class Apartment extends Model
         'status',
         'description',
         'images',
+        'handover_date',
+        'legal_status',
     ];
 
     protected $casts = [
         'images' => 'array',
+        'handover_date' => 'date',
     ];
 
     /**

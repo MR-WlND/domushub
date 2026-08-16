@@ -423,11 +423,15 @@ class ApartmentController extends Controller
             'user_id' => 'required|exists:users,id',
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
+            'contract_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'deposit_amount' => 'nullable|numeric|min:0',
         ], [
             'user_id.required' => 'Vui lòng chọn cư dân để gán.',
             'user_id.exists' => 'Cư dân được chọn không hợp lệ.',
             'start_date.required' => 'Vui lòng chọn ngày bắt đầu thuê.',
             'end_date.after_or_equal' => 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.',
+            'contract_file.file' => 'Hợp đồng phải là một tệp tin hợp lệ.',
+            'contract_file.mimes' => 'Định dạng hỗ trợ: pdf, jpg, jpeg, png.',
         ]);
 
         $user = \App\Models\User::findOrFail($validated['user_id']);
@@ -445,33 +449,61 @@ class ApartmentController extends Controller
             return back()->with('error', 'Căn hộ đã đạt giới hạn cư dân tối đa (10 người).');
         }
 
+        $contractFilePath = null;
+        if ($request->hasFile('contract_file')) {
+            $contractFilePath = $request->file('contract_file')->store('contracts', 'public');
+        }
+
         // Gán cư dân làm khách thuê
-        \Illuminate\Support\Facades\DB::transaction(function () use ($apartment, $user, $validated) {
+        \Illuminate\Support\Facades\DB::transaction(function () use ($apartment, $user, $validated, $contractFilePath) {
             $resident = \App\Models\Resident::where('apartment_id', $apartment->id)
                 ->where('user_id', $user->id)
                 ->first();
 
+            $data = [
+                'relationship' => 'tenant',
+                'start_date' => $validated['start_date'],
+                'end_date' => $validated['end_date'] ?? null,
+            ];
+            
+            if ($contractFilePath) {
+                $data['contract_file'] = $contractFilePath;
+            }
+            if (isset($validated['deposit_amount'])) {
+                $data['deposit_amount'] = $validated['deposit_amount'];
+            }
+
             if ($resident) {
-                $resident->update([
-                    'relationship' => 'tenant',
-                    'start_date' => $validated['start_date'],
-                    'end_date' => $validated['end_date'] ?? null,
-                ]);
+                $resident->update($data);
             } else {
-                \App\Models\Resident::create([
-                    'user_id' => $user->id,
-                    'apartment_id' => $apartment->id,
-                    'relationship' => 'tenant',
-                    'temporary_status' => 'permanent',
-                    'start_date' => $validated['start_date'],
-                    'end_date' => $validated['end_date'] ?? null,
-                ]);
+                $data['user_id'] = $user->id;
+                $data['apartment_id'] = $apartment->id;
+                $data['temporary_status'] = 'permanent';
+                \App\Models\Resident::create($data);
             }
         });
 
         return redirect()
             ->route('admin.apartments.show', $apartment->id)
             ->with('success', 'Đã gán khách thuê thành công cho cư dân ' . $user->name . '.');
+    }
+
+    /**
+     * Cập nhật thông tin pháp lý
+     */
+    public function updateLegal(Request $request, Apartment $apartment): RedirectResponse
+    {
+        $validated = $request->validate([
+            'handover_date' => 'nullable|date',
+            'legal_status' => 'required|in:pending,processing,issued',
+        ]);
+
+        $apartment->update([
+            'handover_date' => $validated['handover_date'] ?? null,
+            'legal_status' => $validated['legal_status'],
+        ]);
+
+        return back()->with('success', 'Đã cập nhật thông tin pháp lý thành công.');
     }
 
     /**

@@ -19,6 +19,8 @@ class Resident extends Model
         'start_date',
         'end_date',
         'status',
+        'contract_file',
+        'deposit_amount',
     ];
 
     protected static function boot()
