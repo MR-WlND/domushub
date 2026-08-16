@@ -37,4 +37,9 @@ class CleaningReport extends Model
     {
         return $this->belongsTo(User::class, 'assigned_to');
     }
+
+    public function assignees()
+    {
+        return $this->belongsToMany(User::class, 'cleaning_report_assignees', 'cleaning_report_id', 'user_id')->withTimestamps();
+    }
 }

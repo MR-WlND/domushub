@@ -14,7 +14,7 @@ class CleaningReportController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = CleaningReport::with(['reporter', 'assignee'])
+        $query = CleaningReport::with('reporter')
             ->whereHas('reporter', function ($q) {
                 $q->where('role', '!=', 'resident');
             })
@@ -41,9 +41,8 @@ class CleaningReportController extends Controller
 
     public function show($id): View
     {
-        $report = CleaningReport::with(['reporter', 'assignee'])->findOrFail($id);
+        $report = CleaningReport::with(['reporter', 'assignees'])->findOrFail($id);
 
-        // Lấy danh sách kỹ thuật viên (role = technician) để chọn phân công
         $technicians = User::where('role', 'technician')
             ->where('status', 'active')
             ->orderBy('name')
@@ -69,24 +68,49 @@ class CleaningReportController extends Controller
         return redirect()->back()->with('success', 'Cập nhật trạng thái thành công.');
     }
 
-    public function assign(Request $request, $id): RedirectResponse
+    public function assign(Request $request, $id): JsonResponse
     {
         $report = CleaningReport::findOrFail($id);
 
         $request->validate([
-            'assigned_to' => 'required|exists:users,id',
-            'admin_note'  => 'nullable|string|max:1000',
-        ], [
-            'assigned_to.required' => 'Vui lòng chọn kỹ thuật viên.',
-            'assigned_to.exists'   => 'Kỹ thuật viên không hợp lệ.',
+            'user_id' => 'required|exists:users,id',
         ]);
 
-        $report->update([
-            'assigned_to' => $request->assigned_to,
-            'admin_note'  => $request->admin_note,
-            'status'      => $report->status === 'pending' ? 'processing' : $report->status,
+        // Check if already assigned
+        if ($report->assignees()->where('user_id', $request->user_id)->exists()) {
+            return response()->json(['success' => false, 'message' => 'Kỹ thuật viên đã được phân công.']);
+        }
+
+        $report->assignees()->attach($request->user_id);
+
+        // Auto update status to processing if pending
+        if ($report->status === 'pending') {
+            $report->update(['status' => 'processing']);
+        }
+
+        $user = User::find($request->user_id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã phân công thành công.',
+            'assignee' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'phone' => $user->phone,
+            ],
+        ]);
+    }
+
+    public function unassign(Request $request, $id): JsonResponse
+    {
+        $report = CleaningReport::findOrFail($id);
+
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
         ]);
 
-        return redirect()->back()->with('success', 'Đã phân công kỹ thuật viên xử lý sự cố.');
+        $report->assignees()->detach($request->user_id);
+
+        return response()->json(['success' => true, 'message' => 'Đã gỡ phân công.']);
     }
 }

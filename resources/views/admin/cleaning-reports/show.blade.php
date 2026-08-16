@@ -70,11 +70,16 @@
 .ird__assign-textarea:focus{outline:none;border-color:#4F46E5;box-shadow:0 0 0 3px rgba(79,70,229,.08);}
 .ird__assign-btn{width:100%;padding:11px 16px;border-radius:8px;font-size:13px;font-weight:700;border:none;background:#4F46E5;color:white;cursor:pointer;transition:.2s;}
 .ird__assign-btn:hover{background:#4338CA;}
-.ird__assigned{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#EEF2FF;border-radius:10px;border:1px solid #C7D2FE;}
+.ird__assigned{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#EEF2FF;border-radius:10px;border:1px solid #C7D2FE;margin-bottom:8px;}
 .ird__assigned i{font-size:16px;color:#4F46E5;}
 .ird__assigned-info{flex:1;}
 .ird__assigned-name{font-size:13px;font-weight:700;color:#1e293b;}
 .ird__assigned-phone{font-size:11.5px;color:#64748b;}
+.ird__assigned-remove{width:24px;height:24px;border-radius:6px;border:none;background:#FEE2E2;color:#DC2626;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0;}
+.ird__assigned-remove:hover{background:#FECACA;}
+.ird__assigned-list{margin-bottom:4px;}
+.ird__assign-empty{font-size:12.5px;color:#94a3b8;font-style:italic;margin:0 0 4px;}
+.ird__assign-msg{font-size:12px;margin-top:8px;font-weight:600;min-height:16px;}
 
 /* Alert */
 .ird__alert{padding:14px 18px;border-radius:10px;font-size:13px;margin-bottom:20px;display:flex;align-items:center;gap:10px;background:#D1FAE5;color:#065F46;border:1px solid #A7F3D0;font-weight:500;}
@@ -207,43 +212,52 @@
             {{-- Status --}}
             <div class="ird__sidebar-card">
                 <div class="ird__sidebar-title">Cập nhật trạng thái</div>
-                <div class="ird__status-btns">
-                    <button type="button" class="ird__status-btn ird__status-btn--pending {{ $report->status == 'pending' ? 'ird__status-btn--active' : '' }}" onclick="changeStatus('pending', this)">
+                <div class="ird__status-btns" id="statusBtns">
+                    <button type="button" class="ird__status-btn ird__status-btn--pending {{ $report->status == 'pending' ? 'ird__status-btn--active' : '' }}" data-status="pending">
                         <i class="fa-solid fa-clock"></i> Chờ xử lý
                     </button>
-                    <button type="button" class="ird__status-btn ird__status-btn--processing {{ $report->status == 'processing' ? 'ird__status-btn--active' : '' }}" onclick="changeStatus('processing', this)">
+                    <button type="button" class="ird__status-btn ird__status-btn--processing {{ $report->status == 'processing' ? 'ird__status-btn--active' : '' }}" data-status="processing">
                         <i class="fa-solid fa-gear"></i> Đang xử lý
                     </button>
-                    <button type="button" class="ird__status-btn ird__status-btn--resolved {{ $report->status == 'resolved' ? 'ird__status-btn--active' : '' }}" onclick="changeStatus('resolved', this)">
+                    <button type="button" class="ird__status-btn ird__status-btn--resolved {{ $report->status == 'resolved' ? 'ird__status-btn--active' : '' }}" data-status="resolved">
                         <i class="fa-solid fa-circle-check"></i> Đã xử lý
                     </button>
                 </div>
                 <div class="ird__status-msg" id="statusMsg"></div>
             </div>
 
-            {{-- Assign --}}
+            {{-- Assign multiple technicians --}}
             <div class="ird__sidebar-card">
-                <div class="ird__sidebar-title">Phân công xử lý</div>
-                @if($report->assignee)
-                <div class="ird__assigned">
-                    <i class="fa-solid fa-user-gear"></i>
-                    <div class="ird__assigned-info">
-                        <div class="ird__assigned-name">{{ $report->assignee->name }}</div>
-                        <div class="ird__assigned-phone">{{ $report->assignee->phone ?? '' }}</div>
+                <div class="ird__sidebar-title">Phân công kỹ thuật viên</div>
+                @if($report->assignees && count($report->assignees) > 0)
+                <div class="ird__assigned-list" id="assignedList">
+                    @foreach($report->assignees as $assignee)
+                    <div class="ird__assigned" data-id="{{ $assignee->id }}">
+                        <i class="fa-solid fa-user-gear"></i>
+                        <div class="ird__assigned-info">
+                            <div class="ird__assigned-name">{{ $assignee->name }}</div>
+                            <div class="ird__assigned-phone">{{ $assignee->phone ?? '' }}</div>
+                        </div>
+                        <button type="button" class="ird__assigned-remove" onclick="removeAssignee({{ $assignee->id }}, this)" title="Gỡ">&times;</button>
                     </div>
+                    @endforeach
+                </div>
+                @else
+                <div class="ird__assigned-list" id="assignedList">
+                    <p class="ird__assign-empty">Chưa phân công ai.</p>
                 </div>
                 @endif
-                <form class="ird__assign-form" method="POST" action="{{ portal_route('cleaning-reports.assign', $report->id) }}" style="margin-top:{{ $report->assignee ? '12px' : '0' }}">
+                <form class="ird__assign-form" id="assignForm" style="margin-top:12px;">
                     @csrf
-                    <select name="assigned_to" class="ird__assign-select" required>
-                        <option value="">{{ $report->assignee ? 'Đổi người xử lý...' : 'Chọn kỹ thuật viên...' }}</option>
+                    <select name="assigned_to" class="ird__assign-select" id="assignSelect" required>
+                        <option value="">Chọn kỹ thuật viên...</option>
                         @foreach($technicians as $tech)
-                        <option value="{{ $tech->id }}" {{ $report->assigned_to == $tech->id ? 'selected' : '' }}>{{ $tech->name }}{{ $tech->phone ? ' – ' . $tech->phone : '' }}</option>
+                        <option value="{{ $tech->id }}">{{ $tech->name }}{{ $tech->phone ? ' – ' . $tech->phone : '' }}</option>
                         @endforeach
                     </select>
-                    <textarea name="admin_note" class="ird__assign-textarea" placeholder="Ghi chú cho kỹ thuật viên (tuỳ chọn)...">{{ $report->admin_note }}</textarea>
-                    <button type="submit" class="ird__assign-btn"><i class="fa-solid fa-user-plus"></i> Phân công</button>
+                    <button type="submit" class="ird__assign-btn"><i class="fa-solid fa-user-plus"></i> Thêm phân công</button>
                 </form>
+                <div class="ird__assign-msg" id="assignMsg"></div>
             </div>
         </div>
     </div>
@@ -261,19 +275,24 @@
 (function() {
     const token = document.querySelector('meta[name="csrf-token"]')?.content;
     const reportId = {{ $report->id }};
+    const baseUrl = '/{{ request()->segment(1) }}/cleaning-reports/' + reportId;
 
     // ═══════════════════════════════════════
     // STATUS UPDATE
     // ═══════════════════════════════════════
-    window.changeStatus = function(status, btnEl) {
+    document.getElementById('statusBtns').addEventListener('click', function(e) {
+        const btn = e.target.closest('.ird__status-btn');
+        if (!btn) return;
+
+        const status = btn.dataset.status;
         document.querySelectorAll('.ird__status-btn').forEach(b => b.classList.remove('ird__status-btn--active'));
-        btnEl.classList.add('ird__status-btn--active');
+        btn.classList.add('ird__status-btn--active');
 
         const msg = document.getElementById('statusMsg');
         msg.textContent = 'Đang cập nhật...';
         msg.style.color = '#64748b';
 
-        fetch('/{{ request()->segment(1) }}/cleaning-reports/' + reportId + '/status', {
+        fetch(baseUrl + '/status', {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token, 'Accept': 'application/json' },
             body: JSON.stringify({ status })
@@ -286,6 +305,68 @@
         }).catch(() => {
             msg.textContent = '✗ Lỗi cập nhật, thử lại';
             msg.style.color = '#dc2626';
+        });
+    });
+
+    // ═══════════════════════════════════════
+    // ASSIGN TECHNICIAN
+    // ═══════════════════════════════════════
+    document.getElementById('assignForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const select = document.getElementById('assignSelect');
+        const userId = select.value;
+        if (!userId) return;
+
+        const msg = document.getElementById('assignMsg');
+        msg.textContent = 'Đang phân công...';
+        msg.style.color = '#64748b';
+
+        fetch(baseUrl + '/assign', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token, 'Accept': 'application/json' },
+            body: JSON.stringify({ user_id: userId })
+        }).then(r => r.json()).then(json => {
+            if (json.success) {
+                msg.textContent = '✓ Đã phân công';
+                msg.style.color = '#059669';
+                // Add to list
+                const list = document.getElementById('assignedList');
+                const empty = list.querySelector('.ird__assign-empty');
+                if (empty) empty.remove();
+
+                const div = document.createElement('div');
+                div.className = 'ird__assigned';
+                div.dataset.id = json.assignee.id;
+                div.innerHTML = `<i class="fa-solid fa-user-gear"></i><div class="ird__assigned-info"><div class="ird__assigned-name">${json.assignee.name}</div><div class="ird__assigned-phone">${json.assignee.phone || ''}</div></div><button type="button" class="ird__assigned-remove" onclick="removeAssignee(${json.assignee.id}, this)" title="Gỡ">&times;</button>`;
+                list.appendChild(div);
+
+                select.value = '';
+                setTimeout(() => { msg.textContent = ''; }, 2000);
+            } else {
+                msg.textContent = json.message || '✗ Lỗi';
+                msg.style.color = '#dc2626';
+            }
+        }).catch(() => {
+            msg.textContent = '✗ Lỗi kết nối';
+            msg.style.color = '#dc2626';
+        });
+    });
+
+    window.removeAssignee = function(userId, btnEl) {
+        if (!confirm('Gỡ kỹ thuật viên này khỏi sự cố?')) return;
+
+        fetch(baseUrl + '/unassign', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token, 'Accept': 'application/json' },
+            body: JSON.stringify({ user_id: userId })
+        }).then(r => r.json()).then(json => {
+            if (json.success) {
+                const item = btnEl.closest('.ird__assigned');
+                item.style.transition = 'all .2s';
+                item.style.opacity = '0';
+                item.style.maxHeight = '0';
+                setTimeout(() => item.remove(), 200);
+            }
         });
     };
 
