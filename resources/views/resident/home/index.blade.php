@@ -8,6 +8,7 @@
 
 @section('content')
 <div class="rh">
+    @if($apartment)
 
     {{-- Welcome --}}
     <div class="rh-welcome">
@@ -247,6 +248,21 @@
         <div style="margin-top:20px;">{{ $posts->links() }}</div>
         @endif
     </div>
+    @else
+    {{-- Empty State cho User chưa có căn hộ --}}
+    <div class="rh-empty-apartment" style="text-align: center; padding: 60px 20px; background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-top: 20px;">
+        <div style="font-size: 4rem; color: #cbd5e1; margin-bottom: 20px;">
+            <i class="fa-solid fa-house-circle-xmark"></i>
+        </div>
+        <h2 style="font-size: 1.5rem; color: #0f172a; margin-bottom: 12px; font-weight: 700;">Bạn chưa tham gia căn hộ nào</h2>
+        <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 24px; max-width: 500px; margin-left: auto; margin-right: auto; line-height: 1.6;">
+            Tài khoản của bạn hiện không được liên kết với bất kỳ căn hộ nào. Vui lòng liên hệ Ban quản lý, hoặc yêu cầu Chủ hộ cấp <b>Mã mời</b> để gia nhập vào căn hộ.
+        </p>
+        <a href="{{ route('resident.members.index') }}" class="rh-section__btn" style="padding: 12px 24px; font-size: 1rem;">
+            <i class="fa-solid fa-key" style="margin-right: 8px;"></i> Nhập mã mời gia nhập
+        </a>
+    </div>
+    @endif
 
 </div>
 
