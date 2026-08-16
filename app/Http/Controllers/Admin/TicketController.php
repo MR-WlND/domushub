@@ -808,8 +808,13 @@ class TicketController extends Controller
 
         $blocks = \App\Models\Block::orderBy('name')->get();
 
+        // Báo cáo sự cố vận hành được phân công cho KTV này
+        $incidentReports = \App\Models\CleaningReport::whereHas('assignees', function ($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })->with('reporter')->latest()->get();
+
         return view('admin.tickets.technician', compact(
-            'tickets', 'newTasks', 'activeTasks', 'completedTasks', 'stats', 'blocks'
+            'tickets', 'newTasks', 'activeTasks', 'completedTasks', 'stats', 'blocks', 'incidentReports'
         ));
     }
 

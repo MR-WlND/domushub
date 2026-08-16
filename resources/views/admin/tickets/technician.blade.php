@@ -356,6 +356,53 @@
         </div>
     </div>
 
+    {{-- INCIDENT REPORTS SECTION --}}
+    @if(isset($incidentReports) && $incidentReports->count() > 0)
+    <div class="ktv-table-card" style="margin-top:28px;">
+        <div style="padding:20px 24px 12px;display:flex;align-items:center;justify-content:space-between;">
+            <div>
+                <h3 style="font-size:16px;font-weight:700;color:#0f172a;margin:0 0 2px;">Sự cố vận hành được phân công</h3>
+                <p style="font-size:12px;color:#64748b;margin:0;">Báo cáo từ nhân viên vận hành tòa nhà</p>
+            </div>
+            <span style="font-size:12px;font-weight:700;color:#4F46E5;background:#EEF2FF;padding:4px 10px;border-radius:6px;">{{ $incidentReports->count() }}</span>
+        </div>
+        <div class="table-responsive">
+            <table class="ktv-table">
+                <thead>
+                    <tr>
+                        <th>Sự cố</th>
+                        <th>Người báo</th>
+                        <th>Vị trí</th>
+                        <th>Ưu tiên</th>
+                        <th>Trạng thái</th>
+                        <th>Ngày</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($incidentReports as $ir)
+                    <tr>
+                        <td><strong style="color:#0f172a;">{{ $ir->title }}</strong></td>
+                        <td>{{ $ir->reporter->name ?? '—' }}</td>
+                        <td style="font-size:12px;color:#64748b;">{{ $ir->location ?: '—' }}</td>
+                        <td>
+                            <span class="ktv-badge ktv-badge--{{ $ir->priority === 'high' ? 'urgent' : ($ir->priority === 'medium' ? 'medium' : 'low') }}">
+                                {{ $ir->priority === 'high' ? 'Cao' : ($ir->priority === 'medium' ? 'TB' : 'Thấp') }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="ktv-badge ktv-badge--{{ $ir->status === 'pending' ? 'medium' : ($ir->status === 'processing' ? 'low' : 'completed') }}">
+                                {{ $ir->status === 'pending' ? 'Chờ xử lý' : ($ir->status === 'processing' ? 'Đang xử lý' : 'Đã xử lý') }}
+                            </span>
+                        </td>
+                        <td style="font-size:12px;color:#94a3b8;">{{ $ir->created_at->format('H:i d/m') }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @endif
+
 </div>
 
 {{-- Mobile Floating Action Button --}}
