@@ -14,7 +14,7 @@ class CleaningReportController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = CleaningReport::with('reporter')
+        $query = CleaningReport::with(['reporter', 'assignees'])
             ->whereHas('reporter', function ($q) {
                 $q->where('role', '!=', 'resident');
             })

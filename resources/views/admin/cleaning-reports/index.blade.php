@@ -238,8 +238,12 @@
                     <button type="button" class="ir-status-pill ir-status-pill--processing {{ $report->status == 'processing' ? 'ir-status-pill--active' : '' }}" onclick="updateStatus({{ $report->id }}, 'processing', this)" title="Đang xử lý">Xử lý</button>
                     <button type="button" class="ir-status-pill ir-status-pill--resolved {{ $report->status == 'resolved' ? 'ir-status-pill--active' : '' }}" onclick="updateStatus({{ $report->id }}, 'resolved', this)" title="Đã xong">Xong</button>
                 </div>
-                @if($report->assignee)
-                <span class="ir-card__meta-item" style="font-size:11px;"><i class="fa-solid fa-wrench"></i> {{ $report->assignee->name }}</span>
+                @if($report->assignees && $report->assignees->count() > 0)
+                <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">
+                    @foreach($report->assignees as $assignee)
+                    <span class="ir-card__meta-item" style="font-size:11px;"><i class="fa-solid fa-wrench"></i> {{ $assignee->name }}</span>
+                    @endforeach
+                </div>
                 @endif
             </div>
         </div>
