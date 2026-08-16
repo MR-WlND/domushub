@@ -43,6 +43,12 @@ class CleaningReportController extends Controller
     {
         $report = CleaningReport::with(['reporter', 'assignees'])->findOrFail($id);
 
+        // Kỹ thuật viên: view riêng (chỉ xem + cập nhật tiến độ)
+        if (auth()->user()->role === 'technician') {
+            return view('admin.cleaning-reports.show-technician', compact('report'));
+        }
+
+        // Admin/Manager: view đầy đủ
         $technicians = User::where('role', 'technician')
             ->where('status', 'active')
             ->orderBy('name')

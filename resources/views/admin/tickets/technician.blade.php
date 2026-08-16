@@ -380,7 +380,7 @@
                 </thead>
                 <tbody>
                     @foreach($incidentReports as $ir)
-                    <tr>
+                    <tr style="cursor:pointer;" onclick="window.location='{{ portal_route('cleaning-reports.show', $ir->id) }}'">
                         <td><strong style="color:#0f172a;">{{ $ir->title }}</strong></td>
                         <td>{{ $ir->reporter->name ?? '—' }}</td>
                         <td style="font-size:12px;color:#64748b;">{{ $ir->location ?: '—' }}</td>
