@@ -186,37 +186,6 @@
                                 Thêm ghi chú mới
                             </button>
                         </div>
-
-                        <div class="info-section" style="margin-top: 32px;">
-                            <div class="section-title-wrapper">
-                                <div class="section-accent-line"></div>
-                                <h4 class="info-section-title">Pháp lý & Bàn giao</h4>
-                            </div>
-                            <div class="tech-detail-list" style="margin-bottom: 16px;">
-                                <div class="tech-detail-row">
-                                    <span class="tech-label">Ngày bàn giao:</span>
-                                    <span class="tech-value">{{ $apartment->handover_date ? \Carbon\Carbon::parse($apartment->handover_date)->format('d/m/Y') : 'Chưa xác định' }}</span>
-                                </div>
-                                <div class="tech-detail-row">
-                                    <span class="tech-label">Trạng thái Sổ hồng:</span>
-                                    <span class="tech-value">
-                                        @if($apartment->legal_status == 'issued')
-                                            <span class="badge-status-pill badge-status-pill--success" style="padding: 4px 8px; font-size: 11px;">Đã cấp sổ</span>
-                                        @elseif($apartment->legal_status == 'processing')
-                                            <span class="badge-status-pill badge-status-pill--warning" style="padding: 4px 8px; font-size: 11px;">Đang làm thủ tục</span>
-                                        @else
-                                            <span class="badge-status-pill badge-status-pill--danger" style="padding: 4px 8px; font-size: 11px;">Chưa cấp</span>
-                                        @endif
-                                    </span>
-                                </div>
-                            </div>
-                            <button class="btn-outline-custom" onclick="openUpdateLegalModal()" style="width: 100%; justify-content: center;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                </svg>
-                                Cập nhật pháp lý
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -762,48 +731,6 @@
 
 @endsection
 
-<!-- Update Legal Modal -->
-<div id="updateLegalModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);">
-    <div class="modal-content shadow-lg" style="background-color: #ffffff; margin: 10vh auto; padding: 32px; border-radius: 24px; width: 90%; max-width: 480px; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
-        <span class="close-modal" onclick="closeUpdateLegalModal()" style="position: absolute; right: 24px; top: 24px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #f8fafc; cursor: pointer; color: #64748b; transition: all 0.2s;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-        </span>
-        
-        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
-            <div style="width: 48px; height: 48px; border-radius: 14px; background: #f8fafc; display: flex; align-items: center; justify-content: center; color: #0f172a; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            </div>
-            <div>
-                <h3 style="margin: 0; color: #0f172a; font-size: 20px; font-weight: 800; letter-spacing: -0.5px;">Cập nhật Pháp lý</h3>
-                <p style="margin: 4px 0 0; font-size: 14px; color: #64748b; font-weight: 500;">Cập nhật thông tin sổ hồng & bàn giao.</p>
-            </div>
-        </div>
-        
-        <form action="{{ route('admin.apartments.update-legal', $apartment->id) }}" method="POST">
-            @csrf
-            
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 8px;">Ngày bàn giao</label>
-                <input type="date" name="handover_date" value="{{ $apartment->handover_date ? \Carbon\Carbon::parse($apartment->handover_date)->format('Y-m-d') : '' }}" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #cbd5e1; background-color: #f8fafc; font-size: 15px; color: #0f172a; outline: none; font-family: inherit;">
-            </div>
-
-            <div style="margin-bottom: 24px;">
-                <label style="display: block; font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 8px;">Trạng thái Sổ hồng <span style="color: #ef4444;">*</span></label>
-                <select name="legal_status" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #cbd5e1; background-color: #f8fafc; font-size: 15px; color: #0f172a; outline: none;">
-                    <option value="pending" {{ $apartment->legal_status == 'pending' ? 'selected' : '' }}>Chưa cấp</option>
-                    <option value="processing" {{ $apartment->legal_status == 'processing' ? 'selected' : '' }}>Đang làm thủ tục</option>
-                    <option value="issued" {{ $apartment->legal_status == 'issued' ? 'selected' : '' }}>Đã cấp sổ</option>
-                </select>
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; padding-top: 24px; border-top: 1px solid #f1f5f9;">
-                <button type="button" onclick="closeUpdateLegalModal()" style="padding: 10px 20px; border-radius: 12px; border: 1px solid #cbd5e1; background: #fff; color: #475569; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s;">Hủy bỏ</button>
-                <button type="submit" style="padding: 10px 24px; border-radius: 12px; border: none; background: #0f172a; color: #fff; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s;">Lưu thay đổi</button>
-            </div>
-        </form>
-    </div>
-</div>
-
 @push('scripts')
 <script>
     function openTab(evt, tabName) {
@@ -853,20 +780,11 @@
         document.getElementById('assignTenantModal').style.display = 'none';
     }
 
-    function openUpdateLegalModal() {
-        document.getElementById('updateLegalModal').style.display = 'block';
-    }
-
-    function closeUpdateLegalModal() {
-        document.getElementById('updateLegalModal').style.display = 'none';
-    }
-
     // Close modal when clicking outside
     window.onclick = function(event) {
         var vehicleModal = document.getElementById('vehicleModal');
         var ownerModal = document.getElementById('assignOwnerModal');
         var tenantModal = document.getElementById('assignTenantModal');
-        var legalModal = document.getElementById('updateLegalModal');
         
         if (event.target == vehicleModal) {
             vehicleModal.style.display = "none";
@@ -876,9 +794,6 @@
         }
         if (event.target == tenantModal) {
             tenantModal.style.display = "none";
-        }
-        if (event.target == legalModal) {
-            legalModal.style.display = "none";
         }
     }
 </script>

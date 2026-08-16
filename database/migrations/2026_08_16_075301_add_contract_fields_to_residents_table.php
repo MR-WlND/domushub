@@ -8,16 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('residents', function (Blueprint $table) {
-            $table->string('contract_file')->nullable();
-            $table->decimal('deposit_amount', 15, 2)->nullable();
-        });
+        // Cancelled contract fields
     }
 
     public function down(): void
     {
-        Schema::table('residents', function (Blueprint $table) {
-            $table->dropColumn(['contract_file', 'deposit_amount']);
-        });
+        // Cancelled contract fields
     }
 };

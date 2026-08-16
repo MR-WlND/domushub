@@ -473,24 +473,6 @@ class ApartmentController extends Controller
     }
 
     /**
-     * Cập nhật thông tin pháp lý
-     */
-    public function updateLegal(Request $request, Apartment $apartment): RedirectResponse
-    {
-        $validated = $request->validate([
-            'handover_date' => 'nullable|date',
-            'legal_status' => 'required|in:pending,processing,issued',
-        ]);
-
-        $apartment->update([
-            'handover_date' => $validated['handover_date'] ?? null,
-            'legal_status' => $validated['legal_status'],
-        ]);
-
-        return back()->with('success', 'Đã cập nhật thông tin pháp lý thành công.');
-    }
-
-    /**
      * Form sửa
      */
     public function edit(

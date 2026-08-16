@@ -199,20 +199,37 @@ class BlockController extends Controller
     }
 
     /**
-     * Xóa tòa nhà — chỉ cho phép khi không còn tầng
+     * Xóa tòa nhà — hệ thống sẽ tự động xóa mềm các tầng và căn hộ bên trong
      */
     public function destroy(Block $block): RedirectResponse
     {
-        if ($block->floors()->exists()) {
-            return redirect()
-                ->route('admin.blocks.index')
-                ->with('error', 'Không thể xóa tòa nhà đang có tầng. Hãy xóa tất cả tầng trước.');
-        }
-
         $block->delete();
 
         return redirect()
             ->route('admin.blocks.index')
             ->with('success', 'Tòa nhà đã được xóa thành công.');
+    }
+
+    /**
+     * Ma trận hiển thị trạng thái căn hộ toàn tòa nhà
+     */
+    public function matrix(Block $block): View
+    {
+        $floors = $block->floors()
+            ->with(['apartments' => function($q) {
+                $q->orderBy('apartment_number');
+            }])
+            ->orderBy('floor_number', 'desc')
+            ->get();
+
+        $stats = [
+            'floors'      => $floors->count(),
+            'apartments'  => $block->apartments()->count(),
+            'vacant'      => $block->apartments()->where('apartments.status', 'vacant')->count(),
+            'occupied'    => $block->apartments()->where('apartments.status', 'occupied')->count(),
+            'maintenance' => $block->apartments()->where('apartments.status', 'maintenance')->count(),
+        ];
+
+        return view('admin.blocks.matrix', compact('block', 'floors', 'stats'));
     }
 }
