@@ -63,9 +63,23 @@ class CleaningReportController extends Controller
 
         $request->validate([
             'status' => 'required|in:pending,processing,resolved',
+            'progress_note' => 'nullable|string|max:2000',
         ]);
 
         $report->update(['status' => $request->status]);
+
+        // Save progress note if provided
+        if ($request->filled('progress_note')) {
+            $notes = $report->progress_notes ?? [];
+            $notes[] = [
+                'note' => $request->progress_note,
+                'status' => $request->status,
+                'user_id' => auth()->id(),
+                'user_name' => auth()->user()->name,
+                'created_at' => now()->toISOString(),
+            ];
+            $report->update(['progress_notes' => $notes]);
+        }
 
         if ($request->expectsJson()) {
             return response()->json(['success' => true, 'status' => $request->status]);

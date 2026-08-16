@@ -8,13 +8,14 @@ class CleaningReport extends Model
 {
     protected $fillable = [
         'reported_by', 'block_id', 'floor_id', 'title', 'location', 'priority',
-        'description', 'images', 'status', 'assigned_to', 'admin_note',
+        'description', 'images', 'status', 'assigned_to', 'admin_note', 'progress_notes',
     ];
 
     protected function casts(): array
     {
         return [
             'images' => 'array',
+            'progress_notes' => 'array',
         ];
     }
 

@@ -47,6 +47,10 @@
 .irt__gallery-play i{color:white;font-size:28px;}
 
 /* Status update */
+.irt__progress-form{display:flex;flex-direction:column;gap:12px;}
+.irt__progress-input{width:100%;min-height:90px;border:1.5px solid #e2e8f0;border-radius:10px;padding:14px 16px;font-size:13.5px;font-family:inherit;color:#1e293b;resize:vertical;transition:.2s;background:#f8fafc;line-height:1.6;}
+.irt__progress-input:focus{outline:none;border-color:#4F46E5;background:white;box-shadow:0 0 0 3px rgba(79,70,229,.08);}
+.irt__progress-input::placeholder{color:#94a3b8;}
 .irt__status-btns{display:flex;gap:10px;flex-wrap:wrap;}
 .irt__status-btn{padding:12px 20px;border-radius:10px;font-size:13px;font-weight:700;border:2px solid #e2e8f0;background:white;color:#64748b;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:8px;}
 .irt__status-btn:hover{border-color:#cbd5e1;background:#f8fafc;}
@@ -54,6 +58,16 @@
 .irt__status-btn--processing.irt__status-btn--active{background:#3B82F6;border-color:#3B82F6;}
 .irt__status-btn--resolved.irt__status-btn--active{background:#10B981;border-color:#10B981;}
 .irt__status-msg{font-size:12px;margin-top:10px;font-weight:600;min-height:18px;}
+
+/* Progress history */
+.irt__progress-list{display:flex;flex-direction:column;gap:0;padding-left:4px;}
+.irt__progress-item{display:flex;gap:14px;position:relative;padding-bottom:16px;}
+.irt__progress-item:not(:last-child)::before{content:'';position:absolute;left:5px;top:14px;bottom:0;width:2px;background:#e2e8f0;}
+.irt__progress-item:last-child{padding-bottom:0;}
+.irt__progress-dot{width:12px;height:12px;border-radius:50%;background:#4F46E5;flex-shrink:0;margin-top:3px;border:2px solid #EEF2FF;}
+.irt__progress-content{flex:1;min-width:0;}
+.irt__progress-text{font-size:13.5px;color:#1e293b;line-height:1.6;margin:0 0 4px;white-space:pre-wrap;}
+.irt__progress-time{font-size:11.5px;color:#94a3b8;}
 
 /* Admin note */
 .irt__note{background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:14px 18px;font-size:13px;color:#92400E;line-height:1.6;}
@@ -166,16 +180,37 @@
         {{-- Status update --}}
         <div class="irt__section">
             <div class="irt__section-title"><i class="fa-solid fa-list-check"></i> Cập nhật tiến độ</div>
-            <div class="irt__status-btns" id="statusBtns">
-                <button type="button" class="irt__status-btn irt__status-btn--processing {{ $report->status == 'processing' ? 'irt__status-btn--active' : '' }}" data-status="processing">
-                    <i class="fa-solid fa-gear"></i> Đang xử lý
-                </button>
-                <button type="button" class="irt__status-btn irt__status-btn--resolved {{ $report->status == 'resolved' ? 'irt__status-btn--active' : '' }}" data-status="resolved">
-                    <i class="fa-solid fa-circle-check"></i> Đã hoàn thành
-                </button>
+            <div class="irt__progress-form">
+                <textarea class="irt__progress-input" id="progressNote" placeholder="Mô tả công việc đã xử lý hoặc tiến độ hiện tại...&#10;VD: Đã kiểm tra van nước, thay gioăng mới, chờ khô keo..."></textarea>
+                <div class="irt__status-btns" id="statusBtns">
+                    <button type="button" class="irt__status-btn irt__status-btn--processing {{ $report->status == 'processing' ? 'irt__status-btn--active' : '' }}" data-status="processing">
+                        <i class="fa-solid fa-gear"></i> Đang xử lý
+                    </button>
+                    <button type="button" class="irt__status-btn irt__status-btn--resolved {{ $report->status == 'resolved' ? 'irt__status-btn--active' : '' }}" data-status="resolved">
+                        <i class="fa-solid fa-circle-check"></i> Đã hoàn thành
+                    </button>
+                </div>
             </div>
             <div class="irt__status-msg" id="statusMsg"></div>
         </div>
+
+        {{-- Progress history --}}
+        @if($report->progress_notes && count($report->progress_notes) > 0)
+        <div class="irt__section">
+            <div class="irt__section-title"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử cập nhật</div>
+            <div class="irt__progress-list">
+                @foreach($report->progress_notes as $note)
+                <div class="irt__progress-item">
+                    <div class="irt__progress-dot"></div>
+                    <div class="irt__progress-content">
+                        <p class="irt__progress-text">{{ $note['note'] }}</p>
+                        <span class="irt__progress-time">{{ \Carbon\Carbon::parse($note['created_at'])->format('H:i – d/m/Y') }} · {{ $note['user_name'] ?? '' }}</span>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
     </div>
 </div>
 
@@ -193,12 +228,14 @@
     const reportId = {{ $report->id }};
     const baseUrl = '/{{ request()->segment(1) }}/cleaning-reports/' + reportId;
 
-    // Status update
+    // Status update with progress note
     document.getElementById('statusBtns').addEventListener('click', function(e) {
         const btn = e.target.closest('.irt__status-btn');
         if (!btn) return;
 
         const status = btn.dataset.status;
+        const note = document.getElementById('progressNote').value.trim();
+
         document.querySelectorAll('.irt__status-btn').forEach(b => b.classList.remove('irt__status-btn--active'));
         btn.classList.add('irt__status-btn--active');
 
@@ -209,12 +246,20 @@
         fetch(baseUrl + '/status', {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token, 'Accept': 'application/json' },
-            body: JSON.stringify({ status })
+            body: JSON.stringify({ status, progress_note: note })
         }).then(r => {
             if (r.ok) {
                 msg.textContent = status === 'resolved' ? '✓ Đã đánh dấu hoàn thành!' : '✓ Đã cập nhật trạng thái';
                 msg.style.color = '#059669';
-                setTimeout(() => { msg.textContent = ''; }, 3000);
+
+                // Clear textarea after success
+                if (note) {
+                    document.getElementById('progressNote').value = '';
+                    // Reload to show updated history
+                    setTimeout(() => { window.location.reload(); }, 1000);
+                } else {
+                    setTimeout(() => { msg.textContent = ''; }, 3000);
+                }
             } else throw new Error();
         }).catch(() => {
             msg.textContent = '✗ Lỗi cập nhật, thử lại';
