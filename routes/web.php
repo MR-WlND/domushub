@@ -346,6 +346,8 @@ $portalRoutes = function () {
     Route::patch('/cleaning-reports/{id}/status', [\App\Http\Controllers\Admin\CleaningReportController::class, 'updateStatus'])->name('cleaning-reports.update-status');
     Route::post('/cleaning-reports/{id}/assign', [\App\Http\Controllers\Admin\CleaningReportController::class, 'assign'])->name('cleaning-reports.assign');
     Route::post('/cleaning-reports/{id}/unassign', [\App\Http\Controllers\Admin\CleaningReportController::class, 'unassign'])->name('cleaning-reports.unassign');
+    Route::post('/cleaning-reports/{id}/approve', [\App\Http\Controllers\Admin\CleaningReportController::class, 'approve'])->name('cleaning-reports.approve');
+    Route::post('/cleaning-reports/{id}/reject', [\App\Http\Controllers\Admin\CleaningReportController::class, 'reject'])->name('cleaning-reports.reject');
 
 };
 

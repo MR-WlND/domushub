@@ -43,7 +43,7 @@ class CleaningReportController extends Controller
     {
         $report = CleaningReport::with(['reporter', 'assignees'])->findOrFail($id);
 
-        // Kỹ thuật viên: view riêng (chỉ xem + cập nhật tiến độ)
+        // Kỹ thuật viên: view riêng
         if (auth()->user()->role === 'technician') {
             return view('admin.cleaning-reports.show-technician', compact('report'));
         }
@@ -57,12 +57,22 @@ class CleaningReportController extends Controller
         return view('admin.cleaning-reports.show', compact('report', 'technicians'));
     }
 
+    /**
+     * Cập nhật trạng thái (dùng chung cho cả admin và KTV)
+     * - KTV chỉ được: processing, completed_pending
+     * - Admin được: pending, processing, resolved + reject (yêu cầu xử lý lại)
+     */
     public function updateStatus(Request $request, $id): JsonResponse|RedirectResponse
     {
         $report = CleaningReport::findOrFail($id);
+        $user = auth()->user();
+
+        $allowedStatuses = $user->role === 'technician'
+            ? ['processing', 'completed_pending']
+            : ['pending', 'processing', 'resolved', 'completed_pending'];
 
         $request->validate([
-            'status' => 'required|in:pending,processing,resolved',
+            'status' => 'required|in:' . implode(',', $allowedStatuses),
             'progress_note' => 'nullable|string|max:2000',
         ]);
 
@@ -74,8 +84,8 @@ class CleaningReportController extends Controller
             $notes[] = [
                 'note' => $request->progress_note,
                 'status' => $request->status,
-                'user_id' => auth()->id(),
-                'user_name' => auth()->user()->name,
+                'user_id' => $user->id,
+                'user_name' => $user->name,
                 'created_at' => now()->toISOString(),
             ];
             $report->update(['progress_notes' => $notes]);
@@ -88,6 +98,64 @@ class CleaningReportController extends Controller
         return redirect()->back()->with('success', 'Cập nhật trạng thái thành công.');
     }
 
+    /**
+     * Admin duyệt hoàn thành
+     */
+    public function approve($id): JsonResponse
+    {
+        $report = CleaningReport::findOrFail($id);
+
+        if ($report->status !== 'completed_pending') {
+            return response()->json(['success' => false, 'message' => 'Báo cáo chưa ở trạng thái chờ duyệt.']);
+        }
+
+        $notes = $report->progress_notes ?? [];
+        $notes[] = [
+            'note' => 'Quản lý đã duyệt hoàn thành.',
+            'status' => 'resolved',
+            'user_id' => auth()->id(),
+            'user_name' => auth()->user()->name,
+            'created_at' => now()->toISOString(),
+        ];
+
+        $report->update([
+            'status' => 'resolved',
+            'progress_notes' => $notes,
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Đã duyệt hoàn thành.']);
+    }
+
+    /**
+     * Admin yêu cầu xử lý lại
+     */
+    public function reject(Request $request, $id): JsonResponse
+    {
+        $report = CleaningReport::findOrFail($id);
+
+        $request->validate([
+            'reason' => 'required|string|max:1000',
+        ], [
+            'reason.required' => 'Vui lòng nhập lý do yêu cầu xử lý lại.',
+        ]);
+
+        $notes = $report->progress_notes ?? [];
+        $notes[] = [
+            'note' => '⚠️ Yêu cầu xử lý lại: ' . $request->reason,
+            'status' => 'processing',
+            'user_id' => auth()->id(),
+            'user_name' => auth()->user()->name,
+            'created_at' => now()->toISOString(),
+        ];
+
+        $report->update([
+            'status' => 'processing',
+            'progress_notes' => $notes,
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Đã yêu cầu xử lý lại.']);
+    }
+
     public function assign(Request $request, $id): JsonResponse
     {
         $report = CleaningReport::findOrFail($id);
@@ -96,14 +164,12 @@ class CleaningReportController extends Controller
             'user_id' => 'required|exists:users,id',
         ]);
 
-        // Check if already assigned
         if ($report->assignees()->where('user_id', $request->user_id)->exists()) {
             return response()->json(['success' => false, 'message' => 'Kỹ thuật viên đã được phân công.']);
         }
 
         $report->assignees()->attach($request->user_id);
 
-        // Auto update status to processing if pending
         if ($report->status === 'pending') {
             $report->update(['status' => 'processing']);
         }

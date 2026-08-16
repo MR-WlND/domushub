@@ -23,6 +23,7 @@
 .irt__badge--pending{background:#FEF3C7;color:#D97706;}
 .irt__badge--processing{background:#DBEAFE;color:#2563EB;}
 .irt__badge--resolved{background:#D1FAE5;color:#059669;}
+.irt__badge--completed_pending{background:#DBEAFE;color:#2563EB;}
 
 /* Info grid */
 .irt__info{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:24px;}
@@ -93,7 +94,7 @@
     $roleLabels = ['cleaning'=>'Vệ sinh','security'=>'Bảo vệ','technician'=>'Kỹ thuật','receptionist'=>'Lễ tân','staff'=>'Nhân viên','manager'=>'Quản lý'];
     $roleLabel = $roleLabels[$report->reporter->role ?? ''] ?? '—';
     $priorityLabels = ['high'=>'Cao','medium'=>'Trung bình','low'=>'Thấp'];
-    $statusLabels = ['pending'=>'Chờ xử lý','processing'=>'Đang xử lý','resolved'=>'Đã xử lý'];
+    $statusLabels = ['pending'=>'Chờ xử lý','processing'=>'Đang xử lý','completed_pending'=>'Chờ duyệt','resolved'=>'Đã xử lý'];
 @endphp
 
 <div class="irt">
@@ -186,10 +187,20 @@
                     <button type="button" class="irt__status-btn irt__status-btn--processing {{ $report->status == 'processing' ? 'irt__status-btn--active' : '' }}" data-status="processing">
                         <i class="fa-solid fa-gear"></i> Đang xử lý
                     </button>
-                    <button type="button" class="irt__status-btn irt__status-btn--resolved {{ $report->status == 'resolved' ? 'irt__status-btn--active' : '' }}" data-status="resolved">
-                        <i class="fa-solid fa-circle-check"></i> Đã hoàn thành
+                    <button type="button" class="irt__status-btn irt__status-btn--resolved {{ in_array($report->status, ['completed_pending', 'resolved']) ? 'irt__status-btn--active' : '' }}" data-status="completed_pending">
+                        <i class="fa-solid fa-circle-check"></i> Báo hoàn thành
                     </button>
                 </div>
+                @if($report->status === 'completed_pending')
+                <div style="margin-top:10px;padding:10px 14px;background:#DBEAFE;border:1px solid #93C5FD;border-radius:8px;font-size:12.5px;color:#1E40AF;font-weight:600;">
+                    <i class="fa-solid fa-hourglass-half"></i> Đã báo hoàn thành — chờ quản lý duyệt
+                </div>
+                @endif
+                @if($report->status === 'resolved')
+                <div style="margin-top:10px;padding:10px 14px;background:#D1FAE5;border:1px solid #6EE7B7;border-radius:8px;font-size:12.5px;color:#065F46;font-weight:600;">
+                    <i class="fa-solid fa-circle-check"></i> Quản lý đã duyệt hoàn thành
+                </div>
+                @endif
             </div>
             <div class="irt__status-msg" id="statusMsg"></div>
         </div>

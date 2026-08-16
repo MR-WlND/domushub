@@ -160,6 +160,7 @@
                 <option value="">Trạng thái</option>
                 <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Chờ xử lý</option>
                 <option value="processing" {{ request('status') == 'processing' ? 'selected' : '' }}>Đang xử lý</option>
+                <option value="completed_pending" {{ request('status') == 'completed_pending' ? 'selected' : '' }}>Chờ duyệt</option>
                 <option value="resolved" {{ request('status') == 'resolved' ? 'selected' : '' }}>Đã xử lý</option>
             </select>
             <select name="priority" class="ir-filter {{ request('priority') ? 'ir-filter--active' : '' }}" onchange="this.form.submit()">
@@ -236,6 +237,9 @@
                 <div class="ir-card__status-pills" onclick="event.stopPropagation();">
                     <button type="button" class="ir-status-pill ir-status-pill--pending {{ $report->status == 'pending' ? 'ir-status-pill--active' : '' }}" onclick="updateStatus({{ $report->id }}, 'pending', this)" title="Chờ xử lý">Chờ</button>
                     <button type="button" class="ir-status-pill ir-status-pill--processing {{ $report->status == 'processing' ? 'ir-status-pill--active' : '' }}" onclick="updateStatus({{ $report->id }}, 'processing', this)" title="Đang xử lý">Xử lý</button>
+                    @if($report->status === 'completed_pending')
+                    <span class="ir-status-pill ir-status-pill--active" style="background:#3B82F6;color:white;border-color:#3B82F6;cursor:default;" title="KTV báo hoàn thành, chờ duyệt">Chờ duyệt</span>
+                    @endif
                     <button type="button" class="ir-status-pill ir-status-pill--resolved {{ $report->status == 'resolved' ? 'ir-status-pill--active' : '' }}" onclick="updateStatus({{ $report->id }}, 'resolved', this)" title="Đã xong">Xong</button>
                 </div>
                 @if($report->assignees && $report->assignees->count() > 0)

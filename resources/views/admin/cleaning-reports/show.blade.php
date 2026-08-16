@@ -20,6 +20,7 @@
 .ird__badge--pending{background:#FEF3C7;color:#D97706;}
 .ird__badge--processing{background:#DBEAFE;color:#2563EB;}
 .ird__badge--resolved{background:#D1FAE5;color:#059669;}
+.ird__badge--completed_pending{background:#DBEAFE;color:#2563EB;}
 .ird__time{font-size:12.5px;color:#94a3b8;display:flex;align-items:center;gap:6px;white-space:nowrap;}
 
 /* Info grid */
@@ -112,7 +113,7 @@
     ];
     $roleLabel = $roleLabels[$report->reporter->role ?? ''] ?? ($report->reporter->role ?? '—');
     $priorityLabels = ['high' => 'Cao', 'medium' => 'Trung bình', 'low' => 'Thấp'];
-    $statusLabels = ['pending' => 'Chờ xử lý', 'processing' => 'Đang xử lý', 'resolved' => 'Đã xử lý'];
+    $statusLabels = ['pending' => 'Chờ xử lý', 'processing' => 'Đang xử lý', 'completed_pending' => 'Chờ duyệt', 'resolved' => 'Đã xử lý'];
 @endphp
 
 <div class="ird">
@@ -209,6 +210,29 @@
 
         {{-- SIDEBAR --}}
         <div class="ird__sidebar">
+            {{-- Approve/Reject when completed_pending --}}
+            @if($report->status === 'completed_pending')
+            <div class="ird__sidebar-card" style="border:2px solid #3B82F6;background:#EFF6FF;">
+                <div class="ird__sidebar-title" style="color:#1D4ED8;">Kỹ thuật viên báo hoàn thành</div>
+                <p style="font-size:13px;color:#1E40AF;margin:0 0 14px;line-height:1.5;">KTV đã xử lý và báo hoàn thành. Bạn có thể duyệt hoặc yêu cầu xử lý lại.</p>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    <button type="button" class="ird__status-btn ird__status-btn--resolved" style="width:100%;justify-content:center;" onclick="approveReport()">
+                        <i class="fa-solid fa-circle-check"></i> Duyệt hoàn thành
+                    </button>
+                    <button type="button" class="ird__status-btn" style="width:100%;justify-content:center;border-color:#FCA5A5;color:#DC2626;" onclick="showRejectForm()">
+                        <i class="fa-solid fa-rotate-left"></i> Yêu cầu xử lý lại
+                    </button>
+                </div>
+                <div id="rejectForm" style="display:none;margin-top:12px;">
+                    <textarea id="rejectReason" class="ird__assign-textarea" placeholder="Lý do yêu cầu xử lý lại..." style="min-height:70px;"></textarea>
+                    <button type="button" class="ird__assign-btn" style="margin-top:8px;background:#DC2626;" onclick="rejectReport()">
+                        <i class="fa-solid fa-paper-plane"></i> Gửi yêu cầu
+                    </button>
+                </div>
+                <div id="reviewMsg" style="font-size:12px;margin-top:8px;font-weight:600;"></div>
+            </div>
+            @endif
+
             {{-- Status --}}
             <div class="ird__sidebar-card">
                 <div class="ird__sidebar-title">Cập nhật trạng thái</div>
@@ -219,6 +243,11 @@
                     <button type="button" class="ird__status-btn ird__status-btn--processing {{ $report->status == 'processing' ? 'ird__status-btn--active' : '' }}" data-status="processing">
                         <i class="fa-solid fa-gear"></i> Đang xử lý
                     </button>
+                    @if($report->status === 'completed_pending')
+                    <button type="button" class="ird__status-btn" style="border-color:#93C5FD;color:#2563EB;background:#EFF6FF;" disabled>
+                        <i class="fa-solid fa-hourglass-half"></i> Chờ duyệt
+                    </button>
+                    @endif
                     <button type="button" class="ird__status-btn ird__status-btn--resolved {{ $report->status == 'resolved' ? 'ird__status-btn--active' : '' }}" data-status="resolved">
                         <i class="fa-solid fa-circle-check"></i> Đã xử lý
                     </button>
@@ -399,6 +428,58 @@
     document.getElementById('irdLightbox').addEventListener('click', function(e) {
         if (e.target === this) closeLightbox();
     });
+
+    // ═══════════════════════════════════════
+    // APPROVE / REJECT
+    // ═══════════════════════════════════════
+    window.approveReport = function() {
+        const msg = document.getElementById('reviewMsg');
+        msg.textContent = 'Đang duyệt...';
+        msg.style.color = '#64748b';
+
+        fetch(baseUrl + '/approve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token, 'Accept': 'application/json' },
+        }).then(r => r.json()).then(json => {
+            if (json.success) {
+                msg.textContent = '✓ ' + json.message;
+                msg.style.color = '#059669';
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                msg.textContent = '✗ ' + (json.message || 'Lỗi');
+                msg.style.color = '#dc2626';
+            }
+        }).catch(() => { msg.textContent = '✗ Lỗi kết nối'; msg.style.color = '#dc2626'; });
+    };
+
+    window.showRejectForm = function() {
+        document.getElementById('rejectForm').style.display = 'block';
+        document.getElementById('rejectReason').focus();
+    };
+
+    window.rejectReport = function() {
+        const reason = document.getElementById('rejectReason').value.trim();
+        if (!reason) { alert('Vui lòng nhập lý do.'); return; }
+
+        const msg = document.getElementById('reviewMsg');
+        msg.textContent = 'Đang gửi...';
+        msg.style.color = '#64748b';
+
+        fetch(baseUrl + '/reject', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token, 'Accept': 'application/json' },
+            body: JSON.stringify({ reason })
+        }).then(r => r.json()).then(json => {
+            if (json.success) {
+                msg.textContent = '✓ ' + json.message;
+                msg.style.color = '#059669';
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                msg.textContent = '✗ ' + (json.message || 'Lỗi');
+                msg.style.color = '#dc2626';
+            }
+        }).catch(() => { msg.textContent = '✗ Lỗi kết nối'; msg.style.color = '#dc2626'; });
+    };
 })();
 </script>
 @endpush
