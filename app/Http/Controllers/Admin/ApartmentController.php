@@ -423,15 +423,11 @@ class ApartmentController extends Controller
             'user_id' => 'required|exists:users,id',
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
-            'contract_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'deposit_amount' => 'nullable|numeric|min:0',
         ], [
             'user_id.required' => 'Vui lòng chọn cư dân để gán.',
             'user_id.exists' => 'Cư dân được chọn không hợp lệ.',
             'start_date.required' => 'Vui lòng chọn ngày bắt đầu thuê.',
             'end_date.after_or_equal' => 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.',
-            'contract_file.file' => 'Hợp đồng phải là một tệp tin hợp lệ.',
-            'contract_file.mimes' => 'Định dạng hỗ trợ: pdf, jpg, jpeg, png.',
         ]);
 
         $user = \App\Models\User::findOrFail($validated['user_id']);
@@ -449,13 +445,8 @@ class ApartmentController extends Controller
             return back()->with('error', 'Căn hộ đã đạt giới hạn cư dân tối đa (10 người).');
         }
 
-        $contractFilePath = null;
-        if ($request->hasFile('contract_file')) {
-            $contractFilePath = $request->file('contract_file')->store('contracts', 'public');
-        }
-
         // Gán cư dân làm khách thuê
-        \Illuminate\Support\Facades\DB::transaction(function () use ($apartment, $user, $validated, $contractFilePath) {
+        \Illuminate\Support\Facades\DB::transaction(function () use ($apartment, $user, $validated) {
             $resident = \App\Models\Resident::where('apartment_id', $apartment->id)
                 ->where('user_id', $user->id)
                 ->first();
@@ -465,13 +456,6 @@ class ApartmentController extends Controller
                 'start_date' => $validated['start_date'],
                 'end_date' => $validated['end_date'] ?? null,
             ];
-            
-            if ($contractFilePath) {
-                $data['contract_file'] = $contractFilePath;
-            }
-            if (isset($validated['deposit_amount'])) {
-                $data['deposit_amount'] = $validated['deposit_amount'];
-            }
 
             if ($resident) {
                 $resident->update($data);

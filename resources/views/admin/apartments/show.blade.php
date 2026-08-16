@@ -367,8 +367,6 @@
                                 <th>Họ và tên</th>
                                 <th>Số điện thoại</th>
                                 <th>Ngày bắt đầu thuê</th>
-                                <th>Tiền cọc</th>
-                                <th>Hợp đồng</th>
                                 <th>Ngày hết hạn hợp đồng</th>
                                 <th style="text-align: right;">Thao tác</th>
                             </tr>
@@ -394,19 +392,6 @@
                                     </td>
                                     <td>{{ $residentPhone }}</td>
                                     <td>{{ $resident->start_date ? \Carbon\Carbon::parse($resident->start_date)->format('d/m/Y') : '--' }}</td>
-                                    <td style="font-weight: 600; color: #1e293b;">
-                                        {{ $resident->deposit_amount ? number_format($resident->deposit_amount, 0, ',', '.') . ' ₫' : '--' }}
-                                    </td>
-                                    <td>
-                                        @if($resident->contract_file)
-                                            <a href="{{ Storage::url($resident->contract_file) }}" target="_blank" style="color: #0ea5e9; display: inline-flex; align-items: center; gap: 4px; font-weight: 500;">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                                                Xem
-                                            </a>
-                                        @else
-                                            <span style="color: #94a3b8; font-size: 13px;">Chưa tải lên</span>
-                                        @endif
-                                    </td>
                                     <td>
                                         @if($resident->end_date)
                                             @php
@@ -743,7 +728,7 @@
             </div>
         </div>
         
-        <form action="{{ route('admin.apartments.assign-tenant', $apartment->id) }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('admin.apartments.assign-tenant', $apartment->id) }}" method="POST">
             @csrf
             
             <div style="margin-bottom: 20px;">
@@ -761,20 +746,10 @@
                 <input type="date" name="start_date" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #cbd5e1; background-color: #f8fafc; font-size: 15px; color: #0f172a; outline: none; transition: all 0.2s; box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.02); font-family: inherit;">
             </div>
 
-            <div style="margin-bottom: 20px;">
+            <div style="margin-bottom: 24px;">
                 <label style="display: block; font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 8px;">Ngày kết thúc hợp đồng</label>
                 <input type="date" name="end_date" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #cbd5e1; background-color: #f8fafc; font-size: 15px; color: #0f172a; outline: none; transition: all 0.2s; box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.02); font-family: inherit;">
                 <small style="color: #64748b; font-size: 13px; display: block; margin-top: 8px;">Bỏ trống trường này nếu hợp đồng vô thời hạn.</small>
-            </div>
-
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 8px;">Tiền cọc (VNĐ)</label>
-                <input type="number" name="deposit_amount" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #cbd5e1; background-color: #f8fafc; font-size: 15px; color: #0f172a; outline: none; transition: all 0.2s; box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.02); font-family: inherit;" min="0" step="100000" placeholder="VD: 10000000">
-            </div>
-
-            <div style="margin-bottom: 24px;">
-                <label style="display: block; font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 8px;">File hợp đồng đính kèm</label>
-                <input type="file" name="contract_file" accept=".pdf,.jpg,.jpeg,.png" style="width: 100%; padding: 10px 16px; border-radius: 12px; border: 1px solid #cbd5e1; background-color: #f8fafc; font-size: 14px; color: #64748b; outline: none; transition: all 0.2s;">
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; padding-top: 24px; border-top: 1px solid #f1f5f9;">
