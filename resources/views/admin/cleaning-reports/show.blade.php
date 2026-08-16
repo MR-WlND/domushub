@@ -39,6 +39,17 @@
 .ird__desc{font-size:14px;color:#334155;line-height:1.7;white-space:pre-wrap;}
 .ird__desc--empty{color:#94a3b8;font-style:italic;}
 
+/* Progress history */
+.ird__progress-list{display:flex;flex-direction:column;gap:0;padding-left:4px;}
+.ird__progress-item{display:flex;gap:14px;position:relative;padding-bottom:18px;}
+.ird__progress-item:not(:last-child)::before{content:'';position:absolute;left:6px;top:16px;bottom:0;width:2px;background:#e2e8f0;}
+.ird__progress-item:last-child{padding-bottom:0;}
+.ird__progress-dot{width:14px;height:14px;border-radius:50%;background:#4F46E5;flex-shrink:0;margin-top:3px;border:3px solid #EEF2FF;}
+.ird__progress-dot--warning{background:#F59E0B;border-color:#FEF3C7;}
+.ird__progress-content{flex:1;min-width:0;}
+.ird__progress-text{font-size:14px;color:#1e293b;line-height:1.6;margin:0 0 4px;white-space:pre-wrap;}
+.ird__progress-meta{font-size:12px;color:#94a3b8;}
+
 /* Gallery */
 .ird__gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;}
 .ird__gallery-item{aspect-ratio:1;border-radius:12px;overflow:hidden;border:2px solid #e2e8f0;cursor:pointer;position:relative;transition:.2s;}
@@ -206,6 +217,28 @@
                 <p class="ird__desc">{{ $report->admin_note }}</p>
             </div>
             @endif
+
+            {{-- Progress history --}}
+            <div class="ird__section">
+                <div class="ird__section-title"><i class="fa-solid fa-clock-rotate-left"></i> Tiến độ xử lý</div>
+                @if($report->progress_notes && count($report->progress_notes) > 0)
+                <div class="ird__progress-list">
+                    @foreach(array_reverse($report->progress_notes) as $note)
+                    <div class="ird__progress-item">
+                        <div class="ird__progress-dot {{ str_contains($note['note'] ?? '', '⚠️') ? 'ird__progress-dot--warning' : '' }}"></div>
+                        <div class="ird__progress-content">
+                            <p class="ird__progress-text">{{ $note['note'] }}</p>
+                            <span class="ird__progress-meta">
+                                <strong>{{ $note['user_name'] ?? '—' }}</strong> · {{ \Carbon\Carbon::parse($note['created_at'])->format('H:i – d/m/Y') }}
+                            </span>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                @else
+                <p class="ird__desc" style="color:#94a3b8;font-style:italic;">Chưa có cập nhật tiến độ từ kỹ thuật viên.</p>
+                @endif
+            </div>
         </div>
 
         {{-- SIDEBAR --}}
