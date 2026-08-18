@@ -104,12 +104,10 @@ class PostController extends Controller
             'media.*.max' => 'Dung lượng mỗi file không được vượt quá 20MB.',
         ]);
 
-        $data = $request->only(['title', 'content', 'price']);
+        $data = $request->only(['content', 'price']);
         
-        // Tạo tiêu đề tự động nếu người dùng để trống
-        if (!$request->filled('title')) {
-            $data['title'] = Str::limit(strip_tags($request->content), 40, '...');
-        }
+        // Loại bỏ việc tự động tạo tiêu đề
+        $data['title'] = null;
         
         $data['user_id'] = Auth::id();
         $data['status'] = 'published'; // Mặc định là published

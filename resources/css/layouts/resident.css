@@ -1,7 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 .resident-page {
     min-height: 100vh;
     margin: 0;
     background: var(--color-background);
+    font-family: 'Inter', system-ui, sans-serif;
 }
 
 .resident-layout {

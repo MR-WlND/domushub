@@ -40,6 +40,7 @@ body.resident-page {
     border-radius: 50%;
     object-fit: cover;
     background: #e5e7eb;
+    border: 1px solid #d1d5db;
 }
 
 .df-avatar-placeholder {
@@ -112,7 +113,7 @@ body.resident-page {
 /* Create Post */
 .df-create-post {
     background: #ffffff;
-    border-radius: 12px;
+    border-radius: 8px;
     padding: 16px;
     border: 1px solid #e5e7eb;
 }
@@ -131,6 +132,7 @@ body.resident-page {
     object-fit: cover;
     background: #e5e7eb;
     flex-shrink: 0;
+    border: 1px solid #d1d5db;
 }
 
 .df-create-post-input {
@@ -194,6 +196,90 @@ body.resident-page {
     background: #1f2937;
 }
 
+/* Hide input file */
+.df-hidden-input {
+    display: none;
+}
+
+/* ─── GALLERY MODAL ─── */
+.df-gallery-modal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+.df-gallery-modal.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+.df-gallery-modal-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    cursor: pointer;
+}
+.df-gallery-modal-close {
+    position: absolute;
+    top: 20px; right: 30px;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 2rem;
+    cursor: pointer;
+    z-index: 10;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+.df-gallery-modal-close:hover {
+    opacity: 1;
+}
+.df-gallery-modal-counter {
+    position: absolute;
+    top: 30px; left: 30px;
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: 500;
+    z-index: 10;
+}
+.df-gallery-modal-prev, .df-gallery-modal-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: #fff;
+    font-size: 2.5rem;
+    padding: 20px;
+    cursor: pointer;
+    z-index: 10;
+    transition: background 0.2s, transform 0.2s;
+    border-radius: 8px;
+}
+.df-gallery-modal-prev:hover, .df-gallery-modal-next:hover {
+    background: rgba(255,255,255,0.3);
+    transform: translateY(-50%) scale(1.1);
+}
+.df-gallery-modal-prev { left: 40px; }
+.df-gallery-modal-next { right: 40px; }
+.df-gallery-modal-content {
+    position: relative;
+    z-index: 5;
+    max-width: 85vw;
+    max-height: 85vh;
+}
+.df-gallery-modal-content img {
+    max-width: 100%;
+    max-height: 85vh;
+    object-fit: contain;
+    border-radius: 4px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
 /* Filters */
 .df-filters {
     display: flex;
@@ -226,7 +312,7 @@ body.resident-page {
 /* Post Card */
 .df-post {
     background: #ffffff;
-    border-radius: 12px;
+    border-radius: 8px;
     padding: 20px;
     border: 1px solid #e5e7eb;
     display: flex;
@@ -437,7 +523,7 @@ body.resident-page {
 
 .df-widget {
     background: #ffffff;
-    border-radius: 12px;
+    border-radius: 8px;
     padding: 20px;
     display: flex;
     flex-direction: column;
@@ -508,7 +594,7 @@ body.resident-page {
 /* Empty State */
 .df-empty {
     background: #ffffff;
-    border-radius: 12px;
+    border-radius: 8px;
     padding: 60px 20px;
     border: 1px solid #e5e7eb;
     text-align: center;
