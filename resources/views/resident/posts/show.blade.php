@@ -1,6 +1,6 @@
-@extends('layouts.resident.master')
+@extends(request()->has('modal') ? 'layouts.resident.modal' : 'layouts.resident.master')
 
-@section('title', $post->title . ' – Bảng tin DomusHub')
+@section('title', 'Bảng tin DomusHub')
 
 @push('styles')
     @vite(['resources/css/resident/posts.css', 'resources/css/pages/resident/home/index.css'])
@@ -8,12 +8,11 @@
     <style>
         /* === Facebook-style Comment Bubble === */
         .fb-comments-sec {
-            background: var(--color-card);
-            border: 1px solid var(--color-outline-soft);
-            border-radius: var(--radius-lg);
+            background: #ffffff;
+            border-radius: 8px;
             padding: 1.5rem;
-            margin-top: 1.5rem;
-            box-shadow: var(--color-shadow);
+            margin-top: 1rem;
+            border: 1px solid #e5e7eb;
         }
         .fb-comments__title {
             font-size: 1.1rem;
@@ -384,6 +383,119 @@
             align-items: center;
             justify-content: center;
         }
+        
+        .df-post-images.grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .df-post-images.grid-2 img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        
+        /* Modal Báo cáo */
+        .rep-modal {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.6);
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .rep-modal.show {
+            opacity: 1;
+        }
+        .rep-modal__content {
+            background: #fff;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        .rep-modal.show .rep-modal__content {
+            transform: translateY(0);
+        }
+        .rep-modal__header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .rep-modal__title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        .rep-modal__close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+        .rep-modal__body {
+            padding: 1.5rem;
+        }
+        .rep-modal__label {
+            display: block;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+        .rep-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .rep-modal__custom-reason {
+            display: none;
+            margin-top: 1rem;
+        }
+        .rep-modal__textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        .rep-modal__footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        .rep-modal__btn-submit {
+            background: #ef4444;
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .rep-modal__btn-submit:disabled {
+            background: #fca5a5;
+            cursor: not-allowed;
+        }
+        
     </style>
 @endpush
 
@@ -412,7 +524,7 @@
     function nl2br(str) {
         if (!str) return '';
         let escaped = escapeHtml(str);
-        escaped = escaped.replace(/@([^@\u200B]+)\u200B/gu, '<span class="comment-mention">@@push('scripts')</span>');
+        escaped = escaped.replace(/@([^@\u200B]+)\u200B/gu, '<span class="comment-mention">@@$1</span>');
         return escaped.replace(/\n/g, '<br>');
     }
 
@@ -421,9 +533,9 @@
     }
 
     function showToast(message, type = 'success') {
-        const container = document.getElementById('toast-container');
+        const container = document.getElementById('toast-container') || document.body;
         const toast = document.createElement('div');
-        toast.style.cssText = `padding:0.75rem 1.25rem;border-radius:var(--radius-md);box-shadow:var(--color-shadow-lg);color:white;font-size:0.875rem;font-weight:600;display:flex;align-items:center;gap:0.65rem;opacity:0;transform:translateY(20px);transition:all 0.3s cubic-bezier(0.4,0,0.2,1);background-color:${type === 'success' ? '#10b981' : '#ef4444'};`;
+        toast.style.cssText = `position:fixed;bottom:20px;right:20px;padding:0.75rem 1.25rem;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);color:white;font-size:0.875rem;font-weight:600;display:flex;align-items:center;gap:0.65rem;opacity:0;transform:translateY(20px);transition:all 0.3s cubic-bezier(0.4,0,0.2,1);background-color:${type === 'success' ? '#10b981' : '#ef4444'};z-index:99999;`;
         const icon = type === 'success' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-triangle-exclamation"></i>';
         toast.innerHTML = `${icon} <span>${message}</span>`;
         container.appendChild(toast);
@@ -464,57 +576,60 @@
         }
     }
 @endphp
-<div class="rh" style="max-width:720px;">
-<div class="rh-fb-feed" style="max-width: 100%;">
 
-    {{-- NÚT QUAY LẠI --}}
+<div class="{{ request()->has('modal') ? '' : 'rh' }}" style="max-width:720px; margin: 0 auto; padding: {{ request()->has('modal') ? '10px 10px 80px' : '0' }};">
+    
+    @if(!request()->has('modal'))
+    {{-- NÚT QUAY LẠI CHỈ HIỂN THỊ NẾU KHÔNG PHẢI MODAL --}}
     <a href="{{ route('resident.dashboard') }}" style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 600; color: #2563eb; text-decoration: none; margin-bottom: 0.5rem;">
         <i class="fa-solid fa-arrow-left"></i> Quay lại bảng tin
     </a>
+    @endif
 
     {{-- THÔNG BÁO --}}
     @if(session('success'))
-        <div style="padding: 12px 18px; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; border-radius: 10px; font-size: 0.85rem; font-weight: 600;">{{ session('success') }}</div>
+        <div style="padding: 12px 18px; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; border-radius: 10px; font-size: 0.85rem; font-weight: 600; margin-bottom: 15px;">{{ session('success') }}</div>
     @endif
 
-    {{-- BÀI VIẾT DẠNG FB CARD --}}
-    <div class="rh-fb-card">
-        {{-- Header: avatar + name + time --}}
-        <div class="rh-fb-card__header">
-            <div class="rh-fb-card__avatar">
-                @if($post->user->avatar)
-                    <img src="{{ asset('storage/' . $post->user->avatar) }}" alt="" loading="lazy">
+    {{-- BÀI VIẾT DẠNG CHUẨN --}}
+    <div class="df-post" id="post-card-{{ $post->id }}">
+        <div class="df-post-header">
+            <div class="df-post-user">
+                @if($post->user && $post->user->avatar)
+                    <img src="{{ asset('storage/' . $post->user->avatar) }}" class="df-avatar" alt="">
                 @else
-                    <span>{{ mb_substr($post->user->name ?? '?', 0, 1) }}</span>
+                    <div class="df-avatar df-avatar-placeholder" style="background:#000;">
+                        <i class="fa-solid fa-shield-halved" style="color:#fff; font-size:0.9rem;"></i>
+                    </div>
                 @endif
+                <div class="df-post-user-info">
+                    <span class="df-post-name">
+                        {{ $post->user->name ?? 'Ban Quản Lý Urban Living' }}
+                        <i class="fa-solid fa-circle-check" style="color:#10b981;"></i>
+                    </span>
+                    <span class="df-post-meta">
+                        {{ $post->created_at->diffForHumans() }} · {{ $post->user->apartment ? 'Cư dân' : 'BQT' }}
+                    </span>
+                </div>
             </div>
-            <div>
-                <span class="rh-fb-card__name">{{ $post->user->name }}</span>
-                <span class="rh-fb-card__time">{{ $post->created_at->diffForHumans() }} · {{ $post->user->apartment ? 'Cư dân' : 'Ban Quản Trị' }}</span>
-            </div>
-
-            {{-- Nút ... tùy chọn --}}
-            <div class="rh-fb-card__menu">
-                <button type="button" class="rh-fb-card__menu-btn" onclick="togglePostMenu(event, {{ $post->id }})" aria-label="Tùy chọn">
+            <div style="position: relative;">
+                <button type="button" class="df-post-menu-btn" onclick="togglePostMenu(event, {{ $post->id }})">
                     <i class="fa-solid fa-ellipsis"></i>
                 </button>
-                <div class="rh-fb-card__dropdown" id="post-menu-{{ $post->id }}">
+                <div class="df-post-dropdown" id="post-menu-{{ $post->id }}">
                     @if($post->user_id === auth()->id())
-                        <a href="{{ route('resident.posts.edit', $post->id) }}" class="rh-fb-card__dropdown-item">
+                        <a href="{{ route('resident.posts.edit', $post->id) }}" class="df-post-dropdown-item">
                             <i class="fa-regular fa-pen-to-square"></i> Sửa bài viết
                         </a>
-                    @endif
-                    @if($post->user_id === auth()->id() || auth()->user()->isAdminPortalUser())
-                        <form action="{{ route('resident.posts.destroy', $post->id) }}" method="POST" onsubmit="return confirmDeletePost(event, this)" style="margin: 0;">
+                        <form action="{{ route('resident.posts.destroy', $post->id) }}" method="POST" style="margin:0;">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="rh-fb-card__dropdown-item rh-fb-card__dropdown-item--danger">
+                            <button type="submit" class="df-post-dropdown-item df-post-dropdown-item--danger" onclick="return confirm('Bạn có chắc muốn xóa bài viết này?')">
                                 <i class="fa-regular fa-trash-can"></i> Xóa bài viết
                             </button>
                         </form>
-                    @endif
-                    @if($post->user_id !== auth()->id())
-                        <button type="button" class="rh-fb-card__dropdown-item" onclick="openReportModal({{ $post->id }})">
+                    @else
+                        <button type="button" class="df-post-dropdown-item" onclick="openReportModal({{ $post->id }})">
                             <i class="fa-regular fa-flag"></i> Báo cáo bài viết
                         </button>
                     @endif
@@ -522,94 +637,48 @@
             </div>
         </div>
 
-        {{-- Title --}}
-        @if($post->title)
-            <div style="padding: 8px 16px 0; font-weight: 700; font-size: 1.1rem; color: #050505; display: none;" class="pc-detail__title">{{ $post->title }}</div>
-        @endif
-
-        {{-- Content --}}
-        <div class="rh-fb-card__text pc-detail__content post-text-content" id="post-content-{{ $post->id }}" style="padding: 8px 16px 0;">
-            {!! cleanPostContentBlade($post->content) !!}
-        </div>
-
-        {{-- Media đính kèm (FB-style grid) --}}
-        @if($post->images->isNotEmpty())
-            @php $imgCount = $post->images->count(); @endphp
-            <div class="rh-fb-card__media" style="margin-top: 12px; cursor: pointer;">
-                @if($imgCount === 1)
-                    @if(($post->images[0]->type ?? 'image') === 'video')
-                        <video src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-single" controls preload="metadata" style="max-height:500px;width:100%;border-radius:0;"></video>
-                    @else
-                        <img src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-single" alt="" loading="lazy" onclick="openLightbox('{{ asset('storage/' . $post->images[0]->image_path) }}')">
-                    @endif
-                @elseif($imgCount === 2)
-                    <div class="rh-fb-card__img-grid rh-fb-card__img-grid--2">
-                        @foreach($post->images->take(2) as $img)
-                            @if(($img->type ?? 'image') === 'video')
-                                <video src="{{ asset('storage/' . $img->image_path) }}" controls preload="metadata" style="width:100%;height:300px;object-fit:cover;"></video>
-                            @else
-                                <img src="{{ asset('storage/' . $img->image_path) }}" alt="" loading="lazy" onclick="openLightbox('{{ asset('storage/' . $img->image_path) }}')">
-                            @endif
-                        @endforeach
-                    </div>
-                @else
-                    <div class="rh-fb-card__img-grid rh-fb-card__img-grid--3plus">
-                        @if(($post->images[0]->type ?? 'image') === 'video')
-                            <video src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-main" controls preload="metadata" style="height:320px;width:100%;object-fit:cover;"></video>
-                        @else
-                            <img src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-main" alt="" loading="lazy" onclick="openLightbox('{{ asset('storage/' . $post->images[0]->image_path) }}')">
-                        @endif
-                        <div class="rh-fb-card__img-side">
-                            @foreach($post->images->slice(1, 2) as $img)
-                                @if(($img->type ?? 'image') === 'video')
-                                    <video src="{{ asset('storage/' . $img->image_path) }}" controls preload="metadata" style="width:100%;height:159px;object-fit:cover;"></video>
-                                @else
-                                    <img src="{{ asset('storage/' . $img->image_path) }}" alt="" loading="lazy" onclick="openLightbox('{{ asset('storage/' . $img->image_path) }}')">
-                                @endif
-                            @endforeach
-                            @if($imgCount > 3)
-                                <div class="rh-fb-card__img-overlay">+{{ $imgCount - 3 }}</div>
-                            @endif
-                        </div>
-                    </div>
+        <div class="df-post-content">
+            <div class="df-post-text">
+                @if($post->content)
+                    @php
+                        $allowed = '<p><br><strong><b><i><em><ul><ol><li><u>';
+                        $safe = strip_tags($post->content, $allowed);
+                        $safe = preg_replace('/<([a-z][a-z0-9]*)[^>]*?(\/?)>/si', '<$1$2>', $safe);
+                    @endphp
+                    {!! nl2br($safe) !!}
                 @endif
             </div>
-        @endif
-
-        {{-- Stats row --}}
-        <div class="rh-fb-card__stats">
-            <span><span class="like-count">{{ $post->likes_count }}</span> lượt thích</span>
-            <span>{{ $totalComments }} bình luận</span>
         </div>
 
-        {{-- Action bar (giống index) --}}
-        <div class="rh-fb-card__actions">
-            {{-- Thích --}}
-            <div class="pc-like-container" style="display: flex; align-items: center; justify-content: center;">
-                @php
-                    $userLike = $post->likedByCurrentUser->first();
-                    $activeReaction = $userLike ? true : false;
-                @endphp
+        <div class="df-post-images {{ $post->images->count() >= 2 ? 'grid-2' : '' }}">
+            @if($post->images->isNotEmpty())
+                @foreach($post->images as $img)
+                    <img src="{{ asset('storage/' . $img->image_path) }}" alt="" onclick="openLightbox('{{ asset('storage/' . $img->image_path) }}')" style="cursor: zoom-in; max-width: 100%; border-radius: 8px; margin-top: 10px;">
+                @endforeach
+            @endif
+        </div>
 
-                <button type="button" class="rh-fb-card__action pc-like-btn {{ $activeReaction ? 'rh-fb-like-btn--active' : '' }}" onclick="toggleLike(event, {{ $post->id }}, 'post', 'like')" style="width:100%;">
-                    <svg class="like-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
-                    <span class="reaction-text-span">Thích</span>
-                </button>
+        <div class="df-post-stats" style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; margin-top: 12px;">
+            <div class="df-post-stats-left" style="display: flex; align-items: center; gap: 6px;">
+                <span class="df-stat-icon-wrap" style="background:#22c55e; border-radius: 50%; padding: 4px; display: inline-flex;"><i class="fa-solid fa-thumbs-up" style="color:#fff;font-size:0.7rem;"></i></span>
+                <span style="font-weight:600; color:#374151;" class="like-count">{{ $post->likes_count ?? 0 }}</span>
             </div>
-
-            {{-- Bình luận --}}
-            <button type="button" class="rh-fb-card__action" onclick="document.getElementById('comment-content').focus()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                Bình luận
-            </button>
-
-            {{-- Chia sẻ --}}
-            <button type="button" class="rh-fb-card__action rh-fb-share-btn" data-url="{{ route('resident.posts.show', $post->id) }}">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-                Chia sẻ
-            </button>
+            <div class="df-post-stats-right" style="color:#6b7280; font-size:0.9rem;">
+                <span>{{ $totalComments ?? 0 }} bình luận</span>
+            </div>
         </div>
 
+        <div class="df-post-actions" style="display: flex; padding-top: 8px;">
+            <button type="button" class="df-action-btn rh-fb-like-btn pc-like-btn {{ $post->likedByCurrentUser->isNotEmpty() ? 'active rh-fb-like-btn--active' : '' }}" onclick="toggleLike(event, {{ $post->id }}, 'post', 'like')" style="flex:1;">
+                <i class="fa-regular fa-thumbs-up"></i> <span class="reaction-text-span">Thích</span>
+            </button>
+            <button type="button" class="df-action-btn" onclick="document.getElementById('comment-content').focus()" style="flex:1;">
+                <i class="fa-regular fa-comment"></i> Bình luận
+            </button>
+            <button type="button" class="df-action-btn rh-fb-share-btn" data-url="{{ route('resident.posts.show', $post->id) }}" style="flex:1;">
+                <i class="fa-solid fa-share-nodes"></i> Chia sẻ
+            </button>
+        </div>
     </div>
 
     {{-- KHU VỰC BÌNH LUẬN KIỂU FACEBOOK --}}

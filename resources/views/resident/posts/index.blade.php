@@ -174,9 +174,9 @@
                 <button type="button" class="df-action-btn rh-fb-like-btn {{ $post->likedByCurrentUser->isNotEmpty() ? 'active' : '' }}" data-post-id="{{ $post->id }}">
                     <i class="fa-regular fa-thumbs-up"></i> Thích
                 </button>
-                <a href="{{ route('resident.posts.show', $post->id) }}" class="df-action-btn" style="text-decoration:none;">
+                <button type="button" class="df-action-btn" onclick="openPostDetailModal({{ $post->id }})" style="text-decoration:none;">
                     <i class="fa-regular fa-comment"></i> Bình luận
-                </a>
+                </button>
                 <button type="button" class="df-action-btn rh-fb-share-btn" data-url="{{ route('resident.posts.show', $post->id) }}">
                     <i class="fa-solid fa-share-nodes"></i> Chia sẻ
                 </button>
@@ -512,6 +512,34 @@ function hidePost(e, id) {
     card.style.opacity = '0.5';
     card.innerHTML = '<div style="padding:20px;text-align:center;color:#64748b;">Bài viết đã được ẩn.</div>';
 }
+
+// POST DETAIL IFRAME MODAL
+function openPostDetailModal(postId) {
+    const modal = document.getElementById('postDetailModal');
+    const iframe = document.getElementById('postDetailIframe');
+    iframe.src = '/resident/posts/' + postId + '?modal=1';
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+}
+
+function closePostDetailModal() {
+    const modal = document.getElementById('postDetailModal');
+    const iframe = document.getElementById('postDetailIframe');
+    modal.style.display = 'none';
+    iframe.src = ''; // Clear iframe
+    document.body.style.overflow = 'auto'; // Restore scrolling
+}
 </script>
+
+<!-- POST DETAIL IFRAME MODAL -->
+<div class="df-modal" id="postDetailModal" style="display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 10000; overflow: hidden;">
+    <div class="df-modal-overlay" onclick="closePostDetailModal()" style="position: absolute; inset: 0;"></div>
+    <div class="df-modal-content" style="position: relative; width: 750px; max-width: 95%; height: 85vh; background: #fff; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <button class="df-modal-close" onclick="closePostDetailModal()" style="position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border: none; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 20; color: #333; font-size: 1.2rem; transition: background 0.2s;">
+            &times;
+        </button>
+        <iframe id="postDetailIframe" src="" style="width: 100%; height: 100%; border: none; flex: 1;"></iframe>
+    </div>
+</div>
 @endpush
 @endsection
