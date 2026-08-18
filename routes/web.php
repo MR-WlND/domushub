@@ -530,14 +530,26 @@ Route::middleware(['resident'])->group(function () {
     // BẢNG TIN & BÌNH LUẬN PHÍA CƯ DÂN
     Route::get('/resident/posts', function (\Illuminate\Http\Request $request) {
         $user = auth()->user();
-        $posts = \App\Models\Post::with(['user', 'images', 'comments', 'likedByCurrentUser'])
+        $tab  = $request->get('tab', 'all'); // all | mine | announcements
+
+        $query = \App\Models\Post::with(['user', 'images', 'comments', 'likedByCurrentUser'])
             ->withCount(['likes', 'comments'])
-            ->where('status', 'published')
-            ->where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-            
-        return view('resident.posts.index', compact('posts', 'user'));
+            ->where('status', 'published');
+
+        if ($tab === 'mine') {
+            $query->where('user_id', $user->id);
+        } elseif ($tab === 'announcements') {
+            $query->whereHas('user', fn($q) => $q->where('role', 'admin'));
+        } else {
+            // Ẩn các bài mà user đã hide
+            $query->whereNotIn('id', function($q) use ($user) {
+                $q->select('post_id')->from('post_hides')->where('user_id', $user->id);
+            });
+        }
+
+        $posts = $query->orderBy('created_at', 'desc')->paginate(10);
+
+        return view('resident.posts.index', compact('posts', 'user', 'tab'));
     })->name('resident.posts.index');
     Route::get('/resident/posts/create', function() { return view('resident.posts.create'); })->name('resident.posts.create');
     Route::post('/resident/posts', [\App\Http\Controllers\Resident\PostController::class, 'store'])->name('resident.posts.store');
@@ -559,6 +571,7 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/reactions/{likeable_type}/{likeable_id}', [\App\Http\Controllers\Resident\PostController::class, 'getReactions'])->name('resident.reactions');
 
     // BẢNG TIN CHUNG CƯ PHÍA CƯ DÂN (CHỈ GIỮ LẠI TRANG CHI TIẾT)
+    Route::get('/resident/announcements', [\App\Http\Controllers\Resident\AnnouncementController::class, 'index'])->name('resident.announcements.index');
     Route::get('/resident/announcements/{id}', [\App\Http\Controllers\Resident\AnnouncementController::class, 'show'])->name('resident.announcements.show');
 
     // THÔNG BÁO CƯ DÂN

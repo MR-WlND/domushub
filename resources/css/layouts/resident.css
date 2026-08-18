@@ -15,76 +15,88 @@
     padding: 2rem 1.5rem;
 }
 
+/* Trang chủ dùng background ảnh toàn trang – xóa padding của wrapper & ẩn footer & cố định màn hình */
+.resident-content:has(.rh-bg) {
+    padding: 0;
+    overflow: hidden;
+}
+
+body.resident-page {
+    font-family: 'Inter', system-ui, sans-serif;
+}
+
+.resident-layout:has(.rh-bg) footer,
+.resident-page:has(.rh-bg) footer {
+    display: none !important;
+}
+
+.resident-page:has(.rh-bg) {
+    overflow: hidden;
+    height: 100vh;
+}
+
+
 .resident-header {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    justify-content: space-between;
-    gap: 1.5rem;
     padding: 0 2.5rem;
-    background-color: #f8f9ff;
-    border-bottom: 1px solid #c5c5d3;
-    height: 72px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e5e5e5;
+    height: 64px;
     width: 100%;
     box-sizing: border-box;
     position: sticky;
     top: 0;
-    z-index: 10;
+    z-index: 100;
 }
 
 .resident-header__brand {
+    justify-self: start;
     display: flex;
     align-items: center;
 }
 
 .resident-header__brand-link {
-    font-size: 1.25rem;
+    font-size: 1rem;
     font-weight: 700;
-    color: #00236f;
+    color: #000000;
     text-decoration: none;
+    letter-spacing: -0.02em;
 }
 
 .resident-header__nav {
+    justify-self: center;
     display: flex;
     align-items: center;
-    gap: 2rem;
+    gap: 2.5rem;
     height: 100%;
 }
 
 .resident-header__link {
-    color: #475569;
+    color: #374151;
     text-decoration: none;
     font-weight: 500;
-    font-size: 0.95rem;
+    font-size: 0.8rem;
     display: flex;
     align-items: center;
     justify-content: center;
     height: 100%;
-    position: relative;
     transition: color 0.2s ease;
     box-sizing: border-box;
 }
 
 .resident-header__link:hover {
-    color: #00236f;
+    color: #000000;
 }
 
 .resident-header__link--active {
-    color: #00236f;
-    font-weight: 600;
-}
-
-.resident-header__link--active::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background-color: #00236f;
-    border-radius: 8px;
+    color: #000000;
+    font-weight: 700;
 }
 
 .resident-header__actions {
+    justify-self: end;
     display: flex;
     align-items: center;
     gap: 1.25rem;
@@ -94,7 +106,7 @@
 .header-icon-wrapper {
     position: relative;
     cursor: pointer;
-    color: #5f6368;
+    color: #000000;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -105,12 +117,12 @@
 }
 
 .header-icon-wrapper:hover {
-    background-color: rgba(0, 35, 111, 0.04);
-    color: #00236f;
+    background-color: rgba(0,0,0,0.05);
 }
 
 .header-icon {
     color: currentColor;
+    font-size: 1.1rem;
 }
 
 /* User Menu & Dropdown */
@@ -376,9 +388,11 @@
         gap: 1.5rem;
         align-items: flex-start;
     }
+
     .resident-footer__info {
         text-align: left;
     }
+
     .resident-footer__nav {
         flex-direction: column;
         align-items: flex-start;
@@ -480,5 +494,3 @@
     margin-top: 4px;
     display: block;
 }
-
-

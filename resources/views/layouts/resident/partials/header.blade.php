@@ -6,7 +6,7 @@
     <nav class="resident-header__nav" aria-label="Resident navigation">
         <a href="{{ route('resident.dashboard') }}"
             class="resident-header__link {{ request()->routeIs('resident.dashboard') ? 'resident-header__link--active' : '' }}">
-            Home
+            Trang chủ
         </a>
         <a href="{{ route('resident.posts.index') }}"
             class="resident-header__link {{ request()->routeIs('resident.posts.index') ? 'resident-header__link--active' : '' }}">

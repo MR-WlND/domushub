@@ -18,8 +18,6 @@
         <main class="resident-content">
             @yield('content')
         </main>
-
-        @include('layouts.resident.partials.footer')
     </div>
 
     @include('layouts.resident.partials.chatbot')

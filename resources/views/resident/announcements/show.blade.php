@@ -1,89 +1,229 @@
 @extends('layouts.resident.master')
 
-@section('title', $announcement->title . ' – BQL DomusHub')
+@section('title', $announcement->title . ' – BQL Urban Living')
 
 @push('styles')
     @vite(['resources/css/pages/resident/announcements/index.css'])
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .ra-detail-page {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .ra-breadcrumb {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-bottom: 24px;
+        }
+        .ra-breadcrumb a {
+            color: #4b5563;
+            text-decoration: none;
+        }
+        .ra-breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        
+        .ra-tags {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .ra-detail-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #111827;
+            margin: 0 0 16px 0;
+            line-height: 1.3;
+            letter-spacing: -0.02em;
+        }
+        
+        .ra-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 0.9rem;
+            color: #4b5563;
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .ra-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .ra-cover {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            margin-bottom: 32px;
+        }
+        
+        .ra-content {
+            font-size: 1rem;
+            color: #374151;
+            line-height: 1.7;
+            margin-bottom: 60px;
+        }
+        .ra-content p {
+            margin-bottom: 16px;
+        }
+        
+        /* Related section */
+        .ra-related-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .ra-related-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #111827;
+            margin: 0;
+        }
+        .ra-related-link {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #4b5563;
+            text-decoration: none;
+        }
+        .ra-related-link:hover {
+            color: #111827;
+        }
+        
+        .ra-related-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+        
+        .ra-related-card {
+            background: #ffffff;
+            border: 1px solid #f3f4f6;
+            border-radius: 12px;
+            padding: 20px;
+            text-decoration: none;
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .ra-related-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transform: translateY(-2px);
+        }
+        .ra-related-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .ra-rc-tag {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 99px;
+            letter-spacing: 0.05em;
+            background: #f9fafb;
+            color: #6b7280;
+            border: 1px solid #e5e7eb;
+        }
+        .ra-rc-date {
+            font-size: 0.8rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        .ra-rc-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #111827;
+            margin: 0;
+            line-height: 1.4;
+        }
+    </style>
 @endpush
 
 @section('content')
-    <div class="res-announcements" style="max-width: 800px;">
-        {{-- Back button header --}}
-        <div style="margin-bottom: 8px;">
-            <a href="{{ route('resident.dashboard') }}" class="res-card__readmore" style="font-size: 14px; font-weight: 600; text-decoration: none;">
-                <i class="fa-solid fa-arrow-left"></i> Quay lại trang chủ
-            </a>
+<div class="ra-detail-page">
+    
+    <div class="ra-breadcrumb">
+        <a href="{{ route('resident.dashboard') }}">Trang chủ</a> &nbsp;›&nbsp; 
+        <a href="{{ route('resident.announcements.index') }}">Thông báo</a> &nbsp;›&nbsp; 
+        <span style="color: #111827; font-weight: 500;">Chi tiết thông báo</span>
+    </div>
+
+    @php
+        $catRaw = strtolower($announcement->category ?? '');
+        $catText = $categoryMap[$catRaw] ?? ($announcement->category ?? 'Chung');
+        
+        $tagBg = '#f3f4f6';
+        $tagColor = '#374151';
+        
+        if ($catRaw === 'warning' || $catRaw === 'urgent') {
+            $tagBg = '#b91c1c';
+            $tagColor = '#ffffff';
+        } elseif ($catRaw === 'maintenance') {
+            $tagBg = '#f3f4f6';
+            $tagColor = '#4b5563';
+        } elseif ($catRaw === 'event') {
+            $tagBg = '#e0e7ff';
+            $tagColor = '#4f46e5';
+        }
+    @endphp
+
+    <div class="ra-tags">
+        @if($announcement->pinned)
+            <span class="ra-tag" style="background-color: #b91c1c; color: #ffffff;"><i class="fa-solid fa-triangle-exclamation"></i> QUAN TRỌNG</span>
+        @endif
+        <span class="ra-tag" style="background-color: {{ $announcement->pinned ? '#f3f4f6' : $tagBg }}; color: {{ $announcement->pinned ? '#4b5563' : $tagColor }};">{{ mb_strtoupper($catText) }}</span>
+    </div>
+
+    <h1 class="ra-detail-title">{{ $announcement->title }}</h1>
+
+    <div class="ra-meta-row">
+        <div class="ra-meta-item">
+            <i class="fa-regular fa-calendar" style="color: #6b7280;"></i>
+            <span>{{ $announcement->created_at->format('d \T\h\á\n\g m, Y') }}</span>
         </div>
-
-        {{-- Detail card --}}
-        <div class="res-detail-card">
-            @if($announcement->image_path)
-                <img src="{{ asset('storage/' . $announcement->image_path) }}" alt="Banner" class="res-detail-banner">
-            @endif
-
-            <div class="res-detail-content">
-                {{-- Meta --}}
-                <div class="res-detail-meta">
-                    <span class="res-badge res-badge--{{ $announcement->category }}">
-                        @if($announcement->category === 'maintenance')
-                            Bảo trì kỹ thuật
-                        @elseif($announcement->category === 'warning')
-                            Cảnh báo khẩn cấp
-                        @elseif($announcement->category === 'event')
-                            Sự kiện
-                        @else
-                            Tin tức chung
-                        @endif
-                    </span>
-                    <span style="font-size: 13px; color: #64748b;">
-                        Đăng ngày: {{ $announcement->created_at->format('H:i d/m/Y') }} 
-                        ({{ $announcement->created_at->diffForHumans() }})
-                    </span>
-                    @if($announcement->pinned)
-                        <span style="font-size: 12px; font-weight: 700; color: #854d0e; background: #fef08a; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
-                            <i class="fa-solid fa-thumbtack"></i> Đã ghim
-                        </span>
-                    @endif
-                </div>
-
-                {{-- Title --}}
-                <h1 class="res-detail-title">{{ $announcement->title }}</h1>
-
-                {{-- Author info --}}
-                <div class="res-detail-author-row">
-                    @if($announcement->user && $announcement->user->avatar)
-                        <img src="{{ asset('storage/' . $announcement->user->avatar) }}" alt="Avatar" class="res-detail-author-avatar">
-                    @else
-                        <div class="res-detail-author-avatar" style="display: flex; align-items: center; justify-content: center; background: #eff6ff; border: 1px solid #bfdbfe; color: #0b57d0; font-size: 16px; font-weight: 700;">
-                            {{ strtoupper(mb_substr($announcement->user->name ?? 'A', 0, 1)) }}
-                        </div>
-                    @endif
-                    <div>
-                        <h4 class="res-detail-author-name">{{ $announcement->user->name ?? 'Ban Quản Trị' }}</h4>
-                        <p class="res-detail-author-title">
-                            @if($announcement->user && $announcement->user->role === 'admin')
-                                Quản trị viên hệ thống
-                            @elseif($announcement->user && $announcement->user->role === 'manager')
-                                Ban Quản Lý Chung Cư
-                            @else
-                                Nhân viên Ban Quản Trị
-                            @endif
-                        </p>
-                    </div>
-                </div>
-
-                {{-- Body content --}}
-                <div class="res-detail-body">
-                    {!! $announcement->content !!}
-                </div>
-
-                {{-- Signature --}}
-                <div class="res-detail-signature">
-                    <span class="res-signature-label">Trân trọng,</span>
-                    <span class="res-signature-name">Ban Quản Lý Chung Cư DomusHub</span>
-                </div>
-            </div>
+        <div class="ra-meta-item">
+            <i class="fa-regular fa-circle-user" style="color: #6b7280;"></i>
+            <span>Ban Quản Lý Tòa Nhà</span>
         </div>
     </div>
+
+    @if($announcement->image_path)
+        <img src="{{ asset('storage/' . $announcement->image_path) }}" alt="Cover" class="ra-cover">
+    @endif
+
+    <div class="ra-content">
+        {!! $announcement->content !!}
+    </div>
+
+    @if($relatedAnnouncements->count() > 0)
+    <div class="ra-related">
+        <div class="ra-related-header">
+            <h2 class="ra-related-title">Thông báo liên quan</h2>
+            <a href="{{ route('resident.announcements.index') }}" class="ra-related-link">XEM TẤT CẢ &rarr;</a>
+        </div>
+        
+        <div class="ra-related-grid">
+            @foreach($relatedAnnouncements as $rel)
+                @php
+                    $relCatRaw = strtolower($rel->category ?? '');
+                    $relCatText = $categoryMap[$relCatRaw] ?? ($rel->category ?? 'Chung');
+                @endphp
+                <a href="{{ route('resident.announcements.show', $rel->id) }}" class="ra-related-card">
+                    <div class="ra-related-card-top">
+                        <span class="ra-rc-tag">{{ mb_strtoupper($relCatText) }}</span>
+                        <span class="ra-rc-date">{{ $rel->created_at->format('d \T\h\g m') }}</span>
+                    </div>
+                    <h3 class="ra-rc-title">{{ Str::limit($rel->title, 70) }}</h3>
+                </a>
+            @endforeach
+        </div>
+    </div>
+    @endif
+</div>
 @endsection

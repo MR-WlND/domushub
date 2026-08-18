@@ -16,6 +16,7 @@ Table users {
   cccd varchar [not null]
   banned_posting_until timestamp [not null]
   banned_commenting_until timestamp [not null]
+  staff_id bigint
 }
 
 Table blocks {
@@ -508,3 +509,171 @@ Ref: utility_meters.id < utility_meter_logs.utility_meter_id
 Ref: apartments.id < utility_meter_logs.apartment_id
 Ref: users.id < utility_meter_logs.user_id
 Ref: users.id < announcements.user_id
+
+Table chatbot_messages {
+  id bigint [pk, increment]
+  user_id bigint
+  role varchar
+  message text
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table ticket_costs {
+  id bigint [pk, increment]
+  ticket_id bigint
+  note text
+  created_by bigint
+  created_at timestamp
+}
+
+Table post_hides {
+  id bigint [pk, increment]
+  post_id bigint
+  user_id bigint
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table apartment_types {
+  id bigint [pk, increment]
+  description text
+  bedroom_count integer
+  bathroom_count integer
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table cleaning_tasks {
+  id bigint [pk, increment]
+  assigned_to bigint
+  assigned_by bigint
+  title varchar
+  description text
+  area varchar
+  area_group varchar
+  start_time time
+  end_time time
+  checklist json
+  manager_note text
+  completed_at timestamp
+  task_date date
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table cleaning_reports {
+  id bigint [pk, increment]
+  reported_by bigint
+  title varchar
+  location varchar
+  description text
+  images json
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table parcels {
+  id bigint [pk, increment]
+  apartment_id bigint
+  sender_name varchar
+  tracking_code varchar
+  carrier varchar
+  description text
+  arrived_at timestamp
+  received_at timestamp
+  returned_at timestamp
+  note text
+  created_by bigint
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table departments {
+  id bigint [pk, increment]
+  name varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table staffs {
+  id bigint [pk, increment]
+  full_name varchar
+  address varchar
+  dob date
+  department_id bigint
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table contracts {
+  id bigint [pk, increment]
+  staff_id bigint
+  contract_number varchar
+  type varchar
+  start_date date
+  end_date date
+  file_path varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table shifts {
+  id bigint [pk, increment]
+  name varchar
+  start_time time
+  end_time time
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table staff_schedules {
+  id bigint [pk, increment]
+  staff_id bigint
+  shift_id bigint
+  work_date date
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table shift_requirements {
+  id bigint [pk, increment]
+  shift_id bigint
+  department_id bigint
+  required_staff integer
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table ticket_assignments {
+  id bigint [pk, increment]
+  ticket_id bigint
+  user_id bigint
+  assigned_by bigint
+  created_at timestamp
+  updated_at timestamp
+}
+
+
+
+Ref: chatbot_messages.user_id > users.id
+Ref: ticket_costs.ticket_id > tickets.id
+Ref: ticket_costs.created_by > users.id
+Ref: post_hides.post_id > posts.id
+Ref: post_hides.user_id > users.id
+Ref: cleaning_tasks.assigned_to > users.id
+Ref: cleaning_tasks.assigned_by > users.id
+Ref: cleaning_reports.reported_by > users.id
+Ref: parcels.apartment_id > apartments.id
+Ref: parcels.created_by > users.id
+Ref: staffs.department_id > departments.id
+Ref: contracts.staff_id > staffs.id
+Ref: staff_schedules.staff_id > staffs.id
+Ref: staff_schedules.shift_id > shifts.id
+Ref: shift_requirements.shift_id > shifts.id
+Ref: shift_requirements.department_id > departments.id
+Ref: ticket_assignments.ticket_id > tickets.id
+Ref: ticket_assignments.user_id > users.id
+Ref: ticket_assignments.assigned_by > users.id
+Ref: users.staff_id > staffs.id
+

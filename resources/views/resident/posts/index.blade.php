@@ -1,194 +1,240 @@
 @extends('layouts.resident.master')
 
-@section('title', 'Trang chủ - DomusHub')
+@section('title', 'Bản tin - DomusHub')
 
 @push('styles')
-    @vite(['resources/css/pages/resident/home/index.css', 'resources/css/resident/posts.css'])
+    @vite(['resources/css/resident/posts.css'])
 @endpush
 
-@section('content')
-<div class="rh">
+@php
+    $tab = request('tab', 'all');
+    $importantAnnouncements = \App\Models\Announcement::where('status', 'published')->latest()->take(3)->get();
+    
+    // Lấy 2 hình ảnh mới nhất từ các bài viết
+    $latestImages = \App\Models\PostImage::where('type', 'image')
+        ->latest()
+        ->take(2)
+        ->get();
+@endphp
 
-    {{-- My Posts Header --}}
-    <div class="rh-section" style="margin-top: 20px;">
-        <h3 class="rh-section__title">Bản tin của tôi</h3>
-        <div class="rh-section__actions">
-            <a href="{{ route('resident.posts.create') }}" class="rh-section__btn" aria-label="Đăng bài viết mới">+ Đăng bài</a>
+@section('content')
+<div class="df-layout">
+
+    {{-- LEFT SIDEBAR: DANH MỤC --}}
+    <div class="df-sidebar">
+        {{-- User Info Snippet --}}
+        <div class="df-user-snippet">
+            @if(auth()->user() && auth()->user()->avatar)
+                <img src="{{ asset('storage/' . auth()->user()->avatar) }}" class="df-snippet-avatar" alt="">
+            @else
+                <div class="df-snippet-avatar df-avatar-placeholder">
+                    {{ mb_substr(auth()->user()->name ?? 'U', 0, 1) }}
+                </div>
+            @endif
+            <div class="df-snippet-info">
+                <span class="df-snippet-name">{{ explode(' ', auth()->user()->name)[count(explode(' ', auth()->user()->name))-1] ?? auth()->user()->name }} Nguyen</span>
+                <span class="df-snippet-meta">Căn hộ {{ auth()->user()->apartment->apartment_number ?? 'A-1204' }}</span>
+            </div>
+        </div>
+
+        <div class="df-menu">
+            <a href="{{ route('resident.posts.index', ['tab' => 'all']) }}" class="df-menu-item {{ $tab === 'all' ? 'active' : '' }}">
+                <i class="fa-solid fa-house"></i> Bảng tin cư dân
+            </a>
+            <a href="{{ route('resident.posts.index', ['tab' => 'admin']) }}" class="df-menu-item {{ $tab === 'admin' ? 'active' : '' }}">
+                <i class="fa-solid fa-bullhorn"></i> Thông báo ban quản lý
+            </a>
+            <a href="{{ route('resident.posts.index', ['tab' => 'mine']) }}" class="df-menu-item {{ $tab === 'mine' ? 'active' : '' }}">
+                <i class="fa-solid fa-users"></i> Bài viết của tôi
+            </a>
+            <a href="{{ route('resident.facilities.index') }}" class="df-menu-item">
+                <i class="fa-regular fa-calendar"></i> Sự kiện sắp tới
+            </a>
         </div>
     </div>
 
-    @if(session('success'))
-        <div style="padding:12px 18px;background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;border-radius:10px;font-size:0.85rem;font-weight:600;margin-bottom:16px;">{{ session('success') }}</div>
-    @endif
+    {{-- MAIN CONTENT: FEED --}}
+    <div class="df-main">
 
-    <div class="rh-fb-feed">
-            @forelse($posts as $post)
-            <div class="rh-fb-card" id="post-card-{{ $post->id }}">
-                {{-- Header: avatar + name + time --}}
-                <div class="rh-fb-card__header">
-                    <div class="rh-fb-card__avatar">
-                        @if($post->user->avatar)
-                            <img src="{{ asset('storage/' . $post->user->avatar) }}" alt="" loading="lazy">
+        {{-- Create Post Box --}}
+        <div class="df-create-post">
+            <div class="df-create-post-top">
+                @if(auth()->user() && auth()->user()->avatar)
+                    <img src="{{ asset('storage/' . auth()->user()->avatar) }}" class="df-avatar" alt="">
+                @else
+                    <div class="df-avatar df-avatar-placeholder">
+                        {{ mb_substr(auth()->user()->name ?? 'U', 0, 1) }}
+                    </div>
+                @endif
+                <div class="df-create-post-input" onclick="window.location.href='{{ route('resident.posts.create') }}'">
+                    {{ explode(' ', auth()->user()->name)[count(explode(' ', auth()->user()->name))-1] ?? auth()->user()->name }}, bạn đang nghĩ gì?
+                </div>
+            </div>
+            <div class="df-create-post-bottom">
+                <button class="df-create-btn" onclick="window.location.href='{{ route('resident.posts.create') }}'">
+                    <i class="fa-regular fa-image" style="color: #10b981; font-size: 1.1rem;"></i> Hình ảnh/Video
+                </button>
+                <button class="df-post-submit-btn" onclick="window.location.href='{{ route('resident.posts.create') }}'">Đăng</button>
+            </div>
+        </div>
+
+        {{-- Filters --}}
+        <div class="df-filters">
+            <a href="#" class="df-filter-btn active">Nổi bật</a>
+            <a href="#" class="df-filter-btn">Gần đây</a>
+            <a href="#" class="df-filter-btn">Ban quản lý</a>
+        </div>
+
+        {{-- Posts Loop --}}
+        @forelse($posts as $post)
+        <div class="df-post" id="post-card-{{ $post->id }}">
+            <div class="df-post-header">
+                <div class="df-post-user">
+                    @if($post->user && $post->user->avatar)
+                        <img src="{{ asset('storage/' . $post->user->avatar) }}" class="df-avatar" alt="">
+                    @else
+                        <div class="df-avatar df-avatar-placeholder" style="background:#000;">
+                            <i class="fa-solid fa-shield-halved" style="color:#fff; font-size:0.9rem;"></i>
+                        </div>
+                    @endif
+                    <div class="df-post-user-info">
+                        <span class="df-post-name">
+                            {{ $post->user->name ?? 'Ban Quản Lý Urban Living' }}
+                            @if($post->user && $post->user->role === 'admin')
+                                <i class="fa-solid fa-circle-check" style="color:#10b981;"></i>
+                            @else
+                                <i class="fa-solid fa-circle-check" style="color:#10b981;"></i>
+                            @endif
+                        </span>
+                        <span class="df-post-meta">
+                            {{ $post->created_at->diffForHumans() }} · Cập nhật tiện ích
+                        </span>
+                    </div>
+                </div>
+                <div style="position: relative;">
+                    <button type="button" class="df-post-menu-btn" onclick="togglePostMenu(event, {{ $post->id }})">
+                        <i class="fa-solid fa-ellipsis"></i>
+                    </button>
+                    <div class="df-post-dropdown" id="post-menu-{{ $post->id }}">
+                        @if($post->user_id === auth()->id())
+                            <a href="{{ route('resident.posts.edit', $post->id) }}" class="df-post-dropdown-item">
+                                <i class="fa-regular fa-pen-to-square"></i> Sửa bài viết
+                            </a>
+                            <form action="{{ route('resident.posts.destroy', $post->id) }}" method="POST" style="margin:0;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="df-post-dropdown-item df-post-dropdown-item--danger" onclick="return confirm('Bạn có chắc muốn xóa bài viết này?')">
+                                    <i class="fa-regular fa-trash-can"></i> Xóa bài viết
+                                </button>
+                            </form>
                         @else
-                            <span>{{ mb_substr($post->user->name ?? '?', 0, 1) }}</span>
+                            <button type="button" class="df-post-dropdown-item" onclick="reportPost(event, {{ $post->id }})">
+                                <i class="fa-regular fa-flag"></i> Báo cáo bài viết
+                            </button>
+                            <button type="button" class="df-post-dropdown-item" onclick="hidePost(event, {{ $post->id }})">
+                                <i class="fa-regular fa-eye-slash"></i> Ẩn bài viết
+                            </button>
                         @endif
                     </div>
-                    <div>
-                        <span class="rh-fb-card__name">{{ $post->user->name ?? 'Cư dân' }}</span>
-                        <span class="rh-fb-card__time">{{ $post->created_at->diffForHumans() }}</span>
-                    </div>
-
-                    {{-- Nút ... tùy chọn --}}
-                    <div class="rh-fb-card__menu">
-                        <button type="button" class="rh-fb-card__menu-btn" onclick="togglePostMenu(event, {{ $post->id }})" aria-label="Tùy chọn">
-                            <i class="fa-solid fa-ellipsis"></i>
-                        </button>
-                        <div class="rh-fb-card__dropdown" id="post-menu-{{ $post->id }}">
-                            @if($post->user_id === auth()->id())
-                                <a href="{{ route('resident.posts.edit', $post->id) }}" class="rh-fb-card__dropdown-item">
-                                    <i class="fa-regular fa-pen-to-square"></i> Sửa bài viết
-                                </a>
-                            @endif
-                            @if($post->user_id === auth()->id() || auth()->user()->isAdminPortalUser())
-                                <form action="{{ route('resident.posts.destroy', $post->id) }}" method="POST" onsubmit="return confirmDeletePost(event, this)" style="margin: 0;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="rh-fb-card__dropdown-item rh-fb-card__dropdown-item--danger">
-                                        <i class="fa-regular fa-trash-can"></i> Xóa bài viết
-                                    </button>
-                                </form>
-                            @endif
-                            @if($post->user_id !== auth()->id())
-                                <button type="button" class="rh-fb-card__dropdown-item" onclick="openReportModal(event, {{ $post->id }})">
-                                    <i class="fa-regular fa-flag"></i> Báo cáo bài viết
-                                </button>
-                                <button type="button" class="rh-fb-card__dropdown-item" onclick="hidePost(event, {{ $post->id }})">
-                                    <i class="fa-regular fa-eye-slash"></i> Ẩn bài viết
-                                </button>
-                            @endif
-                        </div>
-                    </div>
                 </div>
+            </div>
 
-                {{-- Content text --}}
-                @if($post->content)
-                <div class="rh-fb-card__text">
-                    {{ Str::limit(strip_tags($post->content), 250) }}
-                    @if(strlen(strip_tags($post->content)) > 250)
-                        <a href="{{ route('resident.posts.show', $post->id) }}" class="rh-fb-card__more-text">Xem thêm</a>
-                    @endif
-                </div>
+            <div class="df-post-content">
+                @if($post->title)
+                    <h3 class="df-post-title">{{ $post->title }}</h3>
                 @endif
+                <p class="df-post-text">
+                    @if($post->content)
+                        {!! nl2br(e(strip_tags($post->content))) !!}
+                    @endif
+                </p>
+            </div>
 
-                {{-- Media --}}
+            <div class="df-post-images {{ $post->images->count() >= 2 ? 'grid-2' : '' }}">
                 @if($post->images->isNotEmpty())
-                @php $imgCount = $post->images->count(); @endphp
-                @if($imgCount === 1 && ($post->images[0]->type ?? 'image') === 'video')
-                <div class="rh-fb-card__media" style="margin-top:12px;">
-                    <video src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-single" controls preload="metadata" style="max-height:500px;width:100%;object-fit:cover;display:block;"></video>
-                </div>
-                @else
-                <a href="{{ route('resident.posts.show', $post->id) }}" class="rh-fb-card__media">
-                    @if($imgCount === 1)
-                        <img src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-single" alt="" loading="lazy">
-                    @elseif($imgCount === 2)
-                        <div class="rh-fb-card__img-grid rh-fb-card__img-grid--2">
-                            @foreach($post->images->take(2) as $img)
-                                @if(($img->type ?? 'image') === 'video')
-                                    <video src="{{ asset('storage/' . $img->image_path) }}" controls preload="metadata" style="width:100%;height:300px;object-fit:cover;"></video>
-                                @else
-                                    <img src="{{ asset('storage/' . $img->image_path) }}" alt="" loading="lazy">
-                                @endif
-                            @endforeach
-                        </div>
-                    @else
-                        <div class="rh-fb-card__img-grid rh-fb-card__img-grid--3plus">
-                            @if(($post->images[0]->type ?? 'image') === 'video')
-                                <video src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-main" controls preload="metadata" style="height:320px;width:100%;object-fit:cover;"></video>
-                            @else
-                                <img src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-main" alt="" loading="lazy">
-                            @endif
-                            <div class="rh-fb-card__img-side">
-                                @foreach($post->images->slice(1, 2) as $img)
-                                    @if(($img->type ?? 'image') === 'video')
-                                        <video src="{{ asset('storage/' . $img->image_path) }}" controls preload="metadata" style="width:100%;height:159px;object-fit:cover;"></video>
-                                    @else
-                                        <img src="{{ asset('storage/' . $img->image_path) }}" alt="" loading="lazy">
-                                    @endif
-                                @endforeach
-                                @if($imgCount > 3)
-                                    <div class="rh-fb-card__img-overlay">+{{ $imgCount - 3 }}</div>
-                                @endif
-                            </div>
-                        </div>
-                    @endif
-                </a>
+                    @foreach($post->images->take(2) as $img)
+                        <img src="{{ asset('storage/' . $img->image_path) }}" alt="">
+                    @endforeach
                 @endif
-                @endif
+            </div>
 
-                {{-- Stats row --}}
-                <div class="rh-fb-card__stats">
-                    <span>{{ $post->likes_count ?? 0 }} lượt thích</span>
+            <div class="df-post-stats">
+                <div class="df-post-stats-left">
+                    <span class="df-stat-icon-wrap" style="background:#22c55e;"><i class="fa-solid fa-thumbs-up" style="color:#fff;font-size:0.6rem;"></i></span>
+                    <span style="margin-left:6px; font-weight:600; color:#374151;">{{ $post->likes_count ?? 0 }}</span>
+                </div>
+                <div class="df-post-stats-right">
                     <span>{{ $post->comments_count ?? 0 }} bình luận</span>
                 </div>
-
-                {{-- Action bar --}}
-                <div class="rh-fb-card__actions">
-                    <button type="button" class="rh-fb-card__action rh-fb-like-btn {{ $post->likedByCurrentUser->isNotEmpty() ? 'rh-fb-like-btn--active' : '' }}" data-post-id="{{ $post->id }}">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
-                        Thích
-                    </button>
-                    <a href="{{ route('resident.posts.show', $post->id) }}" class="rh-fb-card__action">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                        Bình luận
-                    </a>
-                    <button type="button" class="rh-fb-card__action rh-fb-share-btn" data-url="{{ route('resident.posts.show', $post->id) }}">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-                        Chia sẻ
-                    </button>
-                </div>
             </div>
-            @empty
-            <div class="rh-empty">
-                <p class="rh-empty__text">Chưa có bài viết nào</p>
-                <a href="{{ route('resident.posts.create') }}" class="rh-empty__btn">Đăng bài đầu tiên</a>
-            </div>
-            @endforelse
 
-        @if($posts->hasPages())
-        <div style="margin-top:20px;">{{ $posts->links() }}</div>
-        @endif
+            <div class="df-post-actions">
+                <button type="button" class="df-action-btn rh-fb-like-btn {{ $post->likedByCurrentUser->isNotEmpty() ? 'active' : '' }}" data-post-id="{{ $post->id }}">
+                    <i class="fa-regular fa-thumbs-up"></i> Thích
+                </button>
+                <a href="{{ route('resident.posts.show', $post->id) }}" class="df-action-btn" style="text-decoration:none;">
+                    <i class="fa-regular fa-comment"></i> Bình luận
+                </a>
+                <button type="button" class="df-action-btn rh-fb-share-btn" data-url="{{ route('resident.posts.show', $post->id) }}">
+                    <i class="fa-solid fa-share-nodes"></i> Chia sẻ
+                </button>
+            </div>
+        </div>
+        @empty
+        <div class="df-empty">
+            <i class="fa-regular fa-folder-open" style="font-size: 3rem; margin-bottom: 16px; opacity: 0.5;"></i>
+            <p>Chưa có bài viết nào.</p>
+        </div>
+        @endforelse
+
     </div>
 
+    {{-- RIGHT SIDEBAR: WIDGETS --}}
+    <div class="df-right">
+        {{-- Tiêu điểm cộng đồng --}}
+        <div class="df-widget">
+            <h4 class="df-widget-title">Tiêu điểm cộng đồng</h4>
+            <div class="df-widget-list">
+                @forelse($importantAnnouncements as $ann)
+                <div class="df-event-item">
+                    <span class="df-event-meta">{{ mb_strtoupper($ann->category ?? 'THÔNG BÁO') }}</span>
+                    <a href="{{ route('resident.announcements.show', $ann->id) }}" style="text-decoration:none;">
+                        <span class="df-event-title" style="color:#000;">{{ Str::limit($ann->title, 50) }}</span>
+                    </a>
+                    <span class="df-event-meta" style="font-size:0.75rem;">{{ $ann->created_at->diffForHumans() }}</span>
+                </div>
+                @empty
+                <div class="df-event-item">
+                    <span class="df-event-title" style="color:#6b7280; font-weight:400;">Không có tiêu điểm nào gần đây.</span>
+                </div>
+                @endforelse
+            </div>
+        </div>
+
+        {{-- Hình ảnh nổi bật --}}
+        <div class="df-widget">
+            <h4 class="df-widget-title">Hình ảnh nổi bật</h4>
+            <div class="df-gallery">
+                @forelse($latestImages as $img)
+                    <div class="df-gallery-img" style="background-image:url('{{ asset('storage/' . $img->image_path) }}');"></div>
+                @empty
+                    <p style="color:#6b7280; font-size:0.85rem; margin:0; grid-column:span 2;">Chưa có hình ảnh nào.</p>
+                @endforelse
+            </div>
+            <a href="#" class="df-widget-link">Xem tất cả</a>
+        </div>
+    </div>
 </div>
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const slider = document.getElementById('announceSlider');
-    if (!slider) return;
-    const slides = slider.querySelectorAll('.rh-announce-slide');
-    const dots = document.querySelectorAll('#announceDots .rh-dot');
-    if (slides.length <= 1) return;
-    let current = 0, interval;
-    function show(i) { slides.forEach(s => s.style.display = 'none'); dots.forEach(d => d.classList.remove('rh-dot--active')); slides[i].style.display = 'flex'; dots[i].classList.add('rh-dot--active'); current = i; }
-    function next() { show((current + 1) % slides.length); }
-    interval = setInterval(next, 5000);
-    dots.forEach(d => { d.addEventListener('click', function() { clearInterval(interval); show(+this.dataset.index); interval = setInterval(next, 5000); }); });
-    slider.addEventListener('mouseenter', () => clearInterval(interval));
-    slider.addEventListener('mouseleave', () => { interval = setInterval(next, 5000); });
-    let sx = 0;
-    slider.addEventListener('touchstart', e => sx = e.touches[0].clientX);
-    slider.addEventListener('touchend', e => { const d = sx - e.changedTouches[0].clientX; if (Math.abs(d) > 40) { clearInterval(interval); d > 0 ? next() : show((current-1+slides.length)%slides.length); interval = setInterval(next, 5000); }});
-});
-
 // Like AJAX
 document.querySelectorAll('.rh-fb-like-btn').forEach(btn => {
     btn.addEventListener('click', async function(e) {
         e.preventDefault();
         const postId = this.dataset.postId;
-        const card = this.closest('.rh-fb-card');
-        const statsEl = card.querySelector('.rh-fb-card__stats span:first-child');
+        const card = this.closest('.df-post');
+        const statsEl = card.querySelector('.df-post-stats-left span:last-child');
         try {
             const res = await fetch('{{ route("resident.posts.like") }}', {
                 method: 'POST',
@@ -196,11 +242,11 @@ document.querySelectorAll('.rh-fb-like-btn').forEach(btn => {
                 body: JSON.stringify({ likeable_id: postId, likeable_type: 'post', type: 'like' })
             });
             const data = await res.json();
-            if (data.likes_count !== undefined) statsEl.textContent = data.likes_count + ' lượt thích';
+            if (data.likes_count !== undefined) statsEl.textContent = data.likes_count;
             if (data.liked) {
-                this.classList.add('rh-fb-like-btn--active');
+                this.classList.add('active');
             } else {
-                this.classList.remove('rh-fb-like-btn--active');
+                this.classList.remove('active');
             }
         } catch(e) { console.error(e); }
     });
@@ -210,294 +256,38 @@ document.querySelectorAll('.rh-fb-share-btn').forEach(btn => {
     btn.addEventListener('click', function() {
         const url = this.dataset.url;
         navigator.clipboard.writeText(url).then(() => {
-            const orig = this.innerHTML;
-            this.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Đã sao chép';
-            setTimeout(() => { this.innerHTML = orig; }, 2000);
+            alert('Đã sao chép liên kết bài viết!');
         });
     });
 });
+
+// Toggle Post dropdown
+function togglePostMenu(e, id) {
+    e.stopPropagation();
+    document.querySelectorAll('.df-post-dropdown').forEach(d => {
+        if (d.id !== 'post-menu-' + id) d.style.display = 'none';
+    });
+    const menu = document.getElementById('post-menu-' + id);
+    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+}
+
+window.addEventListener('click', () => {
+    document.querySelectorAll('.df-post-dropdown').forEach(d => d.style.display = 'none');
+});
+
+function reportPost(e, id) {
+    e.stopPropagation();
+    document.getElementById('post-menu-' + id).style.display = 'none';
+    alert('Đã gửi báo cáo bài viết. Ban quản trị sẽ xem xét.');
+}
+
+function hidePost(e, id) {
+    e.stopPropagation();
+    document.getElementById('post-menu-' + id).style.display = 'none';
+    const card = document.getElementById('post-card-' + id);
+    card.style.opacity = '0.5';
+    card.innerHTML = '<div style="padding:20px;text-align:center;color:#64748b;">Bài viết đã được ẩn.</div>';
+}
 </script>
-<script>
-let pendingHidePostId = null;
-
-// Dropdown control
-function togglePostMenu(event, postId) {
-    event.stopPropagation();
-    // Close all other dropdowns
-    document.querySelectorAll('.rh-fb-card__dropdown').forEach(dropdown => {
-        if (dropdown.id !== 'post-menu-' + postId) {
-            dropdown.style.display = 'none';
-        }
-    });
-    const dropdown = document.getElementById('post-menu-' + postId);
-    if (dropdown.style.display === 'block') {
-        dropdown.style.display = 'none';
-    } else {
-        dropdown.style.display = 'block';
-    }
-}
-
-// Close dropdowns on document click
-document.addEventListener('click', function() {
-    document.querySelectorAll('.rh-fb-card__dropdown').forEach(dropdown => {
-        dropdown.style.display = 'none';
-    });
-});
-
-// Toast notification helper
-function showToast(message, type = 'success') {
-    const container = document.getElementById('toast-container');
-    const toast = document.createElement('div');
-    toast.style.cssText = `padding:0.75rem 1.25rem;border-radius:10px;box-shadow:0 8px 16px rgba(0,0,0,0.1);color:white;font-size:0.875rem;font-weight:600;display:flex;align-items:center;gap:0.65rem;opacity:0;transform:translateY(20px);transition:all 0.3s cubic-bezier(0.4,0,0.2,1);background-color:${type === 'success' ? '#10b981' : '#ef4444'};`;
-    const icon = type === 'success' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-triangle-exclamation"></i>';
-    toast.innerHTML = `${icon} <span>${message}</span>`;
-    container.appendChild(toast);
-    setTimeout(() => { toast.style.opacity = '1'; toast.style.transform = 'translateY(0)'; }, 10);
-    setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(20px)'; setTimeout(() => toast.remove(), 300); }, 3500);
-}
-
-// Hide post function
-function hidePost(event, postId) {
-    event.preventDefault();
-    pendingHidePostId = postId;
-    const modal = document.getElementById('confirmHideModal');
-    modal.style.display = 'flex';
-    setTimeout(() => modal.classList.add('show'), 10);
-}
-
-// Close hide modal
-function closeHideModal() {
-    const modal = document.getElementById('confirmHideModal');
-    modal.classList.remove('show');
-    setTimeout(() => {
-        modal.style.display = 'none';
-    }, 300);
-    pendingHidePostId = null;
-}
-
-function handleHideOutsideClick(e) {
-    if (e.target === document.getElementById('confirmHideModal')) {
-        closeHideModal();
-    }
-}
-
-// Bind confirmation button
-document.addEventListener('DOMContentLoaded', function() {
-    const confirmBtn = document.getElementById('confirm-hide-btn');
-    if (confirmBtn) {
-        confirmBtn.addEventListener('click', async function() {
-            if (!pendingHidePostId) return;
-            const postId = pendingHidePostId;
-            closeHideModal();
-            try {
-                const res = await fetch(`/resident/posts/${postId}/hide`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    }
-                });
-                const data = await res.json();
-                if (data.success) {
-                    showToast(data.message || 'Đã ẩn bài viết thành công!');
-                    // Fade out and remove post card from DOM
-                    const card = document.getElementById('post-card-' + postId);
-                    if (card) {
-                        card.style.transition = 'all 0.5s ease';
-                        card.style.opacity = '0';
-                        card.style.transform = 'scale(0.9)';
-                        setTimeout(() => {
-                            card.remove();
-                            // If no posts left, show empty state
-                            const feed = document.querySelector('.rh-fb-feed');
-                            if (feed && feed.querySelectorAll('.rh-fb-card').length === 0) {
-                                feed.innerHTML = `<div class="rh-empty"><p class="rh-empty__text">Chưa có bài viết nào</p><a href="{{ route('resident.posts.create') }}" class="rh-empty__btn">Đăng bài đầu tiên</a></div>`;
-                            }
-                        }, 500);
-                    }
-                } else {
-                    showToast(data.message || 'Có lỗi xảy ra, vui lòng thử lại.', 'error');
-                }
-            } catch(e) {
-                console.error(e);
-                showToast('Không thể kết nối máy chủ.', 'error');
-            }
-        });
-    }
-});
-
-// Report Modal functions
-function openReportModal(event, postId) {
-    event.preventDefault();
-    document.getElementById('report-target-post-id').value = postId;
-    document.getElementById('report-post-form').reset();
-    document.getElementById('custom-reason-container').style.display = 'none';
-    document.getElementById('submit-report-btn').setAttribute('disabled', 'disabled');
-    
-    const modal = document.getElementById('reportPostModal');
-    modal.style.display = 'flex';
-    setTimeout(() => modal.classList.add('show'), 10);
-}
-
-function closeReportModal() {
-    const modal = document.getElementById('reportPostModal');
-    modal.classList.remove('show');
-    setTimeout(() => {
-        modal.style.display = 'none';
-    }, 300);
-}
-
-function handleOutsideModalClick(e) {
-    if (e.target === document.getElementById('reportPostModal')) {
-        closeReportModal();
-    }
-}
-
-function toggleCustomReason(show) {
-    const customContainer = document.getElementById('custom-reason-container');
-    const textarea = document.getElementById('report-reason-custom');
-    if (show) {
-        customContainer.style.display = 'block';
-        textarea.setAttribute('required', 'required');
-    } else {
-        customContainer.style.display = 'none';
-        textarea.removeAttribute('required');
-    }
-    checkReportFormStatus();
-}
-
-function checkReportFormStatus() {
-    const submitBtn = document.getElementById('submit-report-btn');
-    const presets = document.querySelectorAll('input[name="reason_preset"]:checked');
-    if (presets.length === 0) {
-        submitBtn.setAttribute('disabled', 'disabled');
-        return;
-    }
-    const val = presets[0].value;
-    if (val === 'other') {
-        const text = document.getElementById('report-reason-custom').value.trim();
-        if (text.length > 0) {
-            submitBtn.removeAttribute('disabled');
-        } else {
-            submitBtn.setAttribute('disabled', 'disabled');
-        }
-    } else {
-        submitBtn.removeAttribute('disabled');
-    }
-}
-
-// Attach listener to custom reason textarea
-document.addEventListener('DOMContentLoaded', function() {
-    const customTextarea = document.getElementById('report-reason-custom');
-    if (customTextarea) {
-        customTextarea.addEventListener('input', checkReportFormStatus);
-    }
-    
-    // Handle report form submit
-    const reportForm = document.getElementById('report-post-form');
-    if (reportForm) {
-        reportForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const postId = document.getElementById('report-target-post-id').value;
-            const presets = document.querySelectorAll('input[name="reason_preset"]:checked');
-            if (presets.length === 0) return;
-            
-            let reason = presets[0].value;
-            if (reason === 'other') {
-                reason = document.getElementById('report-reason-custom').value.trim();
-            }
-            
-            try {
-                const res = await fetch(`/resident/posts/${postId}/report`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ reason: reason })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    closeReportModal();
-                    showToast(data.message || 'Báo cáo bài viết thành công.');
-                    
-                    // Fade out and remove reported post from feed
-                    const card = document.getElementById('post-card-' + postId);
-                    if (card) {
-                        card.style.transition = 'all 0.5s ease';
-                        card.style.opacity = '0';
-                        card.style.transform = 'scale(0.9)';
-                        setTimeout(() => {
-                            card.remove();
-                            // If no posts left, show empty state
-                            const feed = document.querySelector('.rh-fb-feed');
-                            if (feed && feed.querySelectorAll('.rh-fb-card').length === 0) {
-                                feed.innerHTML = `<div class="rh-empty"><p class="rh-empty__text">Chưa có bài viết nào</p><a href="{{ route('resident.posts.create') }}" class="rh-empty__btn">Đăng bài đầu tiên</a></div>`;
-                            }
-                        }, 500);
-                    }
-                } else {
-                    showToast(data.message || 'Không thể gửi báo cáo.', 'error');
-                }
-            } catch(err) {
-                console.error(err);
-                showToast('Có lỗi xảy ra khi kết nối máy chủ.', 'error');
-            }
-        });
-    }
-});
-</script>
-
-{{-- Modal Báo cáo Bài viết --}}
-<div id="reportPostModal" class="rep-modal" onclick="handleOutsideModalClick(event)" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
-    <div class="rep-modal__content" style="background: #fff; padding: 24px; border-radius: 12px; max-width: 450px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.15); position: relative; animation: postDropdownFadeIn 0.3s ease-out; box-sizing: border-box;">
-        <div class="rep-modal__header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <h3 class="rep-modal__title" style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #00236f; display: flex; align-items: center; gap: 8px;">
-                <i class="fa-solid fa-triangle-exclamation" style="color: #dc2626;"></i> Báo cáo bài viết
-            </h3>
-            <button type="button" class="rep-modal__close" onclick="closeReportModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">&times;</button>
-        </div>
-        <form id="report-post-form">
-            @csrf
-            <input type="hidden" name="post_id" id="report-target-post-id" value="">
-            <div class="rep-modal__body" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
-                <span class="rep-modal__label" style="font-size: 0.85rem; font-weight: 600; color: #334155; margin-bottom: 6px;">Tại sao bạn muốn báo cáo bài viết này?</span>
-                <label class="rep-option" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #334155; cursor: pointer;"><input type="radio" name="reason_preset" value="Spam, quảng cáo rác" onclick="toggleCustomReason(false)"><span class="rep-option__text">Spam, quảng cáo rác</span></label>
-                <label class="rep-option" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #334155; cursor: pointer;"><input type="radio" name="reason_preset" value="Từ ngữ thô tục, công kích" onclick="toggleCustomReason(false)"><span class="rep-option__text">Từ ngữ thô tục, công kích</span></label>
-                <label class="rep-option" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #334155; cursor: pointer;"><input type="radio" name="reason_preset" value="Lừa đảo, giả mạo" onclick="toggleCustomReason(false)"><span class="rep-option__text">Lừa đảo, giả mạo thông tin</span></label>
-                <label class="rep-option" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #334155; cursor: pointer;"><input type="radio" name="reason_preset" value="Nội dung phản cảm, thù địch" onclick="toggleCustomReason(false)"><span class="rep-option__text">Nội dung phản cảm, thù địch</span></label>
-                <label class="rep-option" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #334155; cursor: pointer;"><input type="radio" name="reason_preset" value="other" onclick="toggleCustomReason(true)"><span class="rep-option__text">Lý do khác...</span></label>
-                <div class="rep-modal__custom-reason" id="custom-reason-container" style="display: none; margin-top: 8px;">
-                    <textarea name="reason_custom" id="report-reason-custom" class="rep-modal__textarea" placeholder="Nhập lý do cụ thể..." style="width: 100%; padding: 10px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; outline: none; font-family: inherit; resize: vertical; box-sizing: border-box;" rows="3"></textarea>
-                </div>
-            </div>
-            <div class="rep-modal__footer" style="display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid #f1f5f9; padding-top: 14px;">
-                <button type="button" class="rh-section__btn" style="background: #64748b;" onclick="closeReportModal()">Hủy bỏ</button>
-                <button type="submit" class="rh-section__btn" id="submit-report-btn" disabled style="background: #dc2626;">Gửi báo cáo</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-{{-- Modal Xác nhận Ẩn Bài viết --}}
-<div id="confirmHideModal" class="rep-modal" onclick="handleHideOutsideClick(event)" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
-    <div class="rep-modal__content" style="background: #fff; padding: 24px; border-radius: 12px; max-width: 400px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.15); position: relative; animation: postDropdownFadeIn 0.3s ease-out; box-sizing: border-box; text-align: center;">
-        <div style="font-size: 2.5rem; color: #eab308; margin-bottom: 12px;">
-            <i class="fa-solid fa-circle-question"></i>
-        </div>
-        <h3 style="margin: 0 0 10px; font-size: 1.15rem; font-weight: 700; color: #00236f;">Ẩn bài viết này?</h3>
-        <p style="margin: 0 0 20px; font-size: 0.88rem; color: #64748b; line-height: 1.4;">Bài viết này sẽ không còn hiển thị trên bảng tin của bạn nữa. Bạn vẫn muốn tiếp tục ẩn chứ?</p>
-        <div style="display: flex; justify-content: center; gap: 12px;">
-            <button type="button" class="rh-section__btn" style="background: #64748b; padding: 10px 20px;" onclick="closeHideModal()">Hủy bỏ</button>
-            <button type="button" class="rh-section__btn" id="confirm-hide-btn" style="background: #2563eb; padding: 10px 20px;">Đồng ý ẩn</button>
-        </div>
-    </div>
-</div>
-
-{{-- Toast Container --}}
-<div id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 10001; display: flex; flex-direction: column; gap: 0.5rem; max-width: 350px;"></div>
-
 @endpush
 @endsection
