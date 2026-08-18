@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Mark existing media for deletion
 const deletedMediaIds = new Set();
-function markMediaForDeletion(mediaId) {
+window.markMediaForDeletion = function(mediaId) {
     deletedMediaIds.add(mediaId);
     
     // Hide visual card
@@ -30,7 +30,7 @@ function markMediaForDeletion(mediaId) {
 }
 
 // Preview new media uploads
-function previewMedia(input) {
+window.previewMedia = function(input) {
     const container = document.getElementById('new-media-previews');
     container.innerHTML = '';
     if (!input.files) return;

@@ -66,5 +66,6 @@
 @endsection
 
 @push('scripts')
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
     @vite(['resources/js/pages/resident/posts/create.js'])
 @endpush

@@ -152,10 +152,14 @@
                 </div>
             </div>
 
-            <div class="df-post-images {{ $post->images->count() >= 2 ? 'grid-2' : '' }}">
+            <div class="df-post-images layout-count-{{ min($post->images->count(), 5) }}">
                 @if($post->images->isNotEmpty())
-                    @foreach($post->images->take(2) as $img)
-                        <img src="{{ asset('storage/' . $img->image_path) }}" alt="">
+                    @foreach($post->images->take(5) as $img)
+                        @if($img->type === 'video')
+                            <video src="{{ asset('storage/' . $img->image_path) }}" controls style="max-height: 400px; width: 100%; object-fit: cover;"></video>
+                        @else
+                            <img src="{{ asset('storage/' . $img->image_path) }}" alt="" style="max-height: 400px; width: 100%; object-fit: cover; cursor: pointer;" onclick="openSingleImageModal('{{ asset('storage/' . $img->image_path) }}')">
+                        @endif
                     @endforeach
                 @endif
             </div>
@@ -502,7 +506,31 @@ window.addEventListener('click', () => {
 function reportPost(e, id) {
     e.stopPropagation();
     document.getElementById('post-menu-' + id).style.display = 'none';
-    alert('Đã gửi báo cáo bài viết. Ban quản trị sẽ xem xét.');
+    document.getElementById('report-target-post-id-index').value = id;
+    const modal = document.getElementById('reportPostModalIndex');
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('show'), 10);
+}
+
+function closeReportModalIndex() {
+    const modal = document.getElementById('reportPostModalIndex');
+    modal.classList.remove('show');
+    setTimeout(() => { modal.style.display = 'none'; document.getElementById('report-post-form-index').reset(); }, 300);
+}
+
+function handleOutsideReportModalClick(e) {
+    if (e.target.id === 'reportPostModalIndex') closeReportModalIndex();
+}
+
+function handleShowCustomReasonIndex(show) {
+    const c = document.getElementById('custom-reason-container-index');
+    const t = document.getElementById('report-reason-custom-index');
+    if(c) c.style.display = show ? 'block' : 'none';
+    if(show && t) { t.setAttribute('required', 'required'); t.focus(); }
+    else if (t) { t.removeAttribute('required'); t.value = ''; }
+    
+    const btn = document.getElementById('submit-report-btn-index');
+    if(btn) btn.removeAttribute('disabled');
 }
 
 function hidePost(e, id) {
@@ -541,5 +569,137 @@ function closePostDetailModal() {
         <iframe id="postDetailIframe" src="" style="width: 100%; height: 100%; border: none; flex: 1;"></iframe>
     </div>
 </div>
+
+<style>
+.rep-modal { display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 10000; opacity: 0; transition: opacity 0.3s ease; }
+.rep-modal.show { opacity: 1; }
+.rep-modal__content { background: #fff; width: 90%; max-width: 500px; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2); transform: translateY(20px); transition: transform 0.3s ease; }
+.rep-modal.show .rep-modal__content { transform: translateY(0); }
+.rep-modal__header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid #e5e7eb; }
+.rep-modal__title { font-size: 1.1rem; font-weight: 600; margin: 0; }
+.rep-modal__close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #6b7280; }
+.rep-modal__body { padding: 1.5rem; }
+.rep-modal__label { display: block; margin-bottom: 1rem; font-weight: 500; }
+.rep-option { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; cursor: pointer; font-size: 0.9rem; }
+.rep-modal__custom-reason { display: none; margin-top: 1rem; }
+.rep-modal__textarea { width: 100%; min-height: 80px; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; resize: vertical; font-family: inherit; }
+.rep-modal__footer { padding: 1rem 1.5rem; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 1rem; }
+.rep-modal__btn-submit { background: #ef4444; color: #fff; border: none; padding: 0.5rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; }
+.rep-modal__btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+</style>
+<div id="reportPostModalIndex" class="rep-modal" onclick="handleOutsideReportModalClick(event)">
+    <div class="rep-modal__content" onclick="event.stopPropagation()">
+        <div class="rep-modal__header">
+            <h3 class="rep-modal__title"><i class="fa-solid fa-triangle-exclamation" style="color: var(--color-error);"></i> Báo cáo bài viết</h3>
+            <button type="button" class="rep-modal__close" onclick="closeReportModalIndex()">&times;</button>
+        </div>
+        <form id="report-post-form-index">
+            @csrf
+            <input type="hidden" name="post_id" id="report-target-post-id-index" value="">
+            <div class="rep-modal__body">
+                <span class="rep-modal__label">Tại sao bạn muốn báo cáo bài viết này?</span>
+                <label class="rep-option"><input type="radio" name="reason_preset" value="Spam, quảng cáo rác" onclick="handleShowCustomReasonIndex(false)"><span class="rep-option__text">Spam, quảng cáo rác</span></label>
+                <label class="rep-option"><input type="radio" name="reason_preset" value="Từ ngữ thô tục, công kích" onclick="handleShowCustomReasonIndex(false)"><span class="rep-option__text">Từ ngữ thô tục, công kích</span></label>
+                <label class="rep-option"><input type="radio" name="reason_preset" value="Lừa đảo, giả mạo" onclick="handleShowCustomReasonIndex(false)"><span class="rep-option__text">Lừa đảo, giả mạo thông tin</span></label>
+                <label class="rep-option"><input type="radio" name="reason_preset" value="Nội dung phản cảm, thù địch" onclick="handleShowCustomReasonIndex(false)"><span class="rep-option__text">Nội dung phản cảm, thù địch</span></label>
+                <label class="rep-option"><input type="radio" name="reason_preset" value="other" onclick="handleShowCustomReasonIndex(true)"><span class="rep-option__text">Lý do khác...</span></label>
+                <div class="rep-modal__custom-reason" id="custom-reason-container-index">
+                    <textarea name="reason_custom" id="report-reason-custom-index" class="rep-modal__textarea" placeholder="Nhập lý do cụ thể..."></textarea>
+                </div>
+            </div>
+            <div class="rep-modal__footer">
+                <button type="button" class="pc-btn pc-btn--secondary" onclick="closeReportModalIndex()" style="padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid #d1d5db; background: #fff; cursor: pointer;">Hủy bỏ</button>
+                <button type="submit" class="rep-modal__btn-submit" id="submit-report-btn-index" disabled>Gửi báo cáo</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+document.getElementById('report-post-form-index')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submit-report-btn-index');
+    btn.innerHTML = 'Đang gửi...'; btn.disabled = true;
+    const formData = new FormData(this);
+    fetch('/resident/posts/report', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        closeReportModalIndex();
+        btn.innerHTML = 'Gửi báo cáo';
+        if(data.success) toastr.success(data.message);
+        else toastr.error(data.message || 'Lỗi');
+    }).catch(e => {
+        closeReportModalIndex();
+        btn.innerHTML = 'Gửi báo cáo';
+        toastr.error('Lỗi kết nối');
+    });
+});
+</script>
+<style>
+    .df-post-images {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .df-post-images > * {
+        flex: 1 1 calc(50% - 4px);
+        min-width: 30%;
+        max-height: 300px;
+        object-fit: cover;
+        cursor: pointer;
+    }
+    .df-post-images.layout-count-1 > * {
+        flex: 1 1 100%;
+        max-height: 500px;
+    }
+    .df-post-images.layout-count-2 > * {
+        flex: 1 1 calc(50% - 4px);
+        height: 300px;
+    }
+    .df-post-images.layout-count-3 > * {
+        flex: 1 1 calc(33.333% - 4px);
+        height: 250px;
+    }
+    .df-post-images.layout-count-4 > * {
+        flex: 1 1 calc(50% - 4px);
+        height: 200px;
+    }
+    .df-post-images.layout-count-5 > * {
+        flex: 1 1 calc(33.333% - 4px);
+        height: 200px;
+    }
+    .df-post-images.layout-count-5 > *:nth-child(4),
+    .df-post-images.layout-count-5 > *:nth-child(5) {
+        flex: 1 1 calc(50% - 4px);
+    }
+</style>
+
+    function openSingleImageModal(src) {
+        document.getElementById('single-modal-img').src = src;
+        document.getElementById('single-image-modal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeSingleImageModal() {
+        document.getElementById('single-image-modal').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+</script>
+
+<div id="single-image-modal" class="df-gallery-modal">
+    <div class="df-gallery-modal-overlay" onclick="closeSingleImageModal()"></div>
+    <button class="df-gallery-modal-close" onclick="closeSingleImageModal()">
+        <i class="fa-solid fa-xmark"></i>
+    </button>
+    <div class="df-gallery-modal-content">
+        <img id="single-modal-img" src="" alt="" style="max-height: 90vh; max-width: 90vw; object-fit: contain;">
+    </div>
+</div>
+
 @endpush
 @endsection
