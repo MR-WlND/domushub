@@ -61,7 +61,7 @@
                         <i class="fa-regular fa-calendar"></i> Đến hạn: {{ $dueDate ? \Carbon\Carbon::parse($dueDate)->format('d/m/Y') : 'Không có' }}
                     </span>
                 </div>
-                <a href="{{ route('resident.invoices.index') }}" class="rh-btn-black">THANH TOÁN NGAY</a>
+                <a href="{{ route('resident.invoices.index') }}" class="rh-btn-primary">THANH TOÁN NGAY</a>
             </div>
 
             {{-- Shortcuts --}}

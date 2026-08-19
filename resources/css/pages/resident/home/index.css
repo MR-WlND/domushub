@@ -117,7 +117,7 @@ body.resident-page {
 .rh-billing-amount {
     font-size: 1.8rem;
     font-weight: 700;
-    color: #111827;
+    color: #00236f;
     margin: 0;
     letter-spacing: -0.01em;
 }
@@ -130,8 +130,8 @@ body.resident-page {
     gap: 6px;
 }
 
-.rh-btn-black {
-    background: #000000;
+.rh-btn-primary {
+    background: #00236f;
     color: #ffffff;
     font-weight: 600;
     font-size: 0.8rem;
@@ -143,15 +143,15 @@ body.resident-page {
     transition: background 0.2s;
 }
 
-.rh-btn-black:hover {
-    background: #1f2937;
+.rh-btn-primary:hover {
+    background: #1e3a8a;
 }
 
 /* Shortcuts */
 .rh-section-title {
     font-size: 1.1rem;
     font-weight: 600;
-    color: #111827;
+    color: #00236f;
     margin: 0 0 16px 0;
 }
 
@@ -170,7 +170,7 @@ body.resident-page {
     align-items: flex-start;
     gap: 20px;
     text-decoration: none;
-    color: #111827;
+    color: #00236f;
     border: 1px solid rgba(0,0,0,0.12);
     transition: transform 0.2s;
 }
@@ -224,7 +224,7 @@ body.resident-page {
     top: 16px;
     left: 16px;
     background: #ffffff;
-    color: #111827;
+    color: #00236f;
     font-size: 0.7rem;
     font-weight: 700;
     padding: 4px 10px;
@@ -248,7 +248,7 @@ body.resident-page {
 .rh-news-title {
     font-size: 1.3rem;
     font-weight: 600;
-    color: #111827;
+    color: #00236f;
     margin: 0;
     line-height: 1.3;
 }
@@ -264,7 +264,7 @@ body.resident-page {
     margin-top: 12px;
     font-size: 0.75rem;
     font-weight: 700;
-    color: #111827;
+    color: #00236f;
     text-decoration: none;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -327,7 +327,7 @@ body.resident-page {
         grid-row: 2 / 3;
         font-size: 0.75rem;
     }
-    .rh-btn-black {
+    .rh-btn-primary {
         grid-column: 2 / 3;
         grid-row: 2 / 3;
         padding: 10px 14px;
