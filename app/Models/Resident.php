@@ -32,9 +32,9 @@ class Resident extends Model
                 $apartment->save();
             }
 
-            // Đồng bộ apartment_id vào bảng users
+            // Đồng bộ apartment_id vào bảng users (chỉ khi user chưa có apartment_id active)
             $user = $resident->user;
-            if ($user && $user->apartment_id !== $resident->apartment_id) {
+            if ($user && empty($user->apartment_id)) {
                 $user->update(['apartment_id' => $resident->apartment_id]);
             }
         });

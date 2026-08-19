@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Floor extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'block_id',
@@ -19,6 +20,29 @@ class Floor extends Model
         'description',
         'floor_type',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($floor) {
+            if ($floor->isForceDeleting()) {
+                $floor->apartments()->withTrashed()->each(function ($apt) {
+                    $apt->forceDelete();
+                });
+            } else {
+                $floor->apartments()->each(function ($apt) {
+                    $apt->delete(); // Soft delete apartments
+                });
+            }
+        });
+
+        static::restoring(function ($floor) {
+            $floor->apartments()->withTrashed()->each(function ($apt) {
+                $apt->restore(); // Restore soft-deleted apartments
+            });
+        });
+    }
 
     /**
      * Nhãn loại tầng bằng tiếng Việt

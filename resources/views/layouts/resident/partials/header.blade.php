@@ -27,6 +27,7 @@
                 Dịch vụ <i class="fa-solid fa-chevron-down nav-dropdown-icon"></i>
             </button>
             <div class="resident-header__nav-dropdown">
+                <a href="{{ route('resident.temporary-registrations.index') }}" class="nav-dropdown-item {{ request()->routeIs('resident.temporary-registrations.*') ? 'nav-dropdown-item--active' : '' }}">Tạm trú / Tạm vắng</a>
                 <a href="{{ route('resident.vehicles.index') }}" class="nav-dropdown-item {{ request()->routeIs('resident.vehicles.*') ? 'nav-dropdown-item--active' : '' }}">Phương tiện</a>
                 <a href="{{ route('resident.facilities.index') }}" class="nav-dropdown-item {{ request()->routeIs('resident.facilities.*') || request()->routeIs('resident.facility-bookings.*') ? 'nav-dropdown-item--active' : '' }}">Tiện ích</a>
                 <a href="{{ route('resident.visitors.index') }}" class="nav-dropdown-item {{ request()->routeIs('resident.visitors.*') ? 'nav-dropdown-item--active' : '' }}">Khách ghé thăm</a>
