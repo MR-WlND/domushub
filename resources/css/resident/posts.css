@@ -610,6 +610,22 @@ body.resident-page {
     .df-sidebar { display: none; }
 }
 @media (max-width: 768px) {
-    .df-layout { grid-template-columns: 1fr; }
+    .df-layout { 
+        grid-template-columns: 1fr; 
+        padding: 12px; 
+        gap: 16px; 
+    }
     .df-right { display: none; }
+    
+    .df-create-post { padding: 12px; }
+    .df-create-post-top { gap: 10px; margin-bottom: 10px; }
+    .df-create-btn { font-size: 0.85rem; padding: 6px 8px; }
+    .df-post-submit-btn { padding: 6px 20px; font-size: 0.85rem; }
+    
+    .df-post { padding: 16px; gap: 12px; }
+    .df-post-user { gap: 10px; }
+    .df-post-name { font-size: 0.9rem; }
+    .df-post-meta { font-size: 0.75rem; }
+    
+    .df-action-btn { font-size: 0.85rem; padding: 6px; }
 }

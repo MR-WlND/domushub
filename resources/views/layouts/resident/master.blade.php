@@ -423,6 +423,25 @@
     }
     </script>
 
+    {{-- MOBILE BOTTOM NAVIGATION --}}
+    <nav class="mobile-bottom-nav">
+        <a href="{{ route('resident.dashboard') }}" class="mobile-nav-item {{ request()->routeIs('resident.dashboard') ? 'active' : '' }}">
+            <i class="fa-solid fa-house"></i>
+        </a>
+        <a href="{{ route('resident.invoices.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.invoices.*') ? 'active' : '' }}">
+            <i class="fa-solid fa-receipt"></i>
+        </a>
+        <a href="{{ route('resident.posts.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.posts.*') ? 'active' : '' }}">
+            <i class="fa-regular fa-newspaper"></i>
+        </a>
+        <a href="{{ route('resident.facilities.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.facilities.*') || request()->routeIs('resident.facility-bookings.*') ? 'active' : '' }}">
+            <i class="fa-regular fa-calendar"></i>
+        </a>
+        <a href="{{ route('resident.profile.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.profile.*') ? 'active' : '' }}">
+            <i class="fa-regular fa-user"></i>
+        </a>
+    </nav>
+
     @stack('scripts')
 </body>
 

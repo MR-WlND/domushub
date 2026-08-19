@@ -74,9 +74,14 @@
                 </div>
             </div>
             <div class="df-create-post-bottom">
-                <button class="df-create-btn" onclick="openCreatePostModal()">
-                    <i class="fa-regular fa-image" style="color: #10b981; font-size: 1.1rem;"></i> Hình ảnh/Video
-                </button>
+                <div style="display: flex; gap: 8px;">
+                    <button class="df-create-btn" onclick="openCreatePostModal()">
+                        <i class="fa-regular fa-image" style="color: #10b981; font-size: 1.1rem;"></i> Ảnh/Video
+                    </button>
+                    <button class="df-create-btn" onclick="openCreatePostModal()">
+                        <i class="fa-regular fa-calendar" style="color: #6366f1; font-size: 1.1rem;"></i> Sự kiện
+                    </button>
+                </div>
                 <button class="df-post-submit-btn" onclick="openCreatePostModal()">Đăng</button>
             </div>
         </div>
@@ -679,6 +684,7 @@ document.getElementById('report-post-form-index')?.addEventListener('submit', fu
     }
 </style>
 
+<script>
     function openSingleImageModal(src) {
         document.getElementById('single-modal-img').src = src;
         document.getElementById('single-image-modal').classList.add('active');

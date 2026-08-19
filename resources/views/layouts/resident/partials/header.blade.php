@@ -1,9 +1,14 @@
 <header class="resident-header">
-    <div class="resident-header__brand">
-        <a href="{{ route('resident.dashboard') }}" class="resident-header__brand-link">DomusHub</a>
+    <div class="resident-header__brand-mobile-wrapper">
+        <button id="mobileMenuToggle" class="resident-header__mobile-toggle">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="resident-header__brand">
+            <a href="{{ route('resident.dashboard') }}" class="resident-header__brand-link">URBAN LIVING</a>
+        </div>
     </div>
 
-    <nav class="resident-header__nav" aria-label="Resident navigation">
+    <nav class="resident-header__nav" id="residentNavMenu" aria-label="Resident navigation">
         <a href="{{ route('resident.dashboard') }}"
             class="resident-header__link {{ request()->routeIs('resident.dashboard') ? 'resident-header__link--active' : '' }}">
             Trang chủ
@@ -122,6 +127,16 @@
                 if (userMenu) userMenu.classList.remove('active');
                 if (dropdown) dropdown.style.display = 'none';
                 this.classList.toggle('active');
+            });
+        }
+
+        // Hamburger Menu Toggle
+        const mobileToggle = document.getElementById('mobileMenuToggle');
+        const navMenu = document.getElementById('residentNavMenu');
+        if (mobileToggle && navMenu) {
+            mobileToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                navMenu.classList.toggle('resident-header__nav--active');
             });
         }
 
