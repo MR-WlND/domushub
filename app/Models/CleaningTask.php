@@ -31,4 +31,24 @@ class CleaningTask extends Model
     {
         return $this->belongsTo(User::class, 'assigned_by');
     }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return match ($this->status) {
+            'pending'  => 'Chưa thực hiện',
+            'progress' => 'Đang làm',
+            'done'     => 'Hoàn thành',
+            default    => $this->status,
+        };
+    }
+
+    public function getPriorityLabelAttribute(): string
+    {
+        return match ($this->priority) {
+            'low'    => 'Thấp',
+            'medium' => 'Trung bình',
+            'high'   => 'Cao',
+            default  => $this->priority,
+        };
+    }
 }

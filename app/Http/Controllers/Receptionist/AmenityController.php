@@ -11,15 +11,20 @@ class AmenityController extends Controller
 {
     public function index(Request $request)
     {
+        $validated = $request->validate([
+            'status'      => 'nullable|string|in:pending,approved,used,cancelled,rejected',
+            'facility_id' => 'nullable|integer|exists:facilities,id',
+        ]);
+
         $query = FacilityBooking::with(['facility', 'user'])
             ->latest();
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        if (!empty($validated['status'])) {
+            $query->where('status', $validated['status']);
         }
 
-        if ($request->filled('facility_id')) {
-            $query->where('facility_id', $request->facility_id);
+        if (!empty($validated['facility_id'])) {
+            $query->where('facility_id', $validated['facility_id']);
         }
 
         $bookings  = $query->paginate(15)->withQueryString();
@@ -30,7 +35,16 @@ class AmenityController extends Controller
 
     public function approveBooking($id)
     {
-        $booking = FacilityBooking::findOrFail($id);
+        $booking = FacilityBooking::with('facility')->findOrFail($id);
+
+        if ($booking->status !== 'pending') {
+            return back()->with('error', 'Chỉ có thể duyệt lịch đặt đang ở trạng thái chờ.');
+        }
+
+        if ($booking->facility && !in_array($booking->facility->status, ['available', 'active'], true)) {
+            return back()->with('error', 'Không thể duyệt lịch do tiện ích hiện đang bảo trì hoặc tạm đóng.');
+        }
+
         $booking->update(['status' => 'approved']);
 
         return back()->with('success', 'Đã duyệt đặt lịch tiện ích.');
@@ -38,10 +52,16 @@ class AmenityController extends Controller
 
     public function rejectBooking(Request $request, $id)
     {
+        $validated = $request->validate([
+            'reason' => 'nullable|string|max:500',
+        ], [
+            'reason.max' => 'Lý do từ chối không được vượt quá 500 ký tự.',
+        ]);
+
         $booking = FacilityBooking::findOrFail($id);
         $booking->update([
             'status'          => 'rejected',
-            'rejection_reason' => $request->reason,
+            'rejection_reason' => $validated['reason'] ?? null,
         ]);
 
         return back()->with('success', 'Đã từ chối đặt lịch tiện ích.');

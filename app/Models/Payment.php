@@ -85,4 +85,16 @@ class Payment extends Model
     {
         return 'PAY-' . str_pad($this->id, 5, '0', STR_PAD_LEFT);
     }
+
+    public function getPaymentMethodLabelAttribute(): string
+    {
+        return match ($this->payment_method) {
+            'cash'          => 'Tiền mặt',
+            'bank_transfer' => 'Chuyển khoản ngân hàng',
+            'vnpay'         => 'VNPAY',
+            'momo'          => 'Ví MoMo',
+            'other'         => 'Khác',
+            default         => $this->payment_method ?? 'Không xác định',
+        };
+    }
 }

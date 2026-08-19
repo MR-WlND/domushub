@@ -208,7 +208,7 @@ $portalRoutes = function () {
     Route::get('/invoices/batch', [InvoiceController::class, 'batchCreate'])->name('invoices.batch');
     Route::post('/invoices/batch', [InvoiceController::class, 'batchStore'])->name('invoices.batch.store');
 
-    Route::post('/invoices/generate', [InvoiceController::class, 'generate'])->name('invoices.generate');
+    // Route 'generate' đã bị xóa — chức năng xuất hàng loạt dùng /invoices/batch thay thế
     Route::get('/invoices/apartment/{apartment}', [InvoiceController::class, 'apartmentInvoices'])->name('invoices.apartment');
     Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
     Route::get('/invoices/{invoice}/edit', [InvoiceController::class, 'edit'])->name('invoices.edit');
@@ -303,6 +303,7 @@ $portalRoutes = function () {
     
     // API & Phân công (RESTful StaffSchedules)
     Route::get('/api/staffs', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'getStaffs'])->name('api.staffs');
+    Route::get('/api/floors', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'getFloors'])->name('api.floors');
     Route::post('/staff-schedules', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'store'])->name('staff-schedules.store');
     Route::delete('/staff-schedules/{staff_schedule}', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'destroy'])->name('staff-schedules.destroy');
     Route::patch('/staff-schedules/{staff_schedule}/leader', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'toggleLeader'])->name('staff-schedules.leader');
@@ -341,7 +342,12 @@ $portalRoutes = function () {
     Route::delete('/cleaning-tasks/{id}', [\App\Http\Controllers\Admin\CleaningTaskController::class, 'destroy'])->name('cleaning-tasks.destroy');
 
     Route::get('/cleaning-reports', [\App\Http\Controllers\Admin\CleaningReportController::class, 'index'])->name('cleaning-reports.index');
+    Route::get('/cleaning-reports/{id}', [\App\Http\Controllers\Admin\CleaningReportController::class, 'show'])->name('cleaning-reports.show');
     Route::patch('/cleaning-reports/{id}/status', [\App\Http\Controllers\Admin\CleaningReportController::class, 'updateStatus'])->name('cleaning-reports.update-status');
+    Route::post('/cleaning-reports/{id}/assign', [\App\Http\Controllers\Admin\CleaningReportController::class, 'assign'])->name('cleaning-reports.assign');
+    Route::post('/cleaning-reports/{id}/unassign', [\App\Http\Controllers\Admin\CleaningReportController::class, 'unassign'])->name('cleaning-reports.unassign');
+    Route::post('/cleaning-reports/{id}/approve', [\App\Http\Controllers\Admin\CleaningReportController::class, 'approve'])->name('cleaning-reports.approve');
+    Route::post('/cleaning-reports/{id}/reject', [\App\Http\Controllers\Admin\CleaningReportController::class, 'reject'])->name('cleaning-reports.reject');
 
 };
 
@@ -392,6 +398,7 @@ Route::middleware(['cleaning'])->group(function () {
 
     Route::get('/cleaning/report', [\App\Http\Controllers\Cleaning\ReportController::class, 'index'])->name('cleaning.report');
     Route::post('/cleaning/report', [\App\Http\Controllers\Cleaning\ReportController::class, 'store'])->name('cleaning.report.store');
+    Route::get('/cleaning/report/{id}', [\App\Http\Controllers\Cleaning\ReportController::class, 'show'])->name('cleaning.report.show');
 
     Route::get('/cleaning/tasks', [\App\Http\Controllers\Cleaning\TaskController::class, 'index'])->name('cleaning.tasks');
     Route::get('/cleaning/tasks/{id}', [\App\Http\Controllers\Cleaning\TaskController::class, 'show'])->name('cleaning.tasks.show');

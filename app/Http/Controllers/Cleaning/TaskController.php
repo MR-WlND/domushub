@@ -61,6 +61,11 @@ class TaskController extends Controller
 
         $request->validate([
             'status' => 'required|in:pending,progress,done',
+            'note'   => 'nullable|string|max:1000',
+        ], [
+            'status.required' => 'Vui lòng chọn trạng thái.',
+            'status.in'       => 'Trạng thái không hợp lệ.',
+            'note.max'        => 'Ghi chú không được vượt quá 1000 ký tự.',
         ]);
 
         $task->status = $request->status;
@@ -80,9 +85,9 @@ class TaskController extends Controller
             $task->completed_at = null;
         }
 
-        // Save note if provided
+        // Lưu ghi chú của nhân viên vào staff_note (không được ghi vào manager_note)
         if ($request->has('note')) {
-            $task->manager_note = $request->input('note');
+            $task->staff_note = $request->input('note');
         }
 
         $task->save();
@@ -101,7 +106,13 @@ class TaskController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $checklist = $request->input('checklist');
+        $validated = $request->validate([
+            'checklist'        => 'required|array',
+            'checklist.*.text' => 'required|string|max:500',
+            'checklist.*.done' => 'required|boolean',
+        ]);
+
+        $checklist = $validated['checklist'];
         $task->checklist = $checklist;
 
         // If all checklist items are done, auto-mark task as done

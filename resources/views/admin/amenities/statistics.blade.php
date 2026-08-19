@@ -45,9 +45,9 @@
                 <label class="year-filter-label" for="monthSelect" style="margin-left: 12px;">Tháng:</label>
                 <div class="year-select-wrap">
                     <select id="monthSelect" name="month" class="year-select" onchange="this.form.submit()">
-                        <option value="">Tất cả các tháng</option>
+                        <option value="" {{ ($selectedMonth === null || $selectedMonth === '') ? 'selected' : '' }}>Tất cả các tháng</option>
                         @for ($m = 1; $m <= 12; $m++)
-                            <option value="{{ $m }}" {{ $selectedMonth == $m ? 'selected' : '' }}>
+                            <option value="{{ $m }}" {{ (string)$selectedMonth === (string)$m ? 'selected' : '' }}>
                                 Tháng {{ str_pad($m, 2, '0', STR_PAD_LEFT) }}
                             </option>
                         @endfor

@@ -150,4 +150,5 @@ class FacilityBooking extends Model
 
         return 0;
     }
+
 }

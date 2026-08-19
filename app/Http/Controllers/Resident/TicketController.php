@@ -231,32 +231,12 @@ class TicketController extends Controller
 
         $rating = (int) $validated['rating'];
 
-        // Từ 4-5 sao: đánh dấu hoàn tất bình thường
-        if ($rating >= 4) {
-            $ticket->update([
-                'rating'           => $rating,
-                'feedback_comment' => $validated['feedback_comment'] ?? null,
-            ]);
-
-            return back()->with('success', 'Cảm ơn bạn đã đánh giá! Phản hồi của bạn giúp chúng tôi cải thiện dịch vụ.');
-        }
-        // Từ 1-3 sao: yêu cầu KTV kiểm tra lại
         $ticket->update([
             'rating'           => $rating,
             'feedback_comment' => $validated['feedback_comment'] ?? null,
-            'status'           => 'in_progress',
-            'reopened_count'   => $ticket->reopened_count + 1,
-            'completed_at'     => null,
         ]);
 
-        TicketProgress::create([
-            'ticket_id'  => $ticket->id,
-            'status'     => 'in_progress',
-            'comment'    => 'Cư dân đánh giá ' . $rating . ' sao. Yêu cầu kỹ thuật viên kiểm tra lại. Lý do: ' . ($validated['feedback_comment'] ?? 'Không có ghi chú.'),
-            'updated_by'  => $user->id,
-        ]);
-
-        return back()->with('success', 'Cảm ơn bạn đã phản hồi. Kỹ thuật viên sẽ kiểm tra lại sự cố này trong thời gian sớm nhất.');
+        return back()->with('success', 'Cảm ơn bạn đã đánh giá! Phản hồi của bạn giúp chúng tôi cải thiện dịch vụ.');
     }
 
     /**

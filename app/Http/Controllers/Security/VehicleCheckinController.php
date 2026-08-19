@@ -134,6 +134,14 @@ class VehicleCheckinController extends Controller
             'guest_name'         => ['nullable', 'string', 'max:100'],
             'guest_phone'        => ['nullable', 'string', 'max:20'],
             'guest_note'         => ['nullable', 'string', 'max:500'],
+        ], [
+            'guest_plate.required'        => 'Vui lòng nhập biển số xe khách vãng lai.',
+            'guest_plate.max'             => 'Biển số xe không được vượt quá 20 ký tự.',
+            'guest_vehicle_type.required' => 'Vui lòng chọn loại phương tiện.',
+            'guest_vehicle_type.in'       => 'Loại phương tiện không hợp lệ.',
+            'guest_name.max'              => 'Tên khách không được vượt quá 100 ký tự.',
+            'guest_phone.max'             => 'Số điện thoại không được vượt quá 20 ký tự.',
+            'guest_note.max'              => 'Ghi chú không được vượt quá 500 ký tự.',
         ]);
 
         $plate = strtoupper(trim($request->guest_plate));

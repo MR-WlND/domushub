@@ -70,6 +70,14 @@ class ServicePriceController extends Controller
             'unit_price'  => 'required|numeric|min:0',
             'status'      => 'required|in:active,pending,banned',
             'description' => 'nullable|string|max:500',
+        ], [
+            'name.required'        => 'Vui lòng nhập tên dịch vụ.',
+            'name.max'             => 'Tên dịch vụ không được vượt quá 100 ký tự.',
+            'type.required'        => 'Vui lòng chọn loại dịch vụ.',
+            'unit_price.required'  => 'Vui lòng nhập đơn giá.',
+            'unit_price.min'       => 'Đơn giá phải lớn hơn hoặc bằng 0.',
+            'status.required'      => 'Vui lòng chọn trạng thái.',
+            'description.max'      => 'Mô tả không được vượt quá 500 ký tự.',
         ]);
 
         $servicePrice->update($validated);

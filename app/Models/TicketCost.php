@@ -51,6 +51,11 @@ class TicketCost extends Model
         };
     }
 
+    public function getCostTypeLabelAttribute(): string
+    {
+        return $this->costTypeLabel();
+    }
+
     public function isRepair(): bool
     {
         return $this->cost_type === 'repair';

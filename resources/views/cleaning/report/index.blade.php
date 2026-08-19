@@ -28,14 +28,40 @@
     .priority-dot--low{background:#05CD99;}
     .priority-dot--medium{background:#FFB547;}
     .priority-dot--high{background:#EE5D50;}
+    .location-badge{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:10px;background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border:1.5px solid #C7D2FE;font-size:13.5px;font-weight:600;color:#3730A3;height:46px;}
+    .location-badge i{font-size:15px;color:#6366F1;}
+    .location-badge--muted{background:#F8FAFC;border-color:#E2E8F0;color:#94A3B8;}
+    .location-badge--muted i{color:#CBD5E1;}
     .upload-area{border:2px dashed #D8E0F0;border-radius:12px;padding:28px;text-align:center;cursor:pointer;transition:.2s;background:#FAFCFE;}
     .upload-area:hover{border-color:#3652D9;background:#F4F7FE;}
     .upload-area i{font-size:24px;color:#A3AED0;margin-bottom:8px;}
     .upload-area p{font-size:13px;color:#707EAE;font-weight:500;}
     .upload-area span{font-size:11px;color:#A3AED0;display:block;margin-top:3px;}
-    .upload-preview{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
-    .upload-thumb{width:56px;height:56px;border-radius:8px;overflow:hidden;border:2px solid #E9EDF7;}
-    .upload-thumb img{width:100%;height:100%;object-fit:cover;}
+    .upload-preview{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+    .upload-thumb{width:80px;height:80px;border-radius:10px;overflow:hidden;border:2px solid #E9EDF7;position:relative;cursor:pointer;transition:.2s;}
+    .upload-thumb:hover{border-color:#3652D9;transform:scale(1.03);}
+    .upload-thumb img,.upload-thumb video{width:100%;height:100%;object-fit:cover;display:block;}
+    .upload-thumb__overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);border-radius:8px;opacity:1;}
+    .upload-thumb__overlay i{color:white;font-size:18px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));}
+    .upload-thumb__remove{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#EE5D50;color:white;border:2px solid white;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:.15s;z-index:2;}
+    .upload-thumb:hover .upload-thumb__remove{opacity:1;}
+    .upload-thumb__name{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.6);color:white;font-size:9px;padding:2px 4px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+    /* Lightbox */
+    .lightbox{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.85);align-items:center;justify-content:center;padding:20px;}
+    .lightbox--active{display:flex;}
+    .lightbox__content{max-width:90vw;max-height:85vh;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+    .lightbox__content img,.lightbox__content video{max-width:90vw;max-height:85vh;display:block;border-radius:12px;}
+    .lightbox__close{position:absolute;top:20px;right:24px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.15);backdrop-filter:blur(4px);border:none;color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;}
+    .lightbox__close:hover{background:rgba(255,255,255,.3);}
+
+    /* History media thumbnails */
+    .history-item__media{display:flex;gap:6px;margin-top:6px;}
+    .history-media-thumb{width:36px;height:36px;border-radius:6px;overflow:hidden;border:1.5px solid #E9EDF7;cursor:pointer;position:relative;transition:.15s;}
+    .history-media-thumb:hover{border-color:#3652D9;transform:scale(1.05);}
+    .history-media-thumb img,.history-media-thumb video{width:100%;height:100%;object-fit:cover;display:block;}
+    .history-media-thumb__play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);border-radius:4px;}
+    .history-media-thumb__play i{color:white;font-size:10px;}
     .btn-submit{display:inline-flex;align-items:center;gap:10px;background:#3652D9;color:white;border:none;padding:13px 28px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:.2s;font-family:inherit;margin-top:4px;}
     .btn-submit:hover{background:#2a43b8;transform:translateY(-1px);box-shadow:0 6px 16px rgba(54,82,217,.3);}
 
@@ -58,8 +84,9 @@
     .history-card{background:white;border-radius:14px;padding:20px;box-shadow:0 2px 12px rgba(54,82,217,.04);margin-top:20px;}
     .history-card__title{font-size:15px;font-weight:700;color:#1B2559;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
     .history-card__title i{color:#3652D9;font-size:13px;}
-    .history-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #F4F7FE;font-size:12.5px;}
+    .history-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #F4F7FE;font-size:12.5px;transition:.15s;border-radius:8px;}
     .history-item:last-child{border-bottom:none;}
+    .history-item:hover{background:#F8FAFF;padding-left:8px;padding-right:8px;}
     .history-item__dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
     .history-item__dot--pending{background:#FFB547;}
     .history-item__dot--processing{background:#3652D9;}
@@ -112,22 +139,28 @@
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Vị trí / Khu vực <span class="req">*</span></label>
-                    <select class="form-select" name="location" required>
-                        <option value="">Chọn khu vực</option>
-                        <option value="Tầng trệt / Sảnh chính" {{ old('location') == 'Tầng trệt / Sảnh chính' ? 'selected' : '' }}>Tầng trệt / Sảnh chính</option>
-                        <option value="Tầng 1" {{ old('location') == 'Tầng 1' ? 'selected' : '' }}>Tầng 1</option>
-                        <option value="Tầng 2" {{ old('location') == 'Tầng 2' ? 'selected' : '' }}>Tầng 2</option>
-                        <option value="Tầng 3" {{ old('location') == 'Tầng 3' ? 'selected' : '' }}>Tầng 3</option>
-                        <option value="Tầng 4" {{ old('location') == 'Tầng 4' ? 'selected' : '' }}>Tầng 4</option>
-                        <option value="Tầng 5" {{ old('location') == 'Tầng 5' ? 'selected' : '' }}>Tầng 5</option>
-                        <option value="Tầng hầm" {{ old('location') == 'Tầng hầm' ? 'selected' : '' }}>Tầng hầm</option>
-                        <option value="Sân thượng" {{ old('location') == 'Sân thượng' ? 'selected' : '' }}>Sân thượng</option>
-                        <option value="Hồ bơi" {{ old('location') == 'Hồ bơi' ? 'selected' : '' }}>Hồ bơi</option>
-                        <option value="Phòng Gym" {{ old('location') == 'Phòng Gym' ? 'selected' : '' }}>Phòng Gym</option>
-                        <option value="Thang máy" {{ old('location') == 'Thang máy' ? 'selected' : '' }}>Thang máy</option>
-                    </select>
+                    <label class="form-label">Khu vực phân công</label>
+                    @if($todaySchedule && $todaySchedule->block)
+                    <div class="location-badge">
+                        <i class="fa-solid fa-building"></i>
+                        <span>{{ $todaySchedule->block->name }} – {{ $todaySchedule->floor?->name ?? 'Tầng ' . $todaySchedule->floor?->floor_number }}</span>
+                    </div>
+                    <input type="hidden" name="block_id" value="{{ $todaySchedule->block_id }}">
+                    <input type="hidden" name="floor_id" value="{{ $todaySchedule->floor_id }}">
+                    @else
+                    <div class="location-badge location-badge--muted">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span>Chưa có lịch phân ca hôm nay</span>
+                    </div>
+                    @endif
                 </div>
+                <div class="form-group">
+                    <label class="form-label">Vị trí chi tiết</label>
+                    <input type="text" class="form-input" name="location" value="{{ old('location') }}" placeholder="VD: Hành lang, Cầu thang, Phòng rác...">
+                </div>
+            </div>
+
+            <div class="form-row">
                 <div class="form-group">
                     <label class="form-label">Mức độ ưu tiên</label>
                     <div class="priority-group">
@@ -144,13 +177,13 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label">Ảnh minh chứng</label>
+                <label class="form-label">Ảnh / Video minh chứng</label>
                 <div class="upload-area" onclick="document.getElementById('fileInput').click()">
                     <i class="fa-solid fa-cloud-arrow-up"></i>
-                    <p>Kéo thả hoặc nhấp để tải ảnh lên</p>
-                    <span>Định dạng JPG, PNG (Tối đa 10MB)</span>
+                    <p>Kéo thả hoặc nhấp để tải ảnh / video lên</p>
+                    <span>Ảnh: JPG, PNG, WebP (10MB) — Video: MP4, MOV, AVI, WebM (50MB)</span>
                 </div>
-                <input type="file" id="fileInput" name="images[]" multiple accept="image/*" style="display:none;" onchange="previewFiles(this)">
+                <input type="file" id="fileInput" name="images[]" multiple accept="image/*,video/*" style="display:none;" onchange="previewFiles(this)">
                 <div class="upload-preview" id="uploadPreview"></div>
             </div>
 
@@ -163,14 +196,35 @@
     <div class="history-card">
         <h2 class="history-card__title"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử báo cáo ({{ $reports->count() }})</h2>
         @foreach($reports as $report)
-        <div class="history-item">
+        <a href="{{ route('cleaning.report.show', $report->id) }}" class="history-item" style="flex-wrap:wrap;text-decoration:none;cursor:pointer;">
             <div class="history-item__dot history-item__dot--{{ $report->status }}"></div>
             <span class="history-item__title">{{ $report->title }}</span>
             <span class="history-item__status history-item__status--{{ $report->status }}">
                 {{ $report->status === 'pending' ? 'Chờ xử lý' : ($report->status === 'processing' ? 'Đang xử lý' : 'Đã xử lý') }}
             </span>
             <span class="history-item__date">{{ $report->created_at->format('d/m') }}</span>
-        </div>
+            @if($report->images && count($report->images) > 0)
+            <div class="history-item__media" style="width:100%;padding-left:20px;">
+                @foreach($report->images as $media)
+                @php
+                    $ext = strtolower(pathinfo($media, PATHINFO_EXTENSION));
+                    $isVideo = in_array($ext, ['mp4','mov','avi','webm']);
+                    $url = asset('storage/' . $media);
+                @endphp
+                @if($isVideo)
+                <div class="history-media-thumb">
+                    <video src="{{ $url }}" muted preload="metadata"></video>
+                    <div class="history-media-thumb__play"><i class="fa-solid fa-play"></i></div>
+                </div>
+                @else
+                <div class="history-media-thumb">
+                    <img src="{{ $url }}" alt="Ảnh sự cố">
+                </div>
+                @endif
+                @endforeach
+            </div>
+            @endif
+        </a>
         @endforeach
     </div>
     @endif
@@ -199,21 +253,159 @@
 
 @push('scripts')
 <script>
+// ═══════════════════════════════════════
+// FILE PREVIEW (trước khi gửi)
+// ═══════════════════════════════════════
+let selectedFiles = [];
+
 function previewFiles(input) {
     const preview = document.getElementById('uploadPreview');
     preview.innerHTML = '';
-    if (input.files) {
-        Array.from(input.files).forEach(file => {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const thumb = document.createElement('div');
-                thumb.className = 'upload-thumb';
-                thumb.innerHTML = '<img src="' + e.target.result + '" alt="preview">';
-                preview.appendChild(thumb);
-            };
-            reader.readAsDataURL(file);
+    selectedFiles = Array.from(input.files);
+
+    selectedFiles.forEach((file, idx) => {
+        const thumb = document.createElement('div');
+        thumb.className = 'upload-thumb';
+
+        if (file.type.startsWith('video/')) {
+            const video = document.createElement('video');
+            video.src = URL.createObjectURL(file);
+            video.muted = true;
+            video.preload = 'metadata';
+            video.addEventListener('loadeddata', () => { video.currentTime = 1; });
+            thumb.appendChild(video);
+
+            const overlay = document.createElement('div');
+            overlay.className = 'upload-thumb__overlay';
+            overlay.innerHTML = '<i class="fa-solid fa-video"></i>';
+            thumb.appendChild(overlay);
+        } else {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.alt = file.name;
+            thumb.appendChild(img);
+        }
+
+        // File name label
+        const nameLabel = document.createElement('div');
+        nameLabel.className = 'upload-thumb__name';
+        nameLabel.textContent = file.name.length > 12 ? file.name.substring(0, 9) + '...' : file.name;
+        thumb.appendChild(nameLabel);
+
+        // Remove button
+        const removeBtn = document.createElement('div');
+        removeBtn.className = 'upload-thumb__remove';
+        removeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        removeBtn.onclick = function(e) {
+            e.stopPropagation();
+            selectedFiles.splice(idx, 1);
+            rebuildFileInput();
+            previewFromArray();
+        };
+        thumb.appendChild(removeBtn);
+
+        // Click to preview full
+        thumb.addEventListener('click', function() {
+            const url = URL.createObjectURL(file);
+            openLightbox(url, file.type.startsWith('video/') ? 'video' : 'image');
         });
-    }
+
+        preview.appendChild(thumb);
+    });
 }
+
+function previewFromArray() {
+    const preview = document.getElementById('uploadPreview');
+    preview.innerHTML = '';
+    selectedFiles.forEach((file, idx) => {
+        const thumb = document.createElement('div');
+        thumb.className = 'upload-thumb';
+
+        if (file.type.startsWith('video/')) {
+            const video = document.createElement('video');
+            video.src = URL.createObjectURL(file);
+            video.muted = true;
+            video.preload = 'metadata';
+            video.addEventListener('loadeddata', () => { video.currentTime = 1; });
+            thumb.appendChild(video);
+            const overlay = document.createElement('div');
+            overlay.className = 'upload-thumb__overlay';
+            overlay.innerHTML = '<i class="fa-solid fa-video"></i>';
+            thumb.appendChild(overlay);
+        } else {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            thumb.appendChild(img);
+        }
+
+        const nameLabel = document.createElement('div');
+        nameLabel.className = 'upload-thumb__name';
+        nameLabel.textContent = file.name.length > 12 ? file.name.substring(0, 9) + '...' : file.name;
+        thumb.appendChild(nameLabel);
+
+        const removeBtn = document.createElement('div');
+        removeBtn.className = 'upload-thumb__remove';
+        removeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        removeBtn.onclick = function(e) {
+            e.stopPropagation();
+            selectedFiles.splice(idx, 1);
+            rebuildFileInput();
+            previewFromArray();
+        };
+        thumb.appendChild(removeBtn);
+
+        thumb.addEventListener('click', function() {
+            openLightbox(URL.createObjectURL(file), file.type.startsWith('video/') ? 'video' : 'image');
+        });
+
+        preview.appendChild(thumb);
+    });
+}
+
+function rebuildFileInput() {
+    const dt = new DataTransfer();
+    selectedFiles.forEach(f => dt.items.add(f));
+    document.getElementById('fileInput').files = dt.files;
+}
+
+// ═══════════════════════════════════════
+// LIGHTBOX (xem ảnh/video full)
+// ═══════════════════════════════════════
+function openLightbox(url, type) {
+    let lightbox = document.getElementById('mediaLightbox');
+    if (!lightbox) {
+        lightbox = document.createElement('div');
+        lightbox.id = 'mediaLightbox';
+        lightbox.className = 'lightbox';
+        lightbox.innerHTML = '<button class="lightbox__close" onclick="closeLightbox()"><i class="fa-solid fa-xmark"></i></button><div class="lightbox__content" id="lightboxContent"></div>';
+        lightbox.addEventListener('click', function(e) { if (e.target === this) closeLightbox(); });
+        document.body.appendChild(lightbox);
+    }
+
+    const content = document.getElementById('lightboxContent');
+    if (type === 'video') {
+        content.innerHTML = `<video src="${url}" controls autoplay style="max-width:90vw;max-height:85vh;border-radius:12px;"></video>`;
+    } else {
+        content.innerHTML = `<img src="${url}" alt="Preview" style="max-width:90vw;max-height:85vh;border-radius:12px;">`;
+    }
+    lightbox.classList.add('lightbox--active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+    const lightbox = document.getElementById('mediaLightbox');
+    if (lightbox) {
+        lightbox.classList.remove('lightbox--active');
+        const content = document.getElementById('lightboxContent');
+        const video = content.querySelector('video');
+        if (video) video.pause();
+        content.innerHTML = '';
+    }
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeLightbox();
+});
 </script>
 @endpush

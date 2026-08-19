@@ -19,9 +19,10 @@ class ScheduleController extends Controller
 
         $shifts = Shift::with('requirements')->get();
         $departments = \App\Models\Department::where('is_shift', true)->where('status', 'active')->get();
+        $blocks = \App\Models\Block::orderBy('name')->get();
 
         // Get schedules for the week
-        $schedules = StaffSchedule::with(['staff', 'shift'])
+        $schedules = StaffSchedule::with(['staff', 'shift', 'block', 'floor'])
             ->whereBetween('work_date', [$startOfWeek->format('Y-m-d'), $endOfWeek->format('Y-m-d')])
             ->get();
 
@@ -45,7 +46,7 @@ class ScheduleController extends Controller
 
         $today = Carbon::today()->format('Y-m-d');
 
-        return view('admin.schedules.index', compact('days', 'shifts', 'departments', 'scheduleMatrix', 'startOfWeek', 'endOfWeek', 'date', 'today'));
+        return view('admin.schedules.index', compact('days', 'shifts', 'departments', 'scheduleMatrix', 'startOfWeek', 'endOfWeek', 'date', 'today', 'blocks'));
     }
 
     public function updateRequirements(Request $request, Shift $shift)

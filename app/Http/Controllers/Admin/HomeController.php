@@ -249,29 +249,8 @@ class HomeController extends Controller
             $monthlyStackedData[$catKey] = array_values($monthValues);
         }
 
-        // 5. Tỷ lệ hoàn thành đóng phí của tháng được chọn
-        $latestMonthQuery = DB::table('bills')
-            ->whereNull('bills.deleted_at')
-            ->where('bills.status', '!=', 'cancelled')
-            ->where('bills.billing_year', $selectedYear);
-        if ($selectedBlock) {
-            $latestMonthQuery->join('apartments', 'bills.apartment_id', '=', 'apartments.id')
-                ->join('floors', 'apartments.floor_id', '=', 'floors.id')
-                ->where('floors.block_id', $selectedBlock);
-        }
-        $latestMonthRow = $latestMonthQuery->select('bills.billing_month')
-            ->orderBy('bills.billing_month', 'desc')
-            ->first();
-
-        $latestMonth = $latestMonthRow ? $latestMonthRow->billing_month : null;
-        $selectedMonth = $request->get('month');
-        if ($selectedMonth === null) {
-            $selectedMonth = $latestMonth ?? (int)date('m');
-        } elseif ($selectedMonth === '') {
-            $selectedMonth = null;
-        } else {
-            $selectedMonth = (int)$selectedMonth;
-        }
+        // 5. Tỷ lệ hoàn thành đóng phí của tháng được chọn (hoặc tất cả các tháng)
+        $selectedMonth = $request->filled('month') ? (int) $request->get('month') : null;
         $paidAmount = 0;
         $unpaidAmount = 0;
 
@@ -329,7 +308,7 @@ class HomeController extends Controller
             'totalBilled', 'totalCollected', 'totalUnpaid', 'collectionRate',
             'yearBilled', 'yearCollected', 'yearUnpaid', 'yearCollectionRate',
             'monthlyRevenue', 'monthlyLabels',
-            'monthlyStackedData', 'latestMonth', 'paidAmount', 'unpaidAmount',
+            'monthlyStackedData', 'paidAmount', 'unpaidAmount',
             'waterConsumption'
         ));
     }
