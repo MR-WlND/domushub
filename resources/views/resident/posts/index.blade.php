@@ -96,7 +96,7 @@
                     @if($post->user && $post->user->avatar)
                         <img src="{{ asset('storage/' . $post->user->avatar) }}" class="df-avatar" alt="">
                     @else
-                        <div class="df-avatar df-avatar-placeholder" style="background:#000;">
+                        <div class="df-avatar df-avatar-placeholder" style="background:#00236f;">
                             <i class="fa-solid fa-shield-halved" style="color:#fff; font-size:0.9rem;"></i>
                         </div>
                     @endif
@@ -351,7 +351,7 @@
             </div>
             
             <div style="padding: 16px; padding-top: 0;">
-                <button type="submit" style="width: 100%; background: #000000; color: #ffffff; border: none; padding: 12px; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s;">
+                <button type="submit" style="width: 100%; background: #00236f; color: #ffffff; border: none; padding: 12px; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s;">
                     Đăng
                 </button>
             </div>

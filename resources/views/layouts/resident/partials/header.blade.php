@@ -4,7 +4,7 @@
             <i class="fa-solid fa-bars"></i>
         </button>
         <div class="resident-header__brand">
-            <a href="{{ route('resident.dashboard') }}" class="resident-header__brand-link">URBAN LIVING</a>
+            <a href="{{ route('resident.dashboard') }}" class="resident-header__brand-link">DomusHub</a>
         </div>
     </div>
 

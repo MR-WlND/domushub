@@ -17,7 +17,7 @@
 .ra-title {
     font-size: 2.2rem;
     font-weight: 700;
-    color: #111827;
+    color: #00236f;
     margin: 0 0 8px 0;
     letter-spacing: -0.02em;
 }
@@ -53,9 +53,9 @@
 }
 
 .ra-filter-btn.active {
-    background: #000000;
+    background: #00236f;
     color: #ffffff;
-    border-color: #000000;
+    border-color: #00236f;
 }
 
 /* List Section */
@@ -121,7 +121,7 @@
 .ra-item-title {
     font-size: 1.25rem;
     font-weight: 700;
-    color: #111827;
+    color: #00236f;
     margin: 0;
     line-height: 1.4;
 }
@@ -136,7 +136,7 @@
 .ra-readmore {
     font-size: 0.85rem;
     font-weight: 700;
-    color: #111827;
+    color: #00236f;
     text-decoration: none;
     margin-top: 8px;
     display: inline-block;

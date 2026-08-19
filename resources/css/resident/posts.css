@@ -98,8 +98,8 @@ body.resident-page {
 }
 
 .df-menu-item.active {
-    background: #f3f4f6;
-    color: #000;
+    background: #eff6ff;
+    color: #00236f;
     font-weight: 600;
 }
 
@@ -181,7 +181,7 @@ body.resident-page {
 }
 
 .df-post-submit-btn {
-    background: #000000;
+    background: #00236f;
     color: #ffffff;
     border: none;
     padding: 8px 24px;
@@ -193,7 +193,7 @@ body.resident-page {
 }
 
 .df-post-submit-btn:hover {
-    background: #1f2937;
+    background: #1e3a8a;
 }
 
 /* Hide input file */
@@ -304,9 +304,9 @@ body.resident-page {
 }
 
 .df-filter-btn.active {
-    background: #000000;
+    background: #00236f;
     color: #ffffff;
-    border-color: #000000;
+    border-color: #00236f;
 }
 
 /* Post Card */
@@ -533,7 +533,7 @@ body.resident-page {
 .df-widget-title {
     font-size: 1.05rem;
     font-weight: 700;
-    color: #111827;
+    color: #00236f;
     margin: 0;
 }
 
@@ -580,7 +580,7 @@ body.resident-page {
 .df-widget-link {
     font-size: 0.85rem;
     font-weight: 600;
-    color: #111827;
+    color: #00236f;
     text-decoration: none;
     text-align: center;
     display: block;

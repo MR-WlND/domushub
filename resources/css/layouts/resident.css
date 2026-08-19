@@ -77,12 +77,11 @@ body.resident-page {
 }
 
 .resident-header__brand-link {
-    font-size: 1rem;
+    font-size: 1.25rem;
     font-weight: 700;
-    color: #000000;
+    color: #00236f;
     text-decoration: none;
-    letter-spacing: -0.02em;
-    text-transform: uppercase;
+    letter-spacing: -0.01em;
 }
 
 .resident-header__nav {
@@ -94,25 +93,27 @@ body.resident-page {
 }
 
 .resident-header__link {
-    color: #374151;
+    color: #475569;
     text-decoration: none;
     font-weight: 500;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     display: flex;
     align-items: center;
     justify-content: center;
     height: 100%;
-    transition: color 0.2s ease;
+    transition: color 0.2s ease, border-bottom 0.2s ease;
     box-sizing: border-box;
+    border-bottom: 3px solid transparent;
 }
 
 .resident-header__link:hover {
-    color: #000000;
+    color: #00236f;
 }
 
 .resident-header__link--active {
-    color: #000000;
-    font-weight: 700;
+    color: #00236f;
+    font-weight: 600;
+    border-bottom: 3px solid #00236f;
 }
 
 .resident-header__actions {
@@ -244,7 +245,9 @@ body.resident-page {
 
 .resident-header__dropdown-trigger {
     background: none;
-    border: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
     cursor: pointer;
     font-family: inherit;
     padding: 0;
