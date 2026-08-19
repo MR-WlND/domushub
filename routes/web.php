@@ -179,6 +179,8 @@ $portalRoutes = function () {
 
     // Điện nước & hoá đơn
     Route::get('/utility-readings', [UtilityMeterController::class, 'index'])->name('utility-readings.index');
+    Route::get('/utility-readings/import-template', [UtilityMeterController::class, 'downloadTemplate'])->name('utility-readings.import-template');
+    Route::post('/utility-readings/import', [UtilityMeterController::class, 'import'])->name('utility-readings.import');
     Route::get('/utility-readings/create', [UtilityMeterController::class, 'create'])->name('utility-readings.create');
     Route::post('/utility-readings', [UtilityMeterController::class, 'store'])->name('utility-readings.store');
     Route::get('/utility-readings/batch', [UtilityMeterController::class, 'batchCreate'])->name('utility-readings.batch');
