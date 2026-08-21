@@ -4,6 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DomusHub – Đăng nhập Cư dân</title>
+    
+    <!-- SEO On-page -->
+    <meta name="description" content="Đăng nhập tài khoản cư dân trên DomusHub. Quản lý hóa đơn, nhận thông báo, phản ánh sự cố và sử dụng tiện ích tòa nhà dễ dàng, bảo mật.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{{ url()->current() }}">
+    
+    <!-- Open Graph / Mạng xã hội -->
+    <meta property="og:title" content="DomusHub – Đăng nhập Cư dân">
+    <meta property="og:description" content="Truy cập hệ thống quản lý tòa nhà DomusHub dành riêng cho cư dân. Trải nghiệm dịch vụ tiện ích minh bạch và hiện đại.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <!-- End SEO -->
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     @vite(['resources/css/auth/login.css'])
 </head>
