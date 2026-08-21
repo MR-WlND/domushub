@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    UTILITY READINGS â€“ Chá»‘t sá»‘ Äiá»‡n NÆ°á»›c
    ============================================================ */
 
@@ -984,5 +984,153 @@ select.util-form-input {
     color: #b45309;
 }
 
+/* ============================================================
+   MOBILE RESPONSIVE — Utility Readings (max-width: 768px)
+   ============================================================ */
 
+@media (max-width: 768px) {
 
+    /* ── Page Header ── */
+    .util-page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .util-page-header h1 {
+        font-size: 18px;
+    }
+
+    .util-page-header p {
+        font-size: 13px;
+    }
+
+    .util-header-actions {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .util-header-actions .util-btn {
+        flex: 1;
+        justify-content: center;
+        font-size: 13px;
+        padding: 9px 12px;
+        min-width: 0;
+    }
+
+    /* ── Stat Cards ── */
+    .util-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+
+    .util-stat-card {
+        padding: 14px 16px;
+    }
+
+    .util-stat-card__value {
+        font-size: 22px;
+    }
+
+    /* ── Filter Panel ── */
+    .util-filter-panel {
+        padding: 14px 16px;
+        margin-bottom: 16px;
+    }
+
+    .util-filter-grid,
+    .util-filter-grid--index {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 10px;
+    }
+
+    .util-filter-actions {
+        grid-column: span 2;
+        flex-direction: row;
+        gap: 8px;
+    }
+
+    .util-filter-actions .util-btn {
+        flex: 1;
+        justify-content: center;
+    }
+
+    /* ── Table — Horizontal scroll on mobile ── */
+    .util-table-card {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .util-table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 0 0 10px 10px;
+    }
+
+    .util-table {
+        min-width: 680px; /* ensure columns don't squeeze too much */
+    }
+
+    .util-table th,
+    .util-table td {
+        padding: 8px 6px;
+        font-size: 12px;
+    }
+
+    /* ── Batch form input ── */
+    .batch-meter-input {
+        width: 100px !important;
+        font-size: 12px !important;
+        padding: 6px 8px !important;
+    }
+
+    /* ── Alert messages ── */
+    .util-alert--success,
+    .util-alert--danger {
+        padding: 12px 14px;
+        font-size: 13px;
+    }
+
+    /* ── Empty state ── */
+    .util-empty-state {
+        padding: 40px 16px;
+    }
+
+    .util-empty-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .util-empty-actions .util-btn {
+        justify-content: center;
+    }
+
+    /* ── Extra bottom padding for mobile nav ── */
+    .util-table-card,
+    .util-empty-state {
+        margin-bottom: 80px;
+    }
+}
+
+@media (max-width: 480px) {
+    .util-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .util-filter-grid,
+    .util-filter-grid--index {
+        grid-template-columns: 1fr !important;
+    }
+
+    .util-filter-actions {
+        grid-column: span 1;
+    }
+
+    .util-header-actions .util-btn {
+        font-size: 12px;
+        padding: 8px 10px;
+    }
+}

@@ -138,7 +138,7 @@ body.resident-page {
 }
 
 .header-icon-wrapper:hover {
-    background-color: rgba(0,0,0,0.05);
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
 .header-icon {
@@ -456,8 +456,15 @@ body.resident-page {
     }
 
     @keyframes slideInDrawer {
-        from { transform: translateX(-100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
+        from {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
     }
 
     .resident-header__nav--active {
@@ -588,6 +595,7 @@ body.resident-page {
     .mobile-bottom-nav {
         display: flex;
     }
+
     .resident-layout {
         padding-bottom: 76px;
     }
