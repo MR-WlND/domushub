@@ -28,7 +28,7 @@
         <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=768&h=1024&fit=crop" alt="building">
         <div class="overlay"></div>
         <div class="hero">
-            <h1>Nâng tầm cuộc sống<br>tại DomusHub</h1>
+            <h2>Nâng tầm cuộc sống<br>tại DomusHub</h2>
             <p>Trải nghiệm dịch vụ quản lý cư dân minh bạch, an toàn và hiện đại dành riêng cho bạn.</p>
         </div>
     </div>
@@ -41,7 +41,7 @@
                 <i class="fa-solid fa-building"></i> DomusHub Portal
             </div>
 
-            <h2>Chào mừng trở lại</h2>
+            <h1>Đăng nhập Cư dân DomusHub</h1>
             <p class="sub">Vui lòng nhập thông tin để truy cập tài khoản của bạn.</p>
 
             <form method="POST" action="{{ route('resident.login.submit') }}">

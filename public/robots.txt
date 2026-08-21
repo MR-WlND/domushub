@@ -1,2 +1,9 @@
 User-agent: *
-Disallow:
+Allow: /resident/login
+Allow: /login
+Allow: /
+
+# Chặn bot quét các trang sau khi đăng nhập
+Disallow: /resident/dashboard
+Disallow: /resident/invoices
+Disallow: /admin/
