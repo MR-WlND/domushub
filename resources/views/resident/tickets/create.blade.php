@@ -423,26 +423,36 @@
 @endpush
 
 @section('content')
-    <!-- Mobile Menu Drawer (No Icons - Clean Modern Design) -->
+    <!-- Mobile Menu Drawer (Matches Master Header 100%) -->
     <div id="mobMenuOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.45); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); z-index:999;"></div>
     <div id="mobMenuDrawer" style="position:fixed; top:0; left:-300px; width:270px; height:100%; background:#ffffff; z-index:1000; transition:left 0.28s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 10px 0 30px rgba(0, 35, 111, 0.15); display:flex; flex-direction:column;">
         <div style="padding: 18px 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
             <strong style="color:#00236f; font-size:1.15rem; font-weight:800; letter-spacing:-0.01em;">DomusHub</strong>
             <button id="mobMenuClose" style="background:#f1f5f9; border:none; width:32px; height:32px; border-radius:8px; font-size:16px; color:#64748b; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div style="padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; overflow-y: auto;">
-            <a href="{{ route('resident.dashboard') }}" class="mob-drawer-item">Home</a>
-            <a href="{{ route('resident.posts.index') }}" class="mob-drawer-item">Bản tin của tôi</a>
-            <a href="{{ route('resident.members.index') }}" class="mob-drawer-item">Thành viên</a>
-            <hr style="border:0; border-bottom:1px solid #f1f5f9; margin: 6px 4px;">
-            <span style="color:#94a3b8; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; padding: 4px 12px;">Dịch vụ</span>
-            <a href="{{ route('resident.vehicles.index') }}" class="mob-drawer-item">Phương tiện</a>
-            <a href="{{ route('resident.facilities.index') }}" class="mob-drawer-item">Tiện ích</a>
-            <a href="{{ route('resident.invoices.index') }}" class="mob-drawer-item">Hóa đơn</a>
-            <hr style="border:0; border-bottom:1px solid #f1f5f9; margin: 6px 4px;">
-            <a href="{{ route('resident.tickets.index') }}" class="mob-drawer-item mob-drawer-item--active">Phản ánh</a>
-            <a href="{{ route('resident.contact') }}" class="mob-drawer-item">Liên hệ</a>
-            <hr style="border:0; border-bottom:1px solid #f1f5f9; margin: 6px 4px;">
+        <div style="padding: 16px 12px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto;">
+            <a href="{{ route('resident.dashboard') }}" class="mob-drawer-item {{ request()->routeIs('resident.dashboard') ? 'mob-drawer-item--active' : '' }}">Trang chủ</a>
+            <a href="{{ route('resident.posts.index') }}" class="mob-drawer-item {{ request()->routeIs('resident.posts.*') ? 'mob-drawer-item--active' : '' }}">Bản tin</a>
+            <a href="{{ route('resident.members.index') }}" class="mob-drawer-item {{ request()->routeIs('resident.members.*') ? 'mob-drawer-item--active' : '' }}">Thành viên</a>
+            
+            <div class="mob-drawer-dropdown">
+                <button type="button" class="mob-drawer-item mob-drawer-trigger {{ (request()->routeIs('resident.vehicles.*') || request()->routeIs('resident.invoices.*') || request()->routeIs('resident.visitors.*') || request()->routeIs('resident.facilities.*') || request()->routeIs('resident.temporary-registrations.*')) ? 'mob-drawer-item--active' : '' }}" onclick="this.nextElementSibling.classList.toggle('show'); this.querySelector('.chevron').classList.toggle('rotate');">
+                    <span>Dịch vụ</span>
+                    <i class="fa-solid fa-chevron-down chevron" style="font-size: 0.75rem; transition: transform 0.2s ease;"></i>
+                </button>
+                <div class="mob-drawer-sub" style="display: none; flex-direction: column; gap: 2px; padding-left: 12px; margin-top: 4px; border-left: 2px solid #e2e8f0;">
+                    <a href="{{ route('resident.temporary-registrations.index') }}" class="mob-drawer-sub-item {{ request()->routeIs('resident.temporary-registrations.*') ? 'mob-drawer-item--active' : '' }}">Tạm trú / Tạm vắng</a>
+                    <a href="{{ route('resident.vehicles.index') }}" class="mob-drawer-sub-item {{ request()->routeIs('resident.vehicles.*') ? 'mob-drawer-item--active' : '' }}">Phương tiện</a>
+                    <a href="{{ route('resident.facilities.index') }}" class="mob-drawer-sub-item {{ request()->routeIs('resident.facilities.*') || request()->routeIs('resident.facility-bookings.*') ? 'mob-drawer-item--active' : '' }}">Tiện ích</a>
+                    <a href="{{ route('resident.visitors.index') }}" class="mob-drawer-sub-item {{ request()->routeIs('resident.visitors.*') ? 'mob-drawer-item--active' : '' }}">Khách ghé thăm</a>
+                    <a href="{{ route('resident.invoices.index') }}" class="mob-drawer-sub-item {{ request()->routeIs('resident.invoices.*') ? 'mob-drawer-item--active' : '' }}">Thanh toán hóa đơn</a>
+                </div>
+            </div>
+
+            <a href="{{ route('resident.tickets.index') }}" class="mob-drawer-item {{ request()->routeIs('resident.tickets.*') ? 'mob-drawer-item--active' : '' }}">Phản Ánh</a>
+            <a href="{{ route('resident.contact') }}" class="mob-drawer-item {{ request()->routeIs('resident.contact') ? 'mob-drawer-item--active' : '' }}">Liên hệ</a>
+            
+            <hr style="border:0; border-bottom:1px solid #f1f5f9; margin: 8px 4px;">
             <a href="#" onclick="event.preventDefault(); document.getElementById('resident-logout-form').submit();" class="mob-drawer-item mob-drawer-item--logout">Đăng xuất</a>
         </div>
     </div>
