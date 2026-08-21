@@ -1,6 +1,7 @@
 @extends('layouts.resident.master')
 
 @section('title', 'Bản tin - DomusHub')
+@section('content_class', 'no-padding')
 
 @push('styles')
     @vite(['resources/css/resident/posts.css'])
