@@ -32,22 +32,23 @@
         </main>
     </div>
 
-    {{-- MOBILE BOTTOM NAVIGATION (NO ICONS) --}}
+    {{-- MOBILE BOTTOM NAVIGATION (MATCHING DESIGN) --}}
     <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
-        <a href="{{ portal_route('dashboard') }}" class="mobile-nav-item {{ is_portal_route('dashboard') ? 'active' : '' }}">
-            <span>Tổng quan</span>
+        <a href="{{ portal_route('dashboard') }}" class="mobile-nav-item {{ is_portal_route('dashboard') ? 'active' : '' }}" title="Tổng quan">
+            <i class="fa-solid fa-house"></i>
         </a>
-        <a href="{{ portal_route('tickets.index') }}" class="mobile-nav-item {{ is_portal_route('tickets.*') ? 'active' : '' }}">
-            <span>Phản ánh</span>
+        <a href="{{ portal_route('invoices.index') }}" class="mobile-nav-item {{ is_portal_route('invoices.*') ? 'active' : '' }}" title="Hóa đơn">
+            <i class="fa-solid fa-receipt"></i>
         </a>
-        <a href="{{ portal_route('residents.index') }}" class="mobile-nav-item {{ is_portal_route('residents.*') ? 'active' : '' }}">
-            <span>Cư dân</span>
+        <a href="{{ portal_route('announcements.index') }}" class="mobile-nav-item {{ is_portal_route('announcements.*') ? 'active' : '' }}" title="Bản tin">
+            <i class="fa-regular fa-newspaper"></i>
         </a>
-        <a href="{{ portal_route('invoices.index') }}" class="mobile-nav-item {{ is_portal_route('invoices.*') ? 'active' : '' }}">
-            <span>Hóa đơn</span>
+        <a href="{{ portal_route('tickets.index') }}" class="mobile-nav-item {{ is_portal_route('tickets.*') ? 'active' : '' }}" title="Phản ánh">
+            <i class="fa-regular fa-calendar-check"></i>
         </a>
-        <a href="{{ portal_route('profile.index') }}" class="mobile-nav-item {{ is_portal_route('profile.*') ? 'active' : '' }}">
-            <span>Tài khoản</span>
+        <a href="{{ portal_route('profile.index') }}" class="mobile-nav-chat-btn" title="Tài khoản">
+            <i class="fa-solid fa-comments"></i>
+            <span class="online-dot"></span>
         </a>
     </nav>
 

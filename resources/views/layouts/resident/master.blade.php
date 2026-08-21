@@ -423,22 +423,23 @@
     }
     </script>
 
-    {{-- MOBILE BOTTOM NAVIGATION (NO ICONS) --}}
+    {{-- MOBILE BOTTOM NAVIGATION (MATCHING DESIGN) --}}
     <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
-        <a href="{{ route('resident.dashboard') }}" class="mobile-nav-item {{ request()->routeIs('resident.dashboard') ? 'active' : '' }}">
-            <span>Trang chủ</span>
+        <a href="{{ route('resident.dashboard') }}" class="mobile-nav-item {{ request()->routeIs('resident.dashboard') ? 'active' : '' }}" title="Trang chủ">
+            <i class="fa-solid fa-house"></i>
         </a>
-        <a href="{{ route('resident.posts.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.posts.*') ? 'active' : '' }}">
-            <span>Bản tin</span>
+        <a href="{{ route('resident.invoices.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.invoices.*') ? 'active' : '' }}" title="Hóa đơn">
+            <i class="fa-solid fa-receipt"></i>
         </a>
-        <a href="{{ route('resident.tickets.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.tickets.*') ? 'active' : '' }}">
-            <span>Phản ánh</span>
+        <a href="{{ route('resident.posts.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.posts.*') ? 'active' : '' }}" title="Bản tin">
+            <i class="fa-regular fa-newspaper"></i>
         </a>
-        <a href="{{ route('resident.invoices.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.invoices.*') ? 'active' : '' }}">
-            <span>Hóa đơn</span>
+        <a href="{{ route('resident.tickets.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.tickets.*') ? 'active' : '' }}" title="Phản ánh">
+            <i class="fa-regular fa-calendar-check"></i>
         </a>
-        <a href="{{ route('resident.profile.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.profile.*') ? 'active' : '' }}">
-            <span>Tài khoản</span>
+        <a href="{{ route('resident.contact') }}" class="mobile-nav-chat-btn" title="Liên hệ / Chat">
+            <i class="fa-solid fa-comments"></i>
+            <span class="online-dot"></span>
         </a>
     </nav>
 
