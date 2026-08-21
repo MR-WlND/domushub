@@ -380,6 +380,52 @@
             }
             .mob-nav-item i { font-size: 18px; }
             .mob-nav-item.active { background: #6ee7b7; color: #065f46; }
+
+            /* Styles for new mobile drawer */
+            .mob-drawer-item {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 12px 16px;
+                color: #334155;
+                font-size: 15px;
+                font-weight: 500;
+                text-decoration: none;
+                border-radius: 8px;
+                margin-bottom: 4px;
+            }
+            .mob-drawer-item:hover, .mob-drawer-item--active {
+                background: #f0f4f8;
+                color: #00236f;
+                font-weight: 600;
+            }
+            .mob-drawer-item--logout {
+                color: #dc2626 !important;
+                background: #fef2f2 !important;
+                margin-top: 24px;
+                font-weight: 600;
+                justify-content: flex-start;
+            }
+            .mob-drawer-sub {
+                display: none;
+                flex-direction: column;
+                padding-left: 16px;
+            }
+            .mob-drawer-sub.open {
+                display: flex;
+            }
+            .mob-drawer-sub-item {
+                padding: 10px 16px;
+                color: #64748b;
+                font-size: 14px;
+                text-decoration: none;
+                border-radius: 8px;
+                margin-bottom: 4px;
+            }
+            .mob-drawer-sub-item:hover {
+                color: #00236f;
+                background: #f8fafc;
+            }
         }
     </style>
 @endpush
@@ -523,9 +569,9 @@
     <!-- Mobile Menu Drawer (Matches Master Header 100%) -->
     <div id="mobMenuOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.45); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); z-index:999;"></div>
     <div id="mobMenuDrawer" style="position:fixed; top:0; left:-300px; width:270px; height:100%; background:#ffffff; z-index:1000; transition:left 0.28s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 10px 0 30px rgba(0, 35, 111, 0.15); display:flex; flex-direction:column;">
-        <div style="padding: 18px 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
+        <div style="padding: 18px 20px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 16px;">
+            <button id="mobMenuClose" style="background:none; border:none; font-size:20px; color:#1e293b; cursor:pointer; padding:0; display:flex;"><i class="fa-solid fa-bars"></i></button>
             <strong style="color:#00236f; font-size:1.15rem; font-weight:800; letter-spacing:-0.01em;">DomusHub</strong>
-            <button id="mobMenuClose" style="background:#f1f5f9; border:none; width:32px; height:32px; border-radius:8px; font-size:16px; color:#64748b; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div style="padding: 16px 12px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto;">
             <a href="{{ route('resident.dashboard') }}" class="mob-drawer-item {{ request()->routeIs('resident.dashboard') ? 'mob-drawer-item--active' : '' }}">Trang chủ</a>
