@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <meta name="google-site-verification" content="ysQgOyX8qz7zivQjVDnO_G4puygfJ66ouZMf17FAPJc" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DomusHub – Đăng nhập Cư dân</title>
