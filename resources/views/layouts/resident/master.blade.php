@@ -423,22 +423,22 @@
     }
     </script>
 
-    {{-- MOBILE BOTTOM NAVIGATION --}}
-    <nav class="mobile-bottom-nav">
+    {{-- MOBILE BOTTOM NAVIGATION (NO ICONS) --}}
+    <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
         <a href="{{ route('resident.dashboard') }}" class="mobile-nav-item {{ request()->routeIs('resident.dashboard') ? 'active' : '' }}">
-            <i class="fa-solid fa-house"></i>
-        </a>
-        <a href="{{ route('resident.invoices.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.invoices.*') ? 'active' : '' }}">
-            <i class="fa-solid fa-receipt"></i>
+            <span>Trang chủ</span>
         </a>
         <a href="{{ route('resident.posts.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.posts.*') ? 'active' : '' }}">
-            <i class="fa-regular fa-newspaper"></i>
+            <span>Bản tin</span>
         </a>
-        <a href="{{ route('resident.facilities.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.facilities.*') || request()->routeIs('resident.facility-bookings.*') ? 'active' : '' }}">
-            <i class="fa-regular fa-calendar"></i>
+        <a href="{{ route('resident.tickets.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.tickets.*') ? 'active' : '' }}">
+            <span>Phản ánh</span>
+        </a>
+        <a href="{{ route('resident.invoices.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.invoices.*') ? 'active' : '' }}">
+            <span>Hóa đơn</span>
         </a>
         <a href="{{ route('resident.profile.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.profile.*') ? 'active' : '' }}">
-            <i class="fa-regular fa-user"></i>
+            <span>Tài khoản</span>
         </a>
     </nav>
 
