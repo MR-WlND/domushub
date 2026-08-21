@@ -108,6 +108,14 @@
                         <a href="{{ route('resident.announcements.index') }}" class="rh-news-link">XEM TẤT CẢ <i class="fa-solid fa-arrow-right"></i></a>
                     </div>
                 </div>
+            @else
+                <div class="rh-news-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem 2rem; text-align: center; min-height: 380px; background: #f8fafc; border: 1px dashed #cbd5e1; box-shadow: none;">
+                    <div style="width: 80px; height: 80px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+                        <i class="fa-regular fa-bell-slash" style="font-size: 2rem; color: #94a3b8;"></i>
+                    </div>
+                    <h4 style="font-size: 1.15rem; color: #1e293b; margin-bottom: 0.5rem; font-weight: 700;">Không có thông báo</h4>
+                    <p style="font-size: 0.95rem; color: #64748b; line-height: 1.5; margin: 0;">Hiện tại chưa có thông báo mới nào từ ban quản lý tòa nhà.</p>
+                </div>
             @endif
         </div>
         
