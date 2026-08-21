@@ -1,0 +1,1 @@
+document.addEventListener(`DOMContentLoaded`,function(){let e=document.getElementById(`editor-post-content`);e&&ClassicEditor.create(e,{toolbar:[`bold`,`italic`,`underline`,`bulletedList`,`numberedList`,`undo`,`redo`],placeholder:`Bạn đang muốn chia sẻ điều gì với cư dân hôm nay...`}).catch(e=>console.error(e))});

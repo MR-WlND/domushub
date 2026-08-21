@@ -1,0 +1,11 @@
+.git
+.env
+node_modules
+vendor
+storage/*.key
+.idea
+.vscode
+.cursor
+.zed
+.phpunit.cache
+*.log
