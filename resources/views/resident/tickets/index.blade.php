@@ -520,27 +520,27 @@
 
 <!-- Mobile View -->
 <div class="mobile-view">
-    <!-- Mobile Menu Drawer (Hidden by default) -->
-    <div id="mobMenuOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:99;"></div>
-    <div id="mobMenuDrawer" style="position:fixed; top:0; left:-300px; width:280px; height:100%; background:#fff; z-index:100; transition:left 0.3s ease; box-shadow: 2px 0 10px rgba(0,0,0,0.1); display:flex; flex-direction:column;">
-        <div style="padding: 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
-            <strong style="color:#1e3a8a; font-size:18px;">DomusHub</strong>
-            <button id="mobMenuClose" style="background:none; border:none; font-size:20px; color:#64748b; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+    <!-- Mobile Menu Drawer (No Icons - Clean Modern Design) -->
+    <div id="mobMenuOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.45); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); z-index:999;"></div>
+    <div id="mobMenuDrawer" style="position:fixed; top:0; left:-300px; width:270px; height:100%; background:#ffffff; z-index:1000; transition:left 0.28s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 10px 0 30px rgba(0, 35, 111, 0.15); display:flex; flex-direction:column;">
+        <div style="padding: 18px 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
+            <strong style="color:#00236f; font-size:1.15rem; font-weight:800; letter-spacing:-0.01em;">DomusHub</strong>
+            <button id="mobMenuClose" style="background:#f1f5f9; border:none; width:32px; height:32px; border-radius:8px; font-size:16px; color:#64748b; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto;">
-            <a href="{{ route('resident.dashboard') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-house" style="width:24px; color:#64748b;"></i> Home</a>
-            <a href="{{ route('resident.posts.index') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-newspaper" style="width:24px; color:#64748b;"></i> Bản tin của tôi</a>
-            <a href="{{ route('resident.members.index') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-users" style="width:24px; color:#64748b;"></i> Thành viên</a>
-            <hr style="border:0; border-bottom:1px solid #f1f5f9; margin: 4px 0;">
-            <span style="color:#94a3b8; font-size:12px; font-weight:700; text-transform:uppercase;">Dịch vụ</span>
-            <a href="{{ route('resident.vehicles.index') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-car" style="width:24px; color:#64748b;"></i> Phương tiện</a>
-            <a href="{{ route('resident.facilities.index') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-swimming-pool" style="width:24px; color:#64748b;"></i> Tiện ích</a>
-            <a href="{{ route('resident.invoices.index') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-file-invoice-dollar" style="width:24px; color:#64748b;"></i> Hóa đơn</a>
-            <hr style="border:0; border-bottom:1px solid #f1f5f9; margin: 4px 0;">
-            <a href="{{ route('resident.tickets.index') }}" style="text-decoration:none; color:#1e3a8a; font-weight:700; font-size:15px;"><i class="fa-solid fa-screwdriver-wrench" style="width:24px; color:#1e3a8a;"></i> Phản ánh</a>
-            <a href="{{ route('resident.contact') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-address-book" style="width:24px; color:#64748b;"></i> Liên hệ</a>
-            <hr style="border:0; border-bottom:1px solid #f1f5f9; margin: 4px 0;">
-            <a href="#" onclick="event.preventDefault(); document.getElementById('resident-logout-form').submit();" style="text-decoration:none; color:#dc2626; font-weight:600; font-size:15px;"><i class="fa-solid fa-right-from-bracket" style="width:24px; color:#dc2626;"></i> Đăng xuất</a>
+        <div style="padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; overflow-y: auto;">
+            <a href="{{ route('resident.dashboard') }}" class="mob-drawer-item">Home</a>
+            <a href="{{ route('resident.posts.index') }}" class="mob-drawer-item">Bản tin của tôi</a>
+            <a href="{{ route('resident.members.index') }}" class="mob-drawer-item">Thành viên</a>
+            <hr style="border:0; border-bottom:1px solid #f1f5f9; margin: 6px 4px;">
+            <span style="color:#94a3b8; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; padding: 4px 12px;">Dịch vụ</span>
+            <a href="{{ route('resident.vehicles.index') }}" class="mob-drawer-item">Phương tiện</a>
+            <a href="{{ route('resident.facilities.index') }}" class="mob-drawer-item">Tiện ích</a>
+            <a href="{{ route('resident.invoices.index') }}" class="mob-drawer-item">Hóa đơn</a>
+            <hr style="border:0; border-bottom:1px solid #f1f5f9; margin: 6px 4px;">
+            <a href="{{ route('resident.tickets.index') }}" class="mob-drawer-item mob-drawer-item--active">Phản ánh</a>
+            <a href="{{ route('resident.contact') }}" class="mob-drawer-item">Liên hệ</a>
+            <hr style="border:0; border-bottom:1px solid #f1f5f9; margin: 6px 4px;">
+            <a href="#" onclick="event.preventDefault(); document.getElementById('resident-logout-form').submit();" class="mob-drawer-item mob-drawer-item--logout">Đăng xuất</a>
         </div>
     </div>
 

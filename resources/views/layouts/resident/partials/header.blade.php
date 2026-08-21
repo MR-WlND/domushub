@@ -43,6 +43,11 @@
             class="resident-header__link {{ request()->routeIs('resident.contact') ? 'resident-header__link--active' : '' }}">
             Liên hệ
         </a>
+        <a href="#"
+            onclick="event.preventDefault(); document.getElementById('resident-logout-form').submit();"
+            class="resident-header__link resident-header__link--logout mobile-only-logout">
+            Đăng xuất
+        </a>
     </nav>
 
     <div class="resident-header__actions">

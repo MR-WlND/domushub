@@ -32,6 +32,25 @@
         </main>
     </div>
 
+    {{-- MOBILE BOTTOM NAVIGATION (NO ICONS) --}}
+    <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
+        <a href="{{ portal_route('dashboard') }}" class="mobile-nav-item {{ is_portal_route('dashboard') ? 'active' : '' }}">
+            <span>Tổng quan</span>
+        </a>
+        <a href="{{ portal_route('tickets.index') }}" class="mobile-nav-item {{ is_portal_route('tickets.*') ? 'active' : '' }}">
+            <span>Phản ánh</span>
+        </a>
+        <a href="{{ portal_route('residents.index') }}" class="mobile-nav-item {{ is_portal_route('residents.*') ? 'active' : '' }}">
+            <span>Cư dân</span>
+        </a>
+        <a href="{{ portal_route('invoices.index') }}" class="mobile-nav-item {{ is_portal_route('invoices.*') ? 'active' : '' }}">
+            <span>Hóa đơn</span>
+        </a>
+        <a href="{{ portal_route('profile.index') }}" class="mobile-nav-item {{ is_portal_route('profile.*') ? 'active' : '' }}">
+            <span>Tài khoản</span>
+        </a>
+    </nav>
+
     @stack('scripts')
     <script>
         // Preserve sidebar scroll position
