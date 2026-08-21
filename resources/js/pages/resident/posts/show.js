@@ -444,3 +444,35 @@
     }
     function closeReactionsModal() { document.getElementById('reactionsListModal').style.display = 'none'; }
     function handleReactionsOutsideClick(e) { if (e.target === document.getElementById('reactionsListModal')) closeReactionsModal(); }
+// Export functions to window for inline onclick handlers
+window.cancelEditComment = cancelEditComment;
+window.cancelReply = cancelReply;
+window.checkCommentReportFormStatus = checkCommentReportFormStatus;
+window.checkReportFormStatus = checkReportFormStatus;
+window.closeCommentReportModal = closeCommentReportModal;
+window.closeLightbox = closeLightbox;
+window.closeReactionsModal = closeReactionsModal;
+window.closeReportModal = closeReportModal;
+window.createCommentHtml = createCommentHtml;
+window.filterReactions = filterReactions;
+window.handleCommentOutsideModalClick = handleCommentOutsideModalClick;
+window.handleNewComment = handleNewComment;
+window.handleOutsideModalClick = handleOutsideModalClick;
+window.handleReactionsOutsideClick = handleReactionsOutsideClick;
+window.loadOlderComments = loadOlderComments;
+window.openCommentReportModal = openCommentReportModal;
+window.openLightbox = openLightbox;
+window.openReactionsListModal = openReactionsListModal;
+window.openReportModal = openReportModal;
+window.populateReactionsList = populateReactionsList;
+window.previewCommentImage = previewCommentImage;
+window.removeCommentImage = removeCommentImage;
+window.replyToComment = replyToComment;
+window.saveEditComment = saveEditComment;
+window.startEditComment = startEditComment;
+window.toggleCommentCustomReason = toggleCommentCustomReason;
+window.toggleCustomReason = toggleCustomReason;
+window.toggleLike = toggleLike;
+window.togglePinComment = togglePinComment;
+window.toggleReplies = toggleReplies;
+window.updateReactionsTabsSummary = updateReactionsTabsSummary;

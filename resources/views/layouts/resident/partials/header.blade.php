@@ -1,16 +1,21 @@
 <header class="resident-header">
-    <div class="resident-header__brand">
-        <a href="{{ route('resident.dashboard') }}" class="resident-header__brand-link">DomusHub</a>
+    <div class="resident-header__brand-mobile-wrapper">
+        <button id="mobileMenuToggle" class="resident-header__mobile-toggle">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="resident-header__brand">
+            <a href="{{ route('resident.dashboard') }}" class="resident-header__brand-link">DomusHub</a>
+        </div>
     </div>
 
-    <nav class="resident-header__nav" aria-label="Resident navigation">
+    <nav class="resident-header__nav" id="residentNavMenu" aria-label="Resident navigation">
         <a href="{{ route('resident.dashboard') }}"
             class="resident-header__link {{ request()->routeIs('resident.dashboard') ? 'resident-header__link--active' : '' }}">
-            Home
+            Trang chủ
         </a>
         <a href="{{ route('resident.posts.index') }}"
             class="resident-header__link {{ request()->routeIs('resident.posts.index') ? 'resident-header__link--active' : '' }}">
-            Bản tin của tôi
+            Bản tin
         </a>
         <a href="{{ route('resident.members.index') }}"
             class="resident-header__link {{ request()->routeIs('resident.members.*') ? 'resident-header__link--active' : '' }}">
@@ -22,6 +27,7 @@
                 Dịch vụ <i class="fa-solid fa-chevron-down nav-dropdown-icon"></i>
             </button>
             <div class="resident-header__nav-dropdown">
+                <a href="{{ route('resident.temporary-registrations.index') }}" class="nav-dropdown-item {{ request()->routeIs('resident.temporary-registrations.*') ? 'nav-dropdown-item--active' : '' }}">Tạm trú / Tạm vắng</a>
                 <a href="{{ route('resident.vehicles.index') }}" class="nav-dropdown-item {{ request()->routeIs('resident.vehicles.*') ? 'nav-dropdown-item--active' : '' }}">Phương tiện</a>
                 <a href="{{ route('resident.facilities.index') }}" class="nav-dropdown-item {{ request()->routeIs('resident.facilities.*') || request()->routeIs('resident.facility-bookings.*') ? 'nav-dropdown-item--active' : '' }}">Tiện ích</a>
                 <a href="{{ route('resident.visitors.index') }}" class="nav-dropdown-item {{ request()->routeIs('resident.visitors.*') ? 'nav-dropdown-item--active' : '' }}">Khách ghé thăm</a>
@@ -122,6 +128,16 @@
                 if (userMenu) userMenu.classList.remove('active');
                 if (dropdown) dropdown.style.display = 'none';
                 this.classList.toggle('active');
+            });
+        }
+
+        // Hamburger Menu Toggle
+        const mobileToggle = document.getElementById('mobileMenuToggle');
+        const navMenu = document.getElementById('residentNavMenu');
+        if (mobileToggle && navMenu) {
+            mobileToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                navMenu.classList.toggle('resident-header__nav--active');
             });
         }
 

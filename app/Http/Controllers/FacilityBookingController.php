@@ -19,8 +19,14 @@ class FacilityBookingController extends Controller
     public function getAvailableSlots(Request $request)
     {
         $request->validate([
-            'facility_id' => 'required|exists:facilities,id',
+            'facility_id'  => 'required|exists:facilities,id',
             'booking_date' => 'required|date|after_or_equal:today',
+        ], [
+            'facility_id.required'         => 'Vui lòng chọn tiện ích.',
+            'facility_id.exists'           => 'Tiện ích không tồn tại.',
+            'booking_date.required'        => 'Vui lòng chọn ngày đặt.',
+            'booking_date.date'            => 'Ngày đặt không đúng định dạng.',
+            'booking_date.after_or_equal'  => 'Ngày đặt không được nhỏ hơn ngày hiện tại.',
         ]);
 
         $facility = Facility::findOrFail($request->facility_id);

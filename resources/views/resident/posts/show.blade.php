@@ -1,6 +1,6 @@
-@extends('layouts.resident.master')
+@extends(request()->has('modal') ? 'layouts.resident.modal' : 'layouts.resident.master')
 
-@section('title', $post->title . ' – Bảng tin DomusHub')
+@section('title', 'Bảng tin DomusHub')
 
 @push('styles')
     @vite(['resources/css/resident/posts.css', 'resources/css/pages/resident/home/index.css'])
@@ -8,12 +8,11 @@
     <style>
         /* === Facebook-style Comment Bubble === */
         .fb-comments-sec {
-            background: var(--color-card);
-            border: 1px solid var(--color-outline-soft);
-            border-radius: var(--radius-lg);
+            background: #ffffff;
+            border-radius: 8px;
             padding: 1.5rem;
-            margin-top: 1.5rem;
-            box-shadow: var(--color-shadow);
+            margin-top: 1rem;
+            border: 1px solid #e5e7eb;
         }
         .fb-comments__title {
             font-size: 1.1rem;
@@ -384,6 +383,119 @@
             align-items: center;
             justify-content: center;
         }
+        
+        .df-post-images.grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .df-post-images.grid-2 img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        
+        /* Modal Báo cáo */
+        .rep-modal {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.6);
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .rep-modal.show {
+            opacity: 1;
+        }
+        .rep-modal__content {
+            background: #fff;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        .rep-modal.show .rep-modal__content {
+            transform: translateY(0);
+        }
+        .rep-modal__header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .rep-modal__title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        .rep-modal__close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+        .rep-modal__body {
+            padding: 1.5rem;
+        }
+        .rep-modal__label {
+            display: block;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+        .rep-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .rep-modal__custom-reason {
+            display: none;
+            margin-top: 1rem;
+        }
+        .rep-modal__textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        .rep-modal__footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        .rep-modal__btn-submit {
+            background: #ef4444;
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .rep-modal__btn-submit:disabled {
+            background: #fca5a5;
+            cursor: not-allowed;
+        }
+        
     </style>
 @endpush
 
@@ -412,7 +524,7 @@
     function nl2br(str) {
         if (!str) return '';
         let escaped = escapeHtml(str);
-        escaped = escaped.replace(/@([^@\u200B]+)\u200B/gu, '<span class="comment-mention">@@push('scripts')</span>');
+        escaped = escaped.replace(/@([^@\u200B]+)\u200B/gu, '<span class="comment-mention">@@$1</span>');
         return escaped.replace(/\n/g, '<br>');
     }
 
@@ -421,9 +533,9 @@
     }
 
     function showToast(message, type = 'success') {
-        const container = document.getElementById('toast-container');
+        const container = document.getElementById('toast-container') || document.body;
         const toast = document.createElement('div');
-        toast.style.cssText = `padding:0.75rem 1.25rem;border-radius:var(--radius-md);box-shadow:var(--color-shadow-lg);color:white;font-size:0.875rem;font-weight:600;display:flex;align-items:center;gap:0.65rem;opacity:0;transform:translateY(20px);transition:all 0.3s cubic-bezier(0.4,0,0.2,1);background-color:${type === 'success' ? '#10b981' : '#ef4444'};`;
+        toast.style.cssText = `position:fixed;bottom:20px;right:20px;padding:0.75rem 1.25rem;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);color:white;font-size:0.875rem;font-weight:600;display:flex;align-items:center;gap:0.65rem;opacity:0;transform:translateY(20px);transition:all 0.3s cubic-bezier(0.4,0,0.2,1);background-color:${type === 'success' ? '#10b981' : '#ef4444'};z-index:99999;`;
         const icon = type === 'success' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-triangle-exclamation"></i>';
         toast.innerHTML = `${icon} <span>${message}</span>`;
         container.appendChild(toast);
@@ -464,202 +576,24 @@
         }
     }
 @endphp
-<div class="rh" style="max-width:720px;">
-<div class="rh-fb-feed" style="max-width: 100%;">
 
-    {{-- NÚT QUAY LẠI --}}
-    <a href="{{ route('resident.dashboard') }}" style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 600; color: #2563eb; text-decoration: none; margin-bottom: 0.5rem;">
-        <i class="fa-solid fa-arrow-left"></i> Quay lại bảng tin
-    </a>
-
-    {{-- THÔNG BÁO --}}
-    @if(session('success'))
-        <div style="padding: 12px 18px; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; border-radius: 10px; font-size: 0.85rem; font-weight: 600;">{{ session('success') }}</div>
-    @endif
-
-    {{-- BÀI VIẾT DẠNG FB CARD --}}
-    <div class="rh-fb-card">
-        {{-- Header: avatar + name + time --}}
-        <div class="rh-fb-card__header">
-            <div class="rh-fb-card__avatar">
-                @if($post->user->avatar)
-                    <img src="{{ asset('storage/' . $post->user->avatar) }}" alt="" loading="lazy">
-                @else
-                    <span>{{ mb_substr($post->user->name ?? '?', 0, 1) }}</span>
-                @endif
-            </div>
-            <div>
-                <span class="rh-fb-card__name">{{ $post->user->name }}</span>
-                <span class="rh-fb-card__time">{{ $post->created_at->diffForHumans() }} · {{ $post->user->apartment ? 'Cư dân' : 'Ban Quản Trị' }}</span>
-            </div>
-
-            {{-- Nút ... tùy chọn --}}
-            <div class="rh-fb-card__menu">
-                <button type="button" class="rh-fb-card__menu-btn" onclick="togglePostMenu(event, {{ $post->id }})" aria-label="Tùy chọn">
-                    <i class="fa-solid fa-ellipsis"></i>
-                </button>
-                <div class="rh-fb-card__dropdown" id="post-menu-{{ $post->id }}">
-                    @if($post->user_id === auth()->id())
-                        <a href="{{ route('resident.posts.edit', $post->id) }}" class="rh-fb-card__dropdown-item">
-                            <i class="fa-regular fa-pen-to-square"></i> Sửa bài viết
-                        </a>
-                    @endif
-                    @if($post->user_id === auth()->id() || auth()->user()->isAdminPortalUser())
-                        <form action="{{ route('resident.posts.destroy', $post->id) }}" method="POST" onsubmit="return confirmDeletePost(event, this)" style="margin: 0;">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="rh-fb-card__dropdown-item rh-fb-card__dropdown-item--danger">
-                                <i class="fa-regular fa-trash-can"></i> Xóa bài viết
-                            </button>
-                        </form>
-                    @endif
-                    @if($post->user_id !== auth()->id())
-                        <button type="button" class="rh-fb-card__dropdown-item" onclick="openReportModal({{ $post->id }})">
-                            <i class="fa-regular fa-flag"></i> Báo cáo bài viết
-                        </button>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        {{-- Title --}}
-        @if($post->title)
-            <div style="padding: 8px 16px 0; font-weight: 700; font-size: 1.1rem; color: #050505; display: none;" class="pc-detail__title">{{ $post->title }}</div>
-        @endif
-
-        {{-- Content --}}
-        <div class="rh-fb-card__text pc-detail__content post-text-content" id="post-content-{{ $post->id }}" style="padding: 8px 16px 0;">
-            {!! cleanPostContentBlade($post->content) !!}
-        </div>
-
-        {{-- Media đính kèm (FB-style grid) --}}
-        @if($post->images->isNotEmpty())
-            @php $imgCount = $post->images->count(); @endphp
-            <div class="rh-fb-card__media" style="margin-top: 12px; cursor: pointer;">
-                @if($imgCount === 1)
-                    @if(($post->images[0]->type ?? 'image') === 'video')
-                        <video src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-single" controls preload="metadata" style="max-height:500px;width:100%;border-radius:0;"></video>
-                    @else
-                        <img src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-single" alt="" loading="lazy" onclick="openLightbox('{{ asset('storage/' . $post->images[0]->image_path) }}')">
-                    @endif
-                @elseif($imgCount === 2)
-                    <div class="rh-fb-card__img-grid rh-fb-card__img-grid--2">
-                        @foreach($post->images->take(2) as $img)
-                            @if(($img->type ?? 'image') === 'video')
-                                <video src="{{ asset('storage/' . $img->image_path) }}" controls preload="metadata" style="width:100%;height:300px;object-fit:cover;"></video>
-                            @else
-                                <img src="{{ asset('storage/' . $img->image_path) }}" alt="" loading="lazy" onclick="openLightbox('{{ asset('storage/' . $img->image_path) }}')">
-                            @endif
-                        @endforeach
-                    </div>
-                @else
-                    <div class="rh-fb-card__img-grid rh-fb-card__img-grid--3plus">
-                        @if(($post->images[0]->type ?? 'image') === 'video')
-                            <video src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-main" controls preload="metadata" style="height:320px;width:100%;object-fit:cover;"></video>
-                        @else
-                            <img src="{{ asset('storage/' . $post->images[0]->image_path) }}" class="rh-fb-card__img-main" alt="" loading="lazy" onclick="openLightbox('{{ asset('storage/' . $post->images[0]->image_path) }}')">
-                        @endif
-                        <div class="rh-fb-card__img-side">
-                            @foreach($post->images->slice(1, 2) as $img)
-                                @if(($img->type ?? 'image') === 'video')
-                                    <video src="{{ asset('storage/' . $img->image_path) }}" controls preload="metadata" style="width:100%;height:159px;object-fit:cover;"></video>
-                                @else
-                                    <img src="{{ asset('storage/' . $img->image_path) }}" alt="" loading="lazy" onclick="openLightbox('{{ asset('storage/' . $img->image_path) }}')">
-                                @endif
-                            @endforeach
-                            @if($imgCount > 3)
-                                <div class="rh-fb-card__img-overlay">+{{ $imgCount - 3 }}</div>
-                            @endif
-                        </div>
-                    </div>
-                @endif
-            </div>
-        @endif
-
-        {{-- Stats row --}}
-        <div class="rh-fb-card__stats">
-            <span><span class="like-count">{{ $post->likes_count }}</span> lượt thích</span>
-            <span>{{ $totalComments }} bình luận</span>
-        </div>
-
-        {{-- Action bar (giống index) --}}
-        <div class="rh-fb-card__actions">
-            {{-- Thích --}}
-            <div class="pc-like-container" style="display: flex; align-items: center; justify-content: center;">
-                @php
-                    $userLike = $post->likedByCurrentUser->first();
-                    $activeReaction = $userLike ? true : false;
-                @endphp
-
-                <button type="button" class="rh-fb-card__action pc-like-btn {{ $activeReaction ? 'rh-fb-like-btn--active' : '' }}" onclick="toggleLike(event, {{ $post->id }}, 'post', 'like')" style="width:100%;">
-                    <svg class="like-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
-                    <span class="reaction-text-span">Thích</span>
-                </button>
-            </div>
-
-            {{-- Bình luận --}}
-            <button type="button" class="rh-fb-card__action" onclick="document.getElementById('comment-content').focus()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                Bình luận
-            </button>
-
-            {{-- Chia sẻ --}}
-            <button type="button" class="rh-fb-card__action rh-fb-share-btn" data-url="{{ route('resident.posts.show', $post->id) }}">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-                Chia sẻ
-            </button>
-        </div>
-
-    </div>
-
-    {{-- KHU VỰC BÌNH LUẬN KIỂU FACEBOOK --}}
-    <section class="fb-comments-sec" style="border-radius: 10px;">
-        <h3 class="fb-comments__title">
+<div style="height: 100vh; display: flex; flex-direction: column; margin: 0; padding: 0; background: #fff;">
+    {{-- HEADER BÌNH LUẬN --}}
+    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid #e5e7eb; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: #fff; z-index: 10;">
+        <h3 class="fb-comments__title" style="margin: 0; border: none; padding: 0;">
             <i class="fa-regular fa-comments"></i> Bình luận (<span id="total-comments-count">{{ $totalComments }}</span>)
         </h3>
+    </div>
 
-        {{-- FORM VIẾT BÌNH LUẬN --}}
-        <div class="fb-comment-form">
-            <img src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name) . '&background=00236f&color=fff' }}" 
-                 alt="Avatar" class="fb-comment-form__avatar">
-            
-            <div class="fb-comment-form__body">
-                <form action="{{ route('resident.posts.comments.store', $post->id) }}" method="POST" id="comment-form" enctype="multipart/form-data">
-                    @csrf
-                    <input type="hidden" name="parent_id" id="comment-parent-id" value="">
-
-                    <div class="fb-reply-indicator" id="reply-indicator">
-                        <span><i class="fa-solid fa-reply"></i> Đang trả lời <strong id="reply-target-name"></strong></span>
-                        <button type="button" class="fb-reply-indicator__close" onclick="cancelReply()">&times;</button>
-                    </div>
-
-                    <textarea name="content" id="comment-content" class="fb-comment-form__input" placeholder="Viết bình luận..." required></textarea>
-                    
-                    <div class="fb-img-preview" id="comment-image-preview-wrap">
-                        <img id="comment-image-preview" src="">
-                        <button type="button" class="fb-img-preview__remove" onclick="removeCommentImage()">&times;</button>
-                    </div>
-
-                    <div class="fb-comment-form__actions">
-                        <label style="cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; color: #64748b;">
-                            <i class="fa-regular fa-image" style="color: #2563eb; font-size: 1rem;"></i> Ảnh
-                            <input type="file" name="image" id="comment-image-input" accept="image/*" style="display: none;" onchange="previewCommentImage(event)">
-                        </label>
-                        <button type="submit" class="pc-btn" style="padding: 0.4rem 1rem; font-size: 0.8rem; border-radius: 16px;">Gửi</button>
-                    </div>
-                </form>
+    {{-- DANH SÁCH BÌNH LUẬN --}}
+    <div class="fb-comments-list" style="flex: 1; overflow-y: auto; padding: 1.5rem 1.5rem 100px 1.5rem;">
+        @if($totalComments > 10)
+            <div class="fb-load-older" id="load-older-container" style="margin-bottom: 1rem;">
+                <button type="button" class="fb-load-older__btn" id="load-older-btn" data-offset="10" data-total="{{ $totalComments }}" onclick="loadOlderComments()">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Xem thêm bình luận cũ hơn (<span id="older-count">{{ $totalComments - 10 }}</span>)
+                </button>
             </div>
-        </div>
-
-        {{-- DANH SÁCH BÌNH LUẬN --}}
-        <div class="fb-comments-list">
-            @if($totalComments > 10)
-                <div class="fb-load-older" id="load-older-container">
-                    <button type="button" class="fb-load-older__btn" id="load-older-btn" data-offset="10" data-total="{{ $totalComments }}" onclick="loadOlderComments()">
-                        <i class="fa-solid fa-clock-rotate-left"></i> Xem thêm bình luận cũ hơn (<span id="older-count">{{ $totalComments - 10 }}</span>)
-                    </button>
-                </div>
-            @endif
+        @endif
 
             @if($comments->isEmpty())
                 <p id="empty-comments-placeholder" style="text-align: center; color: var(--color-text-secondary); font-size: 0.9rem; margin: 2rem 0;">Chưa có bình luận nào. Hãy bắt đầu cuộc trò chuyện!</p>
@@ -835,10 +769,69 @@
                 @endforeach
             @endif
         </div>
-    </section>
+    </div>
 
 </div>
+    
+    {{-- FORM VIẾT BÌNH LUẬN (CỐ ĐỊNH Ở ĐÁY) --}}
+    <div class="fb-comment-form-container" style="position: fixed; bottom: 0; left: 0; width: 100%; box-sizing: border-box; z-index: 100; padding: 1rem 1.5rem; border-top: 1px solid #e5e7eb; background: #fff; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);">
+        <div class="fb-comment-form" style="margin: 0; align-items: center;">
+            <img src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name) . '&background=00236f&color=fff' }}" 
+                 alt="Avatar" class="fb-comment-form__avatar">
+            
+            <div class="fb-comment-form__body">
+                <form action="{{ route('resident.posts.comments.store', $post->id) }}" method="POST" id="comment-form" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="parent_id" id="comment-parent-id" value="">
+
+                    <div class="fb-reply-indicator" id="reply-indicator">
+                        <span><i class="fa-solid fa-reply"></i> Đang trả lời <strong id="reply-target-name"></strong></span>
+                        <button type="button" class="fb-reply-indicator__close" onclick="cancelReply()">&times;</button>
+                    </div>
+
+                    <textarea name="content" id="comment-content" class="fb-comment-form__input" placeholder="Viết bình luận..." required style="min-height: 40px; border-radius: 20px;"></textarea>
+                    
+                    <div class="fb-img-preview" id="comment-image-preview-wrap">
+                        <img id="comment-image-preview" src="">
+                        <button type="button" class="fb-img-preview__remove" onclick="removeCommentImage()">&times;</button>
+                    </div>
+
+                    <div class="fb-comment-form__actions" style="margin-top: 8px;">
+                        <label style="cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; color: #64748b;">
+                            <i class="fa-regular fa-image" style="color: #2563eb; font-size: 1rem;"></i> Ảnh
+                            <input type="file" name="image" id="comment-image-input" accept="image/*" style="display: none;" onchange="previewCommentImage(event)">
+                        </label>
+                        <button type="submit" class="pc-btn" style="padding: 0.4rem 1rem; font-size: 0.8rem; border-radius: 16px;">Gửi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script>
+    window.handleShowCustomReason = function(show) {
+        const c = document.getElementById('custom-reason-container');
+        const t = document.getElementById('report-reason-custom');
+        if(c) c.style.display = show ? 'block' : 'none';
+        if(show && t) { t.setAttribute('required', 'required'); t.focus(); }
+        else if (t) { t.removeAttribute('required'); t.value = ''; }
+        
+        const btn = document.getElementById('submit-report-btn');
+        if(btn) btn.removeAttribute('disabled');
+    };
+
+    window.handleShowCommentCustomReason = function(show) {
+        const c = document.getElementById('comment-custom-reason-container');
+        const t = document.getElementById('report-comment-reason-custom');
+        if(c) c.style.display = show ? 'block' : 'none';
+        if(show && t) { t.setAttribute('required', 'required'); t.focus(); }
+        else if (t) { t.removeAttribute('required'); t.value = ''; }
+        
+        const btn = document.getElementById('submit-comment-report-btn');
+        if(btn) btn.removeAttribute('disabled');
+    };
+</script>
 
 {{-- Lightbox --}}
 <div id="pcLightbox" class="pc-modal" onclick="closeLightbox()">
@@ -858,11 +851,11 @@
             <input type="hidden" name="post_id" id="report-target-post-id" value="">
             <div class="rep-modal__body">
                 <span class="rep-modal__label">Tại sao bạn muốn báo cáo bài viết này?</span>
-                <label class="rep-option"><input type="radio" name="reason_preset" value="Spam, quảng cáo rác" onclick="toggleCustomReason(false)"><span class="rep-option__text">Spam, quảng cáo rác</span></label>
-                <label class="rep-option"><input type="radio" name="reason_preset" value="Từ ngữ thô tục, công kích" onclick="toggleCustomReason(false)"><span class="rep-option__text">Từ ngữ thô tục, công kích</span></label>
-                <label class="rep-option"><input type="radio" name="reason_preset" value="Lừa đảo, giả mạo" onclick="toggleCustomReason(false)"><span class="rep-option__text">Lừa đảo, giả mạo thông tin</span></label>
-                <label class="rep-option"><input type="radio" name="reason_preset" value="Nội dung phản cảm, thù địch" onclick="toggleCustomReason(false)"><span class="rep-option__text">Nội dung phản cảm, thù địch</span></label>
-                <label class="rep-option"><input type="radio" name="reason_preset" value="other" onclick="toggleCustomReason(true)"><span class="rep-option__text">Lý do khác...</span></label>
+                <label class="rep-option"><input type="radio" name="reason_preset" value="Spam, quảng cáo rác" onclick="handleShowCustomReason(false)"><span class="rep-option__text">Spam, quảng cáo rác</span></label>
+                <label class="rep-option"><input type="radio" name="reason_preset" value="Từ ngữ thô tục, công kích" onclick="handleShowCustomReason(false)"><span class="rep-option__text">Từ ngữ thô tục, công kích</span></label>
+                <label class="rep-option"><input type="radio" name="reason_preset" value="Lừa đảo, giả mạo" onclick="handleShowCustomReason(false)"><span class="rep-option__text">Lừa đảo, giả mạo thông tin</span></label>
+                <label class="rep-option"><input type="radio" name="reason_preset" value="Nội dung phản cảm, thù địch" onclick="handleShowCustomReason(false)"><span class="rep-option__text">Nội dung phản cảm, thù địch</span></label>
+                <label class="rep-option"><input type="radio" name="reason_preset" value="other" onclick="handleShowCustomReason(true)"><span class="rep-option__text">Lý do khác...</span></label>
                 <div class="rep-modal__custom-reason" id="custom-reason-container">
                     <textarea name="reason_custom" id="report-reason-custom" class="rep-modal__textarea" placeholder="Nhập lý do cụ thể..."></textarea>
                 </div>
@@ -887,11 +880,11 @@
             <input type="hidden" name="comment_id" id="report-target-comment-id" value="">
             <div class="rep-modal__body">
                 <span class="rep-modal__label">Tại sao bạn muốn báo cáo bình luận này?</span>
-                <label class="rep-option"><input type="radio" name="comment_reason_preset" value="Spam, quảng cáo rác" onclick="toggleCommentCustomReason(false)"><span class="rep-option__text">Spam, quảng cáo rác</span></label>
-                <label class="rep-option"><input type="radio" name="comment_reason_preset" value="Từ ngữ thô tục, công kích" onclick="toggleCommentCustomReason(false)"><span class="rep-option__text">Từ ngữ thô tục, công kích</span></label>
-                <label class="rep-option"><input type="radio" name="comment_reason_preset" value="Lừa đảo, giả mạo" onclick="toggleCommentCustomReason(false)"><span class="rep-option__text">Lừa đảo, giả mạo thông tin</span></label>
-                <label class="rep-option"><input type="radio" name="comment_reason_preset" value="Nội dung phản cảm, thù địch" onclick="toggleCommentCustomReason(false)"><span class="rep-option__text">Nội dung phản cảm, thù địch</span></label>
-                <label class="rep-option"><input type="radio" name="comment_reason_preset" value="other" onclick="toggleCommentCustomReason(true)"><span class="rep-option__text">Lý do khác...</span></label>
+                <label class="rep-option"><input type="radio" name="comment_reason_preset" value="Spam, quảng cáo rác" onclick="handleShowCommentCustomReason(false)"><span class="rep-option__text">Spam, quảng cáo rác</span></label>
+                <label class="rep-option"><input type="radio" name="comment_reason_preset" value="Từ ngữ thô tục, công kích" onclick="handleShowCommentCustomReason(false)"><span class="rep-option__text">Từ ngữ thô tục, công kích</span></label>
+                <label class="rep-option"><input type="radio" name="comment_reason_preset" value="Lừa đảo, giả mạo" onclick="handleShowCommentCustomReason(false)"><span class="rep-option__text">Lừa đảo, giả mạo thông tin</span></label>
+                <label class="rep-option"><input type="radio" name="comment_reason_preset" value="Nội dung phản cảm, thù địch" onclick="handleShowCommentCustomReason(false)"><span class="rep-option__text">Nội dung phản cảm, thù địch</span></label>
+                <label class="rep-option"><input type="radio" name="comment_reason_preset" value="other" onclick="handleShowCommentCustomReason(true)"><span class="rep-option__text">Lý do khác...</span></label>
                 <div class="rep-modal__custom-reason" id="comment-custom-reason-container">
                     <textarea name="comment_reason_custom" id="report-comment-reason-custom" class="rep-modal__textarea" placeholder="Nhập lý do cụ thể..."></textarea>
                 </div>

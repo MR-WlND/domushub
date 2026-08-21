@@ -131,6 +131,7 @@ $portalRoutes = function () {
     Route::get('/blocks', [\App\Http\Controllers\Admin\BlockController::class, 'index'])->name('blocks.index');
     Route::get('/blocks/create', [\App\Http\Controllers\Admin\BlockController::class, 'create'])->name('blocks.create');
     Route::post('/blocks', [\App\Http\Controllers\Admin\BlockController::class, 'store'])->name('blocks.store');
+    Route::get('/blocks/{block}/matrix', [\App\Http\Controllers\Admin\BlockController::class, 'matrix'])->name('blocks.matrix');
     Route::get('/blocks/{block}', [\App\Http\Controllers\Admin\BlockController::class, 'show'])->name('blocks.show');
     Route::get('/blocks/{block}/edit', [\App\Http\Controllers\Admin\BlockController::class, 'edit'])->name('blocks.edit');
     Route::put('/blocks/{block}', [\App\Http\Controllers\Admin\BlockController::class, 'update'])->name('blocks.update');
@@ -146,6 +147,7 @@ $portalRoutes = function () {
 
     // Apartments (Căn hộ/Phòng)
     Route::get('/apartments', [\App\Http\Controllers\Admin\ApartmentController::class, 'index'])->name('apartments.index');
+    Route::get('/apartments/matrix', [\App\Http\Controllers\Admin\ApartmentController::class, 'matrix'])->name('apartments.matrix');
     Route::get('/apartments/create', [\App\Http\Controllers\Admin\ApartmentController::class, 'create'])->name('apartments.create');
     Route::post('/apartments', [\App\Http\Controllers\Admin\ApartmentController::class, 'store'])->name('apartments.store');
     Route::get('/apartments/import-template', [\App\Http\Controllers\Admin\ApartmentController::class, 'downloadTemplate'])->name('apartments.import-template');
@@ -155,6 +157,7 @@ $portalRoutes = function () {
     Route::put('/apartments/{apartment}', [\App\Http\Controllers\Admin\ApartmentController::class, 'update'])->name('apartments.update');
     Route::delete('/apartments/{apartment}', [\App\Http\Controllers\Admin\ApartmentController::class, 'destroy'])->name('apartments.destroy');
     Route::post('/apartments/{apartment}/assign-owner', [\App\Http\Controllers\Admin\ApartmentController::class, 'assignOwner'])->name('apartments.assign-owner');
+    Route::post('/apartments/{apartment}/assign-tenant', [\App\Http\Controllers\Admin\ApartmentController::class, 'assignTenant'])->name('apartments.assign-tenant');
 
     // Apartment Types (Loại căn hộ)
     Route::get('/apartment-types', [\App\Http\Controllers\Admin\ApartmentTypeController::class, 'index'])->name('apartment-types.index');
@@ -176,6 +179,8 @@ $portalRoutes = function () {
 
     // Điện nước & hoá đơn
     Route::get('/utility-readings', [UtilityMeterController::class, 'index'])->name('utility-readings.index');
+    Route::get('/utility-readings/import-template', [UtilityMeterController::class, 'downloadTemplate'])->name('utility-readings.import-template');
+    Route::post('/utility-readings/import', [UtilityMeterController::class, 'import'])->name('utility-readings.import');
     Route::get('/utility-readings/create', [UtilityMeterController::class, 'create'])->name('utility-readings.create');
     Route::post('/utility-readings', [UtilityMeterController::class, 'store'])->name('utility-readings.store');
     Route::get('/utility-readings/batch', [UtilityMeterController::class, 'batchCreate'])->name('utility-readings.batch');
@@ -208,7 +213,7 @@ $portalRoutes = function () {
     Route::get('/invoices/batch', [InvoiceController::class, 'batchCreate'])->name('invoices.batch');
     Route::post('/invoices/batch', [InvoiceController::class, 'batchStore'])->name('invoices.batch.store');
 
-    Route::post('/invoices/generate', [InvoiceController::class, 'generate'])->name('invoices.generate');
+    // Route 'generate' đã bị xóa — chức năng xuất hàng loạt dùng /invoices/batch thay thế
     Route::get('/invoices/apartment/{apartment}', [InvoiceController::class, 'apartmentInvoices'])->name('invoices.apartment');
     Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
     Route::get('/invoices/{invoice}/edit', [InvoiceController::class, 'edit'])->name('invoices.edit');
@@ -252,6 +257,17 @@ $portalRoutes = function () {
     // LỊCH SỬ RA VÀO (Admin)
     Route::get('/vehicle-logs', [App\Http\Controllers\Admin\VehicleLogController::class, 'index'])->name('vehicle-logs.index');
     Route::get('/visitor-logs', [App\Http\Controllers\Admin\VisitorLogController::class, 'index'])->name('visitor-logs.index');
+
+    // TẠM TRÚ TẠM VẮNG (Admin)
+    Route::get('/temporary-registrations',                  [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'index'])->name('temporary-registrations.index');
+    Route::get('/temporary-registrations/create',           [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'create'])->name('temporary-registrations.create');
+    Route::post('/temporary-registrations',                 [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'store'])->name('temporary-registrations.store');
+    Route::get('/temporary-registrations/{temporaryRegistration}/edit', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'edit'])->name('temporary-registrations.edit');
+    Route::put('/temporary-registrations/{temporaryRegistration}', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'update'])->name('temporary-registrations.update');
+    Route::delete('/temporary-registrations/{temporaryRegistration}', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'destroy'])->name('temporary-registrations.destroy');
+    Route::post('/temporary-registrations/{temporaryRegistration}/approve', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'approve'])->name('temporary-registrations.approve');
+    Route::post('/temporary-registrations/{temporaryRegistration}/reject', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'reject'])->name('temporary-registrations.reject');
+    Route::post('/temporary-registrations/{temporaryRegistration}/end-early', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'endEarly'])->name('temporary-registrations.end-early');
 
     // QUẢN LÝ LỐT ĐỖ XE
     Route::get('/parking-lots', [App\Http\Controllers\Admin\ParkingLotController::class, 'index'])->name('parking-lots.index');
@@ -303,6 +319,7 @@ $portalRoutes = function () {
     
     // API & Phân công (RESTful StaffSchedules)
     Route::get('/api/staffs', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'getStaffs'])->name('api.staffs');
+    Route::get('/api/floors', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'getFloors'])->name('api.floors');
     Route::post('/staff-schedules', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'store'])->name('staff-schedules.store');
     Route::delete('/staff-schedules/{staff_schedule}', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'destroy'])->name('staff-schedules.destroy');
     Route::patch('/staff-schedules/{staff_schedule}/leader', [\App\Http\Controllers\Admin\StaffScheduleController::class, 'toggleLeader'])->name('staff-schedules.leader');
@@ -341,7 +358,12 @@ $portalRoutes = function () {
     Route::delete('/cleaning-tasks/{id}', [\App\Http\Controllers\Admin\CleaningTaskController::class, 'destroy'])->name('cleaning-tasks.destroy');
 
     Route::get('/cleaning-reports', [\App\Http\Controllers\Admin\CleaningReportController::class, 'index'])->name('cleaning-reports.index');
+    Route::get('/cleaning-reports/{id}', [\App\Http\Controllers\Admin\CleaningReportController::class, 'show'])->name('cleaning-reports.show');
     Route::patch('/cleaning-reports/{id}/status', [\App\Http\Controllers\Admin\CleaningReportController::class, 'updateStatus'])->name('cleaning-reports.update-status');
+    Route::post('/cleaning-reports/{id}/assign', [\App\Http\Controllers\Admin\CleaningReportController::class, 'assign'])->name('cleaning-reports.assign');
+    Route::post('/cleaning-reports/{id}/unassign', [\App\Http\Controllers\Admin\CleaningReportController::class, 'unassign'])->name('cleaning-reports.unassign');
+    Route::post('/cleaning-reports/{id}/approve', [\App\Http\Controllers\Admin\CleaningReportController::class, 'approve'])->name('cleaning-reports.approve');
+    Route::post('/cleaning-reports/{id}/reject', [\App\Http\Controllers\Admin\CleaningReportController::class, 'reject'])->name('cleaning-reports.reject');
 
 };
 
@@ -392,6 +414,7 @@ Route::middleware(['cleaning'])->group(function () {
 
     Route::get('/cleaning/report', [\App\Http\Controllers\Cleaning\ReportController::class, 'index'])->name('cleaning.report');
     Route::post('/cleaning/report', [\App\Http\Controllers\Cleaning\ReportController::class, 'store'])->name('cleaning.report.store');
+    Route::get('/cleaning/report/{id}', [\App\Http\Controllers\Cleaning\ReportController::class, 'show'])->name('cleaning.report.show');
 
     Route::get('/cleaning/tasks', [\App\Http\Controllers\Cleaning\TaskController::class, 'index'])->name('cleaning.tasks');
     Route::get('/cleaning/tasks/{id}', [\App\Http\Controllers\Cleaning\TaskController::class, 'show'])->name('cleaning.tasks.show');
@@ -512,6 +535,10 @@ Route::middleware(['resident'])->group(function () {
     Route::post('/resident/visitors/{id}/approve', [\App\Http\Controllers\Resident\VisitorController::class, 'approve'])->name('resident.visitors.approve');
     Route::post('/resident/visitors/{id}/reject', [\App\Http\Controllers\Resident\VisitorController::class, 'reject'])->name('resident.visitors.reject');
     Route::delete('/resident/visitors/{id}', [\App\Http\Controllers\Resident\VisitorController::class, 'destroy'])->name('resident.visitors.destroy');
+
+    // TẠM TRÚ TẠM VẮNG PHÍA CƯ DÂN
+    Route::post('/resident/temporary-registrations/{temporary_registration}/end-early', [\App\Http\Controllers\Resident\TemporaryRegistrationController::class, 'endEarly'])->name('resident.temporary-registrations.end-early');
+    Route::resource('/resident/temporary-registrations', \App\Http\Controllers\Resident\TemporaryRegistrationController::class, ['as' => 'resident']);
     // PHẢN ÁNH SỰ CỐ PHÍA CƯ DÂN
     Route::get('/resident/tickets', [ResidentTicketController::class, 'index'])->name('resident.tickets.index');
     Route::get('/resident/tickets/create', [ResidentTicketController::class, 'create'])->name('resident.tickets.create');
@@ -530,14 +557,26 @@ Route::middleware(['resident'])->group(function () {
     // BẢNG TIN & BÌNH LUẬN PHÍA CƯ DÂN
     Route::get('/resident/posts', function (\Illuminate\Http\Request $request) {
         $user = auth()->user();
-        $posts = \App\Models\Post::with(['user', 'images', 'comments', 'likedByCurrentUser'])
+        $tab  = $request->get('tab', 'all'); // all | mine | announcements
+
+        $query = \App\Models\Post::with(['user', 'images', 'comments', 'likedByCurrentUser'])
             ->withCount(['likes', 'comments'])
-            ->where('status', 'published')
-            ->where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-            
-        return view('resident.posts.index', compact('posts', 'user'));
+            ->where('status', 'published');
+
+        if ($tab === 'mine') {
+            $query->where('user_id', $user->id);
+        } elseif ($tab === 'announcements') {
+            $query->whereHas('user', fn($q) => $q->where('role', 'admin'));
+        } else {
+            // Ẩn các bài mà user đã hide
+            $query->whereNotIn('id', function($q) use ($user) {
+                $q->select('post_id')->from('post_hides')->where('user_id', $user->id);
+            });
+        }
+
+        $posts = $query->orderBy('created_at', 'desc')->paginate(10);
+
+        return view('resident.posts.index', compact('posts', 'user', 'tab'));
     })->name('resident.posts.index');
     Route::get('/resident/posts/create', function() { return view('resident.posts.create'); })->name('resident.posts.create');
     Route::post('/resident/posts', [\App\Http\Controllers\Resident\PostController::class, 'store'])->name('resident.posts.store');
@@ -559,6 +598,7 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/reactions/{likeable_type}/{likeable_id}', [\App\Http\Controllers\Resident\PostController::class, 'getReactions'])->name('resident.reactions');
 
     // BẢNG TIN CHUNG CƯ PHÍA CƯ DÂN (CHỈ GIỮ LẠI TRANG CHI TIẾT)
+    Route::get('/resident/announcements', [\App\Http\Controllers\Resident\AnnouncementController::class, 'index'])->name('resident.announcements.index');
     Route::get('/resident/announcements/{id}', [\App\Http\Controllers\Resident\AnnouncementController::class, 'show'])->name('resident.announcements.show');
 
     // THÔNG BÁO CƯ DÂN
@@ -625,6 +665,17 @@ Route::middleware(['receptionist'])->prefix('receptionist')->name('receptionist.
     Route::post('/walk-in',                         [\App\Http\Controllers\Receptionist\VisitorController::class, 'store'])->name('walk-in.store');
     Route::post('/walk-in/checkout',                [\App\Http\Controllers\Receptionist\VisitorController::class, 'checkout'])->name('walk-in.checkout');
     Route::get('/visitor-log',                      [\App\Http\Controllers\Receptionist\VisitorController::class, 'log'])->name('visitor-log.index');
+
+    // Quản lý Tạm trú - Tạm vắng
+    Route::get('/temporary-registrations',                  [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'index'])->name('temporary-registrations.index');
+    Route::get('/temporary-registrations/create',           [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'create'])->name('temporary-registrations.create');
+    Route::post('/temporary-registrations',                 [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'store'])->name('temporary-registrations.store');
+    Route::get('/temporary-registrations/{temporaryRegistration}/edit', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'edit'])->name('temporary-registrations.edit');
+    Route::put('/temporary-registrations/{temporaryRegistration}', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'update'])->name('temporary-registrations.update');
+    Route::delete('/temporary-registrations/{temporaryRegistration}', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'destroy'])->name('temporary-registrations.destroy');
+    Route::post('/temporary-registrations/{temporaryRegistration}/approve', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'approve'])->name('temporary-registrations.approve');
+    Route::post('/temporary-registrations/{temporaryRegistration}/reject', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'reject'])->name('temporary-registrations.reject');
+    Route::post('/temporary-registrations/{temporaryRegistration}/end-early', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'endEarly'])->name('temporary-registrations.end-early');
 
     // Trang cá nhân
     Route::get('/profile',                          [\App\Http\Controllers\Receptionist\ProfileController::class, 'index'])->name('profile');

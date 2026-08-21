@@ -244,7 +244,7 @@
                         {{-- Body của Card --}}
                         <div class="post-card__body">
                             <a href="javascript:void(0)" onclick="openAdminPostModal({{ $post->id }})" class="post-card__title" title="Bấm để xem chi tiết bài đăng và danh sách báo cáo vi phạm">
-                                {{ $post->title }}
+                                Bài viết #{{ $post->id }}
                             </a>
                             <p class="post-card__excerpt">{{ Str::limit(strip_tags($post->content), 180, '...') }}</p>
                             
@@ -387,7 +387,7 @@
                         <div class="comment-card__post-context">
                             <span class="context-title"><i class="fa-regular fa-paper-plane"></i> Bài viết gốc:</span>
                             <span class="context-link" onclick="openAdminPostModal({{ $comment->post->id ?? 0 }}, false)">
-                                {{ $comment->post->title ?? 'Bài đăng đã bị xóa hoặc không tìm thấy' }}
+                                Bài viết #{{ $comment->post->id ?? 'đã bị xóa hoặc không tìm thấy' }}
                             </span>
                             <span class="context-author">
                                 (Đăng bởi: <strong>{{ $comment->post->user->name ?? 'N/A' }}</strong>)

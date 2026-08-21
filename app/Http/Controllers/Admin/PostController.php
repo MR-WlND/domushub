@@ -67,12 +67,11 @@ class PostController extends Controller
             ->withCount('reports')
             ->orderBy('created_at', 'desc');
 
-        // Tìm kiếm theo từ khóa (tiêu đề, nội dung, hoặc tên người đăng)
+        // Tìm kiếm theo từ khóa (nội dung, hoặc tên người đăng)
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('content', 'like', "%{$search}%")
+                $q->where('content', 'like', "%{$search}%")
                   ->orWhereHas('user', function($userQuery) use ($search) {
                       $userQuery->where('name', 'like', "%{$search}%");
                   });
@@ -306,7 +305,7 @@ class PostController extends Controller
         $post = Post::withTrashed()->findOrFail($id);
         $post->restore();
 
-        return redirect()->back()->with('success', "Đã khôi phục bài viết \"{$post->title}\" thành công.");
+        return redirect()->back()->with('success', "Đã khôi phục bài viết thành công.");
     }
 
     /**

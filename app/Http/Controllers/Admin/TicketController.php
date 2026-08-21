@@ -23,6 +23,7 @@ class TicketController extends Controller
             'priority'    => 'nullable|in:low,medium,high,urgent',
             'ticket_type' => 'nullable|in:complaint,report',
             'block_id'    => 'nullable|integer|exists:blocks,id',
+            'date'        => 'nullable|date',
             'search'      => 'nullable|string|max:200',
 
             // Tab 2: Điều phối (Dispatch)
@@ -754,34 +755,35 @@ class TicketController extends Controller
 
         $tickets = $query->paginate(10)->withQueryString();
 
-        // Statistical Cards
-        $totalCount = Ticket::where('handler_id', $user->id)->count();
-        $inProgressCount = Ticket::where('handler_id', $user->id)->where('status', 'in_progress')->count();
-        $assignedCount = Ticket::where('handler_id', $user->id)->where('status', 'assigned')->count();
-        $completedThisMonthCount = Ticket::where('handler_id', $user->id)
-            ->where('status', 'completed')
-            ->whereMonth('updated_at', now()->month)
-            ->whereYear('updated_at', now()->year)
-            ->count();
-        $completedThisWeekCount = Ticket::where('handler_id', $user->id)
-            ->where('status', 'completed')
-            ->whereBetween('updated_at', [now()->startOfWeek(), now()->endOfWeek()])
-            ->count();
-        $totalCompleted = Ticket::where('handler_id', $user->id)->where('status', 'completed')->count();
-        $recheckCount = Ticket::where('handler_id', $user->id)->where('status', 'in_progress')->where('reopened_count', '>', 0)->count();
+        // Statistical Cards — gom tất cả thống kê vào 1 query để giảm số lần truy vấn DB
+        $statsRaw = Ticket::where('handler_id', $user->id)
+            ->selectRaw("
+                COUNT(*) as total,
+                SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as active,
+                SUM(CASE WHEN status = 'assigned' THEN 1 ELSE 0 END) as new_count,
+                SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
+                SUM(CASE WHEN status = 'completed' AND MONTH(updated_at) = ? AND YEAR(updated_at) = ? THEN 1 ELSE 0 END) as completed_month,
+                SUM(CASE WHEN status = 'completed' AND updated_at BETWEEN ? AND ? THEN 1 ELSE 0 END) as completed_week,
+                SUM(CASE WHEN status = 'in_progress' AND reopened_count > 0 THEN 1 ELSE 0 END) as recheck_count
+            ", [now()->month, now()->year, now()->startOfWeek(), now()->endOfWeek()])
+            ->first();
 
-        $avgRatingVal = Ticket::where('handler_id', $user->id)->whereNotNull('rating')->avg('rating');
+        $avgRatingVal       = Ticket::where('handler_id', $user->id)->whereNotNull('rating')->avg('rating');
         $avgRatingFormatted = $avgRatingVal ? number_format($avgRatingVal, 1) . '/5' : '4.9/5';
 
+        $completedThisMonthCount = (int) ($statsRaw->completed_month ?? 0);
+        $completedThisWeekCount  = (int) ($statsRaw->completed_week  ?? 0);
+        $totalCompleted          = (int) ($statsRaw->completed        ?? 0);
+
         $stats = [
-            'total'                => $totalCount,
-            'active'               => $inProgressCount,
-            'new'                  => $assignedCount,
+            'total'                => (int) ($statsRaw->total      ?? 0),
+            'active'               => (int) ($statsRaw->active     ?? 0),
+            'new'                  => (int) ($statsRaw->new_count  ?? 0),
             'completed_this_month' => $completedThisMonthCount,
             'completed_this_week'  => $completedThisWeekCount > 0 ? $completedThisWeekCount : ($completedThisMonthCount > 0 ? $completedThisMonthCount : $totalCompleted),
             'avg_rating'           => $avgRatingFormatted,
             'completed'            => $totalCompleted,
-            'recheck'              => $recheckCount,
+            'recheck'              => (int) ($statsRaw->recheck_count ?? 0),
         ];
 
         // Legacy arrays for compatibility
@@ -806,8 +808,13 @@ class TicketController extends Controller
 
         $blocks = \App\Models\Block::orderBy('name')->get();
 
+        // Báo cáo sự cố vận hành được phân công cho KTV này
+        $incidentReports = \App\Models\CleaningReport::whereHas('assignees', function ($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })->with('reporter')->latest()->get();
+
         return view('admin.tickets.technician', compact(
-            'tickets', 'newTasks', 'activeTasks', 'completedTasks', 'stats', 'blocks'
+            'tickets', 'newTasks', 'activeTasks', 'completedTasks', 'stats', 'blocks', 'incidentReports'
         ));
     }
 

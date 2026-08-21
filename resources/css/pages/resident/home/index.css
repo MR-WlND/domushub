@@ -1,269 +1,391 @@
 /* ============================================================
-   RESIDENT HOME DASHBOARD â€” Professional Design System
-   Base spacing: 8px (8, 16, 24, 32, 40, 48)
+   RESIDENT HOME DASHBOARD – Urban Living Theme
    ============================================================ */
-
-/* â”€â”€â”€ Layout â”€â”€â”€ */
-.rh { max-width: 980px; margin: 0 auto; padding: 0px 24px 64px; display: flex; flex-direction: column; gap: 32px; }
-
-/* â”€â”€â”€ Welcome â”€â”€â”€ */
-.rh-welcome h1 { margin: 0; font-size: 2rem; font-weight: 800; color: #0f172a; }
-.rh-welcome p { margin: 8px 0 0; color: #64748b; font-size: 0.92rem; }
-
-/* â”€â”€â”€ Hero Grid â”€â”€â”€ */
-.rh-hero { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-
-/* Debt Card */
-.rh-debt-card {
-    background: linear-gradient(135deg, #1e3a5f, #2563eb);
-    border-radius: 10px; padding: 25px 30px; color: #fff;
-    display: flex; flex-direction: column; justify-content: space-between;
-    height: 220px; box-shadow: 0 8px 32px rgba(30,58,95,0.2);
-}
-.rh-debt__label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.8; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-.rh-debt__amount { font-size: 2.2rem; font-weight: 700; margin: 15px 0 8px; line-height: 1; }
-.rh-debt__amount small { font-size: 1rem; font-weight: 600; opacity: 0.7; }
-.rh-debt__due { font-size: 0.8rem; opacity: 0.65; }
-.rh-debt__btn {
-    display: inline-flex; align-items: center; gap: 8px; margin-top: 24px;
-    padding: 12px 24px; background: #4ade80; color: #064e3b; border: none;
-    border-radius: 8px; font-size: 0.88rem; font-weight: 700;
-    cursor: pointer; text-decoration: none; transition: all 0.2s; width: fit-content;
-}
-.rh-debt__btn:hover { background: #22c55e; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(34,197,94,0.35); }
-.rh-debt__btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
-
-/* Announce Card */
-.rh-announce-card {
-    background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
-    overflow: hidden; display: flex; flex-direction: column; height: 220px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-}
-.rh-announce-slider { width: 100%; flex: 1; overflow: hidden; position: relative; }
-.rh-announce-slide { display: none; flex-direction: column; width: 100%; height: 100%; }
-.rh-announce-slide:first-child { display: flex; }
-.rh-announce__visual { width: 100%; flex: 1; overflow: hidden; position: relative; }
-.rh-announce__img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.rh-announce__badge {
-    position: absolute; top: 12px; left: 14px;
-    padding: 4px 12px; background: #dc2626; color: #fff;
-    font-size: 0.65rem; font-weight: 800; border-radius: 8px; text-transform: uppercase;
-}
-.rh-announce__body { padding: 16px 20px; }
-.rh-announce__title { margin: 0; font-size: 0.92rem; font-weight: 700; color: #0f172a; }
-.rh-announce__time { margin: 4px 0 0; font-size: 0.75rem; color: #94a3b8; }
-.rh-announce-dots { display: flex; justify-content: center; gap: 8px; padding: 10px 0; }
-.rh-dot { width: 8px; height: 8px; border-radius: 10px; background: #cbd5e1; cursor: pointer; transition: all 0.2s; }
-.rh-dot:hover { background: #94a3b8; }
-.rh-dot--active { background: #2563eb; transform: scale(1.25); }
-
-/* â”€â”€â”€ Section Title â”€â”€â”€ */
-.rh-section { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-.rh-section__title { margin: 0; font-size: 1.1rem; font-weight: 700; color: #0f172a; }
-.rh-section__actions { display: flex; align-items: center; gap: 16px; }
-.rh-section__link { font-size: 0.82rem; font-weight: 600; color: #2563eb; text-decoration: none; }
-.rh-section__link:hover { text-decoration: underline; }
-.rh-section__btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 8px 16px; background: #00236f; color: #fff;
-    border-radius: 10px; font-size: 0.8rem; font-weight: 700; text-decoration: none; transition: all 0.2s;
-}
-.rh-section__btn:hover { background: #001850; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,35,111,0.2); }
-
-/* â”€â”€â”€ Shortcuts â”€â”€â”€ */
-.rh-shortcuts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-.rh-shortcut {
-    display: flex; align-items: center; gap: 16px;
-    padding: 13px; background: #fff; border: 1px solid #e2e8f0;
-    border-radius: 10px; text-decoration: none;
-    transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-}
-.rh-shortcut:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.07); border-color: #bfdbfe; }
-.rh-shortcut:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
-.rh-shortcut__icon { width: 44px; height: 44px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.rh-shortcut__icon--pay { background: #dbeafe; color: #2563eb; }
-.rh-shortcut__icon--report { background: #fee2e2; color: #dc2626; }
-.rh-shortcut__icon--visitor { background: #dcfce7; color: #16a34a; }
-.rh-shortcut__icon--post { background: #f3e8ff; color: #7c3aed; }
-.rh-shortcut__label { display: block; font-weight: 700; color: #0f172a; font-size: 0.88rem; }
-.rh-shortcut__desc { display: block; font-size: 0.72rem; color: #64748b; margin-top: 2px; }
-
-/* â”€â”€â”€ Empty State â”€â”€â”€ */
-.rh-empty {
-    grid-column: 1 / -1; padding: 48px 24px; text-align: center;
-    background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
-}
-.rh-empty__text { margin: 0; font-size: 0.9rem; color: #64748b; font-weight: 500; }
-.rh-empty__btn {
-    display: inline-flex; align-items: center; gap: 6px; margin-top: 16px;
-    padding: 10px 20px; background: #00236f; color: #fff;
-    border-radius: 8px; font-size: 0.82rem; font-weight: 700; text-decoration: none; transition: all 0.2s;
-}
-.rh-empty__btn:hover { background: #001850; }
-
-/* â”€â”€â”€ Responsive â”€â”€â”€ */
-@media (max-width: 1024px) {
-    .rh-shortcuts { grid-template-columns: repeat(2, 1fr); }
+body.resident-page {
+    background-color: #f9fafb;
+    font-family: 'Inter', sans-serif;
 }
 
-@media (max-width: 768px) {
-    .rh { padding: 24px 16px 48px; gap: 24px; }
-    .rh-hero { grid-template-columns: 1fr; }
-    .rh-debt-card { height: auto; min-height: 200px; }
-    .rh-announce-card { height: 240px; }
-    .rh-shortcuts { grid-template-columns: 1fr; }
-    .rh-welcome h1 { font-size: 1.4rem; }
-    .rh-debt__amount { font-size: 2rem; }
+.resident-content {
+    padding: 0 !important;
 }
 
-@media (max-width: 480px) {
-    .rh { padding: 16px 12px 40px; gap: 20px; }
-    .rh-section__actions { gap: 8px; }
-    .rh-section__btn { padding: 6px 12px; font-size: 0.72rem; }
+.rh-container {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 30px 40px 60px;
 }
 
-/* Announce empty */
-.rh-announce__empty { flex: 1; display: flex; align-items: center; justify-content: center; background: #f8fafc; color: #94a3b8; font-size: 0.875rem; }
-
-/* â”€â”€â”€ Facebook-style Feed â”€â”€â”€ */
-.rh-fb-feed { display: flex; flex-direction: column; gap: 16px; max-width: 980px; }
-
-.rh-fb-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; }
-
-.rh-fb-card__header { display: flex; align-items: center; gap: 10px; padding: 10px 16px 0; }
-.rh-fb-card__avatar {
-    width: 40px; height: 40px; border-radius: 10px; overflow: hidden;
-    background: #e0e7ff; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.rh-fb-card__avatar img { width: 100%; height: 100%; object-fit: cover; }
-.rh-fb-card__avatar span { font-weight: 700; color: #3730a3; font-size: 1rem; }
-.rh-fb-card__name { display: block; font-weight: 700; color: #050505; font-size: 0.9rem; }
-.rh-fb-card__time { display: block; font-size: 0.75rem; color: #65676b; }
-
-.rh-fb-card__text { padding: 10px 16px 0; font-size: 0.92rem; color: #050505; line-height: 1.5; }
-.rh-fb-card__more-text { color: #385898; font-weight: 600; text-decoration: none; margin-left: 4px; }
-.rh-fb-card__more-text:hover { text-decoration: underline; }
-
-.rh-fb-card__media { display: block; margin-top: 12px; text-decoration: none; }
-.rh-fb-card__img-single { width: 100%; max-height: 500px; object-fit: cover; display: block; }
-
-.rh-fb-card__img-grid { display: grid; gap: 2px; }
-.rh-fb-card__img-grid--2 { grid-template-columns: 1fr 1fr; }
-.rh-fb-card__img-grid--2 img { width: 100%; height: 300px; object-fit: cover; }
-
-.rh-fb-card__img-grid--3plus { grid-template-columns: 1.2fr 0.8fr; gap: 2px; }
-.rh-fb-card__img-main { width: 100%; height: 320px; object-fit: cover; grid-row: 1 / 3; }
-.rh-fb-card__img-side { display: flex; flex-direction: column; gap: 2px; position: relative; }
-.rh-fb-card__img-side img { width: 100%; height: 159px; object-fit: cover; }
-.rh-fb-card__img-overlay {
-    position: absolute; bottom: 0; right: 0; left: 0; height: 159px;
-    background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
-    color: #fff; font-size: 1.5rem; font-weight: 700;
-}
-
-.rh-fb-card__stats {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 16px; font-size: 0.82rem; color: #65676b;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.rh-fb-card__actions {
-    display: grid; grid-template-columns: repeat(3, 1fr); text-align: center;
-}
-.rh-fb-card__action {
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-    padding: 10px 0; font-size: 0.88rem; font-weight: 600;
-    color: #65676b; text-decoration: none; transition: background 0.15s;
-    border: none; background: none; cursor: pointer; font-family: inherit;
-}
-.rh-fb-card__action:hover { background: #f2f2f2; color: #050505; }
-.rh-fb-card__action svg { flex-shrink: 0; }
-
-.rh-fb-like-btn--active { color: #2563eb !important; }
-.rh-fb-like-btn--active svg { stroke: #2563eb; fill: #2563eb; }
-
-@media (max-width: 768px) {
-    .rh-fb-feed { max-width: 100%; }
-    .rh-fb-card__img-grid--2 img { height: 200px; }
-    .rh-fb-card__img-main { height: 240px; }
-    .rh-fb-card__img-side img { height: 119px; }
-    .rh-fb-card__img-overlay { height: 119px; }
-}
-
-/* Post ellipsis menu and animations */
-.rh-fb-card__menu {
-    margin-left: auto;
+/* ─── HERO SECTION ─── */
+.rh-hero {
     position: relative;
+    width: 100%;
+    height: 400px;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #d1d5db;
+    background-size: cover;
+    background-position: center;
+    margin-bottom: 40px;
+    display: flex;
+    align-items: flex-end;
 }
-.rh-fb-card__menu-btn {
-    background: none;
-    border: none;
-    font-size: 1.1rem;
-    color: #65676b;
-    cursor: pointer;
-    width: 32px;
-    height: 32px;
+
+.rh-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 60%, rgba(0,0,0,0) 100%);
+    z-index: 1;
+}
+
+.rh-hero-content {
+    position: relative;
+    z-index: 2;
+    padding: 40px;
+    color: #fff;
+}
+
+.rh-hero-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    padding: 6px 12px;
+    border-radius: 99px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+}
+
+.rh-hero-status .dot {
+    width: 6px;
+    height: 6px;
+    background-color: #4ade80;
     border-radius: 50%;
+}
+
+.rh-hero-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+/* ─── MAIN GRID ─── */
+.rh-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 40px;
+    align-items: start;
+}
+
+/* ─── LEFT COLUMN ─── */
+.rh-col-left {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+/* Billing Card */
+.rh-card {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid rgba(0,0,0,0.12);
+}
+
+.rh-billing-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.rh-billing-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.rh-billing-amount {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #00236f;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.rh-billing-due {
+    font-size: 0.8rem;
+    color: #4b5563;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.rh-btn-primary {
+    background: #00236f;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 12px 24px;
+    border-radius: 4px;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: background 0.2s;
+}
+
+.rh-btn-primary:hover {
+    background: #1e3a8a;
+}
+
+/* Shortcuts */
+.rh-section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #00236f;
+    margin: 0 0 16px 0;
+}
+
+.rh-shortcuts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.rh-shortcut-card {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    text-decoration: none;
+    color: #00236f;
+    border: 1px solid rgba(0,0,0,0.12);
+    transition: transform 0.2s;
+}
+
+.rh-shortcut-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.rh-shortcut-card i {
+    width: 36px;
+    height: 36px;
+    background: #f3f4f6;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
-}
-.rh-fb-card__menu-btn:hover {
-    background: #f2f2f2;
-    color: #050505;
-}
-.rh-fb-card__dropdown {
-    display: none;
-    position: absolute;
-    top: calc(100% + 4px);
-    right: 0;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    z-index: 10;
-    min-width: 160px;
-    padding: 6px 0;
-    animation: postDropdownFadeIn 0.2s ease-out;
-}
-.rh-fb-card__dropdown-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-    padding: 10px 14px;
-    background: none;
-    border: none;
-    text-align: left;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #334155;
-    cursor: pointer;
-    transition: background 0.15s;
-    font-family: inherit;
-    text-decoration: none;
-    box-sizing: border-box;
-}
-.rh-fb-card__dropdown-item:hover {
-    background: #f8fafc;
-    color: #0f172a;
-}
-.rh-fb-card__dropdown-item--danger {
-    color: #dc2626;
-}
-.rh-fb-card__dropdown-item--danger:hover {
-    background: #fef2f2;
-    color: #b91c1c;
-}
-@keyframes postDropdownFadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-8px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    font-size: 1.1rem;
+    color: #374151;
 }
 
+.rh-shortcut-card span {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+/* ─── RIGHT COLUMN ─── */
+.rh-news-card {
+    background: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.12);
+    display: flex;
+    flex-direction: column;
+}
+
+.rh-news-img-wrap {
+    position: relative;
+    width: 100%;
+    height: 200px;
+}
+
+.rh-news-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.rh-news-tag {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    background: #ffffff;
+    color: #00236f;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 99px;
+    letter-spacing: 0.05em;
+}
+
+.rh-news-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.rh-news-date {
+    font-size: 0.75rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.rh-news-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #00236f;
+    margin: 0;
+    line-height: 1.3;
+}
+
+.rh-news-excerpt {
+    font-size: 0.9rem;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.rh-news-link {
+    margin-top: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #00236f;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.rh-news-link:hover {
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .rh-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+    .rh-container {
+        padding: 16px;
+    }
+    .rh-hero {
+        height: 250px;
+        margin-bottom: 24px;
+        border-radius: 12px;
+    }
+    .rh-hero-content {
+        padding: 20px;
+    }
+    .rh-hero-title {
+        font-size: 1.5rem;
+    }
+    .rh-grid {
+        gap: 24px;
+    }
+
+    /* Billing Card Responsive Layout */
+    .rh-card {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-rows: auto auto;
+        gap: 12px;
+        align-items: center;
+        padding: 20px;
+        border-radius: 12px;
+    }
+    .rh-billing-info {
+        grid-column: 1 / 3;
+        grid-row: 1 / 2;
+    }
+    .rh-billing-label {
+        font-size: 0.65rem;
+    }
+    .rh-billing-amount {
+        font-size: 1.5rem;
+        margin-top: 4px;
+    }
+    .rh-billing-due {
+        grid-column: 1 / 2;
+        grid-row: 2 / 3;
+        font-size: 0.75rem;
+    }
+    .rh-btn-primary {
+        grid-column: 2 / 3;
+        grid-row: 2 / 3;
+        padding: 10px 14px;
+        font-size: 0.7rem;
+        border-radius: 4px;
+        margin: 0;
+    }
+
+    /* Quick Access Responsive Layout */
+    .rh-shortcuts-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 12px;
+    }
+    .rh-shortcut-card {
+        padding: 16px;
+        border-radius: 12px;
+    }
+    
+    /* Box 1 (Trái): Đặt chỗ tiện ích */
+    .rh-shortcuts-grid > a:nth-child(1) {
+        grid-column: 1 / 2;
+        grid-row: 1 / 3;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .rh-shortcuts-grid > a:nth-child(1) i {
+        margin-bottom: 20px;
+    }
+    
+    /* Box 2 & 3 (Phải): Truy cập khách, Hỗ trợ cư dân */
+    .rh-shortcuts-grid > a:nth-child(2),
+    .rh-shortcuts-grid > a:nth-child(3) {
+        grid-column: 2 / 3;
+        flex-direction: row;
+        align-items: center;
+        padding: 12px 16px;
+        gap: 12px;
+    }
+    .rh-shortcuts-grid > a:nth-child(2) i,
+    .rh-shortcuts-grid > a:nth-child(3) i {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+    
+    .rh-shortcut-card span {
+        font-size: 0.75rem;
+        line-height: 1.3;
+    }
+
+    /* Community News */
+    .rh-news-img-wrap {
+        height: 180px;
+    }
+    .rh-news-title {
+        font-size: 1.15rem;
+    }
+}

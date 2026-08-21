@@ -155,9 +155,9 @@
         @endif
 
         {{-- ============================================================== --}}
-        {{-- DỊCH VỤ CƯ DÂN - Admin & Manager --}}
+        {{-- DỊCH VỤ CƯ DÂN - Admin, Manager, Staff --}}
         {{-- ============================================================== --}}
-        @if(in_array($role, ['admin', 'manager']))
+        @if(in_array($role, ['admin', 'manager', 'staff']))
         <div class="nav-section">
             <span class="nav-section__label">DỊCH VỤ CƯ DÂN</span>
             <a href="{{ portal_route('residents.index') }}" class="dashboard-nav__item {{ is_portal_route('residents.*') ? 'dashboard-nav__item--active' : '' }}">
@@ -169,6 +169,16 @@
                 </svg>
                 <span>Danh sách cư dân</span>
             </a>
+            <a href="{{ portal_route('temporary-registrations.index') }}" class="dashboard-nav__item {{ is_portal_route('temporary-registrations.*') ? 'dashboard-nav__item--active' : '' }}">
+                <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                <span>Tạm trú / Tạm vắng</span>
+            </a>
             <a href="{{ portal_route('tickets.index') }}" class="dashboard-nav__item {{ is_portal_route('tickets.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -176,6 +186,7 @@
                 <span>Quản lý phản ánh</span>
             </a>
             {{-- Duyệt đăng ký xe: admin thấy toàn bộ quản lý xe, manager thấy duyệt xe --}}
+            @if(in_array($role, ['admin', 'manager']))
             <a href="{{ portal_route('vehicles.index') }}" class="dashboard-nav__item {{ is_portal_route('vehicles.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="1" y="3" width="15" height="13" rx="2"></rect>
@@ -185,6 +196,7 @@
                 </svg>
                 <span>{{ $role === 'manager' ? 'Duyệt đăng ký xe' : 'Quản lý xe' }}</span>
             </a>
+            @endif
             @if($role === 'admin')
             <a href="{{ portal_route('parking-lots.index') }}" class="dashboard-nav__item {{ is_portal_route('parking-lots.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -231,11 +243,11 @@
 
 
         {{-- ============================================================== --}}
-        {{-- QUẢN LÝ VỆ SINH - Admin & Manager --}}
+        {{-- QUẢN LÝ VẬN HÀNH - Admin & Manager --}}
         {{-- ============================================================== --}}
         @if(in_array($role, ['admin', 'manager']))
         <div class="nav-section">
-            <span class="nav-section__label">QUẢN LÝ VỆ SINH</span>
+            <span class="nav-section__label">QUẢN LÝ VẬN HÀNH</span>
             <a href="{{ portal_route('cleaning-tasks.index') }}" class="dashboard-nav__item {{ is_portal_route('cleaning-tasks.*') ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path>
@@ -250,7 +262,7 @@
                     <line x1="12" y1="9" x2="12" y2="13"></line>
                     <line x1="12" y1="17" x2="12.01" y2="17"></line>
                 </svg>
-                <span>Báo cáo sự cố VS</span>
+                <span>Báo cáo sự cố</span>
             </a>
         </div>
         @endif

@@ -87,13 +87,11 @@ class PostController extends Controller
 
         // 2. Validate dữ liệu đầu vào (hỗ trợ images/video dạng mảng)
         $request->validate([
-            'title' => ['nullable', 'string', 'max:200', new CleanContent()],
             'content' => ['required', 'string', new CleanContent()],
             'price' => 'nullable|numeric|min:0|max:999999999',
             'media' => 'nullable|array|max:5', // Tối đa 5 file ảnh/video
             'media.*' => 'file|mimes:jpeg,png,jpg,gif,webp,mp4,mov,avi,webm|max:20480', // Mỗi file tối đa 20MB
         ], [
-            'title.max' => 'Tiêu đề không được vượt quá 200 ký tự.',
             'content.required' => 'Vui lòng nhập nội dung bài đăng.',
             'price.numeric' => 'Giá bán phải là định dạng số.',
             'price.min' => 'Giá bán không được nhỏ hơn 0đ.',
@@ -104,12 +102,7 @@ class PostController extends Controller
             'media.*.max' => 'Dung lượng mỗi file không được vượt quá 20MB.',
         ]);
 
-        $data = $request->only(['title', 'content', 'price']);
-        
-        // Tạo tiêu đề tự động nếu người dùng để trống
-        if (!$request->filled('title')) {
-            $data['title'] = Str::limit(strip_tags($request->content), 40, '...');
-        }
+        $data = $request->only(['content', 'price']);
         
         $data['user_id'] = Auth::id();
         $data['status'] = 'published'; // Mặc định là published
@@ -535,7 +528,6 @@ class PostController extends Controller
         }
 
         $request->validate([
-            'title' => ['nullable', 'string', 'max:200', new CleanContent()],
             'content' => ['required', 'string', new CleanContent()],
             'price' => 'nullable|numeric|min:0|max:999999999',
             'media' => 'nullable|array|max:5',
@@ -543,7 +535,6 @@ class PostController extends Controller
             'delete_media' => 'nullable|array',
             'delete_media.*' => 'integer|exists:post_images,id',
         ], [
-            'title.max' => 'Tiêu đề không được vượt quá 200 ký tự.',
             'content.required' => 'Vui lòng nhập nội dung bài đăng.',
             'price.numeric' => 'Giá bán phải là định dạng số.',
             'price.min' => 'Giá bán không được nhỏ hơn 0đ.',
@@ -594,7 +585,6 @@ class PostController extends Controller
         }
 
         $post->update([
-            'title' => $request->title ?: Str::limit(strip_tags($request->content), 40, '...'),
             'content' => $request->content,
             'price' => $request->price,
         ]);
@@ -613,7 +603,7 @@ class PostController extends Controller
             ]);
         }
 
-        return redirect()->route('resident.posts.show', $post->id)->with('success', 'Cập nhật bài viết thành công!');
+        return redirect()->route('resident.posts.index')->with('success', 'Cập nhật bài viết thành công!');
     }
 
     /**

@@ -37,6 +37,10 @@
             </div>
             
             <div style="display: flex; gap: 12px;">
+                <a href="{{ portal_route('blocks.matrix', $block) }}" style="background: #10b981; border: 1px solid #10b981; color: white; padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; transition: all 0.2s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                    Sơ đồ Tòa nhà
+                </a>
                 <a href="{{ portal_route('blocks.index') }}" style="background: white; border: 1px solid #e2e8f0; color: #475569; padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='white'">Quay lại</a>
                 <a href="{{ portal_route('blocks.edit', $block) }}" style="background: #1d4ed8; border: 1px solid #1d4ed8; color: white; padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; transition: all 0.2s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#1e40af'" onmouseout="this.style.background='#1d4ed8'">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>

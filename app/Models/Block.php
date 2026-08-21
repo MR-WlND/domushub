@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Block extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -25,6 +26,29 @@ class Block extends Model
     protected $casts = [
         'amenities' => 'array',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($block) {
+            if ($block->isForceDeleting()) {
+                $block->floors()->withTrashed()->each(function ($floor) {
+                    $floor->forceDelete();
+                });
+            } else {
+                $block->floors()->each(function ($floor) {
+                    $floor->delete(); // Soft delete floors
+                });
+            }
+        });
+
+        static::restoring(function ($block) {
+            $block->floors()->withTrashed()->each(function ($floor) {
+                $floor->restore(); // Restore soft-deleted floors
+            });
+        });
+    }
 
     /**
      * Tòa nhà có nhiều tầng

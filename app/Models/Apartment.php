@@ -25,6 +25,7 @@ class Apartment extends Model
 
     protected $casts = [
         'images' => 'array',
+        'handover_date' => 'date',
     ];
 
     /**

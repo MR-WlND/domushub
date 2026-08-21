@@ -48,15 +48,30 @@ class CleaningTaskController extends Controller
     {
         $validated = $request->validate([
             'assigned_to' => 'required|exists:users,id',
-            'title' => 'required|string|max:200',
+            'title'       => 'required|string|max:200',
             'description' => 'nullable|string|max:2000',
-            'area' => 'required|string|max:100',
-            'area_group' => 'nullable|string|max:100',
-            'start_time' => 'nullable',
-            'end_time' => 'nullable',
-            'priority' => 'required|in:low,medium,high',
-            'task_date' => 'required|date',
-            'checklist' => 'nullable|string',
+            'area'        => 'required|string|max:100',
+            'area_group'  => 'nullable|string|max:100',
+            'start_time'  => 'nullable|date_format:H:i',
+            'end_time'    => 'nullable|date_format:H:i|after:start_time',
+            'priority'    => 'required|in:low,medium,high',
+            'task_date'   => 'required|date',
+            'checklist'   => 'nullable|string',
+        ], [
+            'assigned_to.required'      => 'Vui lòng chọn nhân viên được giao.',
+            'assigned_to.exists'        => 'Nhân viên được chọn không tồn tại.',
+            'title.required'            => 'Vui lòng nhập tên công việc.',
+            'title.max'                 => 'Tên công việc không được vượt quá 200 ký tự.',
+            'description.max'           => 'Mô tả không được vượt quá 2000 ký tự.',
+            'area.required'             => 'Vui lòng nhập khu vực vệ sinh.',
+            'area.max'                  => 'Tên khu vực không được vượt quá 100 ký tự.',
+            'start_time.date_format'    => 'Giờ bắt đầu phải đúng định dạng HH:MM.',
+            'end_time.date_format'      => 'Giờ kết thúc phải đúng định dạng HH:MM.',
+            'end_time.after'            => 'Giờ kết thúc phải sau giờ bắt đầu.',
+            'priority.required'         => 'Vui lòng chọn mức độ ưu tiên.',
+            'priority.in'               => 'Mức độ ưu tiên không hợp lệ.',
+            'task_date.required'        => 'Vui lòng chọn ngày thực hiện.',
+            'task_date.date'            => 'Ngày thực hiện không đúng định dạng.',
         ]);
 
         // Parse checklist from textarea (one item per line)

@@ -26,10 +26,10 @@ class InvoiceController extends Controller
 
         // KPI tổng quát
         $totalRevenue     = Invoice::where('status', 'paid')->sum('total_amount');
-        $thisMonthRevenue = Invoice::where('status', 'paid')
-            ->whereMonth('updated_at', now()->month)
-            ->whereYear('updated_at', now()->year)
-            ->sum('total_amount');
+        $thisMonthRevenue = \App\Models\Payment::where('status', 'success')
+            ->whereMonth('paid_at', now()->month)
+            ->whereYear('paid_at', now()->year)
+            ->sum('amount');
         $totalInvoices    = Invoice::count();
         $paidCount        = Invoice::where('status', 'paid')->count();
         $unpaidCount      = Invoice::where('status', 'unpaid')->count();
@@ -525,7 +525,7 @@ class InvoiceController extends Controller
             'billing_month' => 'required|string',
             'due_date'      => 'required|date',
             'types'         => 'required|array|min:1',
-            'types.*'       => 'in:water,management_fee,parking_fee_motorbike,parking_fee_car,parking_fee_electric_bike,parking_fee_bicycle,internet,service,other',
+            'types.*'       => 'in:electricity,water,management_fee,parking_fee_motorbike,parking_fee_car,parking_fee_electric_bike,parking_fee_bicycle,internet,service,other',
             'apartment_ids' => 'required|array|min:1',
             'apartment_ids.*' => 'integer|exists:apartments,id',
         ], [
@@ -902,6 +902,7 @@ class InvoiceController extends Controller
      */
     public function markAsPaid(Request $request, Invoice $invoice)
     {
+
         if ($invoice->status === 'cancelled') {
             return back()->with('error', 'Hóa đơn này đã bị hủy, không thể ghi nhận thanh toán.');
         }
@@ -914,6 +915,7 @@ class InvoiceController extends Controller
         }
 
         $maxAmount = $remainingDue;
+
 
         $validated = $request->validate([
             'payment_method' => 'required|in:cash,bank_transfer,momo,vnpay,other',
@@ -959,8 +961,10 @@ class InvoiceController extends Controller
             // Cộng vào paid_amount của bill
             $newPaidAmount = (float) $invoice->paid_amount + (float) $validated['amount'];
 
+
             // Xác định status mới dựa trên total_due_at_issue (tính cả nợ cũ)
             $newStatus = $newPaidAmount >= $totalDueAtIssue ? 'paid' : 'partial_paid';
+
 
             $invoice->update([
                 'paid_amount' => $newPaidAmount,
@@ -1022,10 +1026,11 @@ class InvoiceController extends Controller
             // Trừ paid_amount của bill
             $newPaidAmount = max(0, (float) $invoice->paid_amount - (float) $payment->amount);
 
-            // Xác định lại status
+            // Xác định lại status dựa trên tổng nợ (bao gồm previous_debt)
+            $totalDue = (float) $invoice->total_due_at_issue;
             if ($newPaidAmount <= 0) {
                 $newStatus = 'unpaid';
-            } elseif ($newPaidAmount < (float) $invoice->total_amount) {
+            } elseif ($newPaidAmount < $totalDue) {
                 $newStatus = 'partial_paid';
             } else {
                 $newStatus = 'paid';
@@ -1200,6 +1205,8 @@ class InvoiceController extends Controller
 
         if (!$parkingDetail) return;
 
+
+
         $vehicles = \App\Models\Vehicle::where('apartment_id', $invoice->apartment_id)
             ->where('status', 'awaiting_payment')
             ->get();
@@ -1224,10 +1231,12 @@ class InvoiceController extends Controller
                 $vehicle->update(['qr_code' => strtoupper(str_replace([' ', '-'], '', $vehicle->license_plate))]);
             }
 
+
             SystemLogger::log(
                 'vehicle',
                 'Kích hoạt xe ' . $vehicle->license_plate . ' sau khi thanh toán phí gửi xe',
                 ['vehicle_id' => $vehicle->id, 'apartment_id' => $invoice->apartment_id]
+
             );
         }
     }

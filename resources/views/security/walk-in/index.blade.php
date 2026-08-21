@@ -3,243 +3,423 @@
 @push('styles')
 <style>
 /* =====================================================
-   WALK-IN — 3-STEP WIZARD
+   WALK-IN REGISTRATION — MODERN PREMIUM STYLES
    ===================================================== */
 
-/* WRAP */
-.wi-wrap {
-    max-width: 760px;
-    margin: 0 auto;
-    padding: 1.5rem 1rem 4rem;
+:root {
+    --wi-primary: #3b82f6;
+    --wi-primary-hover: #2563eb;
+    --wi-primary-light: #eff6ff;
+    --wi-success: #10b981;
+    --wi-success-dark: #059669;
+    --wi-success-light: #ecfdf5;
+    --wi-text-main: #0f172a;
+    --wi-text-muted: #64748b;
+    --wi-bg-card: #ffffff;
+    --wi-border-color: #e2e8f0;
+    --wi-shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+    --wi-shadow-lg: 0 20px 30px -10px rgba(15, 23, 42, 0.07), 0 10px 15px -5px rgba(15, 23, 42, 0.04);
 }
 
-/* ---- STEPPER ---- */
+.wi-wrap {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 4rem;
+    font-family: inherit;
+}
+
+/* ---- PAGE HEADER TITLE ---- */
+.wi-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+.wi-header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, #e0e7ff, #dbeafe);
+    color: #4338ca;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    margin-bottom: 0.6rem;
+    text-transform: uppercase;
+}
+.wi-header-title {
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: var(--wi-text-main);
+    letter-spacing: -0.02em;
+    margin: 0 0 0.4rem;
+}
+.wi-header-sub {
+    font-size: 0.88rem;
+    color: var(--wi-text-muted);
+    margin: 0;
+}
+
+/* ---- STEPPER WIZARD ---- */
+.wi-stepper-card {
+    background: var(--wi-bg-card);
+    border: 1px solid var(--wi-border-color);
+    border-radius: 20px;
+    padding: 1.25rem 1.75rem;
+    margin-bottom: 1.75rem;
+    box-shadow: var(--wi-shadow-sm);
+}
 .wi-stepper {
     display: flex;
     align-items: center;
-    margin-bottom: 2rem;
+    justify-content: space-between;
     position: relative;
+}
+.wi-stepper-track {
+    position: absolute;
+    top: 20px;
+    left: 40px;
+    right: 40px;
+    height: 3px;
+    background: #e2e8f0;
+    z-index: 0;
+    border-radius: 99px;
+    overflow: hidden;
+}
+.wi-stepper-progress {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #3b82f6, #6366f1, #10b981);
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .wi-step-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: .35rem;
-    flex: 1;
+    gap: 0.45rem;
     position: relative;
     z-index: 1;
-}
-.wi-step-item:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    top: 18px;
-    left: calc(50% + 20px);
-    right: calc(-50% + 20px);
-    height: 2px;
-    background: #e2e8f0;
-    z-index: 0;
-    transition: background .4s;
-}
-.wi-step-item.s-done:not(:last-child)::after,
-.wi-step-item.s-active:not(:last-child)::after {
-    background: #2563eb;
+    cursor: pointer;
+    user-select: none;
 }
 .wi-step-circle {
-    width: 38px;
-    height: 38px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
-    border: 2.5px solid #e2e8f0;
-    background: #fff;
+    border: 2px solid #cbd5e1;
+    background: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: .82rem;
+    font-size: 0.9rem;
     font-weight: 800;
-    color: #94a3b8;
-    position: relative;
-    z-index: 1;
-    transition: all .3s;
+    color: #64748b;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .wi-step-item.s-active .wi-step-circle {
-    border-color: #2563eb;
-    background: #2563eb;
-    color: #fff;
-    box-shadow: 0 0 0 5px rgba(37,99,235,.15);
+    border-color: #3b82f6;
+    background: #3b82f6;
+    color: #ffffff;
+    box-shadow: 0 0 0 5px rgba(59, 130, 246, 0.2);
+    transform: scale(1.08);
 }
 .wi-step-item.s-done .wi-step-circle {
-    border-color: #2563eb;
-    background: #2563eb;
-    color: #fff;
+    border-color: #10b981;
+    background: #10b981;
+    color: #ffffff;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
 }
 .wi-step-lbl {
-    font-size: .72rem;
+    font-size: 0.78rem;
     font-weight: 700;
     color: #94a3b8;
-    white-space: nowrap;
-    transition: color .3s;
+    transition: color 0.3s;
 }
-.wi-step-item.s-active .wi-step-lbl,
-.wi-step-item.s-done .wi-step-lbl {
+.wi-step-item.s-active .wi-step-lbl {
     color: #2563eb;
+    font-weight: 800;
+}
+.wi-step-item.s-done .wi-step-lbl {
+    color: #059669;
 }
 
 /* ---- SECTION CARD ---- */
 .wi-sec {
-    background: #fff;
-    border: 1px solid #e8ecf4;
-    border-radius: 16px;
-    margin-bottom: 1.25rem;
+    background: var(--wi-bg-card);
+    border: 1px solid var(--wi-border-color);
+    border-radius: 20px;
+    margin-bottom: 1.5rem;
     overflow: hidden;
-    box-shadow: 0 2px 12px rgba(0,20,80,.05);
-    transition: opacity .3s, transform .3s;
+    box-shadow: var(--wi-shadow-lg);
+    transition: opacity 0.3s, transform 0.3s, box-shadow 0.3s;
 }
 .wi-sec.locked {
-    opacity: .45;
+    opacity: 0.5;
     pointer-events: none;
+    filter: grayscale(20%);
 }
 .wi-sec.hidden-step {
     display: none;
 }
 .wi-sec-hd {
-    padding: .85rem 1.25rem;
-    background: #f4f7ff;
-    border-bottom: 1px solid #e8ecf4;
+    padding: 1.1rem 1.5rem;
+    background: linear-gradient(to right, #f8fafc, #ffffff);
+    border-bottom: 1px solid #edf2f7;
     display: flex;
     align-items: center;
-    gap: .65rem;
+    gap: 0.85rem;
 }
 .wi-sec-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 9px;
-    background: #dbeafe;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: #eff6ff;
+    color: #2563eb;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #2563eb;
     flex-shrink: 0;
+    font-size: 1.05rem;
+    box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.1);
 }
 .wi-sec-title {
-    font-size: .9rem;
+    font-size: 1rem;
     font-weight: 800;
-    color: #1e293b;
+    color: #0f172a;
     margin: 0;
     flex: 1;
 }
 .wi-sec-badge {
-    font-size: .7rem;
+    font-size: 0.72rem;
     font-weight: 700;
-    padding: .2rem .55rem;
+    padding: 0.25rem 0.65rem;
     border-radius: 999px;
     background: #dcfce7;
     color: #15803d;
     display: none;
     align-items: center;
-    gap: .25rem;
+    gap: 0.3rem;
+    border: 1px solid #bbf7d0;
 }
-.wi-sec-badge.show { display: flex; }
-.wi-sec-body { padding: 1.35rem; }
+.wi-sec-badge.show { display: inline-flex; }
+.wi-sec-body { padding: 1.5rem; }
 
-/* ---- FORM ELEMENTS ---- */
-.wi-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
-@media (max-width:540px) { .wi-grid2 { grid-template-columns: 1fr; } }
+/* ---- FORM INPUTS ---- */
+.wi-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+@media (max-width: 600px) { .wi-grid2 { grid-template-columns: 1fr; } }
 .wi-span2 { grid-column: 1 / -1; }
-.wi-fld { display: flex; flex-direction: column; gap: .3rem; }
+.wi-fld { display: flex; flex-direction: column; gap: 0.4rem; }
 .wi-lbl {
-    font-size: .72rem;
+    font-size: 0.75rem;
     font-weight: 700;
-    color: #64748b;
+    color: #475569;
     text-transform: uppercase;
-    letter-spacing: .05em;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
 }
 .wi-lbl em { color: #ef4444; font-style: normal; }
+
+.wi-inp-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.wi-inp-icon {
+    position: absolute;
+    left: 0.85rem;
+    color: #94a3b8;
+    font-size: 0.9rem;
+    pointer-events: none;
+    transition: color 0.2s;
+}
 .wi-inp, .wi-sel, .wi-ta {
     background: #f8fafc;
     border: 1.5px solid #e2e8f0;
-    border-radius: 10px;
-    padding: .65rem .95rem;
-    font-size: .88rem;
+    border-radius: 12px;
+    padding: 0.72rem 0.95rem 0.72rem 2.4rem;
+    font-size: 0.9rem;
     font-family: inherit;
-    color: #1e293b;
+    color: #0f172a;
     width: 100%;
     box-sizing: border-box;
-    transition: border-color .15s, box-shadow .15s;
+    transition: all 0.2s ease;
+}
+.wi-ta {
+    padding-left: 0.95rem;
+    min-height: 85px;
+    resize: vertical;
+    line-height: 1.5;
 }
 .wi-inp:focus, .wi-sel:focus, .wi-ta:focus {
     outline: none;
-    border-color: #2563eb;
-    background: #fff;
-    box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+    border-color: #3b82f6;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
 }
-.wi-inp::placeholder, .wi-ta::placeholder { color: #b0bac9; }
-.wi-ta { min-height: 80px; resize: vertical; }
-.wi-sel { cursor: pointer; }
+.wi-inp:focus + .wi-inp-icon, .wi-inp-wrap:focus-within .wi-inp-icon {
+    color: #2563eb;
+}
+.wi-inp::placeholder, .wi-ta::placeholder { color: #94a3b8; }
+
+/* QUICK REASON TAGS */
+.wi-quick-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-top: 0.5rem;
+}
+.wi-tag-btn {
+    padding: 0.3rem 0.7rem;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+.wi-tag-btn:hover {
+    background: #eff6ff;
+    border-color: #93c5fd;
+    color: #1d4ed8;
+    transform: translateY(-1px);
+}
+.wi-tag-btn:active { transform: translateY(0); }
 
 /* APARTMENT DROPDOWN */
-.wi-apt-wrap { position: relative; }
+.wi-apt-wrap { position: relative; width: 100%; }
 .wi-apt-dd {
     position: absolute;
-    top: calc(100% + 4px);
+    top: calc(100% + 6px);
     left: 0;
     right: 0;
-    background: #fff;
+    background: #ffffff;
     border: 1.5px solid #e2e8f0;
-    border-radius: 11px;
-    box-shadow: 0 10px 28px rgba(0,0,0,.1);
-    max-height: 200px;
+    border-radius: 14px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+    max-height: 220px;
     overflow-y: auto;
     z-index: 300;
     display: none;
+    padding: 0.4rem;
 }
-.wi-apt-dd.open { display: block; }
+.wi-apt-dd.open { display: block; animation: fadeInDown 0.2s ease-out; }
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 .wi-apt-opt {
-    padding: .55rem .9rem;
-    font-size: .86rem;
+    padding: 0.65rem 0.85rem;
+    font-size: 0.88rem;
+    font-weight: 600;
     cursor: pointer;
     color: #1e293b;
-    transition: background .1s;
-}
-.wi-apt-opt:hover { background: #eff6ff; color: #1d4ed8; }
-.wi-apt-opt--e { color: #94a3b8; cursor: default; }
-
-/* RESIDENT CHIPS */
-.wi-res {
-    background: #f0fdf4;
-    border: 1.5px solid #bbf7d0;
-    border-radius: 11px;
-    padding: .75rem 1rem;
+    border-radius: 8px;
+    transition: background 0.15s, color 0.15s;
     display: flex;
     align-items: center;
-    gap: .75rem;
-    cursor: pointer;
-    margin-bottom: .45rem;
-    transition: all .15s;
-    box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    justify-content: space-between;
 }
-.wi-res:hover { background: #dcfce7; border-color: #86efac; }
-.wi-res.sel { background: #dcfce7; border-color: #22c55e; box-shadow: 0 2px 8px rgba(34,197,94,.2); }
+.wi-apt-opt:hover { background: #eff6ff; color: #1d4ed8; }
+.wi-apt-opt--e { color: #94a3b8; cursor: default; justify-content: center; font-weight: 500; }
+
+/* RESIDENT CHIPS / CARDS */
+.wi-res-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.4rem;
+}
+.wi-res {
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: var(--wi-shadow-sm);
+    position: relative;
+}
+.wi-res:hover {
+    border-color: #93c5fd;
+    background: #f8fafc;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.1);
+}
+.wi-res.sel {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border-color: #22c55e;
+    box-shadow: 0 4px 14px rgba(34, 197, 94, 0.2);
+}
 .wi-res-avatar {
-    width: 38px; height: 38px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
-    background: linear-gradient(135deg,#22c55e,#16a34a);
+    background: linear-gradient(135deg, #3b82f6, #6366f1);
     display: flex; align-items: center; justify-content: center;
-    color: #fff; font-weight: 800; font-size: .9rem; flex-shrink: 0;
+    color: #ffffff; font-weight: 800; font-size: 1rem;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
+}
+.wi-res.sel .wi-res-avatar {
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
 }
 .wi-res-info { flex: 1; min-width: 0; }
-.wi-res-name { font-size: .9rem; font-weight: 800; color: #15803d; margin-bottom: .1rem; }
-.wi-res-phone { font-size: .8rem; color: #16a34a; font-weight: 600; display: flex; align-items: center; gap: .3rem; }
-.wi-res-chk { display: none; color: #16a34a; flex-shrink: 0; }
+.wi-res-name { font-size: 0.9rem; font-weight: 800; color: #0f172a; margin-bottom: 0.15rem; }
+.wi-res.sel .wi-res-name { color: #14532d; }
+.wi-res-phone { font-size: 0.78rem; color: #64748b; font-weight: 600; display: flex; align-items: center; gap: 0.3rem; }
+.wi-res.sel .wi-res-phone { color: #16a34a; }
+.wi-res-chk {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: #22c55e;
+    color: #fff;
+    display: none; align-items: center; justify-content: center;
+    font-size: 0.7rem; flex-shrink: 0;
+}
 .wi-res.sel .wi-res-chk { display: flex; }
+
 .wi-res-empty {
-    background: #fff8f0; border: 1.5px dashed #fed7aa;
-    border-radius: 11px; padding: .85rem 1rem;
-    display: flex; align-items: center; gap: .65rem;
-    color: #92400e; font-size: .84rem; font-weight: 600;
+    background: #fffbe0;
+    border: 1.5px dashed #fcd34d;
+    border-radius: 14px;
+    padding: 1rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #92400e;
+    font-size: 0.88rem;
+    font-weight: 600;
 }
 
-/* ---- CAMERA ---- */
-.wi-cam-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; align-items: start; }
-@media (max-width:540px) { .wi-cam-layout { grid-template-columns: 1fr; } }
+/* ---- CAMERA SECTION ---- */
+.wi-cam-layout {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 1.25rem;
+    align-items: start;
+}
+@media (max-width: 640px) { .wi-cam-layout { grid-template-columns: 1fr; } }
+
+.wi-cam-container {
+    background: #0f172a;
+    border-radius: 16px;
+    padding: 0.5rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+}
 .wi-cam-vp {
     width: 100%;
     aspect-ratio: 4 / 3;
@@ -252,425 +432,557 @@
     position: relative;
 }
 .wi-cam-vp video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.wi-cam-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.wi-cam-guide-oval {
+    width: 55%;
+    height: 70%;
+    border: 2px dashed rgba(255, 255, 255, 0.45);
+    border-radius: 50%;
+    box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.35);
+}
+.wi-cam-live-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(225, 29, 72, 0.85);
+    backdrop-filter: blur(4px);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    letter-spacing: 0.05em;
+    z-index: 10;
+}
+.wi-cam-live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #fff;
+    animation: blink 1.2s infinite;
+}
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
 .wi-cam-off {
-    display: flex; flex-direction: column;
-    align-items: center; gap: .5rem;
-    color: #64748b; text-align: center; padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    color: #94a3b8;
+    text-align: center;
+    padding: 1.5rem 1rem;
 }
-.wi-cam-off p { margin: 0; font-size: .78rem; }
+.wi-cam-off p { margin: 0; font-size: 0.85rem; font-weight: 600; color: #cbd5e1; }
+
 .wi-snap-btn {
-    display: flex; width: 100%; margin-top: .75rem;
-    padding: .7rem 1rem;
-    background: #1d4ed8; color: #fff;
-    border: none; border-radius: 10px;
-    font-size: .88rem; font-weight: 800; font-family: inherit;
-    cursor: pointer; align-items: center; justify-content: center; gap: .5rem;
-    box-shadow: 0 3px 10px rgba(29,78,216,.3); transition: all .2s;
+    display: flex; width: 100%; margin-top: 0.75rem;
+    padding: 0.8rem 1.2rem;
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    color: #ffffff;
+    border: none; border-radius: 12px;
+    font-size: 0.92rem; font-weight: 800; font-family: inherit;
+    cursor: pointer; align-items: center; justify-content: center; gap: 0.6rem;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35); transition: all 0.2s;
 }
-.wi-snap-btn:hover { background: #1e40af; transform: translateY(-1px); }
-.wi-snap-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+.wi-snap-btn:hover { background: linear-gradient(135deg, #1d4ed8, #2563eb); transform: translateY(-1px); }
+.wi-snap-btn:active { transform: translateY(0); }
+.wi-snap-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.wi-prev-card {
+    background: #f8fafc;
+    border: 1.5px dashed #cbd5e1;
+    border-radius: 16px;
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 .wi-prev-lbl {
-    font-size: .72rem; font-weight: 700;
-    color: #64748b; text-transform: uppercase; letter-spacing: .05em; margin: 0 0 .5rem;
+    font-size: 0.75rem; font-weight: 800;
+    color: #475569; text-transform: uppercase; letter-spacing: 0.05em;
+    margin: 0 0 0.6rem; align-self: flex-start;
 }
 .wi-prev-box {
     width: 100%; aspect-ratio: 4 / 3;
-    background: #f8fafc; border: 2px dashed #e2e8f0;
+    background: #ffffff; border: 1px solid #e2e8f0;
     border-radius: 12px; overflow: hidden;
     display: flex; align-items: center; justify-content: center;
+    position: relative;
+    box-shadow: var(--wi-shadow-sm);
 }
 .wi-prev-box img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .wi-prev-empty {
     display: flex; flex-direction: column;
-    align-items: center; gap: .4rem;
-    color: #b0bac9; font-size: .74rem; text-align: center; padding: .75rem;
+    align-items: center; gap: 0.5rem;
+    color: #94a3b8; font-size: 0.78rem; text-align: center; padding: 1rem;
 }
-.wi-prev-empty svg { opacity: .45; }
-.wi-prev-empty p { margin: 0; }
+.wi-prev-empty i { font-size: 2rem; color: #cbd5e1; }
 .wi-cam-acts {
     display: grid; grid-template-columns: 1fr 1fr;
-    gap: .6rem; margin-top: .65rem;
+    gap: 0.6rem; margin-top: 0.75rem; width: 100%;
 }
 .wi-btn-sm {
-    padding: .52rem .7rem; border-radius: 9px;
-    font-size: .8rem; font-weight: 700; font-family: inherit;
+    padding: 0.6rem 0.8rem; border-radius: 10px;
+    font-size: 0.82rem; font-weight: 700; font-family: inherit;
     cursor: pointer; border: 1.5px solid;
-    display: flex; align-items: center; justify-content: center; gap: .35rem; transition: all .15s;
+    display: flex; align-items: center; justify-content: center; gap: 0.4rem; transition: all 0.15s;
 }
-.wi-btn-outline { background: #fff; color: #64748b; border-color: #e2e8f0; }
-.wi-btn-outline:hover { background: #f1f5f9; }
+.wi-btn-outline { background: #fff; color: #475569; border-color: #cbd5e1; }
+.wi-btn-outline:hover { background: #f1f5f9; color: #1e293b; }
 .wi-btn-del { background: #fff; color: #dc2626; border-color: #fca5a5; }
-.wi-btn-del:hover { background: #fef2f2; }
-.wi-btn-del:disabled, .wi-btn-sm:disabled { opacity: .4; cursor: not-allowed; }
+.wi-btn-del:hover { background: #fef2f2; border-color: #f87171; }
+.wi-btn-del:disabled, .wi-btn-sm:disabled { opacity: 0.45; cursor: not-allowed; }
 
-/* ---- REVIEW ---- */
-.wi-review {
-    background: #f8fafc; border: 1px solid #e2e8f0;
-    border-radius: 12px; padding: 1rem 1.15rem;
-    display: grid; grid-template-columns: 1fr auto;
-    gap: .6rem 1rem; align-items: start;
+/* ---- REVIEW STEP (DIGITAL VISITOR PASS MOCKUP) ---- */
+.wi-pass-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid #cbd5e1;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
 }
-.wi-rv-rows { display: flex; flex-direction: column; gap: .45rem; }
-.wi-rv-row { display: flex; gap: .5rem; font-size: .85rem; }
-.wi-rv-lbl { color: #64748b; font-weight: 600; min-width: 110px; flex-shrink: 0; }
-.wi-rv-val { color: #1e293b; font-weight: 700; flex: 1; word-break: break-word; }
-.wi-rv-val.accent { color: #1d4ed8; }
+.wi-pass-hd {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    color: #ffffff;
+    padding: 0.85rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.wi-pass-title {
+    font-size: 0.85rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #f8fafc;
+}
+.wi-pass-body {
+    padding: 1.25rem;
+    display: grid;
+    grid-template-columns: 1fr 110px;
+    gap: 1.25rem;
+    align-items: center;
+}
+@media (max-width: 520px) { .wi-pass-body { grid-template-columns: 1fr; } }
+.wi-rv-rows { display: flex; flex-direction: column; gap: 0.55rem; }
+.wi-rv-row { display: flex; align-items: baseline; gap: 0.6rem; font-size: 0.88rem; }
+.wi-rv-lbl { color: #64748b; font-weight: 600; min-width: 120px; flex-shrink: 0; font-size: 0.82rem; }
+.wi-rv-val { color: #0f172a; font-weight: 700; flex: 1; word-break: break-word; }
+.wi-rv-val.accent { color: #2563eb; font-size: 1rem; }
+
 .wi-rv-thumb {
-    width: 80px; height: 80px;
-    border-radius: 10px; overflow: hidden;
-    border: 2px solid #e2e8f0; background: #f1f5f9;
+    width: 110px; height: 110px;
+    border-radius: 14px; overflow: hidden;
+    border: 2px solid #3b82f6; background: #f1f5f9;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+    margin: 0 auto;
 }
 .wi-rv-thumb img { width: 100%; height: 100%; object-fit: cover; }
 .wi-rv-thumb-empty {
-    color: #94a3b8; font-size: .65rem;
-    text-align: center; padding: .3rem;
-    display: flex; flex-direction: column; align-items: center; gap: .2rem;
-}
-.wi-notice {
-    background: #eff6ff; border: 1px solid #bfdbfe;
-    border-radius: 10px; padding: .75rem 1rem;
-    display: flex; align-items: flex-start; gap: .6rem;
-    font-size: .82rem; color: #1e40af; margin-top: .9rem;
-}
-.wi-notice svg { flex-shrink: 0; margin-top: 1px; }
-.wi-notice--warn {
-    background: #fffbeb; border-color: #fde68a; color: #92400e;
-}
-.wi-notice--ok {
-    background: #f0fdf4; border-color: #bbf7d0; color: #166534;
+    color: #94a3b8; font-size: 0.7rem;
+    text-align: center; padding: 0.5rem;
+    display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
 }
 
-/* ---- STEP CONFIRM BUTTON (per-section) ---- */
+.wi-notice {
+    background: #f0fdf4; border: 1.5px solid #bbf7d0;
+    border-radius: 12px; padding: 0.85rem 1.1rem;
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    font-size: 0.85rem; color: #166534; margin-top: 1rem;
+    font-weight: 600;
+}
+.wi-notice i { font-size: 1.1rem; margin-top: 2px; color: #16a34a; }
+
+/* ---- STEP ACTION BUTTONS ---- */
 .wi-step-confirm {
-    display: flex; align-items: center; justify-content: flex-end;
-    gap: .65rem; margin-top: 1.1rem; padding-top: 1rem;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 0.75rem; margin-top: 1.25rem; padding-top: 1.25rem;
     border-top: 1px solid #f1f5f9;
 }
 .wi-btn-confirm {
-    padding: .7rem 1.6rem;
-    background: linear-gradient(135deg, #1d4ed8, #3b82f6);
-    color: #fff; border: none; border-radius: 11px;
-    font-size: .9rem; font-weight: 800; font-family: inherit;
+    padding: 0.75rem 1.75rem;
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    color: #ffffff; border: none; border-radius: 12px;
+    font-size: 0.92rem; font-weight: 800; font-family: inherit;
     cursor: pointer;
-    display: flex; align-items: center; gap: .5rem;
-    box-shadow: 0 4px 14px rgba(29,78,216,.28);
-    transition: all .2s;
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+    transition: all 0.2s;
+    margin-left: auto;
 }
-.wi-btn-confirm:hover { background: linear-gradient(135deg,#1e40af,#2563eb); transform: translateY(-1px); }
+.wi-btn-confirm:hover { background: linear-gradient(135deg, #1d4ed8, #2563eb); transform: translateY(-1px); }
 .wi-btn-confirm:active { transform: translateY(0); }
-.wi-btn-confirm:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+.wi-btn-confirm:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 .wi-btn-edit {
-    padding: .65rem 1.1rem;
-    background: #fff; color: #64748b;
-    border: 1.5px solid #e2e8f0; border-radius: 10px;
-    font-size: .85rem; font-weight: 700; font-family: inherit;
+    padding: 0.7rem 1.2rem;
+    background: #ffffff; color: #475569;
+    border: 1.5px solid #cbd5e1; border-radius: 11px;
+    font-size: 0.85rem; font-weight: 700; font-family: inherit;
     cursor: pointer;
-    display: flex; align-items: center; gap: .45rem;
-    transition: all .15s;
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    transition: all 0.15s;
 }
-.wi-btn-edit:hover { background: #f1f5f9; border-color: #cbd5e1; }
+.wi-btn-edit:hover { background: #f8fafc; border-color: #94a3b8; color: #0f172a; }
 
-/* ---- FINAL SUBMIT BUTTON ---- */
+/* ---- SUBMIT BUTTON ---- */
 .wi-footer { margin-top: 1.75rem; }
 .wi-btn-main {
     width: 100%;
-    padding: 1rem 1rem;
-    background: linear-gradient(135deg, #15803d, #22c55e);
-    color: #fff; border: none; border-radius: 13px;
+    padding: 1.1rem 1rem;
+    background: linear-gradient(135deg, #059669, #10b981);
+    color: #ffffff; border: none; border-radius: 14px;
     font-size: 1.05rem; font-weight: 800; font-family: inherit;
     cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: .6rem;
-    transition: all .2s;
-    box-shadow: 0 6px 22px rgba(21,128,61,.3);
-    letter-spacing: .02em;
+    display: flex; align-items: center; justify-content: center; gap: 0.65rem;
+    transition: all 0.2s;
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+    letter-spacing: 0.02em;
 }
-.wi-btn-main:hover { background: linear-gradient(135deg,#166534,#16a34a); transform: translateY(-1px); }
+.wi-btn-main:hover { background: linear-gradient(135deg, #047857, #059669); transform: translateY(-1px); }
 .wi-btn-main:active { transform: translateY(0); }
-.wi-btn-main:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+.wi-btn-main:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
 .wi-footer-links {
     display: flex; align-items: center; justify-content: center;
-    gap: 1.5rem; margin-top: .9rem;
+    gap: 1.75rem; margin-top: 1rem;
 }
 .wi-footer-link {
-    font-size: .8rem; font-weight: 700; color: #64748b;
+    font-size: 0.82rem; font-weight: 700; color: #64748b;
     text-decoration: none;
-    display: flex; align-items: center; gap: .35rem;
-    transition: color .15s;
+    display: flex; align-items: center; gap: 0.4rem;
+    transition: color 0.15s;
 }
-.wi-footer-link:hover { color: #1d4ed8; }
+.wi-footer-link:hover { color: #2563eb; }
 
-/* ---- UTILS ---- */
+/* UTILS */
 .wi-spin {
-    width: 18px; height: 18px;
+    width: 20px; height: 20px;
     border: 2.5px solid rgba(255,255,255,.35);
     border-top-color: #fff; border-radius: 50%;
     animation: wspin .7s linear infinite; flex-shrink: 0;
 }
 .wi-spin-sm {
-    width: 13px; height: 13px;
+    width: 14px; height: 14px;
     border: 2px solid #e2e8f0;
-    border-top-color: #2563eb; border-radius: 50%;
+    border-top-color: #3b82f6; border-radius: 50%;
     animation: wspin .7s linear infinite;
     display: inline-block; vertical-align: middle;
 }
 @keyframes wspin { to { transform: rotate(360deg); } }
 
 .wi-toast {
-    position: fixed; bottom: 1.5rem; right: 1.5rem;
-    background: #1e293b; color: #fff; border-radius: 13px;
-    padding: .85rem 1.15rem;
-    display: flex; align-items: center; gap: .6rem;
-    font-size: .86rem; font-weight: 600; z-index: 9999;
+    position: fixed; bottom: 2rem; right: 2rem;
+    background: #0f172a; color: #ffffff; border-radius: 14px;
+    padding: 0.95rem 1.25rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    font-size: 0.88rem; font-weight: 600; z-index: 9999;
     transform: translateY(100px); opacity: 0;
-    transition: all .3s cubic-bezier(.34,1.56,.64,1);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     pointer-events: none;
-    box-shadow: 0 8px 24px rgba(0,0,0,.2);
-    max-width: 380px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    max-width: 400px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 .wi-toast.show { transform: translateY(0); opacity: 1; }
-.wi-toast--success { background: #166534; }
-.wi-toast--error   { background: #991b1b; }
-
-/* PHOTO CONFIRM SECTION */
-.wi-photo-confirm {
-    margin-top: 1rem;
-    background: #f0fdf4;
-    border: 1.5px solid #bbf7d0;
-    border-radius: 12px;
-    padding: .9rem 1rem;
-    display: none;
-    align-items: center;
-    gap: .9rem;
-}
-.wi-photo-confirm.show { display: flex; }
-.wi-photo-confirm-img {
-    width: 60px; height: 60px;
-    border-radius: 9px; overflow: hidden;
-    border: 2px solid #86efac; flex-shrink: 0;
-}
-.wi-photo-confirm-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.wi-photo-confirm-info { flex: 1; }
-.wi-photo-confirm-info p { margin: 0; font-size: .83rem; color: #15803d; font-weight: 700; }
-.wi-photo-confirm-info span { font-size: .76rem; color: #16a34a; }
+.wi-toast--success { background: #065f46; border-color: #10b981; }
+.wi-toast--error   { background: #881337; border-color: #f43f5e; }
 </style>
 @endpush
 
 @section('content')
 <div class="wi-wrap">
 
-{{-- STEPPER --}}
-<div class="wi-stepper">
-    <div class="wi-step-item s-active" id="stp-1">
-        <div class="wi-step-circle" id="stp-c-1">1</div>
-        <span class="wi-step-lbl">Thông tin</span>
-    </div>
-    <div class="wi-step-item" id="stp-2">
-        <div class="wi-step-circle" id="stp-c-2">2</div>
-        <span class="wi-step-lbl">Chụp ảnh</span>
-    </div>
-    <div class="wi-step-item" id="stp-3">
-        <div class="wi-step-circle" id="stp-c-3">3</div>
-        <span class="wi-step-lbl">Xác nhận</span>
-    </div>
-</div>
-
-{{-- ================================================
-     PHẦN 1: THÔNG TIN KHÁCH
-     ================================================ --}}
-<div class="wi-sec" id="sec-1">
-    <div class="wi-sec-hd">
-        <div class="wi-sec-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+    {{-- HEADER TITLE --}}
+    <div class="wi-header">
+        <div class="wi-header-badge">
+            <i class="fa-solid fa-shield-halved"></i> Cổng Bảo vệ DomusHub
         </div>
-        <h2 class="wi-sec-title">Phần 1 — Thông tin khách đăng ký</h2>
-        <span class="wi-sec-badge" id="badge-1">
-            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Đã xác nhận
-        </span>
+        <h1 class="wi-header-title">Đăng Ký Khách Ghé Thăm Tại Cổng</h1>
+        <p class="wi-header-sub">Ghi nhận thông tin ra vào, chụp ảnh định danh và gửi thông báo trực tiếp cho cư dân</p>
     </div>
-    <div class="wi-sec-body">
-        <div class="wi-grid2">
-            <div class="wi-fld">
-                <label class="wi-lbl" for="guest_name">Họ và tên khách <em>*</em></label>
-                <input type="text" id="guest_name" class="wi-inp" placeholder="Nhập đầy đủ họ tên" maxlength="100" autocomplete="off">
+
+    {{-- STEPPER CARD --}}
+    <div class="wi-stepper-card">
+        <div class="wi-stepper">
+            <div class="wi-stepper-track">
+                <div class="wi-stepper-progress" id="stp-progress"></div>
             </div>
-            <div class="wi-fld">
-                <label class="wi-lbl" for="guest_phone">Số điện thoại</label>
-                <input type="text" id="guest_phone" class="wi-inp" placeholder="090x xxx xxx" maxlength="20" autocomplete="off">
+            <div class="wi-step-item s-active" id="stp-1" onclick="editStep(1)">
+                <div class="wi-step-circle" id="stp-c-1">1</div>
+                <span class="wi-step-lbl">Thông tin khách</span>
             </div>
-            <div class="wi-fld wi-span2">
-                <label class="wi-lbl">Căn hộ đến thăm <em>*</em> <span id="apt-load" style="display:none"><span class="wi-spin-sm"></span></span></label>
-                <div class="wi-apt-wrap">
-                    <input type="text" id="apt_filter" class="wi-inp" placeholder="Chọn căn hộ..."
-                        autocomplete="off" oninput="filterApt(this.value)" onfocus="openAptDd()" onblur="closeAptDd()">
-                    <input type="hidden" id="apartment_id">
-                    <div id="apt_dd" class="wi-apt-dd">
-                        @foreach($apartments as $apt)
-                        <div class="wi-apt-opt" onmousedown="pickApt({{ $apt->id }},'{{ addslashes($apt->apartment_number.($apt->floor?->block?' ('.$apt->floor->block->name.')':'')) }}')">{{ $apt->apartment_number }}{{ $apt->floor?->block?' ('.$apt->floor->block->name.')':'' }}</div>
-                        @endforeach
+            <div class="wi-step-item" id="stp-2" onclick="editStep(2)">
+                <div class="wi-step-circle" id="stp-c-2">2</div>
+                <span class="wi-step-lbl">Chụp ảnh định danh</span>
+            </div>
+            <div class="wi-step-item" id="stp-3">
+                <div class="wi-step-circle" id="stp-c-3">3</div>
+                <span class="wi-step-lbl">Xác nhận & Gửi</span>
+            </div>
+        </div>
+    </div>
+
+    {{-- ================================================
+         PHẦN 1: THÔNG TIN KHÁCH
+         ================================================ --}}
+    <div class="wi-sec" id="sec-1">
+        <div class="wi-sec-hd">
+            <div class="wi-sec-icon">
+                <i class="fa-solid fa-user-plus"></i>
+            </div>
+            <h2 class="wi-sec-title">Phần 1 — Thông tin khách & Căn hộ ghé thăm</h2>
+            <span class="wi-sec-badge" id="badge-1">
+                <i class="fa-solid fa-circle-check"></i> Đã hoàn tất
+            </span>
+        </div>
+        <div class="wi-sec-body">
+            <div class="wi-grid2">
+                {{-- Họ tên khách --}}
+                <div class="wi-fld">
+                    <label class="wi-lbl" for="guest_name">Họ và tên khách <em>*</em></label>
+                    <div class="wi-inp-wrap">
+                        <input type="text" id="guest_name" class="wi-inp" placeholder="Ví dụ: Nguyễn Văn An" maxlength="100" autocomplete="off">
+                        <i class="fa-solid fa-user wi-inp-icon"></i>
+                    </div>
+                </div>
+
+                {{-- Số điện thoại --}}
+                <div class="wi-fld">
+                    <label class="wi-lbl" for="guest_phone">Số điện thoại</label>
+                    <div class="wi-inp-wrap">
+                        <input type="text" id="guest_phone" class="wi-inp" placeholder="090x xxx xxx" maxlength="20" autocomplete="off">
+                        <i class="fa-solid fa-phone wi-inp-icon"></i>
+                    </div>
+                </div>
+
+                {{-- Chọn Căn hộ --}}
+                <div class="wi-fld wi-span2">
+                    <label class="wi-lbl">Căn hộ ghé thăm <em>*</em> <span id="apt-load" style="display:none"><span class="wi-spin-sm"></span></span></label>
+                    <div class="wi-apt-wrap">
+                        <div class="wi-inp-wrap">
+                            <input type="text" id="apt_filter" class="wi-inp" placeholder="Gõ số phòng hoặc chọn từ danh sách..."
+                                autocomplete="off" oninput="filterApt(this.value)" onfocus="openAptDd()" onblur="closeAptDd()">
+                            <i class="fa-solid fa-building wi-inp-icon"></i>
+                        </div>
+                        <input type="hidden" id="apartment_id">
+                        <div id="apt_dd" class="wi-apt-dd">
+                            @foreach($apartments as $apt)
+                            <div class="wi-apt-opt" onmousedown="pickApt({{ $apt->id }},'{{ addslashes($apt->apartment_number.($apt->floor?->block?' ('.$apt->floor->block->name.')':'')) }}')">
+                                <span><i class="fa-solid fa-door-closed" style="color:#94a3b8;margin-right:6px"></i> {{ $apt->apartment_number }}</span>
+                                @if($apt->floor?->block)
+                                <span style="font-size:.75rem;color:#64748b;background:#f1f5f9;padding:2px 6px;border-radius:4px">{{ $apt->floor->block->name }}</span>
+                                @endif
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Chọn Cư dân --}}
+                <div class="wi-fld wi-span2" id="res-box" style="display:none">
+                    <label class="wi-lbl"><i class="fa-solid fa-users" style="color:#3b82f6"></i> Cư dân đón khách <em>*</em></label>
+                    <div id="res-list"></div>
+                    <input type="hidden" id="confirmed_by_resident">
+                    <input type="text" id="res_manual" class="wi-inp" style="display:none;margin-top:.5rem;padding-left:1rem" placeholder="Nhập tên cư dân cần gặp..." maxlength="100">
+                </div>
+
+                {{-- Lý do ghé thăm --}}
+                <div class="wi-fld wi-span2">
+                    <label class="wi-lbl" for="note">Lý do ghé thăm</label>
+                    <textarea id="note" class="wi-ta" placeholder="Ví dụ: Thăm người thân, giao hàng, bảo trì..."></textarea>
+                    
+                    {{-- Quick tags --}}
+                    <div class="wi-quick-tags">
+                        <span style="font-size:.72rem;color:#94a3b8;align-self:center;margin-right:2px">Chọn nhanh:</span>
+                        <button type="button" class="wi-tag-btn" onclick="setQuickNote('Thăm người thân')">Thăm người thân</button>
+                        <button type="button" class="wi-tag-btn" onclick="setQuickNote('Giao hàng / Shipper')">Giao hàng</button>
+                        <button type="button" class="wi-tag-btn" onclick="setQuickNote('Bảo trì / Sửa chữa')">Bảo trì</button>
+                        <button type="button" class="wi-tag-btn" onclick="setQuickNote('Công việc / Họp')">Công việc</button>
                     </div>
                 </div>
             </div>
-            <div class="wi-fld wi-span2" id="res-box" style="display:none">
-                <div id="res-list"></div>
-                <input type="hidden" id="confirmed_by_resident">
-                <input type="text" id="res_manual" class="wi-inp" style="display:none;margin-top:.4rem" placeholder="Nhập tên cư dân cần gặp" maxlength="100">
-            </div>
-            <div class="wi-fld wi-span2">
-                <label class="wi-lbl" for="note">Lý do thăm</label>
-                <textarea id="note" class="wi-ta" placeholder="Ví dụ: Thăm người thân, giao hàng, bảo trì..."></textarea>
-            </div>
-        </div>
 
-        {{-- Confirm Step 1 --}}
-        <div class="wi-step-confirm">
-            <span id="s1-hint" style="font-size:.8rem;color:#94a3b8;flex:1">Điền đầy đủ thông tin rồi nhấn xác nhận.</span>
-            <button type="button" class="wi-btn-confirm" id="btn-confirm-1" onclick="confirmStep1()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                Xác nhận & Tiếp tục
-            </button>
-        </div>
-    </div>
-</div>
-
-{{-- ================================================
-     PHẦN 2: CHỤP ẢNH ĐỊNH DANH
-     ================================================ --}}
-<div class="wi-sec hidden-step" id="sec-2">
-    <div class="wi-sec-hd">
-        <div class="wi-sec-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        </div>
-        <h2 class="wi-sec-title">Phần 2 — Chụp ảnh định danh</h2>
-        <span class="wi-sec-badge" id="badge-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Đã chụp
-        </span>
-    </div>
-    <div class="wi-sec-body">
-        <div class="wi-cam-layout">
-            <div>
-                <div class="wi-cam-vp" id="cam-vp">
-                    <video id="cam-video" autoplay playsinline muted style="display:none;width:100%;height:100%;object-fit:cover"></video>
-                    <div class="wi-cam-off" id="cam-off">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                        <p>Camera chưa bật</p>
-                    </div>
-                </div>
-                <button type="button" id="btn-snap" class="wi-snap-btn" onclick="snapPhoto()" disabled>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
-                    CHỤP ẢNH (F9)
+            {{-- Confirm Step 1 --}}
+            <div class="wi-step-confirm">
+                <span id="s1-hint" style="font-size:.82rem;color:#94a3b8"><i class="fa-solid fa-circle-info"></i> Điền đầy đủ thông tin khách và chọn cư dân trước khi tiếp tục.</span>
+                <button type="button" class="wi-btn-confirm" id="btn-confirm-1" onclick="confirmStep1()">
+                    Tiếp tục chụp ảnh <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </div>
-            <div>
-                <p class="wi-prev-lbl">Ảnh xem trước</p>
-                <div class="wi-prev-box">
-                    <div class="wi-prev-empty" id="prev-empty">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                        <p>Bật và chụp ảnh để<br>xem trước ở đây</p>
+        </div>
+    </div>
+
+    {{-- ================================================
+         PHẦN 3: CHỤP ẢNH ĐỊNH DANH
+         ================================================ --}}
+    <div class="wi-sec hidden-step" id="sec-2">
+        <div class="wi-sec-hd">
+            <div class="wi-sec-icon" style="background:#fef3c7;color:#d97706">
+                <i class="fa-solid fa-camera"></i>
+            </div>
+            <h2 class="wi-sec-title">Phần 2 — Chụp ảnh định danh khách hàng</h2>
+            <span class="wi-sec-badge" id="badge-2">
+                <i class="fa-solid fa-circle-check"></i> Đã chụp ảnh
+            </span>
+        </div>
+        <div class="wi-sec-body">
+            <div class="wi-cam-layout">
+                {{-- Live Camera Box --}}
+                <div>
+                    <div class="wi-cam-container">
+                        <div class="wi-cam-vp" id="cam-vp">
+                            <div class="wi-cam-overlay">
+                                <div class="wi-cam-guide-oval"></div>
+                            </div>
+                            <video id="cam-video" autoplay playsinline muted style="display:none;width:100%;height:100%;object-fit:cover"></video>
+                            <div class="wi-cam-off" id="cam-off">
+                                <i class="fa-solid fa-video-slash" style="font-size:2.5rem;color:#475569"></i>
+                                <p>Camera đang tắt</p>
+                                <span style="font-size:.76rem;color:#64748b">Nhấn nút bên dưới để bật webcam</span>
+                            </div>
+                        </div>
                     </div>
-                    <img id="prev-img" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover">
-                </div>
-                <div class="wi-cam-acts">
-                    <button type="button" class="wi-btn-sm wi-btn-del" id="btn-del" onclick="clearPhoto()" disabled>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-                        Xoá ảnh
-                    </button>
-                    <button type="button" class="wi-btn-sm wi-btn-outline" id="btn-cam" onclick="toggleCam()">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
-                        <span id="cam-lbl">Bật camera</span>
+                    <button type="button" id="btn-snap" class="wi-snap-btn" onclick="snapPhoto()" disabled>
+                        <i class="fa-solid fa-camera"></i> CHỤP ẢNH NGAY <span style="font-size:.75rem;opacity:.8">(F9)</span>
                     </button>
                 </div>
-            </div>
-        </div>
-        <canvas id="wi-canvas" style="display:none"></canvas>
-        <input type="hidden" id="face_image_data">
 
-        {{-- Photo taken preview & confirm --}}
-        <div class="wi-photo-confirm" id="photo-confirm-row">
-            <div class="wi-photo-confirm-img">
-                <img id="photo-confirm-thumb" src="" alt="Ảnh khách">
-            </div>
-            <div class="wi-photo-confirm-info">
-                <p>✓ Đã chụp ảnh thành công!</p>
-                <span>Kiểm tra ảnh ở trên trước khi xác nhận.</span>
-            </div>
-        </div>
-
-        {{-- Confirm Step 2 --}}
-        <div class="wi-step-confirm">
-            <button type="button" class="wi-btn-edit" onclick="editStep(1)">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-                Quay lại
-            </button>
-            <button type="button" class="wi-btn-confirm" id="btn-confirm-2" onclick="confirmStep2()" disabled>
-                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                Xác nhận ảnh & Tiếp tục
-            </button>
-        </div>
-    </div>
-</div>
-
-{{-- ================================================
-     PHẦN 3: KIỂM TRA & XÁC NHẬN GỬI
-     ================================================ --}}
-<div class="wi-sec hidden-step" id="sec-3">
-    <div class="wi-sec-hd">
-        <div class="wi-sec-icon" style="background:#dcfce7;color:#15803d;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-        </div>
-        <h2 class="wi-sec-title" style="color:#15803d;">Phần 3 — Kiểm tra & Xác nhận gửi thông báo</h2>
-    </div>
-    <div class="wi-sec-body">
-
-        {{-- Summary card --}}
-        <div class="wi-review">
-            <div class="wi-rv-rows">
-                <div class="wi-rv-row"><span class="wi-rv-lbl">Khách:</span><span class="wi-rv-val accent" id="rv-name">—</span></div>
-                <div class="wi-rv-row"><span class="wi-rv-lbl">Số điện thoại:</span><span class="wi-rv-val" id="rv-phone">—</span></div>
-                <div class="wi-rv-row"><span class="wi-rv-lbl">Căn hộ:</span><span class="wi-rv-val" id="rv-apt">—</span></div>
-                <div class="wi-rv-row"><span class="wi-rv-lbl">Cư dân nhận:</span><span class="wi-rv-val" id="rv-resident" style="color:#15803d">—</span></div>
-                <div class="wi-rv-row" id="rv-note-row" style="display:none"><span class="wi-rv-lbl">Lý do:</span><span class="wi-rv-val" id="rv-note" style="font-style:italic"></span></div>
-                <div class="wi-rv-row"><span class="wi-rv-lbl">Ảnh định danh:</span><span class="wi-rv-val" id="rv-photo-status">—</span></div>
-            </div>
-            <div class="wi-rv-thumb">
-                <div class="wi-rv-thumb-empty" id="rv-thumb-empty">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                    <span style="font-size:.65rem;color:#94a3b8;margin-top:.2rem;display:block">Ảnh khách</span>
+                {{-- Photo Preview Box --}}
+                <div class="wi-prev-card">
+                    <p class="wi-prev-lbl"><i class="fa-solid fa-image"></i> Ảnh xem trước</p>
+                    <div class="wi-prev-box">
+                        <div class="wi-prev-empty" id="prev-empty">
+                            <i class="fa-solid fa-image-portrait"></i>
+                            <p>Hình ảnh đã chụp<br>sẽ xuất hiện ở đây</p>
+                        </div>
+                        <img id="prev-img" src="" alt="Ảnh chụp khách" style="display:none;width:100%;height:100%;object-fit:cover">
+                    </div>
+                    <div class="wi-cam-acts">
+                        <button type="button" class="wi-btn-sm wi-btn-outline" id="btn-cam" onclick="toggleCam()">
+                            <i class="fa-solid fa-power-off"></i> <span id="cam-lbl">Bật camera</span>
+                        </button>
+                        <button type="button" class="wi-btn-sm wi-btn-del" id="btn-del" onclick="clearPhoto()" disabled>
+                            <i class="fa-solid fa-trash-can"></i> Xoá & Chụp lại
+                        </button>
+                    </div>
                 </div>
-                <img id="rv-photo" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover">
             </div>
-        </div>
+            <canvas id="wi-canvas" style="display:none"></canvas>
+            <input type="hidden" id="face_image_data">
 
-        {{-- Resident notify notice --}}
-        <div class="wi-notice wi-notice--ok" id="rv-notice" style="margin-top:.9rem">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <span id="rv-notice-text">Sẵn sàng gửi thông báo đến cư dân.</span>
-        </div>
-
-        {{-- Final submit --}}
-        <div class="wi-footer" style="margin-top:1.25rem;">
-            <button type="button" id="btn-submit" class="wi-btn-main" onclick="doSubmit()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                GỬI THÔNG BÁO CHO CƯ DÂN
-            </button>
-            <div class="wi-footer-links">
-                <a href="#" class="wi-footer-link" onclick="editStep(2);return false">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-                    Quay lại chụp ảnh
-                </a>
-                <a href="#" class="wi-footer-link" onclick="resetForm();return false">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
-                    Huỷ đăng ký
-                </a>
+            {{-- Confirm Step 2 --}}
+            <div class="wi-step-confirm">
+                <button type="button" class="wi-btn-edit" onclick="editStep(1)">
+                    <i class="fa-solid fa-arrow-left"></i> Quay lại sửa thông tin
+                </button>
+                <button type="button" class="wi-btn-confirm" id="btn-confirm-2" onclick="confirmStep2()" disabled>
+                    Xác nhận ảnh & Tiếp tục <i class="fa-solid fa-arrow-right"></i>
+                </button>
             </div>
         </div>
     </div>
-</div>
+
+    {{-- ================================================
+         PHẦN 3: KIỂM TRA & XÁC NHẬN GỬI
+         ================================================ --}}
+    <div class="wi-sec hidden-step" id="sec-3">
+        <div class="wi-sec-hd">
+            <div class="wi-sec-icon" style="background:#dcfce7;color:#15803d">
+                <i class="fa-solid fa-paper-plane"></i>
+            </div>
+            <h2 class="wi-sec-title" style="color:#15803d">Phần 3 — Xác nhận thông tin & Gửi thông báo cư dân</h2>
+        </div>
+        <div class="wi-sec-body">
+
+            {{-- Digital Visitor Pass Summary Card --}}
+            <div class="wi-pass-card">
+                <div class="wi-pass-hd">
+                    <div class="wi-pass-title">
+                        <i class="fa-solid fa-shield-halved"></i> DomusHub Visitor Security Pass
+                    </div>
+                    <span style="font-size:.72rem;background:rgba(255,255,255,.2);padding:2px 8px;border-radius:99px;font-weight:700">TẬN TÂM - AN TOÀN</span>
+                </div>
+                <div class="wi-pass-body">
+                    <div class="wi-rv-rows">
+                        <div class="wi-rv-row">
+                            <span class="wi-rv-lbl"><i class="fa-solid fa-user"></i> Họ tên khách:</span>
+                            <span class="wi-rv-val accent" id="rv-name">—</span>
+                        </div>
+                        <div class="wi-rv-row">
+                            <span class="wi-rv-lbl"><i class="fa-solid fa-phone"></i> Số điện thoại:</span>
+                            <span class="wi-rv-val" id="rv-phone">—</span>
+                        </div>
+                        <div class="wi-rv-row">
+                            <span class="wi-rv-lbl"><i class="fa-solid fa-building"></i> Căn hộ ghé thăm:</span>
+                            <span class="wi-rv-val" id="rv-apt">—</span>
+                        </div>
+                        <div class="wi-rv-row">
+                            <span class="wi-rv-lbl"><i class="fa-solid fa-user-check"></i> Cư dân tiếp đón:</span>
+                            <span class="wi-rv-val" id="rv-resident" style="color:#15803d;font-weight:800">—</span>
+                        </div>
+                        <div class="wi-rv-row" id="rv-note-row" style="display:none">
+                            <span class="wi-rv-lbl"><i class="fa-solid fa-comment-dots"></i> Lý do thăm:</span>
+                            <span class="wi-rv-val" id="rv-note" style="font-style:italic;color:#475569"></span>
+                        </div>
+                        <div class="wi-rv-row">
+                            <span class="wi-rv-lbl"><i class="fa-solid fa-camera"></i> Ảnh định danh:</span>
+                            <span class="wi-rv-val" id="rv-photo-status">—</span>
+                        </div>
+                    </div>
+
+                    {{-- Pass Photo Thumbnail --}}
+                    <div class="wi-rv-thumb">
+                        <div class="wi-rv-thumb-empty" id="rv-thumb-empty">
+                            <i class="fa-solid fa-user-shield" style="font-size:1.8rem;color:#cbd5e1"></i>
+                            <span>Ảnh khách</span>
+                        </div>
+                        <img id="rv-photo" src="" alt="Ảnh định danh khách" style="display:none;width:100%;height:100%;object-fit:cover">
+                    </div>
+                </div>
+            </div>
+
+            {{-- Resident notify notice --}}
+            <div class="wi-notice" id="rv-notice">
+                <i class="fa-solid fa-bell-concierge"></i>
+                <span id="rv-notice-text">Sẵn sàng gửi thông báo đến ứng dụng cư dân.</span>
+            </div>
+
+            {{-- Final Submit --}}
+            <div class="wi-footer">
+                <button type="button" id="btn-submit" class="wi-btn-main" onclick="doSubmit()">
+                    <i class="fa-solid fa-paper-plane"></i> GỬI THÔNG BÁO CHO CƯ DÂN & GHI NHẬN
+                </button>
+                <div class="wi-footer-links">
+                    <a href="#" class="wi-footer-link" onclick="editStep(2);return false">
+                        <i class="fa-solid fa-arrow-left"></i> Quay lại chụp ảnh
+                    </a>
+                    <a href="#" class="wi-footer-link" onclick="resetForm();return false" style="color:#ef4444">
+                        <i class="fa-solid fa-rotate-left"></i> Huỷ & Đăng ký lại
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </div>{{-- /wi-wrap --}}
-<div class="wi-toast" id="wi-toast"><span id="toast-icon"></span><span id="toast-msg"></span></div>
+
+<div class="wi-toast" id="wi-toast">
+    <span id="toast-icon" style="font-size:1.1rem"></span>
+    <span id="toast-msg"></span>
+</div>
 
 <script>
 const CSRF      = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
@@ -683,28 +995,46 @@ const APT_DATA  = [
 ];
 
 let selResId = '', selResName = '', camStream = null, camOn = false;
-let currentStep = 1; // track which step we are on
+let currentStep = 1;
+
+/* =====================================================
+   QUICK REASON TAGS
+   ===================================================== */
+function setQuickNote(val) {
+    const noteEl = document.getElementById('note');
+    noteEl.value = val;
+    noteEl.focus();
+}
 
 /* =====================================================
    STEPPER
    ===================================================== */
 function setStep(n) {
     currentStep = n;
+    
+    // Update progress bar
+    const progressEl = document.getElementById('stp-progress');
+    if (progressEl) {
+        progressEl.style.width = n === 1 ? '0%' : (n === 2 ? '50%' : '100%');
+    }
+
     [1,2,3].forEach(i => {
         const it = document.getElementById('stp-' + i);
         const c  = document.getElementById('stp-c-' + i);
+        if (!it || !c) return;
+        
         it.className = 'wi-step-item' + (i < n ? ' s-done' : (i === n ? ' s-active' : ''));
         c.innerHTML = i < n
-            ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="20 6 9 17 4 12"/></svg>'
+            ? '<i class="fa-solid fa-check"></i>'
             : i;
     });
-    // show/hide sections
+
     [1,2,3].forEach(i => {
         const sec = document.getElementById('sec-' + i);
+        if (!sec) return;
         if (i === n) {
             sec.classList.remove('hidden-step', 'locked');
         } else if (i < n) {
-            // done — show but locked/collapsed
             sec.classList.remove('hidden-step');
             sec.classList.add('locked');
         } else {
@@ -712,19 +1042,18 @@ function setStep(n) {
             sec.classList.remove('locked');
         }
     });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    window.scrollTo({ top: 120, behavior: 'smooth' });
 }
 
 function editStep(n) {
-    // going back, unlock that step
+    if (n >= currentStep && n !== 1) return;
     setStep(n);
     if (n === 1) {
         document.getElementById('badge-1').classList.remove('show');
     }
     if (n === 2) {
         document.getElementById('badge-2').classList.remove('show');
-        // clear photo when going back to step 2
-        // keep photo if they just want to re-check
     }
 }
 
@@ -741,15 +1070,19 @@ function confirmStep1() {
         document.getElementById('guest_name').focus(); return;
     }
     if (!aptId) {
-        showToast('Vui lòng chọn căn hộ đến thăm.', 'error');
+        showToast('Vui lòng chọn căn hộ ghé thăm.', 'error');
         document.getElementById('apt_filter').focus(); return;
     }
     if (!resident) {
-        showToast('Vui lòng chọn hoặc nhập tên cư dân cần gặp.', 'error'); return;
+        showToast('Vui lòng chọn hoặc nhập tên cư dân đón khách.', 'error'); return;
     }
 
     document.getElementById('badge-1').classList.add('show');
     setStep(2);
+    // Auto start camera if not started
+    if (!camOn) {
+        startCam();
+    }
 }
 
 /* =====================================================
@@ -770,13 +1103,13 @@ function confirmStep2() {
    APARTMENT DROPDOWN
    ===================================================== */
 function openAptDd() { filterApt(document.getElementById('apt_filter').value); document.getElementById('apt_dd').classList.add('open'); }
-function closeAptDd() { setTimeout(() => document.getElementById('apt_dd').classList.remove('open'), 160); }
+function closeAptDd() { setTimeout(() => document.getElementById('apt_dd').classList.remove('open'), 180); }
 function filterApt(q) {
     const dd = document.getElementById('apt_dd'), lo = q.trim().toLowerCase();
     const items = APT_DATA.filter(a => a.label.toLowerCase().includes(lo));
     dd.innerHTML = items.length === 0
-        ? '<div class="wi-apt-opt wi-apt-opt--e">Không tìm thấy</div>'
-        : items.map(a => `<div class="wi-apt-opt" onmousedown="pickApt(${a.id},'${a.label.replace(/'/g,"\\'")}')">` + a.label + '</div>').join('');
+        ? '<div class="wi-apt-opt wi-apt-opt--e"><i class="fa-solid fa-circle-exclamation"></i> Không tìm thấy căn hộ</div>'
+        : items.map(a => `<div class="wi-apt-opt" onmousedown="pickApt(${a.id},'${a.label.replace(/'/g,"\\'")}')"><span><i class="fa-solid fa-door-closed" style="color:#94a3b8;margin-right:6px"></i> ${a.label}</span><i class="fa-solid fa-chevron-right" style="font-size:.7rem;color:#cbd5e1"></i></div>`).join('');
     dd.classList.add('open');
 }
 function pickApt(id, label) {
@@ -798,32 +1131,32 @@ async function loadRes(aptId) {
     document.getElementById('confirmed_by_resident').value = '';
     box.style.display = 'none'; manual.style.display = 'none'; manual.value = '';
     if (!aptId) return;
-    loader.style.display = 'inline';
+    loader.style.display = 'inline-block';
     try {
         const r = await fetch(URL_RES + '?apartment_id=' + aptId, { headers: { Accept: 'application/json', 'X-CSRF-TOKEN': CSRF } });
         if (!r.ok) throw new Error('HTTP ' + r.status);
         const data = await r.json(); const residents = data.residents || [];
         loader.style.display = 'none'; box.style.display = 'block';
         if (!residents.length) {
-            list.innerHTML = '<div class="wi-res-empty"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Căn hộ chưa có cư dân — nhập tên bên dưới</div>';
+            list.innerHTML = '<div class="wi-res-empty"><i class="fa-solid fa-triangle-exclamation" style="font-size:1.2rem"></i> <div>Căn hộ chưa có cư dân đăng ký trên hệ thống. Vui lòng nhập thủ công bên dưới.</div></div>';
             manual.style.display = 'block'; manual.focus();
         } else {
+            list.className = 'wi-res-grid';
             list.innerHTML = residents.map(r => `
                 <div class="wi-res" id="res-${r.id}" onclick="pickRes(${r.id},'${(r.name||'').replace(/\\/g,"\\\\").replace(/'/g,"\\'")}')">
                     <div class="wi-res-avatar">${(r.name||'C').charAt(0).toUpperCase()}</div>
                     <div class="wi-res-info">
                         <div class="wi-res-name">${r.name||'Cư dân'}</div>
-                        <div class="wi-res-phone">${r.phone?'<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2.5\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><path d=\'M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.54 4.18 2 2 0 0 1 3.5 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.08 6.08l1.08-1.08a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z\'/></svg> '+r.phone:'<span style=\'color:#94a3b8;font-weight:500\'>Không có số điện thoại</span>'}
-                        </div>
+                        <div class="wi-res-phone">${r.phone?'<i class="fa-solid fa-phone"></i> '+r.phone:'<span style="color:#94a3b8">Chưa có SĐT</span>'}</div>
                     </div>
-                    <div class="wi-res-chk"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#22c55e" stroke="none"/><polyline points="20 6 9 17 4 12" stroke="#fff"/></svg></div>
+                    <div class="wi-res-chk"><i class="fa-solid fa-check"></i></div>
                 </div>`).join('');
             if (residents.length === 1) pickRes(residents[0].id, residents[0].name);
         }
     } catch (err) {
         console.error('Lỗi tải cư dân:', err);
         loader.style.display = 'none'; box.style.display = 'block';
-        list.innerHTML = '<p style="color:#ef4444;font-size:.82rem">Lỗi tải cư dân.</p>';
+        list.innerHTML = '<p style="color:#ef4444;font-size:.85rem;font-weight:600"><i class="fa-solid fa-circle-exclamation"></i> Không thể tải danh sách cư dân.</p>';
     }
 }
 function pickRes(id, name) {
@@ -863,26 +1196,21 @@ function snapPhoto() {
     c.getContext('2d').drawImage(v, 0, 0);
     const url = c.toDataURL('image/jpeg', .88);
     document.getElementById('face_image_data').value = url;
-    // preview
     document.getElementById('prev-img').src = url;
     document.getElementById('prev-img').style.display = 'block';
     document.getElementById('prev-empty').style.display = 'none';
     document.getElementById('btn-del').disabled = false;
-    // photo confirm row
-    document.getElementById('photo-confirm-thumb').src = url;
-    document.getElementById('photo-confirm-row').classList.add('show');
-    // enable confirm button
     document.getElementById('btn-confirm-2').disabled = false;
     stopCam();
-    showToast('Đã chụp ảnh! Hãy kiểm tra rồi nhấn xác nhận.', 'success');
+    showToast('Đã chụp ảnh định danh thành công! Kiểm tra và nhấn Tiếp tục.', 'success');
 }
 function clearPhoto() {
     document.getElementById('face_image_data').value = '';
     document.getElementById('prev-img').style.display = 'none';
     document.getElementById('prev-empty').style.display = 'flex';
     document.getElementById('btn-del').disabled = true;
-    document.getElementById('photo-confirm-row').classList.remove('show');
     document.getElementById('btn-confirm-2').disabled = true;
+    startCam();
 }
 document.addEventListener('keydown', e => {
     if (e.key === 'F9') { e.preventDefault(); if (!document.getElementById('btn-snap').disabled) snapPhoto(); }
@@ -903,7 +1231,7 @@ function updateReview() {
     const imgData  = document.getElementById('face_image_data').value;
 
     document.getElementById('rv-name').textContent     = name    || '—';
-    document.getElementById('rv-phone').textContent    = phone   || '—';
+    document.getElementById('rv-phone').textContent    = phone   || 'Chưa cung cấp';
     document.getElementById('rv-apt').textContent      = aptLbl  || '—';
     document.getElementById('rv-resident').textContent = resident || '—';
 
@@ -911,28 +1239,26 @@ function updateReview() {
     if (note) { document.getElementById('rv-note').textContent = '"' + note + '"'; nr.style.display = 'flex'; }
     else { nr.style.display = 'none'; }
 
-    // photo in review
     const photoStatus = document.getElementById('rv-photo-status');
     if (imgData) {
         document.getElementById('rv-photo').src = imgData;
         document.getElementById('rv-photo').style.display = 'block';
         document.getElementById('rv-thumb-empty').style.display = 'none';
-        photoStatus.innerHTML = '<span style="color:#15803d;font-weight:800">✓ Có ảnh định danh</span>';
+        photoStatus.innerHTML = '<span style="color:#059669;font-weight:800">Đã có ảnh chụp định danh</span>';
     } else {
         document.getElementById('rv-photo').style.display = 'none';
         document.getElementById('rv-thumb-empty').style.display = 'flex';
-        photoStatus.innerHTML = '<span style="color:#94a3b8">Không có ảnh</span>';
+        photoStatus.innerHTML = '<span style="color:#94a3b8">Chưa có ảnh</span>';
     }
 
-    // notice
     const noticeEl = document.getElementById('rv-notice');
     const noticeText = document.getElementById('rv-notice-text');
     if (selResId) {
-        noticeEl.className = 'wi-notice wi-notice--ok';
-        noticeText.innerHTML = 'Sẵn sàng gửi thông báo đến cư dân <strong>' + selResName + '</strong>. Nhấn nút bên dưới để hoàn tất.';
+        noticeEl.className = 'wi-notice';
+        noticeText.innerHTML = 'Hệ thống sẽ gửi thông báo đẩy (push notification) tới ứng dụng của cư dân <strong>' + selResName + '</strong> ngay khi nhấn gửi.';
     } else {
         noticeEl.className = 'wi-notice';
-        noticeText.innerHTML = 'Thông tin đã đầy đủ. Nhấn nút bên dưới để ghi nhận khách vào.';
+        noticeText.innerHTML = 'Thông tin đã đầy đủ. Nhấn nút bên dưới để ghi nhận thông tin khách vào hệ thống.';
     }
 }
 
@@ -948,7 +1274,7 @@ async function doSubmit() {
     }
     const btn = document.getElementById('btn-submit');
     btn.disabled = true;
-    btn.innerHTML = '<div class="wi-spin"></div> Đang gửi thông báo...';
+    btn.innerHTML = '<div class="wi-spin"></div> Đang gửi thông báo cho cư dân...';
     try {
         const r = await fetch(URL_STORE, {
             method: 'POST',
@@ -968,17 +1294,17 @@ async function doSubmit() {
         });
         const data = await r.json();
         if (data.success) {
-            showToast(data.message + (selResId ? ' · Đã thông báo cư dân.' : ''), 'success');
-            setTimeout(resetForm, 1600);
+            showToast(data.message + (selResId ? ' · Đã thông báo cư dân thành công!' : ''), 'success');
+            setTimeout(resetForm, 1800);
         } else {
             showToast(data.message || 'Có lỗi xảy ra.', 'error');
             btn.disabled = false;
-            btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> GỬI THÔNG BÁO CHO CƯ DÂN';
+            btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> GỬI THÔNG BÁO CHO CƯ DÂN & GHI NHẬN';
         }
     } catch {
-        showToast('Lỗi kết nối.', 'error');
+        showToast('Lỗi kết nối tới máy chủ.', 'error');
         btn.disabled = false;
-        btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> GỬI THÔNG BÁO CHO CƯ DÂN';
+        btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> GỬI THÔNG BÁO CHO CƯ DÂN & GHI NHẬN';
     }
 }
 
@@ -1008,7 +1334,7 @@ function resetForm() {
 function showToast(msg, type) {
     const t = document.getElementById('wi-toast');
     t.className = 'wi-toast wi-toast--' + type;
-    document.getElementById('toast-icon').textContent = type === 'success' ? '✓ ' : '✕ ';
+    document.getElementById('toast-icon').innerHTML = type === 'success' ? '<i class="fa-solid fa-circle-check" style="color:#34d399"></i>' : '<i class="fa-solid fa-triangle-exclamation" style="color:#f87171"></i>';
     document.getElementById('toast-msg').textContent = msg;
     t.classList.add('show');
     clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 4200);
