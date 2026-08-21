@@ -833,7 +833,7 @@
 }
 
 /* =========================================================================
-   Mobile Bottom Navigation (No Icons - Modern Floating Pill Design)
+   Mobile Bottom Navigation (Icon-based Design)
    ========================================================================= */
 
 .mobile-bottom-nav {
@@ -843,19 +843,19 @@
     left: 50%;
     transform: translateX(-50%);
     width: calc(100% - 24px);
-    max-width: 480px;
-    height: 52px;
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(226, 232, 240, 0.85);
-    border-radius: 26px;
+    max-width: 420px;
+    height: 56px;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(226, 232, 240, 0.7);
+    border-radius: 28px;
     z-index: 10000;
-    box-shadow: 0 12px 32px -4px rgba(0, 35, 111, 0.14), 0 4px 12px rgba(0, 0, 0, 0.03);
-    padding: 4px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.04);
+    padding: 6px 8px;
     box-sizing: border-box;
     align-items: center;
-    justify-content: space-around;
+    justify-content: space-between;
     gap: 4px;
 }
 
@@ -864,7 +864,7 @@
         display: flex;
     }
     .dashboard-main {
-        padding-bottom: 76px; /* Space for floating bottom nav */
+        padding-bottom: 76px;
     }
 }
 
@@ -873,53 +873,75 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100%;
-    color: #64748b;
+    height: 44px;
+    color: #94a3b8;
     text-decoration: none;
-    font-size: 0.81rem;
-    font-weight: 600;
-    letter-spacing: -0.01em;
+    font-size: 1.1rem;
     position: relative;
-    border-radius: 20px;
-    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-    white-space: nowrap;
-    padding: 0 6px;
+    border-radius: 18px;
+    transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
     user-select: none;
 }
 
-.mobile-nav-item span {
-    position: relative;
-    z-index: 2;
-    transition: transform 0.2s ease;
+.mobile-nav-item i {
+    transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .mobile-nav-item:hover {
     color: #00236f;
-    background: rgba(0, 35, 111, 0.04);
+    background: rgba(0, 35, 111, 0.05);
 }
 
 .mobile-nav-item:active {
-    transform: scale(0.94);
+    transform: scale(0.88);
 }
 
 .mobile-nav-item.active {
-    color: #ffffff;
-    background: linear-gradient(135deg, #00236f 0%, #1e40af 100%);
-    font-weight: 700;
-    box-shadow: 0 4px 14px rgba(0, 35, 111, 0.32);
-    transform: scale(1.02);
+    color: #00236f;
+    background: rgba(0, 35, 111, 0.08);
 }
 
-.mobile-nav-item.active::after {
-    content: '';
-    position: absolute;
-    bottom: 3px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 4px;
-    height: 4px;
-    background: #60a5fa;
+.mobile-nav-item.active i {
+    transform: scale(1.12);
+}
+
+/* Right blue chat / account FAB button */
+.mobile-nav-chat-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #00236f 0%, #2563eb 100%);
+    color: #ffffff;
     border-radius: 50%;
-    box-shadow: 0 0 6px #60a5fa;
+    text-decoration: none;
+    font-size: 1.15rem;
+    position: relative;
+    box-shadow: 0 4px 14px rgba(0, 35, 111, 0.35);
+    transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    user-select: none;
+}
+
+.mobile-nav-chat-btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 6px 20px rgba(0, 35, 111, 0.45);
+}
+
+.mobile-nav-chat-btn:active {
+    transform: scale(0.92);
+}
+
+.mobile-nav-chat-btn .online-dot {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 9px;
+    height: 9px;
+    background: #22c55e;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
 }
 
