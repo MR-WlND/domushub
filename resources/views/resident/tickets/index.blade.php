@@ -640,25 +640,24 @@
         <i class="fa-solid fa-plus"></i>
     </a>
 
-    <!-- Bottom Nav -->
-    <div class="mob-bottom-nav">
-        <a href="#" class="mob-nav-item">
-            <i class="fa-solid fa-house"></i>
-            <span>Home</span>
+    {{-- MOBILE BOTTOM NAVIGATION (NO ICONS - MATCHES MASTER) --}}
+    <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
+        <a href="{{ route('resident.dashboard') }}" class="mobile-nav-item {{ request()->routeIs('resident.dashboard') ? 'active' : '' }}">
+            <span>Trang chủ</span>
         </a>
-        <a href="#" class="mob-nav-item">
-            <i class="fa-solid fa-file-invoice-dollar"></i>
-            <span>Bills</span>
+        <a href="{{ route('resident.posts.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.posts.*') ? 'active' : '' }}">
+            <span>Bản tin</span>
         </a>
-        <a href="{{ route('resident.tickets.index') }}" class="mob-nav-item active">
-            <i class="fa-solid fa-screwdriver-wrench"></i>
-            <span>Requests</span>
+        <a href="{{ route('resident.tickets.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.tickets.*') ? 'active' : '' }}">
+            <span>Phản ánh</span>
         </a>
-        <a href="#" onclick="event.preventDefault(); document.getElementById('resident-logout-form').submit();" class="mob-nav-item">
-            <i class="fa-solid fa-user"></i>
-            <span>Profile</span>
+        <a href="{{ route('resident.invoices.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.invoices.*') ? 'active' : '' }}">
+            <span>Hóa đơn</span>
         </a>
-    </div>
+        <a href="{{ route('resident.profile.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.profile.*') ? 'active' : '' }}">
+            <span>Tài khoản</span>
+        </a>
+    </nav>
 </div>
 
 @endsection
