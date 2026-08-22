@@ -115,14 +115,14 @@
 <div class="mobile-sidebar" id="mobileSidebar">
     <div class="mobile-sidebar__header">
         <div class="mobile-sidebar__brand">
-            Civic<br>Horizon
+            DomusHub
         </div>
         <button id="mobileMenuClose" class="mobile-sidebar__close">
             <i class="fa-solid fa-xmark"></i>
         </button>
     </div>
 
-    <div class="mobile-sidebar__label">RESIDENT PORTAL</div>
+    <div class="mobile-sidebar__label">CƯ DÂN</div>
 
     <div class="mobile-sidebar__menu">
         <a href="{{ route('resident.dashboard') }}" class="mobile-sidebar__link {{ request()->routeIs('resident.dashboard') ? 'active' : '' }}">
