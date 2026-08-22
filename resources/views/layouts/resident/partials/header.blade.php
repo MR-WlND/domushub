@@ -43,11 +43,6 @@
             class="resident-header__link {{ request()->routeIs('resident.contact') ? 'resident-header__link--active' : '' }}">
             Liên hệ
         </a>
-        <a href="#"
-            onclick="event.preventDefault(); document.getElementById('resident-logout-form').submit();"
-            class="resident-header__link resident-header__link--logout mobile-only-logout">
-            Đăng xuất
-        </a>
     </nav>
 
     <div class="resident-header__actions">
@@ -102,9 +97,6 @@
                 <hr class="dropdown-divider">
                 <a href="{{ route('resident.profile.index') }}" class="dropdown-item">Hồ sơ</a>
                 <a href="#" class="dropdown-item">Cài đặt</a>
-                <a href="#"
-                    onclick="event.preventDefault(); document.getElementById('resident-logout-form').submit();"
-                    class="dropdown-item dropdown-item--logout">Đăng xuất</a>
                 <form id="resident-logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                     @csrf
                 </form>
