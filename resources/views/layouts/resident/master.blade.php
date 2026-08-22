@@ -430,17 +430,16 @@
             <i class="fa-solid fa-house"></i>
         </a>
         <a href="{{ route('resident.invoices.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.invoices.*') ? 'active' : '' }}" title="Hóa đơn">
-            <i class="fa-solid fa-receipt"></i>
+            <i class="fa-solid fa-file-invoice-dollar"></i>
         </a>
         <a href="{{ route('resident.posts.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.posts.*') ? 'active' : '' }}" title="Bản tin">
             <i class="fa-regular fa-newspaper"></i>
         </a>
         <a href="{{ route('resident.tickets.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.tickets.*') ? 'active' : '' }}" title="Phản ánh">
-            <i class="fa-regular fa-calendar-check"></i>
+            <i class="fa-solid fa-clipboard-question"></i>
         </a>
-        <a href="{{ route('resident.contact') }}" class="mobile-nav-chat-btn" title="Liên hệ / Chat">
-            <i class="fa-solid fa-comments"></i>
-            <span class="online-dot"></span>
+        <a href="{{ route('resident.contact') }}" class="mobile-nav-item {{ request()->routeIs('resident.contact') ? 'active' : '' }}" title="Liên hệ">
+            <i class="fa-regular fa-comments"></i>
         </a>
     </nav>
 

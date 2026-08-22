@@ -462,15 +462,15 @@
 /* Responsive */
 @media (max-width: 768px) {
     .chatbot-widget {
-        bottom: 16px;
+        bottom: 76px;
         right: 16px;
         z-index: 999999;
     }
     .chatbot-window {
         width: calc(100vw - 32px);
-        height: calc(100dvh - 120px);
+        height: calc(100dvh - 150px);
         max-height: 550px;
-        bottom: 16px;
+        bottom: 76px;
         right: 16px;
         left: 16px;
     }
