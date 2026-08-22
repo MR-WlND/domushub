@@ -460,14 +460,16 @@
 }
 
 /* Responsive */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
     .chatbot-widget {
         bottom: 16px;
         right: 16px;
+        z-index: 999999;
     }
     .chatbot-window {
         width: calc(100vw - 32px);
-        height: 480px;
+        height: calc(100dvh - 120px);
+        max-height: 550px;
         bottom: 16px;
         right: 16px;
         left: 16px;
