@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'DomusHub Resident')</title>
+    <link rel="icon" href="{{ asset('images/logo.png') }}" type="image/svg+xml">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     @vite(['resources/css/app.css', 'resources/css/layouts/resident.css', 'resources/js/app.js'])
@@ -423,22 +424,22 @@
     }
     </script>
 
-    {{-- MOBILE BOTTOM NAVIGATION --}}
-    <nav class="mobile-bottom-nav">
-        <a href="{{ route('resident.dashboard') }}" class="mobile-nav-item {{ request()->routeIs('resident.dashboard') ? 'active' : '' }}">
+    {{-- MOBILE BOTTOM NAVIGATION (MATCHING DESIGN) --}}
+    <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
+        <a href="{{ route('resident.dashboard') }}" class="mobile-nav-item {{ request()->routeIs('resident.dashboard') ? 'active' : '' }}" title="Trang chủ">
             <i class="fa-solid fa-house"></i>
         </a>
-        <a href="{{ route('resident.invoices.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.invoices.*') ? 'active' : '' }}">
-            <i class="fa-solid fa-receipt"></i>
+        <a href="{{ route('resident.invoices.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.invoices.*') ? 'active' : '' }}" title="Hóa đơn">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
         </a>
-        <a href="{{ route('resident.posts.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.posts.*') ? 'active' : '' }}">
+        <a href="{{ route('resident.posts.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.posts.*') ? 'active' : '' }}" title="Bản tin">
             <i class="fa-regular fa-newspaper"></i>
         </a>
-        <a href="{{ route('resident.facilities.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.facilities.*') || request()->routeIs('resident.facility-bookings.*') ? 'active' : '' }}">
-            <i class="fa-regular fa-calendar"></i>
+        <a href="{{ route('resident.tickets.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.tickets.*') ? 'active' : '' }}" title="Phản ánh">
+            <i class="fa-solid fa-clipboard-question"></i>
         </a>
-        <a href="{{ route('resident.profile.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.profile.*') ? 'active' : '' }}">
-            <i class="fa-regular fa-user"></i>
+        <a href="{{ route('resident.contact') }}" class="mobile-nav-item {{ request()->routeIs('resident.contact') ? 'active' : '' }}" title="Liên hệ">
+            <i class="fa-regular fa-comments"></i>
         </a>
     </nav>
 

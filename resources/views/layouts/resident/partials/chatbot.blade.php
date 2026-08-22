@@ -184,11 +184,24 @@
     box-shadow: var(--color-shadow-lg, 0px 12px 32px rgba(30,58,138,.12));
     display: flex;
     flex-direction: column;
-    position: absolute;
-    bottom: 5px;
-    right: 0;
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
     overflow: hidden;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transform-origin: bottom right;
+    z-index: 99999;
+}
+
+.chatbot-window.align-left {
+    right: auto;
+    left: 24px;
+    transform-origin: bottom left;
+}
+
+.chatbot-window.align-right {
+    left: auto;
+    right: 24px;
     transform-origin: bottom right;
 }
 
@@ -447,15 +460,24 @@
 }
 
 /* Responsive */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
     .chatbot-widget {
-        bottom: 16px;
+        bottom: 76px;
         right: 16px;
+        z-index: 999999;
     }
     .chatbot-window {
         width: calc(100vw - 32px);
-        height: 480px;
-        bottom: 70px;
+        height: calc(100dvh - 150px);
+        max-height: 550px;
+        bottom: 76px;
+        right: 16px;
+        left: 16px;
+    }
+    .chatbot-window.align-left, .chatbot-window.align-right {
+        left: 16px;
+        right: 16px;
+        transform-origin: bottom center;
     }
 }
 </style>
@@ -500,25 +522,120 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
+    // Logic kéo thả (Drag & Drop) cho nút AI - Classic Method
+    const widget = document.getElementById('domushub-chatbot');
+    let isDraggingBubble = false;
+    let hasMovedBubble = false;
+    let offsetX = 0, offsetY = 0;
+
+    function startDrag(clientX, clientY) {
+        if (!widget) return;
+        isDraggingBubble = true;
+        hasMovedBubble = false;
+        
+        const rect = widget.getBoundingClientRect();
+        offsetX = clientX - rect.left;
+        offsetY = clientY - rect.top;
+        
+        widget.style.transition = 'none';
+        widget.style.bottom = 'auto';
+        widget.style.right = 'auto';
+    }
+
+    function doDrag(clientX, clientY, e) {
+        if (!isDraggingBubble || !widget) return;
+        
+        let newX = clientX - offsetX;
+        let newY = clientY - offsetY;
+        
+        // Cần di chuyển ít nhất 5px để phân biệt với click
+        if (!hasMovedBubble) {
+            const rect = widget.getBoundingClientRect();
+            if (Math.abs(newX - rect.left) + Math.abs(newY - rect.top) > 5) {
+                hasMovedBubble = true;
+            }
+        }
+        
+        if (hasMovedBubble) {
+            if (e && e.cancelable) e.preventDefault();
+            
+            const maxX = window.innerWidth - widget.offsetWidth;
+            const maxY = window.innerHeight - widget.offsetHeight;
+            
+            widget.style.left = Math.max(0, Math.min(newX, maxX)) + 'px';
+            widget.style.top = Math.max(0, Math.min(newY, maxY)) + 'px';
+        }
+    }
+
+    function endDrag() {
+        if (!isDraggingBubble || !widget) return;
+        isDraggingBubble = false;
+        
+        widget.style.transition = 'left 0.3s ease-out, top 0.3s ease-out';
+        
+        const centerX = window.innerWidth / 2;
+        const rect = widget.getBoundingClientRect();
+        const widgetCenterX = rect.left + widget.offsetWidth / 2;
+        
+        if (widgetCenterX < centerX) {
+            widget.style.left = '24px';
+            if (win) {
+                win.classList.add('align-left');
+                win.classList.remove('align-right');
+            }
+        } else {
+            const targetLeft = window.innerWidth - widget.offsetWidth - 24;
+            widget.style.left = targetLeft + 'px';
+            if (win) {
+                win.classList.add('align-right');
+                win.classList.remove('align-left');
+            }
+        }
+        
+        setTimeout(() => {
+            if (!isDraggingBubble && widget) {
+                widget.style.transition = 'none';
+            }
+        }, 300);
+    }
+
+    if (bubble) {
+        // Mouse events
+        bubble.addEventListener('mousedown', (e) => startDrag(e.clientX, e.clientY));
+        document.addEventListener('mousemove', (e) => doDrag(e.clientX, e.clientY, e));
+        document.addEventListener('mouseup', endDrag);
+
+        // Touch events
+        bubble.addEventListener('touchstart', (e) => startDrag(e.touches[0].clientX, e.touches[0].clientY), {passive: true});
+        document.addEventListener('touchmove', (e) => doDrag(e.touches[0].clientX, e.touches[0].clientY, e), {passive: false});
+        document.addEventListener('touchend', endDrag);
+
+        // Mở/Thu nhỏ cửa sổ chat
+        bubble.addEventListener('click', function(e) {
+            if (hasMovedBubble) {
+                hasMovedBubble = false;
+                return;
+            }
+            
+            bubble.classList.add('chatbot-bubble--hidden');
+            setTimeout(function() {
+                if (win) {
+                    win.classList.remove('hidden');
+                    sessionStorage.setItem('chatbot_open', 'true');
+                    input.focus();
+                    loadChatHistory();
+                    scrollToBottom();
+                }
+            }, 250);
+        });
+    }
+
     const isChatOpen = sessionStorage.getItem('chatbot_open') === 'true';
     if (isChatOpen) {
         win.classList.remove('hidden');
         bubble.classList.add('chatbot-bubble--hidden');
         loadChatHistory();
     }
-
-    // Mở/Thu nhỏ cửa sổ chat
-    bubble.addEventListener('click', function() {
-        // Bubble mờ dần rồi biến mất, sau đó hiện khung chat
-        bubble.classList.add('chatbot-bubble--hidden');
-        setTimeout(function() {
-            win.classList.remove('hidden');
-            sessionStorage.setItem('chatbot_open', 'true');
-            input.focus();
-            loadChatHistory();
-            scrollToBottom();
-        }, 250);
-    });
 
     function closeChatWindow() {
         win.classList.add('hidden');

@@ -1,10 +1,14 @@
 /* --------------------------------------------------------------------------
-   RESIDENT PROFILE PAGE â€“ Dashboard Style
+   RESIDENT PROFILE PAGE – Dashboard Style
    -------------------------------------------------------------------------- */
+.resident-content:has(.resident-profile-page) {
+    padding: 0 !important;
+}
+
 .resident-profile-page {
-    max-width: 1000px;
+    max-width: 1440px;
     margin: 0 auto;
-    padding: 32px 16px 60px;
+    padding: 30px 40px 60px;
     display: flex;
     flex-direction: column;
     gap: 24px;
@@ -252,15 +256,18 @@
 .res-btn--primary:hover { background: #001f3f; }
 
 /* Card */
-.res-card { background: #fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.02); padding: 24px; margin-bottom: 24px; border: 1px solid #f1f5f9; }
+.res-card { background: #fff; border-radius: 8px; padding: 24px; margin-bottom: 24px; border: 1px solid rgba(0,0,0,0.12); }
 .res-card__title { font-size: 16px; font-weight: 700; color: #002f5a; display: flex; align-items: center; gap: 8px; margin: 0 0 20px 0; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; justify-content: space-between; }
 .res-card__title i { color: #3b82f6; }
 .res-card__title-right { font-size: 12px; color: #64748b; font-weight: 500; }
 .res-card__title-right a { color: #2563eb; text-decoration: none; }
 
+/* Modal adjustments */
+.invite-modal { max-width: 420px !important; max-height: 90vh !important; overflow-y: auto !important; }
+
 /* Hero */
-.res-hero { display: flex; align-items: center; gap: 32px; }
-.res-hero__avatar-wrapper { position: relative; }
+.res-hero { background: #fff; border-radius: 8px; border: 1px solid rgba(0,0,0,0.12); display: flex; align-items: center; gap: 32px; padding: 32px; margin-bottom: 24px; }
+.res-hero__avatar-wrapper { position: relative; display: flex; align-items: center; justify-content: center; width: max-content; }
 .res-hero__avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #e0e7ff; }
 .res-hero__info h2 { font-size: 22px; font-weight: 700; color: #002f5a; margin: 0 0 16px 0; }
 .res-hero__details { display: flex; gap: 40px; color: #475569; font-size: 14px; }
@@ -296,3 +303,42 @@
 .res-list-item__title { font-size: 14px; font-weight: 600; color: #0f172a; margin: 0 0 2px 0; }
 .res-list-item__desc { font-size: 12px; color: #64748b; margin: 0; }
 .res-invoice-amount { font-size: 14px; font-weight: 700; color: #0f172a; text-align: right; margin-bottom: 4px; }
+
+/* Visibility Classes */
+.d-mobile-only { display: none !important; }
+.d-mobile-only-block { display: none !important; }
+.d-desktop-only { display: block !important; }
+
+/* Edit Badge */
+.res-hero__edit-badge { display: flex; position: absolute; bottom: 0; right: 4px; width: 28px; height: 28px; background: #059669; color: #fff; border-radius: 50%; align-items: center; justify-content: center; border: 2px solid #fff; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+@media (max-width: 768px) {
+    .d-mobile-only { display: flex !important; }
+    .d-desktop-only { display: none !important; }
+    .d-mobile-only-block { display: block !important; }
+    .res-hero__edit-badge { display: flex; }
+    
+    .invite-modal { padding: 20px !important; width: calc(100% - 32px) !important; margin: 0 16px !important; max-height: 90vh !important; overflow-y: auto !important; }
+    
+    .resident-profile-page { padding: 12px 16px 80px; background: linear-gradient(180deg, #f8fafc 0%, #fff 100%); }
+    .res-header { display: none; }
+    
+    .res-hero { flex-direction: column; padding: 24px 16px; border: none; background: transparent; box-shadow: none; align-items: center; gap: 16px; margin-bottom: 8px; }
+    .res-hero__avatar { border: 2px solid #e2e8f0; }
+    .res-hero__info { text-align: center; width: 100%; }
+    .res-hero__info h2 { font-size: 20px; font-weight: 700; color: #1e293b; margin-bottom: 4px; }
+    .res-hero__details { flex-direction: column; gap: 8px; align-items: center; justify-content: center; }
+    .res-hero__item--apt { font-size: 13px; color: #64748b; }
+    .res-hero__item--apt span { font-weight: 400; }
+    
+    .res-grid { display: flex; flex-direction: column; gap: 16px; align-items: stretch; }
+    .res-grid > div { width: 100%; display: flex; flex-direction: column; gap: 16px; }
+    
+    .res-card { padding: 20px; border-radius: 12px; margin-bottom: 0; border: 1px solid rgba(0,0,0,0.12); }
+    .res-card__title { border-bottom: none; padding-bottom: 4px; margin-bottom: 16px; font-size: 15px; }
+    
+    .res-info-grid { display: flex; flex-direction: column; gap: 16px; }
+    .res-info-item { gap: 2px; }
+    .res-info-label { font-size: 11px; }
+    .res-info-value { font-size: 15px; }
+}

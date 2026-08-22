@@ -124,7 +124,9 @@
             <div class="res-card" style="padding-bottom: 0; overflow: hidden;">
                 <div class="res-card__title" style="margin-bottom: 0;">
                     <div><i class="fa-solid fa-users"></i> Danh sách thành viên</div>
-                    <div class="res-badge" style="background: #eef2ff; color: #4f46e5;">{{ $registeredMembers->count() + $declaredMembers->count() }} người</div>
+                    <div class="res-card__title-right">
+                        <a href="{{ route('resident.members.index') }}" class="d-desktop-only"><i class="fa-solid fa-plus"></i> Thêm thành viên</a>
+                    </div>
                 </div>
                 <table class="res-table">
                     <thead>
@@ -481,6 +483,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window.closePasswordModal = function() {
         document.getElementById('passwordModal').style.display = 'none';
+    };
+
+    window.openInviteModal = function() {
+        document.getElementById('addMemberModal').style.display = 'flex';
+    };
+
+    window.closeInviteModal = function() {
+        document.getElementById('addMemberModal').style.display = 'none';
     };
 
     window.openTransferModal = function() {
