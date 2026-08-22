@@ -97,6 +97,9 @@
                 <hr class="dropdown-divider">
                 <a href="{{ route('resident.profile.index') }}" class="dropdown-item">Hồ sơ</a>
                 <a href="#" class="dropdown-item">Cài đặt</a>
+                <a href="#"
+                    onclick="event.preventDefault(); document.getElementById('resident-logout-form').submit();"
+                    class="dropdown-item dropdown-item--logout" style="color: #ef4444;">Đăng xuất</a>
                 <form id="resident-logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                     @csrf
                 </form>
