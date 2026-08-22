@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'DomusHub')</title>
-    <link rel="icon" href="{{ asset('images/logo1.png') }}" type="image/x-icon">
+    <link rel="icon" href="{{ asset('images/logo.png') }}" type="image/svg+xml">
     
     <!-- Meta -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
