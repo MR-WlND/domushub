@@ -14,25 +14,27 @@
                     @if ($apartments->count() === 1)
                         @php $apt = $apartments->first(); @endphp
                         <input type="hidden" name="apartment_id" value="{{ $apt->id }}">
-                        <div class="form-group">
-                            <label class="form-label"><i class="fa-solid fa-building"></i> Tòa nhà</label>
-                            <div class="form-input" style="background:#f8fafc;color:#64748b;cursor:default;display:flex;align-items:center;gap:.5rem;">
-                                <i class="fa-solid fa-lock" style="font-size:.75rem;opacity:.5;"></i>
-                                {{ $apt->floor->block->name ?? '—' }}
+                        <div style="display: none;">
+                            <div class="form-group">
+                                <label class="form-label"><i class="fa-solid fa-building"></i> Tòa nhà</label>
+                                <div class="form-input" style="background:#f8fafc;color:#64748b;cursor:default;display:flex;align-items:center;gap:.5rem;">
+                                    <i class="fa-solid fa-lock" style="font-size:.75rem;opacity:.5;"></i>
+                                    {{ $apt->floor->block->name ?? '—' }}
+                                </div>
                             </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label"><i class="fa-solid fa-layer-group"></i> Tầng</label>
-                            <div class="form-input" style="background:#f8fafc;color:#64748b;cursor:default;display:flex;align-items:center;gap:.5rem;">
-                                <i class="fa-solid fa-lock" style="font-size:.75rem;opacity:.5;"></i>
-                                {{ $apt->floor->name ?? ('Tầng ' . ($apt->floor->floor_number ?? '?')) }}
+                            <div class="form-group">
+                                <label class="form-label"><i class="fa-solid fa-layer-group"></i> Tầng</label>
+                                <div class="form-input" style="background:#f8fafc;color:#64748b;cursor:default;display:flex;align-items:center;gap:.5rem;">
+                                    <i class="fa-solid fa-lock" style="font-size:.75rem;opacity:.5;"></i>
+                                    {{ $apt->floor->name ?? ('Tầng ' . ($apt->floor->floor_number ?? '?')) }}
+                                </div>
                             </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label"><i class="fa-solid fa-door-open"></i> Căn hộ</label>
-                            <div class="form-input" style="background:#f8fafc;color:#64748b;cursor:default;display:flex;align-items:center;gap:.5rem;">
-                                <i class="fa-solid fa-lock" style="font-size:.75rem;opacity:.5;"></i>
-                                {{ $apt->apartment_number }}
+                            <div class="form-group">
+                                <label class="form-label"><i class="fa-solid fa-door-open"></i> Căn hộ</label>
+                                <div class="form-input" style="background:#f8fafc;color:#64748b;cursor:default;display:flex;align-items:center;gap:.5rem;">
+                                    <i class="fa-solid fa-lock" style="font-size:.75rem;opacity:.5;"></i>
+                                    {{ $apt->apartment_number }}
+                                </div>
                             </div>
                         </div>
                     @else

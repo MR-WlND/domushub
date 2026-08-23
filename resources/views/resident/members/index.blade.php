@@ -10,10 +10,18 @@
 @section('content')
     <section class="resident-members-page">
         <!-- Header -->
-        <div class="page-header">
-            <p class="page-eyebrow">Hộ gia đình</p>
-            <h1>Quản lý thành viên & Nhân khẩu</h1>
-            <p class="page-subtitle">Xem danh sách cư dân liên kết, khai báo nhân khẩu gia đình và tạo mã mời thành viên mới.</p>
+        <div class="res-header">
+            <div>
+                <div class="res-header__breadcrumb">
+                    <a href="{{ route('resident.dashboard') }}">Cư dân</a> &gt; Quản lý thành viên
+                </div>
+                <h1 class="res-header__title">Quản lý thành viên & Nhân khẩu</h1>
+            </div>
+            <div class="res-header__actions">
+                <button class="btn btn-add-member" onclick="openInviteModal()">
+                    <i class="fa-solid fa-plus"></i> Thêm thành viên
+                </button>
+            </div>
         </div>
 
         <!-- Thống kê nhanh (Stats Cards) -->
@@ -29,8 +37,8 @@
             </div>
 
             <div class="stats-card">
-                <div class="stats-card__icon stats-card__icon--amber">
-                    <i class="fa-solid fa-address-book"></i>
+                <div class="stats-card__icon stats-card__icon--green">
+                    <i class="fa-solid fa-id-card"></i>
                 </div>
                 <div class="stats-card__data">
                     <span class="stats-card__label">Số nhân khẩu khai báo</span>
@@ -39,7 +47,7 @@
             </div>
 
             <div class="stats-card">
-                <div class="stats-card__icon stats-card__icon--emerald">
+                <div class="stats-card__icon stats-card__icon--light-blue">
                     <i class="fa-solid fa-ticket"></i>
                 </div>
                 <div class="stats-card__data">
@@ -77,31 +85,64 @@
         <!-- Tab Navigation -->
         <div class="tabs-container">
             <nav class="tabs-nav" aria-label="Members Navigation">
-                <a href="{{ route('resident.members.index', ['tab' => 'registered']) }}" 
-                   class="tab-link {{ $activeTab === 'registered' ? 'tab-link--active' : '' }}">
+                <button type="button" class="tab-link tab-link--active" data-target="registered-tab">
                     <i class="fa-solid fa-circle-user"></i> Cư dân liên kết
-                </a>
+                </button>
                 
-                <a href="{{ route('resident.members.index', ['tab' => 'declared']) }}" 
-                   class="tab-link {{ $activeTab === 'declared' ? 'tab-link--active' : '' }}">
+                <button type="button" class="tab-link" data-target="declared-tab">
                     <i class="fa-solid fa-address-book"></i> Nhân khẩu khai báo
-                </a>
+                </button>
 
                 @if ($isOwner)
-                    <a href="{{ route('resident.members.index', ['tab' => 'invitations']) }}" 
-                       class="tab-link {{ $activeTab === 'invitations' ? 'tab-link--active' : '' }}">
+                    <button type="button" class="tab-link" data-target="invitations-tab">
                         <i class="fa-solid fa-key"></i> Mã mời gia đình
                         @if($activeInvitesCount > 0)
-                            <span class="tab-badge tab-badge--emerald">{{ $activeInvitesCount }}</span>
+                            <span class="tab-badge tab-badge--blue">{{ $activeInvitesCount }}</span>
                         @endif
-                    </a>
+                    </button>
                 @endif
             </nav>
         </div>
 
         <!-- Tab Content dynamically loaded from partials -->
         <div class="tab-content-wrapper">
-            @include('resident.members.partials.' . $activeTab)
+            <div id="registered-tab" class="tab-pane active">
+                @include('resident.members.partials.registered')
+            </div>
+            <div id="declared-tab" class="tab-pane" style="display: none;">
+                @include('resident.members.partials.declared')
+            </div>
+            @if ($isOwner)
+                <div id="invitations-tab" class="tab-pane" style="display: none;">
+                    @include('resident.members.partials.invitations')
+                </div>
+            @endif
         </div>
     </section>
+
+    @push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabLinks = document.querySelectorAll('.tab-link');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+
+            tabLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remove active class from all links and hide all panes
+                    tabLinks.forEach(l => l.classList.remove('tab-link--active'));
+                    tabPanes.forEach(p => p.style.display = 'none');
+                    
+                    // Add active class to clicked link
+                    this.classList.add('tab-link--active');
+                    
+                    // Show target pane
+                    const targetId = this.getAttribute('data-target');
+                    document.getElementById(targetId).style.display = 'block';
+                });
+            });
+        });
+    </script>
+    @endpush
 @endsection

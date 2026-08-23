@@ -1,7 +1,7 @@
 @if ($isOwner && isset($pendingMembers) && $pendingMembers->count() > 0)
-    <div class="card card--tab-content" style="margin-bottom: 24px; border-left: 4px solid #f59e0b;">
+    <div class="card card--tab-content" style="margin-bottom: 24px;">
         <div class="card__header" style="border-bottom: 1px solid rgba(0, 0, 0, 0.08); padding-bottom: 12px;">
-            <h2 class="card__title" style="color: #d97706; display: flex; align-items: center; gap: 8px;">
+            <h2 class="card__title" style="display: flex; align-items: center; gap: 8px;">
                 <i class="fa-solid fa-clock-rotate-left"></i> Yêu cầu gia nhập đang chờ duyệt
             </h2>
             <p class="card__description">Danh sách cư dân đăng ký qua mã mời đang chờ bạn phê duyệt để gia nhập căn hộ.</p>
@@ -50,13 +50,13 @@
                                     <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
                                         <form action="{{ route('resident.members.approve', $pending->id) }}" method="POST" style="margin: 0;">
                                             @csrf
-                                            <button type="submit" class="btn btn-success btn-sm" style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; font-size: 13px; border-radius: 4px; background-color: #22c55e; color: #fff; border: none; cursor: pointer;">
+                                            <button type="submit" class="btn btn-success btn-sm">
                                                 <i class="fa-solid fa-check"></i> Duyệt
                                             </button>
                                         </form>
                                         <form action="{{ route('resident.members.reject', $pending->id) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Bạn có chắc chắn muốn từ chối yêu cầu gia nhập này?');">
                                             @csrf
-                                            <button type="submit" class="btn btn-danger btn-sm" style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; font-size: 13px; border-radius: 4px; background-color: #ef4444; color: #fff; border: none; cursor: pointer;">
+                                            <button type="submit" class="btn btn-danger btn-sm">
                                                 <i class="fa-solid fa-xmark"></i> Từ chối
                                             </button>
                                         </form>

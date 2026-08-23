@@ -6,33 +6,38 @@
 }
 
 /* Header */
-.page-header {
+.res-header {
     display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 4px;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 24px;
 }
 
-.page-eyebrow {
-    margin: 0;
-    color: #3b82f6;
-    font-size: 0.8rem;
-    letter-spacing: 0.08em;
+.res-header__breadcrumb {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 8px;
+}
+
+.res-header__breadcrumb a {
+    color: #64748b;
+    text-decoration: none;
+}
+
+.res-header__breadcrumb a:hover {
+    color: #00236f;
+}
+
+.res-header__title {
+    font-size: 24px;
     font-weight: 700;
-    text-transform: uppercase;
-}
-
-.page-header h1 {
-    font-size: 1.8rem;
-    font-weight: 800;
     color: #0f172a;
     margin: 0;
 }
 
-.page-subtitle {
-    margin: 0;
-    color: #64748b;
-    font-size: 0.95rem;
+.res-header__actions {
+    display: flex;
+    gap: 12px;
 }
 
 /* Stats Grid */
@@ -45,7 +50,7 @@
 .stats-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 10px;
+    border-radius: 8px;
     padding: 20px;
     display: flex;
     align-items: center;
@@ -62,26 +67,18 @@
 .stats-card__icon {
     width: 50px;
     height: 50px;
-    border-radius: 10px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 20px;
 }
 
-.stats-card__icon--blue {
-    background: #eff6ff;
-    color: #3b82f6;
-}
-
-.stats-card__icon--amber {
-    background: #fffbeb;
-    color: #d97706;
-}
-
-.stats-card__icon--emerald {
-    background: #ecfdf5;
-    color: #10b981;
+.stats-card__icon--blue,
+.stats-card__icon--green,
+.stats-card__icon--light-blue {
+    background: #f3f4f6;
+    color: #00236f;
 }
 
 .stats-card__data {
@@ -176,7 +173,10 @@
     font-weight: 600;
     font-size: 0.95rem;
     text-decoration: none;
+    border: none;
     border-bottom: 2px solid transparent;
+    background: transparent;
+    cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
 }
@@ -186,8 +186,8 @@
 }
 
 .tab-link--active {
-    color: #2563eb;
-    border-bottom-color: #2563eb;
+    color: #00236f;
+    border-bottom-color: #00236f;
 }
 
 .tab-badge {
@@ -196,12 +196,12 @@
     font-size: 0.75rem;
     font-weight: 700;
     padding: 2px 6px;
-    border-radius: 8px;
+    border-radius: 4px;
 }
 
-.tab-badge--emerald {
-    background: #d1fae5;
-    color: #065f46;
+.tab-badge--blue {
+    background: #e0f2fe;
+    color: #00236f;
 }
 
 /* Layouts */
@@ -226,7 +226,7 @@
 .card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 10px;
+    border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.01), 0 4px 6px -1px rgba(0, 0, 0, 0.02);
     overflow: hidden;
 }
@@ -295,7 +295,7 @@
     height: 42px;
     padding: 0 14px;
     border: 1px solid #cbd5e1;
-    border-radius: 8px;
+    border-radius: 4px;
     background: #ffffff;
     color: #0f172a;
     font-size: 14px;
@@ -330,7 +330,7 @@ select.form-input {
     gap: 8px;
     height: 42px;
     padding: 0 16px;
-    border-radius: 8px;
+    border-radius: 4px;
     font-size: 0.9rem;
     font-weight: 600;
     border: 1px solid transparent;
@@ -339,12 +339,25 @@ select.form-input {
 }
 
 .btn-primary {
-    background: #2563eb;
+    background: #00236f;
     color: #ffffff;
 }
 
 .btn-primary:hover {
-    background: #1d4ed8;
+    background: #1e3a8a;
+}
+
+.btn-add-member {
+    background: #00236f;
+    color: #ffffff;
+    border-radius: 4px;
+    box-shadow: 0 4px 6px -1px rgba(0, 35, 111, 0.1), 0 2px 4px -1px rgba(0, 35, 111, 0.06);
+}
+
+.btn-add-member:hover {
+    background: #001a53;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 8px -1px rgba(0, 35, 111, 0.15), 0 4px 6px -1px rgba(0, 35, 111, 0.1);
 }
 
 .btn-secondary {
@@ -367,6 +380,15 @@ select.form-input {
     background: #dc2626;
 }
 
+.btn-success {
+    background: #22c55e;
+    color: #ffffff;
+}
+
+.btn-success:hover {
+    background: #16a34a;
+}
+
 .btn-danger-outline {
     background: #ffffff;
     color: #ef4444;
@@ -381,7 +403,7 @@ select.form-input {
     height: 32px;
     padding: 0 10px;
     font-size: 0.8rem;
-    border-radius: 8px;
+    border-radius: 4px;
 }
 
 .w-100 {
@@ -437,7 +459,7 @@ select.form-input {
     font-size: 0.75rem;
     font-weight: 600;
     padding: 3px 8px;
-    border-radius: 8px;
+    border-radius: 4px;
 }
 
 .badge--self {
@@ -446,18 +468,14 @@ select.form-input {
 }
 
 .badge--owner {
-    background: #eff6ff;
-    color: #1d4ed8;
+    background: #e0f2fe;
+    color: #00236f;
 }
 
-.badge--family {
-    background: #faf5ff;
-    color: #6b21a8;
-}
-
+.badge--family,
 .badge--tenant {
-    background: #fffbeb;
-    color: #b45309;
+    background: #f1f5f9;
+    color: #475569;
 }
 
 .badge--secondary {
@@ -472,7 +490,7 @@ select.form-input {
 }
 
 .badge-status {
-    border-radius: 8px;
+    border-radius: 4px;
     padding: 2px 8px;
     font-size: 0.75rem;
 }
@@ -550,7 +568,7 @@ select.form-input {
     background: #f1f5f9;
     color: #0f172a;
     padding: 3px 8px;
-    border-radius: 10px;
+    border-radius: 4px;
     border: 1px solid #cbd5e1;
     letter-spacing: 0.05em;
 }
@@ -561,7 +579,7 @@ select.form-input {
     color: #94a3b8;
     cursor: pointer;
     padding: 4px;
-    border-radius: 8px;
+    border-radius: 4px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -635,7 +653,7 @@ select.form-input {
     gap: 12px;
     padding: 14px 16px;
     border: 1.5px solid #e2e8f0;
-    border-radius: 10px;
+    border-radius: 8px;
     cursor: pointer;
     transition: all 0.15s ease;
     background: #ffffff;
@@ -668,22 +686,16 @@ select.form-input {
     flex-shrink: 0;
 }
 
-.role-option__icon--family {
-    background: #faf5ff;
-    color: #6b21a8;
-}
-
+.role-option__icon--family,
 .role-option__icon--tenant {
-    background: #fffbeb;
-    color: #b45309;
+    background: #f1f5f9;
+    color: #475569;
 }
 
-.role-option--selected .role-option__icon--family {
-    background: #e9d5ff;
-}
-
+.role-option--selected .role-option__icon--family,
 .role-option--selected .role-option__icon--tenant {
-    background: #fde68a;
+    background: #00236f;
+    color: #ffffff;
 }
 
 .role-option__content {
@@ -740,7 +752,7 @@ select.form-input {
 
 .invite-modal {
     background: #ffffff;
-    border-radius: 20px;
+    border-radius: 8px;
     padding: 32px 28px 24px;
     max-width: 440px;
     width: 92%;
@@ -763,7 +775,7 @@ select.form-input {
     right: 16px;
     width: 32px;
     height: 32px;
-    border-radius: 10px;
+    border-radius: 4px;
     border: none;
     background: #f1f5f9;
     color: #64748b;
@@ -792,14 +804,15 @@ select.form-input {
 .invite-modal__icon-wrap {
     width: 58px;
     height: 58px;
-    background: linear-gradient(135deg, #00236f, #1e3a8a);
-    border-radius: 16px;
+    background: #00236f;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 24px;
     color: #ffffff;
-    box-shadow: 0 8px 20px rgba(0, 35, 111, 0.25);
+    margin-bottom: 4px;
+    box-shadow: 0 4px 12px -2px rgba(0, 35, 111, 0.15);
 }
 
 .invite-modal__title {
