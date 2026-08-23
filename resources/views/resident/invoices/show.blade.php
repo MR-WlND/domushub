@@ -85,23 +85,28 @@
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td>
-                                                Tháng {{ $monthStr }}/{{ $yearStr }}
-                                                @if($invoice->status === 'overdue')
-                                                <i class="fa-solid fa-circle-exclamation text-danger ms-1" title="Quá hạn"></i>
-                                                @endif
+                                            <td style="font-size: 0.9rem;">
+                                                <div style="font-weight: 500; color: #334155; margin-bottom: 2px; white-space: nowrap;">
+                                                    Tháng {{ $monthStr }}/{{ $yearStr }}
+                                                </div>
+                                                <div style="font-size: 0.75rem; color: {{ $invoice->status === 'overdue' ? '#dc2626' : '#64748b' }};">
+                                                    Hạn: {{ $invoice->due_date ? $invoice->due_date->format('d/m/Y') : 'N/A' }}
+                                                    @if($invoice->status === 'overdue')
+                                                    <i class="fa-solid fa-circle-exclamation ms-1" title="Quá hạn"></i>
+                                                    @endif
+                                                </div>
                                             </td>
                                             <td class="text-right">
-                                                <div class="pay-amount-cell">
+                                                <div class="pay-amount-cell" style="display: flex; flex-direction: column; align-items: flex-end; text-align: right;">
                                                     @if($invoice->status === 'partial' || $invoice->status === 'partial_paid')
-                                                        <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 2px;">
-                                                            Tổng: {{ number_format($invoice->total_amount, 0, ',', '.') }}đ <br>
-                                                            Đã thanh toán: -{{ number_format($invoice->paid_amount, 0, ',', '.') }}đ
+                                                        <div style="font-size: 0.85rem; color: #64748b; line-height: 1.4; margin-bottom: 8px; white-space: nowrap;">
+                                                            <div>Tổng: {{ number_format($invoice->total_amount, 0, ',', '.') }}đ</div>
+                                                            <div>Đã thanh toán: -{{ number_format($invoice->paid_amount, 0, ',', '.') }}đ</div>
                                                         </div>
-                                                        <div class="pay-amount-val" style="color: #dc2626; font-size: 1rem;">
+                                                        <div style="color: #dc2626; font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.5px; white-space: nowrap;">
                                                             Còn lại: {{ number_format($invoice->total_amount - $invoice->paid_amount, 0, ',', '.') }}
                                                         </div>
-                                                        <span class="pay-status-badge" style="background: #fef08a; color: #854d0e; padding: 4px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 700; margin-top: 4px;">THANH TOÁN 1 PHẦN</span>
+                                                        <span class="pay-status-badge" style="background: #fef3c7; color: #92400e; padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; border: 1px solid #fde68a;">THANH TOÁN 1 PHẦN</span>
                                                     @else
                                                         <div class="pay-amount-val">{{ number_format($invoice->total_amount - $invoice->paid_amount, 0, ',', '.') }}</div>
                                                         @if($invoice->status === 'overdue')
@@ -186,9 +191,9 @@
                         <div class="pay-mini-card__label">DƯ NỢ HIỆN TẠI</div>
                         <div class="pay-mini-card__val text-danger">{{ number_format($totalDebt, 0, ',', '.') }} <span>đ</span></div>
                     </div>
-                    <div class="pay-mini-card" title="Ngày cuối cùng phải thanh toán cho khoản nợ cũ nhất">
-                        <div class="pay-mini-card__label" style="font-size: 0.65rem;">HẠN CHÓT NỢ CŨ NHẤT</div>
-                        <div class="pay-mini-card__val"><i class="fa-regular fa-calendar-check text-success"></i> {{ $nearestDeadline ?? '--/--/----' }}</div>
+                    <div class="pay-mini-card" title="Số lượng hóa đơn bạn chưa hoàn tất thanh toán">
+                        <div class="pay-mini-card__label">CHƯA THANH TOÁN</div>
+                        <div class="pay-mini-card__val">{{ $invoices->count() }}</div>
                     </div>
                 </div>
 
