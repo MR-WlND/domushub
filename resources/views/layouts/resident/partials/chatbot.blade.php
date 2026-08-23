@@ -571,6 +571,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!isDraggingBubble || !widget) return;
         isDraggingBubble = false;
         
+        if (!hasMovedBubble) {
+            return; // Don't snap or animate if it was just a click
+        }
+        
         widget.style.transition = 'left 0.3s ease-out, top 0.3s ease-out';
         
         const centerX = window.innerWidth / 2;
