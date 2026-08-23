@@ -32,7 +32,7 @@
                 {{-- Thẻ: Danh sách hóa đơn chưa thanh toán --}}
                 <div class="pay-card">
                     <div class="pay-card__header flex-between">
-                        <h2 class="pay-card__title">Danh sách hóa đơn chưa thanh toán</h2>
+                        <h2 class="pay-card__title">Hóa đơn chưa thanh toán</h2>
                         @if($invoices->isNotEmpty())
                         <label class="pay-checkbox-select-all">
                             <input type="checkbox" id="select-all" checked>
@@ -67,58 +67,73 @@
                                             $yearStr = $invoice->billing_year;
                                             $serviceName = $invoice->title;
                                         @endphp
-                                        <tr class="pay-row {{ $invoice->status === 'overdue' ? 'row-overdue' : '' }}" onclick="toggleDetails({{ $invoice->id }})" style="cursor: pointer;">
-                                            <td onclick="event.stopPropagation();">
+                                        <tr id="pay-row-{{ $invoice->id }}" class="pay-row {{ $invoice->status === 'overdue' ? 'row-overdue' : '' }}" onclick="toggleDetails({{ $invoice->id }})" style="cursor: pointer;">
+                                            <td class="td-check" onclick="event.stopPropagation();">
                                                 <label class="pay-checkbox-item">
                                                     <input type="checkbox" name="invoice_ids[]" value="{{ $invoice->id }}" checked class="invoice-checkbox" data-id="{{ $invoice->id }}" data-amount="{{ $invoice->total_amount - $invoice->paid_amount }}" data-name="{{ $invoice->title }}">
                                                     <span class="pay-checkbox-box"><i class="fa-solid fa-check"></i></span>
                                                 </label>
                                             </td>
-                                            <td>
-                                                <div class="pay-service-cell">
-                                                    <div class="pay-icon-square icon-default">
+                                            <td class="td-service">
+                                                <div class="pay-service-cell" style="display: flex; align-items: center; gap: 12px;">
+                                                    <div class="desktop-only" style="width: 36px; height: 36px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #64748b;">
                                                         <i class="fa-solid fa-file-invoice"></i>
                                                     </div>
-                                                    <div class="pay-service-info">
-                                                        <span class="pay-service-name">{{ $serviceName }}</span>
-                                                        <div class="pay-service-sub">Căn hộ: {{ $invoice->apartment->apartment_number ?? '' }}</div>
+                                                    <div style="display: flex; flex-direction: column; justify-content: center;">
+                                                        <div style="font-weight: 600; color: #0f172a; font-size: 1rem; margin-bottom: 2px;">
+                                                            <span class="desktop-only">{{ $serviceName }}</span>
+                                                            <span class="mobile-only" style="font-weight: 700; font-size: 1.05rem;">{{ str_replace('Hóa đơn ', '', $serviceName) }}</span>
+                                                        </div>
+                                                        <div class="desktop-only" style="color: #64748b; font-size: 0.85rem;">
+                                                            Căn hộ: {{ $invoice->apartment->apartment_number ?? 'N/A' }}
+                                                        </div>
+                                                        <div class="mobile-only" style="color: #64748b; font-size: 0.85rem; margin-top: 2px;">
+                                                            Hạn: {{ \Carbon\Carbon::parse($invoice->due_date)->format('d/m/Y') }}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td style="font-size: 0.9rem;">
-                                                <div style="font-weight: 500; color: #334155; margin-bottom: 2px; white-space: nowrap;">
-                                                    Tháng {{ $monthStr }}/{{ $yearStr }}
-                                                </div>
-                                                <div style="font-size: 0.75rem; color: {{ $invoice->status === 'overdue' ? '#dc2626' : '#64748b' }};">
-                                                    Hạn: {{ $invoice->due_date ? $invoice->due_date->format('d/m/Y') : 'N/A' }}
-                                                    @if($invoice->status === 'overdue')
-                                                    <i class="fa-solid fa-circle-exclamation ms-1" title="Quá hạn"></i>
-                                                    @endif
-                                                </div>
+                                            <td class="desktop-only" style="font-size: 0.9rem;">
+                                                <div style="color: #64748b; font-size: 0.9rem; margin-bottom: 2px;">Kỳ hạn: Tháng {{ $monthStr }}/{{ $yearStr }}</div>
+                                                <div style="color: #475569; font-size: 0.85rem;">Hạn: {{ \Carbon\Carbon::parse($invoice->due_date)->format('d/m/Y') }}</div>
                                             </td>
-                                            <td class="text-right">
-                                                <div class="pay-amount-cell" style="display: flex; flex-direction: column; align-items: flex-end; text-align: right;">
+                                            <td class="mobile-only td-meta-mobile" style="display: none;">
+                                                {{-- Empty grid area for mobile meta --}}
+                                            </td>
+                                            <td class="td-price">
+                                                <div class="pay-amount-cell" style="display: flex; flex-direction: column; align-items: flex-end; text-align: right; width: 100%;">
                                                     @if($invoice->status === 'partial' || $invoice->status === 'partial_paid')
-                                                        <div style="font-size: 0.85rem; color: #64748b; line-height: 1.4; margin-bottom: 8px; white-space: nowrap;">
+                                                        <div class="desktop-only" style="font-size: 0.85rem; color: #64748b; line-height: 1.4; margin-bottom: 8px; white-space: nowrap;">
                                                             <div>Tổng: {{ number_format($invoice->total_amount, 0, ',', '.') }}đ</div>
                                                             <div>Đã thanh toán: -{{ number_format($invoice->paid_amount, 0, ',', '.') }}đ</div>
                                                         </div>
-                                                        <div style="color: #dc2626; font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.5px; white-space: nowrap;">
-                                                            Còn lại: {{ number_format($invoice->total_amount - $invoice->paid_amount, 0, ',', '.') }}
+                                                        <div class="mobile-only" style="font-size: 0.85rem; color: #64748b; margin-bottom: 2px; white-space: nowrap; text-decoration: line-through;">
+                                                            {{ number_format($invoice->total_amount, 0, ',', '.') }} đ
                                                         </div>
-                                                        <span class="pay-status-badge" style="background: #fef3c7; color: #92400e; padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; border: 1px solid #fde68a;">THANH TOÁN 1 PHẦN</span>
+                                                        
+                                                        <div style="color: #dc2626; font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; white-space: nowrap;">
+                                                            <span class="desktop-only">Còn lại: </span>{{ number_format($invoice->total_amount - $invoice->paid_amount, 0, ',', '.') }} đ
+                                                        </div>
+                                                        <span class="pay-status-badge badge-partial" style="white-space: nowrap;">THANH TOÁN 1 PHẦN</span>
                                                     @else
-                                                        <div class="pay-amount-val">{{ number_format($invoice->total_amount - $invoice->paid_amount, 0, ',', '.') }}</div>
+                                                        <div class="pay-amount-val" style="white-space: nowrap; font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 6px;">
+                                                            {{ number_format($invoice->total_amount - $invoice->paid_amount, 0, ',', '.') }} đ
+                                                        </div>
                                                         @if($invoice->status === 'overdue')
-                                                            <span class="pay-status-badge badge-overdue">QUÁ HẠN</span>
+                                                            <span class="pay-status-badge badge-overdue" style="white-space: nowrap;">QUÁ HẠN</span>
                                                         @else
-                                                            <span class="pay-status-badge badge-unpaid">CHƯA THANH TOÁN</span>
+                                                            <span class="pay-status-badge badge-unpaid" style="white-space: nowrap;">CHƯA THANH TOÁN</span>
                                                         @endif
                                                     @endif
                                                 </div>
                                             </td>
-                                            <td class="text-center text-muted">
+                                            <td class="desktop-only text-center text-muted">
                                                 <i class="fa-solid fa-chevron-down" id="arrow-{{ $invoice->id }}" style="transition: transform 0.2s;"></i>
+                                            </td>
+                                            <td class="mobile-only td-chevron-mobile" style="display: none;">
+                                                <div onclick="toggleDetails({{ $invoice->id }}); event.stopPropagation();" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; height: 100%; color: #00236f; font-size: 0.9rem; font-weight: 600; padding-left: 0px; cursor: pointer; position: relative; z-index: 10;" class="toggle-text-container">
+                                                    <span class="toggle-text" id="toggle-text-{{ $invoice->id }}">Xem chi tiết <i class="fa-solid fa-angle-down" id="arrow-mobile-{{ $invoice->id }}" style="font-size: 0.8rem; margin-left: 4px; transition: transform 0.2s;"></i></span>
+                                                </div>
                                             </td>
                                         </tr>
                                         <tr id="details-{{ $invoice->id }}" style="display: none; background: #f8fafc;">
@@ -139,19 +154,23 @@
                                                                 <tr style="{{ $detail->status === 'paid' ? 'opacity: 0.6;' : '' }}">
                                                                     <td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; text-align: center;">
                                                                         @if($detail->status !== 'paid')
-                                                                        <input type="checkbox" name="detail_ids[]" value="{{ $detail->id }}" class="item-check child-of-{{ $invoice->id }}" data-parent="{{ $invoice->id }}" data-invoice-title="{{ $invoice->title }}" data-amount="{{ $detail->amount }}" data-name="{{ $detail->servicePrice->name ?? 'Dịch vụ' }} - T{{ $invoice->billing_month->month }}" checked onclick="event.stopPropagation();">
+                                                                        <i class="fa-solid fa-circle-check mobile-only" style="color: #00236f; font-size: 1rem;"></i>
+                                                                        <input type="checkbox" name="detail_ids[]" value="{{ $detail->id }}" class="item-check desktop-only child-of-{{ $invoice->id }}" data-parent="{{ $invoice->id }}" data-invoice-title="{{ $invoice->title }}" data-amount="{{ $detail->amount }}" data-name="{{ $detail->servicePrice->name ?? 'Dịch vụ' }} - T{{ $invoice->billing_month->month }}" checked onclick="event.stopPropagation();" style="cursor: pointer;">
                                                                         @endif
                                                                     </td>
                                                                     <td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; color: #334155; {{ $detail->status === 'paid' ? 'text-decoration: line-through;' : '' }}">
                                                                         {{ $detail->servicePrice->name ?? 'Dịch vụ' }}
+                                                                        @if($detail->status === 'paid')
+                                                                            <span class="mobile-only">(Đã thanh toán)</span>
+                                                                        @endif
                                                                     </td>
-                                                                    <td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; text-align: right; font-size: 0.85rem; color: #334155; {{ $detail->status === 'paid' ? 'text-decoration: line-through;' : '' }}">
+                                                                    <td class="desktop-only" style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; text-align: right; font-size: 0.85rem; color: #334155; {{ $detail->status === 'paid' ? 'text-decoration: line-through;' : '' }}">
                                                                         {{ $detail->quantity }} {{ $detail->servicePrice->unit ?? '' }}
                                                                     </td>
                                                                     <td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; text-align: right; font-size: 0.85rem; font-weight: 600; color: #0f172a; {{ $detail->status === 'paid' ? 'text-decoration: line-through;' : '' }}">
                                                                         {{ number_format($detail->amount, 0, ',', '.') }} đ
                                                                     </td>
-                                                                    <td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; text-align: right;">
+                                                                    <td class="desktop-only" style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; text-align: right;">
                                                                         @if($detail->status === 'paid')
                                                                             <span style="background: #e2e8f0; color: #475569; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem;">Đã thanh toán</span>
                                                                         @else
@@ -186,7 +205,13 @@
             <div class="pay-col-right">
                 
                 {{-- Top Cards (Dư nợ & Hạn chót) --}}
-                <div class="pay-top-cards">
+                @php
+                    $earliestDueDate = $invoices->min('due_date');
+                    $earliestDateStr = $earliestDueDate ? \Carbon\Carbon::parse($earliestDueDate)->format('d/m/Y') : 'Không có';
+                @endphp
+                
+                {{-- Desktop Top Cards --}}
+                <div class="pay-top-cards desktop-only">
                     <div class="pay-mini-card">
                         <div class="pay-mini-card__label">DƯ NỢ HIỆN TẠI</div>
                         <div class="pay-mini-card__val text-danger">{{ number_format($totalDebt, 0, ',', '.') }} <span>đ</span></div>
@@ -194,6 +219,18 @@
                     <div class="pay-mini-card" title="Số lượng hóa đơn bạn chưa hoàn tất thanh toán">
                         <div class="pay-mini-card__label">CHƯA THANH TOÁN</div>
                         <div class="pay-mini-card__val">{{ $invoices->count() }}</div>
+                    </div>
+                </div>
+
+                {{-- Mobile Top Cards --}}
+                <div class="pay-top-cards mobile-only">
+                    <div class="pay-mini-card pay-mini-card--primary">
+                        <div class="pay-mini-card__label">DƯ NỢ HIỆN TẠI</div>
+                        <div class="pay-mini-card__val">{{ number_format($totalDebt, 0, ',', '.') }} <span>đ</span></div>
+                    </div>
+                    <div class="pay-mini-card pay-mini-card--outline">
+                        <div class="pay-mini-card__label">CHƯA THANH TOÁN</div>
+                        <div class="pay-mini-card__val" style="color: #0b1c30;">{{ $invoices->count() }}</div>
                     </div>
                 </div>
 
@@ -259,15 +296,21 @@
 @include('resident.invoices.partials.script')
 <script>
     function toggleDetails(id) {
+        const payRow = document.getElementById('pay-row-' + id);
         const row = document.getElementById('details-' + id);
         const arrow = document.getElementById('arrow-' + id);
+        const textMobile = document.getElementById('toggle-text-' + id);
         
         if (row.style.display === 'none') {
             row.style.display = 'table-row';
+            if (payRow) payRow.classList.add('is-expanded');
             if (arrow) arrow.style.transform = 'rotate(180deg)';
+            if (textMobile) textMobile.innerHTML = 'Thu gọn <i class="fa-solid fa-angle-up" style="font-size: 0.8rem; margin-left: 4px; transition: transform 0.2s;"></i>';
         } else {
             row.style.display = 'none';
+            if (payRow) payRow.classList.remove('is-expanded');
             if (arrow) arrow.style.transform = 'rotate(0deg)';
+            if (textMobile) textMobile.innerHTML = 'Xem chi tiết <i class="fa-solid fa-angle-down" style="font-size: 0.8rem; margin-left: 4px; transition: transform 0.2s;"></i>';
         }
     }
 

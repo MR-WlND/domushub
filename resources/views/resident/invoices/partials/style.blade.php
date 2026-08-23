@@ -181,6 +181,11 @@
         font-size: 16px;
     }
 
+    .badge-unpaid { background-color: #e2e8f0; color: #64748b; border: 1px solid #cbd5e1; font-weight: 600; padding: 4px 10px; font-size: 0.7rem; }
+    .badge-paid { background-color: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; font-weight: 600; padding: 4px 10px; font-size: 0.7rem; }
+    .badge-overdue { background-color: #fee2e2; color: #dc2626; border: 1px solid #fecaca; font-weight: 600; padding: 4px 10px; font-size: 0.7rem; }
+    .badge-partial { background-color: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; font-weight: 600; padding: 4px 10px; font-size: 0.7rem; }
+
     .icon-internet { background-color: #ffe4e6; color: #e11d48; }
     .icon-management { background-color: #e0f2fe; color: #0284c7; }
     .icon-electric { background-color: #fef9c3; color: #ca8a04; }
@@ -235,12 +240,10 @@
         font-weight: 600;
     }
 
-    .badge-overdue { background-color: #ef4444; color: #fff; }
-    .badge-unpaid { background-color: var(--color-background, #f8f9ff); color: var(--color-outline, #757682); }
 
     .pay-card__footer {
         padding: 16px 24px;
-        background-color: #fff;
+        background: transparent;
     }
 
     .btn-history-link {
@@ -248,13 +251,13 @@
         align-items: center;
         gap: 8px;
         font-size: 0.85rem;
-        font-weight: 600;
         color: var(--color-primary, #00236f);
-        background-color: var(--color-background, #f8f9ff);
-        padding: 8px 16px;
-        border-radius: 6px;
         text-decoration: none;
-        transition: 0.2s;
+        font-weight: 600;
+        padding: 8px 16px;
+        background: transparent;
+        border-radius: 8px;
+        transition: all 0.2s;
     }
     .btn-history-link:hover { background-color: #e0e7ff; }
 
@@ -289,6 +292,22 @@
         color: var(--color-text, #0b1c30);
     }
     .pay-mini-card__val span { font-size: 0.9rem; }
+    
+    .pay-mini-card--primary {
+        background: #00236f;
+        border: none;
+    }
+    .pay-mini-card--primary .pay-mini-card__label,
+    .pay-mini-card--primary .pay-mini-card__val {
+        color: #fff !important;
+    }
+    .pay-mini-card--outline {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+    }
+    .pay-mini-card--outline .pay-mini-card__label {
+        color: #64748b;
+    }
 
     /* Summary Card */
     .pay-summary-card {
@@ -415,13 +434,6 @@
     /* Responsive */
     @media (max-width: 992px) {
         .pay-grid { grid-template-columns: 1fr; }
-        .pay-summary-card { position: static; }
-    }
-    
-    @media (max-width: 768px) {
-        .pay-table th, .pay-table td { padding: 12px; font-size: 0.85rem; }
-        .pay-service-cell { flex-direction: column; align-items: flex-start; gap: 8px; }
-        .pay-top-cards { grid-template-columns: 1fr; }
     }
 
 .invoice-detail-page {
@@ -1061,5 +1073,246 @@
     justify-content: center;
 }
 
+.mobile-only { display: none !important; }
+
+/* ==================================================== */
+/* MOBILE RESPONSIVE (CARD LAYOUT & STICKY BOTTOM BAR) */
+/* ==================================================== */
+@media (max-width: 1024px) {
+    .desktop-only { display: none !important; }
+    .mobile-only { display: block !important; }
+    span.mobile-only, i.mobile-only { display: inline-block !important; }
+    div.mobile-flex { display: flex !important; }
+
+    .pay-grid {
+        display: flex;
+        flex-direction: column;
+    }
+    .pay-col-left {
+        order: 2;
+        width: 100%;
+    }
+    .pay-col-right {
+        order: 1;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    /* Top Cards Layout */
+    .pay-top-cards.mobile-only {
+        order: -1;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .pay-top-cards .pay-mini-card {
+        border-radius: 12px !important;
+    }
+    .pay-mini-card {
+        text-align: center;
+        padding: 16px 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        border-radius: 12px;
+    }
+    .pay-mini-card__label {
+        font-size: 0.7rem !important;
+        margin-bottom: 6px;
+    }
+    .pay-mini-card__val {
+        font-size: 1.25rem !important;
+        justify-content: center;
+    }
+
+    /* Transform Table to Cards */
+    .pay-card {
+        background: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
+    .pay-card__header {
+        padding: 0 0 16px 0 !important;
+        border: none !important;
+    }
+    .pay-card__title {
+        font-size: 1.05rem !important;
+    }
+    
+    .pay-table-wrapper {
+        background: transparent !important;
+        overflow: visible !important;
+    }
+    .pay-table {
+        display: block;
+    }
+    .pay-table thead {
+        display: none;
+    }
+    .pay-table tbody {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    .pay-row {
+        display: grid !important;
+        grid-template-columns: 36px 1fr auto;
+        grid-template-rows: auto auto;
+        grid-template-areas: 
+            "check service price"
+            ". toggle price";
+        gap: 12px 8px;
+        align-items: start;
+        background: #fff;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        border: 1px solid #f1f5f9;
+    }
+    .pay-row > td {
+        padding: 0 !important;
+        border: none !important;
+        display: block;
+    }
+    
+    /* Card Cells Layout with Grid Areas */
+    .pay-row > td.td-check { 
+        grid-area: check; 
+        padding-top: 4px !important;
+    }
+    .pay-row > td.td-service { 
+        grid-area: service; 
+        min-width: 0; /* allow truncation if needed */
+    }
+    .pay-service-cell {
+        flex-direction: row !important;
+        align-items: flex-start !important;
+    }
+    .pay-row > td.td-meta-mobile { 
+        grid-area: meta;
+        margin-top: 0 !important;
+        padding-left: 0 !important;
+    }
+    .pay-row > td.td-price { 
+        grid-area: price;
+        margin-top: 0 !important;
+        text-align: right;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+    .pay-row > td.td-chevron-mobile { 
+        grid-area: toggle;
+        position: static !important;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        padding-top: 4px !important;
+    }
+    .pay-row > td.td-chevron-mobile .toggle-text-container {
+        margin-top: 0 !important;
+    }
+    
+    .pay-row.is-expanded {
+        border-radius: 12px 12px 0 0 !important;
+        border-bottom: none !important;
+    }
+    .pay-row + tr[id^="details-"] {
+        margin-top: -16px;
+        width: 100%;
+        display: block; /* Ensure it takes full width as flex item */
+    }
+    .pay-row + tr[id^="details-"] > td {
+        padding: 0 !important;
+        width: 100%;
+        display: block;
+    }
+    .pay-row + tr[id^="details-"] table {
+        background: #fff;
+        border: 1px solid #f1f5f9;
+        border-top: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        border-radius: 0 0 12px 12px;
+        margin-top: 0;
+        padding: 0 16px 16px 16px;
+        display: block;
+    }
+    .pay-row + tr[id^="details-"] table::before {
+        content: "";
+        display: block;
+        width: 100%;
+        height: 1px;
+        background: #e2e8f0;
+        margin-bottom: 12px;
+    }
+    .pay-row + tr[id^="details-"] thead th:nth-child(3),
+    .pay-row + tr[id^="details-"] thead th:nth-child(5) {
+        display: none;
+    }
+    .pay-row + tr[id^="details-"] thead {
+        display: none;
+    }
+    .pay-row + tr[id^="details-"] tbody {
+        display: flex;
+        flex-direction: column;
+        gap: 8px; /* Reduced gap since no borders */
+    }
+    .pay-row + tr[id^="details-"] tr {
+        display: flex;
+        width: 100%;
+        border-bottom: none; /* Removed dashed border */
+        padding: 8px 0; /* Adjusted padding */
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+    .pay-row + tr[id^="details-"] td {
+        padding: 0 !important;
+        border: none !important;
+    }
+    .pay-row + tr[id^="details-"] td:nth-child(2) {
+        flex: 1;
+    }
+    .pay-row + tr[id^="details-"] td:nth-child(4) {
+        margin-left: auto;
+        text-align: right;
+    }
+    
+    /* Fixed Bottom Bar */
+    .pay-summary-card {
+        position: fixed !important;
+        top: auto !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        background: #fff !important;
+        border-radius: 20px 20px 0 0 !important;
+        box-shadow: 0 -10px 30px rgba(0,0,0,0.1) !important;
+        z-index: 9999 !important;
+        padding: 20px 24px !important;
+    }
+    .pay-summary__header, .pay-summary__list, .pay-summary__total-box {
+        display: none !important;
+    }
+    .pay-summary__subtotal {
+        margin-bottom: 16px !important;
+        font-size: 1.05rem !important;
+    }
+    .pay-summary__subtotal #summary-subtotal-val {
+        font-size: 1.35rem !important;
+        font-weight: 800 !important;
+        color: var(--color-text, #0b1c30) !important;
+    }
+    .btn-pay-submit {
+        border-radius: 8px !important;
+        padding: 14px 20px !important;
+        width: 100% !important;
+    }
+    
+    .pay-dashboard {
+        padding-bottom: 180px;
+    }
+}
 </style>
 @endpush
