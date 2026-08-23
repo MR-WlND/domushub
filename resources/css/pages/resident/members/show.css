@@ -1,0 +1,445 @@
+.resident-member-detail {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 40px;
+    background: #f8fafc;
+    min-height: 100vh;
+}
+
+/* Header */
+.res-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.res-header__title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+/* Alert */
+.alert {
+    padding: 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 24px;
+}
+
+.alert-success {
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+}
+
+.alert-error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+}
+
+/* Cards Stack */
+.cards-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.detail-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Profile Header Card */
+.profile-header-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+}
+
+.profile-header-card__left {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.profile-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.profile-info h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.profile-badges {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* Detail Card common */
+.detail-card__header {
+    padding: 16px 24px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.detail-card__header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+}
+
+.detail-card__body {
+    padding: 24px;
+}
+
+/* Info Grid */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+
+.info-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.info-label {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.info-value {
+    font-size: 0.95rem;
+    color: #0f172a;
+    font-weight: 500;
+}
+
+/* Invite Box Modern */
+.invite-box-modern {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.invite-box-modern__top .text-muted {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.invite-box-modern__main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.invite-code {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+    background: #ffffff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    letter-spacing: 0.1em;
+}
+
+.invite-box-modern__bottom .expiry-text {
+    font-size: 0.8rem;
+    color: #94a3b8;
+}
+
+/* Badges */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 4px;
+}
+
+.badge-status--verified {
+    background: #ecfdf5;
+    color: #065f46;
+}
+
+.badge-status--pending {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.badge--relationship {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.apartment-tag {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #475569;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-sm {
+    height: 32px;
+    padding: 0 12px;
+}
+
+.btn-secondary {
+    background: #ffffff;
+    color: #475569;
+    border-color: #e2e8f0;
+}
+
+.btn-secondary:hover {
+    background: #f8fafc;
+    color: #0f172a;
+}
+
+.btn-outline-secondary {
+    background: #ffffff;
+    color: #475569;
+    border-color: #e2e8f0;
+}
+
+.btn-outline-secondary:hover {
+    background: #f8fafc;
+}
+
+.btn-primary {
+    background: #00236f;
+    color: #ffffff;
+}
+
+.btn-primary:hover {
+    background: #1e3a8a;
+}
+
+.btn-danger-soft {
+    background: #fef2f2;
+    color: #ef4444;
+}
+
+.btn-danger-soft:hover {
+    background: #fee2e2;
+}
+
+/* Actions */
+.action-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+/* Responsive Grid */
+@media (max-width: 768px) {
+    .info-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .res-header {
+        margin-bottom: 16px;
+    }
+    
+    .cards-stack {
+        gap: 16px;
+    }
+
+    /* Profile Header */
+    .profile-header-card {
+        background: transparent;
+        border: none;
+        flex-direction: column;
+        align-items: center;
+        padding: 0 0 16px 0;
+        gap: 16px;
+    }
+
+    .profile-header-card__left {
+        flex-direction: column;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .profile-info {
+        align-items: center;
+        gap: 12px;
+    }
+
+    .profile-info h2 {
+        font-size: 1.5rem;
+    }
+
+    .profile-badges {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .profile-header-card__right {
+        display: none; /* Hide edit button on mobile or position it differently, keeping simple for now based on image */
+    }
+
+    /* Basic Info Card */
+    .detail-card {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    }
+
+    .detail-card__header {
+        border-bottom: none;
+        padding: 20px 20px 8px 20px;
+    }
+
+    .detail-card__header h3 {
+        font-size: 1.1rem;
+    }
+
+    .detail-card__body {
+        padding: 0 20px 24px 20px;
+    }
+
+    .info-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    .info-group {
+        gap: 8px;
+    }
+
+    .info-label {
+        font-size: 0.85rem;
+    }
+
+    .info-value {
+        font-size: 0.95rem;
+        background: #f1f5f9;
+        padding: 8px 12px;
+        border-radius: 8px;
+        display: inline-block;
+    }
+    
+    .apartment-tag {
+        background: transparent;
+        border: none;
+        padding: 0;
+        font-size: inherit;
+        color: inherit;
+    }
+    
+    /* Invite Box */
+    .invite-box-modern {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        padding: 16px;
+    }
+
+    .invite-box-modern__main {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 16px;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .invite-code {
+        color: #00236f;
+        border: none;
+        border-bottom: 2px dotted #cbd5e1;
+        padding: 4px 0;
+        border-radius: 0;
+        background: transparent;
+        font-size: 1.2rem;
+    }
+
+    /* Actions Card */
+    .detail-card:last-child {
+        background: transparent;
+        box-shadow: none;
+    }
+
+    .detail-card:last-child .detail-card__header {
+        padding-left: 0;
+        padding-right: 0;
+    }
+    
+    .detail-card:last-child .detail-card__header h3 {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        color: #475569;
+        letter-spacing: 0.05em;
+    }
+
+    .detail-card:last-child .detail-card__body {
+        padding: 0;
+    }
+
+    .action-buttons form, .action-buttons button {
+        width: 100%;
+    }
+
+    .btn-danger-soft {
+        background: #fee2e2;
+        color: #7f1d1d;
+        height: 48px;
+        border-radius: 8px;
+        font-size: 1rem;
+    }
+}

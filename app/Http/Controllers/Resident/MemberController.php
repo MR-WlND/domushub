@@ -48,15 +48,7 @@ class MemberController extends Controller
         $ownerApartmentIds = $this->getOwnerApartmentIds($user);
         $isOwner = !empty($ownerApartmentIds);
 
-        // Xác định tab hoạt động
-        $allowedTabs = ['registered', 'declared'];
-        if ($isOwner) {
-            $allowedTabs[] = 'invitations';
-        }
-        $activeTab = $request->query('tab', 'registered');
-        if (!in_array($activeTab, $allowedTabs, true)) {
-            $activeTab = 'registered';
-        }
+        // Không cần phân giải tab nữa vì trang gộp chung
 
         // Lấy danh sách căn hộ phù hợp với quyền hạn
         $apartmentIds = $isOwner ? $ownerApartmentIds : $this->getAssociatedApartmentIds($user);
@@ -103,7 +95,7 @@ class MemberController extends Controller
             ->first();
 
         // Lấy danh sách nhân khẩu gia đình khai báo
-        $declaredMembers = ApartmentMember::with(['apartment.floor.block'])
+        $declaredMembers = ApartmentMember::with(['apartment.floor.block', 'invite'])
             ->whereIn('apartment_id', $apartmentIds)
             ->orderByDesc('created_at')
             ->get();
@@ -128,7 +120,6 @@ class MemberController extends Controller
         return view('resident.members.index', compact(
             'user',
             'isOwner',
-            'activeTab',
             'apartments',
             'blocks',
             'registeredMembers',
@@ -140,6 +131,32 @@ class MemberController extends Controller
             'pendingDeclarationsCount',
             'activeInvitesCount'
         ));
+    }
+
+    public function show($id, Request $request)
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        $ownerApartmentIds = $this->getOwnerApartmentIds($user);
+        $apartmentIds = !empty($ownerApartmentIds) ? $ownerApartmentIds : $this->getAssociatedApartmentIds($user);
+        $isOwner = !empty($ownerApartmentIds);
+
+        $type = $request->query('type');
+
+        if ($type === 'registered') {
+            $member = Resident::with(['user', 'apartment.floor.block'])
+                ->whereIn('apartment_id', $apartmentIds)
+                ->where('user_id', '!=', $user->id)
+                ->findOrFail($id);
+        } elseif ($type === 'declared') {
+            $member = ApartmentMember::with(['apartment.floor.block', 'invite'])
+                ->whereIn('apartment_id', $apartmentIds)
+                ->findOrFail($id);
+        } else {
+            abort(404, 'Loại thành viên không hợp lệ.');
+        }
+
+        return view('resident.members.show', compact('member', 'type', 'isOwner', 'ownerApartmentIds'));
     }
 
     public function storeDeclared(Request $request): RedirectResponse
@@ -240,9 +257,57 @@ class MemberController extends Controller
             'expired_at'             => $validated['expired_at'] ?? null,
         ]);
 
-        return redirect()->route('resident.members.index', ['tab' => 'invitations'])
+        return redirect()->route('resident.members.index')
             ->with('new_invite_code', $code)
             ->with('success', 'Tạo mã mời thành công! Hãy sao chép và gửi mã bên dưới cho người thân.');
+    }
+
+    public function generateInviteForMember(Request $request, ApartmentMember $member): RedirectResponse
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        $ownerApartmentIds = $this->getOwnerApartmentIds($user);
+
+        if (empty($ownerApartmentIds) || !in_array($member->apartment_id, $ownerApartmentIds, true)) {
+            abort(403, 'Chỉ chủ hộ mới có quyền tạo mã mời cho nhân khẩu này.');
+        }
+
+        if ($member->invite_id) {
+            return redirect()->back()->with('error', 'Nhân khẩu này đã có mã mời.');
+        }
+
+        $apartment = Apartment::with('floor')->findOrFail($member->apartment_id);
+        
+        // Sinh mã chuẩn: INV-[ApartmentNumber]-[4RandomDigits]
+        $cleanAptNumber = str_replace([' ', '-', '_'], '', strtoupper($apartment->apartment_number));
+        do {
+            $code = 'INV-' . $cleanAptNumber . '-' . random_int(1000, 9999);
+        } while (ApartmentInvite::where('invite_code', $code)->exists());
+
+        // Sử dụng relationship của member hoặc mặc định là family_member
+        $intendedRole = 'family_member';
+        if (strtolower($member->relationship) === 'người thuê' || strtolower($member->relationship) === 'tenant') {
+            $intendedRole = 'tenant';
+        }
+
+        $invite = ApartmentInvite::create([
+            'block_id'               => $apartment->floor->block_id,
+            'apartment_id'           => $apartment->id,
+            'created_by'             => $user->id,
+            'invite_code'            => $code,
+            'intended_relationship'  => $intendedRole,
+            'note'                   => 'Mã cấp cho nhân khẩu: ' . $member->name,
+            'status'                 => 'active',
+            'max_uses'               => 1,
+            'uses_count'             => 0,
+            'expired_at'             => now()->addDays(7),
+        ]);
+
+        $member->update(['invite_id' => $invite->id]);
+
+        return redirect()->route('resident.members.index')
+            ->with('new_invite_code', $code)
+            ->with('success', 'Đã cấp mã mời cho nhân khẩu: ' . $member->name);
     }
 
     public function destroyInvite($id): RedirectResponse
