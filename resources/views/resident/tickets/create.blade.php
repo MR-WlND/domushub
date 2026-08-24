@@ -120,7 +120,7 @@
                 border-radius: 8px;
             }
             .form-grid { 
-                grid-template-columns: 1fr; 
+                grid-template-columns: 1fr 1fr; /* Keep it side by side like template */
                 gap: 16px;
                 margin-bottom: 16px;
             }
@@ -468,14 +468,12 @@
         </div>
     </div>
     
-    <div class="mob-header" style="display: none; align-items: center; justify-content: space-between; padding: 16px; background: #fff; position: sticky; top: 0; z-index: 90; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+    <!-- Top Header -->
+    <div class="mob-header" style="display: none; align-items: center; justify-content: space-between; padding: 16px 20px; background: #fff; border-bottom: 1px solid #f1f5f9; position: sticky; top: 0; z-index: 90;">
+        <button class="mob-menu-btn" id="mobMenuOpenBtn" style="background:none; border:none; font-size:20px; color:#1e3a8a; padding:0; cursor:pointer;"><i class="fa-solid fa-bars"></i></button>
+        <div class="mob-header-title" style="font-size:18px; font-weight:700; color:#1e3a8a; flex:1; margin-left:20px;">Gửi phản ánh</div>
         <div style="display: flex; align-items: center; gap: 12px;">
-            <a href="{{ route('resident.tickets.index') }}" style="color:#1e293b; font-size:18px; text-decoration:none;" title="Quay lại"><i class="fa-solid fa-arrow-left"></i></a>
-            <button id="mobMenuOpenBtn" style="background:none; border:none; font-size:20px; color:#1e293b; cursor:pointer;"><i class="fa-solid fa-bars"></i></button>
-        </div>
-        <div style="font-size:16px; font-weight:700; color:#1e293b;">Gửi phản ánh</div>
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <button style="background:none; border:none; font-size:20px; color:#1e293b; cursor:pointer;"><i class="fa-regular fa-bell"></i></button>
+            <button class="mob-bell-btn" style="background:none; border:none; font-size:20px; color:#1e3a8a; padding:0; cursor:pointer;"><i class="fa-regular fa-bell"></i></button>
             <img src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' }}" alt="Avatar" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;">
         </div>
     </div>
