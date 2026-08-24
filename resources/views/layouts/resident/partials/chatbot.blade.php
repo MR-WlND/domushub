@@ -536,10 +536,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const rect = widget.getBoundingClientRect();
         offsetX = clientX - rect.left;
         offsetY = clientY - rect.top;
-        
-        widget.style.transition = 'none';
-        widget.style.bottom = 'auto';
-        widget.style.right = 'auto';
+        // KHÔNG unset bottom/right ở đây để tránh lỗi giật hình khi chỉ click
     }
 
     function doDrag(clientX, clientY, e) {
@@ -553,6 +550,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const rect = widget.getBoundingClientRect();
             if (Math.abs(newX - rect.left) + Math.abs(newY - rect.top) > 5) {
                 hasMovedBubble = true;
+                
+                // Khi bắt đầu kéo thực sự, mới chuyển sang định vị bằng left/top
+                widget.style.left = rect.left + 'px';
+                widget.style.top = rect.top + 'px';
+                widget.style.transition = 'none';
+                widget.style.bottom = 'auto';
+                widget.style.right = 'auto';
             }
         }
         
