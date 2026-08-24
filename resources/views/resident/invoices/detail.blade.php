@@ -87,7 +87,7 @@
                                     @endif
                                 </td>
                             @endif
-                            <td>
+                            <td data-label="Tên khoản phí">
                                 <div class="item-name">{{ $detail->servicePrice->name ?? 'Dịch vụ / Phí khác' }}</div>
                                 <div class="item-desc">
                                     Đơn giá: {{ number_format($detail->servicePrice->price ?? $detail->amount) }} đ
@@ -119,14 +119,14 @@
                                     @endif
                                 @endif
                             </td>
-                            <td class="text-right val-quantity">
+                            <td data-label="Số lượng" class="text-right val-quantity">
                                 {{ $detail->quantity }}
                                 @if(isset($detail->servicePrice->unit))
                                     {{ $detail->servicePrice->unit }}
                                 @endif
                             </td>
-                            <td class="text-right val-subtotal">{{ number_format($detail->amount, 0, ',', '.') }} đ</td>
-                            <td class="text-right">
+                            <td data-label="Thành tiền" class="text-right val-subtotal">{{ number_format($detail->amount, 0, ',', '.') }} đ</td>
+                            <td data-label="Trạng thái" class="text-right">
                                 @if($detail->status === 'paid')
                                     <span class="badge" style="background: #e2e8f0; color: #475569; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">Đã thanh toán</span>
                                 @else
@@ -294,6 +294,110 @@
 </div>
 
 @include('resident.invoices.partials.style')
+
+@push('styles')
+<style>
+@media (max-width: 768px) {
+    .invoice-detail-page {
+        padding: 16px;
+    }
+    
+    .detail-header-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    
+    .detail-card__header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .detail-card__meta {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    /* Transform items-table to cards */
+    .items-table, .items-table tbody, .items-table tr, .items-table td {
+        display: block;
+        width: 100%;
+    }
+    
+    .items-table thead {
+        display: none;
+    }
+    
+    .items-table tr {
+        background: #fff;
+        border: 1px solid #f1f5f9;
+        border-radius: 12px;
+        margin-bottom: 16px;
+        padding: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+    
+    .items-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0 !important;
+        border-bottom: 1px dashed #e2e8f0 !important;
+        text-align: right;
+    }
+    
+    .items-table td:last-child {
+        border-bottom: none !important;
+    }
+    
+    .items-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #64748b;
+        text-align: left;
+        margin-right: 16px;
+        flex-shrink: 0;
+        font-size: 0.85rem;
+    }
+    
+    .items-table td[style*="text-align: center;"] {
+        display: flex;
+        justify-content: flex-start;
+    }
+    
+    .items-table td[style*="text-align: center;"]::before {
+        content: "Chọn thanh toán";
+    }
+
+    .items-table td[data-label="Tên khoản phí"] {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+    }
+    
+    .items-table td[data-label="Tên khoản phí"]::before {
+        margin-bottom: 8px;
+    }
+
+    .detail-card__total {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-end;
+    }
+    
+    .payment-info-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    
+    .info-label {
+        width: 100%;
+    }
+}
+</style>
+@endpush
 
 @push('scripts')
 <script>
