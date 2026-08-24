@@ -704,7 +704,7 @@
 
     .payment-info-item {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         font-size: 0.92rem;
         border-bottom: 1px dashed var(--color-background, #f8f9ff);
         padding-bottom: 8px;
@@ -718,13 +718,33 @@
     .info-label {
         color: var(--color-text-secondary, #444651);
         font-weight: 500;
-        width: 240px;
+        width: 100px;
         flex-shrink: 0;
+    }
+    
+    .desktop-label { display: none; }
+    .mobile-label { display: inline; }
+
+    @media (min-width: 769px) {
+        .payment-transaction {
+            background-color: #fff;
+            grid-template-columns: 1fr 1fr;
+            column-gap: 32px;
+        }
+        .info-label {
+            width: 240px;
+        }
+        .desktop-label { display: inline; }
+        .mobile-label { display: none; }
+        .payment-info-item.full-width {
+            grid-column: 1 / -1;
+        }
     }
 
     .info-val {
         color: var(--color-text, #0b1c30);
         font-weight: 600;
+        flex: 1;
     }
 
     .code-val {

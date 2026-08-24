@@ -216,51 +216,44 @@
                 @endphp
                 <div class="payment-transaction" style="margin-bottom: 24px;">
                     <div class="payment-info-item">
-                        <span class="info-label">Mã hóa đơn hệ thống:</span>
+                        <span class="info-label"><span class="desktop-label">Mã hóa đơn hệ thống:</span><span class="mobile-label">Mã HĐ:</span></span>
                         <span class="info-val code-val">{{ $invoice->invoice_code }}</span>
                     </div>
                     <div class="payment-info-item">
-                        <span class="info-label">Số tiền thanh toán:</span>
-                        <span class="info-val">{{ number_format($payment->amount, 0, ',', '.') }} đ</span>
+                        <span class="info-label"><span class="desktop-label">Số tiền thanh toán:</span><span class="mobile-label">Số tiền:</span></span>
+                        <span class="info-val" style="font-weight: 700;">{{ number_format($payment->amount, 0, ',', '.') }} đ</span>
                     </div>
                     <div class="payment-info-item">
-                        <span class="info-label">Phương thức thanh toán:</span>
+                        <span class="info-label"><span class="desktop-label">Phương thức thanh toán:</span><span class="mobile-label">PTTT:</span></span>
                         <span class="info-val">{{ $methodLabel }}</span>
                     </div>
                     <div class="payment-info-item">
-                        <span class="info-label">Người nộp (Cư dân):</span>
+                        <span class="info-label"><span class="desktop-label">Người nộp (Cư dân):</span><span class="mobile-label">Người nộp:</span></span>
                         <span class="info-val">{{ $payment->payer_name ?: ($invoice->apartment->owner_name ?? 'Cư dân căn hộ') }}</span>
                     </div>
                     @if($payment->recorder && $payment->recorder->name !== '—')
                     <div class="payment-info-item">
-                        <span class="info-label">Người thu (Nhân viên):</span>
+                        <span class="info-label"><span class="desktop-label">Người thu (Nhân viên):</span><span class="mobile-label">Người thu:</span></span>
                         <span class="info-val">{{ $payment->recorder->name }}</span>
                     </div>
                     @endif
                     @if($payment->payment_method === 'vnpay')
                     <div class="payment-info-item">
-                        <span class="info-label">Mã giao dịch đối soát (VNPay):</span>
+                        <span class="info-label"><span class="desktop-label">Mã giao dịch đối soát (VNPay):</span><span class="mobile-label">Mã VNPay:</span></span>
                         <span class="info-val code-val">{{ $vnpTxnNo ?: '—' }}</span>
                     </div>
                     @endif
                     <div class="payment-info-item">
-                        <span class="info-label">Thời gian thanh toán:</span>
+                        <span class="info-label"><span class="desktop-label">Thời gian thanh toán:</span><span class="mobile-label">Thời gian:</span></span>
                         <span class="info-val">{{ $payment->paid_at ? $payment->paid_at->format('d/m/Y H:i') : '—' }}</span>
                     </div>
                     @php
-                        $displayNote = $payment->note;
-                        if (empty($displayNote)) {
-                            $allocatedServices = $detailAllocations[$payment->id] ?? [];
-                            if (!empty($allocatedServices)) {
-                                $displayNote = 'Thanh toán dịch vụ: ' . implode(', ', $allocatedServices);
-                            } else {
-                                $displayNote = 'Thanh toán hóa đơn';
-                            }
-                        }
+                        $covered = $detailAllocations[$payment->id] ?? [];
+                        $servicesStr = empty($covered) ? '—' : implode(', ', $covered);
                     @endphp
-                    <div class="payment-info-item">
-                        <span class="info-label">Nội dung / Dịch vụ:</span>
-                        <span class="info-val" style="color: #0d9488;">{{ $displayNote }}</span>
+                    <div class="payment-info-item full-width">
+                        <span class="info-label"><span class="desktop-label">Nội dung / Dịch vụ:</span><span class="mobile-label">Nội dung:</span></span>
+                        <span class="info-val" style="color: #0d9488; font-weight: 500; line-height: 1.4;">Thanh toán dịch vụ: {{ $servicesStr }}</span>
                     </div>
                     @if($payment->proof_image)
                     <div class="payment-info-item">
