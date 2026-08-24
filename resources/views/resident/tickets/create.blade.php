@@ -25,6 +25,10 @@
             .tk-layout-row {
                 flex-direction: column;
                 gap: 16px !important;
+                align-items: stretch !important;
+            }
+            .tk-main-col {
+                width: 100% !important;
             }
             .tk-sidebar {
                 width: 100% !important;
