@@ -11,7 +11,10 @@
 
     /* STATS */
     .vr-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:.85rem; margin-bottom:1.5rem; }
-    @media(max-width:500px){ .vr-stats { grid-template-columns:1fr 1fr; } }
+    @media(max-width:768px){
+        .vr-stats { grid-template-columns:1fr 1fr; }
+        .vr-stats > :first-child { grid-column:span 2; }
+    }
     .vr-stat { background:#fff; border:1px solid #e8ecf4; border-radius:12px; padding:.8rem 1rem; display:flex; align-items:center; gap:.65rem; box-shadow:0 1px 4px rgba(0,20,80,.04); }
     .vr-stat__ic { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
     .vr-stat__ic--purple { background:#dbeafe; color:#00236f; }
@@ -23,31 +26,49 @@
 
     /* CARDS */
     .vr-list { display:flex; flex-direction:column; gap:.75rem; }
-    .vr-card { background:#fff; border:1px solid #e8ecf4; border-radius:14px; overflow:hidden; box-shadow:0 1px 5px rgba(0,20,80,.04); transition:box-shadow .15s; display:flex; align-items:stretch; }
+    .vr-card { background:#fff; border:1px solid #e8ecf4; border-left:4px solid transparent; border-radius:14px; overflow:hidden; box-shadow:0 1px 5px rgba(0,20,80,.04); transition:box-shadow .15s; }
     .vr-card:hover { box-shadow:0 4px 14px rgba(0,20,80,.09); }
 
+    .vr-card--checked_in  { border-left-color:#047857; }
+    .vr-card--checked_out { border-left-color:#64748b; }
+    .vr-card--pending     { border-left-color:#2563eb; }
+    .vr-card--cancelled   { border-left-color:#dc2626; }
+    .vr-card--expired     { border-left-color:#d97706; }
 
-    .vr-card__body { display:flex; align-items:center; gap:1rem; padding:.85rem 1rem; flex:1; min-width:0; }
-    .vr-card__avatar { width:46px; height:46px; border-radius:10px; overflow:hidden; border:2px solid #e2e8f0; flex-shrink:0; background:#f1f5f9; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.05rem; color:#64748b; }
+    .vr-card__body { padding:.85rem 1rem; }
+    @media(max-width:480px){
+        .vr-card__body { padding:.85rem .75rem; }
+    }
+    .vr-card__top-row { display:flex; gap:1rem; align-items:flex-start; }
+    .vr-card__avatar { width:60px; height:60px; border-radius:10px; overflow:hidden; border:1px solid #e2e8f0; flex-shrink:0; background:#f1f5f9; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.2rem; color:#64748b; box-shadow:0 1px 3px rgba(0,0,0,0.02); }
     .vr-card__avatar img { width:100%; height:100%; object-fit:cover; }
-    .vr-card__info { flex:1; min-width:0; }
-    .vr-card__name { font-size:.9rem; font-weight:800; color:#0f172a; margin:0 0 .15rem; }
-    .vr-card__meta { font-size:.77rem; color:#64748b; display:flex; flex-wrap:wrap; align-items:center; gap:.4rem; }
-    .vr-card__apt  { font-weight:700; color:#1e293b; }
+    .vr-card__main-info { flex:1; min-width:0; }
+    .vr-card__name { font-size:.95rem; font-weight:700; color:#0f172a; margin:0 0 .25rem; display:inline-flex; align-items:center; gap:6px; }
+    .vr-card__meta { font-size:.8rem; color:#475569; display:flex; flex-wrap:wrap; align-items:center; gap:.35rem; margin-bottom:.25rem; }
+    .vr-card__apt  { font-weight:600; color:#0f172a; }
+    .vr-dot { color:#94a3b8; }
+
+    .vr-card__time-row { display:flex; align-items:center; gap:.25rem; font-size:.75rem; color:#64748b; }
+    .vr-clock-icon { color:#94a3b8; flex-shrink:0; }
+
+    .vr-card__divider { border-top:1px solid #f1f5f9; margin:.85rem 0 .75rem; }
+
+    .vr-card__bottom-row { display:flex; align-items:center; justify-content:space-between; gap:.5rem; flex-wrap:nowrap; }
+    .vr-card__badges { display:flex; gap:.4rem; flex-wrap:wrap; align-items:center; min-width:0; }
 
     /* badges */
-    .vr-chip { display:inline-flex; align-items:center; gap:.25rem; font-size:.7rem; font-weight:700; padding:.2rem .6rem; border-radius:999px; }
-    .vr-chip--checked_in  { background:#a7f3d0; color:#047857; }
+    .vr-chip { display:inline-flex; align-items:center; gap:.2rem; font-size:.68rem; font-weight:600; padding:.15rem .45rem; border-radius:999px; line-height:1.2; flex-shrink:0; }
+    .vr-chip--checked_in  { background:#d1fae5; color:#065f46; }
     .vr-chip--checked_out { background:#f1f5f9; color:#475569; }
     .vr-chip--pending     { background:#dbeafe; color:#1e40af; }
     .vr-chip--cancelled   { background:#fee2e2; color:#991b1b; }
     .vr-chip--expired     { background:#ffedd5; color:#9a3412; }
+    .vr-chip--confirmed   { background:#d1fae5; color:#065f46; }
 
-    /* right action */
-    .vr-card__actions { display:flex; align-items:center; gap:.5rem; padding-right:.85rem; flex-shrink:0; }
-    .vr-btn { display:inline-flex; align-items:center; gap:.35rem; padding:.45rem .85rem; border-radius:8px; font-size:.8rem; font-weight:700; font-family:inherit; cursor:pointer; border:1.5px solid; text-decoration:none; transition:all .15s; }
-    .vr-btn--outline { background:#fff; color:#64748b; border-color:#e2e8f0; }
-    .vr-btn--outline:hover { background:#f8fafc; }
+    /* action */
+    .vr-btn { display:inline-flex; align-items:center; gap:.3rem; padding:.3rem .6rem; border-radius:6px; font-size:.72rem; font-weight:500; font-family:inherit; cursor:pointer; border:1.2px solid; text-decoration:none; transition:all .15s; flex-shrink:0; }
+    .vr-btn--outline { background:#fff; color:#475569; border-color:#cbd5e1; }
+    .vr-btn--outline:hover { background:#f8fafc; color:#0f172a; border-color:#cbd5e1; }
 
     /* empty */
     .vr-empty { background:#fff; border:1px solid #e8ecf4; border-radius:14px; padding:3.5rem 1.5rem; text-align:center; }
@@ -56,7 +77,7 @@
     .vr-empty p  { font-size:.85rem; color:#64748b; margin:0; }
 
     /* New notification dot */
-    .vr-card__new { width:8px; height:8px; border-radius:50%; background:#00236f; flex-shrink:0; }
+    .vr-card__new-dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:#00236f; flex-shrink:0; }
     </style>
 @endpush
 
@@ -111,54 +132,77 @@
             @foreach($visitors as $v)
                 @php $isNew = $v->created_at->gt(now()->subHours(2)) && $v->status === 'checked_in'; @endphp
                 <div class="vr-card vr-card--{{ $v->status }}">
-
                     <div class="vr-card__body">
-                        {{-- Avatar / photo --}}
-                        <div class="vr-card__avatar">
-                            @if($v->face_image)
-                                <img src="{{ asset('storage/'.$v->face_image) }}" alt="{{ $v->guest_name }}">
-                            @else
-                                {{ mb_strtoupper(mb_substr($v->guest_name,0,1)) }}
-                            @endif
-                        </div>
-                        <div class="vr-card__info">
-                            <p class="vr-card__name">{{ $v->guest_name }}</p>
-                            <div class="vr-card__meta">
-                                @if($v->guest_phone)
-                                    <span>{{ $v->guest_phone }}</span>
-                                    <span>&middot;</span>
+                        
+                        {{-- Upper Row: Avatar + Info --}}
+                        <div class="vr-card__top-row">
+                            <div class="vr-card__avatar">
+                                @if($v->face_image)
+                                    <img src="{{ asset('storage/'.$v->face_image) }}" alt="{{ $v->guest_name }}">
+                                @else
+                                    {{ mb_strtoupper(mb_substr($v->guest_name,0,1)) }}
                                 @endif
-                                <span class="vr-card__apt">
-                                    {{ $v->apartment?->apartment_number ?? '' }}
-                                    @if($v->apartment?->floor?->block)
-                                        - {{ $v->apartment->floor->block->name }}
+                            </div>
+                            <div class="vr-card__main-info">
+                                <p class="vr-card__name">
+                                    {{ $v->guest_name }}
+                                    @if($isNew)
+                                        <span class="vr-card__new-dot" title="Khách mới"></span>
                                     @endif
-                                </span>
-                                <span>&middot;</span>
-                                <span>{{ $v->created_at->format('H:i d/m/Y') }}</span>
-                            </div>
-                            <div style="margin-top:.35rem;display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;">
-                                <span class="vr-chip vr-chip--{{ $v->status }}">{{ $v->statusLabel() }}</span>
-                                @if($v->check_in_at)
-                                    <span style="font-size:.72rem;color:#64748b;">Vào {{ $v->check_in_at->format('H:i') }}</span>
-                                @endif
-                                @if($v->check_out_at)
-                                    <span style="font-size:.72rem;color:#64748b;">· Ra {{ $v->check_out_at->format('H:i') }}</span>
-                                @endif
-                                @if($v->confirmed_by_resident)
-                                    <span style="font-size:.7rem;background:#a7f3d0;color:#047857;padding:.15rem .5rem;border-radius:999px;font-weight:700;">✓ Đã xác nhận</span>
-                                @endif
+                                </p>
+                                <div class="vr-card__meta">
+                                    @if($v->guest_phone)
+                                        <span>{{ $v->guest_phone }}</span>
+                                        <span class="vr-dot">&middot;</span>
+                                    @endif
+                                    <span class="vr-card__apt">
+                                        {{ $v->apartment?->apartment_number ?? '' }}
+                                        @if($v->apartment?->floor?->block)
+                                            - {{ $v->apartment->floor->block->name }}
+                                        @endif
+                                    </span>
+                                </div>
+                                <div class="vr-card__time-row">
+                                    <svg class="vr-clock-icon" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                    <span>{{ $v->created_at->format('H:i d/m/Y') }}</span>
+                                </div>
                             </div>
                         </div>
-                        @if($isNew)
-                            <div class="vr-card__new" title="Khách mới"></div>
-                        @endif
-                    </div>
-                    <div class="vr-card__actions">
-                        <a href="{{ route('resident.visitors.show', $v->id) }}" class="vr-btn vr-btn--outline">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                            Chi tiết
-                        </a>
+
+                        {{-- Divider line --}}
+                        <div class="vr-card__divider"></div>
+
+                        {{-- Lower Row: Badges + Action button --}}
+                        <div class="vr-card__bottom-row">
+                            <div class="vr-card__badges">
+                                @if($v->status === 'checked_in')
+                                    <span class="vr-chip vr-chip--checked_in">
+                                        Đã vào @if($v->check_in_at) lúc {{ $v->check_in_at->format('H:i') }} @endif
+                                    </span>
+                                @elseif($v->status === 'checked_out')
+                                    <span class="vr-chip vr-chip--checked_out">
+                                        Đã ra @if($v->check_out_at) lúc {{ $v->check_out_at->format('H:i') }} @endif
+                                    </span>
+                                @else
+                                    <span class="vr-chip vr-chip--{{ $v->status }}">{{ $v->statusLabel() }}</span>
+                                @endif
+
+                                @if($v->confirmed_by_resident)
+                                    <span class="vr-chip vr-chip--confirmed">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg>
+                                        <span>Đã xác nhận</span>
+                                    </span>
+                                @endif
+                            </div>
+
+                            <div class="vr-card__action">
+                                <a href="{{ route('resident.visitors.show', $v->id) }}" class="vr-btn vr-btn--outline">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    <span>Chi tiết</span>
+                                </a>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             @endforeach
