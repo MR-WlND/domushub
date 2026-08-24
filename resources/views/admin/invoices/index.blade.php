@@ -205,7 +205,7 @@
                             </td>
                             <td>
                                 @if($debt > 0)
-                                    <a href="{{ portal_route('manual-payment.index', ['apartment_id' => $apt->id]) }}" class="inv-admin__btn" style="background:#16a34a;color:#fff;border:none;padding:7px 14px;font-size:0.85rem;border-radius:6px;white-space:nowrap;line-height:1.2;" onclick="event.stopPropagation()">
+                                    <a href="{{ portal_route('manual-payment.index', ['apartment_id' => $apt->id]) }}" class="inv-admin__btn inv-admin__btn--success" style="padding:6px 14px;" onclick="event.stopPropagation()">
                                         Thanh toán
                                     </a>
                                 @endif
@@ -623,12 +623,22 @@
         }
 
         .inv-admin__btn--primary {
-            background: #2563eb;
+            background: #00236f;
             color: #fff;
         }
 
         .inv-admin__btn--primary:hover {
-            background: #1d4ed8;
+            background: #00123f;
+            transform: translateY(-1px);
+        }
+
+        .inv-admin__btn--success {
+            background: #166534;
+            color: #fff;
+        }
+
+        .inv-admin__btn--success:hover {
+            background: #14532d;
             transform: translateY(-1px);
         }
 
