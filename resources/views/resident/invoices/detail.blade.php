@@ -200,8 +200,7 @@
     @endphp
 
     @if($invoice->payments->count() > 0)
-    <div class="detail-card" style="margin-top: 24px;">
-        <div class="detail-card__payment">
+    <div class="detail-card__payment" style="margin-top: 24px;">
             <h3 class="section-title">Lịch sử giao dịch</h3>
             @foreach($invoice->payments as $payment)
                 @php
@@ -272,16 +271,13 @@
                     @endif
                 </div>
             @endforeach
-        </div>
-    </div>{{-- /.detail-card (history) --}}
+    </div>{{-- /.detail-card__payment --}}
     @else
-    <div class="detail-card" style="margin-top: 24px;">
-        <div class="detail-card__payment">
+    <div class="detail-card__payment" style="margin-top: 24px;">
             <h3 class="section-title">Lịch sử giao dịch</h3>
             <div style="font-size: 0.85rem; color: #64748b; padding: 15px 0; text-align: center;">
                 Chưa có giao dịch nào được ghi nhận cho hóa đơn này.
             </div>
-        </div>
     </div>
     @endif
 </div>{{-- /.invoice-detail-page --}}
