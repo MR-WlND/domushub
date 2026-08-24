@@ -284,7 +284,7 @@
 <style>
 @media (max-width: 768px) {
     .invoice-detail-page {
-        padding: 16px;
+        /* Global layout already provides padding via .resident-content */
     }
     
     .detail-header-row {
