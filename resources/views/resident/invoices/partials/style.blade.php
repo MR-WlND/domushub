@@ -684,6 +684,9 @@
     .detail-card__payment {
         padding: 24px;
         background-color: var(--color-card, #fff);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
     }
 
     .payment-grid {
@@ -697,8 +700,8 @@
         border-radius: var(--radius-md, 12px);
         padding: 24px;
         background-color: #fff;
-        display: grid;
-        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column;
         gap: 16px;
     }
 
@@ -720,33 +723,37 @@
     .info-val {
         color: var(--color-text, #0b1c30);
         font-weight: 500;
-        flex: 1;
         text-align: right;
     }
     
     .desktop-label { display: none; }
     .mobile-label { display: inline; }
 
-    @media (min-width: 769px) {
+    /* On tablets and larger, use a true 4-column grid for perfect vertical alignment */
+    @media (min-width: 992px) {
         .payment-transaction {
-            grid-template-columns: 1fr 1fr;
-            column-gap: 40px;
-            row-gap: 20px;
+            display: grid;
+            grid-template-columns: max-content 1fr max-content 1fr;
+            column-gap: 24px;
+            row-gap: 16px;
+            align-items: center;
         }
         .payment-info-item {
-            justify-content: flex-start;
-            gap: 12px;
-        }
-        .info-label {
-            width: 220px;
+            display: contents;
         }
         .info-val {
             text-align: left;
+            justify-self: start;
         }
         .desktop-label { display: inline; }
         .mobile-label { display: none; }
-        .payment-info-item.full-width {
-            grid-column: 1 / -1;
+        
+        /* The 'Nội dung' row spans the remaining columns */
+        .payment-info-item.full-width .info-label {
+            grid-column: 1 / 2;
+        }
+        .payment-info-item.full-width .info-val {
+            grid-column: 2 / -1;
         }
     }
 
