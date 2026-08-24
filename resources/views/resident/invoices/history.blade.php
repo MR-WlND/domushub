@@ -1,53 +1,68 @@
 @extends('layouts.resident.master')
 
-@section('title', 'Hóa đơn – DomusHub')
+@section('title', 'Lịch sử hóa đơn – DomusHub')
 
 @section('content')
-<div class="inv-container">
+<div class="pay-dashboard">
+    @push('styles')
+    <style>
+    @media (max-width: 1024px) {
+        .history-row {
+            grid-template-columns: 1fr auto !important;
+            grid-template-areas: "service price" !important;
+            align-items: center !important;
+        }
+        .history-row > td.td-chevron-mobile { display: none !important; }
+    }
+    @media (max-width: 768px) {
+        .inv-chart-wrap { padding: 16px 12px !important; }
+    }
+    </style>
+    @endpush
 
     {{-- HEADER --}}
-    <div class="inv-header">
+    <div class="pay-dashboard__header flex-between" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
         <div>
-            <p class="inv-eyebrow">Tài chính căn hộ</p>
-            <h1 class="inv-title">Lịch sử hóa đơn</h1>
+            <h1 class="pay-page__title">Lịch sử hóa đơn</h1>
+            <p class="pay-page__subtitle">Xem lại các khoản phí bạn đã thanh toán.</p>
+        </div>
+        <div>
+            <a href="{{ route('resident.invoices.index') }}" class="btn-history-link" style="background: #ffffff; border: 1px solid #e2e8f0; padding: 10px 20px; border-radius: 6px; color: #475569; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; transition: background 0.2s;">
+                <i class="fa-solid fa-arrow-left"></i> Quay lại
+            </a>
         </div>
     </div>
 
     {{-- SYSTEM ALERTS --}}
     @if(session('success'))
-        <div class="inv-alert inv-alert--success">
+        <div class="pay-alert pay-alert--success">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             <div>{{ session('success') }}</div>
         </div>
     @endif
 
     @if(session('error'))
-        <div class="inv-alert inv-alert--error">
+        <div class="pay-alert pay-alert--error">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             <div>{{ session('error') }}</div>
         </div>
     @endif
-    @push('styles')
-    @vite(['resources/css/pages/resident/invoices/history.css'])
-
-        @endpush
 
     {{-- WATER CONSUMPTION CHART CARD --}}
-    <div class="inv-chart-card">
-        <div class="inv-chart-card__header">
+    <div class="pay-card" style="margin-bottom: 24px;">
+        <div class="pay-card__header flex-between" style="display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <h3 class="inv-chart-card__title">Biểu đồ tiêu thụ nước</h3>
-                <p class="inv-chart-card__subtitle">Lượng nước tiêu thụ (m³) ghi nhận từ hệ thống</p>
+                <h2 class="pay-card__title">Biểu đồ tiêu thụ nước</h2>
+                <p style="font-size: 0.85rem; color: #64748b; margin: 4px 0 0 0;">Lượng nước tiêu thụ (m³) ghi nhận từ hệ thống</p>
             </div>
-            <div class="inv-chart-card__badge">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 6px;"><path d="M12 2c-5.33 7.23-8 11.23-8 14a8 8 0 1 0 16 0c0-2.77-2.67-6.77-8-14zm0 15c-1.66 0-3-1.34-3-3 0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5c0 .55.45 1 1 1s1-.45 1-1c0-2.21-1.79-4-4-4-.55 0-1-.45-1-1s.45-1 1-1c3.31 0 6 2.69 6 6 0 1.66-1.34 3-3 3z"/></svg>
-                Đồng hồ Nước
+            <div style="background: #e0f2fe; color: #0284c7; padding: 6px 12px; border-radius: 99px; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center;">
+                <i class="fa-solid fa-droplet" style="margin-right: 6px;"></i> Đồng hồ Nước
             </div>
         </div>
-        <div class="inv-chart-wrap" style="position: relative; height: 260px; width: 100%; display: flex; align-items: center; justify-content: center;">
+        <div class="inv-chart-wrap" style="padding: 24px; position: relative; height: 260px; width: 100%; display: flex; align-items: center; justify-content: center;">
             @if(empty($waterChartData))
                 <div style="text-align: center; color: #94a3b8; font-size: 0.95rem; font-weight: 500; padding: 20px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" viewBox="0 0 16 16" style="margin-bottom: 12px; color: #cbd5e1; display: block; margin-left: auto; margin-right: auto;"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M6.271 5.055a.5.5 0 0 1 .52.038l3.5 2.5a.5.5 0 0 1 0 .814l-3.5 2.5a.5.5 0 0 1-.771-.409v-5A.5.5 0 0 1 6.271 5.055z"/></svg>
+                    <i class="fa-solid fa-chart-line" style="font-size: 40px; color: #cbd5e1; display: block; margin: 0 auto 12px auto;"></i>
                     Chưa có dữ liệu tiêu thụ nước được ghi nhận cho căn hộ của bạn.
                 </div>
             @else
@@ -58,7 +73,7 @@
 
     @if(!empty($waterChartData))
     @push('scripts')
-<script>
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
             const ctx = document.getElementById('waterUsageChart').getContext('2d');
             
@@ -139,92 +154,88 @@
             });
         });
     </script>
-
     @endpush
     @endif
 
-    {{-- EMPTY STATE --}}
-    @if($invoices->isEmpty())
-        <div class="inv-empty">
-            <div class="inv-empty__icon-wrap">
-                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            </div>
-            <h3 class="inv-empty__title">Không tìm thấy hóa đơn</h3>
-            <p class="inv-empty__desc">Hiện tại căn hộ của bạn không có hóa đơn nào phù hợp với bộ lọc đã chọn.</p>
+    {{-- INVOICES LIST --}}
+    <div class="pay-card">
+        <div class="pay-card__header">
+            <h2 class="pay-card__title">Hóa đơn đã thanh toán</h2>
         </div>
-    @else
-        {{-- INVOICES LIST --}}
-        <div class="inv-list">
-            @foreach($invoices as $invoice)
-                <div class="inv-card inv-card--paid">
-                    <div class="inv-card__accent"></div>
-
-                    {{-- Body info --}}
-                    <div class="inv-card__body">
-                        <h3 class="inv-card__title">{{ $invoice->title }}</h3>
-                        <p class="inv-card__subtitle">
-                            Căn hộ: {{ $invoice->apartment->apartment_number ?? '—' }} 
-                            ({{ optional(optional($invoice->apartment)->floor)->block->name ?? '' }})
-                        </p>
-                        
-                        {{-- Chi tiết hóa đơn --}}
-                        @if($invoice->details->isNotEmpty())
-                            <div class="inv-card__details">
-                                @foreach($invoice->details as $detail)
-                                    <span class="inv-card__detail-badge">
-                                        {{ $detail->servicePrice->name ?? 'Phí khác' }}: {{ number_format($detail->amount) }}đ
-                                    </span>
-                                @endforeach
-                            </div>
-                        @endif
-
-                        <div class="inv-card__meta">
-                            <span class="inv-meta-item">
-                                Kỳ thanh toán: {{ str_pad($invoice->billing_month->month, 2, '0', STR_PAD_LEFT) }}/{{ $invoice->billing_year }}
-                            </span>
-                            @if($invoice->status === 'paid' && $invoice->payments->isNotEmpty())
-                                @php $payment = $invoice->payments->first(); @endphp
-                                <span class="inv-meta-item">
-                                    Thanh toán lúc: {{ $payment->paid_at ? $payment->paid_at->format('d/m/Y H:i') : '—' }}
-                                </span>
-                                @if($payment->payment_method === 'vnpay')
-                                <span class="inv-meta-item">
-                                    Mã GD: <strong style="color: #0f172a;">{{ $payment->vnp_txn_ref ?: explode('|', $payment->transaction_code)[0] }}</strong>
-                                </span>
-                                @endif
-                            @else
-                                <span class="inv-meta-item">
-                                    Hạn chót: {{ $invoice->due_date->format('d/m/Y') }}
-                                </span>
-                            @endif
-                        </div>
-                    </div>
-
-                    {{-- Amount & actions --}}
-                    <div class="inv-card__right">
-                        <div class="inv-card__price">
-                            {{ number_format($invoice->total_amount) }}đ
-                        </div>
-
-                        <div class="inv-card__status-box">
-                            <span class="inv-status inv-status--paid">Đã thanh toán</span>
-                        </div>
-
-                        <a href="{{ route('resident.invoices.show', $invoice->id) }}" class="inv-btn" style="background-color: #f1f5f9; color: #475569;">
-                            Xem chi tiết
-                        </a>
-                    </div>
+        
+        @if($invoices->isEmpty())
+            <div class="pay-empty">
+                <div class="pay-empty__icon"><i class="fa-regular fa-folder-open"></i></div>
+                <h3 class="pay-empty__title">Không tìm thấy hóa đơn</h3>
+                <p class="pay-empty__desc">Hiện tại căn hộ của bạn không có hóa đơn nào phù hợp với bộ lọc đã chọn.</p>
+            </div>
+        @else
+            <div class="pay-table-wrapper">
+                <table class="pay-table">
+                    <thead>
+                        <tr>
+                            <th>HÓA ĐƠN</th>
+                            <th>KỲ HẠN</th>
+                            <th class="text-right">SỐ TIỀN (VNĐ)</th>
+                            <th style="width: 40px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($invoices as $invoice)
+                            <tr class="pay-row history-row" onclick="window.location='{{ route('resident.invoices.show', $invoice->id) }}'" style="cursor: pointer;">
+                                <td class="td-service">
+                                    <div class="pay-service-cell" style="display: flex; align-items: center; gap: 12px;">
+                                        <div class="desktop-only" style="width: 36px; height: 36px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #64748b;">
+                                            <i class="fa-solid fa-file-invoice"></i>
+                                        </div>
+                                        <div style="display: flex; flex-direction: column; justify-content: center;">
+                                            <div style="font-weight: 600; color: #0f172a; font-size: 1rem; margin-bottom: 2px;">
+                                                <span class="desktop-only">{{ $invoice->title }}</span>
+                                                <span class="mobile-only" style="font-weight: 700; font-size: 1.05rem;">{{ str_replace('Hóa đơn ', '', $invoice->title) }}</span>
+                                            </div>
+                                            <div class="desktop-only" style="color: #64748b; font-size: 0.85rem;">
+                                                Căn hộ: {{ $invoice->apartment->apartment_number ?? 'N/A' }}
+                                            </div>
+                                            <div class="mobile-only" style="color: #64748b; font-size: 0.85rem; margin-top: 2px;">
+                                                Kỳ hạn: T{{ str_pad($invoice->billing_month->month, 2, '0', STR_PAD_LEFT) }}/{{ $invoice->billing_year }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="desktop-only" style="font-size: 0.9rem;">
+                                    <div style="color: #64748b; font-size: 0.9rem; margin-bottom: 2px;">Kỳ hạn: Tháng {{ str_pad($invoice->billing_month->month, 2, '0', STR_PAD_LEFT) }}/{{ $invoice->billing_year }}</div>
+                                    @if($invoice->status === 'paid' && $invoice->payments->isNotEmpty())
+                                        @php $payment = $invoice->payments->first(); @endphp
+                                        <div style="color: #475569; font-size: 0.85rem;">TT: {{ $payment->paid_at ? $payment->paid_at->format('d/m/Y H:i') : '—' }}</div>
+                                    @else
+                                        <div style="color: #475569; font-size: 0.85rem;">Hạn: {{ $invoice->due_date->format('d/m/Y') }}</div>
+                                    @endif
+                                </td>
+                                <td class="td-price">
+                                    <div class="pay-amount-cell" style="display: flex; flex-direction: column; align-items: flex-end; text-align: right; width: 100%;">
+                                        <div class="pay-amount-val" style="white-space: nowrap; font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 6px;">
+                                            {{ number_format($invoice->total_amount, 0, ',', '.') }} đ
+                                        </div>
+                                        <span class="pay-status-badge badge-paid" style="white-space: nowrap; background: #e2e8f0; color: #475569; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px;">ĐÃ THANH TOÁN</span>
+                                    </div>
+                                </td>
+                                <td class="text-center text-muted td-chevron-mobile">
+                                    <i class="fa-solid fa-chevron-right" style="color: #94a3b8;"></i>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            
+            {{-- PAGINATION --}}
+            @if($invoices->hasPages())
+                <div style="padding: 16px 24px; border-top: 1px solid #f1f5f9;">
+                    {{ $invoices->links() }}
                 </div>
-            @endforeach
-        </div>
-
-        {{-- PAGINATION --}}
-        @if($invoices->hasPages())
-            <div class="inv-pagination">
-                {{ $invoices->links() }}
-            </div>
+            @endif
         @endif
-    @endif
+    </div>
 </div>
 
 @include('resident.invoices.partials.style')
