@@ -20,8 +20,11 @@
             .resident-content { padding: 0 !important; }
             .mob-header { display: flex !important; }
             .tk-page-wrapper {
-                flex-direction: column;
                 padding: 16px;
+            }
+            .tk-layout-row {
+                flex-direction: column;
+                gap: 16px !important;
             }
             .tk-sidebar {
                 width: 100% !important;
@@ -281,6 +284,13 @@
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 16px;
+            gap: 12px;
+        }
+        @media (max-width: 640px) {
+            .history-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
         }
         .history-info h4 {
             margin: 0 0 4px 0;
@@ -299,6 +309,7 @@
             font-weight: 600;
             background: #eff6ff;
             color: #2563eb;
+            white-space: nowrap;
         }
         .history-status.completed {
             background: #ecfdf5;
