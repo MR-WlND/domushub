@@ -13,7 +13,7 @@
     .vr-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:.85rem; margin-bottom:1.5rem; }
     @media(max-width:500px){ .vr-stats { grid-template-columns:1fr 1fr; } }
     .vr-stat { background:#fff; border:1px solid #e8ecf4; border-radius:12px; padding:.8rem 1rem; display:flex; align-items:center; gap:.65rem; box-shadow:0 1px 4px rgba(0,20,80,.04); }
-    .vr-stat__ic { width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .vr-stat__ic { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
     .vr-stat__ic--purple { background:#dbeafe; color:#00236f; }
     .vr-stat__ic--green  { background:#dcfce7; color:#16a34a; }
     .vr-stat__ic--gray   { background:#f1f5f9; color:#64748b; }
@@ -26,25 +26,18 @@
     .vr-card { background:#fff; border:1px solid #e8ecf4; border-radius:14px; overflow:hidden; box-shadow:0 1px 5px rgba(0,20,80,.04); transition:box-shadow .15s; display:flex; align-items:stretch; }
     .vr-card:hover { box-shadow:0 4px 14px rgba(0,20,80,.09); }
 
-    /* Left stripe by status */
-    .vr-card__stripe { width:5px; flex-shrink:0; }
-    .vr-card--checked_in  .vr-card__stripe { background: linear-gradient(#059669,#10b981); }
-    .vr-card--checked_out .vr-card__stripe { background: linear-gradient(#94a3b8,#cbd5e1); }
-    .vr-card--pending     .vr-card__stripe { background: linear-gradient(#3b82f6,#6366f1); }
-    .vr-card--cancelled   .vr-card__stripe { background: linear-gradient(#ef4444,#f87171); }
-    .vr-card--expired     .vr-card__stripe { background: linear-gradient(#f59e0b,#fbbf24); }
 
     .vr-card__body { display:flex; align-items:center; gap:1rem; padding:.85rem 1rem; flex:1; min-width:0; }
     .vr-card__avatar { width:46px; height:46px; border-radius:10px; overflow:hidden; border:2px solid #e2e8f0; flex-shrink:0; background:#f1f5f9; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.05rem; color:#64748b; }
     .vr-card__avatar img { width:100%; height:100%; object-fit:cover; }
     .vr-card__info { flex:1; min-width:0; }
     .vr-card__name { font-size:.9rem; font-weight:800; color:#0f172a; margin:0 0 .15rem; }
-    .vr-card__meta { font-size:.77rem; color:#64748b; display:flex; flex-wrap:wrap; gap:.2rem .7rem; }
-    .vr-card__apt  { font-weight:700; color:#00236f; }
+    .vr-card__meta { font-size:.77rem; color:#64748b; display:flex; flex-wrap:wrap; align-items:center; gap:.4rem; }
+    .vr-card__apt  { font-weight:700; color:#1e293b; }
 
     /* badges */
     .vr-chip { display:inline-flex; align-items:center; gap:.25rem; font-size:.7rem; font-weight:700; padding:.2rem .6rem; border-radius:999px; }
-    .vr-chip--checked_in  { background:#dcfce7; color:#166534; }
+    .vr-chip--checked_in  { background:#a7f3d0; color:#047857; }
     .vr-chip--checked_out { background:#f1f5f9; color:#475569; }
     .vr-chip--pending     { background:#dbeafe; color:#1e40af; }
     .vr-chip--cancelled   { background:#fee2e2; color:#991b1b; }
@@ -107,7 +100,7 @@
             </div>
             <div class="vr-stat">
                 <div class="vr-stat__ic vr-stat__ic--gray">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                 </div>
                 <div><div class="vr-stat__n">{{ $outCount }}</div><div class="vr-stat__lb">Đã ra</div></div>
             </div>
@@ -118,7 +111,7 @@
             @foreach($visitors as $v)
                 @php $isNew = $v->created_at->gt(now()->subHours(2)) && $v->status === 'checked_in'; @endphp
                 <div class="vr-card vr-card--{{ $v->status }}">
-                    <div class="vr-card__stripe"></div>
+
                     <div class="vr-card__body">
                         {{-- Avatar / photo --}}
                         <div class="vr-card__avatar">
@@ -133,13 +126,15 @@
                             <div class="vr-card__meta">
                                 @if($v->guest_phone)
                                     <span>{{ $v->guest_phone }}</span>
+                                    <span>&middot;</span>
                                 @endif
                                 <span class="vr-card__apt">
                                     {{ $v->apartment?->apartment_number ?? '' }}
                                     @if($v->apartment?->floor?->block)
-                                        · {{ $v->apartment->floor->block->name }}
+                                        - {{ $v->apartment->floor->block->name }}
                                     @endif
                                 </span>
+                                <span>&middot;</span>
                                 <span>{{ $v->created_at->format('H:i d/m/Y') }}</span>
                             </div>
                             <div style="margin-top:.35rem;display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;">
@@ -151,7 +146,7 @@
                                     <span style="font-size:.72rem;color:#64748b;">· Ra {{ $v->check_out_at->format('H:i') }}</span>
                                 @endif
                                 @if($v->confirmed_by_resident)
-                                    <span style="font-size:.7rem;background:#dcfce7;color:#166534;padding:.15rem .5rem;border-radius:999px;font-weight:700;">✓ Đã xác nhận</span>
+                                    <span style="font-size:.7rem;background:#a7f3d0;color:#047857;padding:.15rem .5rem;border-radius:999px;font-weight:700;">✓ Đã xác nhận</span>
                                 @endif
                             </div>
                         </div>
