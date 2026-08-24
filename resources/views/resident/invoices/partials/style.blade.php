@@ -609,6 +609,7 @@
         text-transform: uppercase;
         letter-spacing: 0.05em;
         border-bottom: 1px solid var(--color-outline-soft, #c5c5d3);
+        white-space: nowrap;
     }
 
     .items-table td {

@@ -129,9 +129,9 @@
                                 <td data-label="Thành tiền" class="text-right val-subtotal">{{ number_format($detail->amount, 0, ',', '.') }} đ</td>
                                 <td data-label="Trạng thái" class="text-right">
                                     @if($detail->status === 'paid')
-                                        <span class="badge" style="background: #e2e8f0; color: #475569; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">Đã thanh toán</span>
+                                        <span class="badge" style="background: #e2e8f0; color: #475569; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; white-space: nowrap;">Đã thanh toán</span>
                                     @else
-                                        <span class="badge" style="background: #fef9c3; color: #854d0e; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">Chưa thanh toán</span>
+                                        <span class="badge" style="background: #fef9c3; color: #854d0e; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; white-space: nowrap;">Chưa thanh toán</span>
                                     @endif
                                 </td>
                             </tr>
