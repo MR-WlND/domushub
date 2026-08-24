@@ -291,13 +291,18 @@
     }
     
     .detail-card__header {
-        flex-direction: column;
+        flex-direction: row;
         align-items: flex-start;
-        gap: 12px;
+        gap: 8px;
     }
     
+    .detail-card__header > div:first-child {
+        flex: 1;
+        min-width: 0;
+    }
+
     .detail-card__meta {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
         gap: 12px;
     }
     
