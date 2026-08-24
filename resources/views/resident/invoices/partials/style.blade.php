@@ -651,7 +651,7 @@
     .items-table th.text-right, 
     .items-table td.text-right {
         text-align: right;
-        padding-left: 16px;
+        padding-left: 28px;
     }
 
     .text-center {
