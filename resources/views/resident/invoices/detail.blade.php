@@ -88,13 +88,10 @@
                                         @endif
                                     </td>
                                 @endif
-                                <td data-label="Tên khoản phí">
+                                <td data-label="Tên khoản phí" class="td-name">
                                     <div class="item-name">{{ $detail->servicePrice->name ?? 'Dịch vụ / Phí khác' }}</div>
                                     <div class="item-desc">
-                                        Đơn giá: {{ number_format($detail->servicePrice->price ?? $detail->amount) }} đ
-                                        @if(isset($detail->servicePrice->unit))
-                                            / {{ $detail->servicePrice->unit }}
-                                        @endif
+                                        SL: {{ number_format($detail->quantity, 2) }} × {{ number_format($detail->servicePrice->price ?? $detail->amount, 0, ',', '.') }} đ
                                     </div>
                                     @if(in_array(optional($detail->servicePrice)->type, ['water']))
                                         @php
@@ -120,14 +117,14 @@
                                         @endif
                                     @endif
                                 </td>
-                                <td data-label="Số lượng" class="text-right val-quantity">
+                                <td data-label="Số lượng" class="text-right val-quantity td-qty">
                                     {{ $detail->quantity }}
                                     @if(isset($detail->servicePrice->unit))
                                         {{ $detail->servicePrice->unit }}
                                     @endif
                                 </td>
-                                <td data-label="Thành tiền" class="text-right val-subtotal">{{ number_format($detail->amount, 0, ',', '.') }} đ</td>
-                                <td data-label="Trạng thái" class="text-right">
+                                <td data-label="Thành tiền" class="text-right val-subtotal td-amount">{{ number_format($detail->amount, 0, ',', '.') }} đ</td>
+                                <td data-label="Trạng thái" class="text-right td-status">
                                     @if($detail->status === 'paid')
                                         <span class="badge" style="background: #e2e8f0; color: #475569; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; white-space: nowrap;">Đã thanh toán</span>
                                     @else
@@ -304,65 +301,72 @@
         gap: 12px;
     }
     
-    /* Transform items-table to cards */
-    .items-table, .items-table tbody, .items-table tr, .items-table td {
-        display: block;
-        width: 100%;
-    }
-    
-    .items-table thead {
-        display: none;
-    }
+    /* Transform items-table to grid cards on mobile */
+    .items-table, .items-table tbody { display: block; }
+    .items-table thead { display: none; }
     
     .items-table tr {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-rows: auto auto;
         background: #fff;
-        border: 1px solid #f1f5f9;
+        border: 1px solid #e8ecf4;
         border-radius: 12px;
-        margin-bottom: 16px;
-        padding: 12px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        margin-bottom: 12px;
+        padding: 14px 16px;
+        gap: 6px 12px;
     }
     
+    /* All tds reset */
     .items-table td {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 0 !important;
-        border-bottom: 1px dashed #e2e8f0 !important;
-        text-align: right;
-    }
-    
-    .items-table td:last-child {
+        display: block;
+        padding: 0 !important;
         border-bottom: none !important;
-    }
-    
-    .items-table td::before {
-        content: attr(data-label);
-        font-weight: 600;
-        color: #64748b;
         text-align: left;
-        margin-right: 16px;
-        flex-shrink: 0;
-        font-size: 0.85rem;
+        vertical-align: top;
     }
     
-    .items-table td[style*="text-align: center;"] {
+    /* Remove ::before labels */
+    .items-table td::before { display: none; }
+    
+    /* Item name cell — left column spanning both rows */
+    .items-table td.td-name {
+        grid-column: 1;
+        grid-row: 1 / 3;
         display: flex;
-        justify-content: flex-start;
-    }
-    
-    .items-table td[style*="text-align: center;"]::before {
-        content: "Chọn thanh toán";
-    }
-
-    .items-table td[data-label="Tên khoản phí"] {
         flex-direction: column;
-        align-items: flex-start;
-        text-align: left;
+        gap: 4px;
     }
     
-    .items-table td[data-label="Tên khoản phí"]::before {
-        margin-bottom: 8px;
+    /* Hide qty column */
+    .items-table td.td-qty { display: none; }
+    
+    /* Amount — top right */
+    .items-table td.td-amount {
+        grid-column: 2;
+        grid-row: 1;
+        text-align: right;
+        font-size: 0.92rem;
+        font-weight: 700;
+        white-space: nowrap;
+        align-self: start;
+        padding-left: 0 !important;
+    }
+    
+    /* Status badge — bottom right */
+    .items-table td.td-status {
+        grid-column: 2;
+        grid-row: 2;
+        text-align: right;
+        display: flex;
+        justify-content: flex-end;
+        align-items: flex-end;
+        padding-left: 0 !important;
+    }
+    
+    /* Checkbox td */
+    .items-table td[style*="text-align: center"] {
+        display: none;
     }
 
     .detail-card__total {
