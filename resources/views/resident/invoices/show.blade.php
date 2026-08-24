@@ -154,8 +154,8 @@
                                                                 <tr style="{{ $detail->status === 'paid' ? 'opacity: 0.6;' : '' }}">
                                                                     <td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; text-align: center;">
                                                                         @if($detail->status !== 'paid')
-                                                                        <i class="fa-solid fa-circle-check mobile-only" style="color: #00236f; font-size: 1rem;"></i>
-                                                                        <input type="checkbox" name="detail_ids[]" value="{{ $detail->id }}" class="item-check desktop-only child-of-{{ $invoice->id }}" data-parent="{{ $invoice->id }}" data-invoice-title="{{ $invoice->title }}" data-amount="{{ $detail->amount }}" data-name="{{ $detail->servicePrice->name ?? 'Dịch vụ' }} - T{{ $invoice->billing_month->month }}" checked onclick="event.stopPropagation();" style="cursor: pointer;">
+                                                                        {{-- Checkbox is always in DOM (needed by JS) but hidden visually on mobile --}}
+                                                                        <input type="checkbox" name="detail_ids[]" value="{{ $detail->id }}" class="item-check child-of-{{ $invoice->id }}" data-parent="{{ $invoice->id }}" data-invoice-title="{{ $invoice->title }}" data-amount="{{ $detail->amount }}" data-name="{{ $detail->servicePrice->name ?? 'Dịch vụ' }} - T{{ $invoice->billing_month->month }}" checked onclick="event.stopPropagation();" style="cursor: pointer;">
                                                                         @endif
                                                                     </td>
                                                                     <td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; color: #334155; {{ $detail->status === 'paid' ? 'text-decoration: line-through;' : '' }}">
