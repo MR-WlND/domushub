@@ -7,12 +7,25 @@
     @push('styles')
     <style>
     @media (max-width: 1024px) {
-        .history-row {
-            grid-template-columns: 1fr auto !important;
-            grid-template-areas: "service price" !important;
-            align-items: center !important;
+        div.pay-card.chart-card {
+            background: #fff !important;
+            box-shadow: 0px 4px 20px rgba(0, 35, 111, 0.03) !important;
+            border: 1px solid #f1f5f9 !important;
+            border-radius: 16px !important;
+            padding: 16px !important;
         }
-        .history-row > td.td-chevron-mobile { display: none !important; }
+        tr.pay-row.history-row {
+            display: block !important;
+            padding: 16px !important;
+        }
+        tr.pay-row.history-row > td:not(.desktop-only) {
+            border: none !important;
+            padding: 0 !important;
+            display: block !important;
+        }
+        tr.pay-row.history-row > td.desktop-only {
+            display: none !important;
+        }
     }
     @media (max-width: 768px) {
         .inv-chart-wrap { padding: 16px 12px !important; }
@@ -26,7 +39,7 @@
             <h1 class="pay-page__title">Lịch sử hóa đơn</h1>
             <p class="pay-page__subtitle">Xem lại các khoản phí bạn đã thanh toán.</p>
         </div>
-        <div>
+        <div class="desktop-only">
             <a href="{{ route('resident.invoices.index') }}" class="btn-history-link" style="background: #ffffff; border: 1px solid #e2e8f0; padding: 10px 20px; border-radius: 6px; color: #475569; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; transition: background 0.2s;">
                 <i class="fa-solid fa-arrow-left"></i> Quay lại
             </a>
@@ -49,13 +62,13 @@
     @endif
 
     {{-- WATER CONSUMPTION CHART CARD --}}
-    <div class="pay-card" style="margin-bottom: 24px;">
-        <div class="pay-card__header flex-between" style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
+    <div class="pay-card chart-card" style="margin-bottom: 24px;">
+        <div class="pay-card__header flex-between" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+            <div style="flex: 1;">
                 <h2 class="pay-card__title">Biểu đồ tiêu thụ nước</h2>
                 <p style="font-size: 0.85rem; color: #64748b; margin: 4px 0 0 0;">Lượng nước tiêu thụ (m³) ghi nhận từ hệ thống</p>
             </div>
-            <div style="background: #e0f2fe; color: #0284c7; padding: 6px 12px; border-radius: 99px; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center;">
+            <div style="background: #e0f2fe; color: #0284c7; padding: 6px 12px; border-radius: 99px; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; white-space: nowrap; flex-shrink: 0;">
                 <i class="fa-solid fa-droplet" style="margin-right: 6px;"></i> Đồng hồ Nước
             </div>
         </div>
@@ -73,6 +86,7 @@
 
     @if(!empty($waterChartData))
     @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const ctx = document.getElementById('waterUsageChart').getContext('2d');
@@ -183,21 +197,18 @@
                     <tbody>
                         @foreach($invoices as $invoice)
                             <tr class="pay-row history-row" onclick="window.location='{{ route('resident.invoices.show', $invoice->id) }}'" style="cursor: pointer;">
-                                <td class="td-service">
+                                <!-- DESKTOP VIEW -->
+                                <td class="td-service desktop-only">
                                     <div class="pay-service-cell" style="display: flex; align-items: center; gap: 12px;">
-                                        <div class="desktop-only" style="width: 36px; height: 36px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #64748b;">
+                                        <div style="width: 36px; height: 36px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #64748b;">
                                             <i class="fa-solid fa-file-invoice"></i>
                                         </div>
                                         <div style="display: flex; flex-direction: column; justify-content: center;">
                                             <div style="font-weight: 600; color: #0f172a; font-size: 1rem; margin-bottom: 2px;">
-                                                <span class="desktop-only">{{ $invoice->title }}</span>
-                                                <span class="mobile-only" style="font-weight: 700; font-size: 1.05rem;">{{ str_replace('Hóa đơn ', '', $invoice->title) }}</span>
+                                                <span>{{ $invoice->title }}</span>
                                             </div>
-                                            <div class="desktop-only" style="color: #64748b; font-size: 0.85rem;">
+                                            <div style="color: #64748b; font-size: 0.85rem;">
                                                 Căn hộ: {{ $invoice->apartment->apartment_number ?? 'N/A' }}
-                                            </div>
-                                            <div class="mobile-only" style="color: #64748b; font-size: 0.85rem; margin-top: 2px;">
-                                                Kỳ hạn: T{{ str_pad($invoice->billing_month->month, 2, '0', STR_PAD_LEFT) }}/{{ $invoice->billing_year }}
                                             </div>
                                         </div>
                                     </div>
@@ -211,7 +222,7 @@
                                         <div style="color: #475569; font-size: 0.85rem;">Hạn: {{ $invoice->due_date->format('d/m/Y') }}</div>
                                     @endif
                                 </td>
-                                <td class="td-price">
+                                <td class="td-price desktop-only">
                                     <div class="pay-amount-cell" style="display: flex; flex-direction: column; align-items: flex-end; text-align: right; width: 100%;">
                                         <div class="pay-amount-val" style="white-space: nowrap; font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 6px;">
                                             {{ number_format($invoice->total_amount, 0, ',', '.') }} đ
@@ -219,8 +230,44 @@
                                         <span class="pay-status-badge badge-paid" style="white-space: nowrap; background: #e2e8f0; color: #475569; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px;">ĐÃ THANH TOÁN</span>
                                     </div>
                                 </td>
-                                <td class="text-center text-muted td-chevron-mobile">
+                                <td class="text-center text-muted desktop-only">
                                     <i class="fa-solid fa-chevron-right" style="color: #94a3b8;"></i>
+                                </td>
+
+                                <!-- MOBILE VIEW -->
+                                <td class="mobile-only" style="width: 100%;">
+                                    <div style="display: flex; gap: 14px; align-items: flex-start; width: 100%;">
+                                        <div style="width: 44px; height: 44px; background: #f1f5f9; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #64748b; flex-shrink: 0;">
+                                            <i class="fa-solid fa-file-invoice" style="font-size: 1.1rem;"></i>
+                                        </div>
+                                        <div style="flex: 1; display: flex; flex-direction: column;">
+                                            <div style="font-weight: 500; font-size: 0.95rem; color: #0f172a; margin-bottom: 6px; line-height: 1.4;">
+                                                {{ $invoice->title }}
+                                            </div>
+                                            <div style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 6px;">
+                                                Căn hộ: {{ $invoice->apartment->apartment_number ?? 'N/A' }}
+                                            </div>
+                                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                                <div style="color: #94a3b8; font-size: 0.8rem; line-height: 1.6;">
+                                                    <div>Kỳ hạn: Tháng {{ str_pad($invoice->billing_month->month, 2, '0', STR_PAD_LEFT) }}/{{ $invoice->billing_year }}</div>
+                                                    @if($invoice->status === 'paid' && $invoice->payments->isNotEmpty())
+                                                        @php $payment = $invoice->payments->first(); @endphp
+                                                        <div>TT: {{ $payment->paid_at ? $payment->paid_at->format('d/m/Y H:i') : '—' }}</div>
+                                                    @else
+                                                        <div>Hạn: {{ $invoice->due_date->format('d/m/Y') }}</div>
+                                                    @endif
+                                                </div>
+                                                <i class="fa-solid fa-chevron-right" style="color: #cbd5e1; font-size: 1rem;"></i>
+                                            </div>
+                                            
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+                                                <div style="font-size: 1.15rem; font-weight: 700; color: #0f172a;">
+                                                    {{ number_format($invoice->total_amount, 0, ',', '.') }} đ
+                                                </div>
+                                                <span style="background: #f8fafc; color: #475569; padding: 6px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px;">ĐÃ THANH TOÁN</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
