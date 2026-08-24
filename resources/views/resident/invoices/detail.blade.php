@@ -2,6 +2,8 @@
 
 @section('title', 'Chi tiết hóa đơn – DomusHub')
 
+@section('content_class', 'invoice-detail-wrapper')
+
 @section('content')
 <div class="invoice-detail-page">
     {{-- Header with back button --}}
@@ -277,14 +279,22 @@
     </div>
     @endif
 </div>{{-- /.invoice-detail-page --}}
-
 @include('resident.invoices.partials.style')
 
 @push('styles')
 <style>
+/* PC: sát header hơn (bớt top padding từ 2rem xuống 1rem) */
+.invoice-detail-wrapper {
+    padding-top: 1rem !important;
+}
+
 @media (max-width: 768px) {
+    /* Mobile: viền mỏng hơn (bớt padding sides + top) */
+    .invoice-detail-wrapper {
+        padding: 0.75rem !important;
+    }
+
     .invoice-detail-page {
-        /* Global layout already provides padding via .resident-content */
     }
     
     .detail-header-row {
@@ -294,24 +304,55 @@
     }
     
     .detail-card__header {
-        flex-direction: row;
-        align-items: flex-start;
-        gap: 8px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px 12px;
+        align-items: center;
     }
     
     .detail-card__header > div:first-child {
-        flex: 1;
-        min-width: 0;
+        display: contents; /* Flattens children for grid */
+    }
+    
+    .invoice-code {
+        grid-column: 1;
+        grid-row: 1;
+        justify-self: start;
+        margin-bottom: 0;
+    }
+    
+    .invoice-status-wrap {
+        grid-column: 2;
+        grid-row: 1;
+    }
+    
+    .invoice-title {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        font-size: 1.3rem;
+        margin-top: 4px;
+    }
+    
+    .invoice-subtitle {
+        grid-column: 1 / -1;
+        grid-row: 3;
     }
 
     .detail-card__meta {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
-        padding: 12px 16px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px 12px;
+        padding: 16px;
     }
     
-    .meta-label { font-size: 0.65rem; }
-    .meta-val { font-size: 0.82rem; }
+    .meta-label { 
+        font-size: 0.65rem; 
+        text-transform: uppercase;
+    }
+    .meta-val { font-size: 0.88rem; }
+    
+    .detail-card__meta .meta-item:nth-child(3) .meta-val {
+        color: #ef4444; /* red for due date */
+    }
     
     /* Transform items-table to grid cards on mobile */
     .items-table, .items-table tbody { display: block; }
@@ -321,12 +362,23 @@
         display: grid;
         grid-template-columns: 1fr auto;
         grid-template-rows: auto auto;
-        background: #fff;
-        border: 1px solid #e8ecf4;
-        border-radius: 12px;
-        margin-bottom: 12px;
-        padding: 14px 16px;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid #f1f5f9;
+        border-radius: 0;
+        margin-bottom: 0;
+        padding: 16px 0;
         gap: 6px 12px;
+    }
+    
+    .items-table tr:last-child {
+        border-bottom: none;
+    }
+    
+    .section-title {
+        font-size: 1.15rem;
+        color: #0f172a;
+        margin-bottom: 8px;
     }
     
     /* All tds reset */
@@ -382,9 +434,21 @@
     }
 
     .detail-card__total {
-        flex-direction: column;
-        gap: 8px;
-        align-items: flex-end;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        background: #eef2ff;
+        border-bottom-left-radius: 12px;
+        border-bottom-right-radius: 12px;
+    }
+    
+    .detail-card__total .total-label {
+        font-size: 1.1rem;
+        color: #1e293b;
+    }
+    
+    .detail-card__total .total-val {
+        color: #00236f;
     }
     
     .payment-info-item {
