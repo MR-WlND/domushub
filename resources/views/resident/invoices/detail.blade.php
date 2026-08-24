@@ -372,13 +372,17 @@
     }
     
     .payment-info-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 4px;
+        flex-wrap: wrap;
+        gap: 4px 8px;
     }
     
     .info-label {
-        width: 100%;
+        min-width: 110px;
+        font-size: 0.82rem;
+    }
+    
+    .info-val {
+        font-size: 0.88rem;
     }
 }
 </style>
