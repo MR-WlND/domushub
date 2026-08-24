@@ -865,3 +865,22 @@ body.resident-page {
         color: #dc2626;
     }
 }
+
+/* =========================================================================
+   Global Page Header Sync (Sync to match Invoice page)
+   ========================================================================= */
+.rv__title, .vr-title, .tr-title, .tk-new-title, .rf-title, .bk-title, .mobile-page-title, .res-header__title, .page-title, .pay-page__title, .vp__title, .vq__title, .tip-title, .tk-main-title, .vd-title, .invoice-title, .rh-hero-title, .ra-title, .ra-detail-title, .qr-facility-name, .rfb-form-title, .fb-title {
+    font-size: 1.6rem !important;
+    font-weight: 700 !important;
+    color: #00236f !important;
+    margin: 0 0 6px 0 !important;
+    font-family: 'Inter', system-ui, sans-serif !important;
+    line-height: 1.3 !important;
+}
+
+.rv__subtitle, .vr-subtitle, .tr-subtitle, .tk-new-subtitle, .rf-subtitle, .bk-subtitle, .mobile-page-subtitle, .res-header__subtitle, .page-subtitle, .pay-page__subtitle, .vp__subtitle, .ra-subtitle {
+    font-size: 0.9rem !important;
+    color: #444651 !important;
+    margin: 0 !important;
+    font-family: 'Inter', system-ui, sans-serif !important;
+}
