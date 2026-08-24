@@ -636,18 +636,21 @@
     .val-quantity {
         font-size: 0.9rem;
         color: var(--color-text-secondary, #444651);
+        white-space: nowrap;
     }
 
     .val-subtotal {
         font-size: 0.95rem;
         font-weight: 700;
         color: var(--color-text, #0b1c30);
+        white-space: nowrap;
     }
 
     .text-right, 
     .items-table th.text-right, 
     .items-table td.text-right {
         text-align: right;
+        padding-left: 16px;
     }
 
     .text-center {
