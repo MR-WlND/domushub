@@ -90,9 +90,6 @@
                                 @endif
                                 <td data-label="Tên khoản phí" class="td-name">
                                     <div class="item-name">{{ $detail->servicePrice->name ?? 'Dịch vụ / Phí khác' }}</div>
-                                    <div class="item-desc">
-                                        SL: {{ number_format($detail->quantity, 2) }} × {{ number_format($detail->servicePrice->price ?? $detail->amount, 0, ',', '.') }} đ
-                                    </div>
                                     @if(in_array(optional($detail->servicePrice)->type, ['water']))
                                         @php
                                             $meter = \App\Models\UtilityMeter::where('apartment_id', $invoice->apartment_id)
@@ -102,19 +99,25 @@
                                                 ->first();
                                         @endphp
                                         @if($meter)
-                                            <div class="item-meter-info" style="font-size: 0.8rem; color: #64748b; margin-top: 4px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-                                                <div>
-                                                    Chỉ số cũ: <strong>{{ $meter->old_value }}</strong> &nbsp;|&nbsp;
-                                                    Chỉ số mới: <strong>{{ $meter->new_value }}</strong> &nbsp;|&nbsp;
-                                                    Tiêu thụ: <strong>{{ $meter->usage_amount }}</strong> {{ $detail->servicePrice->type === 'water' ? 'm³' : 'kWh' }}
-                                                </div>
-                                                @if($detail->servicePrice->type === 'water')
-                                                    <button type="button" class="btn-complaint" onclick="sendWaterComplaint(event, '{{ route('resident.invoices.complaint-water', $invoice->id) }}')" style="background: none; border: none; color: #dc2626; font-size: 0.8rem; font-weight: 600; cursor: pointer; text-decoration: underline; padding: 0;">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right: 4px; vertical-align: middle; display: inline-block;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>Khiếu nại chỉ số
+                                            <div class="item-desc">
+                                                Đơn giá {{ number_format($detail->servicePrice->price ?? 0, 0, ',', '.') }} đ | SL: {{ $meter->usage_amount }} | Tiêu thụ: <strong>{{ $meter->usage_amount }} m³</strong>
+                                            </div>
+                                            @if($detail->servicePrice->type === 'water')
+                                                <div style="margin-top: 4px;">
+                                                    <button type="button" class="btn-complaint" onclick="sendWaterComplaint(event, '{{ route('resident.invoices.complaint-water', $invoice->id) }}')" style="background: none; border: none; color: #dc2626; font-size: 0.75rem; font-weight: 600; cursor: pointer; text-decoration: underline; padding: 0;">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right: 3px; vertical-align: middle; display: inline-block;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>Khiếu nại chỉ số
                                                     </button>
-                                                @endif
+                                                </div>
+                                            @endif
+                                        @else
+                                            <div class="item-desc">
+                                                SL: {{ number_format($detail->quantity, 2) }} × {{ number_format($detail->servicePrice->price ?? $detail->amount, 0, ',', '.') }} đ
                                             </div>
                                         @endif
+                                    @else
+                                        <div class="item-desc">
+                                            SL: {{ number_format($detail->quantity, 2) }} × {{ number_format($detail->servicePrice->price ?? $detail->amount, 0, ',', '.') }} đ
+                                        </div>
                                     @endif
                                 </td>
                                 <td data-label="Số lượng" class="text-right val-quantity td-qty">
@@ -302,9 +305,13 @@
     }
 
     .detail-card__meta {
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        padding: 12px 16px;
     }
+    
+    .meta-label { font-size: 0.65rem; }
+    .meta-val { font-size: 0.82rem; }
     
     /* Transform items-table to grid cards on mobile */
     .items-table, .items-table tbody { display: block; }
