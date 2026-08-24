@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         previewContainer.innerHTML = '';
         
-        if (uploadedFiles.files.length > 0) {
+        if (uploadedFiles.files.length >= 5) {
             uploadZone.style.display = 'none';
         } else {
             uploadZone.style.display = 'block';
@@ -90,21 +90,6 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             previewContainer.appendChild(div);
         });
-
-        // Add 'Add More' button
-        if (uploadedFiles.files.length > 0 && uploadedFiles.files.length < 5) {
-            const addBtn = document.createElement('label');
-            addBtn.htmlFor = 'fileInput';
-            addBtn.className = 'upload-preview-item add-more-btn';
-            addBtn.style.display = 'flex';
-            addBtn.style.alignItems = 'center';
-            addBtn.style.justifyContent = 'center';
-            addBtn.style.background = '#f8fafc';
-            addBtn.style.border = '2px dashed #cbd5e1';
-            addBtn.style.cursor = 'pointer';
-            addBtn.innerHTML = '<i class="fa-solid fa-plus" style="font-size: 24px; color: #94a3b8;"></i>';
-            previewContainer.appendChild(addBtn);
-        }
 
         // Attach event listeners to remove buttons
         document.querySelectorAll('.upload-preview-remove').forEach(btn => {
