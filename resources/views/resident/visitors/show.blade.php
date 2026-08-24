@@ -59,7 +59,7 @@
     .vd-vehicle { margin:0 1.5rem 1.25rem; background:#eff6ff; border:none; border-radius:12px; padding:1.25rem; display:flex; align-items:center; gap:.75rem; font-size:.9rem; color:#1e40af; font-weight:700; }
 
     /* CONFIRMED BOX */
-    .vd-confirmed { margin:0 1.5rem 1.5rem; background:#ecfdf5; border:1px solid #d1fae5; border-radius:12px; padding:1.25rem; display:flex; align-items:center; gap:.75rem; font-size:.9rem; color:#065f46; font-weight:600; }
+    .vd-confirmed { margin:0 1.5rem 1.5rem; background:#52e8ac; border:none; border-radius:12px; padding:1.25rem; display:flex; align-items:center; gap:.75rem; font-size:.9rem; color:#043f2e; font-weight:600; }
     .vd-rejected { margin:0 1.5rem 1.5rem; background:#fef2f2; border:1px solid #fee2e2; border-radius:12px; padding:1.25rem; display:flex; align-items:center; gap:.75rem; font-size:.9rem; color:#991b1b; font-weight:600; }
 
     /* ACTIONS */
@@ -83,6 +83,22 @@
     .vd-toast.show { transform:translateY(0); opacity:1; }
     .vd-toast--success { background:#166534; }
     .vd-toast--error   { background:#991b1b; }
+
+    .vd-mobile-divider { display: none; }
+
+    @media (max-width: 600px) {
+        .vd-top { display: flex; flex-direction: column; gap: 1rem; padding: 1.5rem 1.25rem; }
+        .vd-info { order: 2; width: 100%; }
+        .vd-photo-box { order: 1; margin: 0 auto; width: 100px; }
+        .vd-photo-box img { width: 100px; height: 100px; border-radius: 50%; border: 1.5px solid #cbd5e1; object-fit: cover; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .vd-photo-box p { display: none; }
+        .vd-name { justify-content: center; margin-bottom: 0; }
+        .vd-mobile-divider { display: block; border-top: 1px solid #f1f5f9; margin: 1rem 0; width: 100%; }
+        .vd-info-grid { grid-template-columns: 1fr; row-gap: 0.85rem; margin-top: 0; }
+        .vd-row { justify-content: space-between; align-items: center; width: 100%; }
+        .vd-lbl { min-width: auto; flex-shrink: 1; color: #475569; }
+        .vd-val { text-align: right; flex: none; font-weight: 600; }
+    }
     </style>
 @endpush
 
@@ -115,6 +131,7 @@
                     {{ $visitor->guest_name }}
                     <span class="vd-chip vd-chip--{{ $visitor->status }}">{{ $visitor->statusLabel() }}</span>
                 </div>
+                <div class="vd-mobile-divider"></div>
                 <div class="vd-info-grid">
                     @if($visitor->guest_phone)
                     <div class="vd-row">
@@ -141,18 +158,18 @@
                     </div>
                     <div class="vd-row">
                         <span class="vd-lbl">Đăng ký lúc</span>
-                        <span class="vd-val">{{ $visitor->created_at->format('H:i') }} &mdash; {{ $visitor->created_at->format('d/m/Y') }}</span>
+                        <span class="vd-val">{{ $visitor->created_at->format('H:i') }} - {{ $visitor->created_at->format('d/m/Y') }}</span>
                     </div>
                     @if($visitor->check_in_at)
                     <div class="vd-row">
                         <span class="vd-lbl">Vào lúc</span>
-                        <span class="vd-val" style="color:#059669;">{{ $visitor->check_in_at->format('H:i') }} &mdash; {{ $visitor->check_in_at->format('d/m/Y') }}</span>
+                        <span class="vd-val" style="color:#059669;">{{ $visitor->check_in_at->format('H:i') }} - {{ $visitor->check_in_at->format('d/m/Y') }}</span>
                     </div>
                     @endif
                     @if($visitor->check_out_at)
                     <div class="vd-row">
                         <span class="vd-lbl">Ra lúc</span>
-                        <span class="vd-val" style="color:#64748b;">{{ $visitor->check_out_at->format('H:i') }} &mdash; {{ $visitor->check_out_at->format('d/m/Y') }}</span>
+                        <span class="vd-val" style="color:#64748b;">{{ $visitor->check_out_at->format('H:i') }} - {{ $visitor->check_out_at->format('d/m/Y') }}</span>
                     </div>
                     @endif
                 </div>
