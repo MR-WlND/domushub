@@ -151,7 +151,12 @@
                 </div>
                 <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 8px;">
                     <div style="font-size: 13px; color: #64748b; font-weight: 500; white-space: nowrap;">Hoặc tải lên:</div>
-                    <input type="file" name="attachments[]" accept="image/*, application/pdf" class="form-control" style="flex: 1; height: 42px; padding: 7px 14px; box-sizing: border-box; margin: 0;" id="file-input" multiple>
+                    <label for="file-input" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 16px; cursor: pointer; color: #334155; font-weight: 500; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#94a3b8';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#cbd5e1';">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/></svg>
+                        Chọn tệp
+                    </label>
+                    <span id="file-name-display" style="font-size: 14px; color: #64748b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px;">Không có tệp nào được chọn</span>
+                    <input type="file" name="attachments[]" accept="image/*, application/pdf" class="form-control" id="file-input" multiple style="display: none;" onchange="document.getElementById('file-name-display').textContent = this.files.length > 0 ? (this.files.length + ' tệp được chọn') : 'Không có tệp nào được chọn';">
                 </div>
                 <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">Có thể chọn nhiều file. Tối đa 10MB mỗi file.</div>
                 
