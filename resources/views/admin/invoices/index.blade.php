@@ -8,8 +8,8 @@
         {{-- Header --}}
         <div class="inv-admin__header">
             <div>
-                <p class="inv-admin__eyebrow">Tài chính</p>
                 <h1 class="inv-admin__title">Quản lý Hóa đơn</h1>
+                <p class="inv-admin__subtitle">Theo dõi, quản lý công nợ và thu phí dịch vụ các căn hộ</p>
             </div>
             <div style="display:flex;gap:10px;align-items:center">
                 <form id="batch-remind-form" action="{{ portal_route('invoices.batch-resend-notification') }}" method="POST" style="margin:0">
@@ -402,9 +402,9 @@
         }
 
         .inv-admin {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
         /* Header */
@@ -425,10 +425,18 @@
         }
 
         .inv-admin__title {
-            font-size: 1.6rem;
+            font-size: 28px;
             font-weight: 700;
-            color: #0f172a;
+            color: #00236f;
             margin: 0;
+            line-height: 1.2;
+        }
+
+        .inv-admin__subtitle {
+            font-size: 15px;
+            color: #64748b;
+            margin: 8px 0 0 0;
+            font-weight: 400;
         }
 
         /* Alert */
