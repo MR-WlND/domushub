@@ -281,7 +281,10 @@
             border: 1px solid #e2e8f0;
             border-radius: 12px;
             padding: 20px;
-            margin-bottom: 16px;
+            margin-bottom: 10px;
+        }
+        .history-item:last-child {
+            margin-bottom: 0;
         }
         .history-header {
             display: flex;
@@ -561,7 +564,8 @@
 
             <h3 class="history-title">Lịch sử yêu cầu</h3>
             @php
-                $recentTickets = \App\Models\Ticket::where('sender_id', auth()->id())->latest()->take(2)->get();
+                $totalTicketsCount = \App\Models\Ticket::where('sender_id', auth()->id())->count();
+                $recentTickets = \App\Models\Ticket::where('sender_id', auth()->id())->latest()->take(3)->get();
             @endphp
             
             @forelse($recentTickets as $ticket)
@@ -604,6 +608,14 @@
                     Chưa có phản ánh nào gần đây.
                 </div>
             @endforelse
+            
+            @if($totalTicketsCount > 3)
+                <div style="text-align: center; margin-top: 4px;">
+                    <a href="{{ route('resident.tickets.index') }}" style="display: inline-flex; align-items: center; justify-content: center; padding: 10px 20px; font-size: 14px; font-weight: 600; color: #1e3a8a; background: #eff6ff; border-radius: 20px; text-decoration: none; transition: background 0.2s;">
+                        Xem thêm lịch sử ({{ $totalTicketsCount - 3 }}) <i class="fa-solid fa-arrow-right" style="margin-left: 6px; font-size: 12px;"></i>
+                    </a>
+                </div>
+            @endif
             
         </div>
 
