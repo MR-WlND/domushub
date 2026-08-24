@@ -707,6 +707,7 @@
         display: flex;
         flex-direction: column;
         gap: 16px;
+        margin-bottom: 16px;
     }
 
     .payment-info-item {
