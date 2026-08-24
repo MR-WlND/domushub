@@ -11,6 +11,12 @@ body.resident-page .resident-content {
     padding: 0 16px !important;
 }
 
+@media (max-width: 768px) {
+    body.resident-page .resident-content {
+        padding: 0 !important;
+    }
+}
+
 /* Layout & Containers */
 .df-layout {
     max-width: 1600px; /* Tăng mạnh max-width để viền hai bên không bị quá rộng */
@@ -858,7 +864,7 @@ body.resident-page .resident-content {
 @media (max-width: 768px) {
     .df-layout {
         grid-template-columns: 1fr;
-        padding: 12px;
+        padding: 12px 8px;
         gap: 16px;
     }
 
