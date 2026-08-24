@@ -25,22 +25,20 @@ class ResidentManageController extends Controller
             'search'   => 'nullable|string|max:200',
         ]);
 
-        $query = User::where('role', 'resident')
+        $userQuery = User::where('role', 'resident')
             ->whereHas('residents')
             ->with(['apartment.floor.block', 'residents'])
             ->orderBy('apartment_id', 'asc');
 
         if ($request->filled('block_id')) {
-            $query->whereHas('apartment.floor', fn($q) => $q->where('block_id', $request->block_id));
+            $userQuery->whereHas('apartment.floor', fn($q) => $q->where('block_id', $request->block_id));
         }
-
         if ($request->filled('floor_id')) {
-            $query->whereHas('apartment', fn($q) => $q->where('floor_id', $request->floor_id));
+            $userQuery->whereHas('apartment', fn($q) => $q->where('floor_id', $request->floor_id));
         }
-
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function ($q) use ($search) {
+            $userQuery->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('phone', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
@@ -49,7 +47,73 @@ class ResidentManageController extends Controller
             });
         }
 
-        $residents = $query->paginate(20)->withQueryString();
+        $users = $userQuery->get()->map(function($user) {
+            $apt = $user->apartment;
+            $residentRecord = $user->residents->firstWhere('apartment_id', $user->apartment_id);
+            return (object) [
+                'type' => 'user',
+                'id' => $user->id,
+                'name' => $user->name,
+                'avatar' => $user->avatar,
+                'cccd' => $user->cccd,
+                'phone' => $user->phone,
+                'email' => $user->email,
+                'status' => $user->status,
+                'created_at' => $user->created_at,
+                'apartment' => $apt,
+                'block' => $apt?->floor?->block,
+                'floor' => $apt?->floor,
+                'relationship' => $residentRecord?->relationship,
+                'has_account' => true,
+            ];
+        });
+
+        $memberQuery = \App\Models\ApartmentMember::with(['apartment.floor.block']);
+        if ($request->filled('block_id')) {
+            $memberQuery->whereHas('apartment.floor', fn($q) => $q->where('block_id', $request->block_id));
+        }
+        if ($request->filled('floor_id')) {
+            $memberQuery->whereHas('apartment', fn($q) => $q->where('floor_id', $request->floor_id));
+        }
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $memberQuery->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhereHas('apartment', fn($aq) => $aq->where('apartment_number', 'like', "%{$search}%"));
+            });
+        }
+
+        $members = $memberQuery->get()->map(function($member) {
+            return (object) [
+                'type' => 'declared',
+                'id' => $member->id,
+                'name' => $member->name,
+                'avatar' => null,
+                'cccd' => null,
+                'phone' => null,
+                'email' => null,
+                'status' => 'inactive', // or declared
+                'created_at' => $member->created_at,
+                'apartment' => $member->apartment,
+                'block' => $member->apartment?->floor?->block,
+                'floor' => $member->apartment?->floor,
+                'relationship' => $member->relationship ?? 'Thành viên',
+                'has_account' => false,
+            ];
+        });
+
+        $allResidents = $users->merge($members)->sortBy('apartment.apartment_number')->values();
+        
+        $page = \Illuminate\Pagination\Paginator::resolveCurrentPage() ?: 1;
+        $perPage = 20;
+        $residents = new \Illuminate\Pagination\LengthAwarePaginator(
+            $allResidents->forPage($page, $perPage),
+            $allResidents->count(),
+            $perPage,
+            $page,
+            ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath()]
+        );
+        $residents->withQueryString();
 
         $blocks = Block::orderBy('name')->get();
         $floors = Floor::with('block')->orderBy('floor_number')->get();

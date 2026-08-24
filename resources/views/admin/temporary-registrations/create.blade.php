@@ -386,9 +386,20 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label">Giấy tờ đính kèm (CCCD, Hợp đồng...)</label>
-                <div class="file-upload-wrapper">
-                    <input type="file" name="attachments[]" accept=".jpg,.jpeg,.png,.pdf" class="file-input" id="admin-file-input" multiple>
+                <label class="form-label">Ảnh Căn cước công dân (Mặt trước & mặt sau)</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                    <button type="button" onclick="openGlobalCameraModal('CCCD_Mat_Truoc')" style="background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 8px; padding: 24px 12px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s; color: #00236f; width: 100%; box-sizing: border-box;" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#93c5fd';" onmouseout="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1';">
+                        <i class="fa-solid fa-camera" style="font-size: 24px;"></i>
+                        <span style="font-weight: 600; font-size: 14px;">Chụp mặt trước</span>
+                    </button>
+                    <button type="button" onclick="openGlobalCameraModal('CCCD_Mat_Sau')" style="background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 8px; padding: 24px 12px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s; color: #00236f; width: 100%; box-sizing: border-box;" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#93c5fd';" onmouseout="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1';">
+                        <i class="fa-solid fa-camera" style="font-size: 24px;"></i>
+                        <span style="font-weight: 600; font-size: 14px;">Chụp mặt sau</span>
+                    </button>
+                </div>
+                <div style="display: none; gap: 12px; align-items: center;">
+                    <div style="font-size: 13px; color: #64748b; font-weight: 500; white-space: nowrap;">Hoặc tải lên từ máy:</div>
+                    <input type="file" name="attachments[]" accept="image/*, application/pdf" class="file-input" id="admin-file-input" multiple style="flex: 1; height: 42px; padding: 7px 12px; box-sizing: border-box; margin: 0;">
                 </div>
                 <div class="form-hint">Định dạng hỗ trợ: JPG, PNG, PDF. Kích thước tối đa 10MB/file. Có thể chọn nhiều file.</div>
                 
@@ -403,6 +414,8 @@
         </form>
     </div>
 </div>
+
+@include('components.webrtc-camera')
 
 @push('scripts')
 <script>
@@ -522,6 +535,12 @@
                     adminSelectedFiles.items.add(file);
                 });
                 
+                adminFileInput.files = adminSelectedFiles.files;
+                renderAdminPreviews();
+            });
+
+            document.addEventListener('global-camera-captured', function(e) {
+                adminSelectedFiles.items.add(e.detail.file);
                 adminFileInput.files = adminSelectedFiles.files;
                 renderAdminPreviews();
             });

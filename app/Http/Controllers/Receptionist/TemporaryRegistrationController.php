@@ -376,13 +376,20 @@ class TemporaryRegistrationController extends Controller
             }
         }
 
+        $dbRelationship = 'tenant';
+        if (in_array($registration->relationship, ['Người nhà', 'Giúp việc', 'Khác', 'family_member'])) {
+            $dbRelationship = 'family_member';
+        } elseif (in_array($registration->relationship, ['Khách thuê', 'tenant'])) {
+            $dbRelationship = 'tenant';
+        }
+
         $resident = \App\Models\Resident::firstOrCreate(
             [
                 'user_id' => $targetUserId,
                 'apartment_id' => $registration->apartment_id,
             ],
             [
-                'relationship' => $registration->relationship ?? 'tenant',
+                'relationship' => $dbRelationship,
                 'start_date' => $registration->start_date,
             ]
         );
