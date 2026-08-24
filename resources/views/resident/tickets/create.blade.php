@@ -529,13 +529,36 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Hình ảnh đính kèm</label>
-                        <input type="file" id="fileInput" name="images[]" multiple accept="image/*" style="display:none;" onchange="previewImages(event)">
-                        <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
-                            <i class="fa-solid fa-camera"></i>
-                            <p>Kéo thả hình ảnh hoặc <strong>Bấm để tải lên</strong></p>
-                            <span>Tối đa 5 ảnh, dung lượng dưới 5MB/ảnh</span>
+                        <label>Hình ảnh/Video đính kèm</label>
+                        
+                        <div class="upload-zone" style="display:block; padding: 24px 20px; cursor: default;">
+                            <i class="fa-solid fa-cloud-arrow-up" style="font-size: 28px; color: #94a3b8; margin-bottom: 12px;"></i>
+                            <p style="margin-bottom: 16px; font-weight: 600;">Chọn phương thức đính kèm</p>
+                            
+                            <div style="display: flex; gap: 12px; justify-content: center; margin-bottom: 8px; flex-wrap: wrap;">
+                                <!-- Nút chọn file -->
+                                <label for="fileInput" class="btn-cancel" style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; border-color: #3b82f6; color: #3b82f6; margin: 0; padding: 8px 16px;">
+                                    <i class="fa-regular fa-folder-open"></i> Tải file lên
+                                </label>
+                                
+                                <!-- Nút chụp ảnh -->
+                                <label for="cameraInput" class="btn-cancel" style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; border-color: #10b981; color: #10b981; margin: 0; padding: 8px 16px;">
+                                    <i class="fa-solid fa-camera"></i> Chụp ảnh
+                                </label>
+                                
+                                <!-- Nút quay video -->
+                                <label for="videoInput" class="btn-cancel" style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; border-color: #f59e0b; color: #f59e0b; margin: 0; padding: 8px 16px;">
+                                    <i class="fa-solid fa-video"></i> Quay video
+                                </label>
+                            </div>
+                            
+                            <span style="display: block; font-size: 12px; color: #94a3b8; margin-top: 12px;">Tối đa 5 file, dung lượng dưới 20MB/file</span>
                         </div>
+
+                        <input type="file" id="fileInput" name="images[]" multiple accept="image/*,video/*" style="display:none;">
+                        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
+                        <input type="file" id="videoInput" accept="video/*" capture="environment" style="display:none;">
+                        
                         <div class="upload-preview" id="imagePreview"></div>
                     </div>
 
