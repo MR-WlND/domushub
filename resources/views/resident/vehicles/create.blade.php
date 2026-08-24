@@ -54,8 +54,8 @@
 
                 <div class="rv-field">
                     <label>Ảnh phương tiện</label>
-                    <div class="rv-upload" onclick="document.getElementById('rv-img1').click()" style="width:100%;">
-                        <input type="file" name="image" id="rv-img1" accept="image/*" onchange="rvPreview(this,'rv-ph1','rv-pv1')">
+                    <label class="rv-upload" for="rv-img1" style="width:100%; display:block;">
+                        <input type="file" name="image" id="rv-img1" accept="image/*" style="display:none;">
                         <div id="rv-ph1" class="rv-upload__ph">
                             <div class="rv-upload__icon">
                                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -64,7 +64,7 @@
                             <p class="rv-upload__hint">Định dạng JPG, PNG (Tối đa 2MB)</p>
                         </div>
                         <div id="rv-pv1" class="rv-upload__preview"><img src="" alt=""></div>
-                    </div>
+                    </label>
                 </div>
 
                 <div class="rv-actions">

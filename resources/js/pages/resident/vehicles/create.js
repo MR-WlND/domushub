@@ -1,17 +1,25 @@
-function rvPreview(input, phId, pvId) {
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById(phId).style.display = 'none';
-            const pv = document.getElementById(pvId);
-            pv.style.display = 'block';
-            pv.querySelector('img').src = e.target.result;
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
-}
-
 document.addEventListener('DOMContentLoaded', function() {
+    // Image upload preview
+    const imgInput = document.getElementById('rv-img1');
+    if (imgInput) {
+        imgInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const ph = document.getElementById('rv-ph1');
+                    const pv = document.getElementById('rv-pv1');
+                    if (ph) ph.style.display = 'none';
+                    if (pv) {
+                        pv.style.display = 'block';
+                        const img = pv.querySelector('img');
+                        if (img) img.src = e.target.result;
+                    }
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+    }
+
     const typeSelect = document.querySelector('select[name="vehicle_type"]');
     if(typeSelect) {
         typeSelect.addEventListener('change', function() {
