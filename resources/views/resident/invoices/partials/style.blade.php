@@ -1317,31 +1317,37 @@
     .pay-summary-card {
         position: fixed !important;
         top: auto !important;
-        bottom: 0 !important;
+        bottom: 60px !important; /* Sit above mobile-bottom-nav */
         left: 0 !important;
         width: 100% !important;
         margin: 0 !important;
         background: #fff !important;
         border-radius: 20px 20px 0 0 !important;
         box-shadow: 0 -10px 30px rgba(0,0,0,0.1) !important;
-        z-index: 9999 !important;
-        padding: 20px 24px !important;
+        z-index: 9998 !important;
+        padding: 12px 16px calc(12px + env(safe-area-inset-bottom)) !important;
+    }
+    
+    /* Hide chatbot on this page to avoid overlapping the total */
+    #chatbot-bubble {
+        display: none !important;
     }
     .pay-summary__header, .pay-summary__list, .pay-summary__total-box {
         display: none !important;
     }
     .pay-summary__subtotal {
-        margin-bottom: 16px !important;
-        font-size: 1.05rem !important;
+        margin-bottom: 8px !important;
+        font-size: 0.95rem !important;
     }
     .pay-summary__subtotal #summary-subtotal-val {
-        font-size: 1.35rem !important;
+        font-size: 1.25rem !important;
         font-weight: 800 !important;
         color: var(--color-text, #0b1c30) !important;
     }
     .btn-pay-submit {
         border-radius: 8px !important;
-        padding: 14px 20px !important;
+        padding: 10px 16px !important;
+        font-size: 0.95rem;
         width: 100% !important;
     }
     
