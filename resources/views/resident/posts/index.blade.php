@@ -19,6 +19,13 @@
         
     // Lấy 2 hình ảnh mới nhất để hiển thị ở Widget
     $featuredImages = $galleryImages->take(2);
+
+    $userPostsCount = 0;
+    $userLikesCount = 0;
+    if ($tab === 'mine' && auth()->check()) {
+        $userPostsCount = auth()->user()->posts()->count();
+        $userLikesCount = auth()->user()->posts()->withCount('likes')->get()->sum('likes_count');
+    }
 @endphp
 
 @section('content')
@@ -60,16 +67,52 @@
     {{-- MAIN CONTENT: FEED --}}
     <div class="df-main">
 
-        {{-- Create Post Box --}}
-        <div class="df-create-post">
-            <div class="df-create-post-top">
+        @if($tab === 'mine')
+        {{-- Profile Header Card (User Stats) --}}
+        <div class="df-profile-header-card">
+            <div class="df-phc-left">
                 @if(auth()->user() && auth()->user()->avatar)
-                    <img src="{{ asset('storage/' . auth()->user()->avatar) }}" class="df-avatar" alt="">
+                    <img src="{{ asset('storage/' . auth()->user()->avatar) }}" class="df-phc-avatar" alt="">
                 @else
-                    <div class="df-avatar df-avatar-placeholder">
+                    <div class="df-phc-avatar df-avatar-placeholder">
                         {{ mb_substr(auth()->user()->name ?? 'U', 0, 1) }}
                     </div>
                 @endif
+                <div class="df-phc-info">
+                    <div class="df-phc-name">{{ auth()->user()->name }}</div>
+                    <div class="df-phc-apartment">Căn hộ {{ auth()->user()->apartment->apartment_number ?? 'A-1204' }}</div>
+                </div>
+            </div>
+            <div class="df-phc-right">
+                <div class="df-phc-stat">
+                    <span class="df-phc-stat-num">{{ $userPostsCount ?? 0 }}</span>
+                    <span class="df-phc-stat-label">BÀI VIẾT</span>
+                </div>
+                <div class="df-phc-stat">
+                    <span class="df-phc-stat-num">
+                        @php
+                            $likes = $userLikesCount ?? 0;
+                            echo $likes > 999 ? number_format($likes/1000, 1) . 'k' : $likes;
+                        @endphp
+                    </span>
+                    <span class="df-phc-stat-label">LƯỢT THÍCH</span>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        {{-- Create Post Box --}}
+        <div class="df-create-post">
+            <div class="df-create-post-top">
+                <a href="{{ route('resident.posts.index', ['tab' => 'mine']) }}" style="text-decoration: none; flex-shrink: 0; display: block;">
+                    @if(auth()->user() && auth()->user()->avatar)
+                        <img src="{{ asset('storage/' . auth()->user()->avatar) }}" class="df-avatar" alt="">
+                    @else
+                        <div class="df-avatar df-avatar-placeholder">
+                            {{ mb_substr(auth()->user()->name ?? 'U', 0, 1) }}
+                        </div>
+                    @endif
+                </a>
                 <div class="df-create-post-input" onclick="openCreatePostModal()">
                     {{ explode(' ', auth()->user()->name)[count(explode(' ', auth()->user()->name))-1] ?? auth()->user()->name }}, bạn đang nghĩ gì?
                 </div>
@@ -85,6 +128,12 @@
                 </div>
                 <button class="df-post-submit-btn" onclick="openCreatePostModal()">Đăng</button>
             </div>
+        </div>
+
+        {{-- Mobile Nav (Hiển thị tab trên điện thoại) --}}
+        <div class="df-mobile-nav">
+            <a href="{{ route('resident.posts.index') }}" class="df-post-submit-btn" style="text-decoration: none; {{ request()->routeIs('resident.posts.index') && request('tab') !== 'mine' ? '' : 'background: #f1f5f9; color: #475569;' }}">Tất cả</a>
+            <a href="{{ route('resident.posts.index', ['tab' => 'mine']) }}" class="df-post-submit-btn" style="text-decoration: none; {{ request('tab') === 'mine' ? '' : 'background: #f1f5f9; color: #475569;' }}">Của tôi</a>
         </div>
 
         {{-- Removed Filters --}}
@@ -203,35 +252,53 @@
 
     {{-- RIGHT SIDEBAR: WIDGETS --}}
     <div class="df-right">
-        {{-- Tiêu điểm cộng đồng --}}
-        <div class="df-widget">
-            <h4 class="df-widget-title">Tiêu điểm cộng đồng</h4>
-            <div class="df-widget-list">
+        {{-- Thông báo căn hộ --}}
+        <div class="df-widget df-announcement-widget">
+            <h4 class="df-widget-title df-announcement-title">
+                <i class="fa-solid fa-bullhorn" style="margin-right: 8px;"></i> Thông báo căn hộ
+            </h4>
+            <div class="df-announcement-list">
                 @forelse($importantAnnouncements as $ann)
                 @php
                     $catRaw = strtolower($ann->category ?? '');
                     $catMap = [
-                        'general' => 'Chung',
-                        'event' => 'Sự kiện',
-                        'maintenance' => 'Bảo trì',
-                        'warning' => 'Khẩn cấp',
-                        'community' => 'Cộng đồng',
+                        'general' => ['text' => 'CHUNG', 'color' => '#6b7280'],
+                        'event' => ['text' => 'SỰ KIỆN', 'color' => '#10b981'],
+                        'maintenance' => ['text' => 'BẢO TRÌ', 'color' => '#6b7280'],
+                        'warning' => ['text' => 'QUAN TRỌNG', 'color' => '#dc2626', 'icon' => true],
+                        'community' => ['text' => 'CỘNG ĐỒNG', 'color' => '#3b82f6'],
                     ];
-                    $catText = $catMap[$catRaw] ?? 'THÔNG BÁO';
+                    $catData = $catMap[$catRaw] ?? ['text' => 'THÔNG BÁO', 'color' => '#6b7280'];
                 @endphp
-                <div class="df-event-item">
-                    <span class="df-event-meta">{{ mb_strtoupper($catText) }}</span>
-                    <a href="{{ route('resident.announcements.show', $ann->id) }}" style="text-decoration:none; display:block;">
-                        <span class="df-event-title" style="color:#111827; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; font-weight: 500; font-size: 0.95rem; line-height: 1.5;">{{ $ann->title }}</span>
+                <div class="df-announcement-item">
+                    <div class="df-announcement-header">
+                        <span class="df-announcement-badge" style="color: {{ $catData['color'] }}">
+                            @if(isset($catData['icon']) && $catData['icon'])
+                                <i class="fa-solid fa-circle" style="font-size: 0.5rem; margin-right: 6px; position: relative; top: -1px;"></i>
+                            @endif
+                            {{ $catData['text'] }}
+                        </span>
+                        <span class="df-announcement-date">
+                            @if($ann->created_at->isToday())
+                                Hôm nay
+                            @elseif($ann->created_at->isYesterday())
+                                Hôm qua
+                            @else
+                                {{ $ann->created_at->format('d/m') }}
+                            @endif
+                        </span>
+                    </div>
+                    <a href="{{ route('resident.announcements.show', $ann->id) }}" class="df-announcement-link">
+                        {{ $ann->title }}
                     </a>
-                    <span class="df-event-meta" style="font-size:0.75rem;">{{ $ann->created_at->diffForHumans() }}</span>
                 </div>
                 @empty
-                <div class="df-event-item">
-                    <span class="df-event-title" style="color:#6b7280; font-weight:400;">Không có tiêu điểm nào gần đây.</span>
+                <div class="df-announcement-item" style="border: none;">
+                    <span style="color:#6b7280; font-size: 0.9rem;">Không có thông báo nào.</span>
                 </div>
                 @endforelse
             </div>
+            <a href="{{ route('resident.announcements.index') }}" class="df-announcement-view-all">XEM TẤT CẢ</a>
         </div>
 
         {{-- Hình ảnh nổi bật --}}

@@ -29,12 +29,28 @@ class InvoiceController extends Controller
 
         $invoices = Invoice::with(['apartment.floor.block', 'details.servicePrice'])
             ->whereIn('apartment_id', $apartmentIds)
-            ->whereIn('status', ['unpaid', 'partial', 'overdue'])
+            ->whereIn('status', ['unpaid', 'partial', 'partial_paid', 'overdue'])
             ->orderByDesc('billing_year')
             ->orderByDesc('billing_month')
             ->get();
 
-        return view('resident.invoices.show', compact('invoices'));
+        $recentPaidInvoices = Invoice::with(['apartment.floor.block', 'details.servicePrice'])
+            ->whereIn('apartment_id', $apartmentIds)
+            ->where('status', 'paid')
+            ->orderByDesc('billing_year')
+            ->orderByDesc('billing_month')
+            ->take(5)
+            ->get();
+
+        $totalDebt = $invoices->sum(function($inv) {
+            return $inv->total_amount - $inv->paid_amount;
+        });
+
+        // Hạn chót lấy theo due_date của hóa đơn cũ nhất chưa thanh toán
+        $oldestUnpaid = $invoices->sortBy('due_date')->first();
+        $nearestDeadline = $oldestUnpaid && $oldestUnpaid->due_date ? $oldestUnpaid->due_date->format('d/m/Y') : null;
+
+        return view('resident.invoices.show', compact('invoices', 'recentPaidInvoices', 'totalDebt', 'nearestDeadline'));
     }
 
     /**
@@ -113,31 +129,42 @@ class InvoiceController extends Controller
             $apartmentIds = [$user->apartment_id];
         }
 
-        $invoiceIds = $request->input('invoice_ids', []);
-        if (empty($invoiceIds)) {
-            return back()->with('error', 'Vui lòng chọn ít nhất một hoá đơn để thanh toán.');
+        $detailIds = $request->input('detail_ids', []);
+        
+        if (empty($detailIds)) {
+            return back()->with('error', 'Vui lòng chọn ít nhất một khoản phí để thanh toán.');
         }
 
-        $invoices = Invoice::whereIn('apartment_id', $apartmentIds)
-            ->whereIn('id', $invoiceIds)
-            ->whereIn('status', ['unpaid', 'partial', 'overdue'])
+        // Verify that these details belong to unpaid/partial invoices of this user
+        $details = \App\Models\InvoiceDetail::whereIn('id', $detailIds)
+            ->whereNull('payment_id')
+            ->whereHas('invoice', function($q) use ($apartmentIds) {
+                $q->whereIn('apartment_id', $apartmentIds)
+                  ->whereIn('status', ['unpaid', 'partial', 'partial_paid', 'overdue']);
+            })
             ->get();
 
-        if ($invoices->isEmpty()) {
-            return back()->with('error', 'Không tìm thấy hoá đơn hợp lệ để thanh toán.');
+        if ($details->isEmpty()) {
+            return back()->with('error', 'Không tìm thấy khoản phí hợp lệ để thanh toán.');
         }
 
-        $totalAmount  = $invoices->sum('total_amount');
-        $invoiceIdStr = $invoices->pluck('id')->implode('-');
+        $totalAmount  = $details->sum('amount');
+        if ($totalAmount <= 0) {
+            return back()->with('error', 'Số tiền thanh toán phải lớn hơn 0.');
+        }
+
+        // Tạo vnp_TxnRef đặc biệt: MUL_D_{id1}-{id2}T{time}
+        // Giới hạn độ dài: VNPay cho phép max 250 ký tự.
+        $idsStr = $details->pluck('id')->implode('-');
+        $vnp_TxnRef = 'MUL_D_' . $idsStr . 'T' . time();
 
         $vnp_TmnCode   = config('services.vnpay.tmn_code');
         $vnp_HashSecret = config('services.vnpay.hash_secret');
         $vnp_Url       = config('services.vnpay.url');
         $vnp_Returnurl = route('resident.invoices.vnpay-return');
         $vnp_IpnUrl    = route('vnpay.ipn'); // IPN – xử lý server-to-server
-        $vnp_TxnRef    = $invoiceIdStr . 'T' . time(); // "1-2-3T1749780512"
-        $invoiceCodes  = $invoices->map(fn($invoice) => $invoice->invoice_code)->implode(', ');
-        $vnp_OrderInfo = 'Thanh toan hoa don ' . $invoiceCodes;
+        
+        $vnp_OrderInfo = 'Thanh toan cac khoan phi da chon';
         $vnp_OrderType = 'other';
         $vnp_Amount    = $totalAmount * 100;
         $vnp_Locale    = 'vn';
@@ -372,17 +399,21 @@ class InvoiceController extends Controller
             ->with('error', 'Giao dịch thanh toán không thành công. Vui lòng thử lại.');
     }
 
-    /**
-     * Xử lý cập nhật CSDL khi thanh toán thành công (Dùng chung cho IPN và Return)
-     */
     private function handlePaymentSuccess(Request $request)
     {
         $txnRef  = $request->vnp_TxnRef ?? '';
         $idsPart = explode('T', $txnRef)[0];
         
         $isDetailPayment = false;
+        $isMultiDetailPayment = false;
         $detailIds = [];
-        if (str_contains($idsPart, 'D')) {
+        $invoiceIds = [];
+        
+        if (str_starts_with($idsPart, 'MUL_D_')) {
+            $isMultiDetailPayment = true;
+            $detailIdsStr = str_replace('MUL_D_', '', $idsPart);
+            $detailIds = array_map('intval', explode('-', $detailIdsStr));
+        } elseif (str_contains($idsPart, 'D')) {
             $isDetailPayment = true;
             $parts = explode('D', $idsPart);
             $invoiceIds = [(int)$parts[0]];
@@ -391,9 +422,15 @@ class InvoiceController extends Controller
             $invoiceIds = array_map('intval', explode('-', $idsPart));
         }
 
-        $invoices = Invoice::whereIn('id', $invoiceIds)
-            ->where('status', '!=', 'paid')
-            ->get();
+        if ($isMultiDetailPayment) {
+            $details = \App\Models\InvoiceDetail::whereIn('id', $detailIds)->whereNull('payment_id')->get();
+            if ($details->isEmpty()) return;
+            $invoices = Invoice::whereIn('id', $details->pluck('bill_id')->unique())->get();
+        } else {
+            $invoices = Invoice::whereIn('id', $invoiceIds)
+                ->where('status', '!=', 'paid')
+                ->get();
+        }
 
         if ($invoices->isEmpty()) {
             return;
@@ -413,9 +450,9 @@ class InvoiceController extends Controller
 
         $fullTxnCode = implode('|', [$txnNo ?? '', '', $cardType, $bankCode]);
 
-        DB::transaction(function () use ($invoices, $txnNo, $fullTxnCode, $paidAt, $isDetailPayment, $detailIds) {
+        DB::transaction(function () use ($invoices, $txnNo, $fullTxnCode, $paidAt, $isDetailPayment, $isMultiDetailPayment, $detailIds) {
             foreach ($invoices as $invoice) {
-                if ($isDetailPayment) {
+                if ($isDetailPayment || $isMultiDetailPayment) {
                     $details = $invoice->details()->whereIn('id', $detailIds)->whereNull('payment_id')->get();
                     if ($details->isEmpty()) continue;
                     
@@ -440,9 +477,13 @@ class InvoiceController extends Controller
                         'payer_name'       => auth()->user()?->name ?? ($invoice->apartment->owner_name ?? 'Cư dân'),
                         'note'             => 'Thanh toán các khoản phí: ' . implode(', ', $details->pluck('servicePrice.name')->toArray())
                     ]);
-                    
+
+                    // Gắn payment_id cho các chi tiết đã thanh toán và cập nhật status
                     foreach ($details as $d) {
-                        $d->update(['payment_id' => $payment->id, 'status' => 'paid']);
+                        $d->update([
+                            'payment_id' => $payment->id,
+                            'status'     => 'paid',
+                        ]);
                     }
                     
                     $invoice->recalculateDetailsStatus();

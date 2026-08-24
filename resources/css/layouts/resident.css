@@ -15,18 +15,13 @@
 
 .resident-content {
     flex: 1;
-    padding: 24px 16px;
+    padding: 2rem 1.5rem;
 }
 
 /* Trang chủ dùng background ảnh toàn trang – xóa padding của wrapper & ẩn footer & cố định màn hình */
 .resident-content:has(.rh-bg) {
     padding: 0;
     overflow: hidden;
-}
-
-/* Utility class để xóa padding cho các trang cần full width hoặc tự xử lý padding (như Bảng tin) */
-.resident-content.no-padding {
-    padding: 0;
 }
 
 body.resident-page {
@@ -443,36 +438,94 @@ body.resident-page {
 
     .resident-header__nav {
         display: none;
-        position: absolute;
+        position: fixed;
         top: 60px;
         left: 0;
-        width: 250px;
+        width: 260px;
         background: #ffffff;
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
         height: calc(100vh - 60px);
-        padding: 20px 16px;
-        box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1);
-        border-top: 1px solid #e5e5e5;
-        gap: 16px;
-        z-index: 99;
+        padding: 24px 16px;
+        box-shadow: 8px 0 28px rgba(0, 0, 0, 0.08);
+        border-right: 1px solid #f1f5f9;
+        gap: 8px;
+        z-index: 999;
+        overflow-y: auto;
+        animation: slideInDrawer 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideInDrawer {
+        from {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
     }
 
     .resident-header__nav--active {
         display: flex !important;
     }
 
-    /* Sub-menu (Dropdown) for Mobile */
+    .resident-header__nav .resident-header__link {
+        height: auto;
+        min-height: 42px;
+        justify-content: flex-start;
+        padding: 10px 16px;
+        border-radius: 12px;
+        border-bottom: none;
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #334155;
+        transition: all 0.2s ease;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .resident-header__nav .resident-header__link:hover {
+        background: #f8fafc;
+        color: #00236f;
+    }
+
+    .resident-header__nav .resident-header__link--active {
+        background: #eff6ff !important;
+        color: #00236f !important;
+        font-weight: 600 !important;
+        border-radius: 12px !important;
+        border-bottom: none !important;
+        box-shadow: none !important;
+    }
+
+    .resident-header__nav .resident-header__link--logout {
+        display: flex;
+        color: #dc2626 !important;
+        background: #fef2f2 !important;
+        border-radius: 12px !important;
+        margin-top: 14px;
+        font-weight: 600 !important;
+    }
+
+    .resident-header__nav .resident-header__link--logout:hover {
+        background: #fee2e2 !important;
+        color: #b91c1c !important;
+    }
+
+    /* Sub-menu (Dropdown) for Mobile Drawer */
     .resident-header__dropdown-container {
         width: 100%;
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+        height: auto;
     }
 
     .resident-header__dropdown-trigger {
         width: 100%;
-        justify-content: flex-start;
-        padding-left: 0;
+        justify-content: space-between;
+        padding: 0 14px !important;
     }
 
     .resident-header__nav-dropdown {
@@ -481,11 +534,23 @@ body.resident-page {
         width: 100%;
         box-shadow: none;
         border: none;
-        border-left: 2px solid #e5e5e5;
+        border-left: 2px solid #cbd5e1;
         border-radius: 0;
-        margin-left: 10px;
-        padding: 8px 0 8px 10px;
-        margin-top: 8px;
+        margin-left: 14px;
+        padding: 4px 0 4px 8px;
+        margin-top: 4px;
+        background: transparent;
+        box-sizing: border-box;
+    }
+
+    .nav-dropdown-item {
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 0.88rem;
+    }
+
+    .nav-dropdown-item:hover {
+        background: #f1f5f9;
     }
 
     .resident-header__actions {
@@ -500,7 +565,7 @@ body.resident-page {
 }
 
 /* =========================================================================
-   Mobile Bottom Navigation
+   Mobile Bottom Navigation (Icon-based Design)
    ========================================================================= */
 
 .mobile-bottom-nav {
@@ -508,12 +573,15 @@ body.resident-page {
     position: fixed;
     bottom: 0;
     left: 0;
-    right: 0;
-    background: #ffffff;
-    border-top: 1px solid #e5e5e5;
-    z-index: 1000;
+    width: 100%;
     height: 60px;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+    background: #ffffff;
+    border-top: 1px solid #e2e8f0;
+    z-index: 9999;
+    padding: 0 16px;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: space-between;
 }
 
 @media (max-width: 900px) {
@@ -523,45 +591,32 @@ body.resident-page {
 
     .resident-layout {
         padding-bottom: 60px;
-        /* Space for bottom nav */
     }
 }
 
 .mobile-nav-item {
     flex: 1;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 4px;
-    color: #9ca3af;
+    height: 100%;
+    color: #64748b;
     text-decoration: none;
-    font-size: 0.65rem;
-    font-weight: 600;
+    font-size: 1.4rem;
     position: relative;
-    padding-top: 6px;
-    transition: color 0.2s;
+    transition: color 0.2s ease;
+    user-select: none;
 }
 
-.mobile-nav-item i {
-    font-size: 1.25rem;
+.mobile-nav-item:hover {
+    color: #00236f;
 }
 
 .mobile-nav-item.active {
-    color: #000000;
+    color: #00236f;
 }
 
-.mobile-nav-item.active::before {
-    content: '';
-    position: absolute;
-    top: -1px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60%;
-    height: 3px;
-    background: #000000;
-    border-radius: 0 0 4px 4px;
-}
+
 
 /* =========================================================================
    Resident Header Notification Styles
@@ -636,4 +691,177 @@ body.resident-page {
     color: #94a3b8;
     margin-top: 4px;
     display: block;
+}
+
+@media (max-width: 768px) {
+    .notification-dropdown {
+        position: fixed;
+        top: 60px;
+        right: 16px;
+        left: 16px;
+        width: auto;
+    }
+}
+
+/* =========================================================================
+   Mobile Sidebar Styles (Matches image)
+   ========================================================================= */
+
+.mobile-sidebar {
+    display: none;
+}
+
+.mobile-sidebar-backdrop {
+    display: none;
+}
+
+@media (max-width: 900px) {
+    .mobile-sidebar-backdrop {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9999998;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .mobile-sidebar-backdrop.active {
+        display: block;
+        opacity: 1;
+    }
+
+    .mobile-sidebar {
+        display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 75vw;
+        height: 100vh;
+        background: #f4f7fc;
+        flex-direction: column;
+        padding: 24px 20px;
+        box-shadow: 8px 0 28px rgba(0, 0, 0, 0.08);
+        z-index: 9999999;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        box-sizing: border-box;
+        overflow-y: auto;
+    }
+
+    .mobile-sidebar.active {
+        transform: translateX(0);
+    }
+
+    .mobile-sidebar__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 32px;
+    }
+
+    .mobile-sidebar__brand {
+        font-size: 1.6rem;
+        font-weight: 900;
+        color: #00236f;
+        line-height: 1.1;
+    }
+
+    .mobile-sidebar__close {
+        background: none;
+        border: none;
+        font-size: 1.25rem;
+        color: #334155;
+        cursor: pointer;
+        padding: 4px;
+        margin-top: -4px;
+    }
+
+    .mobile-sidebar__label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #64748b;
+        letter-spacing: 0.05em;
+        margin-bottom: 12px;
+        margin-left: 8px;
+        text-transform: uppercase;
+    }
+
+    .mobile-sidebar__menu {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .mobile-sidebar__link {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        color: #475569;
+        text-decoration: none;
+        font-size: 0.95rem;
+        font-weight: 500;
+        border-radius: 12px;
+        transition: all 0.2s ease;
+    }
+
+    .mobile-sidebar__link .nav-icon {
+        width: 24px;
+        font-size: 1.1rem;
+        margin-right: 12px;
+        color: #64748b;
+    }
+
+    .mobile-sidebar__link.active {
+        background: #e2e8f4;
+        color: #00236f;
+        font-weight: 700;
+    }
+
+    .mobile-sidebar__link.active .nav-icon {
+        color: #00236f;
+    }
+    
+    .mobile-sidebar__sublink {
+        display: block;
+        padding: 10px 12px;
+        color: #64748b;
+        text-decoration: none;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .mobile-sidebar__sublink:hover {
+        background: #f1f5f9;
+        color: #00236f;
+    }
+
+    .mobile-sidebar__sublink.active {
+        color: #00236f;
+        font-weight: 600;
+        background: transparent;
+    }
+
+    .mobile-sidebar__spacer {
+        flex: 1;
+    }
+
+    .mobile-sidebar__footer {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 24px;
+    }
+
+    .mobile-sidebar__link.logout {
+        color: #dc2626;
+    }
+
+    .mobile-sidebar__link.logout .nav-icon {
+        color: #dc2626;
+    }
 }

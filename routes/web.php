@@ -503,7 +503,9 @@ Route::middleware(['resident'])->group(function () {
 
     // Quản lý thành viên gia đình & nhân khẩu & mã mời
     Route::get('/resident/members', [\App\Http\Controllers\Resident\MemberController::class, 'index'])->name('resident.members.index');
+    Route::get('/resident/members/{id}', [\App\Http\Controllers\Resident\MemberController::class, 'show'])->name('resident.members.show');
     Route::post('/resident/members/declared', [\App\Http\Controllers\Resident\MemberController::class, 'storeDeclared'])->name('resident.members.declared.store');
+    Route::post('/resident/members/declared/{member}/generate-invite', [\App\Http\Controllers\Resident\MemberController::class, 'generateInviteForMember'])->name('resident.members.declared.generate-invite');
     Route::delete('/resident/members/declared/{member}', [\App\Http\Controllers\Resident\MemberController::class, 'destroyDeclared'])->name('resident.members.declared.destroy');
     Route::post('/resident/members/invitations', [\App\Http\Controllers\Resident\MemberController::class, 'storeInvite'])->name('resident.members.invitations.store');
     Route::delete('/resident/members/invitations/{id}', [\App\Http\Controllers\Resident\MemberController::class, 'destroyInvite'])->name('resident.members.invitations.destroy');

@@ -380,6 +380,52 @@
             }
             .mob-nav-item i { font-size: 18px; }
             .mob-nav-item.active { background: #6ee7b7; color: #065f46; }
+
+            /* Styles for new mobile drawer */
+            .mob-drawer-item {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 12px 16px;
+                color: #334155;
+                font-size: 15px;
+                font-weight: 500;
+                text-decoration: none;
+                border-radius: 8px;
+                margin-bottom: 4px;
+            }
+            .mob-drawer-item:hover, .mob-drawer-item--active {
+                background: #f0f4f8;
+                color: #00236f;
+                font-weight: 600;
+            }
+            .mob-drawer-item--logout {
+                color: #dc2626 !important;
+                background: #fef2f2 !important;
+                margin-top: 24px;
+                font-weight: 600;
+                justify-content: flex-start;
+            }
+            .mob-drawer-sub {
+                display: none;
+                flex-direction: column;
+                padding-left: 16px;
+            }
+            .mob-drawer-sub.open {
+                display: flex;
+            }
+            .mob-drawer-sub-item {
+                padding: 10px 16px;
+                color: #64748b;
+                font-size: 14px;
+                text-decoration: none;
+                border-radius: 8px;
+                margin-bottom: 4px;
+            }
+            .mob-drawer-sub-item:hover {
+                color: #00236f;
+                background: #f8fafc;
+            }
         }
     </style>
 @endpush
@@ -520,27 +566,37 @@
 
 <!-- Mobile View -->
 <div class="mobile-view">
-    <!-- Mobile Menu Drawer (Hidden by default) -->
-    <div id="mobMenuOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:99;"></div>
-    <div id="mobMenuDrawer" style="position:fixed; top:0; left:-300px; width:280px; height:100%; background:#fff; z-index:100; transition:left 0.3s ease; box-shadow: 2px 0 10px rgba(0,0,0,0.1); display:flex; flex-direction:column;">
-        <div style="padding: 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
-            <strong style="color:#1e3a8a; font-size:18px;">DomusHub</strong>
-            <button id="mobMenuClose" style="background:none; border:none; font-size:20px; color:#64748b; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+    <!-- Mobile Menu Drawer (Matches Master Header 100%) -->
+    <div id="mobMenuOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.45); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); z-index:999;"></div>
+    <div id="mobMenuDrawer" style="position:fixed; top:0; left:-300px; width:270px; height:100%; background:#ffffff; z-index:1000; transition:left 0.28s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 10px 0 30px rgba(0, 35, 111, 0.15); display:flex; flex-direction:column;">
+        <div style="padding: 18px 20px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 16px;">
+            <button id="mobMenuClose" style="background:none; border:none; font-size:20px; color:#1e293b; cursor:pointer; padding:0; display:flex;"><i class="fa-solid fa-bars"></i></button>
+            <strong style="color:#00236f; font-size:1.15rem; font-weight:800; letter-spacing:-0.01em;">DomusHub</strong>
         </div>
-        <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto;">
-            <a href="{{ route('resident.dashboard') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-house" style="width:24px; color:#64748b;"></i> Home</a>
-            <a href="{{ route('resident.posts.index') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-newspaper" style="width:24px; color:#64748b;"></i> Bản tin của tôi</a>
-            <a href="{{ route('resident.members.index') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-users" style="width:24px; color:#64748b;"></i> Thành viên</a>
-            <hr style="border:0; border-bottom:1px solid #f1f5f9; margin: 4px 0;">
-            <span style="color:#94a3b8; font-size:12px; font-weight:700; text-transform:uppercase;">Dịch vụ</span>
-            <a href="{{ route('resident.vehicles.index') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-car" style="width:24px; color:#64748b;"></i> Phương tiện</a>
-            <a href="{{ route('resident.facilities.index') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-swimming-pool" style="width:24px; color:#64748b;"></i> Tiện ích</a>
-            <a href="{{ route('resident.invoices.index') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-file-invoice-dollar" style="width:24px; color:#64748b;"></i> Hóa đơn</a>
-            <hr style="border:0; border-bottom:1px solid #f1f5f9; margin: 4px 0;">
-            <a href="{{ route('resident.tickets.index') }}" style="text-decoration:none; color:#1e3a8a; font-weight:700; font-size:15px;"><i class="fa-solid fa-screwdriver-wrench" style="width:24px; color:#1e3a8a;"></i> Phản ánh</a>
-            <a href="{{ route('resident.contact') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-address-book" style="width:24px; color:#64748b;"></i> Liên hệ</a>
-            <hr style="border:0; border-bottom:1px solid #f1f5f9; margin: 4px 0;">
-            <a href="#" onclick="event.preventDefault(); document.getElementById('resident-logout-form').submit();" style="text-decoration:none; color:#dc2626; font-weight:600; font-size:15px;"><i class="fa-solid fa-right-from-bracket" style="width:24px; color:#dc2626;"></i> Đăng xuất</a>
+        <div style="padding: 16px 12px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto;">
+            <a href="{{ route('resident.dashboard') }}" class="mob-drawer-item {{ request()->routeIs('resident.dashboard') ? 'mob-drawer-item--active' : '' }}">Trang chủ</a>
+            <a href="{{ route('resident.posts.index') }}" class="mob-drawer-item {{ request()->routeIs('resident.posts.*') ? 'mob-drawer-item--active' : '' }}">Bản tin</a>
+            <a href="{{ route('resident.members.index') }}" class="mob-drawer-item {{ request()->routeIs('resident.members.*') ? 'mob-drawer-item--active' : '' }}">Thành viên</a>
+            
+            <div class="mob-drawer-dropdown">
+                <button type="button" class="mob-drawer-item mob-drawer-trigger {{ (request()->routeIs('resident.vehicles.*') || request()->routeIs('resident.invoices.*') || request()->routeIs('resident.visitors.*') || request()->routeIs('resident.facilities.*') || request()->routeIs('resident.temporary-registrations.*')) ? 'mob-drawer-item--active' : '' }}" onclick="this.nextElementSibling.classList.toggle('show'); this.querySelector('.chevron').classList.toggle('rotate');">
+                    <span>Dịch vụ</span>
+                    <i class="fa-solid fa-chevron-down chevron" style="font-size: 0.75rem; transition: transform 0.2s ease;"></i>
+                </button>
+                <div class="mob-drawer-sub" style="display: none; flex-direction: column; gap: 2px; padding-left: 12px; margin-top: 4px; border-left: 2px solid #e2e8f0;">
+                    <a href="{{ route('resident.temporary-registrations.index') }}" class="mob-drawer-sub-item {{ request()->routeIs('resident.temporary-registrations.*') ? 'mob-drawer-item--active' : '' }}">Tạm trú / Tạm vắng</a>
+                    <a href="{{ route('resident.vehicles.index') }}" class="mob-drawer-sub-item {{ request()->routeIs('resident.vehicles.*') ? 'mob-drawer-item--active' : '' }}">Phương tiện</a>
+                    <a href="{{ route('resident.facilities.index') }}" class="mob-drawer-sub-item {{ request()->routeIs('resident.facilities.*') || request()->routeIs('resident.facility-bookings.*') ? 'mob-drawer-item--active' : '' }}">Tiện ích</a>
+                    <a href="{{ route('resident.visitors.index') }}" class="mob-drawer-sub-item {{ request()->routeIs('resident.visitors.*') ? 'mob-drawer-item--active' : '' }}">Khách ghé thăm</a>
+                    <a href="{{ route('resident.invoices.index') }}" class="mob-drawer-sub-item {{ request()->routeIs('resident.invoices.*') ? 'mob-drawer-item--active' : '' }}">Thanh toán hóa đơn</a>
+                </div>
+            </div>
+
+            <a href="{{ route('resident.tickets.index') }}" class="mob-drawer-item {{ request()->routeIs('resident.tickets.*') ? 'mob-drawer-item--active' : '' }}">Phản Ánh</a>
+            <a href="{{ route('resident.contact') }}" class="mob-drawer-item {{ request()->routeIs('resident.contact') ? 'mob-drawer-item--active' : '' }}">Liên hệ</a>
+            
+            <hr style="border:0; border-bottom:1px solid #f1f5f9; margin: 8px 4px;">
+            <a href="#" onclick="event.preventDefault(); document.getElementById('resident-logout-form').submit();" class="mob-drawer-item mob-drawer-item--logout">Đăng xuất</a>
         </div>
     </div>
 
@@ -630,25 +686,24 @@
         <i class="fa-solid fa-plus"></i>
     </a>
 
-    <!-- Bottom Nav -->
-    <div class="mob-bottom-nav">
-        <a href="#" class="mob-nav-item">
-            <i class="fa-solid fa-house"></i>
-            <span>Home</span>
+    {{-- MOBILE BOTTOM NAVIGATION (NO ICONS - MATCHES MASTER) --}}
+    <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
+        <a href="{{ route('resident.dashboard') }}" class="mobile-nav-item {{ request()->routeIs('resident.dashboard') ? 'active' : '' }}">
+            <span>Trang chủ</span>
         </a>
-        <a href="#" class="mob-nav-item">
-            <i class="fa-solid fa-file-invoice-dollar"></i>
-            <span>Bills</span>
+        <a href="{{ route('resident.posts.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.posts.*') ? 'active' : '' }}">
+            <span>Bản tin</span>
         </a>
-        <a href="{{ route('resident.tickets.index') }}" class="mob-nav-item active">
-            <i class="fa-solid fa-screwdriver-wrench"></i>
-            <span>Requests</span>
+        <a href="{{ route('resident.tickets.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.tickets.*') ? 'active' : '' }}">
+            <span>Phản ánh</span>
         </a>
-        <a href="#" onclick="event.preventDefault(); document.getElementById('resident-logout-form').submit();" class="mob-nav-item">
-            <i class="fa-solid fa-user"></i>
-            <span>Profile</span>
+        <a href="{{ route('resident.invoices.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.invoices.*') ? 'active' : '' }}">
+            <span>Hóa đơn</span>
         </a>
-    </div>
+        <a href="{{ route('resident.profile.index') }}" class="mobile-nav-item {{ request()->routeIs('resident.profile.*') ? 'active' : '' }}">
+            <span>Tài khoản</span>
+        </a>
+    </nav>
 </div>
 
 @endsection

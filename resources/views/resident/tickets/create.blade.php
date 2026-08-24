@@ -16,12 +16,17 @@
         }
         
         @media (max-width: 992px) {
-            .resident-header { display: none !important; }
             .resident-content { padding: 0 !important; }
-            .mob-header { display: flex !important; }
             .tk-page-wrapper {
-                flex-direction: column;
                 padding: 16px;
+            }
+            .tk-layout-row {
+                flex-direction: column;
+                gap: 16px !important;
+                align-items: stretch !important;
+            }
+            .tk-main-col {
+                width: 100% !important;
             }
             .tk-sidebar {
                 width: 100% !important;
@@ -117,7 +122,7 @@
                 border-radius: 8px;
             }
             .form-grid { 
-                grid-template-columns: 1fr; 
+                grid-template-columns: 1fr 1fr; /* Keep it side by side like template */
                 gap: 16px;
                 margin-bottom: 16px;
             }
@@ -274,13 +279,23 @@
             border: 1px solid #e2e8f0;
             border-radius: 12px;
             padding: 20px;
-            margin-bottom: 16px;
+            margin-bottom: 10px;
+        }
+        .history-item:last-child {
+            margin-bottom: 0;
         }
         .history-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 16px;
+            gap: 12px;
+        }
+        @media (max-width: 640px) {
+            .history-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
         }
         .history-info h4 {
             margin: 0 0 4px 0;
@@ -299,6 +314,7 @@
             font-weight: 600;
             background: #eff6ff;
             color: #2563eb;
+            white-space: nowrap;
         }
         .history-status.completed {
             background: #ecfdf5;
@@ -423,42 +439,6 @@
 @endpush
 
 @section('content')
-    <!-- Mobile Menu Drawer & Header -->
-    <div id="mobMenuOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:99;"></div>
-    <div id="mobMenuDrawer" style="position:fixed; top:0; left:-300px; width:280px; height:100%; background:#fff; z-index:100; transition:left 0.3s ease; box-shadow: 2px 0 10px rgba(0,0,0,0.1); display:flex; flex-direction:column;">
-        <div style="padding: 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
-            <strong style="color:#1e3a8a; font-size:18px;">DomusHub</strong>
-            <button id="mobMenuClose" style="background:none; border:none; font-size:20px; color:#64748b; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto;">
-            <a href="{{ route('resident.dashboard') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-house" style="width:24px; color:#64748b;"></i> Home</a>
-            <a href="{{ route('resident.posts.index') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-newspaper" style="width:24px; color:#64748b;"></i> Bản tin của tôi</a>
-            <a href="{{ route('resident.members.index') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-users" style="width:24px; color:#64748b;"></i> Thành viên</a>
-            <hr style="border:0; border-bottom:1px solid #f1f5f9; margin: 4px 0;">
-            <span style="color:#94a3b8; font-size:12px; font-weight:700; text-transform:uppercase;">Dịch vụ</span>
-            <a href="{{ route('resident.vehicles.index') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-car" style="width:24px; color:#64748b;"></i> Phương tiện</a>
-            <a href="{{ route('resident.facilities.index') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-swimming-pool" style="width:24px; color:#64748b;"></i> Tiện ích</a>
-            <a href="{{ route('resident.invoices.index') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-file-invoice-dollar" style="width:24px; color:#64748b;"></i> Hóa đơn</a>
-            <hr style="border:0; border-bottom:1px solid #f1f5f9; margin: 4px 0;">
-            <a href="{{ route('resident.tickets.index') }}" style="text-decoration:none; color:#1e3a8a; font-weight:700; font-size:15px;"><i class="fa-solid fa-screwdriver-wrench" style="width:24px; color:#1e3a8a;"></i> Phản ánh</a>
-            <a href="{{ route('resident.contact') }}" style="text-decoration:none; color:#1e293b; font-weight:600; font-size:15px;"><i class="fa-solid fa-address-book" style="width:24px; color:#64748b;"></i> Liên hệ</a>
-            <hr style="border:0; border-bottom:1px solid #f1f5f9; margin: 4px 0;">
-            <a href="#" onclick="event.preventDefault(); document.getElementById('resident-logout-form').submit();" style="text-decoration:none; color:#dc2626; font-weight:600; font-size:15px;"><i class="fa-solid fa-right-from-bracket" style="width:24px; color:#dc2626;"></i> Đăng xuất</a>
-        </div>
-    </div>
-    
-    <div class="mob-header" style="display: none; align-items: center; justify-content: space-between; padding: 16px; background: #fff; position: sticky; top: 0; z-index: 90; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <a href="{{ route('resident.tickets.index') }}" style="color:#1e293b; font-size:18px; text-decoration:none;" title="Quay lại"><i class="fa-solid fa-arrow-left"></i></a>
-            <button id="mobMenuOpenBtn" style="background:none; border:none; font-size:20px; color:#1e293b; cursor:pointer;"><i class="fa-solid fa-bars"></i></button>
-        </div>
-        <div style="font-size:16px; font-weight:700; color:#1e293b;">Gửi phản ánh</div>
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <button style="background:none; border:none; font-size:20px; color:#1e293b; cursor:pointer;"><i class="fa-regular fa-bell"></i></button>
-            <img src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' }}" alt="Avatar" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;">
-        </div>
-    </div>
-
 <div class="tk-page-wrapper" style="flex-direction: column;">
     
     <div class="tk-page-header">
@@ -538,7 +518,8 @@
 
             <h3 class="history-title">Lịch sử yêu cầu</h3>
             @php
-                $recentTickets = \App\Models\Ticket::where('sender_id', auth()->id())->latest()->take(2)->get();
+                $totalTicketsCount = \App\Models\Ticket::where('sender_id', auth()->id())->count();
+                $recentTickets = \App\Models\Ticket::where('sender_id', auth()->id())->latest()->take(3)->get();
             @endphp
             
             @forelse($recentTickets as $ticket)
@@ -581,6 +562,14 @@
                     Chưa có phản ánh nào gần đây.
                 </div>
             @endforelse
+            
+            @if($totalTicketsCount > 3)
+                <div style="text-align: center; margin-top: 4px;">
+                    <a href="{{ route('resident.tickets.index') }}" style="display: inline-flex; align-items: center; justify-content: center; padding: 10px 20px; font-size: 14px; font-weight: 600; color: #1e3a8a; background: #eff6ff; border-radius: 20px; text-decoration: none; transition: background 0.2s;">
+                        Xem thêm lịch sử ({{ $totalTicketsCount - 3 }}) <i class="fa-solid fa-arrow-right" style="margin-left: 6px; font-size: 12px;"></i>
+                    </a>
+                </div>
+            @endif
             
         </div>
 

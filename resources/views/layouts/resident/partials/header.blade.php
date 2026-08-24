@@ -99,7 +99,7 @@
                 <a href="#" class="dropdown-item">Cài đặt</a>
                 <a href="#"
                     onclick="event.preventDefault(); document.getElementById('resident-logout-form').submit();"
-                    class="dropdown-item dropdown-item--logout">Đăng xuất</a>
+                    class="dropdown-item dropdown-item--logout" style="color: #ef4444;">Đăng xuất</a>
                 <form id="resident-logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                     @csrf
                 </form>
@@ -107,6 +107,69 @@
         </div>
     </div>
 </header>
+
+<!-- Mobile Sidebar Backdrop -->
+<div class="mobile-sidebar-backdrop" id="mobileSidebarBackdrop"></div>
+
+<!-- Mobile Sidebar (matches image design) -->
+<div class="mobile-sidebar" id="mobileSidebar">
+    <div class="mobile-sidebar__header">
+        <div class="mobile-sidebar__brand">
+            DomusHub
+        </div>
+        <button id="mobileMenuClose" class="mobile-sidebar__close">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <div class="mobile-sidebar__label">CƯ DÂN</div>
+
+    <div class="mobile-sidebar__menu">
+        <a href="{{ route('resident.dashboard') }}" class="mobile-sidebar__link {{ request()->routeIs('resident.dashboard') ? 'active' : '' }}">
+            <i class="fa-solid fa-house nav-icon"></i> Trang chủ
+        </a>
+        <a href="{{ route('resident.posts.index') }}" class="mobile-sidebar__link {{ request()->routeIs('resident.posts.index') ? 'active' : '' }}">
+            <i class="fa-regular fa-newspaper nav-icon"></i> Bản tin
+        </a>
+        <a href="{{ route('resident.members.index') }}" class="mobile-sidebar__link {{ request()->routeIs('resident.members.*') ? 'active' : '' }}">
+            <i class="fa-solid fa-users nav-icon"></i> Thành viên
+        </a>
+        
+        <div class="mobile-sidebar__dropdown-container" id="mobileServicesContainer">
+            <button class="mobile-sidebar__link w-100" style="width: 100%; border: none; background: transparent; text-align: left; cursor: pointer;" id="mobileServicesToggle">
+                <div style="display: flex; align-items: center; width: 100%;">
+                    <i class="fa-solid fa-layer-group nav-icon"></i> Dịch vụ
+                    <i class="fa-solid fa-chevron-down ms-auto" style="margin-left: auto; font-size: 0.8rem;"></i>
+                </div>
+            </button>
+            <div class="mobile-sidebar__dropdown-menu" id="mobileServicesMenu" style="display: none; flex-direction: column; padding-left: 24px; gap: 4px; margin-top: 4px;">
+                <a href="{{ route('resident.temporary-registrations.index') }}" class="mobile-sidebar__sublink {{ request()->routeIs('resident.temporary-registrations.*') ? 'active' : '' }}">Tạm trú / Tạm vắng</a>
+                <a href="{{ route('resident.vehicles.index') }}" class="mobile-sidebar__sublink {{ request()->routeIs('resident.vehicles.*') ? 'active' : '' }}">Phương tiện</a>
+                <a href="{{ route('resident.facilities.index') }}" class="mobile-sidebar__sublink {{ request()->routeIs('resident.facilities.*') || request()->routeIs('resident.facility-bookings.*') ? 'active' : '' }}">Tiện ích</a>
+                <a href="{{ route('resident.visitors.index') }}" class="mobile-sidebar__sublink {{ request()->routeIs('resident.visitors.*') ? 'active' : '' }}">Khách ghé thăm</a>
+                <a href="{{ route('resident.invoices.index') }}" class="mobile-sidebar__sublink {{ request()->routeIs('resident.invoices.*') ? 'active' : '' }}">Thanh toán hóa đơn</a>
+            </div>
+        </div>
+
+        <a href="{{ route('resident.tickets.index') }}" class="mobile-sidebar__link {{ request()->routeIs('resident.tickets.*') ? 'active' : '' }}">
+            <i class="fa-solid fa-file-contract nav-icon"></i> Phản Ánh
+        </a>
+        <a href="{{ route('resident.contact') }}" class="mobile-sidebar__link {{ request()->routeIs('resident.contact') ? 'active' : '' }}">
+            <i class="fa-regular fa-envelope nav-icon"></i> Liên hệ
+        </a>
+    </div>
+
+    <div class="mobile-sidebar__spacer"></div>
+
+    <div class="mobile-sidebar__footer">
+        <a href="#" class="mobile-sidebar__link">
+            <i class="fa-solid fa-gear nav-icon"></i> Cài đặt
+        </a>
+        <a href="#" onclick="event.preventDefault(); document.getElementById('resident-logout-form').submit();" class="mobile-sidebar__link logout">
+            <i class="fa-solid fa-arrow-right-from-bracket nav-icon"></i> Đăng xuất
+        </a>
+    </div>
+</div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -133,11 +196,53 @@
 
         // Hamburger Menu Toggle
         const mobileToggle = document.getElementById('mobileMenuToggle');
-        const navMenu = document.getElementById('residentNavMenu');
-        if (mobileToggle && navMenu) {
+        const mobileSidebar = document.getElementById('mobileSidebar');
+        const mobileClose = document.getElementById('mobileMenuClose');
+        const mobileBackdrop = document.getElementById('mobileSidebarBackdrop');
+        
+        function openMobileSidebar() {
+            if (mobileSidebar) mobileSidebar.classList.add('active');
+            if (mobileBackdrop) mobileBackdrop.classList.add('active');
+        }
+
+        function closeMobileSidebar() {
+            if (mobileSidebar) mobileSidebar.classList.remove('active');
+            if (mobileBackdrop) mobileBackdrop.classList.remove('active');
+        }
+
+        if (mobileToggle) {
             mobileToggle.addEventListener('click', function(e) {
                 e.stopPropagation();
-                navMenu.classList.toggle('resident-header__nav--active');
+                openMobileSidebar();
+            });
+        }
+        if (mobileClose) {
+            mobileClose.addEventListener('click', function(e) {
+                e.stopPropagation();
+                closeMobileSidebar();
+            });
+        }
+        if (mobileBackdrop) {
+            mobileBackdrop.addEventListener('click', function(e) {
+                e.stopPropagation();
+                closeMobileSidebar();
+            });
+        }
+
+        // Mobile Services Dropdown Toggle
+        const mobileServicesToggle = document.getElementById('mobileServicesToggle');
+        const mobileServicesMenu = document.getElementById('mobileServicesMenu');
+        if (mobileServicesToggle && mobileServicesMenu) {
+            mobileServicesToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const isExpanded = mobileServicesMenu.style.display === 'flex';
+                mobileServicesMenu.style.display = isExpanded ? 'none' : 'flex';
+                const icon = this.querySelector('.fa-chevron-down');
+                if (icon) {
+                    icon.style.transform = isExpanded ? 'rotate(0deg)' : 'rotate(180deg)';
+                    icon.style.transition = 'transform 0.2s';
+                }
             });
         }
 
