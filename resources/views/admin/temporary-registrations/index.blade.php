@@ -512,6 +512,16 @@
                                 @else
                                     <span class="badge-status badge-rejected">Từ chối</span>
                                 @endif
+
+                                @if($reg->type == 'residence' && $reg->status == 'approved')
+                                    @if($reg->card_status == 'pending')
+                                        <div style="margin-top: 6px;"><span class="badge-status" style="background: #e0f2fe; color: #0284c7; font-size: 11px;">Thẻ: Chờ cấp</span></div>
+                                    @elseif($reg->card_status == 'issued')
+                                        <div style="margin-top: 6px;"><span class="badge-status" style="background: #dcfce7; color: #16a34a; font-size: 11px;">Thẻ: Đã cấp</span></div>
+                                    @elseif($reg->card_status == 'returned')
+                                        <div style="margin-top: 6px;"><span class="badge-status" style="background: #f1f5f9; color: #64748b; font-size: 11px;">Thẻ: Đã thu hồi</span></div>
+                                    @endif
+                                @endif
                             </td>
                             <td>
                                 <div class="action-icons" style="justify-content: flex-end;">
@@ -540,6 +550,21 @@
                                         </button>
                                     @endif
                                     @if($reg->status == 'approved')
+                                        @if($reg->type == 'residence')
+                                            @if($reg->card_status == 'pending')
+                                                <button type="button" class="action-btn" style="color: #3b82f6;" title="Xác nhận cấp thẻ/Face ID" onclick="promptIssueCard({{ $reg->id }})">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                                                    </svg>
+                                                </button>
+                                            @elseif($reg->card_status == 'issued')
+                                                <button type="button" class="action-btn" style="color: #64748b;" title="Thu hồi thẻ/Face ID" onclick="promptReturnCard({{ $reg->id }})">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                                    </svg>
+                                                </button>
+                                            @endif
+                                        @endif
                                         {{-- Nút Gia hạn --}}
                                         <a href="{{ route('admin.temporary-registrations.create', ['extend_id' => $reg->id]) }}" class="action-btn" title="Gia hạn">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -678,6 +703,36 @@
     
     function closeEndEarlyModal() {
         document.getElementById('endEarlyModal').style.display = 'none';
+    }
+
+    function promptIssueCard(id) {
+        if(confirm('Xác nhận đã cấp Thẻ từ/Face ID cho người tạm trú này?')) {
+            let form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/admin/temporary-registrations/${id}/issue-card`;
+            let csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = '_token';
+            csrf.value = '{{ csrf_token() }}';
+            form.appendChild(csrf);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
+    function promptReturnCard(id) {
+        if(confirm('Xác nhận khách đã trả lại Thẻ từ và đã xóa dữ liệu Face ID?')) {
+            let form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/admin/temporary-registrations/${id}/return-card`;
+            let csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = '_token';
+            csrf.value = '{{ csrf_token() }}';
+            form.appendChild(csrf);
+            document.body.appendChild(form);
+            form.submit();
+        }
     }
 </script>
 @endsection

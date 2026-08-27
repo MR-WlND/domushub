@@ -269,6 +269,8 @@ $portalRoutes = function () {
     Route::post('/temporary-registrations/{temporaryRegistration}/approve', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'approve'])->name('temporary-registrations.approve');
     Route::post('/temporary-registrations/{temporaryRegistration}/reject', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'reject'])->name('temporary-registrations.reject');
     Route::post('/temporary-registrations/{temporaryRegistration}/end-early', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'endEarly'])->name('temporary-registrations.end-early');
+    Route::post('/temporary-registrations/{temporaryRegistration}/issue-card', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'issueCard'])->name('temporary-registrations.issue-card');
+    Route::post('/temporary-registrations/{temporaryRegistration}/return-card', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'returnCard'])->name('temporary-registrations.return-card');
 
     // QUẢN LÝ LỐT ĐỖ XE
     Route::get('/parking-lots', [App\Http\Controllers\Admin\ParkingLotController::class, 'index'])->name('parking-lots.index');
@@ -680,6 +682,8 @@ Route::middleware(['receptionist'])->prefix('receptionist')->name('receptionist.
     Route::post('/temporary-registrations/{temporaryRegistration}/approve', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'approve'])->name('temporary-registrations.approve');
     Route::post('/temporary-registrations/{temporaryRegistration}/reject', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'reject'])->name('temporary-registrations.reject');
     Route::post('/temporary-registrations/{temporaryRegistration}/end-early', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'endEarly'])->name('temporary-registrations.end-early');
+    Route::post('/temporary-registrations/{temporaryRegistration}/issue-card', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'issueCard'])->name('temporary-registrations.issue-card');
+    Route::post('/temporary-registrations/{temporaryRegistration}/return-card', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'returnCard'])->name('temporary-registrations.return-card');
 
     // Trang cá nhân
     Route::get('/profile',                          [\App\Http\Controllers\Receptionist\ProfileController::class, 'index'])->name('profile');

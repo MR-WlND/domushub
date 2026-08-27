@@ -143,9 +143,9 @@ class TemporaryRegistrationController extends Controller
 
             $this->syncResidentStatus($registration);
 
-            // Tự động tạo Ticket yêu cầu cấp thẻ nếu là Tạm trú
+            // Cập nhật card_status
             if ($registration->type === 'residence' && $registration->status === 'approved') {
-                $this->createAccessCardTicket($registration);
+                $registration->update(['card_status' => 'pending']);
             }
 
             DB::commit();
@@ -251,14 +251,12 @@ class TemporaryRegistrationController extends Controller
                 'status' => 'approved',
                 'approved_by' => Auth::id(),
                 'rejection_reason' => null,
+                'card_status' => $temporaryRegistration->type === 'residence' ? 'pending' : 'none',
             ]);
 
             $this->syncResidentStatus($temporaryRegistration);
 
-            // Tự động tạo Ticket yêu cầu cấp thẻ nếu là Tạm trú
-            if ($temporaryRegistration->type === 'residence') {
-                $this->createAccessCardTicket($temporaryRegistration);
-            }
+
 
             if ($temporaryRegistration->user) {
                 $temporaryRegistration->user->notify(new \App\Notifications\TemporaryRegistrationStatusNotification($temporaryRegistration));
@@ -420,20 +418,30 @@ class TemporaryRegistrationController extends Controller
         }
     }
 
-    private function createAccessCardTicket(TemporaryRegistration $registration)
+    public function issueCard(TemporaryRegistration $temporaryRegistration)
     {
-        $startDate = $registration->start_date ? $registration->start_date->format('d/m/Y') : '';
-        $endDate = $registration->end_date ? $registration->end_date->format('d/m/Y') : 'không xác định';
-        
-        \App\Models\Ticket::create([
-            'apartment_id' => $registration->apartment_id,
-            'sender_id' => $registration->user_id ?? Auth::id(),
-            'ticket_type' => 'complaint',
-            'title' => 'Yêu cầu cấp thẻ từ/Face ID cho khách tạm trú: ' . $registration->guest_name,
-            'description' => 'Đơn tạm trú đã được duyệt. Vui lòng cấp thẻ/Face ID cho khách: ' . $registration->guest_name . ' từ ngày ' . $startDate . ' đến ' . $endDate . '.',
-            'status' => 'pending',
-            'priority' => 'medium',
+        if ($temporaryRegistration->status !== 'approved' || $temporaryRegistration->type !== 'residence') {
+            return redirect()->back()->with('error', 'Chỉ có thể cấp thẻ cho đơn Tạm trú đã duyệt.');
+        }
+
+        $temporaryRegistration->update([
+            'card_status' => 'issued'
         ]);
+
+        return redirect()->back()->with('success', 'Đã xác nhận cấp thẻ / Face ID cho khách.');
+    }
+
+    public function returnCard(TemporaryRegistration $temporaryRegistration)
+    {
+        if ($temporaryRegistration->status !== 'approved' || $temporaryRegistration->type !== 'residence') {
+            return redirect()->back()->with('error', 'Chỉ có thể thu hồi thẻ của đơn Tạm trú đã duyệt.');
+        }
+
+        $temporaryRegistration->update([
+            'card_status' => 'returned'
+        ]);
+
+        return redirect()->back()->with('success', 'Đã xác nhận thu hồi thẻ / Face ID thành công.');
     }
 
     public function exportCsv(Request $request)

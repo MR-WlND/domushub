@@ -22,6 +22,7 @@ class TemporaryRegistration extends Model
         'attachments',
         'rejection_reason',
         'status',
+        'card_status',
         'guest_name',
         'guest_phone',
         'guest_cccd',
