@@ -142,38 +142,19 @@
         @endif
 
         <!-- Card 4: Actions -->
-        @if ($isOwner)
+        @if ($isOwner && $type === 'declared' && (!$member->invite_id || ($member->invite && $member->invite->uses_count == 0 && $member->invite->status == 'expired')))
             <div class="detail-card">
                 <div class="detail-card__header">
                     <h3>Thao tác quản lý</h3>
                 </div>
                 <div class="detail-card__body">
                     <div class="action-buttons">
-                        @if ($type === 'registered')
-                            <form action="{{ route('resident.members.registered.destroy', $member->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn gỡ cư dân này khỏi hộ gia đình?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger-soft">
-                                    <i class="fa-solid fa-trash-can"></i> Xóa thành viên
-                                </button>
-                            </form>
-                        @elseif ($type === 'declared')
-                            @if (!$member->invite_id || ($member->invite && $member->invite->uses_count == 0 && $member->invite->status == 'expired'))
-                                <form action="{{ route('resident.members.declared.generate-invite', $member->id) }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fa-solid fa-key"></i> Tạo mã mời liên kết
-                                    </button>
-                                </form>
-                            @endif
-                            <form action="{{ route('resident.members.declared.destroy', $member->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa nhân khẩu này?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger-soft">
-                                    <i class="fa-solid fa-trash-can"></i> Xóa nhân khẩu
-                                </button>
-                            </form>
-                        @endif
+                        <form action="{{ route('resident.members.declared.generate-invite', $member->id) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa-solid fa-key"></i> Tạo mã mời liên kết
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>

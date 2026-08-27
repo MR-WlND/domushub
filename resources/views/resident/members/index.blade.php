@@ -73,7 +73,7 @@
             <div class="alert alert-warning">
                 <i class="fa-solid fa-triangle-exclamation"></i>
                 <div>
-                    <strong>Lưu ý quan trọng:</strong> Bạn đang truy cập với vai trò <strong>Cư dân thường / Người thuê</strong>. Chỉ có <strong>Chủ hộ (Owner)</strong> mới có quyền khai báo nhân khẩu gia đình, xóa thành viên hoặc tạo mã mời mới.
+                    <strong>Lưu ý quan trọng:</strong> Bạn đang truy cập với vai trò <strong>Cư dân thường / Người thuê</strong>. Chỉ có <strong>Chủ hộ (Owner)</strong> mới có quyền khai báo nhân khẩu gia đình hoặc tạo mã mời mới.
                 </div>
             </div>
         @endif
