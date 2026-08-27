@@ -271,6 +271,7 @@ $portalRoutes = function () {
     Route::post('/temporary-registrations/{temporaryRegistration}/end-early', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'endEarly'])->name('temporary-registrations.end-early');
     Route::post('/temporary-registrations/{temporaryRegistration}/issue-card', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'issueCard'])->name('temporary-registrations.issue-card');
     Route::post('/temporary-registrations/{temporaryRegistration}/return-card', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'returnCard'])->name('temporary-registrations.return-card');
+    Route::post('/temporary-registrations/{temporaryRegistration}/extend', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'extend'])->name('temporary-registrations.extend');
 
     // QUẢN LÝ LỐT ĐỖ XE
     Route::get('/parking-lots', [App\Http\Controllers\Admin\ParkingLotController::class, 'index'])->name('parking-lots.index');
@@ -543,6 +544,7 @@ Route::middleware(['resident'])->group(function () {
 
     // TẠM TRÚ TẠM VẮNG PHÍA CƯ DÂN
     Route::post('/resident/temporary-registrations/{temporary_registration}/end-early', [\App\Http\Controllers\Resident\TemporaryRegistrationController::class, 'endEarly'])->name('resident.temporary-registrations.end-early');
+    Route::post('/resident/temporary-registrations/{temporary_registration}/extend', [\App\Http\Controllers\Resident\TemporaryRegistrationController::class, 'extend'])->name('resident.temporary-registrations.extend');
     Route::resource('/resident/temporary-registrations', \App\Http\Controllers\Resident\TemporaryRegistrationController::class, ['as' => 'resident']);
     // PHẢN ÁNH SỰ CỐ PHÍA CƯ DÂN
     Route::get('/resident/tickets', [ResidentTicketController::class, 'index'])->name('resident.tickets.index');
@@ -684,6 +686,7 @@ Route::middleware(['receptionist'])->prefix('receptionist')->name('receptionist.
     Route::post('/temporary-registrations/{temporaryRegistration}/end-early', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'endEarly'])->name('temporary-registrations.end-early');
     Route::post('/temporary-registrations/{temporaryRegistration}/issue-card', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'issueCard'])->name('temporary-registrations.issue-card');
     Route::post('/temporary-registrations/{temporaryRegistration}/return-card', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'returnCard'])->name('temporary-registrations.return-card');
+    Route::post('/temporary-registrations/{temporaryRegistration}/extend', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'extend'])->name('temporary-registrations.extend');
 
     // Trang cá nhân
     Route::get('/profile',                          [\App\Http\Controllers\Receptionist\ProfileController::class, 'index'])->name('profile');

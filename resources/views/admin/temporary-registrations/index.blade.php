@@ -327,6 +327,38 @@
         }
     }
 </style>
+
+<div id="extendModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background: white; padding: 24px; border-radius: 12px; width: 400px; max-width: 90%; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+        <h3 style="margin-top: 0; color: #1e293b; font-size: 18px; font-weight: 700;">Gia hạn thời gian</h3>
+        <p style="font-size: 14px; color: #64748b; margin-bottom: 16px;">Vui lòng chọn ngày kết thúc mới.</p>
+        
+        <form id="extendForm" method="POST" action="">
+            @csrf
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: #475569;">Ngày kết thúc (mới)</label>
+                <input type="date" name="end_date" id="extend_end_date" required style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit;">
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                <button type="button" onclick="closeExtendModal()" style="padding: 8px 16px; background: #f1f5f9; color: #475569; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">Hủy</button>
+                <button type="submit" style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">Xác nhận Gia hạn</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openExtendModal(id, currentEndDate) {
+        document.getElementById('extendForm').action = `/admin/temporary-registrations/${id}/extend`;
+        document.getElementById('extend_end_date').value = currentEndDate;
+        document.getElementById('extendModal').style.display = 'flex';
+    }
+    function closeExtendModal() {
+        document.getElementById('extendModal').style.display = 'none';
+    }
+</script>
+
 @endpush
 
 @section('content')
@@ -566,11 +598,9 @@
                                             @endif
                                         @endif
                                         {{-- Nút Gia hạn --}}
-                                        <a href="{{ route('admin.temporary-registrations.create', ['extend_id' => $reg->id]) }}" class="action-btn" title="Gia hạn">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                                            </svg>
-                                        </a>
+                                        <button type="button" class="action-btn" title="Gia hạn" onclick="openExtendModal({{ $reg->id }}, '{{ $reg->end_date ? $reg->end_date->format('Y-m-d') : '' }}')">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                                        </button>
 
                                         {{-- Nút Kết thúc sớm --}}
                                         <button type="button" class="action-btn" title="Kết thúc sớm" onclick="promptEndEarly({{ $reg->id }})">

@@ -313,6 +313,19 @@ class TemporaryRegistrationController extends Controller
             ->with('success', 'Đã xóa đơn đăng ký.');
     }
 
+    public function extend(Request $request, TemporaryRegistration $temporaryRegistration)
+    {
+        $request->validate([
+            'end_date' => 'required|date',
+        ]);
+
+        $temporaryRegistration->update([
+            'end_date' => $request->end_date,
+        ]);
+
+        return redirect()->back()->with('success', 'Đã gia hạn thời gian thành công.');
+    }
+
     public function endEarly(TemporaryRegistration $temporaryRegistration)
     {
         if ($temporaryRegistration->status !== 'approved') {

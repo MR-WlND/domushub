@@ -267,6 +267,31 @@ class TemporaryRegistrationController extends Controller
             ->with('success', 'Đã xóa đơn đăng ký.');
     }
 
+    public function extend(Request $request, $id)
+    {
+        $request->validate([
+            'end_date' => 'required|date',
+        ]);
+
+        $temporaryRegistration = \App\Models\TemporaryRegistration::findOrFail($id);
+        
+        $user = Auth::user();
+        $residentApartmentIds = \App\Models\Resident::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->pluck('apartment_id')
+            ->toArray();
+
+        if (!in_array($temporaryRegistration->apartment_id, $residentApartmentIds)) {
+            abort(403);
+        }
+
+        $temporaryRegistration->update([
+            'end_date' => $request->end_date,
+        ]);
+
+        return redirect()->back()->with('success', 'Đã gia hạn thời gian thành công.');
+    }
+
     public function endEarly($id)
     {
         $user = Auth::user();
