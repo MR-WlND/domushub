@@ -506,6 +506,8 @@ class TemporaryRegistrationController extends Controller
             
             // Add UTF-8 BOM for Excel
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            // Force Excel/WPS to use comma as delimiter
+            fprintf($file, "sep=,\n");
             
             fputcsv($file, [
                 'STT', 'Mã CH', 'Loại đăng ký', 'Họ tên khách', 'SĐT', 'CCCD/CMND', 

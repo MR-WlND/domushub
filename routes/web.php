@@ -543,6 +543,7 @@ Route::middleware(['resident'])->group(function () {
     Route::delete('/resident/visitors/{id}', [\App\Http\Controllers\Resident\VisitorController::class, 'destroy'])->name('resident.visitors.destroy');
 
     // TẠM TRÚ TẠM VẮNG PHÍA CƯ DÂN
+    Route::get('/resident/temporary-registrations/{temporary_registration}/print', [\App\Http\Controllers\Resident\TemporaryRegistrationController::class, 'print'])->name('resident.temporary-registrations.print');
     Route::post('/resident/temporary-registrations/{temporary_registration}/end-early', [\App\Http\Controllers\Resident\TemporaryRegistrationController::class, 'endEarly'])->name('resident.temporary-registrations.end-early');
     Route::post('/resident/temporary-registrations/{temporary_registration}/extend', [\App\Http\Controllers\Resident\TemporaryRegistrationController::class, 'extend'])->name('resident.temporary-registrations.extend');
     Route::resource('/resident/temporary-registrations', \App\Http\Controllers\Resident\TemporaryRegistrationController::class, ['as' => 'resident']);

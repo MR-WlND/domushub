@@ -285,11 +285,45 @@ class TemporaryRegistrationController extends Controller
             abort(403);
         }
 
-        $temporaryRegistration->update([
-            'end_date' => $request->end_date,
-        ]);
+        DB::beginTransaction();
+        try {
+            $newRegistration = $temporaryRegistration->replicate();
+            
+            $newRegistration->end_date = $request->end_date;
+            $newRegistration->status = 'pending';
+            $newRegistration->approved_by = null;
+            $newRegistration->rejection_reason = null;
+            $newRegistration->card_status = null;
+            
+            $oldReason = $temporaryRegistration->reason ?? '';
+            $newRegistration->reason = "Gia hạn (Đơn gốc: #REQ-" . str_pad($temporaryRegistration->id, 4, '0', STR_PAD_LEFT) . ")" . ($oldReason ? " - " . $oldReason : "");
+            
+            $newAttachments = [];
+            if (!empty($temporaryRegistration->attachments)) {
+                foreach ($temporaryRegistration->attachments as $oldPath) {
+                    if (Storage::disk('public')->exists($oldPath)) {
+                        $extension = pathinfo($oldPath, PATHINFO_EXTENSION);
+                        $newPath = 'temporary_registrations/' . uniqid('ext_') . '.' . $extension;
+                        Storage::disk('public')->copy($oldPath, $newPath);
+                        $newAttachments[] = $newPath;
+                    }
+                }
+            }
+            $newRegistration->attachments = $newAttachments;
+            
+            $newRegistration->save();
 
-        return redirect()->back()->with('success', 'Đã gia hạn thời gian thành công.');
+            $admins = User::whereIn('role', ['admin', 'manager', 'receptionist'])->get();
+            foreach ($admins as $admin) {
+                $admin->notify(new NewTemporaryRegistrationNotification($newRegistration));
+            }
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Đã tạo đơn yêu cầu gia hạn thành công. Vui lòng chờ BQL phê duyệt.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Đã xảy ra lỗi: ' . $e->getMessage());
+        }
     }
 
     public function endEarly($id)
@@ -351,5 +385,18 @@ class TemporaryRegistrationController extends Controller
             DB::rollBack();
             return redirect()->back()->with('error', 'Lỗi: ' . $e->getMessage());
         }
+    }
+
+    public function print($id)
+    {
+        $user = Auth::user();
+        $temporaryRegistration = TemporaryRegistration::with(['user', 'apartment', 'approver'])
+            ->where(function ($q) use ($user) {
+                $q->where('user_id', $user->id)
+                  ->orWhere('apartment_id', $user->apartment_id);
+            })
+            ->findOrFail($id);
+
+        return view('resident.temporary-registrations.print', compact('temporaryRegistration'));
     }
 }

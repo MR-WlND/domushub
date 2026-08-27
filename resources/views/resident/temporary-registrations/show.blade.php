@@ -28,7 +28,17 @@
             <h1 class="tr-title">Chi tiết đơn đăng ký</h1>
             <p class="tr-subtitle">Mã đơn: #REQ-{{ str_pad($temporaryRegistration->id, 4, '0', STR_PAD_LEFT) }}</p>
         </div>
-        <a href="{{ route('resident.temporary-registrations.index') }}" class="btn-back">Quay lại danh sách</a>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            @if($temporaryRegistration->status == 'approved')
+                <a href="{{ route('resident.temporary-registrations.print', $temporaryRegistration->id) }}" target="_blank" style="padding: 8px 16px; background-color: #00236f; color: white; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 6px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                    </svg>
+                    In CT01
+                </a>
+            @endif
+            <a href="{{ route('resident.temporary-registrations.index') }}" class="btn-back">Quay lại danh sách</a>
+        </div>
     </div>
 
     <div class="tr-card">
