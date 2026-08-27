@@ -130,8 +130,18 @@
     .filter-group {
         display: flex;
         flex-direction: column;
-        flex: 1;
-        min-width: 200px;
+        flex: 1 1 200px;
+    }
+
+    .filter-group.search-group {
+        flex: 2 1 300px;
+    }
+
+    .filter-group.action-group {
+        flex: 0 0 auto;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
     }
 
     .filter-label {
@@ -142,6 +152,7 @@
     }
 
     .filter-input {
+        box-sizing: border-box;
         height: 40px;
         border: 1px solid #d9e2f2;
         border-radius: 10px;
@@ -161,6 +172,8 @@
 
     .filter-input-with-icon {
         position: relative;
+        width: 100%;
+        display: block;
     }
     
     .filter-input-with-icon svg {
@@ -414,7 +427,7 @@
         {{-- Filters --}}
         <div class="filter-container">
             <form method="GET" action="{{ route('receptionist.temporary-registrations.index') }}" class="filter-form">
-                <div class="filter-group" style="flex: 2;">
+                <div class="filter-group search-group">
                     <label class="filter-label">Tìm kiếm</label>
                     <div class="filter-input-with-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -444,14 +457,12 @@
                     </select>
                 </div>
 
-                <div class="filter-group" style="flex: 0; min-width: auto;">
+                <div class="filter-group action-group">
                     <button type="submit" class="btn-filter">Lọc</button>
+                    @if(request()->anyFilled(['search', 'type', 'status']))
+                        <a href="{{ route('receptionist.temporary-registrations.index') }}" style="color: #ef4444; font-size: 14px; text-decoration: none; white-space: nowrap;">Xóa lọc</a>
+                    @endif
                 </div>
-                @if(request()->anyFilled(['search', 'type', 'status']))
-                    <div class="filter-group" style="flex: 0; min-width: auto;">
-                        <a href="{{ route('receptionist.temporary-registrations.index') }}" style="color: #ef4444; font-size: 14px; text-decoration: none; padding-left: 8px;">Xóa</a>
-                    </div>
-                @endif
             </form>
         </div>
 
