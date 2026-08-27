@@ -6,8 +6,9 @@ use App\Models\Announcement;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Str;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
-class NewAnnouncementNotification extends Notification
+class NewAnnouncementNotification extends Notification implements ShouldBroadcast
 {
     use Queueable;
 
@@ -26,7 +27,7 @@ class NewAnnouncementNotification extends Notification
      */
     public function via($notifiable): array
     {
-        return ['database'];
+        return ['database', 'broadcast'];
     }
 
     /**

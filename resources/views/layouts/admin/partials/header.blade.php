@@ -167,6 +167,14 @@
             // Tải lần đầu và chạy ngầm mỗi 60 giây
             loadNotifications();
             setInterval(loadNotifications, 60000);
+
+            // Lắng nghe sự kiện Real-time qua Laravel Echo
+            if (window.Echo && '{{ auth()->check() ? auth()->id() : "" }}') {
+                window.Echo.private('App.Models.User.{{ auth()->id() }}')
+                    .notification((notification) => {
+                        loadNotifications();
+                    });
+            }
         });
         </script>
 

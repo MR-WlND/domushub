@@ -211,3 +211,33 @@
     @endif
 </div>
 @endsection
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Lắng nghe sự kiện Real-time qua Laravel Echo
+    if (window.Echo && '{{ auth()->user()->apartment_id ?? "" }}') {
+        window.Echo.private('apartment.{{ auth()->user()->apartment_id }}')
+            .listen('VisitorStatusChanged', (e) => {
+                const toast = document.createElement('div');
+                toast.className = 'tk-alert tk-alert--success';
+                toast.style.position = 'fixed';
+                toast.style.bottom = '20px';
+                toast.style.right = '20px';
+                toast.style.zIndex = '9999';
+                toast.style.padding = '12px 20px';
+                toast.style.background = '#ecfdf5';
+                toast.style.color = '#065f46';
+                toast.style.borderRadius = '8px';
+                toast.style.border = '1px solid #10b981';
+                toast.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+                toast.innerHTML = '<strong>' + e.visitor.guest_name + '</strong> vừa được cập nhật trạng thái.';
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    window.location.reload();
+                }, 3000);
+            });
+    }
+});
+</script>
+@endpush

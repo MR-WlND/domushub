@@ -815,13 +815,19 @@ document.addEventListener('DOMContentLoaded', function() {
         typingIndicator.classList.remove('hidden');
         scrollToBottom();
 
+        // Lấy Socket ID nếu Echo đã sẵn sàng
+        let headers = {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        };
+        if (window.Echo && window.Echo.socketId()) {
+            headers['X-Socket-ID'] = window.Echo.socketId();
+        }
+
         // Gửi request API
         fetch("{{ route('resident.chatbot.message') }}", {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
+            headers: headers,
             body: JSON.stringify({ message: message })
         })
         .then(response => {
@@ -894,6 +900,25 @@ document.addEventListener('DOMContentLoaded', function() {
         
         messageDiv.appendChild(bubbleDiv);
         messagesContainer.appendChild(messageDiv);
+    }
+
+    // Lắng nghe sự kiện Real-time qua Laravel Echo
+    if (window.Echo && '{{ auth()->id() }}') {
+        window.Echo.private(`chatbot.{{ auth()->id() }}`)
+            .listen('ChatbotMessageSent', (e) => {
+                // Nếu tin nhắn được nhận qua WebSockets, append vào chat
+                // Ẩn hiệu ứng gõ nếu có
+                typingIndicator.classList.add('hidden');
+                
+                const sender = e.message.role === 'model' ? 'bot' : 'user';
+                appendMessage(sender, e.message.message);
+                scrollToBottom();
+
+                // Nếu cửa sổ chat đang đóng, tự động mở lên
+                if (win.classList.contains('hidden')) {
+                    bubble.click();
+                }
+            });
     }
 });
 </script>

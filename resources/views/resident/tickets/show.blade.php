@@ -680,4 +680,26 @@
 
 @push('scripts')
     @vite(['resources/js/pages/resident/tickets/show.js'])
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.Echo) {
+            window.Echo.private('ticket.{{ $ticket->id }}')
+                .listen('TicketProgressUpdated', (e) => {
+                    // Hiển thị thông báo và tải lại trang để xem tiến độ mới
+                    const toast = document.createElement('div');
+                    toast.className = 'tk-alert tk-alert--success';
+                    toast.style.position = 'fixed';
+                    toast.style.bottom = '20px';
+                    toast.style.right = '20px';
+                    toast.style.zIndex = '9999';
+                    toast.innerHTML = '<i class="fa-solid fa-circle-info"></i><div>Tiến độ phản ánh vừa được cập nhật. Đang tải lại...</div>';
+                    document.body.appendChild(toast);
+                    
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 3000);
+                });
+        }
+    });
+    </script>
 @endpush

@@ -47,4 +47,11 @@ class TicketProgress extends Model
             default       => $this->status,
         };
     }
+
+    protected static function booted()
+    {
+        static::created(function ($progress) {
+            broadcast(new \App\Events\TicketProgressUpdated($progress))->toOthers();
+        });
+    }
 }

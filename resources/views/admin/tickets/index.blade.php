@@ -405,5 +405,28 @@
 
 <script>
 // Row click is disabled per user request. You must click the 'Chi tiết' button to view details.
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Lắng nghe sự kiện Real-time qua Laravel Echo
+    if (window.Echo) {
+        window.Echo.private('admin.tickets')
+            .listen('TicketCreated', (e) => {
+                // Tải lại trang hoặc hiển thị thông báo
+                // Ở đây cách đơn giản nhất là hiển thị alert và refresh sau 3s
+                const toast = document.createElement('div');
+                toast.className = 'tickets-alert tickets-alert--success';
+                toast.style.position = 'fixed';
+                toast.style.bottom = '20px';
+                toast.style.right = '20px';
+                toast.style.zIndex = '9999';
+                toast.innerText = '📣 Có phản ánh sự cố mới: ' + (e.ticket.title || 'Vừa được gửi');
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    window.location.reload();
+                }, 3000);
+            });
+    }
+});
 </script>
 @endsection
