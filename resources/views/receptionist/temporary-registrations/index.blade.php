@@ -139,9 +139,6 @@
 
     .filter-group.action-group {
         flex: 0 0 auto;
-        flex-direction: row;
-        align-items: center;
-        gap: 8px;
     }
 
     .filter-label {
@@ -458,10 +455,13 @@
                 </div>
 
                 <div class="filter-group action-group">
-                    <button type="submit" class="btn-filter">Lọc</button>
-                    @if(request()->anyFilled(['search', 'type', 'status']))
-                        <a href="{{ route('receptionist.temporary-registrations.index') }}" style="color: #ef4444; font-size: 14px; text-decoration: none; white-space: nowrap;">Xóa lọc</a>
-                    @endif
+                    <label class="filter-label" style="visibility: hidden; user-select: none;">Hành động</label>
+                    <div style="display: flex; align-items: center; gap: 12px; height: 40px;">
+                        <button type="submit" class="btn-filter">Lọc</button>
+                        @if(request()->anyFilled(['search', 'type', 'status']))
+                            <a href="{{ route('receptionist.temporary-registrations.index') }}" style="color: #ef4444; font-size: 14px; text-decoration: none; white-space: nowrap; font-weight: 500;">Xóa lọc</a>
+                        @endif
+                    </div>
                 </div>
             </form>
         </div>
