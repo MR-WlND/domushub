@@ -506,14 +506,11 @@
                                     
                                     @if($reg->status == 'pending')
                                         {{-- Nút Duyệt --}}
-                                        <form action="{{ route('admin.temporary-registrations.approve', $reg->id) }}" method="POST" style="margin: 0;">
-                                            @csrf
-                                            <button type="submit" class="action-btn approve" title="Duyệt đơn" onclick="return confirm('Xác nhận duyệt đăng ký này?');">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                                    <polyline points="20 6 9 17 4 12"></polyline>
-                                                </svg>
-                                            </button>
-                                        </form>
+                                        <button type="button" class="action-btn approve" title="Duyệt đơn" onclick="promptApprove({{ $reg->id }})">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                            </svg>
+                                        </button>
 
                                         {{-- Nút Từ chối --}}
                                         <button type="button" class="action-btn reject" title="Từ chối" onclick="promptReject({{ $reg->id }})">
@@ -532,14 +529,11 @@
                                         </a>
 
                                         {{-- Nút Kết thúc sớm --}}
-                                        <form action="{{ route('admin.temporary-registrations.end-early', $reg->id) }}" method="POST" style="margin: 0;">
-                                            @csrf
-                                            <button type="submit" class="action-btn" title="Kết thúc sớm" onclick="return confirm('Xác nhận kết thúc sớm đăng ký này (cập nhật ngày kết thúc thành hôm nay)?');">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                            </button>
-                                        </form>
+                                        <button type="button" class="action-btn" title="Kết thúc sớm" onclick="promptEndEarly({{ $reg->id }})">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </button>
                                     @endif
                                 </div>
                             </td>
@@ -592,6 +586,38 @@
     </div>
 </div>
 
+<!-- Custom Modal Duyệt -->
+<div id="approveModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 24px; border-radius: 12px; width: 400px; max-width: 90%; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+        <h3 style="margin-top: 0; color: #1e293b; font-size: 18px; font-weight: 700;">Duyệt đơn đăng ký</h3>
+        <p style="font-size: 14px; color: #64748b; margin-bottom: 24px;">Xác nhận duyệt đăng ký tạm trú/tạm vắng này?</p>
+        
+        <form id="globalApproveForm" method="POST" action="">
+            @csrf
+            <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                <button type="button" onclick="closeApproveModal()" style="padding: 8px 16px; background: #f1f5f9; color: #475569; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">Hủy</button>
+                <button type="submit" style="padding: 8px 16px; background: #16a34a; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">Xác nhận Duyệt</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Custom Modal Kết thúc sớm -->
+<div id="endEarlyModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 24px; border-radius: 12px; width: 400px; max-width: 90%; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+        <h3 style="margin-top: 0; color: #1e293b; font-size: 18px; font-weight: 700;">Kết thúc sớm đăng ký</h3>
+        <p style="font-size: 14px; color: #64748b; margin-bottom: 24px;">Xác nhận kết thúc sớm đăng ký này (cập nhật ngày kết thúc thành hôm nay)?</p>
+        
+        <form id="globalEndEarlyForm" method="POST" action="">
+            @csrf
+            <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                <button type="button" onclick="closeEndEarlyModal()" style="padding: 8px 16px; background: #f1f5f9; color: #475569; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">Hủy</button>
+                <button type="submit" style="padding: 8px 16px; background: #00236f; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">Xác nhận Kết thúc sớm</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     function promptReject(id) {
         let form = document.getElementById('globalRejectForm');
@@ -613,6 +639,26 @@
         } else {
             alert("Lý do từ chối không được để trống!");
         }
+    }
+
+    function promptApprove(id) {
+        let form = document.getElementById('globalApproveForm');
+        form.action = `/admin/temporary-registrations/${id}/approve`;
+        document.getElementById('approveModal').style.display = 'flex';
+    }
+    
+    function closeApproveModal() {
+        document.getElementById('approveModal').style.display = 'none';
+    }
+
+    function promptEndEarly(id) {
+        let form = document.getElementById('globalEndEarlyForm');
+        form.action = `/admin/temporary-registrations/${id}/end-early`;
+        document.getElementById('endEarlyModal').style.display = 'flex';
+    }
+    
+    function closeEndEarlyModal() {
+        document.getElementById('endEarlyModal').style.display = 'none';
     }
 </script>
 @endsection

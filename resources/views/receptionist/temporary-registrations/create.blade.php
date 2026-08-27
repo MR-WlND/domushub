@@ -529,7 +529,7 @@
         toggleSections();
 
         // Image Preview and Multiple Files Logic for Admin
-        const adminFileInput = document.getElementById('admin-file-input');
+        const adminFileInput = document.getElementById('receptionist-file-input');
         const adminPreviewContainer = document.getElementById('admin-file-preview-container');
         let adminSelectedFiles = new DataTransfer();
 
@@ -542,12 +542,14 @@
                 });
                 
                 adminFileInput.files = adminSelectedFiles.files;
+                document.getElementById('receptionist-file-name-display').textContent = adminSelectedFiles.files.length > 0 ? (adminSelectedFiles.files.length + ' tệp được chọn') : 'Không có tệp nào được chọn';
                 renderAdminPreviews();
             });
 
-            document.addEventListener('global-camera-captured', function(e) {
+            window.addEventListener('global-camera-captured', function(e) {
                 adminSelectedFiles.items.add(e.detail.file);
                 adminFileInput.files = adminSelectedFiles.files;
+                document.getElementById('receptionist-file-name-display').textContent = adminSelectedFiles.files.length > 0 ? (adminSelectedFiles.files.length + ' tệp được chọn') : 'Không có tệp nào được chọn';
                 renderAdminPreviews();
             });
             
@@ -558,6 +560,7 @@
                 files.forEach(f => dt.items.add(f));
                 adminSelectedFiles = dt;
                 adminFileInput.files = adminSelectedFiles.files;
+                document.getElementById('receptionist-file-name-display').textContent = adminSelectedFiles.files.length > 0 ? (adminSelectedFiles.files.length + ' tệp được chọn') : 'Không có tệp nào được chọn';
                 renderAdminPreviews();
             }
 
@@ -608,6 +611,27 @@
                             img.style.height = '100%';
                             img.style.objectFit = 'cover';
                             wrapper.appendChild(img);
+                            
+                            let labelText = '';
+                            if (file.name.startsWith('CCCD_Mat_Truoc')) labelText = 'Mặt trước';
+                            else if (file.name.startsWith('CCCD_Mat_Sau')) labelText = 'Mặt sau';
+                            
+                            if (labelText) {
+                                const label = document.createElement('div');
+                                label.textContent = labelText;
+                                label.style.position = 'absolute';
+                                label.style.bottom = '0';
+                                label.style.left = '0';
+                                label.style.right = '0';
+                                label.style.background = 'rgba(0, 35, 111, 0.75)';
+                                label.style.color = '#fff';
+                                label.style.fontSize = '11px';
+                                label.style.fontWeight = '600';
+                                label.style.textAlign = 'center';
+                                label.style.padding = '4px 0';
+                                wrapper.appendChild(label);
+                            }
+                            
                             wrapper.appendChild(removeBtn);
                         }
                         reader.readAsDataURL(file);
