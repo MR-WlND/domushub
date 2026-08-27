@@ -479,6 +479,16 @@
         right: 16px;
         transform-origin: bottom center;
     }
+    
+    /* When chatbot is open, hide bottom nav and maximize chat window to prevent keyboard push-up issues */
+    body.chatbot-is-open .mobile-bottom-nav {
+        display: none !important;
+    }
+    body.chatbot-is-open .chatbot-window {
+        bottom: 16px !important;
+        height: calc(100dvh - 90px) !important;
+        max-height: 550px !important;
+    }
 }
 </style>
 
@@ -629,6 +639,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(function() {
                 if (win) {
                     win.classList.remove('hidden');
+                    document.body.classList.add('chatbot-is-open');
                     sessionStorage.setItem('chatbot_open', 'true');
                     input.focus();
                     loadChatHistory();
@@ -641,12 +652,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const isChatOpen = sessionStorage.getItem('chatbot_open') === 'true';
     if (isChatOpen) {
         win.classList.remove('hidden');
+        document.body.classList.add('chatbot-is-open');
         bubble.classList.add('chatbot-bubble--hidden');
         loadChatHistory();
     }
 
     function closeChatWindow() {
         win.classList.add('hidden');
+        document.body.classList.remove('chatbot-is-open');
         sessionStorage.setItem('chatbot_open', 'false');
         // Bubble hiện lại sau khi cửa sổ đóng
         setTimeout(function() {
