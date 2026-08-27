@@ -147,6 +147,11 @@ class TemporaryRegistrationController extends Controller
             // Đồng bộ trạng thái vào Resident
             $this->syncResidentStatus($registration);
 
+            // Tự động tạo Ticket yêu cầu cấp thẻ nếu là Tạm trú
+            if ($registration->type === 'residence' && $registration->status === 'approved') {
+                $this->createAccessCardTicket($registration);
+            }
+
             DB::commit();
             return redirect(portal_route('temporary-registrations.index'))
                 ->with('success', 'Tạo đăng ký thành công và đã tự động duyệt.');
@@ -253,6 +258,11 @@ class TemporaryRegistrationController extends Controller
             ]);
 
             $this->syncResidentStatus($temporaryRegistration);
+
+            // Tự động tạo Ticket yêu cầu cấp thẻ nếu là Tạm trú
+            if ($temporaryRegistration->type === 'residence') {
+                $this->createAccessCardTicket($temporaryRegistration);
+            }
 
             if ($temporaryRegistration->user) {
                 $temporaryRegistration->user->notify(new \App\Notifications\TemporaryRegistrationStatusNotification($temporaryRegistration));
@@ -418,5 +428,111 @@ class TemporaryRegistrationController extends Controller
         if ($user && $user->apartment_id !== $registration->apartment_id) {
             $user->update(['apartment_id' => $registration->apartment_id]);
         }
+    }
+
+    private function createAccessCardTicket(TemporaryRegistration $registration)
+    {
+        $startDate = $registration->start_date ? $registration->start_date->format('d/m/Y') : '';
+        $endDate = $registration->end_date ? $registration->end_date->format('d/m/Y') : 'không xác định';
+        
+        \App\Models\Ticket::create([
+            'apartment_id' => $registration->apartment_id,
+            'sender_id' => $registration->user_id ?? Auth::id(),
+            'ticket_type' => 'complaint',
+            'title' => 'Yêu cầu cấp thẻ từ/Face ID cho khách tạm trú: ' . $registration->guest_name,
+            'description' => 'Đơn tạm trú đã được duyệt. Vui lòng cấp thẻ/Face ID cho khách: ' . $registration->guest_name . ' từ ngày ' . $startDate . ' đến ' . $endDate . '.',
+            'status' => 'pending',
+            'priority' => 'medium',
+        ]);
+    }
+
+    public function exportCsv(Request $request)
+    {
+        $query = TemporaryRegistration::with(['user', 'apartment.floor.block', 'approver'])
+            ->orderBy('created_at', 'desc');
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('user', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        $registrations = $query->get();
+
+        $filename = "danh-sach-tam-tru-tam-vang-" . date('Y-m-d') . ".csv";
+
+        $headers = [
+            "Content-type"        => "text/csv; charset=UTF-8",
+            "Content-Disposition" => "attachment; filename=$filename",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $callback = function () use ($registrations) {
+            $file = fopen('php://output', 'w');
+            
+            // Add UTF-8 BOM for Excel
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            fputcsv($file, [
+                'STT', 'Mã CH', 'Loại đăng ký', 'Họ tên khách', 'SĐT', 'CCCD/CMND', 
+                'Ngày sinh', 'Giới tính', 'Quê quán', 'Quan hệ', 
+                'Ngày bắt đầu', 'Ngày kết thúc', 'Trạng thái', 'Người duyệt'
+            ]);
+
+            foreach ($registrations as $index => $row) {
+                $type = $row->type == 'residence' ? 'Tạm trú' : 'Tạm vắng';
+                $status = match ($row->status) {
+                    'pending' => 'Chờ duyệt',
+                    'approved' => 'Đã duyệt',
+                    'rejected' => 'Từ chối',
+                    default => $row->status
+                };
+                
+                $apartment = $row->apartment ? $row->apartment->apartment_number : '';
+                $guestName = $row->type == 'residence' ? $row->guest_name : ($row->user ? $row->user->name : '');
+                $guestPhone = $row->type == 'residence' ? $row->guest_phone : ($row->user ? $row->user->phone : '');
+                $guestCccd = $row->type == 'residence' ? $row->guest_cccd : ($row->user ? $row->user->cccd : '');
+                
+                $gender = match ($row->guest_gender) {
+                    'male' => 'Nam',
+                    'female' => 'Nữ',
+                    'other' => 'Khác',
+                    default => ''
+                };
+
+                fputcsv($file, [
+                    $index + 1,
+                    $apartment,
+                    $type,
+                    $guestName,
+                    $guestPhone,
+                    $guestCccd,
+                    $row->guest_dob ? $row->guest_dob->format('d/m/Y') : '',
+                    $gender,
+                    $row->guest_hometown,
+                    $row->relationship,
+                    $row->start_date ? $row->start_date->format('d/m/Y') : '',
+                    $row->end_date ? $row->end_date->format('d/m/Y') : '',
+                    $status,
+                    $row->approver ? $row->approver->name : ''
+                ]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

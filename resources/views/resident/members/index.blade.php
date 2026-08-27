@@ -124,6 +124,9 @@
                                             @else
                                                 <span class="badge badge--secondary">{{ $pending->relationship }}</span>
                                             @endif
+                                            @if ($pending->temporary_status === 'temporary')
+                                                <span class="badge badge--secondary" style="background: #e0e7ff; color: #4338ca; margin-top: 4px; display: inline-block;"><i class="fa-solid fa-suitcase"></i> Tạm trú</span>
+                                            @endif
                                         </td>
                                         <td>{{ $pending->created_at ? $pending->created_at->format('d/m/Y H:i') : '—' }}</td>
                                         <td>
@@ -228,6 +231,9 @@
                                     @else
                                         <span class="badge badge--secondary">{{ $selfRelationship ?? '—' }}</span>
                                     @endif
+                                    @if ($selfResident->temporary_status === 'temporary')
+                                        <span class="badge badge--secondary" style="background: #e0e7ff; color: #4338ca; margin-top: 4px; display: inline-block;"><i class="fa-solid fa-suitcase"></i> Tạm trú</span>
+                                    @endif
                                 </td>
                                 <td class="col-status">
                                     <span class="badge badge-status--verified"><i class="fa-solid fa-check"></i> Đã có tài khoản</span>
@@ -261,6 +267,9 @@
                                         @else
                                             <span class="badge badge--secondary">{{ $member->relationship }}</span>
                                         @endif
+                                        @if ($member->temporary_status === 'temporary')
+                                            <span class="badge badge--secondary" style="background: #e0e7ff; color: #4338ca; margin-top: 4px; display: inline-block;"><i class="fa-solid fa-suitcase"></i> Tạm trú</span>
+                                        @endif
                                     </td>
                                     <td class="col-status">
                                         <span class="badge badge-status--verified"><i class="fa-solid fa-check"></i> Đã có tài khoản</span>
@@ -288,6 +297,9 @@
                                     </td>
                                     <td class="col-role">
                                         <span class="badge badge--relationship">{{ $member->relationship === 'Thành viên gia đình' ? 'Gia đình' : ($member->relationship ?? 'Khác') }}</span>
+                                        @if ($member->temporary_status === 'temporary')
+                                            <span class="badge badge--secondary" style="background: #e0e7ff; color: #4338ca; margin-top: 4px; display: inline-block;"><i class="fa-solid fa-suitcase"></i> Tạm trú</span>
+                                        @endif
                                     </td>
                                     <td class="col-status">
                                         @if ($member->invite_id && $member->invite && ($member->invite->uses_count > 0 || $member->invite->status == 'expired'))

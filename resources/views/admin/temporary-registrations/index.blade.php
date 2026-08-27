@@ -329,13 +329,21 @@
                 <h1 class="tr-title">Quản lý Tạm trú - Tạm vắng</h1>
                 <p class="tr-subtitle">Quản lý danh sách cư dân đăng ký tạm trú, tạm vắng và trạng thái phê duyệt hồ sơ.</p>
             </div>
-            <a href="{{ route('admin.temporary-registrations.create') }}" class="btn-create">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="margin-right: 6px;">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                Tạo đơn hộ
-            </a>
+            <div style="display: flex; gap: 12px;">
+                <a href="{{ route('admin.temporary-registrations.export', request()->all()) }}" class="btn-create" style="background-color: #10b981; color: white;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="margin-right: 6px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Xuất CSV
+                </a>
+                <a href="{{ route('admin.temporary-registrations.create') }}" class="btn-create">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="margin-right: 6px;">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Tạo đơn hộ
+                </a>
+            </div>
         </div>
 
         @if(session('success'))
