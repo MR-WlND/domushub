@@ -259,7 +259,7 @@ $portalRoutes = function () {
     Route::get('/visitor-logs', [App\Http\Controllers\Admin\VisitorLogController::class, 'index'])->name('visitor-logs.index');
 
     // TẠM TRÚ TẠM VẮNG (Admin)
-    Route::get('/temporary-registrations/export',           [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'exportCsv'])->name('temporary-registrations.export');
+    Route::get('/temporary-registrations/export',           [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'exportExcel'])->name('temporary-registrations.export');
     Route::get('/temporary-registrations',                  [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'index'])->name('temporary-registrations.index');
     Route::get('/temporary-registrations/create',           [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'create'])->name('temporary-registrations.create');
     Route::post('/temporary-registrations',                 [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'store'])->name('temporary-registrations.store');
@@ -675,7 +675,7 @@ Route::middleware(['receptionist'])->prefix('receptionist')->name('receptionist.
     Route::get('/visitor-log',                      [\App\Http\Controllers\Receptionist\VisitorController::class, 'log'])->name('visitor-log.index');
 
     // Quản lý Tạm trú - Tạm vắng
-    Route::get('/temporary-registrations/export',           [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'exportCsv'])->name('temporary-registrations.export');
+    Route::get('/temporary-registrations/export',           [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'exportExcel'])->name('temporary-registrations.export');
     Route::get('/temporary-registrations',                  [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'index'])->name('temporary-registrations.index');
     Route::get('/temporary-registrations/create',           [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'create'])->name('temporary-registrations.create');
     Route::post('/temporary-registrations',                 [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'store'])->name('temporary-registrations.store');

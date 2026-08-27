@@ -457,7 +457,7 @@ class TemporaryRegistrationController extends Controller
         return redirect()->back()->with('success', 'Đã xác nhận thu hồi thẻ / Face ID thành công.');
     }
 
-    public function exportCsv(Request $request)
+    public function exportExcel(Request $request)
     {
         $query = TemporaryRegistration::with(['user', 'apartment.floor.block', 'approver'])
             ->orderBy('created_at', 'desc');
@@ -481,69 +481,75 @@ class TemporaryRegistrationController extends Controller
 
         $registrations = $query->get();
 
-        $filename = "danh-sach-tam-tru-tam-vang-" . date('Y-m-d') . ".csv";
+        $filename = "danh-sach-tam-tru-tam-vang-" . date('Y-m-d') . ".xls";
 
         $headers = [
-            "Content-type"        => "text/csv; charset=UTF-8",
+            "Content-type"        => "application/vnd.ms-excel; charset=UTF-8",
             "Content-Disposition" => "attachment; filename=$filename",
             "Pragma"              => "no-cache",
             "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
             "Expires"             => "0"
         ];
 
-        $callback = function () use ($registrations) {
-            $file = fopen('php://output', 'w');
-            
-            // Add UTF-8 BOM for Excel
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-            // Force Excel/WPS to use comma as delimiter
-            fprintf($file, "sep=,\n");
-            
-            fputcsv($file, [
-                'STT', 'Mã CH', 'Loại đăng ký', 'Họ tên khách', 'SĐT', 'CCCD/CMND', 
-                'Ngày sinh', 'Giới tính', 'Quê quán', 'Quan hệ', 
-                'Ngày bắt đầu', 'Ngày kết thúc', 'Trạng thái', 'Người duyệt'
-            ]);
+        $html = '<html xmlns:x="urn:schemas-microsoft-com:office:excel">';
+        $html .= '<head><meta charset="utf-8"></head><body>';
+        $html .= '<table border="1"><thead><tr>';
+        
+        $columns = [
+            'STT', 'Mã CH', 'Loại đăng ký', 'Họ tên khách', 'SĐT', 'CCCD/CMND', 
+            'Ngày sinh', 'Giới tính', 'Quê quán', 'Quan hệ', 
+            'Ngày bắt đầu', 'Ngày kết thúc', 'Trạng thái', 'Người duyệt'
+        ];
+        
+        foreach ($columns as $col) {
+            $html .= '<th style="background-color: #00236f; color: white;">' . $col . '</th>';
+        }
+        $html .= '</tr></thead><tbody>';
 
-            foreach ($registrations as $index => $row) {
-                $type = $row->type == 'residence' ? 'Tạm trú' : 'Tạm vắng';
-                $status = match ($row->status) {
-                    'pending' => 'Chờ duyệt',
-                    'approved' => 'Đã duyệt',
-                    'rejected' => 'Từ chối',
-                    default => $row->status
-                };
-                
-                $apartment = $row->apartment ? $row->apartment->apartment_number : '';
-                $guestName = $row->type == 'residence' ? $row->guest_name : ($row->user ? $row->user->name : '');
-                $guestPhone = $row->type == 'residence' ? $row->guest_phone : ($row->user ? $row->user->phone : '');
-                $guestCccd = $row->type == 'residence' ? $row->guest_cccd : ($row->user ? $row->user->cccd : '');
-                
-                $gender = match ($row->guest_gender) {
-                    'male' => 'Nam',
-                    'female' => 'Nữ',
-                    'other' => 'Khác',
-                    default => ''
-                };
+        foreach ($registrations as $index => $row) {
+            $type = $row->type == 'residence' ? 'Tạm trú' : 'Tạm vắng';
+            $status = match ($row->status) {
+                'pending' => 'Chờ duyệt',
+                'approved' => 'Đã duyệt',
+                'rejected' => 'Từ chối',
+                default => $row->status
+            };
+            
+            $apartment = $row->apartment ? $row->apartment->apartment_number : '';
+            $guestName = $row->type == 'residence' ? $row->guest_name : ($row->user ? $row->user->name : '');
+            $guestPhone = $row->type == 'residence' ? $row->guest_phone : ($row->user ? $row->user->phone : '');
+            $guestCccd = $row->type == 'residence' ? $row->guest_cccd : ($row->user ? $row->user->cccd : '');
+            
+            $gender = match ($row->guest_gender) {
+                'male' => 'Nam',
+                'female' => 'Nữ',
+                'other' => 'Khác',
+                default => ''
+            };
 
-                fputcsv($file, [
-                    $index + 1,
-                    $apartment,
-                    $type,
-                    $guestName,
-                    $guestPhone,
-                    $guestCccd,
-                    $row->guest_dob ? $row->guest_dob->format('d/m/Y') : '',
-                    $gender,
-                    $row->guest_hometown,
-                    $row->relationship,
-                    $row->start_date ? $row->start_date->format('d/m/Y') : '',
-                    $row->end_date ? $row->end_date->format('d/m/Y') : '',
-                    $status,
-                    $row->approver ? $row->approver->name : ''
-                ]);
-            }
-            fclose($file);
+            $html .= '<tr>';
+            $html .= '<td>' . ($index + 1) . '</td>';
+            $html .= '<td>' . $apartment . '</td>';
+            $html .= '<td>' . $type . '</td>';
+            $html .= '<td>' . $guestName . '</td>';
+            // Use ="0987..." to force Excel to treat as string and keep leading zeros
+            $html .= '<td>="' . $guestPhone . '"</td>';
+            $html .= '<td>="' . $guestCccd . '"</td>';
+            $html .= '<td>' . ($row->guest_dob ? $row->guest_dob->format('d/m/Y') : '') . '</td>';
+            $html .= '<td>' . $gender . '</td>';
+            $html .= '<td>' . $row->guest_hometown . '</td>';
+            $html .= '<td>' . $row->relationship . '</td>';
+            $html .= '<td>' . ($row->start_date ? $row->start_date->format('d/m/Y') : '') . '</td>';
+            $html .= '<td>' . ($row->end_date ? $row->end_date->format('d/m/Y') : '') . '</td>';
+            $html .= '<td>' . $status . '</td>';
+            $html .= '<td>' . ($row->approver ? $row->approver->name : '') . '</td>';
+            $html .= '</tr>';
+        }
+        $html .= '</tbody></table></body></html>';
+
+        $callback = function () use ($html) {
+            echo chr(0xEF).chr(0xBB).chr(0xBF); // BOM
+            echo $html;
         };
 
         return response()->stream($callback, 200, $headers);

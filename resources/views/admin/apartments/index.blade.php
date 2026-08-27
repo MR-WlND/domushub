@@ -140,7 +140,10 @@
                 </thead>
                 <tbody>
                     @forelse($apartments as $apartment)
-                        <tr>
+                        @php
+                            $isNew = $apartment->created_at && $apartment->created_at->diffInMinutes(now()) <= 2;
+                        @endphp
+                        <tr @if($isNew) style="background-color: #e0f2fe; transition: background-color 1s ease;" @endif>
                             {{-- Mã căn hộ --}}
                             <td>
                                 <a href="{{ portal_route('apartments.show', $apartment->id) }}" class="apt-code-link">

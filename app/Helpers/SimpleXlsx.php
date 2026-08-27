@@ -92,9 +92,9 @@ class SimpleXlsx
 
         // Row 1: Headers
         $sheet1 .= '<row r="1">';
-        $sheet1 .= '<c r="A1" t="inlineStr"><is><t>ID Căn Hộ</t></is></c>';
-        $sheet1 .= '<c r="B1" t="inlineStr"><is><t>Tòa Nhà / Tầng</t></is></c>';
-        $sheet1 .= '<c r="C1" t="inlineStr"><is><t>Số Căn Hộ</t></is></c>';
+        $sheet1 .= '<c r="A1" t="inlineStr"><is><t>ID</t></is></c>';
+        $sheet1 .= '<c r="B1" t="inlineStr"><is><t>Vị trí</t></is></c>';
+        $sheet1 .= '<c r="C1" t="inlineStr"><is><t>Số Phòng</t></is></c>';
         $sheet1 .= '<c r="D1" t="inlineStr"><is><t>Chỉ Số Nước Cũ</t></is></c>';
         $sheet1 .= '<c r="E1" t="inlineStr"><is><t>Chỉ Số Nước Mới</t></is></c>';
         $sheet1 .= '</row>';

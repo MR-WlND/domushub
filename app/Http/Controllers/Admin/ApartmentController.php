@@ -28,6 +28,9 @@ class ApartmentController extends Controller
         $block = null;
 
         $query = Apartment::query()
+            ->select('apartments.*')
+            ->join('floors', 'apartments.floor_id', '=', 'floors.id')
+            ->join('blocks', 'floors.block_id', '=', 'blocks.id')
             ->with([
                 'floor.block',
                 'residents.user',
@@ -39,7 +42,7 @@ class ApartmentController extends Controller
          * Filter theo loại căn hộ
          */
         if ($apartmentTypeId) {
-            $query->where('apartment_type_id', $apartmentTypeId);
+            $query->where('apartments.apartment_type_id', $apartmentTypeId);
         }
 
         /**
@@ -49,10 +52,7 @@ class ApartmentController extends Controller
 
             $block = Block::findOrFail($blockId);
 
-            $query->whereHas('floor', function ($q) use ($blockId) {
-
-                $q->where('block_id', $blockId);
-            });
+            $query->where('floors.block_id', $blockId);
         }
 
         /**
@@ -63,7 +63,7 @@ class ApartmentController extends Controller
             $floor = Floor::with('block')
                 ->findOrFail($floorId);
 
-            $query->where('floor_id', $floorId);
+            $query->where('apartments.floor_id', $floorId);
         }
 
         /**
@@ -71,7 +71,7 @@ class ApartmentController extends Controller
          */
         if ($status) {
 
-            $query->where('status', $status);
+            $query->where('apartments.status', $status);
         }
 
         /**
@@ -80,14 +80,17 @@ class ApartmentController extends Controller
         if ($search) {
 
             $query->where(
-                'apartment_number',
+                'apartments.apartment_number',
                 'like',
                 "%{$search}%"
             );
         }
 
         $apartments = $query
-            ->latest()
+            ->orderByRaw("CASE WHEN apartments.created_at >= NOW() - INTERVAL 2 MINUTE THEN 0 ELSE 1 END")
+            ->orderBy('blocks.name')
+            ->orderBy('floors.floor_number')
+            ->orderBy('apartments.apartment_number')
             ->paginate(12)
             ->withQueryString();
 
