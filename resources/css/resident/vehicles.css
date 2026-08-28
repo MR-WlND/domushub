@@ -156,5 +156,8 @@ select.rv-input {
     .rv-stat, .rv-item, .rv-qr-panel, .rv-form-card, .rv-info-card, .rv-steps-card {
         border-radius: 12px;
     }
+    
+    .rv-form-card { padding: 20px; }
+    .rv-info-card, .rv-steps-card { padding: 16px; }
 }
 
