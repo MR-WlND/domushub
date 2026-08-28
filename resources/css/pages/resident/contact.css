@@ -1,4 +1,4 @@
-﻿/* Resident Contact Page Stylesheet */
+/* Resident Contact Page Stylesheet */
 
 .resident-contact-page {
     display: flex;
@@ -72,15 +72,15 @@
 /* Contact Card Base styling */
 .contact-card {
     background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
+    border: 1px solid #f1f5f9;
+    border-radius: 16px;
     padding: 1.5rem;
     position: relative;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     min-height: 175px;
-    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.03);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -124,10 +124,10 @@
 }
 
 .contact-card__icon {
-    width: 38px;
-    height: 38px;
-    min-width: 38px;
-    border-radius: 10px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -136,23 +136,23 @@
 
 .contact-card__icon--danger {
     background-color: #fef2f2;
-    color: #ba1a1a;
+    color: #ef4444;
 }
 
 .contact-card__icon--primary {
     background-color: #eff6ff;
-    color: #00236f;
+    color: #1e40af;
 }
 
 .contact-card__icon--outline {
     background-color: #f8fafc;
-    color: #475569;
+    color: #64748b;
     border: 1px solid #e2e8f0;
 }
 
 .contact-card__icon--green {
-    background-color: #f0fdf4;
-    color: #166534;
+    background-color: #ecfdf5;
+    color: #059669;
 }
 
 .contact-card__info {
@@ -214,10 +214,10 @@
     justify-content: center;
     gap: 0.5rem;
     width: 100%;
-    height: 40px;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    font-weight: 700;
+    height: 44px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
     text-decoration: none;
     transition: background-color 0.15s, color 0.15s, border-color 0.15s;
     cursor: pointer;
@@ -226,36 +226,35 @@
 
 /* Red button for emergency */
 .contact-btn--red {
-    background-color: #ba1a1a;
-    color: #ffffff;
-    border: none;
+    background-color: #fef2f2;
+    color: #ef4444;
+    border: 1px solid #fecaca;
 }
 
 .contact-btn--red:hover {
-    background-color: #a11414;
+    background-color: #fee2e2;
 }
 
 /* Navy button for emergency */
 .contact-btn--navy {
-    background-color: #00236f;
-    color: #ffffff;
-    border: none;
+    background-color: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
 }
 
 .contact-btn--navy:hover {
-    background-color: #001a54;
+    background-color: #dbeafe;
 }
 
 /* Outline button for building services */
 .contact-btn--outline {
-    background-color: #ffffff;
-    color: #00236f;
-    border: 1px solid #c5c5d3;
+    background-color: #f8fafc;
+    color: #475569;
+    border: 1px solid #e2e8f0;
 }
 
 .contact-btn--outline:hover {
-    background-color: #f3f4f6;
-    border-color: #00236f;
+    background-color: #f1f5f9;
 }
 
 /* Split Button container (Cá»©u hoáº£/CĂ´ng an) */
@@ -270,27 +269,38 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 0.85rem;
-    height: 34px;
-    border-radius: 8px;
-    font-size: 0.8rem;
-    font-weight: 700;
+    padding: 0 1rem;
+    height: 38px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
     text-decoration: none;
-    transition: opacity 0.15s;
+    transition: opacity 0.15s, background-color 0.15s;
+    border: 1px solid #e2e8f0;
 }
 
 .contact-btn-split:hover {
-    opacity: 0.85;
+    opacity: 0.9;
 }
 
 .contact-btn-split--red {
+    background-color: #fef2f2;
+    color: #ef4444;
+    border-color: #fecaca;
+}
+
+.contact-btn-split--red:hover {
     background-color: #fee2e2;
-    color: #ba1a1a;
 }
 
 .contact-btn-split--blue {
-    background-color: #e0f2fe;
-    color: #0369a1;
+    background-color: #eff6ff;
+    color: #1e40af;
+    border-color: #bfdbfe;
+}
+
+.contact-btn-split--blue:hover {
+    background-color: #dbeafe;
 }
 
 /* Phone Display under local amenities */
