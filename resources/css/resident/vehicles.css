@@ -68,10 +68,11 @@
 .rv-qr-panel__desc { margin: 0 0 20px; font-size: 0.82rem; color: #64748b; }
 .rv-qr-panel__frame { background: #f8fafc; border-radius: 10px; padding: 24px; margin-bottom: 20px; display: inline-block; }
 .rv-qr-panel__frame img { width: 180px; height: 180px; object-fit: contain; }
-.rv-qr-panel__info { text-align: left; font-size: 0.82rem; margin-bottom: 20px; }
-.rv-qr-panel__row { display: flex; justify-content: space-between; padding: 6px 0; }
-.rv-qr-panel__row span:first-child { color: #64748b; }
-.rv-qr-panel__row span:last-child { font-weight: 700; color: #0f172a; }
+.rv-qr-panel__info { display: flex; justify-content: space-between; background: #ffffff; border-radius: 8px; padding: 14px 20px; margin-bottom: 20px; text-align: left; }
+.rv-qr-panel__col { display: flex; flex-direction: column; gap: 4px; }
+.rv-qr-panel__col--right { text-align: right; }
+.rv-qr-panel__label { font-size: 0.75rem; color: #64748b; }
+.rv-qr-panel__val { font-size: 0.85rem; font-weight: 700; color: #0f172a; }
 .rv-qr-panel__btn { display: block; width: 100%; padding: 12px; background: #00236F; color: #fff; border: none; border-radius: 8px; font-weight: 700; font-size: 0.88rem; cursor: pointer; text-decoration: none; text-align: center; transition: background 0.2s; }
 .rv-qr-panel__btn:hover { background: #001850; }
 
@@ -139,8 +140,18 @@ select.rv-input {
 
 /* Responsive */
 @media (max-width: 768px) {
-    .rv-content, .rv-create, .rv-stats, .rv-row, .rv-uploads { grid-template-columns: 1fr; }
+    .rv-create, .rv-row, .rv-uploads { grid-template-columns: 1fr; }
     .rv-header { flex-direction: column; align-items: stretch; }
+    .rv-btn { justify-content: center; }
+    
+    /* Stats side by side */
+    .rv-stats { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .rv-stat { flex-direction: column; align-items: flex-start; padding: 16px; gap: 10px; }
+    .rv-stat__icon { width: 36px; height: 36px; }
+    .rv-stat__icon svg { width: 18px; height: 18px; }
+    
+    /* Content: QR first, then list */
+    .rv-content { display: flex; flex-direction: column-reverse; gap: 24px; }
     
     .rv-stat, .rv-item, .rv-qr-panel, .rv-form-card, .rv-info-card, .rv-steps-card {
         border-radius: 12px;
