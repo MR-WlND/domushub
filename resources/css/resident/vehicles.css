@@ -151,7 +151,7 @@ select.rv-input {
     .rv-stat__icon svg { width: 18px; height: 18px; }
     
     /* Content: QR first, then list */
-    .rv-content { display: flex; flex-direction: column-reverse; gap: 24px; }
+    .rv-content { display: flex; flex-direction: column-reverse; gap: 24px; align-items: stretch; }
     
     .rv-stat, .rv-item, .rv-qr-panel, .rv-form-card, .rv-info-card, .rv-steps-card {
         border-radius: 12px;
