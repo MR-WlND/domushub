@@ -2,7 +2,9 @@
 
 @push('styles')
 <style>
-.fb-page { max-width:900px; margin:0 auto; padding:24px 20px; }
+.resident-content { padding: 0 !important; }
+.fb-page { max-width:1440px; margin:0 auto; padding:30px 40px 60px; }
+@media (max-width: 768px) { .fb-page { padding: 16px; } }
 .fb-back { font-size:12px; color:#64748b; text-decoration:none; display:inline-block; margin-bottom:14px; } .fb-back:hover { color:#0b57d0; }
 .fb-title { font-size:18px; font-weight:700; color:#0f172a; margin:0 0 20px; }
 
@@ -23,7 +25,7 @@
 .fb-rules-title { font-size:12px; font-weight:600; color:#334155; margin-bottom:6px; }
 
 /* Right: Form */
-.fb-form-card { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:20px; position:sticky; top:80px; }
+.fb-form-card { background:#ffffff; border:1px solid rgba(0,0,0,0.12); border-radius:8px; padding:20px; position:sticky; top:80px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 .fb-form-title { font-size:15px; font-weight:700; color:#0f172a; margin:0 0 16px; padding-bottom:12px; border-bottom:1px solid #f1f5f9; }
 .fb-field { margin-bottom:14px; }
 .fb-field:last-child { margin-bottom:0; }

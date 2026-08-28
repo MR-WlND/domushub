@@ -2,12 +2,13 @@
 
 @push('styles')
 <style>
+.resident-content { padding: 0 !important; }
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 .bk-page { 
     max-width: 1100px; 
     margin: 0 auto; 
-    padding: 30px 20px; 
+    padding: 24px 20px; 
     font-family: 'Inter', sans-serif;
     background-color: #f8fafc;
     min-height: calc(100vh - 100px);
@@ -59,13 +60,13 @@
 }
 .bk-card-white { 
     flex: 2; 
-    background: #fff; 
-    border-radius: 12px; 
+    background: #ffffff; 
+    border-radius: 8px; 
     padding: 24px; 
     display: flex; 
     justify-content: space-between; 
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
-    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+    border: 1px solid rgba(0,0,0,0.12);
 }
 .bk-card-white-title { 
     font-size: 12px; 
@@ -146,15 +147,15 @@
 
 /* Toolbar */
 .bk-toolbar { 
-    background: #fff; 
-    border-radius: 12px; 
+    background: #ffffff; 
+    border-radius: 8px; 
     padding: 16px; 
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
     flex-wrap: wrap; 
     gap: 16px; 
-    border: 1px solid #e2e8f0; 
+    border: 1px solid rgba(0,0,0,0.12); 
     margin-bottom: 24px;
 }
 .bk-filters-left { 
@@ -208,9 +209,9 @@
 
 /* Table */
 .bk-table-wrap { 
-    background: #fff; 
-    border-radius: 12px; 
-    border: 1px solid #e2e8f0; 
+    background: #ffffff; 
+    border-radius: 8px; 
+    border: 1px solid rgba(0,0,0,0.12); 
     overflow-x: auto; 
 }
 .bk-table { 
@@ -356,9 +357,12 @@
 .bk-pagination { padding: 20px; }
 
 @media (max-width: 768px) {
+    .bk-page { padding: 16px; }
     .bk-dash { flex-direction: column; }
-    .bk-toolbar { flex-direction: column; align-items: stretch; }
+    .bk-toolbar { flex-direction: column; align-items: stretch; border-radius: 12px; }
     .bk-search { width: 100%; }
+    .bk-card-white { border-radius: 12px; }
+    .bk-table-wrap { border-radius: 12px; }
 }
 </style>
 @endpush
