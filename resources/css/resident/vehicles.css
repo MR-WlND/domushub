@@ -138,8 +138,8 @@ select.rv-input {
 .rv-step__label { font-weight: 700; color: #0f172a; font-size: 0.85rem; display: block; }
 .rv-step__desc { font-size: 0.78rem; color: #64748b; }
 
-/* Responsive */
 @media (max-width: 768px) {
+    .rv { padding: 16px; }
     .rv-create, .rv-row, .rv-uploads { grid-template-columns: 1fr; }
     .rv-header { flex-direction: column; align-items: stretch; }
     .rv-btn { justify-content: center; }
