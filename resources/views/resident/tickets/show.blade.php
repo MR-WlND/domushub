@@ -8,7 +8,6 @@
         .tk-detail-wrapper {
             max-width: 1100px;
             margin: 0 auto;
-            padding: 24px;
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
             color: #0f172a;
         }
@@ -245,6 +244,7 @@
             justify-content: center;
             font-size: 14px;
         }
+
         .tk-bql-title {
             font-size: 14px;
             font-weight: 700;

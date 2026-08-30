@@ -3,7 +3,7 @@
    ============================================================ */
 
 /* â”€â”€â”€ Shared â”€â”€â”€ */
-.rv { max-width: 1440px; margin: 0 auto; padding: 30px 40px 60px; }
+.rv { max-width: 1440px; margin: 0 auto; padding: 0; }
 .rv__breadcrumb { font-size: 0.8rem; color: #64748b; margin-bottom: 6px; }
 .rv__breadcrumb a { color: #2563eb; text-decoration: none; }
 .rv__breadcrumb a:hover { text-decoration: underline; }
@@ -139,7 +139,7 @@ select.rv-input {
 .rv-step__desc { font-size: 0.78rem; color: #64748b; }
 
 @media (max-width: 768px) {
-    .rv { padding: 16px; }
+    .rv { padding: 0; }
     .rv-create, .rv-row, .rv-uploads { grid-template-columns: 1fr; }
     .rv-header { flex-direction: column; align-items: stretch; }
     .rv-btn { justify-content: center; }

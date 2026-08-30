@@ -4,7 +4,7 @@
 
 @push('styles')
 <style>
-    .tr-form-page { font-family: 'Inter', 'Segoe UI', sans-serif; padding: 24px; }
+    .tr-form-page { font-family: 'Inter', 'Segoe UI', sans-serif; }
     .tr-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px; }
     .tr-title { font-size: 24px; font-weight: 700; color: #00236f; margin: 0 0 6px 0; }
     .tr-subtitle { font-size: 14px; color: #64748b; margin: 0; }

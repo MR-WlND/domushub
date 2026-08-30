@@ -8,7 +8,6 @@
         .tk-page-wrapper {
             display: flex;
             gap: 24px;
-            padding: 24px;
             background: #f8fafc;
             min-height: 100vh;
             font-family: 'Inter', sans-serif;
@@ -16,10 +15,6 @@
         }
         
         @media (max-width: 992px) {
-            .resident-content { padding: 0 !important; }
-            .tk-page-wrapper {
-                padding: 16px;
-            }
             .tk-layout-row {
                 flex-direction: column;
                 gap: 16px !important;

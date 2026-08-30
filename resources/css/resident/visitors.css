@@ -1,4 +1,4 @@
-﻿/* =========================================================================
+/* =========================================================================
    Visitor QR â€” Resident Portal
    ========================================================================= */
 
@@ -20,7 +20,7 @@
 }
 
 /* Page wrapper */
-.vq { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem 3rem; font-family: 'Inter', sans-serif; }
+.vq { max-width: 1100px; margin: 0 auto; padding: 0 0 1rem; font-family: 'Inter', sans-serif; }
 
 /* Header */
 .vq__header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; }
