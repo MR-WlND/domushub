@@ -30,7 +30,7 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        background-color: #2563eb;
+        background-color: #00236f;
         color: #ffffff;
         font-size: 14px;
         font-weight: 600;
@@ -41,7 +41,7 @@
         transition: background 0.18s;
     }
     .btn-create:hover {
-        background-color: #1d4ed8;
+        background-color: #001b57;
         color: #fff;
     }
 

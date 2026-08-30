@@ -285,6 +285,14 @@
             grid-template-columns: 1fr;
         }
     }
+    @media (max-width: 768px) {
+        .grid-2 {
+            grid-template-columns: 1fr;
+        }
+        .tr-card {
+            padding: 20px;
+        }
+    }
 </style>
 @endpush
 
