@@ -93,6 +93,12 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.02);
             margin-bottom: 24px;
         }
+        @media (max-width: 768px) {
+            .tk-box-card {
+                padding: 16px;
+                border-radius: 12px;
+            }
+        }
         .tk-box-card:last-child {
             margin-bottom: 0;
         }
