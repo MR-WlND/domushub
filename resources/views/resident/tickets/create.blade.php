@@ -8,7 +8,7 @@
         .tk-page-wrapper {
             display: flex;
             gap: 24px;
-            background: #f8fafc;
+            background: transparent;
             min-height: 100vh;
             font-family: 'Inter', sans-serif;
             align-items: flex-start;
@@ -110,7 +110,7 @@
         }
         @media (max-width: 640px) {
             .tk-page-wrapper {
-                padding: 12px;
+                padding: 0;
             }
             .tk-create-card {
                 padding: 16px;
