@@ -10,7 +10,7 @@
             gap: 24px;
             background: transparent;
             min-height: 100vh;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', system-ui, 'Segoe UI', sans-serif;
             align-items: flex-start;
         }
         
@@ -75,13 +75,13 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.08);
         }
         .tk-page-header h1 {
-            font-size: 20px;
+            font-size: 24px;
             font-weight: 700;
-            color: #1e293b;
-            margin: 0 0 4px 0;
+            color: #00236f;
+            margin: 0 0 6px 0;
         }
         .tk-page-header p {
-            font-size: 13px;
+            font-size: 14px;
             color: #64748b;
             margin: 0;
         }
@@ -442,6 +442,20 @@
             <p>Gửi yêu cầu bảo trì, phản ánh dịch vụ hoặc kiến nghị ban quản lý.</p>
         </div>
     </div>
+
+    @if(session('error'))
+        <div style="background: #fee2e2; color: #991b1b; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div style="background: #fee2e2; color: #991b1b; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+            <ul style="margin: 0; padding-left: 20px;">
+                @foreach($errors->all() as $error) <li>{{ $error }}</li> @endforeach
+            </ul>
+        </div>
+    @endif
 
     <div class="tk-layout-row" style="display: flex; gap: 24px; align-items: flex-start; width: 100%;">
         <!-- CỘT TRÁI (FORM + LỊCH SỬ) -->
