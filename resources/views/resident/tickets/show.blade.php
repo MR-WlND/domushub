@@ -71,6 +71,17 @@
             border-color: #fde68a;
         }
 
+        @media (max-width: 640px) {
+            .tk-main-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .tk-main-title {
+                font-size: 22px;
+            }
+        }
+
         /* 2-Column Layout */
         .tk-layout-grid {
             display: grid;
@@ -117,7 +128,10 @@
         }
         @media (max-width: 640px) {
             .tk-info-row-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .tk-info-col:first-child {
+                grid-column: span 2;
             }
         }
         .tk-info-col {
@@ -275,7 +289,7 @@
             width: 100%;
             padding: 11px;
             border-radius: 10px;
-            background: transparent;
+            background: #eff6ff;
             border: 1px solid #bfdbfe;
             color: #1e3a8a;
             font-size: 13.5px;
@@ -288,14 +302,14 @@
             transition: all 0.2s;
         }
         .btn-side-primary:hover {
-            background: #eff6ff;
+            background: #dbeafe;
             border-color: #93c5fd;
         }
         .btn-side-disabled {
             width: 100%;
             padding: 11px;
             border-radius: 10px;
-            background: transparent;
+            background: #f8fafc;
             border: 1px solid #e2e8f0;
             color: #94a3b8;
             font-size: 14px;
@@ -340,7 +354,7 @@
             width: 100%;
             padding: 11px;
             border-radius: 10px;
-            background: transparent;
+            background: #fef2f2;
             border: 1px solid #fecaca;
             color: #dc2626;
             font-size: 13.5px;
@@ -365,7 +379,7 @@
     {{-- NAV BACK --}}
     <div class="tk-top-nav">
         <a href="{{ route('resident.tickets.index') }}" class="tk-back-btn">
-            <i class="fa-solid fa-arrow-left"></i> Trở lại danh sách
+            <i class="fa-solid fa-arrow-left"></i> Quay lại
         </a>
     </div>
 
