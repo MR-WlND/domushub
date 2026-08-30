@@ -75,7 +75,7 @@
         .tk-new-stat-value.pending { color: #059669; }
 
         .tk-filter-bar {
-            background: #f8fafc;
+            background: transparent;
             padding: 16px;
             border-radius: 12px;
             display: flex;
@@ -223,105 +223,123 @@
         .mobile-view { display: none; }
 
         @media (max-width: 768px) {
-            .desktop-view { display: none !important; }
-            .mobile-view { display: block !important; min-height: 100vh; background: #f8fafc; padding-bottom: 80px; }
+            .desktop-view { display: block !important; }
+            .mobile-view { display: none !important; }
 
-            .mob-filter {
-                display: flex;
+            .tk { padding: 16px 0; }
+            .tk-new-header {
+                flex-direction: column;
+                align-items: stretch;
                 gap: 12px;
-                padding: 12px 20px;
+                margin-bottom: 20px;
+            }
+            .tk-new-title { font-size: 20px; }
+            .tk-new-subtitle { font-size: 13px; }
+            .tk-btn-new {
+                width: 100%;
+                justify-content: center;
+                padding: 12px;
+                font-size: 14px;
+            }
+            
+            .tk-new-stats {
+                display: flex;
                 overflow-x: auto;
-                background: #fff;
-                border-bottom: 1px solid #f1f5f9;
-                position: sticky;
-                top: 57px; /* Header height */
-                z-index: 10;
+                gap: 12px;
+                padding-bottom: 8px;
+                margin-bottom: 16px;
+                scrollbar-width: none;
             }
-            .mob-filter::-webkit-scrollbar { display: none; }
-            .mob-tab {
-                padding: 8px 18px;
-                border-radius: 20px;
-                font-size: 13px;
-                font-weight: 600;
-                white-space: nowrap;
-                text-decoration: none;
-                background: #e0e7ff;
-                color: #3730a3;
+            .tk-new-stats::-webkit-scrollbar { display: none; }
+            .tk-new-stat-card {
+                flex: 0 0 auto;
+                min-width: 140px;
+                padding: 14px;
+                gap: 12px;
             }
-            .mob-tab.active { background: #1e3a8a; color: #fff; }
+            .tk-new-stat-icon { width: 36px; height: 36px; }
+            .tk-new-stat-icon svg { width: 16px; height: 16px; }
+            .tk-new-stat-value { font-size: 20px; }
 
-            .mob-list { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
-            .mob-card {
-                display: block;
-                background: #fff;
-                border: 1px solid #e2e8f0;
-                border-radius: 12px;
+            .tk-filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+                background: transparent;
+                padding: 0;
+                margin-bottom: 16px;
+            }
+            .tk-search { width: 100%; }
+            .tk-filter-tabs {
+                display: flex;
+                overflow-x: auto;
+                padding-bottom: 4px;
+                scrollbar-width: none;
+            }
+            .tk-filter-tabs::-webkit-scrollbar { display: none; }
+            .tk-filter-tab {
+                white-space: nowrap;
+            }
+
+            .tk-new-list { gap: 12px; }
+            .tk-new-ticket {
+                flex-direction: column;
+                align-items: flex-start;
                 padding: 16px;
-                text-decoration: none;
-                color: inherit;
+                gap: 8px;
+                position: relative;
             }
-            .mob-card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
-            .mob-icon-box {
-                width: 40px;
-                height: 40px;
-                border-radius: 8px;
-                display: flex;
+            
+            .tk-new-id-box {
+                order: 2;
+                flex-direction: row;
                 align-items: center;
-                justify-content: center;
-                font-size: 18px;
-                flex-shrink: 0;
+                gap: 4px;
+                padding: 4px 8px;
+                min-width: 0;
+                background: #eff6ff;
+                border-radius: 4px;
             }
-            .mob-icon-box.repair { background: #eff6ff; color: #1e3a8a; }
-            .mob-icon-box.electric { background: #eff6ff; color: #1e3a8a; }
-            .mob-icon-box.clean { background: #ecfdf5; color: #059669; }
-            .mob-icon-box.ac { background: #eff6ff; color: #1e3a8a; }
+            .tk-new-id-label { margin-bottom: 0; font-size: 11px; }
+            .tk-new-id-val { font-size: 11px; font-weight: 700; }
             
-            .mob-card-info { flex: 1; min-width: 0; }
-            .mob-card-title {
-                font-size: 15px;
-                font-weight: 700;
-                color: #0f172a;
-                margin-bottom: 4px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
+            .tk-new-content {
+                order: 1;
+                width: 100%;
             }
-            .mob-card-meta { font-size: 11px; color: #64748b; }
-            
-            .mob-status {
-                padding: 4px 10px;
-                border-radius: 12px;
-                font-size: 11px;
-                font-weight: 700;
-                white-space: nowrap;
+            .tk-new-meta {
+                margin-bottom: 8px;
+                padding-right: 90px;
+                flex-wrap: wrap;
+                gap: 8px;
             }
-            .mob-status.pending { background: #dbeafe; color: #1e40af; }
-            .mob-status.in_progress { background: #dcfce7; color: #15803d; }
-            .mob-status.completed { background: #6ee7b7; color: #065f46; }
-            .mob-status.cancelled { background: #f1f5f9; color: #475569; }
+            .tk-new-cat {
+                background: #f1f5f9;
+                color: #475569;
+                padding: 2px 6px;
+                border-radius: 4px;
+                font-size: 10px;
+            }
+            .tk-new-date { font-size: 11px; }
+            .tk-new-title-text { font-size: 14px; margin-bottom: 6px; padding-right: 0; }
+            .tk-new-desc {
+                white-space: normal;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                line-height: 1.4;
+                font-size: 12px;
+            }
             
-            .mob-card-desc { font-size: 13px; color: #475569; line-height: 1.5; }
-            .mob-card-img { margin-top: 12px; border-radius: 8px; overflow: hidden; height: 140px; }
-            .mob-card-img img { width: 100%; height: 100%; object-fit: cover; }
-
-            .mob-fab {
-                position: fixed;
-                bottom: 80px;
+            .tk-new-status {
+                order: 3;
+                position: absolute;
+                top: 16px;
                 right: 16px;
-                width: 56px;
-                height: 56px;
-                border-radius: 50%;
-                background: #001e71;
-                color: #fff;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                box-shadow: 0 4px 12px rgba(0,30,113,0.3);
-                z-index: 20;
-                text-decoration: none;
-                font-size: 24px;
+                padding: 4px 8px;
+                font-size: 10px;
             }
-
+            .tk-new-arrow { display: none; }
         }
     </style>
 @endpush
@@ -349,36 +367,7 @@
         </a>
     </div>
 
-    {{-- STATS --}}
-    <div class="tk-new-stats">
-        <div class="tk-new-stat-card">
-            <div class="tk-new-stat-icon total">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            </div>
-            <div>
-                <div class="tk-new-stat-label">Tổng số yêu cầu</div>
-                <div class="tk-new-stat-value">{{ str_pad($stats['total'] ?? 0, 2, '0', STR_PAD_LEFT) }}</div>
-            </div>
-        </div>
-        <div class="tk-new-stat-card">
-            <div class="tk-new-stat-icon pending">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><circle cx="12" cy="14" r="3"/><line x1="12" y1="11" x2="12" y2="14"/></svg>
-            </div>
-            <div>
-                <div class="tk-new-stat-label">Đang xử lý</div>
-                <div class="tk-new-stat-value pending">{{ str_pad(($stats['in_progress'] ?? 0), 2, '0', STR_PAD_LEFT) }}</div>
-            </div>
-        </div>
-        <div class="tk-new-stat-card">
-            <div class="tk-new-stat-icon done">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            </div>
-            <div>
-                <div class="tk-new-stat-label">Đã hoàn thành</div>
-                <div class="tk-new-stat-value">{{ str_pad(($stats['completed'] ?? 0), 2, '0', STR_PAD_LEFT) }}</div>
-            </div>
-        </div>
-    </div>
+
 
     {{-- FILTER BAR --}}
     <form action="{{ route('resident.tickets.index') }}" method="GET" class="tk-filter-bar">
@@ -460,89 +449,7 @@
 </div>
 </div> <!-- End desktop-view -->
 
-<!-- Mobile View -->
-<div class="mobile-view">
-    <div class="mobile-page-header" style="padding: 16px 16px 0;">
-        <h1 class="mobile-page-title" style="margin: 0; font-size: 20px; font-weight: 700; color: #1e293b;">Phản ánh</h1>
-    </div>
 
-    <!-- Top Filter -->
-    <div class="mob-filter">
-        <a href="{{ route('resident.tickets.index') }}" class="mob-tab {{ !request('status') ? 'active' : '' }}">Tất cả</a>
-        <a href="{{ route('resident.tickets.index', ['status' => 'pending']) }}" class="mob-tab {{ request('status') === 'pending' ? 'active' : '' }}">Chờ duyệt</a>
-        <a href="{{ route('resident.tickets.index', ['status' => 'in_progress']) }}" class="mob-tab {{ request('status') === 'in_progress' ? 'active' : '' }}">Đang sửa</a>
-        <a href="{{ route('resident.tickets.index', ['status' => 'completed']) }}" class="mob-tab {{ request('status') === 'completed' ? 'active' : '' }}">Xong</a>
-    </div>
-
-    <!-- Cards -->
-    <div class="mob-list">
-        @forelse($tickets as $ticket)
-        <a href="{{ route('resident.tickets.show', $ticket->id) }}" class="mob-card">
-            <div class="mob-card-top">
-                @php
-                    $cat = mb_strtolower($ticket->department->name ?? '');
-                    $iconClass = 'fa-solid fa-list-check';
-                    $boxClass = 'clean';
-                    if (str_contains($cat, 'nước') || str_contains($cat, 'kỹ thuật')) {
-                        $iconClass = 'fa-solid fa-wrench';
-                        $boxClass = 'repair';
-                    } elseif (str_contains($cat, 'điện')) {
-                        $iconClass = 'fa-solid fa-bolt';
-                        $boxClass = 'electric';
-                    } elseif (str_contains($cat, 'điều hòa') || str_contains($cat, 'ac')) {
-                        $iconClass = 'fa-solid fa-snowflake';
-                        $boxClass = 'ac';
-                    }
-                    
-                    $mobStatusClass = 'pending';
-                    $mobStatusText = 'Chờ duyệt';
-                    if(in_array($ticket->status, ['in_progress', 'assigned'])) {
-                        $mobStatusClass = 'in_progress';
-                        $mobStatusText = 'Đang sửa';
-                    } elseif($ticket->status === 'completed') {
-                        $mobStatusClass = 'completed';
-                        $mobStatusText = 'Xong';
-                    } elseif($ticket->status === 'cancelled') {
-                        $mobStatusClass = 'cancelled';
-                        $mobStatusText = 'Đã hủy';
-                    }
-                @endphp
-                <div class="mob-icon-box {{ $boxClass }}">
-                    <i class="{{ $iconClass }}"></i>
-                </div>
-                <div class="mob-card-info">
-                    <div class="mob-card-title">{{ $ticket->title }}</div>
-                    <div class="mob-card-meta">{{ $ticket->created_at->format('d/m/Y') }} • Căn hộ {{ $ticket->apartment->name ?? 'A2' }}</div>
-                </div>
-                <div class="mob-status {{ $mobStatusClass }}">
-                    {{ $mobStatusText }}
-                </div>
-            </div>
-            <div class="mob-card-desc">
-                {{ Str::limit($ticket->description, 80) }}
-            </div>
-            @if($ticket->images && count($ticket->images) > 0)
-            <div class="mob-card-img">
-                @php
-                    $imgs = $ticket->images;
-                @endphp
-                <img src="{{ asset('storage/'.$imgs[0]) }}">
-            </div>
-            @endif
-        </a>
-        @empty
-        <div style="text-align:center; padding: 40px; color: #64748b;">
-            Không có phản ánh nào.
-        </div>
-        @endforelse
-    </div>
-
-    <!-- FAB -->
-    <a href="{{ route('resident.tickets.create') }}" class="mob-fab">
-        <i class="fa-solid fa-plus"></i>
-    </a>
-
-</div>
 
 @endsection
 

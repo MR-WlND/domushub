@@ -11,7 +11,7 @@
 
         @media (max-width: 768px) {
             .desktop-view { display: none !important; }
-            .mobile-view { display: block !important; min-height: 100vh; background: #f8fafc; padding-bottom: 80px; }
+            .mobile-view { display: block !important; min-height: 100vh; background: transparent; padding-bottom: 80px; }
 
             .mob-list { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
             .mob-card {
