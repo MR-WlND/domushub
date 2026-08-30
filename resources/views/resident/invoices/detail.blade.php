@@ -438,8 +438,6 @@
         justify-content: space-between;
         align-items: center;
         background: #eef2ff;
-        border-bottom-left-radius: 12px;
-        border-bottom-right-radius: 12px;
     }
     
     .detail-card__total .total-label {

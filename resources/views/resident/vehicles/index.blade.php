@@ -2,7 +2,6 @@
 @section('title', 'Phương tiện – DomusHub')
 @push('styles')
     @vite(['resources/css/resident/vehicles.css'])
-    <style>.resident-content { padding: 0 !important; }</style>
 @endpush
 
 @section('content')
