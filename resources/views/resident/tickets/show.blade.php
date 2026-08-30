@@ -151,7 +151,7 @@
             font-size: 14px;
             line-height: 1.6;
             color: #1e293b;
-            border: 1px solid #dbeafe;
+            font-style: italic;
         }
 
         /* Hình ảnh đính kèm */
@@ -242,7 +242,7 @@
         .tk-bql-icon {
             width: 32px;
             height: 32px;
-            border-radius: 50%;
+            border-radius: 6px;
             background: #001e71;
             color: #ffffff;
             display: flex;
@@ -260,42 +260,42 @@
             font-size: 13.5px;
             color: #1e293b;
             line-height: 1.5;
-            margin: 0 0 8px 0;
+            margin: 0;
             font-style: italic;
         }
         .tk-bql-time-text {
             font-size: 11px;
             color: #64748b;
+            margin-top: 12px;
             text-align: right;
         }
 
-        /* Right Column Buttons */
+        /* Nút sidebar */
         .btn-side-primary {
             width: 100%;
-            padding: 12px;
+            padding: 11px;
             border-radius: 10px;
-            background: #eff6ff;
+            background: transparent;
             border: 1px solid #bfdbfe;
-            color: #1d4ed8;
-            font-size: 14px;
+            color: #1e3a8a;
+            font-size: 13.5px;
             font-weight: 600;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            text-decoration: none;
+            gap: 6px;
             transition: all 0.2s;
         }
         .btn-side-primary:hover {
-            background: #dbeafe;
-            color: #1e40af;
+            background: #eff6ff;
+            border-color: #93c5fd;
         }
         .btn-side-disabled {
             width: 100%;
-            padding: 12px;
+            padding: 11px;
             border-radius: 10px;
-            background: #f1f5f9;
+            background: transparent;
             border: 1px solid #e2e8f0;
             color: #94a3b8;
             font-size: 14px;
@@ -340,7 +340,7 @@
             width: 100%;
             padding: 11px;
             border-radius: 10px;
-            background: #fef2f2;
+            background: transparent;
             border: 1px solid #fecaca;
             color: #dc2626;
             font-size: 13.5px;
@@ -354,7 +354,7 @@
             transition: background 0.2s;
         }
         .btn-side-cancel:hover {
-            background: #fee2e2;
+            background: #fef2f2;
         }
     </style>
 @endpush
