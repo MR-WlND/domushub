@@ -8,7 +8,7 @@
         .tk-detail-wrapper {
             max-width: 1100px;
             margin: 0 auto;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', system-ui, 'Segoe UI', -apple-system, sans-serif;
             color: #0f172a;
         }
 
@@ -39,7 +39,7 @@
         .tk-main-title {
             font-size: 26px;
             font-weight: 800;
-            color: #0f172a;
+            color: #00236f;
             margin: 0;
             letter-spacing: -0.02em;
         }
