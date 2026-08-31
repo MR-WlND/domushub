@@ -6,7 +6,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 .bk-page { 
-    max-width: 1100px; 
+    max-width: 1440px; 
     margin: 0 auto; 
     padding: 30px 40px 60px;
     box-sizing: border-box;
