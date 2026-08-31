@@ -363,12 +363,34 @@
 
 @media (max-width: 768px) {
     .bk-page { padding: 16px; }
-    .bk-dash { flex-direction: column; }
-    .bk-toolbar { flex-direction: column; align-items: stretch; border-radius: 12px; }
-    .bk-search { width: 100%; }
-    .bk-card-white { border-radius: 12px; }
-    .bk-table-wrap { border-radius: 12px; }
+    .bk-dash { flex-direction: column; gap: 16px; }
+    .bk-toolbar { flex-direction: column; align-items: stretch; border-radius: 12px; border:none; padding:0; background:transparent; }
+    .bk-search { width: 100%; margin-bottom: 8px; }
+    .bk-filters-left { gap: 8px; }
+    .bk-filters-left select { flex: 1; }
+    .bk-card-white { border-radius: 12px; padding: 16px; }
+    .bk-card-blue { border-radius: 12px; padding: 16px; }
+    
+    .hidden-mobile { display: none !important; }
+    .hidden-desktop { display: flex !important; flex-direction: column; gap: 16px; }
 }
+
+.hidden-desktop { display: none; }
+
+/* Mobile Card Styles */
+.bk-mc { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 16px; }
+.bk-mc-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.bk-mc-img { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; background: #e2e8f0; }
+.bk-mc-title { font-size: 15px; font-weight: 700; color: #0f172a; margin: 0 0 4px; }
+.bk-mc-loc { font-size: 12px; color: #64748b; display: flex; align-items: center; gap: 4px; }
+.bk-mc-body { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.bk-mc-item { font-size: 12px; color: #475569; display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.bk-mc-item svg { color: #94a3b8; }
+.bk-mc-item-strong { font-weight: 600; color: #0f172a; }
+.bk-mc-item-green { font-weight: 600; color: #16a34a; }
+.bk-mc-divider { height: 1px; background: #f1f5f9; margin: 0 -16px; }
+.bk-mc-actions { display: flex; gap: 12px; }
+.bk-mc-actions .bk-action-btn { flex: 1; text-align: center; padding: 10px; }
 </style>
 @endpush
 
@@ -479,8 +501,8 @@
         </button>
     </form>
 
-    {{-- Table --}}
-    <div class="bk-table-wrap">
+    {{-- Table (Desktop) --}}
+    <div class="bk-table-wrap hidden-mobile">
         <table class="bk-table">
             <thead>
                 <tr>
@@ -594,6 +616,116 @@
         </table>
         @if($bookings->hasPages())
         <div class="bk-pagination">
+            {{ $bookings->links() }}
+        </div>
+        @endif
+    </div>
+
+    {{-- Cards (Mobile) --}}
+    <div class="hidden-desktop">
+        @forelse($bookings as $booking)
+        @php
+            $badgeClass = '';
+            $badgeText = '';
+            if ($booking->status === 'approved') {
+                $badgeClass = 'bk-badge-approved'; $badgeText = 'Đã xác nhận';
+            } elseif ($booking->status === 'used') {
+                $badgeClass = 'bk-badge-used'; $badgeText = 'Đã hoàn thành';
+            } elseif ($booking->status === 'cancelled') {
+                $badgeClass = 'bk-badge-cancelled'; $badgeText = 'Đã hủy';
+            } elseif ($booking->status === 'pending') {
+                $badgeClass = 'bk-badge-pending'; $badgeText = 'Chờ duyệt';
+            } else {
+                $badgeClass = 'bk-badge-used'; $badgeText = $booking->status_label ?? $booking->status;
+            }
+        @endphp
+        <div class="bk-mc">
+            <div class="bk-mc-header">
+                <div style="display:flex; gap:12px; align-items:center;">
+                    @if($booking->facility && $booking->facility->images && count($booking->facility->images) > 0)
+                        <img src="{{ asset('storage/' . $booking->facility->images[0]) }}" class="bk-mc-img">
+                    @else
+                        <div class="bk-mc-img" style="display:flex; align-items:center; justify-content:center; color:#94a3b8;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        </div>
+                    @endif
+                    <div>
+                        <div class="bk-mc-title">{{ $booking->facility->name ?? '—' }}</div>
+                        <div class="bk-mc-loc">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            @if($booking->facility)
+                                @php
+                                    $loc = [];
+                                    if($booking->facility->floor_id && $booking->facility->floor) $loc[] = $booking->facility->floor->name;
+                                    if($booking->facility->block_id && $booking->facility->block) $loc[] = $booking->facility->block->name;
+                                @endphp
+                                {{ count($loc) > 0 ? implode(' - ', $loc) : ($booking->facility->facility_type ?? 'Tiện ích chung') }}
+                            @else
+                                Không xác định
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                <div class="bk-badge {{ $badgeClass }}" style="font-size:10px; padding:4px 8px;">{{ $badgeText }}</div>
+            </div>
+            
+            <div class="bk-mc-body">
+                <div>
+                    <div class="bk-mc-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        {{ \Carbon\Carbon::parse($booking->booking_date)->locale('vi')->translatedFormat('d Thm, Y') }}
+                    </div>
+                    <div class="bk-mc-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        {{ $booking->number_of_people ?? 1 }} Người
+                    </div>
+                </div>
+                <div>
+                    <div class="bk-mc-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        {{ substr($booking->start_time, 0, 5) }} - {{ substr($booking->end_time, 0, 5) }}
+                    </div>
+                    <div class="bk-mc-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M12 12h.01"/><path d="M17 12h.01"/><path d="M7 12h.01"/></svg>
+                        @if($booking->amount > 0)
+                            <span class="bk-mc-item-strong">{{ number_format($booking->amount) }}đ</span>
+                        @else
+                            <span class="bk-mc-item-green">Miễn phí</span>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bk-mc-divider"></div>
+            
+            <div class="bk-mc-actions">
+                @if(in_array($booking->status, ['pending', 'approved']))
+                <form method="POST" action="{{ route('resident.facility-bookings.cancel', $booking) }}" style="margin:0; flex:1;" onsubmit="return confirm('Bạn có chắc muốn hủy lịch này?')">
+                    @csrf
+                    <button type="submit" class="bk-action-btn bk-action-btn-danger" style="width:100%;">Hủy bỏ</button>
+                </form>
+                @endif
+                
+                @if($booking->status === 'approved')
+                <a href="{{ route('resident.facility-bookings.qr', $booking) }}" class="bk-action-btn bk-action-btn-primary" style="flex:1;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:4px;"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    Mã QR
+                </a>
+                @endif
+                
+                @if(in_array($booking->status, ['used', 'cancelled']))
+                <a href="{{ route('resident.facilities.show', $booking->facility_id) }}" class="bk-action-btn" style="flex:1; background:#f1f5f9; color:#475569; border:none;">Đặt lại tiện ích này</a>
+                @endif
+            </div>
+        </div>
+        @empty
+        <div style="text-align:center; padding:40px; color:#64748b; background:#fff; border-radius:12px;">
+            Không có lịch đặt nào phù hợp.
+        </div>
+        @endforelse
+        
+        @if($bookings->hasPages())
+        <div class="bk-pagination" style="padding:0; display:flex; justify-content:center;">
             {{ $bookings->links() }}
         </div>
         @endif
