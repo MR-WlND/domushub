@@ -4,7 +4,18 @@
 
 @push('styles')
 <style>
-    .tr-form-page { font-family: 'Inter', 'Segoe UI', sans-serif; }
+    .resident-content { padding: 0 !important; }
+    .tr-form-page { 
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 30px 40px 60px;
+        box-sizing: border-box;
+        width: 100%;
+    }
+    @media (max-width: 768px) {
+        .tr-form-page { padding: 20px 16px 40px; }
+    }
     .tr-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px; }
     .tr-title { font-size: 24px; font-weight: 700; color: #00236f; margin: 0 0 6px 0; }
     .tr-subtitle { font-size: 14px; color: #64748b; margin: 0; }

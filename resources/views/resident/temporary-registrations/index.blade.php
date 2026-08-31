@@ -4,10 +4,16 @@
 
 @push('styles')
 <style>
+    .resident-content { padding: 0 !important; }
     .tr-page {
         max-width: 1440px;
         margin: 0 auto;
-        /* Global layout already provides padding via .resident-content */
+        padding: 30px 40px 60px;
+        box-sizing: border-box;
+        width: 100%;
+    }
+    @media (max-width: 768px) {
+        .tr-page { padding: 20px 16px 40px; }
     }
     .tr-header {
         display: flex;

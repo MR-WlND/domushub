@@ -1,9 +1,17 @@
 /* ============================================================
-   RESIDENT VEHICLES â€” Clean Professional Design
+   RESIDENT VEHICLES — Clean Professional Design
    ============================================================ */
 
-/* â”€â”€â”€ Shared â”€â”€â”€ */
-.rv { max-width: 1440px; margin: 0 auto; padding: 0; }
+/* ─── Shared ─── */
+.resident-content:has(.rv) { padding: 0 !important; }
+.rv { 
+    max-width: 1440px; 
+    margin: 0 auto; 
+    padding: 30px 40px 60px;
+    box-sizing: border-box;
+    width: 100%;
+}
+@media (max-width: 768px) { .rv { padding: 20px 16px 40px; } }
 .rv__breadcrumb { font-size: 0.8rem; color: #64748b; margin-bottom: 6px; }
 .rv__breadcrumb a { color: #2563eb; text-decoration: none; }
 .rv__breadcrumb a:hover { text-decoration: underline; }
