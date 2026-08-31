@@ -3,62 +3,74 @@
 @push('styles')
 <style>
 .resident-content { padding: 0 !important; }
-.fb-page { max-width:1440px; margin:0 auto; padding: 30px 40px 60px; box-sizing: border-box; width: 100%; }
+.fb-page { max-width:1440px; margin:0 auto; padding: 30px 40px 60px; box-sizing: border-box; width: 100%; font-family: 'Inter', sans-serif; background-color: #f8fafc; min-height: 100vh; }
 @media (max-width: 768px) { .fb-page { padding: 20px 16px 40px; } }
-.fb-back { font-size:12px; color:#64748b; text-decoration:none; display:inline-block; margin-bottom:14px; } .fb-back:hover { color:#0b57d0; }
-.fb-title { font-size:18px; font-weight:700; color:#0f172a; margin:0 0 20px; }
+.fb-back { font-size:13px; color:#64748b; text-decoration:none; display:inline-flex; align-items:center; gap:6px; margin-bottom:16px; font-weight:500; } .fb-back:hover { color:#1e3a8a; }
+.fb-title { font-size:26px; font-weight:800; color:#1e3a8a; margin:0 0 24px; }
 
-.fb-layout { display:grid; grid-template-columns:1fr 340px; gap:24px; align-items:start; }
-@media(max-width:800px) { .fb-layout { grid-template-columns:1fr; } }
+.fb-layout { display:grid; grid-template-columns:1fr 400px; gap:30px; align-items:start; }
+@media(max-width:992px) { .fb-layout { grid-template-columns:1fr; } }
 
 /* Left */
-.fb-info { }
-.fb-img { width:100%; height:200px; object-fit:cover; border-radius:10px; display:block; margin-bottom:16px; }
-.fb-img-none { width:100%; height:200px; background:#f1f5f9; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:13px; margin-bottom:16px; }
-.fb-details { list-style:none; padding:0; margin:0 0 16px; }
-.fb-details li { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f1f5f9; font-size:13px; }
-.fb-details li:last-child { border-bottom:none; }
-.fb-details__label { color:#64748b; }
-.fb-details__value { color:#0f172a; font-weight:600; }
-.fb-desc { font-size:13px; color:#475569; line-height:1.7; margin-bottom:16px; }
-.fb-rules { font-size:12px; color:#64748b; line-height:1.7; background:#f8fafc; padding:12px 14px; border-radius:8px; white-space:pre-line; }
-.fb-rules-title { font-size:12px; font-weight:600; color:#334155; margin-bottom:6px; }
+.fb-info { display: flex; flex-direction: column; gap: 24px; }
+.fb-img { width:100%; height:400px; object-fit:cover; border-radius:12px; display:block; }
+@media(max-width:768px) { .fb-img { height:250px; } }
+.fb-img-none { width:100%; height:400px; background:#e2e8f0; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:14px; }
+
+.fb-details-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; }
+.fb-details-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 16px; }
+.fb-details-row:last-child { margin-bottom: 0; }
+@media(max-width:500px) { .fb-details-row { grid-template-columns: 1fr; gap: 16px; } }
+.fb-detail-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; }
+.fb-detail-item--full { grid-column: 1 / -1; }
+.fb-detail-item:last-child { border-bottom: none; padding-bottom: 0; }
+.fb-details__label { color:#64748b; font-size:14px; }
+.fb-details__value { color:#0f172a; font-weight:600; font-size:14px; }
+.fb-status-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block; margin-right: 6px; }
+
+.fb-desc { font-size:14px; color:#475569; line-height:1.6; }
+
+.fb-rules { font-size:14px; color:#475569; line-height:1.7; background:#f8fafc; padding:24px; border-radius:12px; border: 1px solid #e2e8f0; }
+.fb-rules-title { font-size:16px; font-weight:700; color:#1e3a8a; margin-bottom:12px; }
+.fb-rules ul { margin: 0; padding-left: 20px; }
+.fb-rules li { margin-bottom: 8px; }
+.fb-rules li:last-child { margin-bottom: 0; }
 
 /* Right: Form */
-.fb-form-card { background:#ffffff; border:1px solid rgba(0,0,0,0.12); border-radius:8px; padding:20px; position:sticky; top:80px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-.fb-form-title { font-size:15px; font-weight:700; color:#0f172a; margin:0 0 16px; padding-bottom:12px; border-bottom:1px solid #f1f5f9; }
-.fb-field { margin-bottom:14px; }
+.fb-form-card { background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:24px; position:sticky; top:24px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+.fb-form-title { font-size:18px; font-weight:800; color:#1e3a8a; margin:0 0 24px; }
+.fb-field { margin-bottom:20px; }
 .fb-field:last-child { margin-bottom:0; }
-.fb-label { display:block; font-size:12px; font-weight:600; color:#475569; margin-bottom:5px; }
-.fb-input { width:100%; padding:9px 12px; border:1px solid #d1d5db; border-radius:6px; font-size:13px; color:#0f172a; box-sizing:border-box; }
-.fb-input:focus { outline:none; border-color:#0b57d0; box-shadow:0 0 0 2px rgba(11,87,208,.08); }
-textarea.fb-input { resize:vertical; min-height:60px; }
+.fb-label { display:block; font-size:13px; font-weight:600; color:#475569; margin-bottom:8px; }
+.fb-input { width:100%; padding:10px 14px; border:1px solid #e2e8f0; border-radius:8px; font-size:14px; color:#0f172a; box-sizing:border-box; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+.fb-input:focus { outline:none; border-color:#1e3a8a; box-shadow:0 0 0 3px rgba(30,58,138,.1); }
+textarea.fb-input { resize:vertical; min-height:80px; }
 
 /* Slots */
-.fb-slots { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
-.fb-slot { padding:7px 4px; text-align:center; border:1px solid #d1d5db; border-radius:5px; font-size:11px; font-weight:600; color:#475569; cursor:pointer; transition:.15s; user-select:none; }
-.fb-slot:hover { border-color:#0b57d0; color:#0b57d0; }
-.fb-slot.active { background:#0f172a; border-color:#0f172a; color:#fff; }
-.fb-slot.disabled { background:#f8fafc; color:#cbd5e1; cursor:not-allowed; }
+.fb-slots { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+.fb-slot { padding:10px 4px; text-align:center; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; color:#64748b; cursor:pointer; transition:all 0.2s; user-select:none; }
+.fb-slot:hover { border-color:#1e3a8a; color:#1e3a8a; }
+.fb-slot.active { background:#eff6ff; border-color:#3b82f6; color:#1d4ed8; font-weight: 600; }
+.fb-slot.disabled { background:#f8fafc; color:#cbd5e1; cursor:not-allowed; border-color:#f1f5f9; }
 
 /* People */
-.fb-people { display:flex; align-items:center; gap:12px; }
-.fb-people-btn { width:30px; height:30px; border:1px solid #d1d5db; border-radius:50%; background:#fff; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#475569; transition:.15s; }
-.fb-people-btn:hover { border-color:#0b57d0; color:#0b57d0; }
-.fb-people-val { font-size:16px; font-weight:700; color:#0f172a; width:20px; text-align:center; }
+.fb-people { display:flex; align-items:center; gap:16px; }
+.fb-people-btn { width:32px; height:32px; border:1px solid #e2e8f0; border-radius:50%; background:#fff; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748b; transition:.15s; }
+.fb-people-btn:hover { border-color:#1e3a8a; color:#1e3a8a; }
+.fb-people-val { font-size:16px; font-weight:600; color:#0f172a; width:24px; text-align:center; }
 
 /* Price */
-.fb-price { display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:#f8fafc; border-radius:6px; margin-bottom:14px; font-size:13px; }
-.fb-price__label { color:#64748b; }
-.fb-price__val { font-size:16px; font-weight:700; color:#0f172a; }
+.fb-price { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; background:#f8fafc; border-radius:8px; margin-bottom:20px; font-size:14px; border: 1px solid #e2e8f0; }
+.fb-price__label { color:#475569; font-weight: 500; }
+.fb-price__val { font-size:18px; font-weight:700; color:#1e3a8a; }
 
 /* Submit */
-.fb-submit { width:100%; padding:11px; background:#1e3a8a; color:#fff; border:none; border-radius:7px; font-size:13px; font-weight:600; cursor:pointer; transition:.15s; }
+.fb-submit { width:100%; padding:14px; background:#1e3a8a; color:#fff; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; transition:.2s; }
 .fb-submit:hover { background:#1e40af; }
-.fb-submit:disabled { background:#e2e8f0; color:#94a3b8; cursor:not-allowed; }
+.fb-submit:disabled { background:#cbd5e1; color:#fff; cursor:not-allowed; }
 
 /* Alert */
-.fb-alert { padding:10px 14px; border-radius:6px; font-size:12px; margin-bottom:14px; }
+.fb-alert { padding:12px 16px; border-radius:8px; font-size:13px; margin-bottom:20px; }
 .fb-alert--error { background:#fef2f2; border:1px solid #fecaca; color:#dc2626; }
 .fb-alert--success { background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; }
 </style>
@@ -69,7 +81,10 @@ textarea.fb-input { resize:vertical; min-height:60px; }
 @section('content')
 <div class="fb-page">
 
-    <a href="{{ route('resident.facilities.index') }}" class="fb-back">← Tiện ích</a>
+    <a href="{{ route('resident.facilities.index') }}" class="fb-back">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Tiện ích
+    </a>
     <h1 class="fb-title">{{ $facility->name }}</h1>
 
     <div class="fb-layout">
@@ -81,13 +96,44 @@ textarea.fb-input { resize:vertical; min-height:60px; }
                 <div class="fb-img-none">Chưa có ảnh</div>
             @endif
 
-            <ul class="fb-details">
-                <li><span class="fb-details__label">Trạng thái</span><span class="fb-details__value">{{ $facility->status=='available'?'Đang hoạt động':($facility->status=='maintenance'?'Bảo trì':'Đóng cửa') }}</span></li>
-                <li><span class="fb-details__label">Giờ hoạt động</span><span class="fb-details__value">{{ $facility->operating_hours ?: '—' }}</span></li>
-                <li><span class="fb-details__label">Sức chứa</span><span class="fb-details__value">{{ $facility->capacity }} người</span></li>
-                <li><span class="fb-details__label">Phí</span><span class="fb-details__value">{{ $facility->price_label ?: 'Miễn phí' }}</span></li>
-                <li><span class="fb-details__label">Vị trí</span><span class="fb-details__value">{{ $facility->block?->name ?: '—' }}{{ $facility->floor ? ', '.$facility->floor->name : '' }}</span></li>
-            </ul>
+            <div class="fb-details-box">
+                <div class="fb-details-row">
+                    <div class="fb-detail-item fb-detail-item--full" style="border-bottom: none;">
+                        <span class="fb-details__label">Trạng thái</span>
+                        <span class="fb-details__value">
+                            @if($facility->status == 'available')
+                                <span class="fb-status-dot"></span>Đang hoạt động
+                            @elseif($facility->status == 'maintenance')
+                                <span class="fb-status-dot" style="background: #f59e0b;"></span>Bảo trì
+                            @else
+                                <span class="fb-status-dot" style="background: #ef4444;"></span>Đóng cửa
+                            @endif
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="fb-details-row">
+                    <div class="fb-detail-item" style="border-bottom: none;">
+                        <span class="fb-details__label">Giờ hoạt động</span>
+                        <span class="fb-details__value">{{ $facility->operating_hours ?: '—' }}</span>
+                    </div>
+                    <div class="fb-detail-item" style="border-bottom: none;">
+                        <span class="fb-details__label">Sức chứa</span>
+                        <span class="fb-details__value">{{ $facility->capacity }} người</span>
+                    </div>
+                </div>
+
+                <div class="fb-details-row" style="margin-bottom: 0;">
+                    <div class="fb-detail-item" style="border-bottom: none; padding-bottom: 0;">
+                        <span class="fb-details__label">Phí</span>
+                        <span class="fb-details__value">{{ $facility->price_label ?: 'Miễn phí' }}</span>
+                    </div>
+                    <div class="fb-detail-item" style="border-bottom: none; padding-bottom: 0;">
+                        <span class="fb-details__label">Vị trí</span>
+                        <span class="fb-details__value">{{ $facility->block?->name ?: '—' }}{{ $facility->floor ? ', '.$facility->floor->name : '' }}</span>
+                    </div>
+                </div>
+            </div>
 
             @if($facility->description)
             <p class="fb-desc">{{ $facility->description }}</p>
@@ -96,7 +142,7 @@ textarea.fb-input { resize:vertical; min-height:60px; }
             @if($facility->rules)
             <div class="fb-rules">
                 <div class="fb-rules-title">Quy định sử dụng</div>
-                {{ $facility->rules }}
+                <div style="white-space: pre-line;">{{ $facility->rules }}</div>
             </div>
             @endif
         </div>
