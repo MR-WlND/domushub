@@ -11,56 +11,50 @@
 .rf-subtitle { font-size: 12px; color: #94a3b8; margin: 4px 0 0; max-width: 500px; line-height: 1.5; }
 
 /* Toolbar: Search and Filters */
-.rf-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 16px; }
+.rf-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
 
-.rf-search { flex: 1; min-width: 180px; position: relative; }
-.rf-search input { width: 100%; padding: 7px 12px 7px 32px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 12px; outline: none; background: #fff; transition: border-color 0.15s; box-sizing: border-box; }
-.rf-search input:focus { border-color: #3b82f6; }
-.rf-search svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #94a3b8; width: 14px; height: 14px; }
+.rf-search { flex: 1; min-width: 280px; position: relative; max-width: 500px; }
+.rf-search input { width: 100%; padding: 10px 14px 10px 36px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; outline: none; background: #fff; transition: border-color 0.15s; box-sizing: border-box; }
+.rf-search input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+.rf-search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #64748b; width: 16px; height: 16px; }
 
-.rf-filters { display: flex; gap: 4px; flex-wrap: wrap; }
-.rf-filter-btn { padding: 5px 12px; border: 1px solid #e2e8f0; border-radius: 5px; font-size: 11px; font-weight: 600; color: #475569; background: #fff; text-decoration: none; transition: all 0.15s; cursor: pointer; }
+.rf-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+.rf-filter-btn { padding: 8px 16px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-weight: 600; color: #475569; background: #fff; text-decoration: none; transition: all 0.15s; cursor: pointer; }
 .rf-filter-btn:hover { background: #f8fafc; border-color: #cbd5e1; }
-.rf-filter-btn.active { background: #0f172a; color: #fff; border-color: #0f172a; }
+.rf-filter-btn.active { background: #1e3a8a; color: #fff; border-color: #1e3a8a; }
 
 /* Grid */
-.rf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-bottom: 24px; }
+.rf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; margin-bottom: 30px; }
 
 /* Card - Vertical */
-.rf-card { background: #ffffff; border: 1px solid rgba(0,0,0,0.12); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; transition: box-shadow 0.2s, transform 0.2s; text-decoration: none; color: inherit; }
-.rf-card:hover { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); transform: translateY(-2px); }
+.rf-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: box-shadow 0.2s, transform 0.2s; text-decoration: none; color: inherit; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+.rf-card:hover { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); transform: translateY(-4px); }
 
 /* Image */
-.rf-card-img-wrap { width: 100%; height: 130px; position: relative; overflow: hidden; background: #f1f5f9; cursor:pointer; }
+.rf-card-img-wrap { width: 100%; height: 170px; position: relative; overflow: hidden; background: #f1f5f9; cursor:pointer; }
 .rf-card-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
-.rf-card-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 12px; }
+.rf-card-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 13px; }
 
-.rf-badge { position: absolute; top: 8px; left: 8px; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
-.rf-badge-dot { width: 6px; height: 6px; border-radius: 50%; }
-.rf-badge--available { background: #dcfce7; color: #166534; }
-.rf-badge--available .rf-badge-dot { background: #16a34a; }
-.rf-badge--maintenance { background: #fee2e2; color: #991b1b; }
-.rf-badge--maintenance .rf-badge-dot { background: #dc2626; }
-.rf-badge--closed { background: #fef3c7; color: #92400e; }
-.rf-badge--closed .rf-badge-dot { background: #ea580c; }
+.rf-badge { position: absolute; top: 12px; left: 12px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.85); backdrop-filter: blur(4px); color: #0f172a; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+.rf-badge-dot { width: 6px; height: 6px; border-radius: 50%; display: none; }
 
 /* Body */
-.rf-card-body { padding: 12px 14px; display: flex; flex-direction: column; flex: 1; }
-.rf-card-title { font-size: 14px; font-weight: 700; color: #0f172a; margin: 0 0 3px; }
-.rf-card-location { font-size: 11px; color: #64748b; display: flex; align-items: center; gap: 4px; margin-bottom: 8px; }
-.rf-card-location svg { flex-shrink: 0; width: 12px; height: 12px; }
+.rf-card-body { padding: 18px; display: flex; flex-direction: column; flex: 1; }
+.rf-card-title { font-size: 16px; font-weight: 800; color: #0f172a; margin: 0 0 6px; }
+.rf-card-location { font-size: 12px; color: #475569; display: flex; align-items: center; gap: 6px; margin-bottom: 16px; font-weight: 500; }
+.rf-card-location svg { flex-shrink: 0; width: 14px; height: 14px; color: #64748b; }
 
-.rf-info-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+.rf-info-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
 .rf-info-label { color: #64748b; }
 .rf-info-val { font-weight: 600; color: #0f172a; }
-.rf-info-val--free { color: #16a34a; }
+.rf-info-val--free { color: #0f172a; }
 
-.rf-card-actions { display: flex; gap: 6px; margin-top: auto; padding-top: 10px; border-top: 1px solid #f1f5f9; }
-.rf-btn { flex: 1; padding: 7px; border-radius: 6px; font-size: 12px; font-weight: 600; text-align: center; text-decoration: none; transition: all 0.15s; border: 1px solid transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-.rf-btn-primary { background: #0f172a; color: #fff; }
-.rf-btn-primary:hover { background: #1e293b; }
+.rf-card-actions { display: flex; gap: 10px; margin-top: auto; padding-top: 16px; border-top: none; }
+.rf-btn { flex: 1; padding: 9px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; text-align: center; text-decoration: none; transition: all 0.15s; border: 1px solid transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.rf-btn-primary { background: #1e3a8a; color: #fff; }
+.rf-btn-primary:hover { background: #172554; }
 .rf-btn-outline { background: #fff; color: #475569; border-color: #e2e8f0; }
-.rf-btn-outline:hover { background: #f8fafc; }
+.rf-btn-outline:hover { background: #f8fafc; border-color: #cbd5e1; color: #0f172a; }
 .rf-btn-disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
 
 /* Modal */
@@ -172,8 +166,8 @@
                         @include('partials.facility-placeholder', ['name' => $facility->name])
                     </div>
                 @endif
-                <div class="rf-badge {{ $statusClass }}">
-                    <span class="rf-badge-dot"></span> {{ $statusText }}
+                <div class="rf-badge">
+                    {{ $statusText }}
                 </div>
             </div>
             </a>
