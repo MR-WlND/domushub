@@ -444,7 +444,11 @@
                          . " tiếp theo vào " . substr($nearest->start_time, 0, 5) 
                          . ($isToday ? " hôm nay" : " ngày " . $nearest->booking_date->format('d/m'));
         } else {
-            $nearestText = "Bạn không có lượt đặt nào sắp tới.";
+            if ($upcomingCount > 0) {
+                $nearestText = "Bạn có " . $upcomingCount . " lượt đặt sắp tới.";
+            } else {
+                $nearestText = "Bạn không có lượt đặt nào sắp tới.";
+            }
         }
     @endphp
 
