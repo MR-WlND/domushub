@@ -19,6 +19,11 @@
 .rf-search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #64748b; width: 16px; height: 16px; }
 
 .rf-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+@media (max-width: 600px) {
+    .rf-filters { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+    .rf-filters::-webkit-scrollbar { display: none; }
+    .rf-filter-btn { white-space: nowrap; }
+}
 .rf-filter-btn { padding: 8px 16px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-weight: 600; color: #475569; background: #fff; text-decoration: none; transition: all 0.15s; cursor: pointer; }
 .rf-filter-btn:hover { background: #f8fafc; border-color: #cbd5e1; }
 .rf-filter-btn.active { background: #1e3a8a; color: #fff; border-color: #1e3a8a; }
@@ -42,19 +47,19 @@
 .rf-card-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
 .rf-card-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 13px; }
 
-.rf-badge { position: absolute; top: 12px; left: 12px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.85); backdrop-filter: blur(4px); color: #0f172a; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+.rf-badge { position: absolute; top: 12px; right: 12px; left: auto; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.85); backdrop-filter: blur(4px); color: #0f172a; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+.rf-badge--available { background: #a7f3d0; color: #064e3b; }
+.rf-badge--maintenance { background: #fecaca; color: #7f1d1d; }
+.rf-badge--closed { background: #fde68a; color: #78350f; }
 .rf-badge-dot { width: 6px; height: 6px; border-radius: 50%; display: none; }
 
 /* Body */
 .rf-card-body { padding: 18px; display: flex; flex-direction: column; flex: 1; }
-.rf-card-title { font-size: 16px; font-weight: 800; color: #0f172a; margin: 0 0 6px; }
-.rf-card-location { font-size: 12px; color: #475569; display: flex; align-items: center; gap: 6px; margin-bottom: 16px; font-weight: 500; }
-.rf-card-location svg { flex-shrink: 0; width: 14px; height: 14px; color: #64748b; }
+.rf-card-title { font-size: 16px; font-weight: 800; color: #0f172a; margin: 0 0 10px; }
+.rf-card-meta { font-size: 12px; color: #475569; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-weight: 500; }
+.rf-card-meta svg { flex-shrink: 0; width: 14px; height: 14px; color: #64748b; }
 
-.rf-info-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
-.rf-info-label { color: #64748b; }
-.rf-info-val { font-weight: 600; color: #0f172a; }
-.rf-info-val--free { color: #0f172a; }
+
 
 .rf-card-actions { display: flex; gap: 10px; margin-top: auto; padding-top: 16px; border-top: none; }
 .rf-btn { flex: 1; padding: 9px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; text-align: center; text-decoration: none; transition: all 0.15s; border: 1px solid transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; }
@@ -179,7 +184,10 @@
                         @include('partials.facility-placeholder', ['name' => $facility->name])
                     </div>
                 @endif
-                <div class="rf-badge">
+                <div class="rf-badge {{ $statusClass }}">
+                    @if($isAvailable)
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                    @endif
                     {{ $statusText }}
                 </div>
             </div>
@@ -190,28 +198,27 @@
                     <a href="{{ route('resident.facilities.show', $facility) }}" style="text-decoration:none;color:inherit;">
                     <h3 class="rf-card-title" title="{{ $facility->name }}">{{ $facility->name }}</h3>
                     </a>
-                    <div class="rf-card-location">
+                    <div class="rf-card-meta">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                         {{ $facility->floor?->name ? $facility->floor->name . ', ' : '' }}{{ $facility->block?->name ?: 'Khu vực chung' }}
                     </div>
-
-                    <div class="rf-info-row">
-                        <span class="rf-info-label">Giờ mở cửa:</span>
-                        <span class="rf-info-val">{{ $facility->operating_hours }}</span>
+                    <div class="rf-card-meta">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        {{ $facility->operating_hours }}
                     </div>
-                    <div class="rf-info-row">
-                        <span class="rf-info-label">Chi phí:</span>
-                        <span class="rf-info-val {{ $priceClass }}">{{ $priceText }}</span>
+                    <div class="rf-card-meta">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M12 12h.01"/><path d="M17 12h.01"/><path d="M7 12h.01"/></svg>
+                        {{ $priceText }}
                     </div>
                 </div>
 
                 <div class="rf-card-actions">
+                    <a href="{{ route('resident.facilities.show', $facility) }}" class="rf-btn rf-btn-outline">Chi tiết</a>
                     @if($isAvailable)
                     <button type="button" class="rf-btn rf-btn-primary" onclick="event.preventDefault(); openBookingModal('modal-{{ $facility->id }}')">Đăng ký</button>
                     @else
                     <button class="rf-btn rf-btn-disabled" disabled>Tạm đóng</button>
                     @endif
-                    <a href="{{ route('resident.facilities.show', $facility) }}" class="rf-btn rf-btn-outline">Chi tiết</a>
                 </div>
             </div>
         </div>
