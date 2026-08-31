@@ -3,8 +3,8 @@
 @push('styles')
 <style>
 .resident-content { padding: 0 !important; }
-.fb-page { max-width:1440px; margin:0 auto; padding:30px 40px 60px; }
-@media (max-width: 768px) { .fb-page { padding: 16px; } }
+.fb-page { max-width:1440px; margin:0 auto; padding: 30px 40px 60px; box-sizing: border-box; width: 100%; }
+@media (max-width: 768px) { .fb-page { padding: 20px 16px 40px; } }
 .fb-back { font-size:12px; color:#64748b; text-decoration:none; display:inline-block; margin-bottom:14px; } .fb-back:hover { color:#0b57d0; }
 .fb-title { font-size:18px; font-weight:700; color:#0f172a; margin:0 0 20px; }
 

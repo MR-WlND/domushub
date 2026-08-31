@@ -3,7 +3,8 @@
 @push('styles')
 <style>
 .resident-content { padding: 0 !important; }
-.rf-page { max-width: 1100px; margin: 0 auto; padding: 24px 20px; font-family: 'Inter', sans-serif; }
+.rf-page { max-width: 1100px; margin: 0 auto; padding: 30px 40px 60px; box-sizing: border-box; width: 100%; font-family: 'Inter', sans-serif; }
+@media (max-width: 768px) { .rf-page { padding: 20px 16px 40px; } }
 
 .rf-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
 .rf-title { font-size: 17px; font-weight: 700; color: #0f172a; margin: 0; }

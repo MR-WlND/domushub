@@ -8,10 +8,15 @@
 .bk-page { 
     max-width: 1100px; 
     margin: 0 auto; 
-    padding: 24px 20px; 
+    padding: 30px 40px 60px;
+    box-sizing: border-box;
+    width: 100%;
     font-family: 'Inter', sans-serif;
     background-color: #f8fafc;
     min-height: calc(100vh - 100px);
+}
+@media (max-width: 768px) {
+    .bk-page { padding: 20px 16px 40px; }
 }
 
 /* Header */

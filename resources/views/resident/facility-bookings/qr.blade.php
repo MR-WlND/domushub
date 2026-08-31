@@ -2,9 +2,11 @@
 
 @push('styles')
 <style>
+.resident-content { padding: 0 !important; }
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-.qr-page { max-width: 860px; margin: 0 auto; padding: 28px 20px; font-family: 'Inter', sans-serif; }
+.qr-page { max-width: 860px; margin: 0 auto; padding: 30px 40px 60px; font-family: 'Inter', sans-serif; box-sizing: border-box; width: 100%; }
+@media (max-width: 768px) { .qr-page { padding: 20px 16px 40px; } }
 
 .qr-breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: #64748b; margin-bottom: 24px; }
 .qr-breadcrumb a { color: #2563eb; text-decoration: none; font-weight: 500; }
