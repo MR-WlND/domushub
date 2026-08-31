@@ -107,7 +107,7 @@
                     <label class="vq-label" style="display:flex;align-items:center;gap:.5rem;cursor:pointer;">
                         <input type="checkbox" id="has-vehicle-toggle" onchange="toggleVehicleFields()"
                                {{ old('vehicle_plate') ? 'checked' : '' }}
-                               style="width:16px;height:16px;accent-color:#2563eb;">
+                               style="width:16px;height:16px;accent-color:#00236f;">
                         <span>Khách có mang phương tiện</span>
                     </label>
                     <p style="font-size:.78rem;color:#64748b;margin-top:.25rem;">Khai báo để bảo vệ cho phép xe khách vào bãi giữ.</p>

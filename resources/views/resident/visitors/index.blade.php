@@ -31,7 +31,7 @@
 
     .vr-card--checked_in  { border-left-color:#047857; }
     .vr-card--checked_out { border-left-color:#64748b; }
-    .vr-card--pending     { border-left-color:#2563eb; }
+    .vr-card--pending     { border-left-color:#00236f; }
     .vr-card--cancelled   { border-left-color:#dc2626; }
     .vr-card--expired     { border-left-color:#d97706; }
 
@@ -60,7 +60,7 @@
     .vr-chip { display:inline-flex; align-items:center; gap:.2rem; font-size:.68rem; font-weight:600; padding:.15rem .45rem; border-radius:999px; line-height:1.2; flex-shrink:0; }
     .vr-chip--checked_in  { background:#d1fae5; color:#065f46; }
     .vr-chip--checked_out { background:#f1f5f9; color:#475569; }
-    .vr-chip--pending     { background:#dbeafe; color:#1e40af; }
+    .vr-chip--pending     { background:#dbeafe; color:#00236f; }
     .vr-chip--cancelled   { background:#fee2e2; color:#991b1b; }
     .vr-chip--expired     { background:#ffedd5; color:#9a3412; }
     .vr-chip--confirmed   { background:#d1fae5; color:#065f46; }

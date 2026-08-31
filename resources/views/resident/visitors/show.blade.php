@@ -17,7 +17,7 @@
     .vd-stripe { height:4px; margin: 0; }
     .vd-stripe--checked_in  { background:#047857; }
     .vd-stripe--checked_out { background:#64748b; }
-    .vd-stripe--pending     { background:#2563eb; }
+    .vd-stripe--pending     { background:#00236f; }
     .vd-stripe--cancelled   { background:#dc2626; }
     .vd-stripe--expired     { background:#d97706; }
 
@@ -44,7 +44,7 @@
     .vd-chip { display:inline-flex; align-items:center; gap:.25rem; font-size:.75rem; font-weight:600; padding:.2rem .6rem; border-radius:999px; line-height:1.2; }
     .vd-chip--checked_in  { background:#d1fae5; color:#065f46; }
     .vd-chip--checked_out { background:#f1f5f9; color:#475569; }
-    .vd-chip--pending     { background:#dbeafe; color:#1e40af; }
+    .vd-chip--pending     { background:#dbeafe; color:#00236f; }
     .vd-chip--cancelled   { background:#fee2e2; color:#991b1b; }
     .vd-chip--expired     { background:#ffedd5; color:#9a3412; }
 
@@ -56,7 +56,7 @@
     .vd-note strong { display:block; font-size:.75rem; text-transform:uppercase; letter-spacing:.05em; color:#64748b; margin-bottom:.5rem; }
 
     /* VEHICLE */
-    .vd-vehicle { margin:0 1.5rem 1.25rem; background:#eff6ff; border:none; border-radius:12px; padding:1.25rem; display:flex; align-items:center; gap:.75rem; font-size:.9rem; color:#1e40af; font-weight:700; }
+    .vd-vehicle { margin:0 1.5rem 1.25rem; background:#eff6ff; border:none; border-radius:12px; padding:1.25rem; display:flex; align-items:center; gap:.75rem; font-size:.9rem; color:#00236f; font-weight:700; }
 
     /* CONFIRMED BOX */
     .vd-confirmed { margin:0 1.5rem 1.5rem; background:#52e8ac; border:none; border-radius:12px; padding:1.25rem; display:flex; align-items:center; gap:.75rem; font-size:.9rem; color:#043f2e; font-weight:600; }
