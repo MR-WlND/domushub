@@ -19,3 +19,7 @@ Schedule::command('temporary-registration:check-expiry')->dailyAt('01:00');
 
 // Kiểm tra khách thuê hết hạn hợp đồng mỗi đêm lúc 02:00
 Schedule::command('residents:check-leases')->dailyAt('02:00');
+
+// Kiểm tra lịch đặt tiện ích quá hạn (mỗi 15 phút)
+Schedule::command('app:check-facility-booking-expiry')->everyFifteenMinutes();
+
