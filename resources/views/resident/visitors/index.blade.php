@@ -4,7 +4,7 @@
     @vite(['resources/css/resident/visitors.css'])
     <style>
     /* ---- OVERRIDES & EXTRAS ---- */
-    .vr-wrap { max-width: 860px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+    .vr-wrap { max-width: 860px; margin: 0 auto; }
     .vr-header { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; }
     .vr-eyebrow { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:#00236f; margin:0 0 .2rem; }
     .vr-title   { font-size:1.5rem; font-weight:800; color:#0f172a; margin:0; }

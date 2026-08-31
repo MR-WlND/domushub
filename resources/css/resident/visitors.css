@@ -20,7 +20,26 @@
 }
 
 /* Page wrapper */
-.vq { max-width: 1100px; margin: 0 auto; padding: 0 0 1rem; font-family: 'Inter', sans-serif; }
+.vq { max-width: 1100px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+
+/* Override resident-content to match home page exactly */
+.resident-content:has(.vq),
+.resident-content:has(.vr-wrap),
+.resident-content:has(.vd-wrap) {
+    padding: 0 !important;
+}
+
+.vq, .vr-wrap, .vd-wrap {
+    padding: 30px 40px 60px;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .vq, .vr-wrap, .vd-wrap {
+        padding: 20px 16px 40px;
+    }
+}
 
 /* Header */
 .vq__header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; }

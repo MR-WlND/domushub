@@ -3,7 +3,7 @@
 @push('styles')
     @vite(['resources/css/resident/visitors.css'])
     <style>
-    .vd-wrap { max-width: 1000px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+    .vd-wrap { max-width: 1000px; margin: 0 auto; }
     .vd-header { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; }
     .vd-eyebrow { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:#64748b; margin:0 0 .2rem; }
     .vd-title { font-size:1.5rem; font-weight:800; color:#0f172a; margin:0; }
