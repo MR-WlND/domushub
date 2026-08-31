@@ -3,7 +3,7 @@
 @push('styles')
 <style>
 .resident-content { padding: 0 !important; }
-.rf-page { max-width: 1100px; margin: 0 auto; padding: 30px 40px 60px; box-sizing: border-box; width: 100%; font-family: 'Inter', sans-serif; }
+.rf-page { max-width: 1440px; margin: 0 auto; padding: 30px 40px 60px; box-sizing: border-box; width: 100%; font-family: 'Inter', sans-serif; }
 @media (max-width: 768px) { .rf-page { padding: 20px 16px 40px; } }
 
 .rf-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
@@ -23,8 +23,15 @@
 .rf-filter-btn:hover { background: #f8fafc; border-color: #cbd5e1; }
 .rf-filter-btn.active { background: #1e3a8a; color: #fff; border-color: #1e3a8a; }
 
+.rf-history-link { font-size: 14px; font-weight: 700; color: #1e3a8a; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: color 0.15s; }
+.rf-history-link:hover { color: #172554; }
+
+.rf-load-more { text-align: center; margin-top: 24px; }
+.rf-load-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 99px; font-size: 14px; font-weight: 600; color: #1e3a8a; background: #eff6ff; border: 1px solid #bfdbfe; text-decoration: none; transition: all 0.2s; }
+.rf-load-btn:hover { background: #dbeafe; transform: translateY(-1px); }
+
 /* Grid */
-.rf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; margin-bottom: 30px; }
+.rf-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-bottom: 30px; }
 
 /* Card - Vertical */
 .rf-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: box-shadow 0.2s, transform 0.2s; text-decoration: none; color: inherit; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
@@ -96,9 +103,15 @@
 .rfd-alert--success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
 
 
+@media (max-width: 1200px) {
+    .rf-grid { grid-template-columns: repeat(3, 1fr); }
+}
 @media (max-width: 900px) {
-    .rf-grid { grid-template-columns: 1fr; }
+    .rf-grid { grid-template-columns: repeat(2, 1fr); }
     .rf-toolbar { flex-direction: column; align-items: stretch; }
+}
+@media (max-width: 600px) {
+    .rf-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 500px) {
     .rf-page { padding: 16px; }
@@ -120,7 +133,7 @@
             <h1 class="rf-title">Tiện ích Toà nhà</h1>
             <p class="rf-subtitle">Khám phá và đăng ký các dịch vụ cao cấp dành riêng cho cư dân ResiCare. Tận hưởng không gian sống đẳng cấp và hiện đại ngay tại nơi bạn ở.</p>
         </div>
-        <a href="{{ route('resident.facility-bookings.index') }}" style="font-size:13px;font-weight:600;color:#0b57d0;text-decoration:none;">Lịch sử đặt →</a>
+        <a href="{{ route('resident.facility-bookings.index') }}" class="rf-history-link">Lịch sử đặt <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
     </div>
 
     {{-- Toolbar --}}
