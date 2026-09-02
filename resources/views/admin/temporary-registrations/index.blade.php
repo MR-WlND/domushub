@@ -48,12 +48,6 @@
         transition: all 0.2s;
     }
     
-    .btn-create:hover {
-        background-color: #0b57d0;
-        color: #ffffff;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 6px rgba(0, 35, 111, 0.2);
-    }
 
     .stats-grid {
         display: grid;
