@@ -170,7 +170,7 @@
     padding: 0 22px;
     border-radius: 8px;
     border: none;
-    background: linear-gradient(135deg, #00236f 0%, #0b57d0 100%);
+    background: #00236f;
     color: #ffffff;
     font-size: 14px;
     font-weight: 700;
@@ -178,16 +178,6 @@
     white-space: nowrap;
     box-shadow: 0 4px 14px rgba(0, 35, 111, 0.2);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.invitations-btn-create:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 35, 111, 0.28);
-}
-
-.invitations-btn-create:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(0, 35, 111, 0.18);
 }
 
 /* ---------- Table Card ---------- */
