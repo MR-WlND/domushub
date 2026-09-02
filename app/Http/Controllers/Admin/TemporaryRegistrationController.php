@@ -457,31 +457,7 @@ class TemporaryRegistrationController extends Controller
         }
     }
 
-    public function issueCard(TemporaryRegistration $temporaryRegistration)
-    {
-        if ($temporaryRegistration->status !== 'approved' || $temporaryRegistration->type !== 'residence') {
-            return redirect()->back()->with('error', 'Chỉ có thể cấp thẻ cho đơn Tạm trú đã duyệt.');
-        }
 
-        $temporaryRegistration->update([
-            'card_status' => 'issued'
-        ]);
-
-        return redirect()->back()->with('success', 'Đã xác nhận cấp thẻ / Face ID cho khách.');
-    }
-
-    public function returnCard(TemporaryRegistration $temporaryRegistration)
-    {
-        if ($temporaryRegistration->status !== 'approved' || $temporaryRegistration->type !== 'residence') {
-            return redirect()->back()->with('error', 'Chỉ có thể thu hồi thẻ của đơn Tạm trú đã duyệt.');
-        }
-
-        $temporaryRegistration->update([
-            'card_status' => 'returned'
-        ]);
-
-        return redirect()->back()->with('success', 'Đã xác nhận thu hồi thẻ / Face ID thành công.');
-    }
 
     public function exportExcel(Request $request)
     {

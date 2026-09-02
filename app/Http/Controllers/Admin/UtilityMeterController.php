@@ -217,7 +217,7 @@ class UtilityMeterController extends Controller
      */
     public function create(): View
     {
-        if (!in_array(Auth::user()->role, ['technician'])) {
+        if (!in_array(Auth::user()->role, ['technician', 'admin', 'manager'])) {
             abort(403, 'Bạn không có quyền ghi chỉ số.');
         }
 
@@ -236,7 +236,7 @@ class UtilityMeterController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        if (!in_array(Auth::user()->role, ['technician'])) {
+        if (!in_array(Auth::user()->role, ['technician', 'admin', 'manager'])) {
             abort(403, 'Bạn không có quyền ghi chỉ số.');
         }
 
@@ -298,6 +298,8 @@ class UtilityMeterController extends Controller
             $imageProofPath = $imagePaths[0] ?? null;
         }
 
+        $status = (Auth::user()->role === 'admin') ? 'approved' : 'pending';
+
         $meter = UtilityMeter::create([
             'apartment_id'  => $validated['apartment_id'],
             'type'          => $validated['type'],
@@ -306,11 +308,15 @@ class UtilityMeterController extends Controller
             'old_value'     => $oldValue,
             'new_value'     => $validated['new_value'],
             'recorded_by'   => Auth::id(),
-            'status'        => 'pending',
+            'status'        => $status,
             'image_proof'   => $imageProofPath,
             'images'        => !empty($imagePaths) ? $imagePaths : null,
             'is_reset'      => $isReset,
         ]);
+
+        if ($status === 'approved') {
+            $this->syncInvoice($meter->apartment_id, (int) $meter->record_month, (int) $meter->record_year);
+        }
 
         // Gửi thông báo cho nhân viên kế toán (staff) khi kỹ thuật viên ghi số
         /** @var \App\Models\User $user */
@@ -338,10 +344,14 @@ class UtilityMeterController extends Controller
             }
         }
 
+        $msg = ($status === 'approved') 
+            ? 'Đã ghi nhận chỉ số mới và tự động chốt.' 
+            : 'Đã ghi nhận chỉ số mới và chuyển trạng thái Chờ chốt.';
+
         return redirect()->route('admin.utility-readings.index', [
             'month' => $validated['record_month'],
             'year'  => $validated['record_year'],
-        ])->with('success', 'Đã ghi nhận chỉ số mới và chuyển trạng thái Chờ chốt.');
+        ])->with('success', $msg);
     }
 
     /**
@@ -349,7 +359,7 @@ class UtilityMeterController extends Controller
      */
     public function batchCreate(Request $request): View
     {
-        if (!in_array(Auth::user()->role, ['technician'])) {
+        if (!in_array(Auth::user()->role, ['technician', 'admin', 'manager'])) {
             abort(403, 'Bạn không có quyền ghi chỉ số.');
         }
 
@@ -407,7 +417,7 @@ class UtilityMeterController extends Controller
      */
     public function batchStore(Request $request): RedirectResponse
     {
-        if (!in_array(Auth::user()->role, ['technician'])) {
+        if (!in_array(Auth::user()->role, ['technician', 'admin', 'manager'])) {
             abort(403, 'Bạn không có quyền ghi chỉ số.');
         }
 
@@ -459,6 +469,7 @@ class UtilityMeterController extends Controller
                 } else {
                     $waterIsReset = isset($reading['water_is_reset']) && (bool)$reading['water_is_reset'];
                     $waterOld = $waterIsReset ? 0 : (UtilityMeter::getPreviousNewValue($aptId, 'water', $month, $year) ?? 0);
+                    $status = (Auth::user()->role === 'admin') ? 'approved' : 'pending';
                     UtilityMeter::create([
                         'apartment_id' => $aptId,
                         'type'         => 'water',
@@ -467,11 +478,15 @@ class UtilityMeterController extends Controller
                         'old_value'    => $waterOld,
                         'new_value'    => (int) $reading['water_new'],
                         'recorded_by'  => Auth::id(),
-                        'status'       => 'pending',
+                        'status'       => $status,
                         'image_proof'  => $imageProofPath,
                         'images'       => !empty($imagePaths) ? $imagePaths : null,
                         'is_reset'     => $waterIsReset,
                     ]);
+
+                    if ($status === 'approved') {
+                        $this->syncInvoice($aptId, (int) $month, (int) $year);
+                    }
                     $saved++;
                     $waterSaved = true;
                 }
@@ -505,7 +520,11 @@ class UtilityMeterController extends Controller
             }
         }
 
-        $message = "Đã gửi thành công {$saved} chỉ số nước và đang chờ kế toán phê duyệt.";
+        $isAutoApproved = (Auth::user()->role === 'admin');
+        $message = $isAutoApproved 
+            ? "Đã chốt tự động {$saved} chỉ số nước thành công." 
+            : "Đã gửi thành công {$saved} chỉ số nước và đang chờ kế toán phê duyệt.";
+        
         if ($skipped > 0) {
             $message .= " Bỏ qua {$skipped} mục đã chốt trước đó.";
         }
