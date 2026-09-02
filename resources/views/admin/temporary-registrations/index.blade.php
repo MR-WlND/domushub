@@ -188,10 +188,6 @@
         transition: all 0.2s;
     }
 
-    .btn-filter:hover {
-        background-color: #0b57d0;
-        box-shadow: 0 4px 6px rgba(0, 35, 111, 0.2);
-    }
 
     .table-container {
         overflow-x: auto;
