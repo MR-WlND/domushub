@@ -1110,7 +1110,7 @@ class UtilityMeterController extends Controller
      */
     public function downloadTemplate(Request $request)
     {
-        if (!in_array(\Illuminate\Support\Facades\Auth::user()->role, ['technician', 'admin'])) {
+        if (!in_array(\Illuminate\Support\Facades\Auth::user()->role, ['technician', 'admin', 'manager'])) {
             abort(403, 'Bạn không có quyền tải mẫu nhập chỉ số.');
         }
 
@@ -1140,7 +1140,7 @@ class UtilityMeterController extends Controller
      */
     public function import(Request $request): \Illuminate\Http\RedirectResponse
     {
-        if (!in_array(\Illuminate\Support\Facades\Auth::user()->role, ['technician', 'admin', 'manager', 'staff'])) {
+        if (!in_array(\Illuminate\Support\Facades\Auth::user()->role, ['technician', 'admin', 'manager'])) {
             abort(403, 'Bạn không có quyền import chỉ số.');
         }
 
