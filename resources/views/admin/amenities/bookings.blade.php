@@ -11,7 +11,7 @@
             <p class="amb-eyebrow">Tiện ích chung cư</p>
             <h1 class="amb-title">Quản lý lịch đặt</h1>
         </div>
-        <a href="{{ portal_route('amenities.index') }}" class="amb-btn amb-btn--outline">
+        <a href="{{ portal_route('amenities.index') }}" class="amb-btn" style="background-color: #00236f; color: #ffffff;">
             Danh sách tiện ích
         </a>
     </div>
