@@ -209,16 +209,12 @@ select.parking-form-control {
     padding: 0 20px;
     border: none;
     border-radius: 8px;
-    background: #4f46e5;
+    background: #00236f;
     color: #ffffff;
     font-size: 0.8125rem;
     font-weight: 700;
     cursor: pointer;
     transition: background .15s ease;
-}
-
-.pk-btn-submit:hover {
-    background: #4338ca;
 }
 
 /* â”€â”€â”€ Tabs â”€â”€â”€ */
