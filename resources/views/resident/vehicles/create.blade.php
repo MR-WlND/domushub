@@ -32,7 +32,6 @@
                             <option value="car" {{ old('vehicle_type')==='car'?'selected':'' }}>Ô tô</option>
                             <option value="motorbike" {{ old('vehicle_type')==='motorbike'?'selected':'' }}>Xe máy</option>
                             <option value="electric_bike" {{ old('vehicle_type')==='electric_bike'?'selected':'' }}>Xe điện</option>
-                            <option value="car" {{ old('vehicle_type')==='car'?'selected':'' }}>Ô tô</option>
                         </select>
                     </div>
                     <div class="rv-field" id="license-plate-field">

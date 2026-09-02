@@ -477,12 +477,13 @@ class InvoiceController extends Controller
             ->whereNotIn('type', ['compensation', 'penalty', 'card_reissue'])
             ->get();
 
+        $blocks = \App\Models\Block::orderBy('name')->get();
+
         $apartments = Apartment::with(['floor.block', 'invoices' => function ($query) use ($selectedYear, $selectedMonthNumber) {
             $query->where('billing_month', $selectedMonthNumber)
                 ->where('billing_year', $selectedYear)
                 ->where('status', '!=', 'cancelled');
         }])
-            ->where('status', 'occupied')
             ->get();
 
         // Sắp xếp: đã xuất lên đầu
@@ -495,12 +496,13 @@ class InvoiceController extends Controller
             return $a->id <=> $b->id;
         })->values();
 
-        $occupiedCount = $apartments->count();
         $totalCount = $apartments->count();
+        $occupiedCount = $apartments->where('status', 'occupied')->count();
         $totalPriceSum = $activePrices->sum('unit_price');
 
         return view('admin.invoices.batch', compact(
             'apartments',
+            'blocks',
             'activePrices',
             'occupiedCount',
             'totalCount',
@@ -550,7 +552,6 @@ class InvoiceController extends Controller
         // --- Lấy danh sách căn hộ đã chọn ---
         $apartments = Apartment::with(['residents.user', 'vehicles', 'apartmentType'])
             ->whereIn('id', $selectedApartmentIds)
-            ->where('status', 'occupied')
             ->get();
 
         // --- Lấy bảng đơn giá theo type ---

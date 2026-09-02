@@ -186,6 +186,30 @@
                                 Thêm ghi chú mới
                             </button>
                         </div>
+
+                        {{-- Hình ảnh căn hộ --}}
+                        <div class="info-section" style="margin-top: 24px;">
+                            <div class="section-title-wrapper">
+                                <div class="section-accent-line"></div>
+                                <h4 class="info-section-title">Hình ảnh căn hộ</h4>
+                            </div>
+                            @if(!empty($apartment->images) && is_array($apartment->images) && count($apartment->images) > 0)
+                                <div class="apartment-gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; margin-top: 14px;">
+                                    @foreach($apartment->images as $img)
+                                        <div class="apartment-gallery-item" style="position: relative; border-radius: 8px; overflow: hidden; aspect-ratio: 4/3; border: 1px solid #e2e8f0; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.06); transition: all 0.2s ease;" onclick="openImageModal('{{ asset('storage/' . $img) }}')" onmouseover="this.style.transform='scale(1.03)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.06)'">
+                                            <img src="{{ asset('storage/' . $img) }}" alt="Hình ảnh căn hộ" style="width: 100%; height: 100%; object-fit: cover;">
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 20px; text-align: center; color: #94a3b8; margin-top: 12px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 6px; display: block; color: #cbd5e1;">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <span style="font-size: 13px;">Chưa có hình ảnh nào cho căn hộ này.</span>
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
@@ -826,6 +850,25 @@
         if (event.target == tenantModal) {
             tenantModal.style.display = "none";
         }
+        var imgModal = document.getElementById('aptImgModal');
+        if (event.target == imgModal) {
+            imgModal.style.display = "none";
+        }
+    }
+
+    function openImageModal(src) {
+        document.getElementById('aptModalImg').src = src;
+        document.getElementById('aptImgModal').style.display = 'flex';
+    }
+
+    function closeImageModal() {
+        document.getElementById('aptImgModal').style.display = 'none';
     }
 </script>
+
+<!-- Image Preview Modal -->
+<div id="aptImgModal" class="modal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.85); align-items: center; justify-content: center; backdrop-filter: blur(4px);" onclick="closeImageModal()">
+    <span style="position: absolute; right: 24px; top: 20px; font-size: 32px; font-weight: bold; cursor: pointer; color: #fff;">&times;</span>
+    <img id="aptModalImg" src="" alt="Full Image" style="max-width: 90%; max-height: 85vh; border-radius: 12px; object-fit: contain; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
+</div>
 @endpush
