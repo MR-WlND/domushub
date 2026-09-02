@@ -5,8 +5,9 @@ namespace App\Notifications;
 use App\Models\Parcel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
-class ParcelNotification extends Notification
+class ParcelNotification extends Notification implements ShouldBroadcast
 {
     use Queueable;
 
@@ -14,7 +15,7 @@ class ParcelNotification extends Notification
 
     public function via($notifiable): array
     {
-        return ['database'];
+        return ['database', 'broadcast'];
     }
 
     public function toArray($notifiable): array

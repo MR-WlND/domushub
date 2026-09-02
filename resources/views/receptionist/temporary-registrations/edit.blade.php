@@ -285,6 +285,14 @@
             grid-template-columns: 1fr;
         }
     }
+    @media (max-width: 768px) {
+        .grid-2 {
+            grid-template-columns: 1fr;
+        }
+        .tr-card {
+            padding: 20px;
+        }
+    }
 </style>
 @endpush
 
@@ -455,30 +463,57 @@
                 <div class="info-group" style="margin-bottom: 0;">
                     <div class="info-label">Hồ sơ / Giấy tờ đính kèm</div>
                     
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
+                    <style>
+                        .attachment-card:hover {
+                            border-color: #94a3b8 !important;
+                            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+                            transform: translateY(-2px);
+                        }
+                    </style>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-top: 16px;">
                         @if($temporaryRegistration->attachment_path)
-                        <a href="{{ Storage::url($temporaryRegistration->attachment_path) }}" target="_blank" class="file-attachment">
-                            <div class="file-icon">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                            </div>
-                            <div class="file-details">
-                                <div class="file-name">Tệp đính kèm (cũ)</div>
-                                <div class="file-meta">Nhấn để xem nội dung</div>
-                            </div>
-                        </a>
+                            @php
+                                $ext = strtolower(pathinfo($temporaryRegistration->attachment_path, PATHINFO_EXTENSION));
+                                $isImage = in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                            @endphp
+                            <a href="{{ Storage::url($temporaryRegistration->attachment_path) }}" target="_blank" class="attachment-card" style="display: flex; flex-direction: column; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; text-decoration: none; transition: all 0.2s; background: #fff;">
+                                @if($isImage)
+                                    <div style="width: 100%; height: 160px; background: #f1f5f9;">
+                                        <img src="{{ Storage::url($temporaryRegistration->attachment_path) }}" style="width: 100%; height: 100%; object-fit: cover;" alt="Hồ sơ">
+                                    </div>
+                                @else
+                                    <div style="width: 100%; height: 160px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #94a3b8;">
+                                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                                    </div>
+                                @endif
+                                <div style="padding: 12px 16px; flex-grow: 1;">
+                                    <div style="font-weight: 600; color: #1e293b; font-size: 14px; margin-bottom: 4px;">Tệp đính kèm (cũ)</div>
+                                    <div style="font-size: 12px; color: #64748b;">Nhấn để phóng to</div>
+                                </div>
+                            </a>
                         @endif
 
                         @if(!empty($temporaryRegistration->attachments))
                             @foreach($temporaryRegistration->attachments as $index => $path)
-                            <a href="{{ Storage::url($path) }}" target="_blank" class="file-attachment">
-                                <div class="file-icon">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                                </div>
-                                <div class="file-details">
-                                    <div class="file-name">Hồ sơ số #{{ $index + 1 }}</div>
-                                    <div class="file-meta">Bản sao giấy tờ</div>
-                                </div>
-                            </a>
+                                @php
+                                    $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+                                    $isImage = in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                                @endphp
+                                <a href="{{ Storage::url($path) }}" target="_blank" class="attachment-card" style="display: flex; flex-direction: column; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; text-decoration: none; transition: all 0.2s; background: #fff;">
+                                    @if($isImage)
+                                        <div style="width: 100%; height: 160px; background: #f1f5f9;">
+                                            <img src="{{ Storage::url($path) }}" style="width: 100%; height: 100%; object-fit: cover;" alt="Hồ sơ">
+                                        </div>
+                                    @else
+                                        <div style="width: 100%; height: 160px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #94a3b8;">
+                                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                                        </div>
+                                    @endif
+                                    <div style="padding: 12px 16px; flex-grow: 1;">
+                                        <div style="font-weight: 600; color: #1e293b; font-size: 14px; margin-bottom: 4px;">Hồ sơ số #{{ $index + 1 }}</div>
+                                        <div style="font-size: 12px; color: #64748b;">Nhấn để phóng to</div>
+                                    </div>
+                                </a>
                             @endforeach
                         @endif
                     </div>

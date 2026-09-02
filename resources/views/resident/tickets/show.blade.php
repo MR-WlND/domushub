@@ -8,8 +8,7 @@
         .tk-detail-wrapper {
             max-width: 1100px;
             margin: 0 auto;
-            padding: 24px;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', system-ui, 'Segoe UI', -apple-system, sans-serif;
             color: #0f172a;
         }
 
@@ -40,7 +39,7 @@
         .tk-main-title {
             font-size: 26px;
             font-weight: 800;
-            color: #0f172a;
+            color: #00236f;
             margin: 0;
             letter-spacing: -0.02em;
         }
@@ -72,6 +71,17 @@
             border-color: #fde68a;
         }
 
+        @media (max-width: 640px) {
+            .tk-main-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .tk-main-title {
+                font-size: 22px;
+            }
+        }
+
         /* 2-Column Layout */
         .tk-layout-grid {
             display: grid;
@@ -94,6 +104,12 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.02);
             margin-bottom: 24px;
         }
+        @media (max-width: 768px) {
+            .tk-box-card {
+                padding: 16px;
+                border-radius: 12px;
+            }
+        }
         .tk-box-card:last-child {
             margin-bottom: 0;
         }
@@ -112,7 +128,10 @@
         }
         @media (max-width: 640px) {
             .tk-info-row-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .tk-info-col:first-child {
+                grid-column: span 2;
             }
         }
         .tk-info-col {
@@ -146,7 +165,7 @@
             font-size: 14px;
             line-height: 1.6;
             color: #1e293b;
-            border: 1px solid #dbeafe;
+            font-style: italic;
         }
 
         /* Hình ảnh đính kèm */
@@ -237,7 +256,7 @@
         .tk-bql-icon {
             width: 32px;
             height: 32px;
-            border-radius: 50%;
+            border-radius: 6px;
             background: #001e71;
             color: #ffffff;
             display: flex;
@@ -245,6 +264,7 @@
             justify-content: center;
             font-size: 14px;
         }
+
         .tk-bql-title {
             font-size: 14px;
             font-weight: 700;
@@ -254,42 +274,42 @@
             font-size: 13.5px;
             color: #1e293b;
             line-height: 1.5;
-            margin: 0 0 8px 0;
+            margin: 0;
             font-style: italic;
         }
         .tk-bql-time-text {
             font-size: 11px;
             color: #64748b;
+            margin-top: 12px;
             text-align: right;
         }
 
-        /* Right Column Buttons */
+        /* Nút sidebar */
         .btn-side-primary {
             width: 100%;
-            padding: 12px;
+            padding: 11px;
             border-radius: 10px;
             background: #eff6ff;
             border: 1px solid #bfdbfe;
-            color: #1d4ed8;
-            font-size: 14px;
+            color: #1e3a8a;
+            font-size: 13.5px;
             font-weight: 600;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            text-decoration: none;
+            gap: 6px;
             transition: all 0.2s;
         }
         .btn-side-primary:hover {
             background: #dbeafe;
-            color: #1e40af;
+            border-color: #93c5fd;
         }
         .btn-side-disabled {
             width: 100%;
-            padding: 12px;
+            padding: 11px;
             border-radius: 10px;
-            background: #f1f5f9;
+            background: #f8fafc;
             border: 1px solid #e2e8f0;
             color: #94a3b8;
             font-size: 14px;
@@ -348,7 +368,7 @@
             transition: background 0.2s;
         }
         .btn-side-cancel:hover {
-            background: #fee2e2;
+            background: #fef2f2;
         }
     </style>
 @endpush
@@ -359,7 +379,7 @@
     {{-- NAV BACK --}}
     <div class="tk-top-nav">
         <a href="{{ route('resident.tickets.index') }}" class="tk-back-btn">
-            <i class="fa-solid fa-arrow-left"></i> Trở lại danh sách
+            <i class="fa-solid fa-arrow-left"></i> Quay lại
         </a>
     </div>
 
@@ -680,4 +700,26 @@
 
 @push('scripts')
     @vite(['resources/js/pages/resident/tickets/show.js'])
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.Echo) {
+            window.Echo.private('ticket.{{ $ticket->id }}')
+                .listen('TicketProgressUpdated', (e) => {
+                    // Hiển thị thông báo và tải lại trang để xem tiến độ mới
+                    const toast = document.createElement('div');
+                    toast.className = 'tk-alert tk-alert--success';
+                    toast.style.position = 'fixed';
+                    toast.style.bottom = '20px';
+                    toast.style.right = '20px';
+                    toast.style.zIndex = '9999';
+                    toast.innerHTML = '<i class="fa-solid fa-circle-info"></i><div>Tiến độ phản ánh vừa được cập nhật. Đang tải lại...</div>';
+                    document.body.appendChild(toast);
+                    
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 3000);
+                });
+        }
+    });
+    </script>
 @endpush

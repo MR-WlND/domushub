@@ -28,6 +28,9 @@ class ApartmentController extends Controller
         $block = null;
 
         $query = Apartment::query()
+            ->select('apartments.*')
+            ->join('floors', 'apartments.floor_id', '=', 'floors.id')
+            ->join('blocks', 'floors.block_id', '=', 'blocks.id')
             ->with([
                 'floor.block',
                 'residents.user',
@@ -39,7 +42,7 @@ class ApartmentController extends Controller
          * Filter theo loại căn hộ
          */
         if ($apartmentTypeId) {
-            $query->where('apartment_type_id', $apartmentTypeId);
+            $query->where('apartments.apartment_type_id', $apartmentTypeId);
         }
 
         /**
@@ -49,10 +52,7 @@ class ApartmentController extends Controller
 
             $block = Block::findOrFail($blockId);
 
-            $query->whereHas('floor', function ($q) use ($blockId) {
-
-                $q->where('block_id', $blockId);
-            });
+            $query->where('floors.block_id', $blockId);
         }
 
         /**
@@ -63,7 +63,7 @@ class ApartmentController extends Controller
             $floor = Floor::with('block')
                 ->findOrFail($floorId);
 
-            $query->where('floor_id', $floorId);
+            $query->where('apartments.floor_id', $floorId);
         }
 
         /**
@@ -71,7 +71,7 @@ class ApartmentController extends Controller
          */
         if ($status) {
 
-            $query->where('status', $status);
+            $query->where('apartments.status', $status);
         }
 
         /**
@@ -80,14 +80,17 @@ class ApartmentController extends Controller
         if ($search) {
 
             $query->where(
-                'apartment_number',
+                'apartments.apartment_number',
                 'like',
                 "%{$search}%"
             );
         }
 
         $apartments = $query
-            ->latest()
+            ->orderByRaw("CASE WHEN apartments.created_at >= NOW() - INTERVAL 2 MINUTE THEN 0 ELSE 1 END")
+            ->orderBy('blocks.name')
+            ->orderBy('floors.floor_number')
+            ->orderBy('apartments.apartment_number')
             ->paginate(12)
             ->withQueryString();
 
@@ -387,13 +390,27 @@ class ApartmentController extends Controller
             return back()->with('error', 'Căn hộ này đã có chủ hộ đăng ký trong hệ thống.');
         }
 
+        // Kiểm tra cư dân đã là chủ hộ hoặc thành viên active trong căn hộ này chưa
+        $existingActive = \App\Models\Resident::where('apartment_id', $apartment->id)
+            ->where('user_id', $user->id)
+            ->whereNull('deleted_at')
+            ->first();
+
+        if ($existingActive && $existingActive->relationship === 'owner') {
+            return back()->with('error', 'Cư dân ' . $user->name . ' đã là chủ hộ của căn hộ này.');
+        }
+
         // 2. Gán cư dân làm chủ hộ
         \Illuminate\Support\Facades\DB::transaction(function () use ($apartment, $user) {
-            $resident = \App\Models\Resident::where('apartment_id', $apartment->id)
+            $resident = \App\Models\Resident::withTrashed()
+                ->where('apartment_id', $apartment->id)
                 ->where('user_id', $user->id)
                 ->first();
 
             if ($resident) {
+                if ($resident->trashed()) {
+                    $resident->restore();
+                }
                 $resident->update([
                     'relationship' => 'owner',
                     'end_date' => null,
@@ -445,9 +462,20 @@ class ApartmentController extends Controller
             return back()->with('error', 'Căn hộ đã đạt giới hạn cư dân tối đa (10 người).');
         }
 
+        // Kiểm tra xem cư dân đã được gán làm khách thuê active chưa
+        $existingActiveTenant = \App\Models\Resident::where('apartment_id', $apartment->id)
+            ->where('user_id', $user->id)
+            ->whereNull('deleted_at')
+            ->first();
+
+        if ($existingActiveTenant && $existingActiveTenant->relationship === 'tenant') {
+            return back()->with('error', 'Cư dân ' . $user->name . ' đã được gán làm khách thuê của căn hộ này.');
+        }
+
         // Gán cư dân làm khách thuê
         \Illuminate\Support\Facades\DB::transaction(function () use ($apartment, $user, $validated) {
-            $resident = \App\Models\Resident::where('apartment_id', $apartment->id)
+            $resident = \App\Models\Resident::withTrashed()
+                ->where('apartment_id', $apartment->id)
                 ->where('user_id', $user->id)
                 ->first();
 
@@ -458,6 +486,9 @@ class ApartmentController extends Controller
             ];
 
             if ($resident) {
+                if ($resident->trashed()) {
+                    $resident->restore();
+                }
                 $resident->update($data);
             } else {
                 $data['user_id'] = $user->id;

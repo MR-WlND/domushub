@@ -174,4 +174,13 @@ class Visitor extends Model
         }
         return '';
     }
+
+    protected static function booted()
+    {
+        static::saved(function ($visitor) {
+            if ($visitor->wasChanged('status')) {
+                broadcast(new \App\Events\VisitorStatusChanged($visitor))->toOthers();
+            }
+        });
+    }
 }

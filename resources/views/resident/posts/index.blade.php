@@ -1,6 +1,7 @@
 @extends('layouts.resident.master')
 
 @section('title', 'Bản tin - DomusHub')
+@section('content_class', 'no-padding')
 
 @push('styles')
     @vite(['resources/css/resident/posts.css'])
@@ -774,5 +775,36 @@ document.getElementById('report-post-form-index')?.addEventListener('submit', fu
     </div>
 </div>
 
+@endpush
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.Echo) {
+        window.Echo.channel('community-feed')
+            .listen('PostCreated', (e) => {
+                const toast = document.createElement('div');
+                toast.className = 'tk-alert tk-alert--success';
+                toast.style.position = 'fixed';
+                toast.style.bottom = '20px';
+                toast.style.right = '20px';
+                toast.style.zIndex = '9999';
+                toast.style.padding = '12px 20px';
+                toast.style.background = '#eff6ff';
+                toast.style.color = '#1d4ed8';
+                toast.style.borderRadius = '8px';
+                toast.style.border = '1px solid #bfdbfe';
+                toast.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+                toast.style.cursor = 'pointer';
+                toast.innerHTML = '📣 Có bài đăng mới từ cư dân. Nhấn để tải lại.';
+                
+                toast.onclick = function() {
+                    window.location.reload();
+                };
+                
+                document.body.appendChild(toast);
+            });
+    }
+});
+</script>
 @endpush
 @endsection

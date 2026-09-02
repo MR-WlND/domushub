@@ -216,17 +216,20 @@ class ChatbotController extends Controller
             }
 
             // Lưu tin nhắn mới vào database để lưu trữ lâu dài
-            ChatbotMessage::create([
+            $userMessage = ChatbotMessage::create([
                 'user_id' => $user->id,
                 'role' => 'user',
                 'message' => $message,
             ]);
+            broadcast(new \App\Events\ChatbotMessageSent($userMessage, $user->id))->toOthers();
 
-            ChatbotMessage::create([
+            $modelMessage = ChatbotMessage::create([
                 'user_id' => $user->id,
                 'role' => 'model',
                 'message' => $replyText,
             ]);
+
+            broadcast(new \App\Events\ChatbotMessageSent($modelMessage, $user->id));
 
             return response()->json([
                 'success' => true,

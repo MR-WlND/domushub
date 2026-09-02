@@ -8,10 +8,12 @@
     {{-- Header --}}
     <div class="sp-header">
         <div>
-            <p class="sp-eyebrow">Tài chính</p>
             <h1 class="sp-title">Biểu giá dịch vụ</h1>
+            <p class="sp-subtitle">Quản lý và cấu hình các loại phí dịch vụ chung cư</p>
         </div>
-        <button class="sp-btn sp-btn--primary" onclick="toggleForm()">Thêm đơn giá</button>
+        <button class="sp-btn sp-btn--primary" onclick="toggleForm()">
+            <i class="fas fa-plus" style="margin-right: 4px;"></i> Thêm đơn giá
+        </button>
     </div>
 
     {{-- Flash --}}
@@ -88,31 +90,44 @@
                 'electric_bike' => 'Xe điện',
             ];
             $grouped = $servicePrices->groupBy('type');
+            $icons = [
+                'water' => 'fas fa-tint icon-water',
+                'parking_fee' => 'fas fa-car icon-parking',
+                'internet' => 'fas fa-wifi icon-internet',
+                'service' => 'fas fa-concierge-bell icon-service',
+                'other' => 'fas fa-box icon-other',
+            ];
         @endphp
-        @foreach($grouped as $type => $items)
-        <div class="sp-stat-chip">
-            <span>{{ $typeLabels[$type] ?? $type }}</span>
-            <span class="sp-stat-count">{{ $items->count() }}</span>
+        <div class="sp-stats-grid">
+            @foreach($grouped as $type => $items)
+            <div class="sp-stat-widget">
+                <div class="sp-stat-info">
+                    <span class="sp-stat-label">{{ $typeLabels[$type] ?? $type }}</span>
+                    <span class="sp-stat-value">{{ $items->count() }} mục</span>
+                </div>
+            </div>
+            @endforeach
         </div>
-        @endforeach
     </div>
 
     {{-- Bảng biểu giá --}}
     <div class="sp-card">
         <div class="sp-card-header">
-            <span>{{ $servicePrices->count() }} mục đơn giá</span>
+            <h2 class="sp-card-title">Danh sách đơn giá dịch vụ</h2>
+            <span class="sp-card-count">{{ $servicePrices->count() }} mục đơn giá</span>
         </div>
-        <table class="sp-table">
-            <thead>
-                <tr>
-                    <th>Loại</th>
-                    <th>Tên dịch vụ</th>
-                    <th>Đơn giá</th>
-                    <th>Mô tả</th>
-                    <th>Trạng thái</th>
-                    <th style="width:120px"></th>
-                </tr>
-            </thead>
+        <div class="sp-table-wrap">
+            <table class="sp-table">
+                <thead>
+                    <tr>
+                        <th>Loại</th>
+                        <th>Tên dịch vụ</th>
+                        <th>Đơn giá</th>
+                        <th>Mô tả</th>
+                        <th>Trạng thái</th>
+                        <th style="width:140px; text-align:right">Hành động</th>
+                    </tr>
+                </thead>
             <tbody>
                 @forelse($servicePrices as $sp)
                 <tr id="row-{{ $sp->id }}">
@@ -130,18 +145,26 @@
                     <td class="view-{{ $sp->id }} sp-desc">{{ $sp->description ?? '—' }}</td>
                     <td class="view-{{ $sp->id }}">
                         @if($sp->status === 'active')
-                            <span class="sp-badge sp-badge--active">Đang dùng</span>
+                            <span class="status-pill status-active">
+                                <span class="dot"></span> Đang dùng
+                            </span>
                         @else
-                            <span class="sp-badge sp-badge--inactive">Tạm dừng</span>
+                            <span class="status-pill status-inactive">
+                                <span class="dot"></span> Tạm dừng
+                            </span>
                         @endif
                     </td>
-                    <td class="view-{{ $sp->id }}">
-                        <div class="sp-actions">
-                            <button class="sp-btn sp-btn--sm sp-btn--edit" onclick="openEdit({{ $sp->id }})">Sửa</button>
+                    <td class="view-{{ $sp->id }}" style="text-align:right">
+                        <div class="sp-actions" style="justify-content: flex-end;">
+                            <button class="sp-btn sp-btn--sm sp-btn--edit" onclick="openEdit({{ $sp->id }})" title="Sửa">
+                                <i class="fas fa-edit"></i>
+                            </button>
                             <form method="POST" action="{{ portal_route('service-prices.destroy', $sp->id) }}"
-                                  onsubmit="return confirm('Xoá đơn giá {{ $sp->name }}?')">
+                                  onsubmit="return confirm('Xoá đơn giá {{ $sp->name }}?')" style="margin:0;">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="sp-btn sp-btn--sm sp-btn--danger">Xoá</button>
+                                <button type="submit" class="sp-btn sp-btn--sm sp-btn--danger" title="Xoá">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
                             </form>
                         </div>
                     </td>
@@ -205,89 +228,120 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 
 <style>
-.sp-page { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
+.sp-page { display: flex; flex-direction: column; gap: 20px; }
 
-.sp-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-.sp-eyebrow { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin: 0 0 4px; font-weight: 600; }
-.sp-title { font-size: 1.6rem; font-weight: 700; color: #0f172a; margin: 0; }
+.sp-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.sp-eyebrow { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: #0b57d0; margin: 0 0 6px; font-weight: 700; }
+.sp-title { font-size: 28px; font-weight: 700; color: #00236f; margin: 0; line-height: 1.2; }
+.sp-subtitle { font-size: 15px; color: #64748b; margin: 8px 0 0 0; font-weight: 400; }
 
-.sp-alert { padding: 12px 16px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; margin-bottom: 16px; }
-.sp-alert--success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
-.sp-alert--error   { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
+.sp-alert { padding: 12px 16px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;}
+.sp-alert--success { background: #e6f4ea; border: 1px solid #b7dfc1; color: #137333; }
+.sp-alert--error   { background: #fce8e6; border: 1px solid #f4b8b2; color: #ba1a1a; }
 
-.sp-form-card { background: #fff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 20px 24px; margin-bottom: 20px; }
-.sp-form-title { font-size: 1rem; font-weight: 700; color: #1e40af; margin: 0 0 16px; }
-.sp-form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
-.sp-field { display: flex; flex-direction: column; gap: 4px; }
+.sp-form-card { background: #fff; border: 1px solid #eef2f6; border-radius: 10px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 20px rgba(0, 35, 111, 0.04); }
+.sp-form-title { font-size: 16px; font-weight: 700; color: #0b1c30; margin: 0 0 20px; }
+.sp-form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+.sp-field { display: flex; flex-direction: column; gap: 6px; }
 .sp-field--wide { grid-column: 1 / -1; }
-.sp-field label { font-size: 0.78rem; font-weight: 600; color: #64748b; }
+.sp-field label { font-size: 13px; font-weight: 700; color: #334155; }
 .sp-field input, .sp-field select {
-    padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px;
-    font-size: 0.875rem; color: #1e293b; background: #f8fafc; outline: none;
+    padding: 0 14px; height: 44px; border: 1px solid #d9e2f2; border-radius: 8px;
+    font-size: 14px; color: #0b1c30; background: #f8f9ff; outline: none; transition: all 0.2s;
 }
-.sp-field input:focus, .sp-field select:focus { border-color: #3b82f6; background: #fff; }
-.sp-required { color: #ef4444; }
-.sp-error { font-size: 0.75rem; color: #dc2626; }
-.sp-form-actions { display: flex; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px solid #e2e8f0; }
+.sp-field input:focus, .sp-field select:focus { border-color: #0b57d0; background: #fff; box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.08); }
+.sp-required { color: #dc2626; margin-left: 2px; }
+.sp-error { font-size: 12px; color: #dc2626; margin-top: 2px; }
+.sp-form-actions { display: flex; gap: 12px; margin-top: 24px; padding-top: 20px; border-top: 1px solid #f1f5f9; }
 
-.sp-stats { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
-.sp-stat-chip {
-    display: flex; align-items: center; gap: 6px;
-    background: #fff; border: 1px solid #e2e8f0; border-radius: 20px;
-    padding: 5px 12px; font-size: 0.8rem; color: #475569; font-weight: 500;
+/* Stats grid */
+.sp-stats-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;
 }
-.sp-stat-count { background: #e2e8f0; color: #334155; border-radius: 10px; padding: 1px 7px; font-size: 0.72rem; font-weight: 700; }
+.sp-stat-widget {
+    background: #fff; border: 1px solid #eef2f6; border-radius: 12px; padding: 16px;
+    display: flex; align-items: center; gap: 16px; box-shadow: 0 2px 10px rgba(0, 35, 111, 0.03);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.sp-stat-widget:hover {
+    transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0, 35, 111, 0.08);
+}
+.sp-stat-icon {
+    width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+}
+.sp-stat-info { display: flex; flex-direction: column; }
+.sp-stat-label { font-size: 13px; color: #64748b; font-weight: 600; }
+.sp-stat-value { font-size: 18px; font-weight: 700; color: #0b1c30; line-height: 1.2; margin-top: 4px; }
 
-.sp-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; }
+.icon-water { background: #eff6ff; color: #2563eb; }
+.icon-internet { background: #f5f3ff; color: #7c3aed; }
+.icon-parking { background: #fff7ed; color: #ea580c; }
+.icon-service { background: #fff1f2; color: #e11d48; }
+.icon-other { background: #f1f5f9; color: #475569; }
+
+.sp-card { background: #fff; border: 1px solid #eef2f6; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 35, 111, 0.04); }
 .sp-card-header {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 0.85rem; font-weight: 600; color: #334155;
+    padding: 20px 24px; border-bottom: 1px solid #f1f5f9;
 }
-.sp-table { width: 100%; border-collapse: collapse; }
+.sp-card-title { margin: 0; font-size: 16px; font-weight: 700; color: #0b1c30; }
+.sp-card-count { font-size: 13px; font-weight: 600; color: #64748b; background: #f1f5f9; padding: 3px 10px; border-radius: 10px; }
+
+.sp-table-wrap { width: 100%; overflow-x: auto; }
+.sp-table { width: 100%; border-collapse: collapse; min-width: 700px; }
 .sp-table th {
-    text-align: left; padding: 10px 14px; font-size: 0.72rem; font-weight: 700;
-    color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;
-    border-bottom: 1px solid #e2e8f0; background: #f8fafc;
+    text-align: left; padding: 15px 20px; font-size: 11px; font-weight: 700;
+    color: #475569; text-transform: uppercase; letter-spacing: 0.08em;
+    border-bottom: 1px solid #f1f5f9; background: #f4f7fe; white-space: nowrap;
 }
-.sp-table td { padding: 12px 14px; font-size: 0.875rem; color: #1e293b; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+.sp-table td { padding: 15px 20px; font-size: 14px; color: #1e293b; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
 .sp-table tr:hover td { background: #fafbff; }
 
-.sp-type-badge { font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 5px; background: #f1f5f9; color: #475569; white-space: nowrap; }
-.sp-type--water       { background: #eff6ff; color: #1e40af; }
-.sp-type--management_fee { background: #f0fdf4; color: #166534; }
-.sp-type--parking_fee { background: #fff7ed; color: #c2410c; }
-.sp-type--internet    { background: #f5f3ff; color: #5b21b6; }
-.sp-type--service     { background: #fff1f2; color: #be123c; }
+.sp-type-badge { font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 6px; background: #f1f5f9; color: #475569; white-space: nowrap; display: inline-block; }
+.sp-type--water       { background: #eff6ff; color: #1e40af; border: 1px dashed #bfdbfe; }
+.sp-type--management_fee { background: #f0fdf4; color: #166534; border: 1px dashed #bbf7d0; }
+.sp-type--parking_fee { background: #fff7ed; color: #c2410c; border: 1px dashed #fed7aa; }
+.sp-type--internet    { background: #f5f3ff; color: #5b21b6; border: 1px dashed #ddd6fe; }
+.sp-type--service     { background: #fff1f2; color: #be123c; border: 1px dashed #fecdd3; }
 
-.sp-name  { font-weight: 600; color: #0f172a; }
-.sp-price { font-weight: 700; color: #2563eb; font-family: monospace; font-size: 0.9rem; }
-.sp-desc  { color: #94a3b8; font-size: 0.8rem; max-width: 250px; }
+.sp-name  { font-weight: 600; color: #0b1c30; }
+.sp-price { font-weight: 700; color: #00236f; font-family: 'Monaco', 'Consolas', monospace; font-size: 15px; }
+.sp-desc  { color: #64748b; font-size: 13px; max-width: 280px; line-height: 1.4; }
 
-.sp-badge { font-size: 0.7rem; font-weight: 600; padding: 3px 8px; border-radius: 4px; }
-.sp-badge--active   { background: #dcfce7; color: #15803d; }
-.sp-badge--inactive { background: #f1f5f9; color: #64748b; }
+.status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+.status-pill .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.status-active { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+.status-active .dot { background: #10b981; }
+.status-inactive { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.status-inactive .dot { background: #ef4444; }
 
-.sp-actions { display: flex; gap: 6px; align-items: center; }
+.sp-actions { display: flex; gap: 8px; align-items: center; }
 
 .sp-btn {
-    padding: 7px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 600;
-    cursor: pointer; border: none; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    border-radius: 8px; font-size: 14px; font-weight: 600;
+    cursor: pointer; border: none; text-decoration: none; transition: all 0.2s ease;
 }
-.sp-btn--primary { background: #2563eb; color: #fff; }
-.sp-btn--primary:hover { background: #1d4ed8; }
-.sp-btn--ghost { background: none; color: #ef4444; border: 1px solid #fecaca; }
-.sp-btn--ghost:hover { background: #fef2f2; }
-.sp-btn--edit   { background: #f1f5f9; color: #475569; padding: 5px 9px; border: 1px solid #e2e8f0; }
-.sp-btn--edit:hover { background: #e2e8f0; }
-.sp-btn--danger { background: #fee2e2; color: #b91c1c; padding: 5px 9px; border: 1px solid #fecaca; }
-.sp-btn--danger:hover { background: #fecaca; }
-.sp-btn--sm { padding: 5px 12px; font-size: 0.78rem; }
+.sp-btn--primary {
+    background: #00236f; color: #fff;
+    padding: 0 20px; height: 42px;
+}
+.sp-btn--primary:hover { background: #00123f; }
+.sp-btn--ghost { background: transparent; color: #475569; border: 1px solid #e2e8f0; padding: 0 16px; height: 42px; }
+.sp-btn--ghost:hover { background: #f1f5f9; color: #0b1c30; }
+.sp-btn--edit   { background: transparent; color: #0b57d0; width: 34px; height: 34px; border: 1px solid #bfdbfe; border-radius: 8px; font-size: 13px; }
+.sp-btn--edit:hover { background: #eff6ff; }
+.sp-btn--danger { background: transparent; color: #dc2626; width: 34px; height: 34px; border: 1px solid #fecaca; border-radius: 8px; font-size: 13px; }
+.sp-btn--danger:hover { background: #fef2f2; }
+.sp-btn--sm { padding: 0; }
 
-.sp-empty { text-align: center; padding: 48px 20px; color: #94a3b8; font-size: 0.95rem; }
+.sp-empty { text-align: center; padding: 56px 24px; color: #94a3b8; font-size: 15px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
 </style>
 
 @push('scripts')

@@ -27,37 +27,60 @@ class CheckTemporaryRegistrationExpiry extends Command
      */
     public function handle()
     {
-        $expiredRegistrations = TemporaryRegistration::where('status', 'approved')
+        // 1. Check for expired registrations (end_date < today)
+        $expiredRegistrations = TemporaryRegistration::with(['user', 'apartment'])
+            ->where('status', 'approved')
             ->whereNotNull('end_date')
             ->whereDate('end_date', '<', today())
             ->get();
 
-        $count = 0;
+        $countExpired = 0;
 
         foreach ($expiredRegistrations as $reg) {
+            $reg->status = 'expired';
+            $reg->save();
+            
             $resident = Resident::where('user_id', $reg->user_id)
                                 ->where('apartment_id', $reg->apartment_id)
                                 ->first();
 
             if ($resident) {
                 if ($reg->type === 'residence' && $resident->temporary_status === 'temporary') {
-                    // Người tạm trú đã hết hạn
                     $resident->temporary_status = null;
                     $resident->save();
-                    $count++;
-                    
                     $this->info("Đã cập nhật hết hạn tạm trú cho user {$reg->user_id} tại căn hộ {$reg->apartment_id}");
                 } elseif ($reg->type === 'absence' && $resident->temporary_status === 'absent') {
-                    // Người tạm vắng đã hết hạn vắng mặt (quay về)
                     $resident->temporary_status = null;
                     $resident->save();
-                    $count++;
-                    
                     $this->info("Đã cập nhật hết hạn tạm vắng cho user {$reg->user_id} tại căn hộ {$reg->apartment_id}");
                 }
             }
+            
+            if ($reg->user) {
+                $reg->user->notify(new \App\Notifications\TemporaryRegistrationExpiredNotification($reg));
+            }
+            $countExpired++;
         }
 
-        $this->info("Hoàn tất kiểm tra. Đã xử lý $count đăng ký hết hạn.");
+        // 2. Check for expiring registrations (end_date == today + 3 days OR today + 7 days)
+        $expiringRegistrations = TemporaryRegistration::with(['user', 'apartment'])
+            ->where('status', 'approved')
+            ->whereNotNull('end_date')
+            ->where(function($q) {
+                $q->whereDate('end_date', today()->addDays(3))
+                  ->orWhereDate('end_date', today()->addDays(7));
+            })
+            ->get();
+            
+        $countExpiring = 0;
+        foreach ($expiringRegistrations as $reg) {
+            if ($reg->user) {
+                $reg->user->notify(new \App\Notifications\TemporaryRegistrationExpiringNotification($reg));
+            }
+            $countExpiring++;
+            $this->info("Đã gửi thông báo sắp hết hạn cho đơn {$reg->id}");
+        }
+
+        $this->info("Hoàn tất kiểm tra. Đã xử lý $countExpired đăng ký hết hạn và nhắc nhở $countExpiring đơn sắp hết hạn.");
     }
 }

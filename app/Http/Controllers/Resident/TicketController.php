@@ -151,6 +151,8 @@ class TicketController extends Controller
             'updated_by' => $user->id,
         ]);
 
+        broadcast(new \App\Events\TicketCreated($ticket))->toOthers();
+
         $successMsg = $ticketType === 'report'
             ? 'Tố cáo của bạn đã được gửi kèm bằng chứng. Ban quản lý sẽ xem xét và xử lý.'
             : 'Phản ánh của bạn đã được gửi thành công. Ban quản lý sẽ xem xét trong thời gian sớm nhất.';

@@ -7,14 +7,24 @@ body.resident-page {
     background-color: #f9fafb !important;
 }
 
+body.resident-page .resident-content {
+    padding: 0 16px !important;
+}
+
+@media (max-width: 768px) {
+    body.resident-page .resident-content {
+        padding: 0 !important;
+    }
+}
+
 /* Layout & Containers */
 .df-layout {
-    max-width: 1200px;
+    max-width: 1600px; /* Tăng mạnh max-width để viền hai bên không bị quá rộng */
     margin: 0 auto;
-    padding: 24px 16px;
+    padding: 24px 32px;
     display: grid;
-    grid-template-columns: 240px 1fr 300px;
-    gap: 24px;
+    grid-template-columns: 280px 1fr 340px; /* Tỉ lệ các cột rộng hơn */
+    gap: 32px;
     align-items: start;
 }
 
@@ -854,7 +864,7 @@ body.resident-page {
 @media (max-width: 768px) {
     .df-layout {
         grid-template-columns: 1fr;
-        padding: 12px;
+        padding: 12px 8px;
         gap: 16px;
     }
 

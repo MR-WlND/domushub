@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    PARKING LOTS PAGE â€” Clean Professional Design
    ============================================================ */
 
@@ -86,10 +86,7 @@
     height: 3px;
 }
 
-.pk-stat-card:hover {
-    box-shadow: 0 4px 16px rgba(15, 23, 42, .06);
-    transform: translateY(-1px);
-}
+
 
 .pk-stat-card__value {
     font-size: 1.75rem;
@@ -212,16 +209,12 @@ select.parking-form-control {
     padding: 0 20px;
     border: none;
     border-radius: 8px;
-    background: #4f46e5;
+    background: #00236f;
     color: #ffffff;
     font-size: 0.8125rem;
     font-weight: 700;
     cursor: pointer;
     transition: background .15s ease;
-}
-
-.pk-btn-submit:hover {
-    background: #4338ca;
 }
 
 /* â”€â”€â”€ Tabs â”€â”€â”€ */

@@ -1,3 +1,80 @@
+@php
+    $role = auth()->check() ? auth()->user()->role : null;
+@endphp
+
+@if($role === 'technician')
+<style>
+    @media (min-width: 769px) {
+        .technician-mobile-header { display: none !important; }
+    }
+    @media (max-width: 768px) {
+        .dashboard-topbar { display: none !important; }
+        .technician-mobile-header { display: grid !important; }
+    }
+</style>
+{{-- Mobile Header for Technician (Resident Design) --}}
+<header class="resident-header technician-mobile-header">
+    <div class="resident-header__brand-mobile-wrapper">
+        <button id="mobileMenuToggle" class="resident-header__mobile-toggle" onclick="openSidebar()" aria-label="Open menu" style="display:block;">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="resident-header__brand">
+            <a href="{{ portal_route('tickets.my-tasks') }}" class="resident-header__brand-link">DomusHub</a>
+        </div>
+    </div>
+
+    <nav class="resident-header__nav" id="residentNavMenu" aria-label="Technician navigation" style="display:none;">
+    </nav>
+
+    <div class="resident-header__actions">
+        {{-- Bell notification --}}
+        <div class="header-icon-wrapper" id="mobileNotificationBellWrapper" style="position: relative;">
+            <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span class="notification-badge" id="mobileNotificationBadge" style="display: none;">0</span>
+        </div>
+
+        <div class="resident-header__user-menu" id="mobile-user-menu-container">
+            <div class="resident-header__user-avatar-container">
+                @if(auth()->user()->avatar)
+                    <img src="{{ asset('storage/' . auth()->user()->avatar) }}"
+                        alt="Avatar" class="resident-header__user-avatar">
+                @else
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                        alt="Avatar" class="resident-header__user-avatar">
+                @endif
+            </div>
+            <div class="resident-header__dropdown">
+                <div class="dropdown-info">
+                    <strong>{{ auth()->user()->name }}</strong>
+                    <span style="font-size: 11px; color: #0b57d0; font-weight: 600;">KỸ THUẬT VIÊN</span>
+                </div>
+                <hr class="dropdown-divider">
+                <a href="{{ portal_route('profile.index') }}" class="dropdown-item">Hồ sơ</a>
+                <a href="#"
+                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                    class="dropdown-item dropdown-item--logout" style="color: #ef4444;">Đăng xuất</a>
+            </div>
+        </div>
+    </div>
+</header>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const mobileUserMenu = document.getElementById('mobile-user-menu-container');
+    if (mobileUserMenu) {
+        mobileUserMenu.addEventListener('click', function(e) {
+            e.stopPropagation();
+            this.classList.toggle('active');
+        });
+    }
+});
+</script>
+@endif
+
 <header class="dashboard-topbar">
     {{-- Hamburger (mobile only) --}}
     <button class="sidebar-toggle" id="sidebarToggle" onclick="openSidebar()" aria-label="Open menu">
@@ -39,137 +116,6 @@
             </div>
         </div>
 
-        <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const bellWrapper = document.getElementById('notificationBellWrapper');
-            const badge = document.getElementById('notificationBadge');
-            const dropdown = document.getElementById('notificationDropdown');
-            const listContainer = document.getElementById('notificationList');
-            const markAllBtn = document.getElementById('markAllReadBtn');
-            
-            let notificationsData = [];
-            
-            // Tải danh sách thông báo
-            function loadNotifications() {
-                fetch('{{ portal_route('notifications.index') }}')
-                    .then(res => res.json())
-                    .then(data => {
-                        // Cập nhật số thông báo chưa đọc
-                        const count = data.unread_count || 0;
-                        if (count > 0) {
-                            badge.textContent = count;
-                            badge.style.display = 'flex';
-                        } else {
-                            badge.style.display = 'none';
-                        }
-                        
-                        notificationsData = data.notifications || [];
-                        renderNotifications();
-                    })
-                    .catch(err => console.error('Error fetching notifications:', err));
-            }
-            
-            function renderNotifications() {
-                if (notificationsData.length === 0) {
-                    listContainer.innerHTML = '<div style="padding: 30px; text-align: center; color: #94a3b8; font-size: 13px;">Không có thông báo nào.</div>';
-                    return;
-                }
-                
-                listContainer.innerHTML = '';
-                notificationsData.forEach(notif => {
-                    const item = document.createElement('a');
-                    item.href = notif.url || '#';
-                    item.className = 'notification-item' + (!notif.read_at ? ' notification-item--unread' : '');
-                    item.setAttribute('data-id', notif.id);
-                    
-                    item.innerHTML = `
-                        <div class="notification-item__title">${notif.title}</div>
-                        <div style="font-size: 12px; color: #475569; margin-top: 2px;">${notif.message}</div>
-                        <span class="notification-item__time">${notif.created_at}</span>
-                    `;
-                    
-                    item.addEventListener('click', function (e) {
-                        if (!notif.read_at) {
-                            e.preventDefault();
-                            markAsRead(notif.id, notif.url);
-                        }
-                    });
-                    
-                    listContainer.appendChild(item);
-                });
-            }
-            
-            function markAsRead(id, redirectUrl) {
-                let url = '{{ portal_route('notifications.mark-read', 'ID_HERE') }}'.replace('ID_HERE', id);
-                fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    }
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        if (redirectUrl && redirectUrl !== '#') {
-                            window.location.href = redirectUrl;
-                        } else {
-                            loadNotifications();
-                        }
-                    }
-                })
-                .catch(err => {
-                    console.error('Error marking notification read:', err);
-                    if (redirectUrl && redirectUrl !== '#') {
-                        window.location.href = redirectUrl;
-                    }
-                });
-            }
-            
-            // Bật/Tắt dropdown khi click
-            bellWrapper.addEventListener('click', function (e) {
-                e.stopPropagation();
-                const isVisible = dropdown.style.display === 'block';
-                dropdown.style.display = isVisible ? 'none' : 'block';
-            });
-            
-            // Ngăn sự kiện click trong dropdown đóng menu
-            dropdown.addEventListener('click', function (e) {
-                e.stopPropagation();
-            });
-            
-            // Đóng dropdown khi click bên ngoài
-            document.addEventListener('click', function (e) {
-                if (!bellWrapper.contains(e.target)) {
-                    dropdown.style.display = 'none';
-                }
-            });
-            
-            // Đánh dấu tất cả đã đọc
-            markAllBtn.addEventListener('click', function (e) {
-                e.stopPropagation();
-                fetch('{{ portal_route('notifications.mark-read', 'all') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    }
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        loadNotifications();
-                    }
-                })
-                .catch(err => console.error('Error marking all notifications read:', err));
-            });
-            
-            // Tải lần đầu và chạy ngầm mỗi 60 giây
-            loadNotifications();
-            setInterval(loadNotifications, 60000);
-        });
-        </script>
-
         <div class="header-icon-wrapper">
             <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -205,3 +151,140 @@
         </a>
     </div>
 </header>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const bellWrapper = document.getElementById('notificationBellWrapper');
+    const badge = document.getElementById('notificationBadge');
+    const dropdown = document.getElementById('notificationDropdown');
+    const listContainer = document.getElementById('notificationList');
+    const markAllBtn = document.getElementById('markAllReadBtn');
+    
+    let notificationsData = [];
+    
+    // Tải danh sách thông báo
+    function loadNotifications() {
+        fetch('{{ portal_route('notifications.index') }}')
+            .then(res => res.json())
+            .then(data => {
+                const count = data.unread_count || 0;
+                if (count > 0) {
+                    badge.textContent = count;
+                    badge.style.display = 'flex';
+                } else {
+                    badge.style.display = 'none';
+                }
+                
+                notificationsData = data.notifications || [];
+                renderNotifications();
+            })
+            .catch(err => console.error('Error fetching notifications:', err));
+    }
+    
+    function renderNotifications() {
+        if (!listContainer) return;
+        if (notificationsData.length === 0) {
+            listContainer.innerHTML = '<div style="padding: 30px; text-align: center; color: #94a3b8; font-size: 13px;">Không có thông báo nào.</div>';
+            return;
+        }
+        
+        listContainer.innerHTML = '';
+        notificationsData.forEach(notif => {
+            const item = document.createElement('a');
+            item.href = notif.url || '#';
+            item.className = 'notification-item' + (!notif.read_at ? ' notification-item--unread' : '');
+            item.setAttribute('data-id', notif.id);
+            
+            item.innerHTML = `
+                <div class="notification-item__title">${notif.title}</div>
+                <div style="font-size: 12px; color: #475569; margin-top: 2px;">${notif.message}</div>
+                <span class="notification-item__time">${notif.created_at}</span>
+            `;
+            
+            item.addEventListener('click', function (e) {
+                if (!notif.read_at) {
+                    e.preventDefault();
+                    markAsRead(notif.id, notif.url);
+                }
+            });
+            
+            listContainer.appendChild(item);
+        });
+    }
+    
+    function markAsRead(id, redirectUrl) {
+        let url = '{{ portal_route('notifications.mark-read', 'ID_HERE') }}'.replace('ID_HERE', id);
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                if (redirectUrl && redirectUrl !== '#') {
+                    window.location.href = redirectUrl;
+                } else {
+                    loadNotifications();
+                }
+            }
+        })
+        .catch(err => {
+            console.error('Error marking notification read:', err);
+            if (redirectUrl && redirectUrl !== '#') {
+                window.location.href = redirectUrl;
+            }
+        });
+    }
+    
+    if (bellWrapper && dropdown) {
+        bellWrapper.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const isVisible = dropdown.style.display === 'block';
+            dropdown.style.display = isVisible ? 'none' : 'block';
+        });
+        
+        dropdown.addEventListener('click', function (e) {
+            e.stopPropagation();
+        });
+        
+        document.addEventListener('click', function (e) {
+            if (!bellWrapper.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+    }
+    
+    if (markAllBtn) {
+        markAllBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            fetch('{{ portal_route('notifications.mark-read', 'all') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    loadNotifications();
+                }
+            })
+            .catch(err => console.error('Error marking all notifications read:', err));
+        });
+    }
+    
+    loadNotifications();
+    setInterval(loadNotifications, 60000);
+
+    if (window.Echo && '{{ auth()->check() ? auth()->id() : "" }}') {
+        window.Echo.private('App.Models.User.{{ auth()->id() }}')
+            .notification((notification) => {
+                loadNotifications();
+            });
+    }
+});
+</script>

@@ -16,7 +16,7 @@
     @include('layouts.resident.partials.header')
 
     <div class="resident-layout">
-        <main class="resident-content">
+        <main class="resident-content @yield('content_class')">
             @yield('content')
         </main>
     </div>

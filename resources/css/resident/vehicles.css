@@ -1,9 +1,17 @@
 /* ============================================================
-   RESIDENT VEHICLES â€” Clean Professional Design
+   RESIDENT VEHICLES — Clean Professional Design
    ============================================================ */
 
-/* â”€â”€â”€ Shared â”€â”€â”€ */
-.rv { max-width: 1100px; margin: 0 auto; padding: 32px 24px 60px; }
+/* ─── Shared ─── */
+.resident-content:has(.rv) { padding: 0 !important; }
+.rv { 
+    max-width: 1440px; 
+    margin: 0 auto; 
+    padding: 30px 40px 60px;
+    box-sizing: border-box;
+    width: 100%;
+}
+@media (max-width: 768px) { .rv { padding: 20px 16px 40px; } }
 .rv__breadcrumb { font-size: 0.8rem; color: #64748b; margin-bottom: 6px; }
 .rv__breadcrumb a { color: #2563eb; text-decoration: none; }
 .rv__breadcrumb a:hover { text-decoration: underline; }
@@ -27,7 +35,8 @@
 
 /* â•â•â• INDEX PAGE â•â•â• */
 .rv-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
-.rv-stat { display: flex; align-items: center; gap: 14px; padding: 18px 22px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; }
+.rv-stat { display: flex; align-items: center; gap: 14px; padding: 18px 22px; background: #ffffff; border: 1px solid rgba(0,0,0,0.12); border-radius: 8px; transition: transform 0.2s, box-shadow 0.2s; }
+.rv-stat:hover { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); transform: translateY(-2px); }
 .rv-stat__icon { width: 48px; height: 48px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .rv-stat__icon--blue { background: #eff6ff; color: #2563eb; }
 .rv-stat__icon--green { background: #dcfce7; color: #16a34a; }
@@ -41,10 +50,10 @@
 .rv-list { display: flex; flex-direction: column; gap: 10px; }
 .rv-item {
     display: flex; align-items: center; gap: 14px; padding: 16px 18px;
-    background: #fff; border: 1.5px solid #e2e8f0; border-radius: 8px;
-    transition: all 0.15s; cursor: default; position: relative;
+    background: #ffffff; border: 1px solid rgba(0,0,0,0.12); border-radius: 8px;
+    transition: box-shadow 0.2s, transform 0.2s; cursor: pointer; position: relative;
 }
-.rv-item:hover { border-color: #cbd5e1; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.rv-item:hover { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); transform: translateY(-2px); }
 .rv-item--selected { background: #fafbff; }
 .rv-item__icon { width: 38px; height: 38px; border-radius: 8px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #475569; }
 .rv-item__thumb { width: 52px; height: 52px; border-radius: 8px; overflow: hidden; flex-shrink: 0; background: #f1f5f9; display: flex; align-items: center; justify-content: center; }
@@ -62,21 +71,22 @@
 .rv-item__qr:hover { background: #e2e8f0; }
 
 /* QR Panel */
-.rv-qr-panel { background: #f0f7ff; border: 1px solid #dbeafe; border-radius: 10px; padding: 32px; text-align: center; }
+.rv-qr-panel { background: #f0f7ff; border: 1px solid #dbeafe; border-radius: 8px; padding: 32px; text-align: center; }
 .rv-qr-panel__title { margin: 0 0 6px; font-size: 1.1rem; font-weight: 700; color: #1e3a5f; }
 .rv-qr-panel__desc { margin: 0 0 20px; font-size: 0.82rem; color: #64748b; }
 .rv-qr-panel__frame { background: #f8fafc; border-radius: 10px; padding: 24px; margin-bottom: 20px; display: inline-block; }
 .rv-qr-panel__frame img { width: 180px; height: 180px; object-fit: contain; }
-.rv-qr-panel__info { text-align: left; font-size: 0.82rem; margin-bottom: 20px; }
-.rv-qr-panel__row { display: flex; justify-content: space-between; padding: 6px 0; }
-.rv-qr-panel__row span:first-child { color: #64748b; }
-.rv-qr-panel__row span:last-child { font-weight: 700; color: #0f172a; }
+.rv-qr-panel__info { display: flex; justify-content: space-between; background: #ffffff; border-radius: 8px; padding: 14px 20px; margin-bottom: 20px; text-align: left; }
+.rv-qr-panel__col { display: flex; flex-direction: column; gap: 4px; }
+.rv-qr-panel__col--right { text-align: right; }
+.rv-qr-panel__label { font-size: 0.75rem; color: #64748b; }
+.rv-qr-panel__val { font-size: 0.85rem; font-weight: 700; color: #0f172a; }
 .rv-qr-panel__btn { display: block; width: 100%; padding: 12px; background: #00236F; color: #fff; border: none; border-radius: 8px; font-weight: 700; font-size: 0.88rem; cursor: pointer; text-decoration: none; text-align: center; transition: background 0.2s; }
 .rv-qr-panel__btn:hover { background: #001850; }
 
 /* â•â•â• CREATE PAGE â•â•â• */
 .rv-create { display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; align-items: start; }
-.rv-form-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 32px; }
+.rv-form-card { background: #ffffff; border: 1px solid rgba(0,0,0,0.12); border-radius: 8px; padding: 32px; }
 .rv-form { display: flex; flex-direction: column; gap: 20px; }
 .rv-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .rv-field label { display: block; font-size: 0.82rem; font-weight: 600; color: #475569; margin-bottom: 6px; }
@@ -119,14 +129,14 @@ select.rv-input {
 
 /* Sidebar cards */
 .rv-sidebar { display: flex; flex-direction: column; gap: 16px; }
-.rv-info-card { background: #eef4ff; border: 1px solid #dbeafe; border-radius: 10px; padding: 22px; }
+.rv-info-card { background: #eef4ff; border: 1px solid #dbeafe; border-radius: 8px; padding: 22px; }
 .rv-info-card__title { margin: 0 0 12px; font-size: 0.92rem; font-weight: 700; color: #1e3a5f; display: flex; align-items: center; gap: 8px; }
 .rv-info-card__list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
 .rv-info-card__list li { font-size: 0.82rem; color: #334155; display: flex; align-items: flex-start; gap: 6px; line-height: 1.5; }
 .rv-info-card__list li::before { content: '\2713'; color: #2563eb; font-weight: 700; flex-shrink: 0; }
 .rv-info-card__note { margin: 12px 0 0; font-size: 0.72rem; color: #64748b; font-style: italic; }
 
-.rv-steps-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 22px; }
+.rv-steps-card { background: #ffffff; border: 1px solid rgba(0,0,0,0.12); border-radius: 8px; padding: 22px; }
 .rv-steps-card__title { margin: 0 0 16px; font-size: 0.92rem; font-weight: 700; color: #1e3a5f; }
 .rv-steps { display: flex; flex-direction: column; gap: 14px; }
 .rv-step { display: flex; gap: 12px; align-items: flex-start; }
@@ -136,9 +146,26 @@ select.rv-input {
 .rv-step__label { font-weight: 700; color: #0f172a; font-size: 0.85rem; display: block; }
 .rv-step__desc { font-size: 0.78rem; color: #64748b; }
 
-/* Responsive */
 @media (max-width: 768px) {
-    .rv-content, .rv-create, .rv-stats, .rv-row, .rv-uploads { grid-template-columns: 1fr; }
+    .rv { padding: 0; }
+    .rv-create, .rv-row, .rv-uploads { grid-template-columns: 1fr; }
     .rv-header { flex-direction: column; align-items: stretch; }
+    .rv-btn { justify-content: center; }
+    
+    /* Stats side by side */
+    .rv-stats { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .rv-stat { flex-direction: column; align-items: flex-start; padding: 16px; gap: 10px; }
+    .rv-stat__icon { width: 36px; height: 36px; }
+    .rv-stat__icon svg { width: 18px; height: 18px; }
+    
+    /* Content: QR first, then list */
+    .rv-content { display: flex; flex-direction: column-reverse; gap: 24px; align-items: stretch; }
+    
+    .rv-stat, .rv-item, .rv-qr-panel, .rv-form-card, .rv-info-card, .rv-steps-card {
+        border-radius: 12px;
+    }
+    
+    .rv-form-card { padding: 20px; }
+    .rv-info-card, .rv-steps-card { padding: 16px; }
 }
 

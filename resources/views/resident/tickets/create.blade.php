@@ -8,20 +8,20 @@
         .tk-page-wrapper {
             display: flex;
             gap: 24px;
-            padding: 24px;
-            background: #f8fafc;
+            background: transparent;
             min-height: 100vh;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', system-ui, 'Segoe UI', sans-serif;
             align-items: flex-start;
         }
         
         @media (max-width: 992px) {
-            .resident-header { display: none !important; }
-            .resident-content { padding: 0 !important; }
-            .mob-header { display: flex !important; }
-            .tk-page-wrapper {
+            .tk-layout-row {
                 flex-direction: column;
-                padding: 16px;
+                gap: 16px !important;
+                align-items: stretch !important;
+            }
+            .tk-main-col {
+                width: 100% !important;
             }
             .tk-sidebar {
                 width: 100% !important;
@@ -75,13 +75,13 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.08);
         }
         .tk-page-header h1 {
-            font-size: 20px;
+            font-size: 24px;
             font-weight: 700;
-            color: #1e293b;
-            margin: 0 0 4px 0;
+            color: #00236f;
+            margin: 0 0 6px 0;
         }
         .tk-page-header p {
-            font-size: 13px;
+            font-size: 14px;
             color: #64748b;
             margin: 0;
         }
@@ -110,14 +110,14 @@
         }
         @media (max-width: 640px) {
             .tk-page-wrapper {
-                padding: 12px;
+                padding: 0;
             }
             .tk-create-card {
                 padding: 16px;
                 border-radius: 8px;
             }
             .form-grid { 
-                grid-template-columns: 1fr; 
+                grid-template-columns: 1fr 1fr; /* Keep it side by side like template */
                 gap: 16px;
                 margin-bottom: 16px;
             }
@@ -274,13 +274,23 @@
             border: 1px solid #e2e8f0;
             border-radius: 12px;
             padding: 20px;
-            margin-bottom: 16px;
+            margin-bottom: 10px;
+        }
+        .history-item:last-child {
+            margin-bottom: 0;
         }
         .history-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 16px;
+            gap: 12px;
+        }
+        @media (max-width: 640px) {
+            .history-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
         }
         .history-info h4 {
             margin: 0 0 4px 0;
@@ -299,6 +309,7 @@
             font-weight: 600;
             background: #eff6ff;
             color: #2563eb;
+            white-space: nowrap;
         }
         .history-status.completed {
             background: #ecfdf5;
@@ -423,52 +434,6 @@
 @endpush
 
 @section('content')
-    <!-- Mobile Menu Drawer (Matches Master Header 100%) -->
-    <div id="mobMenuOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.45); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); z-index:999;"></div>
-    <div id="mobMenuDrawer" style="position:fixed; top:0; left:-300px; width:270px; height:100%; background:#ffffff; z-index:1000; transition:left 0.28s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 10px 0 30px rgba(0, 35, 111, 0.15); display:flex; flex-direction:column;">
-        <div style="padding: 18px 20px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 16px;">
-            <button id="mobMenuClose" style="background:none; border:none; font-size:20px; color:#1e293b; cursor:pointer; padding:0; display:flex;"><i class="fa-solid fa-bars"></i></button>
-            <strong style="color:#00236f; font-size:1.15rem; font-weight:800; letter-spacing:-0.01em;">DomusHub</strong>
-        </div>
-        <div style="padding: 16px 12px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto;">
-            <a href="{{ route('resident.dashboard') }}" class="mob-drawer-item {{ request()->routeIs('resident.dashboard') ? 'mob-drawer-item--active' : '' }}">Trang chủ</a>
-            <a href="{{ route('resident.posts.index') }}" class="mob-drawer-item {{ request()->routeIs('resident.posts.*') ? 'mob-drawer-item--active' : '' }}">Bản tin</a>
-            <a href="{{ route('resident.members.index') }}" class="mob-drawer-item {{ request()->routeIs('resident.members.*') ? 'mob-drawer-item--active' : '' }}">Thành viên</a>
-            
-            <div class="mob-drawer-dropdown">
-                <button type="button" class="mob-drawer-item mob-drawer-trigger {{ (request()->routeIs('resident.vehicles.*') || request()->routeIs('resident.invoices.*') || request()->routeIs('resident.visitors.*') || request()->routeIs('resident.facilities.*') || request()->routeIs('resident.temporary-registrations.*')) ? 'mob-drawer-item--active' : '' }}" onclick="this.nextElementSibling.classList.toggle('show'); this.querySelector('.chevron').classList.toggle('rotate');">
-                    <span>Dịch vụ</span>
-                    <i class="fa-solid fa-chevron-down chevron" style="font-size: 0.75rem; transition: transform 0.2s ease;"></i>
-                </button>
-                <div class="mob-drawer-sub" style="display: none; flex-direction: column; gap: 2px; padding-left: 12px; margin-top: 4px; border-left: 2px solid #e2e8f0;">
-                    <a href="{{ route('resident.temporary-registrations.index') }}" class="mob-drawer-sub-item {{ request()->routeIs('resident.temporary-registrations.*') ? 'mob-drawer-item--active' : '' }}">Tạm trú / Tạm vắng</a>
-                    <a href="{{ route('resident.vehicles.index') }}" class="mob-drawer-sub-item {{ request()->routeIs('resident.vehicles.*') ? 'mob-drawer-item--active' : '' }}">Phương tiện</a>
-                    <a href="{{ route('resident.facilities.index') }}" class="mob-drawer-sub-item {{ request()->routeIs('resident.facilities.*') || request()->routeIs('resident.facility-bookings.*') ? 'mob-drawer-item--active' : '' }}">Tiện ích</a>
-                    <a href="{{ route('resident.visitors.index') }}" class="mob-drawer-sub-item {{ request()->routeIs('resident.visitors.*') ? 'mob-drawer-item--active' : '' }}">Khách ghé thăm</a>
-                    <a href="{{ route('resident.invoices.index') }}" class="mob-drawer-sub-item {{ request()->routeIs('resident.invoices.*') ? 'mob-drawer-item--active' : '' }}">Thanh toán hóa đơn</a>
-                </div>
-            </div>
-
-            <a href="{{ route('resident.tickets.index') }}" class="mob-drawer-item {{ request()->routeIs('resident.tickets.*') ? 'mob-drawer-item--active' : '' }}">Phản Ánh</a>
-            <a href="{{ route('resident.contact') }}" class="mob-drawer-item {{ request()->routeIs('resident.contact') ? 'mob-drawer-item--active' : '' }}">Liên hệ</a>
-            
-            <hr style="border:0; border-bottom:1px solid #f1f5f9; margin: 8px 4px;">
-            <a href="#" onclick="event.preventDefault(); document.getElementById('resident-logout-form').submit();" class="mob-drawer-item mob-drawer-item--logout">Đăng xuất</a>
-        </div>
-    </div>
-    
-    <div class="mob-header" style="display: none; align-items: center; justify-content: space-between; padding: 16px; background: #fff; position: sticky; top: 0; z-index: 90; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <a href="{{ route('resident.tickets.index') }}" style="color:#1e293b; font-size:18px; text-decoration:none;" title="Quay lại"><i class="fa-solid fa-arrow-left"></i></a>
-            <button id="mobMenuOpenBtn" style="background:none; border:none; font-size:20px; color:#1e293b; cursor:pointer;"><i class="fa-solid fa-bars"></i></button>
-        </div>
-        <div style="font-size:16px; font-weight:700; color:#1e293b;">Gửi phản ánh</div>
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <button style="background:none; border:none; font-size:20px; color:#1e293b; cursor:pointer;"><i class="fa-regular fa-bell"></i></button>
-            <img src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' }}" alt="Avatar" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;">
-        </div>
-    </div>
-
 <div class="tk-page-wrapper" style="flex-direction: column;">
     
     <div class="tk-page-header">
@@ -477,6 +442,20 @@
             <p>Gửi yêu cầu bảo trì, phản ánh dịch vụ hoặc kiến nghị ban quản lý.</p>
         </div>
     </div>
+
+    @if(session('error'))
+        <div style="background: #fee2e2; color: #991b1b; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div style="background: #fee2e2; color: #991b1b; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+            <ul style="margin: 0; padding-left: 20px;">
+                @foreach($errors->all() as $error) <li>{{ $error }}</li> @endforeach
+            </ul>
+        </div>
+    @endif
 
     <div class="tk-layout-row" style="display: flex; gap: 24px; align-items: flex-start; width: 100%;">
         <!-- CỘT TRÁI (FORM + LỊCH SỬ) -->
@@ -571,7 +550,8 @@
 
             <h3 class="history-title">Lịch sử yêu cầu</h3>
             @php
-                $recentTickets = \App\Models\Ticket::where('sender_id', auth()->id())->latest()->take(2)->get();
+                $totalTicketsCount = \App\Models\Ticket::where('sender_id', auth()->id())->count();
+                $recentTickets = \App\Models\Ticket::where('sender_id', auth()->id())->latest()->take(3)->get();
             @endphp
             
             @forelse($recentTickets as $ticket)
@@ -614,6 +594,14 @@
                     Chưa có phản ánh nào gần đây.
                 </div>
             @endforelse
+            
+            @if($totalTicketsCount > 3)
+                <div style="text-align: center; margin-top: 4px;">
+                    <a href="{{ route('resident.tickets.index') }}" style="display: inline-flex; align-items: center; justify-content: center; padding: 10px 20px; font-size: 14px; font-weight: 600; color: #1e3a8a; background: #eff6ff; border-radius: 20px; text-decoration: none; transition: background 0.2s;">
+                        Xem thêm lịch sử ({{ $totalTicketsCount - 3 }}) <i class="fa-solid fa-arrow-right" style="margin-left: 6px; font-size: 12px;"></i>
+                    </a>
+                </div>
+            @endif
             
         </div>
 

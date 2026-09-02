@@ -479,6 +479,16 @@
         right: 16px;
         transform-origin: bottom center;
     }
+    
+    /* When chatbot is open, hide bottom nav and maximize chat window to prevent keyboard push-up issues */
+    body.chatbot-is-open .mobile-bottom-nav {
+        display: none !important;
+    }
+    body.chatbot-is-open .chatbot-window {
+        bottom: 16px !important;
+        height: calc(100dvh - 90px) !important;
+        max-height: 550px !important;
+    }
 }
 </style>
 
@@ -536,10 +546,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const rect = widget.getBoundingClientRect();
         offsetX = clientX - rect.left;
         offsetY = clientY - rect.top;
-        
-        widget.style.transition = 'none';
-        widget.style.bottom = 'auto';
-        widget.style.right = 'auto';
+        // KHÔNG unset bottom/right ở đây để tránh lỗi giật hình khi chỉ click
     }
 
     function doDrag(clientX, clientY, e) {
@@ -553,6 +560,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const rect = widget.getBoundingClientRect();
             if (Math.abs(newX - rect.left) + Math.abs(newY - rect.top) > 5) {
                 hasMovedBubble = true;
+                
+                // Khi bắt đầu kéo thực sự, mới chuyển sang định vị bằng left/top
+                widget.style.left = rect.left + 'px';
+                widget.style.top = rect.top + 'px';
+                widget.style.transition = 'none';
+                widget.style.bottom = 'auto';
+                widget.style.right = 'auto';
             }
         }
         
@@ -570,6 +584,10 @@ document.addEventListener('DOMContentLoaded', function() {
     function endDrag() {
         if (!isDraggingBubble || !widget) return;
         isDraggingBubble = false;
+        
+        if (!hasMovedBubble) {
+            return; // Don't snap or animate if it was just a click
+        }
         
         widget.style.transition = 'left 0.3s ease-out, top 0.3s ease-out';
         
@@ -621,6 +639,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(function() {
                 if (win) {
                     win.classList.remove('hidden');
+                    document.body.classList.add('chatbot-is-open');
                     sessionStorage.setItem('chatbot_open', 'true');
                     input.focus();
                     loadChatHistory();
@@ -633,12 +652,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const isChatOpen = sessionStorage.getItem('chatbot_open') === 'true';
     if (isChatOpen) {
         win.classList.remove('hidden');
+        document.body.classList.add('chatbot-is-open');
         bubble.classList.add('chatbot-bubble--hidden');
         loadChatHistory();
     }
 
     function closeChatWindow() {
         win.classList.add('hidden');
+        document.body.classList.remove('chatbot-is-open');
         sessionStorage.setItem('chatbot_open', 'false');
         // Bubble hiện lại sau khi cửa sổ đóng
         setTimeout(function() {
@@ -794,13 +815,19 @@ document.addEventListener('DOMContentLoaded', function() {
         typingIndicator.classList.remove('hidden');
         scrollToBottom();
 
+        // Lấy Socket ID nếu Echo đã sẵn sàng
+        let headers = {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        };
+        if (window.Echo && window.Echo.socketId()) {
+            headers['X-Socket-ID'] = window.Echo.socketId();
+        }
+
         // Gửi request API
         fetch("{{ route('resident.chatbot.message') }}", {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
+            headers: headers,
             body: JSON.stringify({ message: message })
         })
         .then(response => {
@@ -873,6 +900,25 @@ document.addEventListener('DOMContentLoaded', function() {
         
         messageDiv.appendChild(bubbleDiv);
         messagesContainer.appendChild(messageDiv);
+    }
+
+    // Lắng nghe sự kiện Real-time qua Laravel Echo
+    if (window.Echo && '{{ auth()->id() }}') {
+        window.Echo.private(`chatbot.{{ auth()->id() }}`)
+            .listen('ChatbotMessageSent', (e) => {
+                // Nếu tin nhắn được nhận qua WebSockets, append vào chat
+                // Ẩn hiệu ứng gõ nếu có
+                typingIndicator.classList.add('hidden');
+                
+                const sender = e.message.role === 'model' ? 'bot' : 'user';
+                appendMessage(sender, e.message.message);
+                scrollToBottom();
+
+                // Nếu cửa sổ chat đang đóng, tự động mở lên
+                if (win.classList.contains('hidden')) {
+                    bubble.click();
+                }
+            });
     }
 });
 </script>

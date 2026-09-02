@@ -24,10 +24,9 @@
                     @foreach($residents as $user)
                     @php
                         $apt = $user->apartment;
-                        $block = $apt?->floor?->block;
-                        $floor = $apt?->floor;
-                        $residentRecord = $user->residents->firstWhere('apartment_id', $user->apartment_id);
-                        $relationship = $residentRecord?->relationship;
+                        $block = $user->block;
+                        $floor = $user->floor;
+                        $relationship = $user->relationship;
                     @endphp
                     <tr>
                         <td>
@@ -56,7 +55,7 @@
                         <td>
                             @if($apt)
                                 <a href="{{ route('admin.apartments.show', $apt->id) }}" style="text-decoration: none;">
-                                    <span class="res-apt-number" style="border-bottom: 1px dashed rgba(11, 87, 208, 0.6); padding-bottom: 2px; transition: all 0.2s ease;">{{ $apt->apartment_number }}</span>
+                                    <span class="res-apt-number" style="transition: all 0.2s ease;">{{ $apt->apartment_number }}</span>
                                 </a>
                             @else
                                 <span class="res-apt-number">N/A</span>
@@ -90,15 +89,16 @@
                             </div>
                         </td>
                         <td>
-                            @php $status = $user->status ?? 'inactive'; @endphp
-                            <span class="res-status res-status--{{ $status }}">
-                                @switch($status)
-                                    @case('active') Hoạt động @break
-                                    @case('inactive') Ngừng hoạt động @break
-                                    @case('banned') Bị khóa @break
-                                    @default {{ $status }}
-                                @endswitch
-                            </span>
+                            @if($user->has_account)
+                                <span class="res-status res-status--has-account">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Đã có tài khoản
+                                </span>
+                            @else
+                                <span class="res-status res-status--inactive">Chưa có tài khoản</span>
+                            @endif
                         </td>
                         <td>
                             <span class="res-date">{{ $user->created_at?->format('d/m/Y') }}</span>
@@ -122,5 +122,13 @@
 .res-user-cell a:hover .res-user-avatar {
     box-shadow: 0 0 0 2px #0b57d0;
     transition: all 0.2s ease;
+}
+.res-status--has-account {
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
+}
+.res-status--has-account::before {
+    display: none;
 }
 </style>

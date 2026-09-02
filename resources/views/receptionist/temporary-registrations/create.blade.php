@@ -205,9 +205,22 @@
         
     }
 
+    .cccd-capture-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+
     @media (max-width: 768px) {
         .grid-cols-2, .grid-cols-3 {
             grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        .radio-group {
+            flex-direction: column;
+            gap: 12px;
+        }
+        .cccd-capture-group {
+            grid-template-columns: 1fr;
+        }
+        .tr-card {
+            padding: 16px;
         }
     }
 
@@ -387,9 +400,25 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label">Giấy tờ đính kèm (CCCD, Hợp đồng...)</label>
-                <div class="file-upload-wrapper">
-                    <input type="file" name="attachments[]" accept=".jpg,.jpeg,.png,.pdf" class="file-input" id="admin-file-input" multiple>
+                <label class="form-label">Ảnh Căn cước công dân (Mặt trước & mặt sau)</label>
+                <div class="cccd-capture-group">
+                    <button type="button" onclick="openGlobalCameraModal('CCCD_Mat_Truoc')" style="background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 8px; padding: 24px 12px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s; color: #00236f; width: 100%; box-sizing: border-box;" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#93c5fd';" onmouseout="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1';">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 4px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                        <span style="font-weight: 600; font-size: 14px;">Chụp mặt trước</span>
+                    </button>
+                    <button type="button" onclick="openGlobalCameraModal('CCCD_Mat_Sau')" style="background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 8px; padding: 24px 12px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s; color: #00236f; width: 100%; box-sizing: border-box;" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#93c5fd';" onmouseout="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1';">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 4px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                        <span style="font-weight: 600; font-size: 14px;">Chụp mặt sau</span>
+                    </button>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 8px;">
+                    <div style="font-size: 13px; color: #64748b; font-weight: 500; white-space: nowrap;">Hoặc tải lên từ máy:</div>
+                    <label for="receptionist-file-input" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 16px; cursor: pointer; color: #334155; font-weight: 500; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#94a3b8';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#cbd5e1';">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/></svg>
+                        Chọn tệp
+                    </label>
+                    <span id="receptionist-file-name-display" style="font-size: 14px; color: #64748b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px;">Không có tệp nào được chọn</span>
+                    <input type="file" name="attachments[]" accept="image/*, application/pdf" class="file-input" id="receptionist-file-input" multiple style="display: none;" onchange="document.getElementById('receptionist-file-name-display').textContent = this.files.length > 0 ? (this.files.length + ' tệp được chọn') : 'Không có tệp nào được chọn';">
                 </div>
                 <div class="form-hint">Định dạng hỗ trợ: JPG, PNG, PDF. Kích thước tối đa 10MB/file. Có thể chọn nhiều file.</div>
                 
@@ -404,6 +433,8 @@
         </form>
     </div>
 </div>
+
+@include('components.webrtc-camera')
 
 @push('scripts')
 <script>
@@ -511,7 +542,7 @@
         toggleSections();
 
         // Image Preview and Multiple Files Logic for Admin
-        const adminFileInput = document.getElementById('admin-file-input');
+        const adminFileInput = document.getElementById('receptionist-file-input');
         const adminPreviewContainer = document.getElementById('admin-file-preview-container');
         let adminSelectedFiles = new DataTransfer();
 
@@ -524,6 +555,14 @@
                 });
                 
                 adminFileInput.files = adminSelectedFiles.files;
+                document.getElementById('receptionist-file-name-display').textContent = adminSelectedFiles.files.length > 0 ? (adminSelectedFiles.files.length + ' tệp được chọn') : 'Không có tệp nào được chọn';
+                renderAdminPreviews();
+            });
+
+            window.addEventListener('global-camera-captured', function(e) {
+                adminSelectedFiles.items.add(e.detail.file);
+                adminFileInput.files = adminSelectedFiles.files;
+                document.getElementById('receptionist-file-name-display').textContent = adminSelectedFiles.files.length > 0 ? (adminSelectedFiles.files.length + ' tệp được chọn') : 'Không có tệp nào được chọn';
                 renderAdminPreviews();
             });
             
@@ -534,6 +573,7 @@
                 files.forEach(f => dt.items.add(f));
                 adminSelectedFiles = dt;
                 adminFileInput.files = adminSelectedFiles.files;
+                document.getElementById('receptionist-file-name-display').textContent = adminSelectedFiles.files.length > 0 ? (adminSelectedFiles.files.length + ' tệp được chọn') : 'Không có tệp nào được chọn';
                 renderAdminPreviews();
             }
 
@@ -584,6 +624,27 @@
                             img.style.height = '100%';
                             img.style.objectFit = 'cover';
                             wrapper.appendChild(img);
+                            
+                            let labelText = '';
+                            if (file.name.startsWith('CCCD_Mat_Truoc')) labelText = 'Mặt trước';
+                            else if (file.name.startsWith('CCCD_Mat_Sau')) labelText = 'Mặt sau';
+                            
+                            if (labelText) {
+                                const label = document.createElement('div');
+                                label.textContent = labelText;
+                                label.style.position = 'absolute';
+                                label.style.bottom = '0';
+                                label.style.left = '0';
+                                label.style.right = '0';
+                                label.style.background = 'rgba(0, 35, 111, 0.75)';
+                                label.style.color = '#fff';
+                                label.style.fontSize = '11px';
+                                label.style.fontWeight = '600';
+                                label.style.textAlign = 'center';
+                                label.style.padding = '4px 0';
+                                wrapper.appendChild(label);
+                            }
+                            
                             wrapper.appendChild(removeBtn);
                         }
                         reader.readAsDataURL(file);

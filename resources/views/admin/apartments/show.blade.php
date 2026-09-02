@@ -310,10 +310,37 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr>
-                                    <td colspan="5" style="text-align: center; color: #64748b; padding: 24px;">Chưa có thành viên nào khác.</td>
-                                </tr>
+                                @if($apartment->declaredMembers->isEmpty())
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; color: #64748b; padding: 24px;">Chưa có thành viên nào khác.</td>
+                                    </tr>
+                                @endif
                             @endforelse
+
+                            @foreach($apartment->declaredMembers as $member)
+                                <tr>
+                                    <td>
+                                        <div class="td-profile">
+                                            <div class="td-avatar" style="background: #94a3b8; color: white;">
+                                                {{ mb_strtoupper(mb_substr($member->name ?? '?', 0, 2)) }}
+                                            </div>
+                                            <div class="td-name-info">
+                                                <div class="td-name">{{ $member->name }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>—</td>
+                                    <td>
+                                        <span class="badge-status-pill" style="background: #f1f5f9; color: #64748b;">{{ $member->relationship ?? 'Khai báo' }}</span>
+                                    </td>
+                                    <td>{{ $member->created_at ? \Carbon\Carbon::parse($member->created_at)->format('d/m/Y') : '--' }}</td>
+                                    <td style="text-align: right;">
+                                        <button type="button" onclick="alert('Chức năng đang phát triển');" style="color: #ef4444; background: none; border: none; font-weight: 600; font-size: 13px; cursor: pointer; padding: 6px 10px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#fee2e2'" onmouseout="this.style.backgroundColor='transparent'">
+                                            Gỡ bỏ
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -407,7 +434,7 @@
                                 <th>Tổng số tiền</th>
                                 <th>Trạng thái</th>
                                 <th>Ngày thanh toán</th>
-                                <th style="text-align: center;">Chứng từ</th>
+                                <th style="text-align: right;">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -423,9 +450,13 @@
                                         @endif
                                     </td>
                                     <td>{{ $invoice->paid_at ? \Carbon\Carbon::parse($invoice->paid_at)->format('d/m/Y') : '--' }}</td>
-                                    <td style="text-align: center;">
-                                        <a href="#" style="color: #0b57d0;">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                    <td style="text-align: right;">
+                                        <a href="{{ portal_route('invoices.show', $invoice->id) }}" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 6px; background-color: #f1f5f9; color: #0b57d0; font-weight: 600; font-size: 13px; text-decoration: none; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#e2e8f0'" onmouseout="this.style.backgroundColor='#f1f5f9'">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                            Chi tiết
                                         </a>
                                     </td>
                                 </tr>

@@ -8,37 +8,27 @@
     {{-- Header --}}
     <div class="apt-inv-header">
         <a href="{{ portal_route('invoices.index') }}" class="btn-back">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
             Quay lại danh sách
         </a>
-        <div class="apt-inv-header__content" style="margin-top:12px;">
+        <div class="apt-inv-header__content">
             <div style="display:flex; justify-content:space-between; align-items:flex-end; width:100%; gap:16px; flex-wrap:wrap;">
                 <div>
-                    <p class="apt-inv-eyebrow">Tài chính <span class="dot">·</span> Hóa đơn căn hộ</p>
                     @php
                         $blockName = optional(optional($apartment->floor)->block)->name;
                         $floorName = optional($apartment->floor)->name;
                     @endphp
-                    <h1 class="apt-inv-title" style="margin:4px 0 0 0;">
-                        Căn {{ $apartment->apartment_number }}
-                        @if($blockName)
-                            <span class="apt-inv-block-tag">{{ \Illuminate\Support\Str::startsWith($blockName, 'Tòa') ? $blockName : 'Tòa ' . $blockName }}</span>
-                        @endif
+                    <h1 class="apt-inv-title">
+                        Căn {{ $apartment->apartment_number }}@if($blockName) - {{ \Illuminate\Support\Str::startsWith($blockName, 'Tòa') ? $blockName : 'Tòa ' . $blockName }}@endif
                     </h1>
-                    <p class="apt-inv-sub" style="margin-top:6px;">
+                    @if($floorName || $apartment->owner_name)
+                    <p class="apt-inv-sub">
                         @if($floorName)
                             {{ \Illuminate\Support\Str::startsWith($floorName, 'Tầng') ? $floorName : 'Tầng ' . $floorName }} <span class="dot">·</span>
                         @endif
                         {{ $apartment->owner_name }}
                     </p>
-                </div>
-
-                <div>
-                    <a href="{{ portal_route('manual-payment.index', ['apartment_id' => $apartment->id]) }}" 
-                       class="apt-inv-btn" 
-                       style="background:#16a34a; color:#fff; padding:10px 22px; font-size:14px; font-weight:700; border-radius:8px; display:inline-flex; align-items:center; gap:8px; text-decoration:none; box-shadow:0 2px 6px rgba(22,163,74,0.3); white-space:nowrap;">
-                        <i class="fas fa-hand-holding-usd" style="font-size:16px;"></i> Thu tiền
-                    </a>
+                    @endif
                 </div>
             </div>
         </div>
@@ -219,14 +209,11 @@
 
 /* Header */
 .apt-inv-header { margin-bottom: 24px; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
-.btn-back { display: inline-flex; align-items: center; gap: 8px; color: #2563eb; font-weight: 500; font-size: 1rem; text-decoration: none; }
-.btn-back:hover { color: #1d4ed8; text-decoration: underline; }
-.apt-inv-header__content { display: flex; flex-direction: column; gap: 8px; }
-.apt-inv-eyebrow { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin: 0; font-weight: 600; }
-.apt-inv-eyebrow .dot { margin: 0 4px; font-weight: 400; color: #cbd5e1; }
-.apt-inv-title { font-size: 2.6rem; font-weight: 900; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 16px; letter-spacing: -0.02em; line-height: 1; }
-.apt-inv-block-tag { font-size: 1rem; font-weight: 600; padding: 6px 16px; background: #eff6ff; color: #2563eb; border-radius: 20px; letter-spacing: normal; line-height: 1.2; }
-.apt-inv-sub { font-size: 1.1rem; color: #64748b; margin: 0; font-weight: 400; }
+.btn-back { display: inline-flex; align-items: center; gap: 6px; color: #00236f; font-weight: 600; font-size: 13.5px; text-decoration: none; transition: color 0.15s; margin-bottom: 4px; }
+.btn-back:hover { color: #0b57d0; text-decoration: underline; }
+.apt-inv-header__content { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+.apt-inv-title { font-size: 26px; font-weight: 800; color: #00236f; margin: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; letter-spacing: -0.02em; line-height: 1.2; }
+.apt-inv-sub { font-size: 13.5px; color: #64748b; margin: 4px 0 0 0; font-weight: 400; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
 .apt-inv-sub .dot { margin: 0 4px; font-weight: 700; color: #cbd5e1; }
 
 /* Alert */

@@ -1,11 +1,11 @@
-﻿/* ============================================================
+/* ============================================================
    RESIDENT VEHICLES â€” Unified Design System
    Prefix: vp- (Vehicle Page)
    ============================================================ */
 
 /* â”€â”€â”€ Layout â”€â”€â”€ */
 .vp {
-    max-width: 1080px;
+    max-width: 1280px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;

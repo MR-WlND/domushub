@@ -81,12 +81,12 @@
                                         ? 'parking_fee_' . $price->vehicle_type
                                         : $price->type;
                                 @endphp
-                                <label class="batch-price-item">
+                                <div class="batch-price-item" style="cursor: default;">
                                     <input type="checkbox" name="types[]" value="{{ $checkboxValue }}"
                                         data-price="{{ $price->type === 'management_fee' ? 0 : $price->unit_price }}"
-                                        {{ old('types') && in_array($checkboxValue, old('types')) ? 'checked' : '' }}
+                                        checked
                                         class="batch-check"
-                                        onchange="updateEstimatedCost()">
+                                        style="display: none;">
                                     <div class="batch-price-info">
                                         <div>
                                             <div class="batch-price-name">{{ $price->name }}</div>
@@ -98,21 +98,21 @@
                                         </div>
                                     </div>
                                     <span class="batch-price-active">Hoạt động</span>
-                                </label>
+                                </div>
                             @endforeach
 
                             {{-- Hiển thị các loại phí cơ bản chưa có cấu hình giá --}}
                             @foreach ($baseTypes as $type => $label)
                                 @if (!in_array($type, $activeTypesLookup))
-                                <label class="batch-price-item batch-price-item--disabled">
-                                    <input type="checkbox" disabled class="batch-check">
+                                <div class="batch-price-item batch-price-item--disabled" style="cursor: default;">
+                                    <input type="checkbox" disabled class="batch-check" style="display: none;">
                                     <div class="batch-price-info">
                                         <div>
                                             <div class="batch-price-name">{{ $label }}</div>
                                             <div class="batch-price-na">Chưa có đơn giá</div>
                                         </div>
                                     </div>
-                                </label>
+                                </div>
                                 @endif
                             @endforeach
                         </div>

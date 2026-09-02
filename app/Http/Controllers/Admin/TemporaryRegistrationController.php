@@ -130,6 +130,17 @@ class TemporaryRegistrationController extends Controller
                 throw new \Exception("Vui lòng chọn Cư dân cho đơn Tạm vắng.");
             }
             
+            // Kiểm tra nếu cư dân đã là thành viên trong căn hộ
+            if (!empty($data['user_id'])) {
+                $alreadyActive = Resident::where('user_id', $data['user_id'])
+                    ->where('apartment_id', $request->apartment_id)
+                    ->whereNull('deleted_at')
+                    ->exists();
+                if ($alreadyActive && $request->type === 'residence') {
+                    throw new \Exception("Cư dân này đã được đăng ký trong căn hộ.");
+                }
+            }
+
             // Nếu admin tạo, trạng thái mặc định là approved
             $data['status'] = 'approved';
             $data['approved_by'] = Auth::id();
@@ -146,6 +157,11 @@ class TemporaryRegistrationController extends Controller
 
             // Đồng bộ trạng thái vào Resident
             $this->syncResidentStatus($registration);
+
+            // Cập nhật card_status
+            if ($registration->type === 'residence' && $registration->status === 'approved') {
+                $registration->update(['card_status' => 'pending']);
+            }
 
             DB::commit();
             return redirect(portal_route('temporary-registrations.index'))
@@ -250,9 +266,12 @@ class TemporaryRegistrationController extends Controller
                 'status' => 'approved',
                 'approved_by' => Auth::id(),
                 'rejection_reason' => null,
+                'card_status' => $temporaryRegistration->type === 'residence' ? 'pending' : 'none',
             ]);
 
             $this->syncResidentStatus($temporaryRegistration);
+
+
 
             if ($temporaryRegistration->user) {
                 $temporaryRegistration->user->notify(new \App\Notifications\TemporaryRegistrationStatusNotification($temporaryRegistration));
@@ -303,6 +322,19 @@ class TemporaryRegistrationController extends Controller
 
         return redirect(portal_route('temporary-registrations.index'))
             ->with('success', 'Đã xóa đơn đăng ký.');
+    }
+
+    public function extend(Request $request, TemporaryRegistration $temporaryRegistration)
+    {
+        $request->validate([
+            'end_date' => 'required|date',
+        ]);
+
+        $temporaryRegistration->update([
+            'end_date' => $request->end_date,
+        ]);
+
+        return redirect()->back()->with('success', 'Đã gia hạn thời gian thành công.');
     }
 
     public function endEarly(TemporaryRegistration $temporaryRegistration)
@@ -383,17 +415,29 @@ class TemporaryRegistrationController extends Controller
             }
         }
 
+        $dbRelationship = 'tenant';
+        if (in_array($registration->relationship, ['Người nhà', 'Giúp việc', 'Khác', 'family_member'])) {
+            $dbRelationship = 'family_member';
+        } elseif (in_array($registration->relationship, ['Khách thuê', 'tenant'])) {
+            $dbRelationship = 'tenant';
+        }
+
         // Tạo hoặc cập nhật resident
-        $resident = \App\Models\Resident::firstOrCreate(
+        $resident = \App\Models\Resident::withTrashed()->firstOrCreate(
             [
                 'user_id' => $targetUserId,
                 'apartment_id' => $registration->apartment_id,
             ],
             [
-                'relationship' => $registration->relationship ?? 'tenant',
+                'relationship' => $dbRelationship,
                 'start_date' => $registration->start_date,
             ]
         );
+
+        if ($resident->trashed()) {
+            $resident->restore();
+        }
+        $resident->relationship = $dbRelationship;
 
         if ($registration->type === 'residence') {
             $resident->temporary_status = 'temporary';
@@ -411,5 +455,129 @@ class TemporaryRegistrationController extends Controller
         if ($user && $user->apartment_id !== $registration->apartment_id) {
             $user->update(['apartment_id' => $registration->apartment_id]);
         }
+    }
+
+    public function issueCard(TemporaryRegistration $temporaryRegistration)
+    {
+        if ($temporaryRegistration->status !== 'approved' || $temporaryRegistration->type !== 'residence') {
+            return redirect()->back()->with('error', 'Chỉ có thể cấp thẻ cho đơn Tạm trú đã duyệt.');
+        }
+
+        $temporaryRegistration->update([
+            'card_status' => 'issued'
+        ]);
+
+        return redirect()->back()->with('success', 'Đã xác nhận cấp thẻ / Face ID cho khách.');
+    }
+
+    public function returnCard(TemporaryRegistration $temporaryRegistration)
+    {
+        if ($temporaryRegistration->status !== 'approved' || $temporaryRegistration->type !== 'residence') {
+            return redirect()->back()->with('error', 'Chỉ có thể thu hồi thẻ của đơn Tạm trú đã duyệt.');
+        }
+
+        $temporaryRegistration->update([
+            'card_status' => 'returned'
+        ]);
+
+        return redirect()->back()->with('success', 'Đã xác nhận thu hồi thẻ / Face ID thành công.');
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $query = TemporaryRegistration::with(['user', 'apartment.floor.block', 'approver'])
+            ->orderBy('created_at', 'desc');
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('user', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        $registrations = $query->get();
+
+        $filename = "danh-sach-tam-tru-tam-vang-" . date('Y-m-d') . ".xls";
+
+        $headers = [
+            "Content-type"        => "application/vnd.ms-excel; charset=UTF-8",
+            "Content-Disposition" => "attachment; filename=$filename",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $html = '<html xmlns:x="urn:schemas-microsoft-com:office:excel">';
+        $html .= '<head><meta charset="utf-8"></head><body>';
+        $html .= '<table border="1"><thead><tr>';
+        
+        $columns = [
+            'STT', 'Mã CH', 'Loại đăng ký', 'Họ tên khách', 'SĐT', 'CCCD/CMND', 
+            'Ngày sinh', 'Giới tính', 'Quê quán', 'Quan hệ', 
+            'Ngày bắt đầu', 'Ngày kết thúc', 'Trạng thái', 'Người duyệt'
+        ];
+        
+        foreach ($columns as $col) {
+            $html .= '<th style="background-color: #00236f; color: white;">' . $col . '</th>';
+        }
+        $html .= '</tr></thead><tbody>';
+
+        foreach ($registrations as $index => $row) {
+            $type = $row->type == 'residence' ? 'Tạm trú' : 'Tạm vắng';
+            $status = match ($row->status) {
+                'pending' => 'Chờ duyệt',
+                'approved' => 'Đã duyệt',
+                'rejected' => 'Từ chối',
+                default => $row->status
+            };
+            
+            $apartment = $row->apartment ? $row->apartment->apartment_number : '';
+            $guestName = $row->type == 'residence' ? $row->guest_name : ($row->user ? $row->user->name : '');
+            $guestPhone = $row->type == 'residence' ? $row->guest_phone : ($row->user ? $row->user->phone : '');
+            $guestCccd = $row->type == 'residence' ? $row->guest_cccd : ($row->user ? $row->user->cccd : '');
+            
+            $gender = match ($row->guest_gender) {
+                'male' => 'Nam',
+                'female' => 'Nữ',
+                'other' => 'Khác',
+                default => ''
+            };
+
+            $html .= '<tr>';
+            $html .= '<td>' . ($index + 1) . '</td>';
+            $html .= '<td>' . $apartment . '</td>';
+            $html .= '<td>' . $type . '</td>';
+            $html .= '<td>' . $guestName . '</td>';
+            // Use ="0987..." to force Excel to treat as string and keep leading zeros
+            $html .= '<td>="' . $guestPhone . '"</td>';
+            $html .= '<td>="' . $guestCccd . '"</td>';
+            $html .= '<td>' . ($row->guest_dob ? $row->guest_dob->format('d/m/Y') : '') . '</td>';
+            $html .= '<td>' . $gender . '</td>';
+            $html .= '<td>' . $row->guest_hometown . '</td>';
+            $html .= '<td>' . $row->relationship . '</td>';
+            $html .= '<td>' . ($row->start_date ? $row->start_date->format('d/m/Y') : '') . '</td>';
+            $html .= '<td>' . ($row->end_date ? $row->end_date->format('d/m/Y') : '') . '</td>';
+            $html .= '<td>' . $status . '</td>';
+            $html .= '<td>' . ($row->approver ? $row->approver->name : '') . '</td>';
+            $html .= '</tr>';
+        }
+        $html .= '</tbody></table></body></html>';
+
+        $callback = function () use ($html) {
+            echo chr(0xEF).chr(0xBB).chr(0xBF); // BOM
+            echo $html;
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

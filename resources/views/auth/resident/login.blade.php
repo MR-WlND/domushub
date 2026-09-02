@@ -1,9 +1,23 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <meta name="google-site-verification" content="ysQgOyX8qz7zivQjVDnO_G4puygfJ66ouZMf17FAPJc" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DomusHub – Đăng nhập Cư dân</title>
+    
+    <!-- SEO On-page -->
+    <meta name="description" content="Đăng nhập tài khoản cư dân trên DomusHub. Quản lý hóa đơn, nhận thông báo, phản ánh sự cố và sử dụng tiện ích tòa nhà dễ dàng, bảo mật.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{{ url()->current() }}">
+    
+    <!-- Open Graph / Mạng xã hội -->
+    <meta property="og:title" content="DomusHub – Đăng nhập Cư dân">
+    <meta property="og:description" content="Truy cập hệ thống quản lý tòa nhà DomusHub dành riêng cho cư dân. Trải nghiệm dịch vụ tiện ích minh bạch và hiện đại.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <!-- End SEO -->
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     @vite(['resources/css/auth/login.css'])
 </head>
@@ -15,7 +29,7 @@
         <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=768&h=1024&fit=crop" alt="building">
         <div class="overlay"></div>
         <div class="hero">
-            <h1>Nâng tầm cuộc sống<br>tại DomusHub</h1>
+            <h2>Nâng tầm cuộc sống<br>tại DomusHub</h2>
             <p>Trải nghiệm dịch vụ quản lý cư dân minh bạch, an toàn và hiện đại dành riêng cho bạn.</p>
         </div>
     </div>
@@ -28,7 +42,7 @@
                 <i class="fa-solid fa-building"></i> DomusHub Portal
             </div>
 
-            <h2>Chào mừng trở lại</h2>
+            <h1>Đăng nhập Cư dân DomusHub</h1>
             <p class="sub">Vui lòng nhập thông tin để truy cập tài khoản của bạn.</p>
 
             <form method="POST" action="{{ route('resident.login.submit') }}">

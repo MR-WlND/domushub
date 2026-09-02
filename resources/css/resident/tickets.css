@@ -5,7 +5,7 @@
 
 /* --- Layout chung --- */
 .tk {
-    max-width: 1080px;
+    max-width: 1280px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -1175,3 +1175,22 @@
     color: #b91c1c !important;
 }
 
+
+/* Override resident-content to match home page exactly */
+.resident-content:has(.tk),
+.resident-content:has(.tk-page-wrapper),
+.resident-content:has(.tk-detail-wrapper) {
+    padding: 0 !important;
+}
+
+.tk, .tk-page-wrapper, .tk-detail-wrapper {
+    padding: 30px 40px 60px;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .tk, .tk-page-wrapper, .tk-detail-wrapper {
+        padding: 16px !important;
+    }
+}

@@ -1146,7 +1146,7 @@ class UtilityMeterController extends Controller
                 if ($val === '') continue;
 
                 // Cột Căn hộ / Số phòng
-                if ($foundApt === -1 && (str_contains($val, 'phòng') || str_contains($val, 'căn hộ') || str_contains($val, 'mã') || str_contains($val, 'room') || str_contains($val, 'apt') || str_contains($val, 'nhà'))) {
+                if ($foundApt === -1 && !str_contains($val, 'id') && !str_contains($val, 'tòa') && (str_contains($val, 'phòng') || str_contains($val, 'căn hộ') || str_contains($val, 'mã') || str_contains($val, 'room') || str_contains($val, 'apt') || str_contains($val, 'nhà'))) {
                     $foundApt = $colIndex;
                 }
                 // Cột Chỉ số mới

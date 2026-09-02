@@ -3,11 +3,73 @@
 .dashboard-page {
     min-height: 100vh;
     background-color: #ffffff;
-    font-family:
-        "Inter",
-        system-ui,
-        -apple-system,
-        sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body.dashboard-page,
+.dashboard-page {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+}
+
+/* Unified Admin Page Header Title Styling */
+.users-page__header h1,
+.residents-page__header h1,
+.vehicles-page__header h1,
+.apartments-page__header h1,
+.blocks-page__header h1,
+.floors-page__header h1,
+.posts-page__header h1,
+.parking-page__header h1,
+.invitations-page__header h1,
+.announcements-page__header h1,
+.tickets-page__header h1,
+.util-page-header h1,
+.db-header__title,
+.af-page-header__title,
+.af-header__title,
+.amb-title,
+.ktv-header__title,
+.schedule-header__title,
+.mp-header__title,
+.ct-header h1,
+.ir-header__left h1,
+.admin-profile__header h1,
+.res-header__title,
+.page-title,
+.stat-header h1,
+.rpt-page__title,
+.apt-inv-title,
+.dashboard-content .page-header h1,
+.dashboard-content h1:first-child {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+    font-size: 26px !important;
+    font-weight: 700 !important;
+    color: #00236f !important;
+    letter-spacing: -0.02em !important;
+    line-height: 1.2 !important;
+}
+
+/* Unified Admin Page Header Subtitle Styling */
+.af-page-header__sub,
+.af-header__sub,
+.amb-eyebrow,
+.users-page__eyebrow,
+.residents-page__sub,
+.vehicles-page__sub,
+.util-page-header p,
+.tickets-page__sub,
+.db-header__sub,
+.ktv-header__sub,
+.schedule-header__sub,
+.ir-header__left p,
+.page-subtitle,
+.tr-subtitle,
+.dashboard-content .page-header p {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+    font-size: 13.5px !important;
+    color: #64748b !important;
+    font-weight: 400 !important;
+    margin-top: 4px !important;
 }
 
 .dashboard-shell {
@@ -220,6 +282,9 @@
     height: 64px;
     width: 100%;
     box-sizing: border-box;
+    position: sticky;
+    top: 0;
+    z-index: 40;
 }
 
 .dashboard-topbar__search {

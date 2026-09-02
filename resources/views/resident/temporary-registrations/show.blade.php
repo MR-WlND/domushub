@@ -4,7 +4,18 @@
 
 @push('styles')
 <style>
-    .tr-form-page { font-family: 'Inter', 'Segoe UI', sans-serif; padding: 24px; }
+    .resident-content { padding: 0 !important; }
+    .tr-form-page { 
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 30px 40px 60px;
+        box-sizing: border-box;
+        width: 100%;
+    }
+    @media (max-width: 768px) {
+        .tr-form-page { padding: 20px 16px 40px; }
+    }
     .tr-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px; }
     .tr-title { font-size: 24px; font-weight: 700; color: #00236f; margin: 0 0 6px 0; }
     .tr-subtitle { font-size: 14px; color: #64748b; margin: 0; }
@@ -28,7 +39,17 @@
             <h1 class="tr-title">Chi tiết đơn đăng ký</h1>
             <p class="tr-subtitle">Mã đơn: #REQ-{{ str_pad($temporaryRegistration->id, 4, '0', STR_PAD_LEFT) }}</p>
         </div>
-        <a href="{{ route('resident.temporary-registrations.index') }}" class="btn-back">Quay lại danh sách</a>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            @if($temporaryRegistration->status == 'approved')
+                <a href="{{ route('resident.temporary-registrations.print', $temporaryRegistration->id) }}" target="_blank" style="padding: 8px 16px; background-color: #00236f; color: white; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 6px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                    </svg>
+                    In CT01
+                </a>
+            @endif
+            <a href="{{ route('resident.temporary-registrations.index') }}" class="btn-back">Quay lại danh sách</a>
+        </div>
     </div>
 
     <div class="tr-card">

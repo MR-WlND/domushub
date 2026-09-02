@@ -5,8 +5,9 @@ namespace App\Notifications;
 use App\Models\Visitor;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
-class VisitorWalkInNotification extends Notification
+class VisitorWalkInNotification extends Notification implements ShouldBroadcast
 {
     use Queueable;
 
@@ -14,7 +15,7 @@ class VisitorWalkInNotification extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'broadcast'];
     }
 
     public function toArray(object $notifiable): array

@@ -259,6 +259,7 @@ $portalRoutes = function () {
     Route::get('/visitor-logs', [App\Http\Controllers\Admin\VisitorLogController::class, 'index'])->name('visitor-logs.index');
 
     // TẠM TRÚ TẠM VẮNG (Admin)
+    Route::get('/temporary-registrations/export',           [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'exportExcel'])->name('temporary-registrations.export');
     Route::get('/temporary-registrations',                  [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'index'])->name('temporary-registrations.index');
     Route::get('/temporary-registrations/create',           [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'create'])->name('temporary-registrations.create');
     Route::post('/temporary-registrations',                 [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'store'])->name('temporary-registrations.store');
@@ -268,6 +269,9 @@ $portalRoutes = function () {
     Route::post('/temporary-registrations/{temporaryRegistration}/approve', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'approve'])->name('temporary-registrations.approve');
     Route::post('/temporary-registrations/{temporaryRegistration}/reject', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'reject'])->name('temporary-registrations.reject');
     Route::post('/temporary-registrations/{temporaryRegistration}/end-early', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'endEarly'])->name('temporary-registrations.end-early');
+    Route::post('/temporary-registrations/{temporaryRegistration}/issue-card', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'issueCard'])->name('temporary-registrations.issue-card');
+    Route::post('/temporary-registrations/{temporaryRegistration}/return-card', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'returnCard'])->name('temporary-registrations.return-card');
+    Route::post('/temporary-registrations/{temporaryRegistration}/extend', [\App\Http\Controllers\Admin\TemporaryRegistrationController::class, 'extend'])->name('temporary-registrations.extend');
 
     // QUẢN LÝ LỐT ĐỖ XE
     Route::get('/parking-lots', [App\Http\Controllers\Admin\ParkingLotController::class, 'index'])->name('parking-lots.index');
@@ -503,7 +507,9 @@ Route::middleware(['resident'])->group(function () {
 
     // Quản lý thành viên gia đình & nhân khẩu & mã mời
     Route::get('/resident/members', [\App\Http\Controllers\Resident\MemberController::class, 'index'])->name('resident.members.index');
+    Route::get('/resident/members/{id}', [\App\Http\Controllers\Resident\MemberController::class, 'show'])->name('resident.members.show');
     Route::post('/resident/members/declared', [\App\Http\Controllers\Resident\MemberController::class, 'storeDeclared'])->name('resident.members.declared.store');
+    Route::post('/resident/members/declared/{member}/generate-invite', [\App\Http\Controllers\Resident\MemberController::class, 'generateInviteForMember'])->name('resident.members.declared.generate-invite');
     Route::delete('/resident/members/declared/{member}', [\App\Http\Controllers\Resident\MemberController::class, 'destroyDeclared'])->name('resident.members.declared.destroy');
     Route::post('/resident/members/invitations', [\App\Http\Controllers\Resident\MemberController::class, 'storeInvite'])->name('resident.members.invitations.store');
     Route::delete('/resident/members/invitations/{id}', [\App\Http\Controllers\Resident\MemberController::class, 'destroyInvite'])->name('resident.members.invitations.destroy');
@@ -537,7 +543,9 @@ Route::middleware(['resident'])->group(function () {
     Route::delete('/resident/visitors/{id}', [\App\Http\Controllers\Resident\VisitorController::class, 'destroy'])->name('resident.visitors.destroy');
 
     // TẠM TRÚ TẠM VẮNG PHÍA CƯ DÂN
+    Route::get('/resident/temporary-registrations/{temporary_registration}/print', [\App\Http\Controllers\Resident\TemporaryRegistrationController::class, 'print'])->name('resident.temporary-registrations.print');
     Route::post('/resident/temporary-registrations/{temporary_registration}/end-early', [\App\Http\Controllers\Resident\TemporaryRegistrationController::class, 'endEarly'])->name('resident.temporary-registrations.end-early');
+    Route::post('/resident/temporary-registrations/{temporary_registration}/extend', [\App\Http\Controllers\Resident\TemporaryRegistrationController::class, 'extend'])->name('resident.temporary-registrations.extend');
     Route::resource('/resident/temporary-registrations', \App\Http\Controllers\Resident\TemporaryRegistrationController::class, ['as' => 'resident']);
     // PHẢN ÁNH SỰ CỐ PHÍA CƯ DÂN
     Route::get('/resident/tickets', [ResidentTicketController::class, 'index'])->name('resident.tickets.index');
@@ -667,6 +675,7 @@ Route::middleware(['receptionist'])->prefix('receptionist')->name('receptionist.
     Route::get('/visitor-log',                      [\App\Http\Controllers\Receptionist\VisitorController::class, 'log'])->name('visitor-log.index');
 
     // Quản lý Tạm trú - Tạm vắng
+    Route::get('/temporary-registrations/export',           [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'exportExcel'])->name('temporary-registrations.export');
     Route::get('/temporary-registrations',                  [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'index'])->name('temporary-registrations.index');
     Route::get('/temporary-registrations/create',           [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'create'])->name('temporary-registrations.create');
     Route::post('/temporary-registrations',                 [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'store'])->name('temporary-registrations.store');
@@ -676,6 +685,9 @@ Route::middleware(['receptionist'])->prefix('receptionist')->name('receptionist.
     Route::post('/temporary-registrations/{temporaryRegistration}/approve', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'approve'])->name('temporary-registrations.approve');
     Route::post('/temporary-registrations/{temporaryRegistration}/reject', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'reject'])->name('temporary-registrations.reject');
     Route::post('/temporary-registrations/{temporaryRegistration}/end-early', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'endEarly'])->name('temporary-registrations.end-early');
+    Route::post('/temporary-registrations/{temporaryRegistration}/issue-card', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'issueCard'])->name('temporary-registrations.issue-card');
+    Route::post('/temporary-registrations/{temporaryRegistration}/return-card', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'returnCard'])->name('temporary-registrations.return-card');
+    Route::post('/temporary-registrations/{temporaryRegistration}/extend', [\App\Http\Controllers\Receptionist\TemporaryRegistrationController::class, 'extend'])->name('temporary-registrations.extend');
 
     // Trang cá nhân
     Route::get('/profile',                          [\App\Http\Controllers\Receptionist\ProfileController::class, 'index'])->name('profile');

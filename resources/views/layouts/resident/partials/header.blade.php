@@ -115,14 +115,14 @@
 <div class="mobile-sidebar" id="mobileSidebar">
     <div class="mobile-sidebar__header">
         <div class="mobile-sidebar__brand">
-            Civic<br>Horizon
+            DomusHub
         </div>
         <button id="mobileMenuClose" class="mobile-sidebar__close">
             <i class="fa-solid fa-xmark"></i>
         </button>
     </div>
 
-    <div class="mobile-sidebar__label">RESIDENT PORTAL</div>
+    <div class="mobile-sidebar__label">CƯ DÂN</div>
 
     <div class="mobile-sidebar__menu">
         <a href="{{ route('resident.dashboard') }}" class="mobile-sidebar__link {{ request()->routeIs('resident.dashboard') ? 'active' : '' }}">
@@ -386,5 +386,14 @@
 
         loadNotifications();
         setInterval(loadNotifications, 60000);
+
+        // Lắng nghe sự kiện Real-time qua Laravel Echo
+        if (window.Echo && '{{ auth()->check() ? auth()->id() : "" }}') {
+            window.Echo.private('App.Models.User.{{ auth()->id() }}')
+                .notification((notification) => {
+                    // Reload notifications to update badge and list
+                    loadNotifications();
+                });
+        }
     });
 </script>

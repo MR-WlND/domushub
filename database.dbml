@@ -16,7 +16,7 @@ Table users {
   cccd varchar [not null]
   banned_posting_until timestamp [not null]
   banned_commenting_until timestamp [not null]
-  staff_id bigint
+  staff_id bigint [not null]
 }
 
 Table blocks {
@@ -512,7 +512,7 @@ Ref: users.id < announcements.user_id
 
 Table chatbot_messages {
   id bigint [pk, increment]
-  user_id bigint
+  user_id bigint [not null]
   role varchar
   message text
   created_at timestamp
@@ -521,16 +521,16 @@ Table chatbot_messages {
 
 Table ticket_costs {
   id bigint [pk, increment]
-  ticket_id bigint
+  ticket_id bigint [not null]
   note text
-  created_by bigint
+  created_by bigint [not null]
   created_at timestamp
 }
 
 Table post_hides {
   id bigint [pk, increment]
-  post_id bigint
-  user_id bigint
+  post_id bigint [not null]
+  user_id bigint [not null]
   created_at timestamp
   updated_at timestamp
 }
@@ -546,8 +546,8 @@ Table apartment_types {
 
 Table cleaning_tasks {
   id bigint [pk, increment]
-  assigned_to bigint
-  assigned_by bigint
+  assigned_to bigint [not null]
+  assigned_by bigint [not null]
   title varchar
   description text
   area varchar
@@ -564,7 +564,7 @@ Table cleaning_tasks {
 
 Table cleaning_reports {
   id bigint [pk, increment]
-  reported_by bigint
+  reported_by bigint [not null]
   title varchar
   location varchar
   description text
@@ -575,7 +575,7 @@ Table cleaning_reports {
 
 Table parcels {
   id bigint [pk, increment]
-  apartment_id bigint
+  apartment_id bigint [not null]
   sender_name varchar
   tracking_code varchar
   carrier varchar
@@ -584,7 +584,7 @@ Table parcels {
   received_at timestamp
   returned_at timestamp
   note text
-  created_by bigint
+  created_by bigint [not null]
   created_at timestamp
   updated_at timestamp
 }
@@ -601,14 +601,14 @@ Table staffs {
   full_name varchar
   address varchar
   dob date
-  department_id bigint
+  department_id bigint [not null]
   created_at timestamp
   updated_at timestamp
 }
 
 Table contracts {
   id bigint [pk, increment]
-  staff_id bigint
+  staff_id bigint [not null]
   contract_number varchar
   type varchar
   start_date date
@@ -629,8 +629,8 @@ Table shifts {
 
 Table staff_schedules {
   id bigint [pk, increment]
-  staff_id bigint
-  shift_id bigint
+  staff_id bigint [not null]
+  shift_id bigint [not null]
   work_date date
   created_at timestamp
   updated_at timestamp
@@ -638,8 +638,8 @@ Table staff_schedules {
 
 Table shift_requirements {
   id bigint [pk, increment]
-  shift_id bigint
-  department_id bigint
+  shift_id bigint [not null]
+  department_id bigint [not null]
   required_staff integer
   created_at timestamp
   updated_at timestamp
@@ -647,9 +647,9 @@ Table shift_requirements {
 
 Table ticket_assignments {
   id bigint [pk, increment]
-  ticket_id bigint
-  user_id bigint
-  assigned_by bigint
+  ticket_id bigint [not null]
+  user_id bigint [not null]
+  assigned_by bigint [not null]
   created_at timestamp
   updated_at timestamp
 }

@@ -130,8 +130,15 @@
     .filter-group {
         display: flex;
         flex-direction: column;
-        flex: 1;
-        min-width: 200px;
+        flex: 1 1 200px;
+    }
+
+    .filter-group.search-group {
+        flex: 2 1 300px;
+    }
+
+    .filter-group.action-group {
+        flex: 0 0 auto;
     }
 
     .filter-label {
@@ -142,6 +149,7 @@
     }
 
     .filter-input {
+        box-sizing: border-box;
         height: 40px;
         border: 1px solid #d9e2f2;
         border-radius: 10px;
@@ -161,6 +169,8 @@
 
     .filter-input-with-icon {
         position: relative;
+        width: 100%;
+        display: block;
     }
     
     .filter-input-with-icon svg {
@@ -317,6 +327,38 @@
         }
     }
 </style>
+
+<div id="extendModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background: white; padding: 24px; border-radius: 12px; width: 400px; max-width: 90%; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+        <h3 style="margin-top: 0; color: #1e293b; font-size: 18px; font-weight: 700;">Gia hạn thời gian</h3>
+        <p style="font-size: 14px; color: #64748b; margin-bottom: 16px;">Vui lòng chọn ngày kết thúc mới.</p>
+        
+        <form id="extendForm" method="POST" action="">
+            @csrf
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: #475569;">Ngày kết thúc (mới)</label>
+                <input type="date" name="end_date" id="extend_end_date" required style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit;">
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                <button type="button" onclick="closeExtendModal()" style="padding: 8px 16px; background: #f1f5f9; color: #475569; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">Hủy</button>
+                <button type="submit" style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">Xác nhận Gia hạn</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openExtendModal(id, currentEndDate) {
+        document.getElementById('extendForm').action = `/receptionist/temporary-registrations/${id}/extend`;
+        document.getElementById('extend_end_date').value = currentEndDate;
+        document.getElementById('extendModal').style.display = 'flex';
+    }
+    function closeExtendModal() {
+        document.getElementById('extendModal').style.display = 'none';
+    }
+</script>
+
 @endpush
 
 @section('content')
@@ -329,13 +371,21 @@
                 <h1 class="tr-title">Quản lý Tạm trú - Tạm vắng</h1>
                 <p class="tr-subtitle">Quản lý danh sách cư dân đăng ký tạm trú, tạm vắng và trạng thái phê duyệt hồ sơ.</p>
             </div>
-            <a href="{{ route('receptionist.temporary-registrations.create') }}" class="btn-create">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="margin-right: 6px;">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                Tạo đơn hộ
-            </a>
+            <div style="display: flex; gap: 12px;">
+                <a href="{{ route('receptionist.temporary-registrations.export', request()->all()) }}" class="btn-create" style="background-color: #10b981; color: white;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="margin-right: 6px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Xuất CSV
+                </a>
+                <a href="{{ route('receptionist.temporary-registrations.create') }}" class="btn-create">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="margin-right: 6px;">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Tạo đơn hộ
+                </a>
+            </div>
         </div>
 
         @if(session('success'))
@@ -406,7 +456,7 @@
         {{-- Filters --}}
         <div class="filter-container">
             <form method="GET" action="{{ route('receptionist.temporary-registrations.index') }}" class="filter-form">
-                <div class="filter-group" style="flex: 2;">
+                <div class="filter-group search-group">
                     <label class="filter-label">Tìm kiếm</label>
                     <div class="filter-input-with-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -436,14 +486,15 @@
                     </select>
                 </div>
 
-                <div class="filter-group" style="flex: 0; min-width: auto;">
-                    <button type="submit" class="btn-filter">Lọc</button>
-                </div>
-                @if(request()->anyFilled(['search', 'type', 'status']))
-                    <div class="filter-group" style="flex: 0; min-width: auto;">
-                        <a href="{{ route('receptionist.temporary-registrations.index') }}" style="color: #ef4444; font-size: 14px; text-decoration: none; padding-left: 8px;">Xóa</a>
+                <div class="filter-group action-group">
+                    <label class="filter-label" style="visibility: hidden; user-select: none;">Hành động</label>
+                    <div style="display: flex; align-items: center; gap: 12px; height: 40px;">
+                        <button type="submit" class="btn-filter">Lọc</button>
+                        @if(request()->anyFilled(['search', 'type', 'status']))
+                            <a href="{{ route('receptionist.temporary-registrations.index') }}" style="color: #ef4444; font-size: 14px; text-decoration: none; white-space: nowrap; font-weight: 500;">Xóa lọc</a>
+                        @endif
                     </div>
-                @endif
+                </div>
             </form>
         </div>
 
@@ -500,6 +551,16 @@
                                 @else
                                     <span class="badge-status badge-rejected">Từ chối</span>
                                 @endif
+                                
+                                @if($reg->type == 'residence' && $reg->status == 'approved')
+                                    @if($reg->card_status == 'pending')
+                                        <div style="margin-top: 6px;"><span class="badge-status" style="background: #e0f2fe; color: #0284c7; font-size: 11px;">Thẻ: Chờ cấp</span></div>
+                                    @elseif($reg->card_status == 'issued')
+                                        <div style="margin-top: 6px;"><span class="badge-status" style="background: #dcfce7; color: #16a34a; font-size: 11px;">Thẻ: Đã cấp</span></div>
+                                    @elseif($reg->card_status == 'returned')
+                                        <div style="margin-top: 6px;"><span class="badge-status" style="background: #f1f5f9; color: #64748b; font-size: 11px;">Thẻ: Đã thu hồi</span></div>
+                                    @endif
+                                @endif
                             </td>
                             <td>
                                 <div class="action-icons" style="justify-content: flex-end;">
@@ -513,14 +574,11 @@
                                     
                                     @if($reg->status == 'pending')
                                         {{-- Nút Duyệt --}}
-                                        <form action="{{ route('receptionist.temporary-registrations.approve', $reg->id) }}" method="POST" style="margin: 0;">
-                                            @csrf
-                                            <button type="submit" class="action-btn approve" title="Duyệt đơn" onclick="return confirm('Xác nhận duyệt đăng ký này?');">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                                    <polyline points="20 6 9 17 4 12"></polyline>
-                                                </svg>
-                                            </button>
-                                        </form>
+                                        <button type="button" class="action-btn approve" title="Duyệt đơn" onclick="promptApprove({{ $reg->id }})">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                            </svg>
+                                        </button>
 
                                         {{-- Nút Từ chối --}}
                                         <button type="button" class="action-btn reject" title="Từ chối" onclick="promptReject({{ $reg->id }})">
@@ -530,23 +588,35 @@
                                             </svg>
                                         </button>
                                     @endif
-                                    @if($reg->status == 'approved' && !$isEnded)
+                                    @if($reg->status == 'approved')
+                                        @if($reg->type == 'residence')
+                                            @if($reg->card_status == 'pending')
+                                                <button type="button" class="action-btn" style="color: #3b82f6;" title="Xác nhận cấp thẻ/Face ID" onclick="promptIssueCard({{ $reg->id }})">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                                                    </svg>
+                                                </button>
+                                            @elseif($reg->card_status == 'issued')
+                                                <button type="button" class="action-btn" style="color: #64748b;" title="Thu hồi thẻ/Face ID" onclick="promptReturnCard({{ $reg->id }})">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                                    </svg>
+                                                </button>
+                                            @endif
+                                        @endif
                                         {{-- Nút Gia hạn --}}
-                                        <a href="{{ route('receptionist.temporary-registrations.create', ['extend_id' => $reg->id]) }}" class="action-btn" title="Gia hạn">
+                                        <button type="button" class="action-btn" title="Gia hạn" onclick="openExtendModal({{ $reg->id }}, '{{ $reg->end_date ? $reg->end_date->format('Y-m-d') : '' }}')">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                                             </svg>
-                                        </a>
+                                        </button>
 
                                         {{-- Nút Kết thúc sớm --}}
-                                        <form action="{{ route('receptionist.temporary-registrations.end-early', $reg->id) }}" method="POST" style="margin: 0;">
-                                            @csrf
-                                            <button type="submit" class="action-btn" title="Kết thúc sớm" onclick="return confirm('Xác nhận kết thúc sớm đăng ký này (cập nhật ngày kết thúc thành hôm qua)?');">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                            </button>
-                                        </form>
+                                        <button type="button" class="action-btn" title="Kết thúc sớm" onclick="promptEndEarly({{ $reg->id }})">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </button>
                                     @endif
                                 </div>
                             </td>
@@ -599,6 +669,38 @@
     </div>
 </div>
 
+<!-- Custom Modal Duyệt -->
+<div id="approveModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 24px; border-radius: 12px; width: 400px; max-width: 90%; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+        <h3 style="margin-top: 0; color: #1e293b; font-size: 18px; font-weight: 700;">Duyệt đơn đăng ký</h3>
+        <p style="font-size: 14px; color: #64748b; margin-bottom: 24px;">Xác nhận duyệt đăng ký tạm trú/tạm vắng này?</p>
+        
+        <form id="globalApproveForm" method="POST" action="">
+            @csrf
+            <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                <button type="button" onclick="closeApproveModal()" style="padding: 8px 16px; background: #f1f5f9; color: #475569; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">Hủy</button>
+                <button type="submit" style="padding: 8px 16px; background: #16a34a; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">Xác nhận Duyệt</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Custom Modal Kết thúc sớm -->
+<div id="endEarlyModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 24px; border-radius: 12px; width: 400px; max-width: 90%; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+        <h3 style="margin-top: 0; color: #1e293b; font-size: 18px; font-weight: 700;">Kết thúc sớm đăng ký</h3>
+        <p style="font-size: 14px; color: #64748b; margin-bottom: 24px;">Xác nhận kết thúc sớm đăng ký này (cập nhật ngày kết thúc thành hôm nay)?</p>
+        
+        <form id="globalEndEarlyForm" method="POST" action="">
+            @csrf
+            <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                <button type="button" onclick="closeEndEarlyModal()" style="padding: 8px 16px; background: #f1f5f9; color: #475569; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">Hủy</button>
+                <button type="submit" style="padding: 8px 16px; background: #00236f; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">Xác nhận Kết thúc sớm</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     function promptReject(id) {
         let form = document.getElementById('globalRejectForm');
@@ -619,6 +721,56 @@
             document.getElementById('globalRejectForm').submit();
         } else {
             alert("Lý do từ chối không được để trống!");
+        }
+    }
+
+    function promptApprove(id) {
+        let form = document.getElementById('globalApproveForm');
+        form.action = `/receptionist/temporary-registrations/${id}/approve`;
+        document.getElementById('approveModal').style.display = 'flex';
+    }
+    
+    function closeApproveModal() {
+        document.getElementById('approveModal').style.display = 'none';
+    }
+
+    function promptEndEarly(id) {
+        let form = document.getElementById('globalEndEarlyForm');
+        form.action = `/receptionist/temporary-registrations/${id}/end-early`;
+        document.getElementById('endEarlyModal').style.display = 'flex';
+    }
+    
+    function closeEndEarlyModal() {
+        document.getElementById('endEarlyModal').style.display = 'none';
+    }
+
+    function promptIssueCard(id) {
+        if(confirm('Xác nhận đã cấp Thẻ từ/Face ID cho người tạm trú này?')) {
+            let form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/receptionist/temporary-registrations/${id}/issue-card`;
+            let csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = '_token';
+            csrf.value = '{{ csrf_token() }}';
+            form.appendChild(csrf);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
+    function promptReturnCard(id) {
+        if(confirm('Xác nhận khách đã trả lại Thẻ từ và đã xóa dữ liệu Face ID?')) {
+            let form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/receptionist/temporary-registrations/${id}/return-card`;
+            let csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = '_token';
+            csrf.value = '{{ csrf_token() }}';
+            form.appendChild(csrf);
+            document.body.appendChild(form);
+            form.submit();
         }
     }
 </script>

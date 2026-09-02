@@ -86,12 +86,18 @@
             <div>
                 @if($qrV)
                 <div class="rv-qr-panel">
-                    <h3 class="rv-qr-panel__title">Mã QR Ra Vào</h3>
-                    <p class="rv-qr-panel__desc">Sử dụng mã này tại các cổng an ninh để xác thực phương tiện tự động.</p>
+                    <h3 class="rv-qr-panel__title">Mã QR Định Danh</h3>
+                    <p class="rv-qr-panel__desc">Sử dụng mã này tại các cổng an ninh để xác thực tự động.</p>
                     <div class="rv-qr-panel__frame"><img id="rv-qr-img" src="{{ asset('storage/' . $qrV->qr_code) }}" alt="QR" loading="lazy"></div>
                     <div class="rv-qr-panel__info">
-                        <div class="rv-qr-panel__row"><span>Phương tiện:</span><span id="rv-qr-brand">{{ $qrV->brand ?? 'N/A' }}</span></div>
-                        <div class="rv-qr-panel__row"><span>Biển số:</span><span id="rv-qr-plate">{{ $qrV->license_plate }}</span></div>
+                        <div class="rv-qr-panel__col">
+                            <span class="rv-qr-panel__label">Phương tiện</span>
+                            <span class="rv-qr-panel__val" id="rv-qr-brand">{{ $qrV->brand ?? 'N/A' }}</span>
+                        </div>
+                        <div class="rv-qr-panel__col rv-qr-panel__col--right">
+                            <span class="rv-qr-panel__label">Biển số</span>
+                            <span class="rv-qr-panel__val" id="rv-qr-plate">{{ $qrV->license_plate }}</span>
+                        </div>
                     </div>
                     <a id="rv-qr-link" href="{{ route('resident.vehicles.qr.download', $qrV) }}" class="rv-qr-panel__btn">Tải mã QR</a>
                     <a id="rv-qr-detail-link" href="{{ route('resident.vehicles.qr', $qrV) }}" class="rv-qr-panel__btn" style="margin-top:10px; background:transparent; color:#00236F; border:1px solid #00236F;">Xem chi tiết</a>

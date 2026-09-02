@@ -1108,10 +1108,10 @@ select.util-form-input {
         justify-content: center;
     }
 
-    /* ── Extra bottom padding for mobile nav ── */
+    /* ── Extra bottom padding for mobile ── */
     .util-table-card,
     .util-empty-state {
-        margin-bottom: 80px;
+        margin-bottom: 24px;
     }
 }
 
