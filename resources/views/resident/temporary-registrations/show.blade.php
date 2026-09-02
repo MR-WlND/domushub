@@ -134,14 +134,33 @@
 
         @if($temporaryRegistration->attachment_path || !empty($temporaryRegistration->attachments))
         <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 24px 0;">
-        <h4 style="margin: 0 0 16px; color: #0f172a;">Tài liệu đính kèm</h4>
-        <div style="display: flex; flex-direction: column; gap: 8px;">
+        <h4 style="margin: 0 0 16px; color: #0f172a;">Tài liệu đính kèm (Ảnh CCCD)</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 16px;">
             @if($temporaryRegistration->attachment_path)
-                <a href="{{ Storage::url($temporaryRegistration->attachment_path) }}" target="_blank" style="color: #0b57d0;">📄 Xem tệp đính kèm (cũ)</a>
+                @php
+                    $oldExt = strtolower(pathinfo($temporaryRegistration->attachment_path, PATHINFO_EXTENSION));
+                @endphp
+                @if(in_array($oldExt, ['jpg','jpeg','png','webp','gif']))
+                    <img src="{{ Storage::url($temporaryRegistration->attachment_path) }}" alt="Tệp đính kèm cũ" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer;" onclick="window.open(this.src, '_blank')">
+                @else
+                    <a href="{{ Storage::url($temporaryRegistration->attachment_path) }}" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; width: 120px; height: 120px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; color: #0b57d0; text-decoration: none; font-size: 13px; font-weight: 500; text-align: center; padding: 8px;">
+                        📄 Tệp đính kèm (cũ)
+                    </a>
+                @endif
             @endif
+
             @if(!empty($temporaryRegistration->attachments))
                 @foreach($temporaryRegistration->attachments as $index => $path)
-                    <a href="{{ Storage::url($path) }}" target="_blank" style="color: #0b57d0;">📄 Xem tệp đính kèm #{{ $index + 1 }}</a>
+                    @php
+                        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+                    @endphp
+                    @if(in_array($ext, ['jpg','jpeg','png','webp','gif']))
+                        <img src="{{ Storage::url($path) }}" alt="Tệp đính kèm #{{ $index + 1 }}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer;" onclick="window.open(this.src, '_blank')">
+                    @else
+                        <a href="{{ Storage::url($path) }}" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; width: 120px; height: 120px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; color: #0b57d0; text-decoration: none; font-size: 13px; font-weight: 500; text-align: center; padding: 8px;">
+                            📄 Tệp đính kèm #{{ $index + 1 }}
+                        </a>
+                    @endif
                 @endforeach
             @endif
         </div>

@@ -605,7 +605,6 @@
                                         @endforeach
                                     </div>
                                 @endif
-                                @endif
                             </li>
                         @endforeach
                     @else
