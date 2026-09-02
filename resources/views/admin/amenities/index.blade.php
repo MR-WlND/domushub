@@ -11,7 +11,7 @@
 .af-page-header__title { font-size:26px; font-weight:700; color:#00236f; font-family:'Inter', system-ui, -apple-system, sans-serif; letter-spacing:-0.02em; }
 .af-page-header__sub { font-size:13.5px; color:#64748b; margin-top:4px; font-family:'Inter', system-ui, -apple-system, sans-serif; }
 .af-btn { padding:10px 20px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; border:none; text-decoration:none; transition:.15s; display:inline-block; }
-.af-btn--primary { background:#0b57d0; color:#fff; } .af-btn--primary:hover { background:#094bb3; }
+.af-btn--primary { background:#00236f; color:#fff; }
 .af-btn--ghost { background:#f1f5f9; color:#475569; } .af-btn--ghost:hover { background:#e2e8f0; }
 .af-btn--sm { padding:7px 14px; font-size:12px; }
 .af-btn--danger { background:#fef2f2; color:#dc2626; border:1px solid #fecaca; } .af-btn--danger:hover { background:#fee2e2; }

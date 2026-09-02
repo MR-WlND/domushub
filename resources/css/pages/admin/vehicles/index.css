@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    ADMIN VEHICLES â€” Unified Design System
    Matching Resident vehicles design language
    ============================================================ */
@@ -91,10 +91,7 @@
     height: 3px;
 }
 
-.veh-stat-card:hover {
-    box-shadow: 0 6px 20px rgba(15, 23, 42, .07);
-    transform: translateY(-2px);
-}
+
 
 .veh-stat-card__value {
     font-size: 2rem;

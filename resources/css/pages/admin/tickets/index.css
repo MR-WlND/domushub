@@ -103,10 +103,7 @@
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.tk-stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07);
-}
+
 
 .tk-stat-card__content {
     display: flex;
@@ -254,20 +251,16 @@
     gap: 6px;
     padding: 0.6rem 1.1rem;
     border-radius: 8px;
-    background: #edf2fd;
-    color: #00236f;
-    border: 1px solid #c7d7fe;
+    background-color: #00236f;
+    color: #ffffff;
+    border: none;
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
 }
 
-.tk-filter-btn:hover {
-    background: #00236f;
-    color: #ffffff;
-    border-color: #00236f;
-}
+
 
 .tk-filter-reset {
     font-size: 0.85rem;

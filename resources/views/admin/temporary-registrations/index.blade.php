@@ -48,12 +48,6 @@
         transition: all 0.2s;
     }
     
-    .btn-create:hover {
-        background-color: #0b57d0;
-        color: #ffffff;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 6px rgba(0, 35, 111, 0.2);
-    }
 
     .stats-grid {
         display: grid;
@@ -74,10 +68,6 @@
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .stat-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(0, 35, 111, 0.06);
-    }
 
     .stat-header {
         display: flex;
@@ -198,10 +188,6 @@
         transition: all 0.2s;
     }
 
-    .btn-filter:hover {
-        background-color: #0b57d0;
-        box-shadow: 0 4px 6px rgba(0, 35, 111, 0.2);
-    }
 
     .table-container {
         overflow-x: auto;

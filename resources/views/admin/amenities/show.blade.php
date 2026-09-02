@@ -66,7 +66,7 @@
 @section('content')
 <div class="af-page">
 
-    <a href="{{ portal_route('amenities.index') }}" class="af-back">← Danh sách tiện ích</a>
+    <a href="{{ portal_route('amenities.index') }}" class="af-btn" style="background-color: #00236f; color: #ffffff; margin-bottom: 14px; display: inline-block;">← Danh sách tiện ích</a>
 
     @if(session('success'))<div class="af-alert af-alert--success">{{ session('success') }}</div>@endif
     @if(session('error'))<div class="af-alert af-alert--error">{{ session('error') }}</div>@endif
