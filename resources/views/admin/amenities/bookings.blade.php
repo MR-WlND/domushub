@@ -168,10 +168,7 @@
                             @endif
 
                             @if(!in_array($booking->status, ['used', 'cancelled', 'rejected']))
-                                <form method="POST" action="{{ portal_route('amenities.bookings.cancel', $booking) }}" onsubmit="return confirm('Hủy lịch đặt #{{ $booking->id }}?')">
-                                    @csrf
-                                    <button type="submit" class="amb-btn amb-btn--xs amb-btn--cancel" title="Hủy lịch">Hủy</button>
-                                </form>
+                                <button type="button" class="amb-btn amb-btn--xs amb-btn--cancel" onclick="openCancelModal({{ $booking->id }}, '{{ portal_route('amenities.bookings.cancel', $booking) }}')" title="Hủy lịch">Hủy</button>
                             @endif
 
                             {{-- Xem chi tiết --}}
@@ -225,6 +222,31 @@
     </div>
 </div>
 
+{{-- Modal: Hủy --}}
+<div id="cancelModal" class="amb-modal" style="display:none">
+    <div class="amb-modal-backdrop" onclick="closeCancelModal()"></div>
+    <div class="amb-modal-content">
+        <div class="amb-modal-header">
+            <h3>Xác nhận hủy lịch đặt</h3>
+            <button type="button" onclick="closeCancelModal()" class="amb-modal-close">✕</button>
+        </div>
+        <p class="amb-modal-sub" id="cancelModalSub"></p>
+        <form id="cancelForm" method="POST">
+            @csrf
+            <div class="amb-status-options">
+                <label class="amb-status-opt">
+                    <input type="radio" checked>
+                    <div class="amb-status-opt-content amb-soc--cancelled" style="border-color: #ef4444; background: #fee2e2; color: #b91c1c;">
+                        <span>Hủy lịch đặt này</span>
+                        <small>Hành động này sẽ thay đổi trạng thái thành Đã hủy và không thể hoàn tác</small>
+                    </div>
+                </label>
+            </div>
+            <button type="submit" class="amb-modal-submit" style="background: linear-gradient(135deg, #ef4444, #dc2626);">Xác nhận hủy</button>
+        </form>
+    </div>
+</div>
+
 {{-- Modal: Chi tiết --}}
 <div id="detailModal" class="amb-modal" style="display:none">
     <div class="amb-modal-backdrop" onclick="closeDetailModal()"></div>
@@ -271,6 +293,15 @@ function openStatusModal(id, currentStatus, currentLabel) {
 }
 function closeStatusModal() {
     document.getElementById('statusModal').style.display = 'none';
+}
+
+function openCancelModal(id, url) {
+    document.getElementById('cancelForm').action = url;
+    document.getElementById('cancelModalSub').textContent = 'Lịch đặt #' + id + ' – Xác nhận hủy';
+    document.getElementById('cancelModal').style.display = 'flex';
+}
+function closeCancelModal() {
+    document.getElementById('cancelModal').style.display = 'none';
 }
 
 function openDetailModal(id) {
