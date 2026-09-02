@@ -302,8 +302,8 @@ function closeDetailModal() {
 .amb-page { max-width: 1300px; margin: 0 auto; padding: 24px 20px; }
 
 .amb-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-.amb-eyebrow { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; margin: 0 0 4px; font-weight: 600; }
-.amb-title { font-size: 1.65rem; font-weight: 700; color: #0f172a; margin: 0; }
+.amb-eyebrow { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; margin: 0 0 4px; font-weight: 600; font-family:'Inter', system-ui, -apple-system, sans-serif; }
+.amb-title { font-size: 26px; font-weight: 700; color: #00236f; margin: 0; font-family:'Inter', system-ui, -apple-system, sans-serif; letter-spacing:-0.02em; }
 
 /* Alert */
 .amb-alert { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-radius: 8px; font-size: 0.875rem; font-weight: 500; margin-bottom: 16px; }

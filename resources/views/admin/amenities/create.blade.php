@@ -11,8 +11,8 @@
 
 /* ═══ HEADER (sticky) ═══ */
 .af-header { display:flex; justify-content:space-between; align-items:center; padding:16px 0; margin-bottom:24px; position:sticky; top:0; background:#fff; z-index:20; border-bottom:1px solid #e2e8f0; }
-.af-header__title { font-size:20px; font-weight:700; color:#0b1c30; }
-.af-header__sub { font-size:13px; color:#64748b; margin-top:2px; }
+.af-header__title { font-size:26px; font-weight:700; color:#00236f; font-family:'Inter', system-ui, -apple-system, sans-serif; letter-spacing:-0.02em; }
+.af-header__sub { font-size:13.5px; color:#64748b; margin-top:4px; font-family:'Inter', system-ui, -apple-system, sans-serif; }
 .af-header__actions { display:flex; gap:10px; }
 .af-btn { padding:10px 20px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; border:none; text-decoration:none; transition:.15s; }
 .af-btn--primary { background:#0b57d0; color:#fff; } .af-btn--primary:hover { background:#094bb3; }
