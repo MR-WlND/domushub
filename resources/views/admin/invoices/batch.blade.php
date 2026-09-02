@@ -42,7 +42,7 @@
                 <div class="batch-config">
                     <div class="batch-section">
                         <h3 class="batch-section-title">Thông số chung</h3>
-                        <div class="batch-fields">
+                        <div class="batch-fields" style="grid-template-columns: repeat(3, 1fr);">
                             <div class="batch-field">
                                 <label>Tháng phát hành <span class="batch-req">*</span></label>
                                 <input type="month" name="billing_month" id="billing_month" value="{{ $selectedMonth }}"
@@ -53,6 +53,15 @@
                                 <label>Hạn thanh toán <span class="batch-req">*</span></label>
                                 <input type="date" name="due_date"
                                     value="{{ old('due_date', now()->addDays(20)->format('Y-m-d')) }}" required>
+                            </div>
+                            <div class="batch-field">
+                                <label>Tòa nhà</label>
+                                <select id="block_filter" onchange="filterApartments()" style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.875rem; background: #f8fafc; outline: none;">
+                                    <option value="all">-- Tất cả tòa nhà --</option>
+                                    @foreach($blocks as $b)
+                                        <option value="{{ $b->id }}">{{ $b->name }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -132,7 +141,7 @@
                             </label>
                             <label class="batch-option">
                                 <input type="checkbox" name="only_occupied" id="only_occupied" value="1" checked
-                                    onchange="updateApartmentCount()">
+                                    onchange="filterApartments()">
                                 <span>Chỉ căn hộ đang có người ở (occupied)</span>
                             </label>
                         </div>
@@ -177,8 +186,9 @@
                                     @forelse($apartments as $apt)
                                         @php
                                             $hasInvoice = $apt->invoices->isNotEmpty();
+                                            $blockId = optional(optional($apt->floor)->block)->id;
                                         @endphp
-                                        <tr data-status="{{ $apt->status }}" class="{{ $hasInvoice ? 'batch-row-highlight' : '' }}">
+                                        <tr data-status="{{ $apt->status }}" data-block-id="{{ $blockId }}" class="{{ $hasInvoice ? 'batch-row-highlight' : '' }}">
                                             <td>
                                                 <input type="checkbox" name="apartment_ids[]" value="{{ $apt->id }}"
                                                     class="batch-target-check batch-check" {{ $hasInvoice ? '' : 'checked' }}>
@@ -635,6 +645,43 @@
     </style>
 
     <script>
+        function filterApartments() {
+            const blockFilterEl = document.getElementById('block_filter');
+            const onlyOccupiedEl = document.getElementById('only_occupied');
+
+            const selectedBlock = blockFilterEl ? blockFilterEl.value : 'all';
+            const onlyOccupied = onlyOccupiedEl ? onlyOccupiedEl.checked : false;
+
+            const rows = document.querySelectorAll('#aptTable tbody tr[data-block-id]');
+
+            rows.forEach(row => {
+                const blockId = row.getAttribute('data-block-id');
+                const status = row.getAttribute('data-status');
+                const checkbox = row.querySelector('.batch-target-check');
+                const isHighlight = row.classList.contains('batch-row-highlight'); // Đã xuất hóa đơn
+
+                const matchBlock = (selectedBlock === 'all' || blockId === selectedBlock);
+                const matchStatus = (!onlyOccupied || status === 'occupied');
+
+                if (matchBlock && matchStatus) {
+                    row.style.display = '';
+                    if (checkbox) {
+                        checkbox.disabled = false;
+                        // Mặc định tích nếu chưa xuất hóa đơn
+                        checkbox.checked = !isHighlight;
+                    }
+                } else {
+                    row.style.display = 'none';
+                    if (checkbox) {
+                        checkbox.checked = false;
+                        checkbox.disabled = true;
+                    }
+                }
+            });
+
+            updateApartmentCount();
+        }
+
         function updateApartmentCount() {
             const checkedBoxes = document.querySelectorAll('.batch-target-check:checked');
             const activeApts = checkedBoxes.length;
@@ -644,7 +691,7 @@
         }
 
         function updateEstimatedCost() {
-            const checkboxes = document.querySelectorAll('.batch-check:checked');
+            const checkboxes = document.querySelectorAll('.batch-price-list .batch-check:checked');
             let totalPerApt = 0;
             checkboxes.forEach(cb => {
                 totalPerApt += parseFloat(cb.getAttribute('data-price')) || 0;
@@ -667,15 +714,16 @@
             }
         });
         document.getElementById('selectAllApartments').addEventListener('change', function() {
-            document.querySelectorAll('.batch-target-check').forEach(function(checkbox) {
-                checkbox.checked = this.checked;
-            }, this);
+            const isChecked = this.checked;
+            document.querySelectorAll('#aptTable tbody tr:not([style*="display: none"]) .batch-target-check').forEach(function(checkbox) {
+                checkbox.checked = isChecked;
+            });
             updateApartmentCount();
         });
 
         // Chạy lần đầu
         document.addEventListener('DOMContentLoaded', () => {
-            updateApartmentCount();
+            filterApartments();
         });
     </script>
 @endsection
