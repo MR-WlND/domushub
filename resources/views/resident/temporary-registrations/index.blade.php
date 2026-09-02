@@ -138,10 +138,17 @@
                             {{ $reg->end_date ? $reg->end_date->format('d/m/Y') : 'Chưa xác định' }}
                         </td>
                         <td>
+                            @php
+                                $isEnded = $reg->end_date && \Carbon\Carbon::parse($reg->end_date)->startOfDay()->lt(now()->startOfDay());
+                            @endphp
                             @if($reg->status == 'pending')
                                 <span class="badge-status badge-pending">Chờ duyệt</span>
                             @elseif($reg->status == 'approved')
-                                <span class="badge-status badge-approved">Đã duyệt</span>
+                                @if($isEnded)
+                                    <span class="badge-status" style="background-color: #e2e8f0; color: #475569;">Đã kết thúc</span>
+                                @else
+                                    <span class="badge-status badge-approved">Đã duyệt</span>
+                                @endif
                             @else
                                 <span class="badge-status badge-rejected">Từ chối</span>
                             @endif
@@ -172,13 +179,13 @@
                                     </button>
                                 </form>
                                 @endif
-                                @if($reg->status == 'approved')
+                                @if($reg->status == 'approved' && !$isEnded)
                                     <a href="{{ route('resident.temporary-registrations.create', ['extend_id' => $reg->id]) }}" class="action-btn" style="color: #16a34a;" title="Gia hạn">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                                         </svg>
                                     </a>
-                                    <form action="{{ route('resident.temporary-registrations.end-early', $reg->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn báo cáo kết thúc sớm (hôm nay)?');" style="margin:0;">
+                                    <form action="{{ route('resident.temporary-registrations.end-early', $reg->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn báo cáo kết thúc sớm (hôm qua)?');" style="margin:0;">
                                         @csrf
                                         <button type="submit" class="action-btn" style="color: #d97706;" title="Kết thúc sớm">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

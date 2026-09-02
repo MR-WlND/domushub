@@ -314,7 +314,7 @@ class TemporaryRegistrationController extends Controller
         DB::beginTransaction();
         try {
             $temporaryRegistration->update([
-                'end_date' => now(),
+                'end_date' => now()->subDay(),
             ]);
 
             $targetUserId = $temporaryRegistration->user_id;
