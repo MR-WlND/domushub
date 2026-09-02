@@ -5,76 +5,110 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DomusHub – Đăng nhập Admin</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    @vite(['resources/css/auth/admin.css'])
+    @vite(['resources/css/auth/login.css'])
 </head>
 <body>
+<div class="container">
 
-<div class="card">
-
-    <div class="logo">
-        <div class="logo-icon"><i class="fa-solid fa-user-tie"></i></div>
-        DomusHub Admin
+    <!-- LEFT -->
+    <div class="left">
+        <img src="{{ asset('images/admin_login_bg.jpg') }}" alt="admin office">
+        <div class="overlay"></div>
+        <div class="hero">
+            <h1>Quản trị & Điều hành<br>tại DomusHub</h1>
+            <p>Hệ thống quản lý trung tâm giúp bạn điều hành và giám sát mọi hoạt động của tòa nhà.</p>
+        </div>
     </div>
 
-    <h2>Xin chào, Admin</h2>
-    <p class="sub">Đăng nhập để quản lý hệ thống DomusHub.</p>
+    <!-- RIGHT -->
+    <div class="right">
+        <div class="login-box">
 
-    @if(session('error'))
-        <div class="alert-error">
-            <i class="fa-solid fa-circle-exclamation"></i> {{ session('error') }}
-        </div>
-    @endif
-
-    <form method="POST" action="{{ route('admin.login.submit') }}">
-        @csrf
-
-        <div class="group">
-            <label>Email</label>
-            <div class="input-box">
-                <i class="fa-regular fa-envelope icon"></i>
-                <input type="email" name="email" placeholder="" value="{{ old('email') }}" required>
+            <div class="logo">
+                <i class="fa-solid fa-user-tie"></i> DomusHub Admin
             </div>
-            @error('email')<span class="error-msg">{{ $message }}</span>@enderror
-        </div>
 
-        <div class="group">
-            <label>Mật khẩu</label>
-            <div class="input-box">
-                <i class="fa-solid fa-lock icon"></i>
-                <input type="password" name="password" id="password" placeholder="••••••••" required>
-                <i class="fa-regular fa-eye toggle-pw" id="toggleIcon" onclick="togglePassword()"></i>
+            <h2>Xin chào, Admin</h2>
+            <p class="sub">Đăng nhập để quản lý hệ thống DomusHub.</p>
+
+            @if(session('error'))
+                <div class="alert-error">
+                    <i class="fa-solid fa-circle-exclamation"></i> {{ session('error') }}
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('admin.login.submit') }}">
+                @csrf
+
+                <div class="group">
+                    <label>Email</label>
+                    <div class="input-box">
+                        <i class="fa-regular fa-envelope"></i>
+                        <input type="email" name="email" placeholder="admin@example.com" value="{{ old('email') }}" required>
+                    </div>
+                    @error('email')<span class="error-msg">{{ $message }}</span>@enderror
+                </div>
+
+                <div class="group">
+                    <label>Mật khẩu</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" name="password" id="password" placeholder="Nhập mật khẩu" required>
+                        <i class="fa-solid fa-eye toggle-pw" id="togglePassword"></i>
+                    </div>
+                </div>
+
+                <div class="resident-login-options">
+                    <label class="resident-remember">
+                        <input type="checkbox" name="remember" value="1" {{ old('remember') ? 'checked' : '' }}>
+                        <span>Ghi nhớ đăng nhập</span>
+                    </label>
+
+                    <div class="forgot">
+                        <a href="#">Quên mật khẩu?</a>
+                    </div>
+                </div>
+
+                <button type="submit" class="login-btn">
+                    Đăng nhập <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <div class="divider"><span>HOẶC TIẾP TỤC VỚI</span></div>
+
+            <div class="support" style="margin-bottom: 24px;">
+                <i class="fa-solid fa-circle-info"></i>
+                <div>
+                    <strong>Bảo mật hệ thống</strong>
+                    <p>Phiên đăng nhập được mã hóa và ghi lại nhật ký. Nếu cần hỗ trợ, liên hệ IT <strong>1900-XXXX</strong></p>
+                </div>
             </div>
-        </div>
 
-        <div class="form-row">
-            <div>
-                <label class="remember">
-                    <input type="checkbox" name="remember"> Ghi nhớ đăng nhập
-                </label>
+            <div class="bottom">
+                <small>
+                    <span>Chính sách bảo mật</span>
+                    <span>Điều khoản dịch vụ</span>
+                </small>
             </div>
+
         </div>
-
-        <button type="submit" class="login-btn">
-            <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
-        </button>
-    </form>
-
-    <div class="info-box">
-        <i class="fa-solid fa-lock"></i>
-        <span>Phiên đăng nhập được mã hóa và ghi lại nhật ký. Nếu cần hỗ trợ, liên hệ IT <strong>1900-XXXX</strong></span>
     </div>
 
 </div>
-
 <script>
-function togglePassword() {
-    const input = document.getElementById('password');
-    const icon = document.getElementById('toggleIcon');
-    const isHidden = input.type === 'password';
-    input.type = isHidden ? 'text' : 'password';
-    icon.className = isHidden ? 'fa-regular fa-eye-slash toggle-pw' : 'fa-regular fa-eye toggle-pw';
-}
+    document.addEventListener('DOMContentLoaded', function() {
+        const togglePassword = document.querySelector('#togglePassword');
+        const password = document.querySelector('#password');
+        
+        if (togglePassword && password) {
+            togglePassword.addEventListener('click', function () {
+                const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                password.setAttribute('type', type);
+                this.classList.toggle('fa-eye');
+                this.classList.toggle('fa-eye-slash');
+            });
+        }
+    });
 </script>
-
 </body>
 </html>
