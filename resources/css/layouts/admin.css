@@ -39,6 +39,8 @@ body.dashboard-page,
 .stat-header h1,
 .rpt-page__title,
 .apt-inv-title,
+.batch-title,
+.batch-header h1,
 .dashboard-content .page-header h1,
 .dashboard-content h1:first-child {
     font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
@@ -64,6 +66,8 @@ body.dashboard-page,
 .ir-header__left p,
 .page-subtitle,
 .tr-subtitle,
+.batch-sub,
+.batch-eyebrow,
 .dashboard-content .page-header p {
     font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
     font-size: 13.5px !important;

@@ -36,35 +36,38 @@
 
         <form method="POST" action="{{ portal_route('invoices.batch.store') }}" id="batchForm">
             @csrf
+
+            {{-- Thông số chung (Tràn ngang toàn bộ trang) --}}
+            <div class="batch-section" style="margin-bottom: 20px;">
+                <h3 class="batch-section-title">Thông số chung</h3>
+                <div class="batch-fields">
+                    <div class="batch-field">
+                        <label>Tháng phát hành <span class="batch-req">*</span></label>
+                        <input type="month" name="billing_month" id="billing_month" value="{{ $selectedMonth }}"
+                            onchange="window.location='{{ portal_route('invoices.batch') }}?billing_month=' + encodeURIComponent(this.value)"
+                            required>
+                    </div>
+                    <div class="batch-field">
+                        <label>Hạn thanh toán <span class="batch-req">*</span></label>
+                        <input type="date" name="due_date"
+                            value="{{ old('due_date', now()->addDays(20)->format('Y-m-d')) }}" required>
+                    </div>
+                    <div class="batch-field">
+                        <label>Tòa nhà</label>
+                        <select id="block_filter" onchange="filterApartments()">
+                            <option value="all">-- Tất cả tòa nhà --</option>
+                            @foreach($blocks as $b)
+                                <option value="{{ $b->id }}">{{ $b->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+            </div>
+
             <div class="batch-layout">
 
                 {{-- Cấu hình hóa đơn --}}
                 <div class="batch-config">
-                    <div class="batch-section">
-                        <h3 class="batch-section-title">Thông số chung</h3>
-                        <div class="batch-fields" style="grid-template-columns: repeat(3, 1fr);">
-                            <div class="batch-field">
-                                <label>Tháng phát hành <span class="batch-req">*</span></label>
-                                <input type="month" name="billing_month" id="billing_month" value="{{ $selectedMonth }}"
-                                    onchange="window.location='{{ portal_route('invoices.batch') }}?billing_month=' + encodeURIComponent(this.value)"
-                                    required>
-                            </div>
-                            <div class="batch-field">
-                                <label>Hạn thanh toán <span class="batch-req">*</span></label>
-                                <input type="date" name="due_date"
-                                    value="{{ old('due_date', now()->addDays(20)->format('Y-m-d')) }}" required>
-                            </div>
-                            <div class="batch-field">
-                                <label>Tòa nhà</label>
-                                <select id="block_filter" onchange="filterApartments()" style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.875rem; background: #f8fafc; outline: none;">
-                                    <option value="all">-- Tất cả tòa nhà --</option>
-                                    @foreach($blocks as $b)
-                                        <option value="{{ $b->id }}">{{ $b->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                    </div>
 
                     {{-- Chọn loại phí --}}
                     <div class="batch-section">
@@ -240,38 +243,44 @@
 
     <style>
         .batch-page {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
         .batch-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 20px;
+            align-items: center;
+            margin-bottom: 0;
         }
 
         .batch-eyebrow {
-            font-size: 0.78rem;
+            font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: #64748b;
             margin: 0 0 4px;
             font-weight: 600;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
         }
 
         .batch-title {
-            font-size: 1.6rem;
+            font-size: 26px;
             font-weight: 700;
-            color: #0f172a;
-            margin: 0 0 4px;
+            color: #00236f;
+            margin: 0;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
         }
 
         .batch-sub {
-            font-size: 0.875rem;
+            font-size: 14px;
             color: #64748b;
-            margin: 0;
+            margin: 6px 0 0 0;
+            font-weight: 400;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
         }
 
         .batch-alert {
@@ -299,9 +308,15 @@
             grid-template-columns: 1fr 1fr;
             gap: 20px;
             margin-bottom: 20px;
+            min-width: 0;
         }
 
-        @media (max-width: 860px) {
+        .batch-config,
+        .batch-preview {
+            min-width: 0;
+        }
+
+        @media (max-width: 992px) {
             .batch-layout {
                 grid-template-columns: 1fr;
             }
@@ -334,33 +349,41 @@
 
         .batch-fields {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
         }
 
         .batch-field {
             display: flex;
             flex-direction: column;
             gap: 5px;
+            min-width: 0;
         }
 
         .batch-field label {
             font-size: 0.78rem;
             font-weight: 600;
             color: #64748b;
+            white-space: nowrap;
         }
 
         .batch-field input,
         .batch-field select {
-            padding: 8px 12px;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            padding: 9px 12px;
             border: 1px solid #cbd5e1;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 0.875rem;
+            color: #0f172a;
             background: #f8fafc;
             outline: none;
+            transition: all 0.2s ease;
         }
 
-        .batch-field input:focus {
+        .batch-field input:focus,
+        .batch-field select:focus {
             border-color: #3b82f6;
             background: #fff;
         }
@@ -380,8 +403,9 @@
             align-items: center;
             gap: 12px;
             padding: 12px 14px;
-            border: 1.5px solid #e2e8f0;
+            border: 1px solid #e2e8f0;
             border-radius: 8px;
+            background: #fff;
             cursor: pointer;
             transition: border-color .15s, background .15s;
         }
@@ -398,6 +422,8 @@
         .batch-price-item--disabled {
             opacity: 0.45;
             cursor: not-allowed;
+            background: #f8fafc;
+            border-color: #e2e8f0;
         }
 
         .batch-check {
@@ -465,7 +491,7 @@
         /* Est block */
         .batch-est-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
             gap: 12px;
         }
 
@@ -618,12 +644,12 @@
         }
 
         .batch-btn--primary {
-            background: #2563eb;
+            background: #00236f;
             color: #fff;
         }
 
         .batch-btn--primary:hover {
-            background: #1d4ed8;
+            background: #00123f;
         }
 
         .batch-btn--ghost {
