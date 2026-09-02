@@ -521,22 +521,20 @@
                                 </label>
                                 
                                 <!-- Nút chụp ảnh -->
-                                <label for="cameraInput" class="btn-cancel" style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; border-color: #10b981; color: #10b981; margin: 0; padding: 8px 16px;">
+                                <button type="button" onclick="openGlobalCameraModal('PhanAnh')" class="btn-cancel" style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; border-color: #10b981; color: #10b981; margin: 0; padding: 8px 16px; background: #fff;">
                                     <i class="fa-solid fa-camera"></i> Chụp ảnh
-                                </label>
+                                </button>
                                 
                                 <!-- Nút quay video -->
-                                <label for="videoInput" class="btn-cancel" style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; border-color: #f59e0b; color: #f59e0b; margin: 0; padding: 8px 16px;">
+                                <button type="button" onclick="openGlobalVideoModal('PhanAnh')" class="btn-cancel" style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; border-color: #f59e0b; color: #f59e0b; margin: 0; padding: 8px 16px; background: #fff;">
                                     <i class="fa-solid fa-video"></i> Quay video
-                                </label>
+                                </button>
                             </div>
                             
                             <span style="display: block; font-size: 12px; color: #94a3b8; margin-top: 12px;">Tối đa 5 file, dung lượng dưới 20MB/file</span>
                         </div>
 
                         <input type="file" id="fileInput" name="images[]" multiple accept="image/*,video/*" style="display:none;">
-                        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
-                        <input type="file" id="videoInput" accept="video/*" capture="environment" style="display:none;">
                         
                         <div class="upload-preview" id="imagePreview"></div>
                     </div>
@@ -642,6 +640,9 @@
         </div>
     </div>
 </div>
+
+@include('components.webrtc-camera')
+@include('components.webrtc-video')
 
 @endsection
 

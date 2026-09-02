@@ -339,12 +339,28 @@
                                     {{-- Dòng 4: Hình ảnh & Thời gian + Trạng thái --}}
                                     <div class="tk-mb-card__details">
                                         @if(!empty($ticket->images) && is_array($ticket->images) && count($ticket->images) > 0)
+                                            @php
+                                                $ext = strtolower(pathinfo($ticket->images[0], PATHINFO_EXTENSION));
+                                                $isVideo = in_array($ext, ['mp4', 'mov', 'avi', 'webm']);
+                                            @endphp
                                             <div class="tk-mb-card__img-box">
-                                                <img src="{{ asset('storage/' . $ticket->images[0]) }}" alt="Thumbnail">
+                                                @if($isVideo)
+                                                    <video src="{{ asset('storage/' . $ticket->images[0]) }}" muted style="width:100%; height:100%; object-fit:cover;"></video>
+                                                @else
+                                                    <img src="{{ asset('storage/' . $ticket->images[0]) }}" alt="Thumbnail">
+                                                @endif
                                             </div>
                                         @elseif(!empty($ticket->image))
+                                            @php
+                                                $ext = strtolower(pathinfo($ticket->image, PATHINFO_EXTENSION));
+                                                $isVideo = in_array($ext, ['mp4', 'mov', 'avi', 'webm']);
+                                            @endphp
                                             <div class="tk-mb-card__img-box">
-                                                <img src="{{ asset('storage/' . $ticket->image) }}" alt="Thumbnail">
+                                                @if($isVideo)
+                                                    <video src="{{ asset('storage/' . $ticket->image) }}" muted style="width:100%; height:100%; object-fit:cover;"></video>
+                                                @else
+                                                    <img src="{{ asset('storage/' . $ticket->image) }}" alt="Thumbnail">
+                                                @endif
                                             </div>
                                         @endif
                                         <div class="tk-mb-card__info">

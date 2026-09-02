@@ -194,6 +194,7 @@ $portalRoutes = function () {
     Route::delete('/utility-readings/{id}', [UtilityMeterController::class, 'destroy'])->name('utility-readings.destroy');
     Route::post('/utility-readings/{id}/approve', [UtilityMeterController::class, 'approve'])->name('utility-readings.approve');
     Route::post('/utility-readings/{id}/reject', [UtilityMeterController::class, 'reject'])->name('utility-readings.reject');
+    Route::post('/utility-readings/{id}/allow-rerecord', [UtilityMeterController::class, 'allowReRecord'])->name('utility-readings.allow-rerecord');
     Route::post('/utility-readings/batch-approve', [UtilityMeterController::class, 'batchApprove'])->name('utility-readings.batch-approve');
     Route::delete('/utility-readings/{id}/image', [UtilityMeterController::class, 'removeImage'])->name('utility-readings.remove-image');
 
@@ -500,7 +501,7 @@ Route::middleware(['resident'])->group(function () {
     Route::get('/resident/invoices/vnpay-return', [ResidentInvoiceController::class, 'vnpayReturn'])->name('resident.invoices.vnpay-return');
     Route::get('/resident/invoices/{id}', [ResidentInvoiceController::class, 'show'])->name('resident.invoices.show');
     Route::get('/resident/invoices/{id}/print', [ResidentInvoiceController::class, 'printInvoice'])->name('resident.invoices.print');
-    Route::post('/resident/invoices/{invoice}/complaint-water', [ResidentInvoiceController::class, 'complaintWater'])->name('resident.invoices.complaint-water');
+    Route::post('/resident/invoices/complain-water', [ResidentInvoiceController::class, 'complainWater'])->name('resident.invoices.complain-water');
     Route::post('/resident/invoices/pay', [ResidentInvoiceController::class, 'pay'])->name('resident.invoices.pay');
     Route::post('/resident/invoices/pay-details', [ResidentInvoiceController::class, 'payDetails'])->name('resident.invoices.pay-details');
     Route::get('/resident/payments/{payment}/receipt', [ResidentInvoiceController::class, 'printReceipt'])->name('resident.payments.receipt');

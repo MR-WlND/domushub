@@ -242,6 +242,10 @@
 
                     {{-- Trạng thái --}}
                     <td style="text-align:center;">
+                        @if($reading->is_complained)
+                            <span class="util-badge util-badge--danger" style="background:#fef2f2; color:#dc2626; font-size:11px; margin-bottom:4px; display:inline-block;" data-tooltip="Khiếu nại: {{ $reading->complaint_reason }}">Có khiếu nại</span>
+                            <br>
+                        @endif
                         @if($reading->status === 'approved')
                             @php
                                 $approveLog = collect($reading->history_logs ?? [])->firstWhere('action', 'approved');
@@ -318,6 +322,16 @@
                                 </form>
                                 @endif
                                 @if(auth()->user()->role === 'admin')
+                                    @if($reading->is_complained)
+                                    <form action="{{ portal_route('utility-readings.allow-rerecord', $reading->id) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Hóa đơn tiền nước này sẽ bị hủy bỏ (nếu chưa thanh toán) để sửa lại. Bạn có chắc chắn?')">
+                                        @csrf
+                                        <button type="submit" class="util-btn-view" style="color: #ea580c; background: transparent; border: none; padding: 4px;" title="Cho phép ghi lại">
+                                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                            </svg>
+                                        </button>
+                                    </form>
+                                    @endif
                                 <a href="{{ portal_route('utility-readings.edit', $reading->id) }}"
                                     class="util-btn-edit" title="Sửa">
                                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -347,7 +361,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                                     </svg>
                                 </button>
-                                @if(in_array($reading->status, ['pending', 'rejected']) && $reading->recorded_by === auth()->id())
+                                @if(in_array($reading->status, ['pending', 'rejected']))
                                 <a href="{{ portal_route('utility-readings.edit', $reading->id) }}"
                                     class="util-btn-edit" title="Sửa">
                                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

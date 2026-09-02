@@ -75,16 +75,32 @@
                     </div>
 
                     @if($ticket->images && count($ticket->images) > 0)
-                        <div class="tk-section-title">ẢNH ĐÍNH KÈM</div>
+                        <div class="tk-section-title">ẢNH/VIDEO ĐÍNH KÈM</div>
                         <div class="tk-photo-grid">
-                            @foreach($ticket->images as $img)
-                                <img src="{{ asset('storage/' . $img) }}" alt="Photo" class="tk-photo-item" onclick="openAdminImgModal(this.src)">
+                            @foreach($ticket->images as $file)
+                                @php
+                                    $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                                    $isVideo = in_array($ext, ['mp4', 'mov', 'avi', 'webm']);
+                                @endphp
+                                @if($isVideo)
+                                    <video controls src="{{ asset('storage/' . $file) }}" class="tk-photo-item" style="background:#000; width:100%; height:180px; object-fit:cover; border-radius:12px; border:1px solid #e2e8f0;"></video>
+                                @else
+                                    <img src="{{ asset('storage/' . $file) }}" alt="Photo" class="tk-photo-item" onclick="openAdminImgModal(this.src)">
+                                @endif
                             @endforeach
                         </div>
                     @elseif($ticket->image)
-                        <div class="tk-section-title">ẢNH ĐÍNH KÈM</div>
+                        <div class="tk-section-title">ẢNH/VIDEO ĐÍNH KÈM</div>
                         <div class="tk-photo-grid">
-                            <img src="{{ asset('storage/' . $ticket->image) }}" alt="Photo" class="tk-photo-item" onclick="openAdminImgModal(this.src)">
+                            @php
+                                $ext = strtolower(pathinfo($ticket->image, PATHINFO_EXTENSION));
+                                $isVideo = in_array($ext, ['mp4', 'mov', 'avi', 'webm']);
+                            @endphp
+                            @if($isVideo)
+                                <video controls src="{{ asset('storage/' . $ticket->image) }}" class="tk-photo-item" style="background:#000; width:100%; height:180px; object-fit:cover; border-radius:12px; border:1px solid #e2e8f0;"></video>
+                            @else
+                                <img src="{{ asset('storage/' . $ticket->image) }}" alt="Photo" class="tk-photo-item" onclick="openAdminImgModal(this.src)">
+                            @endif
                         </div>
                     @endif
                 </div>

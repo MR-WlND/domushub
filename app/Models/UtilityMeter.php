@@ -48,6 +48,8 @@ class UtilityMeter extends Model
         'is_reset',
         'rejected_by',
         'reject_reason',
+        'is_complained',
+        'complaint_reason',
     ];
 
     /**

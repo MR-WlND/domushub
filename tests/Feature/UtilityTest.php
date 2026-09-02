@@ -361,7 +361,7 @@ class UtilityTest extends TestCase
 
         $this->actingAs($resident);
 
-        $response = $this->post(route('resident.invoices.complaint-water', $invoice));
+        $response = $this->post(route('resident.invoices.complain-water', $invoice));
 
         $response->assertRedirect();
         // Ticket phải được tạo

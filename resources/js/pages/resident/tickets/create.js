@@ -33,8 +33,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // ----------------------------------------------------
     let uploadedFiles = new DataTransfer();
     const fileInput = document.getElementById('fileInput');
-    const cameraInput = document.getElementById('cameraInput');
-    const videoInput = document.getElementById('videoInput');
     const previewContainer = document.getElementById('imagePreview');
     const uploadZone = document.querySelector('.upload-zone');
 
@@ -51,15 +49,29 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (fileInput) fileInput.files = uploadedFiles.files;
         renderPreviews();
-        
-        // Clear camera input so it can be reused immediately for another shot
-        if (event.target === cameraInput) cameraInput.value = '';
-        if (event.target === videoInput) videoInput.value = '';
     }
 
     if (fileInput) fileInput.addEventListener('change', handleFileSelect);
-    if (cameraInput) cameraInput.addEventListener('change', handleFileSelect);
-    if (videoInput) videoInput.addEventListener('change', handleFileSelect);
+
+    window.addEventListener('global-camera-captured', function(e) {
+        if(uploadedFiles.files.length >= 5) {
+            alert('Tối đa 5 file!');
+            return;
+        }
+        uploadedFiles.items.add(e.detail.file);
+        if (fileInput) fileInput.files = uploadedFiles.files;
+        renderPreviews();
+    });
+
+    window.addEventListener('global-video-recorded', function(e) {
+        if(uploadedFiles.files.length >= 5) {
+            alert('Tối đa 5 file!');
+            return;
+        }
+        uploadedFiles.items.add(e.detail.file);
+        if (fileInput) fileInput.files = uploadedFiles.files;
+        renderPreviews();
+    });
 
     function renderPreviews() {
         if (!previewContainer || !uploadZone) return;

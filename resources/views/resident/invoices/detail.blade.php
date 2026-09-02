@@ -106,7 +106,7 @@
                                             </div>
                                             @if($detail->servicePrice->type === 'water')
                                                 <div style="margin-top: 4px;">
-                                                    <button type="button" class="btn-complaint" onclick="sendWaterComplaint(event, '{{ route('resident.invoices.complaint-water', $invoice->id) }}')" style="background: none; border: none; color: #dc2626; font-size: 0.75rem; font-weight: 600; cursor: pointer; text-decoration: underline; padding: 0;">
+                                                    <button type="button" class="btn-complaint" onclick="openComplaintModal({{ $invoice->id }}, '{{ $invoice->title }}', {{ $invoice->billing_month->month }}, {{ $invoice->billing_year }})" style="background: none; border: none; color: #dc2626; font-size: 0.75rem; font-weight: 600; cursor: pointer; text-decoration: underline; padding: 0;">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right: 3px; vertical-align: middle; display: inline-block;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>Khiếu nại chỉ số
                                                     </button>
                                                 </div>
@@ -279,6 +279,32 @@
     </div>
     @endif
 </div>{{-- /.invoice-detail-page --}}
+
+{{-- Popup Khiếu nại chỉ số nước --}}
+<div id="complaintModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:99999; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s ease;">
+    <div style="background:#fff; border-radius:8px; width:100%; max-width:420px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1); transform:scale(0.95); transition:transform 0.2s ease;">
+        <div style="padding: 20px 24px; border-bottom: 1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="font-size:1.1rem; font-weight:600; color:#1e293b; margin:0;">Khiếu nại chỉ số nước</h3>
+            <button type="button" onclick="closeComplaintModal()" style="background:none; border:none; font-size:1.25rem; color:#64748b; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form method="POST" action="{{ route('resident.invoices.complain-water') }}" id="complaint-form">
+            @csrf
+            <input type="hidden" name="invoice_id" id="complaint_invoice_id">
+            <div style="padding: 24px;">
+                <p style="color:#334155; font-size:0.95rem; margin:0 0 16px 0; line-height:1.5;">
+                    Vui lòng cung cấp lý do bạn thấy chỉ số nước <strong id="complaint_invoice_title"></strong> chưa chính xác. Yêu cầu của bạn sẽ được gửi tới Ban quản lý.
+                </p>
+                <div style="margin-bottom: 12px;">
+                    <textarea name="complaint_reason" rows="4" placeholder="Nhập lý do chi tiết..." required style="width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:10px; font-family:inherit; font-size:0.95rem; resize:vertical;"></textarea>
+                </div>
+            </div>
+            <div style="padding: 16px 24px; border-top: 1px solid #e2e8f0; display:flex; gap:12px; justify-content:flex-end; background:#f8fafc; border-bottom-left-radius:8px; border-bottom-right-radius:8px;">
+                <button type="button" onclick="closeComplaintModal()" style="padding:8px 16px; border-radius:6px; border:1px solid #cbd5e1; background:#fff; color:#475569; font-weight:500; font-size:0.9rem; cursor:pointer; transition:background 0.2s;">Hủy bỏ</button>
+                <button type="submit" style="padding:8px 16px; border-radius:6px; border:none; background:#dc2626; color:#fff; font-weight:500; font-size:0.9rem; cursor:pointer; transition:background 0.2s;">Gửi khiếu nại</button>
+            </div>
+        </form>
+    </div>
+</div>
 @include('resident.invoices.partials.style')
 
 @push('styles')
@@ -516,45 +542,32 @@
         updateTotal();
     });
 
-    async function sendWaterComplaint(event, url) {
-        event.preventDefault();
-        if (!confirm('Bạn có chắc chắn muốn gửi khiếu nại về chỉ số nước này tới Ban Quản Lý không?')) {
-            return;
-        }
+    // Complaint Modal Logic
+    window.openComplaintModal = function(invoiceId, title, month, year) {
+        document.getElementById('complaint_invoice_id').value = invoiceId;
+        document.getElementById('complaint_invoice_title').innerText = title;
         
-        const btn = event.currentTarget;
-        const originalContent = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = 'Đang gửi...';
+        const modal = document.getElementById('complaintModal');
+        const modalContent = modal.querySelector('div');
         
-        try {
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json'
-                }
-            });
-            const data = await res.json();
-            if (data.success) {
-                alert(data.message);
-                btn.innerHTML = 'Đã gửi khiếu nại';
-                btn.style.color = '#16a34a';
-                btn.style.textDecoration = 'none';
-                btn.onclick = null;
-            } else {
-                alert(data.message || 'Có lỗi xảy ra, vui lòng thử lại.');
-                btn.disabled = false;
-                btn.innerHTML = originalContent;
-            }
-        } catch(err) {
-            console.error(err);
-            alert('Không thể kết nối máy chủ.');
-            btn.disabled = false;
-            btn.innerHTML = originalContent;
-        }
-    }
+        modal.style.display = 'flex';
+        // Trigger reflow for animation
+        void modal.offsetWidth;
+        modal.style.opacity = '1';
+        modalContent.style.transform = 'scale(1) translateY(0)';
+    };
+
+    window.closeComplaintModal = function() {
+        const modal = document.getElementById('complaintModal');
+        const modalContent = modal.querySelector('div');
+        
+        modal.style.opacity = '0';
+        modalContent.style.transform = 'scale(0.95)';
+        
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 200);
+    };
 </script>
 @endpush
 

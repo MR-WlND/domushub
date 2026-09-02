@@ -409,6 +409,9 @@
                         @endif
 
                                 {{-- Extend / End-early / Print (approved only) --}}
+                                @php
+                                    $isEnded = $reg->end_date && $reg->end_date->isPast();
+                                @endphp
                                 @if($reg->status == 'approved' && !$isEnded)
                                     <a href="{{ route('resident.temporary-registrations.print', $reg->id) }}" target="_blank" class="action-btn" title="In Tờ khai CT01" style="color: #00236f;">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

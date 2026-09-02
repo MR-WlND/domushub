@@ -603,9 +603,6 @@ class UtilityMeterController extends Controller
             if (!in_array($reading->status, ['pending', 'rejected'])) {
                 abort(403, 'Bạn không có quyền chỉnh sửa chỉ số đã được duyệt.');
             }
-            if ($reading->recorded_by !== Auth::id()) {
-                abort(403, 'Bạn không có quyền chỉnh sửa chỉ số của kỹ thuật viên khác.');
-            }
         }
 
         $rejections = $this->getRejectionHistory($id);
@@ -630,9 +627,6 @@ class UtilityMeterController extends Controller
         if ($user->role === 'technician') {
             if (!in_array($reading->status, ['pending', 'rejected'])) {
                 abort(403, 'Bạn không có quyền chỉnh sửa chỉ số đã được duyệt.');
-            }
-            if ($reading->recorded_by !== Auth::id()) {
-                abort(403, 'Bạn không có quyền chỉnh sửa chỉ số của kỹ thuật viên khác.');
             }
         }
 
@@ -846,6 +840,28 @@ class UtilityMeterController extends Controller
         ])->with('success', 'Đã từ chối chỉ số và gửi thông báo cho kỹ thuật viên.');
     }
 
+    public function allowReRecord(Request $request, int $id): RedirectResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if ($user && $user->role !== 'admin') {
+            abort(403, 'Bạn không có quyền thực hiện thao tác này.');
+        }
+
+        $reading = UtilityMeter::findOrFail($id);
+        
+        $reading->update([
+            'status' => 'pending',
+            'is_complained' => false,
+            'complaint_reason' => null
+        ]);
+
+        // Rút tiền nước ra khỏi hóa đơn
+        $this->syncInvoice($reading->apartment_id, $reading->record_month, $reading->record_year);
+
+        return redirect()->back()->with('success', 'Đã cho phép ghi lại chỉ số nước. Trạng thái đã chuyển về Chờ chốt và khoản phí nước tạm thời được gỡ bỏ khỏi hóa đơn.');
+    }
+
     /**
      * Phê duyệt hàng loạt chỉ số
      */
@@ -929,16 +945,32 @@ class UtilityMeterController extends Controller
             ]
         );
 
-        // Nếu không có bất kỳ chỉ số tiêu thụ nước nào, hãy tìm hóa đơn hiện tại và xóa nếu cần
+        // Nếu không có bất kỳ chỉ số tiêu thụ nước nào (chưa chốt hoặc bị hủy)
         if (!$waterReading) {
-            $existingInvoice = \App\Models\Invoice::where('apartment_id', $apartmentId)
+            $invoice = \App\Models\Invoice::where('apartment_id', $apartmentId)
                 ->where('billing_month', $month)
                 ->where('billing_year', $year)
-                ->where('title', 'like', '%Phí nước%')
                 ->first();
-            if ($existingInvoice) {
-                $existingInvoice->details()->delete();
-                $existingInvoice->delete();
+                
+            if ($invoice) {
+                // Xóa chi tiết tiền nước
+                $oldDetails = $invoice->details()->where('service_price_id', $waterService->id)->get();
+                $oldAmount = $oldDetails->sum('amount');
+                
+                $invoice->details()->where('service_price_id', $waterService->id)->delete();
+                
+                // Nếu hóa đơn trống, có thể xóa
+                if ($invoice->details()->count() === 0) {
+                    $invoice->delete();
+                } else {
+                    $newTotalAmount = max(0, $invoice->total_amount - $oldAmount);
+                    $invoice->update([
+                        'total_amount' => $newTotalAmount,
+                        'current_amount' => $newTotalAmount,
+                        'total_due_at_issue' => (float)$invoice->previous_debt + $newTotalAmount,
+                        'status' => ($newTotalAmount == 0 || $newTotalAmount <= $invoice->paid_amount) ? 'paid' : 'unpaid',
+                    ]);
+                }
             }
             return;
         }

@@ -685,11 +685,13 @@ class InvoiceController extends Controller
         return view('admin.invoices.print', compact('invoice'));
     }
 
-    /**
-     * Tự động tạo phản ánh khiếu nại chỉ số nước.
-     */
-    public function complaintWater(Request $request, $id)
+    public function complainWater(Request $request)
     {
+        $request->validate([
+            'invoice_id' => 'required|integer',
+            'complaint_reason' => 'required|string|max:1000'
+        ]);
+
         $user = Auth::user();
         $apartmentIds = $user->getApartmentIds();
 
@@ -697,7 +699,8 @@ class InvoiceController extends Controller
             $apartmentIds = [$user->apartment_id];
         }
 
-        $invoice = Invoice::whereIn('apartment_id', $apartmentIds)->findOrFail($id);
+        $invoiceId = $request->input('invoice_id');
+        $invoice = Invoice::whereIn('apartment_id', $apartmentIds)->findOrFail($invoiceId);
 
         // Tìm chỉ số nước tương ứng
         $meter = \App\Models\UtilityMeter::where('apartment_id', $invoice->apartment_id)
@@ -707,35 +710,39 @@ class InvoiceController extends Controller
             ->first();
 
         if (!$meter) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Không tìm thấy dữ liệu chỉ số nước cho kỳ hóa đơn này.'
-            ], 404);
+            return back()->with('error', 'Không tìm thấy dữ liệu chỉ số nước cho kỳ hóa đơn này.');
         }
 
-        // Tạo Ticket khiếu nại tự động
-        $title = "Khiếu nại chỉ số nước - HĐ " . $invoice->invoice_code;
-        $description = "Cư dân " . $user->name . " gửi khiếu nại về chỉ số nước của kỳ hóa đơn " . $invoice->invoice_code . ".\n"
-                     . "- Chỉ số cũ: " . $meter->old_value . " m³\n"
-                     . "- Chỉ số mới: " . $meter->new_value . " m³\n"
-                     . "- Tiêu thụ: " . $meter->usage_amount . " m³\n"
-                     . "- Ngày chốt: " . ($meter->recorded_at ? $meter->recorded_at->format('d/m/Y') : '—') . "\n"
-                     . "Cư dân phản ánh chỉ số nước không chính xác, vui lòng kiểm tra lại.";
+        if ($meter->is_complained) {
+            return back()->with('error', 'Chỉ số nước này đã được khiếu nại và đang chờ xử lý.');
+        }
 
-        $ticket = \App\Models\Ticket::create([
-            'apartment_id' => $invoice->apartment_id,
-            'sender_id' => $user->id,
-            'ticket_type' => 'complaint',
-            'title' => $title,
-            'description' => $description,
-            'priority' => 'high',
-            'status' => 'pending',
+        $meter->update([
+            'is_complained' => true,
+            'complaint_reason' => $request->input('complaint_reason')
         ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Đã gửi khiếu nại thành công! Ban Quản Lý sẽ sớm liên hệ xử lý.'
-        ]);
+        // Gửi thông báo cho Admin/Manager
+        try {
+            $admins = \App\Models\User::whereIn('role', ['admin', 'manager'])->get();
+            $apartmentNumber = $invoice->apartment->apartment_number ?? 'N/A';
+            $notificationData = [
+                'title' => '⚠️ Khiếu nại chỉ số nước',
+                'message' => "Căn hộ <strong>{$apartmentNumber}</strong> khiếu nại chỉ số nước kỳ {$invoice->billing_month->month}/{$invoice->billing_year}. Lý do: " . $request->input('complaint_reason'),
+                'url' => route('admin.utility-readings.index', [
+                    'month' => $invoice->billing_month->month,
+                    'year' => $invoice->billing_year
+                ]),
+                'type' => 'complaint',
+            ];
+            foreach ($admins as $admin) {
+                $admin->notify(new \App\Notifications\UtilityIndexRecordedNotification($notificationData));
+            }
+        } catch (\Exception $e) {
+            logger()->error('Lỗi khi gửi thông báo khiếu nại: ' . $e->getMessage());
+        }
+
+        return back()->with('success', 'Đã gửi khiếu nại thành công! Ban Quản Lý sẽ kiểm tra và xử lý.');
     }
 
     /**
