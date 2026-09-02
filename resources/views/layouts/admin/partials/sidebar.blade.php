@@ -1,10 +1,53 @@
+@php
+    $role = auth()->check() ? auth()->user()->role : null;
+@endphp
+
+@if($role === 'technician')
+<!-- Mobile Sidebar (Resident design) for Technician (Mobile Only) -->
+<div class="mobile-sidebar" id="mobileSidebar">
+    <div class="mobile-sidebar__header">
+        <div class="mobile-sidebar__brand">
+            DomusHub
+        </div>
+        <button id="mobileMenuClose" class="mobile-sidebar__close" onclick="closeSidebar()">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <div class="mobile-sidebar__label">KỸ THUẬT VIÊN</div>
+
+    <div class="mobile-sidebar__menu">
+        <a href="{{ portal_route('tickets.my-tasks') }}" class="mobile-sidebar__link {{ is_portal_route('tickets.my-tasks') ? 'active' : '' }}">
+            <i class="fa-solid fa-screwdriver-wrench nav-icon"></i> Nhiệm vụ của tôi
+        </a>
+        <a href="{{ portal_route('utility-readings.index') }}" class="mobile-sidebar__link {{ is_portal_route('utility-readings.*') ? 'active' : '' }}">
+            <i class="fa-solid fa-droplet nav-icon"></i> Ghi số nước
+        </a>
+        <a href="{{ portal_route('tickets.index') }}" class="mobile-sidebar__link {{ (is_portal_route('tickets.index') || is_portal_route('tickets.show')) && !is_portal_route('tickets.my-tasks') ? 'active' : '' }}">
+            <i class="fa-regular fa-comments nav-icon"></i> Tất cả phản ánh
+        </a>
+    </div>
+
+    <div class="mobile-sidebar__spacer"></div>
+
+    <div class="mobile-sidebar__footer">
+        <a href="{{ portal_route('profile.index') }}" class="mobile-sidebar__link">
+            <i class="fa-solid fa-user nav-icon"></i> Hồ sơ
+        </a>
+        <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="mobile-sidebar__link logout">
+            <i class="fa-solid fa-arrow-right-from-bracket nav-icon"></i> Đăng xuất
+        </a>
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+            @csrf
+        </form>
+    </div>
+</div>
+@endif
+
 <aside class="dashboard-sidebar" id="dashboardSidebar">
     <div class="dashboard-brand">
         <h2 class="dashboard-brand__title">Chung cư Số</h2>
         <p class="dashboard-brand__label">
-            @php
-                $role = auth()->user()->role;
-            @endphp
             @if($role === 'admin')
                 Admin Portal
             @elseif($role === 'manager')
@@ -136,14 +179,6 @@
                     <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
                 </svg>
                 <span>Nhiệm vụ của tôi</span>
-                {{-- Badge: số nhiệm vụ đang chờ --}}
-                @php
-                    $myPendingCount = \App\Models\Ticket::where('handler_id', auth()->id())
-                        ->whereIn('status', ['assigned', 'in_progress'])->count();
-                @endphp
-                @if($myPendingCount > 0)
-                    <span style="margin-left:auto; background:#f97316; color:#fff; font-size:.68rem; font-weight:800; padding:1px 7px; border-radius:12px; min-width:20px; text-align:center;">{{ $myPendingCount }}</span>
-                @endif
             </a>
             <a href="{{ portal_route('tickets.index') }}" class="dashboard-nav__item {{ is_portal_route('tickets.index') || ($role === 'technician' && is_portal_route('tickets.show')) ? 'dashboard-nav__item--active' : '' }}">
                 <svg class="dashboard-nav__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -239,8 +274,6 @@
             </a>
         </div>
         @endif
-
-
 
         {{-- ============================================================== --}}
         {{-- QUẢN LÝ VẬN HÀNH - Admin & Manager --}}

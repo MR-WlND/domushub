@@ -390,13 +390,27 @@ class ApartmentController extends Controller
             return back()->with('error', 'Căn hộ này đã có chủ hộ đăng ký trong hệ thống.');
         }
 
+        // Kiểm tra cư dân đã là chủ hộ hoặc thành viên active trong căn hộ này chưa
+        $existingActive = \App\Models\Resident::where('apartment_id', $apartment->id)
+            ->where('user_id', $user->id)
+            ->whereNull('deleted_at')
+            ->first();
+
+        if ($existingActive && $existingActive->relationship === 'owner') {
+            return back()->with('error', 'Cư dân ' . $user->name . ' đã là chủ hộ của căn hộ này.');
+        }
+
         // 2. Gán cư dân làm chủ hộ
         \Illuminate\Support\Facades\DB::transaction(function () use ($apartment, $user) {
-            $resident = \App\Models\Resident::where('apartment_id', $apartment->id)
+            $resident = \App\Models\Resident::withTrashed()
+                ->where('apartment_id', $apartment->id)
                 ->where('user_id', $user->id)
                 ->first();
 
             if ($resident) {
+                if ($resident->trashed()) {
+                    $resident->restore();
+                }
                 $resident->update([
                     'relationship' => 'owner',
                     'end_date' => null,
@@ -448,9 +462,20 @@ class ApartmentController extends Controller
             return back()->with('error', 'Căn hộ đã đạt giới hạn cư dân tối đa (10 người).');
         }
 
+        // Kiểm tra xem cư dân đã được gán làm khách thuê active chưa
+        $existingActiveTenant = \App\Models\Resident::where('apartment_id', $apartment->id)
+            ->where('user_id', $user->id)
+            ->whereNull('deleted_at')
+            ->first();
+
+        if ($existingActiveTenant && $existingActiveTenant->relationship === 'tenant') {
+            return back()->with('error', 'Cư dân ' . $user->name . ' đã được gán làm khách thuê của căn hộ này.');
+        }
+
         // Gán cư dân làm khách thuê
         \Illuminate\Support\Facades\DB::transaction(function () use ($apartment, $user, $validated) {
-            $resident = \App\Models\Resident::where('apartment_id', $apartment->id)
+            $resident = \App\Models\Resident::withTrashed()
+                ->where('apartment_id', $apartment->id)
                 ->where('user_id', $user->id)
                 ->first();
 
@@ -461,6 +486,9 @@ class ApartmentController extends Controller
             ];
 
             if ($resident) {
+                if ($resident->trashed()) {
+                    $resident->restore();
+                }
                 $resident->update($data);
             } else {
                 $data['user_id'] = $user->id;

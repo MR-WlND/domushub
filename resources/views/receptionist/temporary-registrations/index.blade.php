@@ -537,10 +537,17 @@
                                 {{ $reg->end_date ? $reg->end_date->format('d/m/Y') : 'Chưa xác định' }}
                             </td>
                             <td>
+                                @php
+                                    $isEnded = $reg->end_date && \Carbon\Carbon::parse($reg->end_date)->startOfDay()->lt(now()->startOfDay());
+                                @endphp
                                 @if($reg->status == 'pending')
                                     <span class="badge-status badge-pending">Chờ duyệt</span>
                                 @elseif($reg->status == 'approved')
-                                    <span class="badge-status badge-approved">Đã duyệt</span>
+                                    @if($isEnded)
+                                        <span class="badge-status" style="background-color: #e2e8f0; color: #475569;">Đã kết thúc</span>
+                                    @else
+                                        <span class="badge-status badge-approved">Đã duyệt</span>
+                                    @endif
                                 @else
                                     <span class="badge-status badge-rejected">Từ chối</span>
                                 @endif

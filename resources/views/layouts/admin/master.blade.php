@@ -12,11 +12,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     @vite(['resources/css/app.css', 'resources/css/layouts/admin.css', 'resources/css/layouts/forms.css'])
+    @if(auth()->check() && auth()->user()->role === 'technician')
+        @vite(['resources/css/layouts/resident.css'])
+    @endif
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     @stack('styles')
 </head>
 
-<body class="dashboard-page">
+<body class="dashboard-page {{ auth()->check() && auth()->user()->role === 'technician' ? 'technician-page' : '' }}">
     {{-- Mobile sidebar overlay --}}
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
@@ -32,25 +35,7 @@
         </main>
     </div>
 
-    {{-- MOBILE BOTTOM NAVIGATION (MATCHING DESIGN) --}}
-    <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
-        <a href="{{ portal_route('dashboard') }}" class="mobile-nav-item {{ is_portal_route('dashboard') ? 'active' : '' }}" title="Tổng quan">
-            <i class="fa-solid fa-house"></i>
-        </a>
-        <a href="{{ portal_route('invoices.index') }}" class="mobile-nav-item {{ is_portal_route('invoices.*') ? 'active' : '' }}" title="Hóa đơn">
-            <i class="fa-solid fa-receipt"></i>
-        </a>
-        <a href="{{ portal_route('announcements.index') }}" class="mobile-nav-item {{ is_portal_route('announcements.*') ? 'active' : '' }}" title="Bản tin">
-            <i class="fa-regular fa-newspaper"></i>
-        </a>
-        <a href="{{ portal_route('tickets.index') }}" class="mobile-nav-item {{ is_portal_route('tickets.*') ? 'active' : '' }}" title="Phản ánh">
-            <i class="fa-regular fa-calendar-check"></i>
-        </a>
-        <a href="{{ portal_route('profile.index') }}" class="mobile-nav-chat-btn" title="Tài khoản">
-            <i class="fa-solid fa-comments"></i>
-            <span class="online-dot"></span>
-        </a>
-    </nav>
+
 
     @stack('scripts')
     <script>
@@ -73,13 +58,21 @@
         });
 
         function openSidebar() {
-            document.getElementById('dashboardSidebar').classList.add('sidebar--open');
-            document.getElementById('sidebarOverlay').classList.add('sidebar-overlay--visible');
+            const mobileSidebar = document.getElementById('mobileSidebar');
+            const dashboardSidebar = document.getElementById('dashboardSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            if (mobileSidebar) mobileSidebar.classList.add('active');
+            if (dashboardSidebar) dashboardSidebar.classList.add('sidebar--open');
+            if (overlay) overlay.classList.add('sidebar-overlay--visible', 'active');
             document.body.style.overflow = 'hidden';
         }
         function closeSidebar() {
-            document.getElementById('dashboardSidebar').classList.remove('sidebar--open');
-            document.getElementById('sidebarOverlay').classList.remove('sidebar-overlay--visible');
+            const mobileSidebar = document.getElementById('mobileSidebar');
+            const dashboardSidebar = document.getElementById('dashboardSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            if (mobileSidebar) mobileSidebar.classList.remove('active');
+            if (dashboardSidebar) dashboardSidebar.classList.remove('sidebar--open');
+            if (overlay) overlay.classList.remove('sidebar-overlay--visible', 'active');
             document.body.style.overflow = '';
         }
     </script>

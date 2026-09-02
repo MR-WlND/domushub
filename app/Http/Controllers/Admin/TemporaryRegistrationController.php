@@ -130,6 +130,17 @@ class TemporaryRegistrationController extends Controller
                 throw new \Exception("Vui lòng chọn Cư dân cho đơn Tạm vắng.");
             }
             
+            // Kiểm tra nếu cư dân đã là thành viên trong căn hộ
+            if (!empty($data['user_id'])) {
+                $alreadyActive = Resident::where('user_id', $data['user_id'])
+                    ->where('apartment_id', $request->apartment_id)
+                    ->whereNull('deleted_at')
+                    ->exists();
+                if ($alreadyActive && $request->type === 'residence') {
+                    throw new \Exception("Cư dân này đã được đăng ký trong căn hộ.");
+                }
+            }
+
             // Nếu admin tạo, trạng thái mặc định là approved
             $data['status'] = 'approved';
             $data['approved_by'] = Auth::id();
@@ -335,7 +346,7 @@ class TemporaryRegistrationController extends Controller
         DB::beginTransaction();
         try {
             $temporaryRegistration->update([
-                'end_date' => now(),
+                'end_date' => now()->subDay(),
             ]);
 
             $targetUserId = $temporaryRegistration->user_id;
@@ -412,7 +423,7 @@ class TemporaryRegistrationController extends Controller
         }
 
         // Tạo hoặc cập nhật resident
-        $resident = \App\Models\Resident::firstOrCreate(
+        $resident = \App\Models\Resident::withTrashed()->firstOrCreate(
             [
                 'user_id' => $targetUserId,
                 'apartment_id' => $registration->apartment_id,
@@ -422,6 +433,11 @@ class TemporaryRegistrationController extends Controller
                 'start_date' => $registration->start_date,
             ]
         );
+
+        if ($resident->trashed()) {
+            $resident->restore();
+        }
+        $resident->relationship = $dbRelationship;
 
         if ($registration->type === 'residence') {
             $resident->temporary_status = 'temporary';
