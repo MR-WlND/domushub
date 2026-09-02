@@ -68,10 +68,6 @@
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .stat-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(0, 35, 111, 0.06);
-    }
 
     .stat-header {
         display: flex;
