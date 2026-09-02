@@ -248,7 +248,7 @@
                             @php
                                 $lastProgress = $ticket->progress->last();
                                 $reportText = $lastProgress?->comment ?? 'Không có báo cáo chi tiết.';
-                                $proofImage = $lastProgress?->image_proof ? asset('storage/' . $lastProgress->image_proof) : null;
+                                $proofImages = !empty($lastProgress?->image_proof) && is_array($lastProgress->image_proof) ? $lastProgress->image_proof : [];
                             @endphp
                             <!-- Dòng chính -->
                             <tr class="rpt-table__main-row" data-ticket-id="{{ $ticket->id }}">
@@ -290,10 +290,15 @@
                                                             <p class="rpt-table__detail-text">{{ $reportText }}</p>
                                                         </div>
 
-                                                        @if($proofImage)
+                                                        @if(count($proofImages) > 0)
                                                             <div class="rpt-table__detail-image-box">
                                                                 <p class="rpt-table__detail-label rpt-table__detail-label--thumb">Ảnh</p>
-                                                                <img data-src="{{ $proofImage }}" src="" class="rpt-table__detail-thumb rpt-table__detail-thumb--lazy" onclick="openLightbox(this.src, \"Ảnh nghiệm thu\")">
+                                                                @foreach($proofImages as $idx => $img)
+                                                                    <img data-src="{{ asset('storage/' . $img) }}" src="" class="rpt-table__detail-thumb rpt-table__detail-thumb--lazy" onclick="openLightbox(this.src, 'Ảnh nghiệm thu')" style="{{ $idx > 0 ? 'display:none;' : '' }}">
+                                                                    @if($idx === 0 && count($proofImages) > 1)
+                                                                        <div style="position:absolute; bottom:5px; right:5px; background:rgba(0,0,0,0.6); color:#fff; font-size:0.7rem; padding:2px 6px; border-radius:10px; pointer-events:none;">+{{ count($proofImages)-1 }}</div>
+                                                                    @endif
+                                                                @endforeach
                                                             </div>
                                                         @endif
                                                     </div>

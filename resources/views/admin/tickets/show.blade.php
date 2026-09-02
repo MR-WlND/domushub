@@ -204,8 +204,13 @@
                                     @if($prog->comment)
                                         <div style="color: #334155;">{{ $prog->comment }}</div>
                                     @endif
-                                    @if($prog->image_proof)
-                                        <img src="{{ asset('storage/' . $prog->image_proof) }}" style="max-width:100%; border-radius:6px; margin-top:8px; cursor:pointer;" onclick="openAdminImgModal(this.src)">
+                                    @if(!empty($prog->image_proof) && is_array($prog->image_proof))
+                                        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                                            @foreach($prog->image_proof as $imgProof)
+                                                <img src="{{ asset('storage/' . $imgProof) }}" style="width:120px; height:120px; border-radius:6px; margin-top:8px; cursor:pointer; object-fit:cover;" onclick="openAdminImgModal(this.src)">
+                                            @endforeach
+                                        </div>
+                                    @endif
                                     @endif
                                 </div>
                             @endforeach
@@ -279,14 +284,13 @@
             <div style="margin-bottom: 24px;">
                 <label style="display:block; font-size:0.85rem; font-weight:600; color:#334155; margin-bottom:6px;">Chụp ảnh / Tải ảnh lên <span id="showProofNote" style="font-weight:normal; color:#64748b; font-size:0.8rem;">(tùy chọn)</span></label>
                 <div style="border: 2px dashed #cbd5e1; border-radius:8px; padding: 16px; text-align: center; cursor: pointer; background: #f8fafc;" onclick="document.getElementById('showImgInput').click()">
-                    <input type="file" name="image_proof" id="showImgInput" accept="image/*" capture="environment" style="display:none;" onchange="handleShowFileSelect(this)">
+                    <input type="file" name="image_proofs[]" id="showImgInput" accept="image/*" multiple capture="environment" style="display:none;" onchange="handleShowFileSelect(this)">
                     <div id="showUploadPlaceholder">
                         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#94a3b8" stroke-width="1.5" style="margin: 0 auto 6px;"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                        <span style="display:block; font-size:0.85rem; color:#64748b;">Nhấn để chọn ảnh hoặc chụp ảnh</span>
+                        <span style="display:block; font-size:0.85rem; color:#64748b;">Nhấn để chọn ảnh hoặc chụp ảnh (có thể chọn nhiều)</span>
                     </div>
-                    <div id="showUploadPreview" style="display:none; align-items:center; gap:10px; justify-content:center;">
-                        <img id="showPreviewImg" src="" style="width:50px; height:50px; object-fit:cover; border-radius:6px;">
-                        <span id="showPreviewName" style="font-size:0.85rem; color:#334155; font-weight:500;"></span>
+                    <div id="showUploadPreview" style="display:none; gap:8px; flex-wrap:wrap;">
+                        <!-- Images will be injected here -->
                     </div>
                 </div>
                 <button type="button" class="tk-btn-outline" style="margin-top: 10px; padding: 8px 12px; font-size: 0.85rem; width: auto; display: inline-flex; align-items: center; gap: 6px;" onclick="openShowCameraCapture()">
@@ -311,7 +315,7 @@
     </div>
     <video id="showCameraVideo" autoplay playsinline style="width:100%;height:auto;border-radius:14px;background:#000;"></video>
     <div style="display:flex;justify-content:flex-end;gap:0.75rem;margin-top:12px;">
-        <button type="button" class="tk-btn-outline" style="width:auto;padding:8px 16px;" onclick="closeShowCameraModal()">Hủy</button>
+        <button type="button" id="showCameraCancelBtn" class="tk-btn-outline" style="width:auto;padding:8px 16px;" onclick="closeShowCameraModal()">Hủy</button>
         <button type="button" class="tk-btn-primary" style="width:auto;padding:8px 20px;" onclick="captureShowCameraPhoto()">Chụp ảnh</button>
     </div>
 </div>
@@ -354,17 +358,68 @@ function updateShowModalNotes(status) {
     }
 }
 
+let showFiles = [];
+
+function syncShowFileInput() {
+    const dt = new DataTransfer();
+    showFiles.forEach(f => dt.items.add(f));
+    document.getElementById('showImgInput').files = dt.files;
+}
+
 function handleShowFileSelect(input) {
-    const file = input.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-        document.getElementById('showPreviewImg').src = e.target.result;
-        document.getElementById('showPreviewName').textContent = file.name;
-        document.getElementById('showUploadPlaceholder').style.display = 'none';
-        document.getElementById('showUploadPreview').style.display = 'flex';
-    };
-    reader.readAsDataURL(file);
+    if (!input.files || input.files.length === 0) return;
+    for(let i=0; i<input.files.length; i++) {
+        showFiles.push(input.files[i]);
+    }
+    input.value = '';
+    syncShowFileInput();
+    updateShowUploadPreview();
+}
+
+function updateShowUploadPreview() {
+    const previewContainer = document.getElementById('showUploadPreview');
+    const placeholder = document.getElementById('showUploadPlaceholder');
+    
+    if (showFiles.length > 0) {
+        placeholder.style.display = 'none';
+        previewContainer.style.display = 'flex';
+        previewContainer.innerHTML = '';
+        
+        showFiles.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const imgBox = document.createElement('div');
+                imgBox.style.position = 'relative';
+                imgBox.style.width = '60px';
+                imgBox.style.height = '60px';
+                
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '8px';
+                
+                const delBtn = document.createElement('div');
+                delBtn.innerHTML = '×';
+                delBtn.style.cssText = 'position:absolute;top:-5px;right:-5px;background:red;color:white;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;z-index:2;';
+                delBtn.onclick = (ev) => {
+                    ev.stopPropagation();
+                    showFiles.splice(index, 1);
+                    syncShowFileInput();
+                    updateShowUploadPreview();
+                };
+                
+                imgBox.appendChild(img);
+                imgBox.appendChild(delBtn);
+                previewContainer.appendChild(imgBox);
+            };
+            reader.readAsDataURL(file);
+        });
+    } else {
+        placeholder.style.display = 'block';
+        previewContainer.style.display = 'none';
+    }
 }
 
 let showCameraStream = null;
@@ -406,6 +461,13 @@ function closeShowCameraModal() {
         showCameraStream = null;
     }
     if (video) video.srcObject = null;
+    
+    const cancelBtn = document.getElementById('showCameraCancelBtn');
+    if(cancelBtn) {
+        cancelBtn.textContent = 'Hủy';
+        cancelBtn.style.background = '';
+        cancelBtn.style.color = '';
+    }
 }
 
 function captureShowCameraPhoto() {
@@ -424,13 +486,24 @@ function captureShowCameraPhoto() {
 
     canvas.toBlob(blob => {
         if (!blob) return;
-        const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
-        const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(file);
-        const input = document.getElementById('showImgInput');
-        input.files = dataTransfer.files;
-        handleShowFileSelect(input);
-        closeShowCameraModal();
+        
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:absolute;top:20px;left:50%;transform:translateX(-50%);background:rgba(22,101,52,0.9);color:#fff;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;z-index:99999;transition:opacity 0.3s;';
+        toast.textContent = '✅ Đã chụp 1 ảnh';
+        document.getElementById('showCameraModal').appendChild(toast);
+        setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 1500);
+
+        const file = new File([blob], `camera-capture-${Date.now()}.jpg`, { type: 'image/jpeg' });
+        showFiles.push(file);
+        syncShowFileInput();
+        updateShowUploadPreview();
+        
+        const cancelBtn = document.getElementById('showCameraCancelBtn');
+        if(cancelBtn) {
+            cancelBtn.textContent = 'Xong';
+            cancelBtn.style.background = '#10b981';
+            cancelBtn.style.color = '#fff';
+        }
     });
 }
 </script>

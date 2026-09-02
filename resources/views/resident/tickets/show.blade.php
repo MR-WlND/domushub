@@ -598,8 +598,13 @@
                                 <div class="tk-tl-desc">
                                     {{ $prog->comment ?? $prog->statusLabel() }}
                                 </div>
-                                @if($prog->image_proof)
-                                    <img src="{{ asset('storage/' . $prog->image_proof) }}" alt="Bằng chứng" style="width: 60px; height: 60px; border-radius: 6px; object-fit: cover; margin-top: 6px; cursor: pointer;" onclick="openImgModal(this.src)">
+                                @if(!empty($prog->image_proof) && is_array($prog->image_proof))
+                                    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                                        @foreach($prog->image_proof as $imgProof)
+                                            <img src="{{ asset('storage/' . $imgProof) }}" alt="Bằng chứng" style="width: 60px; height: 60px; border-radius: 6px; object-fit: cover; margin-top: 6px; cursor: pointer;" onclick="openImgModal(this.src)">
+                                        @endforeach
+                                    </div>
+                                @endif
                                 @endif
                             </li>
                         @endforeach

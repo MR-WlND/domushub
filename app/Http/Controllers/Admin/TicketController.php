@@ -582,26 +582,37 @@ class TicketController extends Controller
         $rules = [
             'status'      => ['required', 'in:in_progress,completed'],
             'comment'     => ['nullable', 'string', 'max:1000'],
-            'image_proof' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'image_proofs'   => ['nullable', 'array', 'max:5'],
+            'image_proofs.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ];
 
         // KTV báo hoàn thành: bắt buộc comment + ảnh nghiệm thu
         if ($request->input('status') === 'completed' && $user->role === 'technician') {
-            $rules['comment']     = ['required', 'string', 'max:1000'];
-            $rules['image_proof'] = ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'];
+            $rules['comment']        = ['required', 'string', 'max:1000'];
+            $rules['image_proofs']   = ['required', 'array', 'min:1', 'max:5'];
+            $rules['image_proofs.*'] = ['image', 'mimes:jpg,jpeg,png,webp', 'max:2048'];
         }
 
         $validated = $request->validate($rules, [
-            'status.required'      => 'Vui lòng chọn trạng thái.',
-            'comment.required'     => 'Vui lòng nhập báo cáo hoàn thành.',
-            'image_proof.required' => 'Vui lòng tải lên ảnh nghiệm thu khi hoàn thành.',
-            'image_proof.max'      => 'Dung lượng ảnh tối đa 2MB.',
+            'status.required'         => 'Vui lòng chọn trạng thái.',
+            'comment.required'        => 'Vui lòng nhập báo cáo hoàn thành.',
+            'image_proofs.required'   => 'Vui lòng tải lên ảnh nghiệm thu khi hoàn thành.',
+            'image_proofs.max'        => 'Chỉ được tải lên tối đa 5 ảnh.',
+            'image_proofs.*.image'    => 'File phải là định dạng ảnh.',
+            'image_proofs.*.max'      => 'Dung lượng ảnh tối đa 2MB.',
         ]);
 
-        $imageProof = null;
-        if ($request->hasFile('image_proof')) {
-            $imageProof = $request->file('image_proof')->store('ticket-progress', 'public');
+        $imageProofPaths = [];
+        if ($request->hasFile('image_proofs')) {
+            foreach ($request->file('image_proofs') as $file) {
+                // Sử dụng hash ngắn để tiết kiệm độ dài chuỗi lưu DB
+                $filename = time() . '_' . \Illuminate\Support\Str::random(5) . '.' . $file->extension();
+                $path = $file->storeAs('ticket-progress', $filename, 'public');
+                $imageProofPaths[] = $path;
+            }
         }
+        
+        $imageProof = empty($imageProofPaths) ? null : json_encode($imageProofPaths);
 
         $updateData = ['status' => $validated['status']];
 

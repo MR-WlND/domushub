@@ -459,14 +459,13 @@
         <div class="ktv-modal__field">
             <label>Ảnh nghiệm thu / Ảnh tiến trình <span id="proofFieldNote" class="ktv-field-note">(tùy chọn khi đang xử lý, bắt buộc khi hoàn thành)</span></label>
             <div class="ktv-modal__upload" id="uploadZone" onclick="openFilePicker()">
-                <input type="file" name="image_proof" id="imgProofInput" accept="image/*" capture="environment" style="display:none" onchange="handleFileSelect(this)">
+                <input type="file" name="image_proofs[]" id="imgProofInput" accept="image/*" multiple capture="environment" style="display:none" onchange="handleFileSelect(this)">
                 <div id="uploadPlaceholder">
                     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#94a3b8" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                    <span>Nhấn để chọn ảnh nghiệm thu</span>
+                    <span>Nhấn để chọn ảnh nghiệm thu (có thể chọn nhiều)</span>
                 </div>
-                <div id="uploadPreview" style="display:none">
-                    <img id="previewImg" src="" alt="preview">
-                    <span id="previewName"></span>
+                <div id="uploadPreview" style="display:none; gap:8px; flex-wrap:wrap;">
+                    <!-- Images will be injected here -->
                 </div>
             </div>
             <button type="button" class="ktv-btn ktv-btn--sm ktv-btn--ghost" style="margin-top:0.75rem;" onclick="openCameraCapture()">
@@ -493,7 +492,7 @@
     </div>
     <video id="cameraVideo" autoplay playsinline style="width:100%;height:auto;border-radius:14px;background:#000;"></video>
     <div style="display:flex;justify-content:flex-end;gap:0.75rem;margin-top:12px;">
-        <button type="button" class="ktv-btn ktv-btn--ghost" onclick="closeCameraModal()">Hủy</button>
+        <button type="button" id="cameraCancelBtn" class="ktv-btn ktv-btn--ghost" onclick="closeCameraModal()">Hủy</button>
         <button type="button" class="ktv-btn ktv-btn--primary" onclick="captureCameraPhoto()">Chụp ảnh</button>
     </div>
 </div>
@@ -564,8 +563,9 @@ function openProgressModal(btn) {
     updateProgressModalNotes(statusSelect.value);
     document.getElementById('progressComment').value = '';
     document.getElementById('imgProofInput').value = '';
-    document.getElementById('uploadPreview').style.display = 'none';
-    document.getElementById('uploadPlaceholder').style.display = 'flex';
+    ktvFiles = [];
+    syncFileInput();
+    updateUploadPreview();
 
     document.getElementById('progressModalOverlay').classList.add('active');
     document.getElementById('progressModal').classList.add('active');
@@ -593,6 +593,13 @@ function closeProgressModal() {
 }
 
 let cameraStream = null;
+let ktvFiles = [];
+
+function syncFileInput() {
+    const dt = new DataTransfer();
+    ktvFiles.forEach(f => dt.items.add(f));
+    document.getElementById('imgProofInput').files = dt.files;
+}
 
 function openFilePicker() {
     document.getElementById('imgProofInput').click();
@@ -636,6 +643,13 @@ function closeCameraModal() {
         cameraStream = null;
     }
     if (video) video.srcObject = null;
+    
+    const cancelBtn = document.getElementById('cameraCancelBtn');
+    if(cancelBtn) {
+        cancelBtn.textContent = 'Hủy';
+        cancelBtn.style.background = '';
+        cancelBtn.style.color = '';
+    }
 }
 
 function captureCameraPhoto() {
@@ -654,13 +668,24 @@ function captureCameraPhoto() {
 
     canvas.toBlob(blob => {
         if (!blob) return;
-        const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
-        const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(file);
-        const input = document.getElementById('imgProofInput');
-        input.files = dataTransfer.files;
-        handleFileSelect(input);
-        closeCameraModal();
+        
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:absolute;top:20px;left:50%;transform:translateX(-50%);background:rgba(22,101,52,0.9);color:#fff;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;z-index:99999;transition:opacity 0.3s;';
+        toast.textContent = '✅ Đã chụp 1 ảnh';
+        document.getElementById('cameraModal').appendChild(toast);
+        setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 1500);
+
+        const file = new File([blob], `camera-capture-${Date.now()}.jpg`, { type: 'image/jpeg' });
+        ktvFiles.push(file);
+        syncFileInput();
+        updateUploadPreview();
+        
+        const cancelBtn = document.getElementById('cameraCancelBtn');
+        if(cancelBtn) {
+            cancelBtn.textContent = 'Xong';
+            cancelBtn.style.background = '#10b981';
+            cancelBtn.style.color = '#fff';
+        }
     });
 }
 
@@ -676,16 +701,59 @@ if (progressForm) {
 }
 
 function handleFileSelect(input) {
-    const file = input.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-        document.getElementById('previewImg').src = e.target.result;
-        document.getElementById('previewName').textContent = file.name;
-        document.getElementById('uploadPlaceholder').style.display = 'none';
-        document.getElementById('uploadPreview').style.display = 'flex';
-    };
-    reader.readAsDataURL(file);
+    if (!input.files || input.files.length === 0) return;
+    for(let i=0; i<input.files.length; i++) {
+        ktvFiles.push(input.files[i]);
+    }
+    input.value = '';
+    syncFileInput();
+    updateUploadPreview();
+}
+
+function updateUploadPreview() {
+    const previewContainer = document.getElementById('uploadPreview');
+    const placeholder = document.getElementById('uploadPlaceholder');
+    
+    if (ktvFiles.length > 0) {
+        placeholder.style.display = 'none';
+        previewContainer.style.display = 'flex';
+        previewContainer.innerHTML = '';
+        
+        ktvFiles.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const imgBox = document.createElement('div');
+                imgBox.style.position = 'relative';
+                imgBox.style.width = '60px';
+                imgBox.style.height = '60px';
+                
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '8px';
+                
+                const delBtn = document.createElement('div');
+                delBtn.innerHTML = '×';
+                delBtn.style.cssText = 'position:absolute;top:-5px;right:-5px;background:red;color:white;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;z-index:2;';
+                delBtn.onclick = (ev) => {
+                    ev.stopPropagation();
+                    ktvFiles.splice(index, 1);
+                    syncFileInput();
+                    updateUploadPreview();
+                };
+                
+                imgBox.appendChild(img);
+                imgBox.appendChild(delBtn);
+                previewContainer.appendChild(imgBox);
+            };
+            reader.readAsDataURL(file);
+        });
+    } else {
+        placeholder.style.display = 'flex';
+        previewContainer.style.display = 'none';
+    }
 }
 
 function getPriorityLabel(p) {
