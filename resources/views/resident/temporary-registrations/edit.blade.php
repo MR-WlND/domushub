@@ -166,14 +166,14 @@
             <div class="form-group">
                 <label class="form-label">Ảnh Căn cước công dân (Mặt trước & mặt sau)</label>
                 <div class="cccd-capture-group">
-                    <button type="button" onclick="openGlobalCameraModal('CCCD_Mat_Truoc')" style="background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 8px; padding: 20px 12px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; color: #00236f; width: 100%; box-sizing: border-box;" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#93c5fd';" onmouseout="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1';">
+                    <div id="btn-camera-front" onclick="openGlobalCameraModal('CCCD_Mat_Truoc')" style="position: relative; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 8px; padding: 20px 12px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; color: #00236f; width: 100%; box-sizing: border-box;" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#93c5fd';" onmouseout="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1';">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 4px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
                         <span style="font-weight: 600; font-size: 14px;">Chụp mặt trước</span>
-                    </button>
-                    <button type="button" onclick="openGlobalCameraModal('CCCD_Mat_Sau')" style="background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 8px; padding: 20px 12px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; color: #00236f; width: 100%; box-sizing: border-box;" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#93c5fd';" onmouseout="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1';">
+                    </div>
+                    <div id="btn-camera-back" onclick="openGlobalCameraModal('CCCD_Mat_Sau')" style="position: relative; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 8px; padding: 20px 12px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; color: #00236f; width: 100%; box-sizing: border-box;" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#93c5fd';" onmouseout="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1';">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 4px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
                         <span style="font-weight: 600; font-size: 14px;">Chụp mặt sau</span>
-                    </button>
+                    </div>
                 </div>
                 <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 8px;">
                     <div style="font-size: 13px; color: #64748b; font-weight: 500; white-space: nowrap;">Hoặc tải lên:</div>
@@ -304,80 +304,115 @@
         function renderPreviews() {
             previewContainer.innerHTML = '';
             
-            Array.from(selectedFiles.files).forEach((file, index) => {
+            const btnFront = document.getElementById('btn-camera-front');
+            const btnBack = document.getElementById('btn-camera-back');
+            
+            // Default HTML for buttons
+            const defaultFront = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 4px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg><span style="font-weight: 600; font-size: 14px;">Chụp mặt trước</span>`;
+            const defaultBack = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 4px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg><span style="font-weight: 600; font-size: 14px;">Chụp mặt sau</span>`;
+            
+            // Reset buttons
+            btnFront.innerHTML = defaultFront;
+            btnFront.style.padding = '20px 12px';
+            btnFront.onclick = function() { openGlobalCameraModal('CCCD_Mat_Truoc'); };
+            
+            btnBack.innerHTML = defaultBack;
+            btnBack.style.padding = '20px 12px';
+            btnBack.onclick = function() { openGlobalCameraModal('CCCD_Mat_Sau'); };
+
+            const files = Array.from(selectedFiles.files);
+            
+            let frontIndex = -1;
+            let backIndex = -1;
+            
+            // First pass: look for specific camera captured filenames
+            files.forEach((f, i) => {
+                if (f.type.startsWith('image/')) {
+                    if (f.name.includes('CCCD_Mat_Truoc') && frontIndex === -1) frontIndex = i;
+                    else if (f.name.includes('CCCD_Mat_Sau') && backIndex === -1) backIndex = i;
+                }
+            });
+            
+            // Second pass: fill empty slots with any other images
+            files.forEach((f, i) => {
+                if (f.type.startsWith('image/') && i !== frontIndex && i !== backIndex) {
+                    if (frontIndex === -1) frontIndex = i;
+                    else if (backIndex === -1) backIndex = i;
+                }
+            });
+
+            files.forEach((file, index) => {
                 const reader = new FileReader();
-                
-                const wrapper = document.createElement('div');
-                wrapper.style.position = 'relative';
-                wrapper.style.width = '100px';
-                wrapper.style.height = '100px';
-                wrapper.style.borderRadius = '8px';
-                wrapper.style.overflow = 'hidden';
-                wrapper.style.border = '1px solid #e2e8f0';
-                wrapper.style.display = 'flex';
-                wrapper.style.alignItems = 'center';
-                wrapper.style.justifyContent = 'center';
-                wrapper.style.backgroundColor = '#f8fafc';
-                
-                const removeBtn = document.createElement('div');
-                removeBtn.innerHTML = '&times;';
-                removeBtn.style.position = 'absolute';
-                removeBtn.style.top = '4px';
-                removeBtn.style.right = '4px';
-                removeBtn.style.background = 'rgba(0,0,0,0.6)';
-                removeBtn.style.color = '#fff';
-                removeBtn.style.borderRadius = '50%';
-                removeBtn.style.width = '20px';
-                removeBtn.style.height = '20px';
-                removeBtn.style.display = 'flex';
-                removeBtn.style.alignItems = 'center';
-                removeBtn.style.justifyContent = 'center';
-                removeBtn.style.cursor = 'pointer';
-                removeBtn.style.fontSize = '14px';
-                removeBtn.style.zIndex = '10';
-                removeBtn.onclick = function(e) {
-                    e.preventDefault();
-                    removeFile(index);
-                };
-                
-                if (file.type.startsWith('image/')) {
-                    reader.onload = function(e) {
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        img.style.width = '100%';
-                        img.style.height = '100%';
-                        img.style.objectFit = 'cover';
-                        wrapper.appendChild(img);
+                reader.onload = e => {
+                    const imgHtml = `<img src="${e.target.result}" style="width:100%; height:120px; object-fit:contain; border-radius:6px;">`;
+                    
+                    if (index === frontIndex) {
+                        btnFront.innerHTML = `<div style="position:relative; width:100%; height:100%;" onclick="event.stopPropagation();">${imgHtml}<div class="btn-remove-cccd" style="position:absolute; top:4px; right:4px; background:rgba(220,38,38,0.9); color:white; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10;">&times;</div><div style="position:absolute; bottom:4px; left:4px; background:rgba(0,0,0,0.6); color:white; font-size:11px; padding:2px 6px; border-radius:4px;">Mặt trước</div></div>`;
+                        btnFront.style.padding = '4px';
+                        btnFront.onclick = null;
+                        btnFront.querySelector('.btn-remove-cccd').onclick = function(ev) {
+                            ev.stopPropagation();
+                            removeFile(index);
+                        };
+                    } else if (index === backIndex) {
+                        btnBack.innerHTML = `<div style="position:relative; width:100%; height:100%;" onclick="event.stopPropagation();">${imgHtml}<div class="btn-remove-cccd" style="position:absolute; top:4px; right:4px; background:rgba(220,38,38,0.9); color:white; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10;">&times;</div><div style="position:absolute; bottom:4px; left:4px; background:rgba(0,0,0,0.6); color:white; font-size:11px; padding:2px 6px; border-radius:4px;">Mặt sau</div></div>`;
+                        btnBack.style.padding = '4px';
+                        btnBack.onclick = null;
+                        btnBack.querySelector('.btn-remove-cccd').onclick = function(ev) {
+                            ev.stopPropagation();
+                            removeFile(index);
+                        };
+                    } else {
+                        // Render in generic preview container
+                        const wrapper = document.createElement('div');
+                        wrapper.style.position = 'relative';
+                        wrapper.style.width = '100px';
+                        wrapper.style.height = '100px';
+                        wrapper.style.borderRadius = '8px';
+                        wrapper.style.overflow = 'hidden';
+                        wrapper.style.border = '1px solid #e2e8f0';
+                        wrapper.style.display = 'flex';
+                        wrapper.style.alignItems = 'center';
+                        wrapper.style.justifyContent = 'center';
+                        wrapper.style.backgroundColor = '#f8fafc';
                         
-                        let labelText = '';
-                        if (file.name.startsWith('CCCD_Mat_Truoc')) labelText = 'Mặt trước';
-                        else if (file.name.startsWith('CCCD_Mat_Sau')) labelText = 'Mặt sau';
+                        const removeBtn = document.createElement('div');
+                        removeBtn.innerHTML = '&times;';
+                        removeBtn.style.position = 'absolute';
+                        removeBtn.style.top = '4px';
+                        removeBtn.style.right = '4px';
+                        removeBtn.style.background = 'rgba(0,0,0,0.6)';
+                        removeBtn.style.color = '#fff';
+                        removeBtn.style.borderRadius = '50%';
+                        removeBtn.style.width = '20px';
+                        removeBtn.style.height = '20px';
+                        removeBtn.style.display = 'flex';
+                        removeBtn.style.alignItems = 'center';
+                        removeBtn.style.justifyContent = 'center';
+                        removeBtn.style.cursor = 'pointer';
+                        removeBtn.style.fontSize = '14px';
+                        removeBtn.style.zIndex = '10';
+                        removeBtn.onclick = (ev) => {
+                            ev.stopPropagation();
+                            removeFile(index);
+                        };
                         
-                        if (labelText) {
-                            const label = document.createElement('div');
-                            label.textContent = labelText;
-                            label.style.position = 'absolute';
-                            label.style.bottom = '0';
-                            label.style.left = '0';
-                            label.style.right = '0';
-                            label.style.background = 'rgba(0, 35, 111, 0.75)';
-                            label.style.color = '#fff';
-                            label.style.fontSize = '11px';
-                            label.style.fontWeight = '600';
-                            label.style.textAlign = 'center';
-                            label.style.padding = '4px 0';
-                            wrapper.appendChild(label);
+                        if (file.type.startsWith('image/')) {
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.style.width = '100%';
+                            img.style.height = '100%';
+                            img.style.objectFit = 'cover';
+                            wrapper.appendChild(img);
+                        } else {
+                            wrapper.innerHTML = `<span style="font-size: 11px; font-weight: 500; color: #64748b; text-align: center; padding: 4px; word-break: break-all;">${file.name}</span>`;
                         }
                         
                         wrapper.appendChild(removeBtn);
+                        previewContainer.appendChild(wrapper);
                     }
-                    reader.readAsDataURL(file);
-                } else if (file.type === 'application/pdf') {
-                    wrapper.innerHTML = '<div style="text-align: center; color: #dc2626;"><i class="fa-solid fa-file-pdf" style="font-size: 24px; margin-bottom: 8px;"></i><div style="font-size: 11px; font-weight: 600; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 90px;">' + file.name + '</div></div>';
-                    wrapper.appendChild(removeBtn);
-                }
-                
-                previewContainer.appendChild(wrapper);
+                };
+                reader.readAsDataURL(file);
             });
         }
     });
